@@ -1,0 +1,32 @@
+-r base.txt
+
+# Testing
+#
+mypy==0.910  # https://github.com/python/mypy
+django-stubs==1.9.0  # https://github.com/typeddjango/django-stubs
+pytest==6.2.5  # https://github.com/pytest-dev/pytest
+pytest-mock==3.6.1  # https://github.com/pytest-dev/pytest-mock/
+pytest-sugar==0.9.4  # https://github.com/Frozenball/pytest-sugar
+django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-migrations
+beautifulsoup4==4.10.0  # http://www.crummy.com/software/BeautifulSoup/bs4/
+
+# mypy library stubs
+# see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+types-requests==2.26.1
+
+# Code quality
+#
+flake8==4.0.1  # https://github.com/PyCQA/flake8
+flake8-isort==4.1.1  # https://github.com/gforcada/flake8-isort
+flake8-quotes==3.3.1  # https://github.com/zheller/flake8-quotes
+coverage==6.2  # https://github.com/nedbat/coveragepy
+pylint-django==2.4.4  # https://github.com/PyCQA/pylint-django
+
+# Django
+#
+django-coverage-plugin==2.0.2  # https://github.com/nedbat/django_coverage_plugin
+pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
+
+# Requirements
+#
+pip-upgrader==1.4.15  # https://github.com/simion/pip-upgrader
