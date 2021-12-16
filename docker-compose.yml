@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:14.1-alpine3.15
+    env_file:
+      - .envs/postgres.dev
+    ports:
+      - 5432:5432
+  app:
+    image: opalmedapps/opal:latest
+    build: .
+    command: python manage.py runserver 0:8000
+    volumes:
+      - $PWD:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db

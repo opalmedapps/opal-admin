@@ -1,0 +1,48 @@
+{
+  "configurations": [
+    {
+      "name": "Python: Django",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runserver",
+        // for some reason it doesn't work with automatic reloading, ref: https://github.com/microsoft/ptvsd/issues/1241
+        "--noreload"
+      ],
+      "django": true,
+      // "subProcess": true,
+      "justMyCode": false,
+    },
+    {
+      "name": "PyTest",
+      "type": "python",
+      "request": "launch",
+      "stopOnEntry": false,
+      "module": "pytest",
+      "args": [
+          "--create-db",
+          "-sv",
+          "${file}",
+      ],
+      "cwd": "${workspaceRoot}",
+      "django": true,
+      "justMyCode": false,
+    },
+    {
+      "name": "Docker: Python - Django",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: debug",
+      "python": {
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+          }
+        ],
+        "projectType": "django"
+      }
+    }
+  ]
+}
