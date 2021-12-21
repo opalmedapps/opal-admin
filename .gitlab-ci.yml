@@ -2,6 +2,7 @@ image: python:3.9.9-slim-buster
 
 before_script:
   - python --version
+  - pip install --upgrade pip
   - pip install -r requirements/development.txt
 
 stages:
