@@ -1,25 +1,49 @@
 image: python:3.9.9-slim-buster
 
+# set up
+# see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
 before_script:
+  - python -m venv .venv
+  - source .venv/bin/activate
   - python --version
-  - pip install --upgrade pip
-  - pip install -r requirements/development.txt
+  - which python
 
 stages:
   - Static Analysis
   - Test
 
-lint:
+setup:
+  stage: .pre
+  script:
+  - pip install --upgrade pip
+  - pip install -r requirements/development.txt
+
+flake8:
   stage: Static Analysis
   script:
   - flake8
 
-typecheck:
+mypy:
   stage: Static Analysis
   script:
   - mypy opal/
 
-unittest:
+test:
   stage: Test
   script:
   - coverage run -m pytest
