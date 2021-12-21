@@ -15,7 +15,7 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - .venv/
+    # - .venv/
 
 before_script:
   - python -m venv .venv
@@ -32,6 +32,18 @@ setup:
   script:
     - pip install --upgrade pip
     - pip install -r requirements/development.txt
+  artifacts:
+    paths:
+      - .venv
+  # Pip's cache doesn't store the python packages
+  # https://pip.pypa.io/en/stable/reference/pip_install/#caching
+  #
+  # If you want to also cache the installed packages, you have to install
+  # them in a virtualenv and cache it as well.
+  cache:
+    paths:
+      - .cache/pip
+      - .venv/
 
 flake8:
   stage: Static Analysis
