@@ -2,15 +2,20 @@ version: '3.7'
 
 services:
   db:
-    image: postgres:14.1-alpine3.15
+    # using 14.1-bullseye causes "django.db.utils.OperationalError: SCRAM authentication requires libpq version 10 or above" in app
+    # could be an Apple Silicon problem only
+    image: postgres:13.5-bullseye
     env_file:
       - .envs/postgres.dev
     ports:
       - 5432:5432
   app:
-    image: opalmedapps/opal:latest
+    image: opalmedapps/backend:latest
     build: .
     command: python manage.py runserver 0:8000
+    environment:
+      # overwrite for container to allow both container and local venv
+      - DATABASE_HOST=db
     volumes:
       - $PWD:/app
     ports:

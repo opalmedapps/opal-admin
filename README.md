@@ -4,7 +4,7 @@
 
 ### Python virtual environment
 
-1. `python3.9 -m venv --prompt 'dp' .venv`
+1. `python3.9 -m venv --prompt 'opal' .venv`
 1. `source .venv/bin/activate`
 1. `python -m pip install --upgrade pip`
 1. `python -m pip install -r requirements/development.txt`
@@ -23,11 +23,6 @@ See the `requirements/` folder for the requirement files depending on the enviro
 
 * `.envs/postgres.dev`: environment variables for the development postgres database
 * `.env`: environment variables for the Django app
-
-## Required volumes in Docker container
-
-* `/data/jobs`: directory to store jobs JSON files of new jobs into (e.g., produced by wmd-xml-parser)
-* `/data/invoices`: directory to store downloaded invoices to (by wmd-scraper)
 
 ## Development
 
