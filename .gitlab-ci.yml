@@ -30,25 +30,32 @@ stages:
 setup:
   stage: .pre
   script:
-  - pip install --upgrade pip
-  - pip install -r requirements/development.txt
+    - pip install --upgrade pip
+    - pip install -r requirements/development.txt
 
 flake8:
   stage: Static Analysis
   script:
-  - flake8
+    - flake8
 
 mypy:
   stage: Static Analysis
   script:
-  - mypy opal/
+    - mypy opal/
 
 test:
   stage: Test
   script:
-  - coverage run -m pytest
+    - coverage run -m pytest
+    - pytest --version
+  artifacts:
+    paths:
+      - .coverage
 
 coverage:
   stage: Test
   script:
-  - coverage report
+    - coverage report
+  needs:
+    - job: test
+  coverage: '/Coverage /'
