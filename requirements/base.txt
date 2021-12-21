@@ -6,7 +6,7 @@ django-extensions==3.1.5  # https://github.com/django-extensions/django-extensio
 
 # PostgreSQL
 #
-psycopg2-binary==2.8.6 # https://github.com/psycopg/psycopg2
+psycopg2-binary==2.9.2 # https://github.com/psycopg/psycopg2
 
 # Other
 #

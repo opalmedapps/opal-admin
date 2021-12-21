@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.0-experimental
-FROM python:3.9.9-slim-buster
+FROM python:3.9.9-slim-bullseye
 
 # for which environment the build is done: development or produdction
 ARG ENV=development
@@ -24,8 +24,8 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install pip requirements
-COPY ./requirements /tmp/
 RUN python -m pip install --upgrade pip
+COPY ./requirements /tmp/
 RUN python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
 
 EXPOSE 8000
