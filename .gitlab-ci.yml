@@ -58,16 +58,23 @@ mypy:
 test:
   stage: Test
   script:
-    - coverage run -m pytest
+    - coverage run -m pytest --junitxml=report.xml
     - pytest --version
   artifacts:
+    reports:
+      junit: report.xml
     paths:
       - .coverage
 
 coverage:
   stage: Test
   script:
+    - coverage xml
     - coverage report
   needs:
     - job: test
+    - job: setup
   coverage: '/Coverage /'
+  artifacts:
+    reports:
+      cobertura: coverage.xml
