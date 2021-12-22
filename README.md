@@ -1,5 +1,7 @@
 # Opal API Prototype
 
+[![pipeline status](https://gitlab.com/mschoettle/backend-prototype/badges/main/pipeline.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main) [![coverage report](https://gitlab.com/mschoettle/backend-prototype/badges/main/coverage.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main)
+
 ## Setup
 
 ### Python virtual environment
