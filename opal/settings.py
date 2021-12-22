@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from pathlib import Path
-from typing import List
 
 import environ
 
@@ -47,7 +46,9 @@ THIRD_PARTY_APPS = [
     'django_extensions',
 ]
 
-LOCAL_APPS: List[str] = []
+LOCAL_APPS = [
+    'opal.hospital_settings.apps.HospitalSettingsConfig'
+]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
