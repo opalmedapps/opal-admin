@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from pathlib import Path
 
+from django.utils.translation import gettext_lazy as _
+
 import environ
 
 # get root of the project
@@ -35,6 +37,9 @@ ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 
 # APPS
 DJANGO_APPS = [
+    # modeltranslation must come before admin
+    # https://django-modeltranslation.readthedocs.io/en/latest/installation.html#installed-apps
+    # 'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -184,6 +189,11 @@ USE_L10N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
+# https://docs.djangoproject.com/en/dev/ref/settings/#languages
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('French')),
+]
 
 
 # Static files (CSS, JavaScript, Images)
