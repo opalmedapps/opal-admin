@@ -39,7 +39,7 @@ ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]']
 DJANGO_APPS = [
     # modeltranslation must come before admin
     # https://django-modeltranslation.readthedocs.io/en/latest/installation.html#installed-apps
-    # 'modeltranslation',
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
