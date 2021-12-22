@@ -1,0 +1,38 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-12-22 17:08+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: opal/hospital_settings/apps.py:9
+msgid "Hospital Settings"
+msgstr "Paramètres hospitaliers"
+
+#: opal/hospital_settings/models.py:9
+msgid "Name"
+msgstr "Nom"
+
+#: opal/hospital_settings/models.py:10
+msgid "Code"
+msgstr "Code"
+
+#: opal/hospital_settings/models.py:11
+msgid "Parking Info"
+msgstr "URL des informations de stationnement"
+
+#: opal/hospital_settings/models.py:26
+msgid "Institution"
+msgstr "Établissement"
