@@ -15,10 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
+
+from rest_framework import routers
+
+from .hospital_settings.urls import router as hospital_settings_router
+
+router = routers.DefaultRouter()
+router.registry.extend(hospital_settings_router.registry)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/hospital-settings/', include(router.urls)),
+    path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
 
 admin.site.site_header = _('Opal Management')
