@@ -3,13 +3,15 @@ from rest_framework import serializers
 from .models import Institution, Site
 
 
-class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Institution
-        fields = '__all__'
-
-
 class SiteSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Site
-        fields = '__all__'
+        fields = ['url', 'parking_url', 'name', 'code']
+
+
+class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
+    sites = SiteSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Institution
+        fields = ['url', 'parking_url', 'name', 'code', 'sites']
