@@ -6,7 +6,7 @@ from .models import Institution, Site
 class SiteSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Site
-        fields = ['url', 'parking_url', 'name', 'code']
+        fields = ['url', 'name', 'code', 'parking_url']
 
 
 class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
@@ -14,4 +14,4 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Institution
-        fields = ['url', 'parking_url', 'name', 'code', 'sites']
+        fields = ['url', 'name', 'code', 'parking_url', 'sites']
