@@ -51,6 +51,7 @@ THIRD_PARTY_APPS = [
     'django_extensions',
     'rest_framework',
     'django_filters',
+    'easyaudit',
 ]
 
 LOCAL_APPS = [
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf

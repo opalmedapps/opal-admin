@@ -6,6 +6,7 @@ django-extensions==3.1.5  # https://github.com/django-extensions/django-extensio
 django-modeltranslation==0.17.3  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.13.1  # https://www.django-rest-framework.org/
 django-filter==21.1  # https://github.com/carltongibson/django-filter
+django-easy-audit==1.3.2  # https://github.com/soynatan/django-easy-audit
 
 # PostgreSQL
 #
