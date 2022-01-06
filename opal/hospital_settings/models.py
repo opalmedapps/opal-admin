@@ -15,10 +15,14 @@ class Location(models.Model):
 
 
 class Institution(Location):
-    pass
+    class Meta:
+        ordering = ['name']
 
 
 class Site(Location):
+    class Meta:
+        ordering = ['name']
+
     institution = models.ForeignKey(
         to=Institution,
         on_delete=models.CASCADE,
