@@ -7,8 +7,7 @@ class Location(models.Model):
         abstract = True
 
     name = models.CharField(_('Name'), max_length=100)
-    code = models.CharField(_('Code'), max_length=10)
-    parking_url = models.URLField(_('Parking Info'))
+    code = models.CharField(_('Code'), max_length=10, unique=True)
 
     def __str__(self) -> str:
         return self.name
@@ -23,6 +22,7 @@ class Site(Location):
     class Meta:
         ordering = ['name']
 
+    parking_url = models.URLField(_('Parking Info'))
     institution = models.ForeignKey(
         to=Institution,
         on_delete=models.CASCADE,
