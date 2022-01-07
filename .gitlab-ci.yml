@@ -15,17 +15,15 @@ variables:
 
 
 before_script:
-  - python -m venv .venv
-  - source .venv/bin/activate
+  - uname -a
   - python --version
   - which python
-  - echo "$POSTGRES_DB"
-  - echo "$CI_PROJECT_DIR"
+  - python -m venv .venv
+  - source .venv/bin/activate
   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=postgres/" .env
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$POSTGRES_DB/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$POSTGRES_USER/" .env
   - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$POSTGRES_PASSWORD/" .env
-  - cat .env
 
 stages:
   - Static Analysis
