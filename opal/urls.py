@@ -20,16 +20,11 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from rest_framework import routers
-
 from .hospital_settings.urls import router as hospital_settings_router
-
-router = routers.DefaultRouter()
-router.registry.extend(hospital_settings_router.registry)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/hospital-settings/', include(router.urls)),
+    path('api/hospital-settings/', include((hospital_settings_router.urls, 'hospital-settings'))),
     path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
