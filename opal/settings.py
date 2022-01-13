@@ -276,9 +276,6 @@ REST_FRAMEWORK = {
 }
 
 # A list of origins that are authorized to make cross-site HTTP requests.
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8082',
-    'http://127.0.0.1:8082',
-]
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
