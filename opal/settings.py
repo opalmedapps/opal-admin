@@ -54,6 +54,7 @@ THIRD_PARTY_APPS = [
     'dj_rest_auth',
     'django_filters',
     'corsheaders',
+    'easyaudit',
 ]
 
 LOCAL_APPS = [
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -275,7 +277,17 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
+# CORS headers
+#
 # A list of origins that are authorized to make cross-site HTTP requests.
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
+
+# Easy Audit
+#
+# Remove /admin to log requests to the admin site
+DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = [r'^/admin/jsi18n/', r'^/static/', r'^/favicon.ico$']
+
+# Make events read-only to disallow deleting
+DJANGO_EASY_AUDIT_READONLY_EVENTS = True

@@ -3,11 +3,14 @@ from http import HTTPStatus
 from django.test.client import Client
 from django.urls.base import reverse
 
+import pytest
+
 
 def test_start_defined():
     assert reverse('start') is not None
 
 
+@pytest.mark.django_db
 def test_home_redirects(client: Client):
     response = client.get('/')
 
