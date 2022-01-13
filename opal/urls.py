@@ -23,9 +23,13 @@ from django.views.generic.base import RedirectView
 from .hospital_settings.urls import router as hospital_settings_router
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # APIs
     path('api/hospital-settings/', include((hospital_settings_router.urls, 'hospital-settings'))),
-    path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # REST API authentification
+    path('api/auth/', include('dj_rest_auth.urls')),
+    # global config
+    path('admin/', admin.site.urls),
+    path('', RedirectView.as_view(url='/api/hospital-settings/'), name='start'),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',
