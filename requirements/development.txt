@@ -2,7 +2,7 @@
 
 # Testing
 #
-mypy==0.921  # https://github.com/python/mypy
+mypy==0.931  # https://github.com/python/mypy
 django-stubs==1.9.0  # https://github.com/typeddjango/django-stubs
 pytest==6.2.5  # https://github.com/pytest-dev/pytest
 pytest-mock==3.6.1  # https://github.com/pytest-dev/pytest-mock/
@@ -19,7 +19,7 @@ flake8==4.0.1  # https://github.com/PyCQA/flake8
 flake8-isort==4.1.1  # https://github.com/gforcada/flake8-isort
 flake8-quotes==3.3.1  # https://github.com/zheller/flake8-quotes
 coverage==6.2  # https://github.com/nedbat/coveragepy
-pylint-django==2.4.4  # https://github.com/PyCQA/pylint-django
+pylint-django==2.5.0  # https://github.com/PyCQA/pylint-django
 
 # Django
 #
