@@ -30,7 +30,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # hospital settings app
     path('', include('opal.hospital_settings.urls')),
-    # path('', RedirectView.as_view(url='/api/hospital-settings/'), name='start'),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',
