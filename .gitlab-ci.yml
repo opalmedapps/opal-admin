@@ -1,7 +1,7 @@
 image: python:3.9.9-slim-buster
 
 services:
-  - postgres:13.5-bullseye
+  - postgres:14.1-bullseye
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies

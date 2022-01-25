@@ -4,7 +4,7 @@ services:
   db:
     # using 14.1-bullseye causes "django.db.utils.OperationalError: SCRAM authentication requires libpq version 10 or above" in app
     # could be an Apple Silicon problem only
-    image: postgres:13.5-bullseye
+    image: postgres:14.1-bullseye
     env_file:
       - .envs/postgres.dev
     ports:
