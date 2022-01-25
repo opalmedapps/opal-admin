@@ -14,7 +14,7 @@ router.register(r'sites', views.SiteViewSet, basename='site')
 
 urlpatterns = [
     # REST APIs
-    path('api/hospital-settings/', include(router.urls)),
+    path('api/hospital-settings/', include((router.urls, 'api-hospital-settings'))),
 
     # Web pages
     path('', views.HomePageView.as_view(), name='index'),

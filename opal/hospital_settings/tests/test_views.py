@@ -12,7 +12,7 @@ pytestmark = pytest.mark.django_db
 
 def test_institution_list(api_client: APIClient):
     Institution.objects.create(name='Test Hospital', code='TH')
-    response = api_client.get(reverse('hospital-settings:institution-list'))
+    response = api_client.get(reverse('api-hospital-settings:institution-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
@@ -22,7 +22,7 @@ def test_site_list(api_client: APIClient):
     institution = Institution.objects.create(name='Test Hospital', code='TH')
     Site.objects.create(name='Test Site', code='TST', institution=institution)
 
-    response = api_client.get(reverse('hospital-settings:site-list'))
+    response = api_client.get(reverse('api-hospital-settings:site-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
