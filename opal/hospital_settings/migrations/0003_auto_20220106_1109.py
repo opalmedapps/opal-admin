@@ -4,6 +4,13 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """
+    Improve Institution and Site models.
+
+    - Add default ordering
+    - Remove parking_url from Institution
+    - Make Institution and Site codes unique
+    """
 
     dependencies = [
         ('hospital_settings', '0002_auto_20211222_1104'),
