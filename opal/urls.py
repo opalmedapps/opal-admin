@@ -22,16 +22,15 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from .hospital_settings.urls import router as hospital_settings_router
-
 urlpatterns = [
-    # APIs
-    path('api/hospital-settings/', include((hospital_settings_router.urls, 'hospital-settings'))),
     # REST API authentification
     path('api/auth/', include('dj_rest_auth.urls')),
+
     # global config
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='/api/hospital-settings/'), name='start'),
+    # hospital settings app
+    path('', include('opal.hospital_settings.urls')),
+    # path('', RedirectView.as_view(url='/api/hospital-settings/'), name='start'),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',

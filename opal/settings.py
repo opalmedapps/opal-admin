@@ -46,6 +46,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
 ]
 THIRD_PARTY_APPS = [
     'django_extensions',
@@ -302,3 +303,5 @@ DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '
 
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
