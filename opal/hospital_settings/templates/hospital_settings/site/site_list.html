@@ -13,7 +13,7 @@
 
 {% block content-header-page-name %}
     <div class="col-sm-6">
-        <h1>Institutions</h1>
+        <h1>Sites</h1>
     </div>
 {% endblock %}
 
@@ -27,7 +27,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <table id="institutionsTable" class="table table-striped institutions">
+                            <table id="sitesTable" class="table table-striped sites">
                                 <thead>
                                 <tr>
                                     <th>
@@ -39,33 +39,53 @@
                                     <th>
                                         French
                                     </th>
+                                    <!-- <th>
+                                      Parking URL (English)
+                                    </th>
+                                    <th>
+                                      Parking URL (French)
+                                    </th> -->
+                                    <th>
+                                      Institution
+                                    </th>
                                     <th style="width: 25%">
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                  {% for institution in object_list %}
+                                  {% for site in object_list %}
                                     <tr>
                                       <td>
-                                        {{ institution.code }}
+                                        {{ site.code }}
                                       </td>
                                       <td>
-                                        {{ institution.name_en }}
+                                        {{ site.name_en }}
                                       </td>
                                       <td>
-                                        {{ institution.name_fr }}
+                                        {{ site.name_fr }}
+                                      </td>
+                                      <!-- <td>
+                                        {{ site.parking_url_en }}
+                                      </td>
+                                      <td>
+                                        {{ site.parking_url_fr }}
+                                      </td> -->
+                                      <td>
+                                        <a href="{% url 'institution-detail' site.institution.id %}">
+                                          {{ site.institution }}
+                                        </a>
                                       </td>
                                       <td class="project-actions text-right">
                                         <div class="btn-toolbar" role="group">
-                                          <a class="btn btn-primary btn-sm mr-2" href="{% url 'institution-detail' institution.id %}">
+                                          <a class="btn btn-primary btn-sm mr-2" href="{% url 'site-detail' site.id %}">
                                               <i class="fas fa-eye"></i>
                                               View
                                           </a>
-                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'institution-update' institution.id %}">
+                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'site-update' site.id %}">
                                               <i class="fas fa-pencil-alt"></i>
                                               Edit
                                           </a>
-                                          <form action="{% url 'institution-delete' institution.id %}" method="post">
+                                          <form action="{% url 'site-delete' site.id %}" method="post">
                                             {% csrf_token %}
                                             <input class="btn btn-danger btn-sm" type="submit" value="Delete"/>
                                           </form>
@@ -73,7 +93,7 @@
                                       </td>
                                     </tr>
                                   {% empty %}
-                                      <li>No institutions yet.</li>
+                                      <li>No sites yet.</li>
                                   {% endfor %}
                                 </tbody>
                             </table>
@@ -99,6 +119,6 @@
   <script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
 
   <!-- Custom JS -->
-  <script src="{% static 'js/hsInstitutions.js' %}"></script>
+  <script src="{% static 'js/hsSites.js' %}"></script>
 {% endblock %}
 
