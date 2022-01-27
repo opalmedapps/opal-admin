@@ -80,16 +80,30 @@ class InstitutionDeleteView(DeleteView):
 
 
 # SITES
+class SiteListView(ListView):
+    model = Site
+    template_name = 'hospital_settings/site/site_list.html'
+
+
 class SiteCreateView(CreateView):
     model = Site
+    template_name = 'hospital_settings/site/site_form.html'
     fields = ['name_en', 'name_fr', 'parking_url_en', 'parking_url_fr', 'code', 'institution']
+    success_url = reverse_lazy('site-list')
+
+
+class SiteDetailView(DetailView):
+    model = Site
+    template_name = 'hospital_settings/site/site_detail.html'
 
 
 class SiteUpdateView(UpdateView):
     model = Site
+    template_name = 'hospital_settings/site/site_form.html'
     fields = ['name_en', 'name_fr', 'parking_url_en', 'parking_url_fr', 'code', 'institution']
+    success_url = reverse_lazy('site-list')
 
 
 class SiteDeleteView(DeleteView):
     model = Site
-    success_url = reverse_lazy('hospital-settings')
+    success_url = reverse_lazy('site-list')
