@@ -345,7 +345,7 @@ def test_site_successfull_create_request_redirects(client):
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
-        'institution': Institution.objects.get(code__exact='ALL_SITES'),
+        'institution': Institution.objects.get(code__exact='ALL_SITES').id,
     }
     response = client.post(url, data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     # redirection
@@ -448,6 +448,7 @@ def test_site_successfull_update_request_redirects(client):
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
+        'institution': Institution.objects.get(code__exact='ALL_SITES').id
     }
     response = client.post(url, data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     # redirection
