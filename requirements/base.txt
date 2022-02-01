@@ -19,3 +19,5 @@ psycopg2-binary==2.9.3 # https://github.com/psycopg/psycopg2
 #
 # secure password hashes using argon2
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
+#Beautiful Soup parser for unit tests
+beautifulsoup4==4.10.0 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
