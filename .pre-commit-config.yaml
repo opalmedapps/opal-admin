@@ -1,18 +1,41 @@
+exclude: '^(\.vscode/launch\.json|manage\.py)'
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v4.1.0
     hooks:
     -   id: check-added-large-files
-    -   id: check-ast
-    -   id: check-builtin-literals
-    -   id: check-docstring-first
     -   id: check-merge-conflict
+    -   id: check-shebang-scripts-are-executable
+    -   id: check-json
     -   id: check-yaml
-    -   id: end-of-file-fixer
     -   id: name-tests-test
         args: ['--django']
+    -   id: double-quote-string-fixer
+    -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+-   repo: https://github.com/asottile/add-trailing-comma
+    rev: v2.2.1
+    hooks:
+    -   id: add-trailing-comma
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+    -   id: isort
+# use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
+-   repo: local
     hooks:
     -   id: flake8
+        name: flake8
+        description: wemake-python-styleguide++ enforcement
+        entry: flake8
+        args: ["--config=setup.cfg"]
+        language: python
+        types: [python]
+    -   id: mypy
+        name: mypy
+        description: static type checking
+        entry: mypy
+        args: ["--config-file=setup.cfg"]
+        language: python
+        types: [python]
