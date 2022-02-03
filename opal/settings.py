@@ -58,7 +58,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'opal.hospital_settings.apps.HospitalSettingsConfig'
+    'opal.hospital_settings.apps.HospitalSettingsConfig',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    # CorsMiddleware should be placed as high as possible, definitely before CommonMiddleware
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -119,9 +120,8 @@ DATABASES = {
         'PASSWORD': env('DATABASE_PASSWORD'),
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
-    }
+    },
 }
-# DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 # Default primary key field
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
@@ -173,7 +173,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': '',
-    }
+    },
 }
 
 
@@ -242,21 +242,23 @@ FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHand
 # https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+# See also:
+# https://sobolevn.me/2020/03/do-not-log
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)-8s %(name)-28s %(message)s'
-            # '%(process)d %(thread)d %(message)s'
-        }
+            'format': '{asctime} {levelname:^8s} {name:<28s} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-        }
+        },
     },
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
@@ -270,7 +272,7 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -287,7 +289,7 @@ CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
 # Easy Audit
 #
 # Remove /admin to log requests to the admin site
-DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = [r'^/admin/jsi18n/', r'^/static/', r'^/favicon.ico$']
+DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
 
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
