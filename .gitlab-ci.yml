@@ -50,12 +50,16 @@ setup:
 flake8:
   stage: Static Analysis
   script:
-    - flake8
+    # install plugin to produce code climate report
+    - pip install flake8-gl-codeclimate
+    - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
 
 mypy:
   stage: Static Analysis
   script:
-    - echo "$POSTGRES_DB"
     - mypy opal/
 
 test:
