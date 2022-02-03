@@ -7,5 +7,12 @@
   "pip_requirements": {
     "fileMatch": ["^requirements/.*\\.txt$"]
   },
-  "assignees": ["mschoettle"]
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "semanticCommitType": "build"
+    }
+  ],
+  "assignees": ["mschoettle"],
+  "labels": ["dependencies"]
 }
