@@ -18,7 +18,7 @@ coverage==6.3  # https://github.com/nedbat/coveragepy
 # Code quality
 #
 # <v4 required by flake8-django
-flake8==3.9.2  # https://github.com/PyCQA/flake8
+flake8==4.0.1  # https://github.com/PyCQA/flake8
 
 # wemake Python Styleguide
 # see: https://wemake-python-stylegui.de/en/latest/index.html
