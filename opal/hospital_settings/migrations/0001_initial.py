@@ -5,6 +5,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    """Initial migration that creates the Institution and Site models."""
 
     initial = True
 

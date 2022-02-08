@@ -15,6 +15,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_rest_api_institution_list(api_client: APIClient):
+    """This test ensures that the API to list institutions works."""
     Institution.objects.create(name='Test Hospital', code='TH')
     response = api_client.get(reverse('api-hospital-settings:institution-list'))
 
@@ -23,6 +24,7 @@ def test_rest_api_institution_list(api_client: APIClient):
 
 
 def test_rest_api_site_list(api_client: APIClient):
+    """This test ensures that the API to list sites works."""
     institution = Institution.objects.create(name='Test Hospital', code='TH')
     Site.objects.create(name='Test Site', code='TST', institution=institution)
 
