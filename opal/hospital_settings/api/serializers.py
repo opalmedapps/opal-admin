@@ -1,7 +1,7 @@
 """This module provides Django REST framework serializers for hospital-specific settings models."""
 from rest_framework import serializers
 
-from .models import Institution, Site
+from ..models import Institution, Site
 
 
 class SiteSerializer(serializers.HyperlinkedModelSerializer):

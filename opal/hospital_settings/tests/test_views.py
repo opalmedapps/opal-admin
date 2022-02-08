@@ -1,37 +1,20 @@
 from http import HTTPStatus
+from django import db
 
 from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertTemplateUsed
-from rest_framework.test import APIClient
 
 from ..models import Institution, Site
 
 pytestmark = pytest.mark.django_db
 
-# REST API
 
-
-def test_rest_api_institution_list(api_client: APIClient):
-    """This test ensures that the API to list institutions works."""
-    Institution.objects.create(name='Test Hospital', code='TH')
-    response = api_client.get(reverse('api-hospital-settings:institution-list'))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 1
-
-
-def test_rest_api_site_list(api_client: APIClient):
-    """This test ensures that the API to list sites works."""
-    institution = Institution.objects.create(name='Test Hospital', code='TH')
-    Site.objects.create(name='Test Site', code='TST', institution=institution)
-
-    response = api_client.get(reverse('api-hospital-settings:site-list'))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 1
+@pytest.fixture
+def institution():
+    return Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
 
 
 # HOME PAGE
@@ -86,22 +69,19 @@ def test_list_all_institutions(client):
     assert returnedNumberOfInsts >= Institution.objects.count()
 
 
-def test_institution_detail_url_exists_at_desired_location(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    response = client.get('/hospital-settings/institution/' + str(inst.id) + '/')
+def test_institution_detail_url_exists_at_desired_location(client, institution):
+    response = client.get('/hospital-settings/institution/' + str(institution.id) + '/')
     assert response.status_code == HTTPStatus.OK
 
 
-def test_institution_detail_accessible_by_name(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-detail', args=(inst.id,))
+def test_institution_detail_accessible_by_name(client, institution):
+    url = reverse('institution-detail', args=(institution.id,))
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
-def test_institution_detail_uses_correct_template(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-detail', args=(inst.id,))
+def test_institution_detail_uses_correct_template(client, institution):
+    url = reverse('institution-detail', args=(institution.id,))
     response = client.get(url)
     assertTemplateUsed(response, 'hospital_settings/institution/institution_detail.html')
 
@@ -146,38 +126,33 @@ def test_institution_create_with_missing_field(client):
     assert 'This field is required' in response.content.decode('utf-8')
 
 
-def test_institution_update_url_exists_at_desired_location(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    response = client.get('/hospital-settings/institution/' + str(inst.id) + '/update/')
+def test_institution_update_url_exists_at_desired_location(client, institution):
+    response = client.get('/hospital-settings/institution/' + str(institution.id) + '/update/')
     assert response.status_code == HTTPStatus.OK
 
 
-def test_institution_update_accessible_by_name(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-update', args=(inst.id,))
+def test_institution_update_accessible_by_name(client, institution):
+    url = reverse('institution-update', args=(institution.id,))
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
-def test_institution_update_uses_correct_template(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-update', args=(inst.id,))
+def test_institution_update_uses_correct_template(client, institution):
+    url = reverse('institution-update', args=(institution.id,))
     response = client.get(url)
     assertTemplateUsed(response, 'hospital_settings/institution/institution_form.html')
 
 
-def test_institution_update_object_displayed(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-update', args=(inst.id,))
+def test_institution_update_object_displayed(client, institution):
+    url = reverse('institution-update', args=(institution.id,))
     response = client.get(url)
     assert 'TEST1_EN' in response.content.decode('utf-8') \
         and 'TEST1_FR' in response.content.decode('utf-8') \
         and 'TEST1' in response.content.decode('utf-8')
 
 
-def test_institution_successfull_update_request_redirects(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-update', args=(inst.id,))
+def test_institution_successfull_update_request_redirects(client, institution):
+    url = reverse('institution-update', args=(institution.id,))
     data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -188,9 +163,8 @@ def test_institution_successfull_update_request_redirects(client):
     assert response.status_code == HTTPStatus.FOUND
 
 
-def test_institution_update_with_missing_field(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-update', args=(inst.id,))
+def test_institution_update_with_missing_field(client, institution):
+    url = reverse('institution-update', args=(institution.id,))
     data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -200,24 +174,22 @@ def test_institution_update_with_missing_field(client):
     assert 'This field is required' in response.content.decode('utf-8')
 
 
-def test_institution_delete_url_exists_at_desired_location(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    response = client.delete('/hospital-settings/institution/' + str(inst.id) + '/delete/')
+def test_institution_delete_url_exists_at_desired_location(client, institution):
+    response = client.delete('/hospital-settings/institution/' + str(institution.id) + '/delete/')
     assert response.status_code == HTTPStatus.FOUND
 
 
-def test_institution_delete_accessible_by_name(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-delete', args=(inst.id,))
+def test_institution_delete_accessible_by_name(client, institution):
+    url = reverse('institution-delete', args=(institution.id,))
     response = client.delete(url)
     assert response.status_code == HTTPStatus.FOUND
 
 
-def test_institution_deleted(client):
-    inst = Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1')
-    url = reverse('institution-delete', args=(inst.id,))
+def test_institution_deleted(client, institution):
+    url = reverse('institution-delete', args=(institution.id,))
     client.delete(url)
-    assert Institution.objects.filter(pk=inst.id).first() is None
+    assert Institution.objects.filter(pk=institution.id).first() is None
+    assert True
 
 # TODO: pagination, ordering, restricted to logged in users
 
