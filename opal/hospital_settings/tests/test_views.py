@@ -13,7 +13,8 @@ pytestmark = pytest.mark.django_db
 
 # REST API
 
-def test_intest_rest_api_institution_liststitution_list(api_client: APIClient):
+
+def test_rest_api_institution_list(api_client: APIClient):
     """This test ensures that the API to list institutions works."""
     Institution.objects.create(name='Test Hospital', code='TH')
     response = api_client.get(reverse('api-hospital-settings:institution-list'))
