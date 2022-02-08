@@ -1,4 +1,5 @@
 # Project specific
+.env
 .envs/*
 !.envs/*.dev
 !.envs/*.sample

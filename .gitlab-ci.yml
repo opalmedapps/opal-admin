@@ -1,7 +1,7 @@
 image: python:3.9.9-slim-buster
 
 services:
-  - postgres:13.5-bullseye
+  - mariadb:10.7.1-focal
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -9,21 +9,31 @@ services:
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  POSTGRES_DB: $POSTGRES_DB
-  POSTGRES_USER: $POSTGRES_USER
-  POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+  MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+  # ensure that user has permissions for test DB to be used by pytest
+  MARIADB_DATABASE: test_$DB_NAME
+  MARIADB_USER: $DB_USER
+  MARIADB_PASSWORD: $DB_PASSWORD
 
 
 before_script:
   - uname -a
   - python --version
   - which python
-  - python -m venv .venv
-  - source .venv/bin/activate
-  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=postgres/" .env
-  - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$POSTGRES_DB/" .env
-  - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$POSTGRES_USER/" .env
-  - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$POSTGRES_PASSWORD/" .env
+  # install dependencies for mysqlclient
+  - apt update && apt-get install -y build-essential libmariadb-dev
+  # don't fail if venv is not set up yet (during setup)
+  - source .venv/bin/activate || true
+  # set up env file for DB service
+  # use sample env file
+  - mv .env.sample .env
+  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
+  - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
+  - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
+  - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+  # generate secret key
+  - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+  - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 stages:
   - Static Analysis
@@ -32,9 +42,15 @@ stages:
 setup:
   stage: .pre
   script:
+    - python -m venv .venv
+    - source .venv/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements/development.txt
   artifacts:
+    # pin artifacts to the branch
+    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
+    name: $CI_COMMIT_REF_SLUG
+    expire_in: 1 week
     paths:
       - .venv
   # Pip's cache doesn't store the python packages
@@ -43,13 +59,15 @@ setup:
   # If you want to also cache the installed packages, you have to install
   # them in a virtualenv and cache it as well.
   cache:
+    # pin artifacts to the branch
+    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
     paths:
       - .cache/pip
-      - .venv/
 
 flake8:
   stage: Static Analysis
   script:
+    - flake8 --version
     # install plugin to produce code climate report
     - pip install flake8-gl-codeclimate
     - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json
@@ -60,13 +78,13 @@ flake8:
 mypy:
   stage: Static Analysis
   script:
-    - mypy opal/
+    - mypy --version .
 
 test:
   stage: Test
   script:
-    - coverage run -m pytest --junitxml=report.xml
     - pytest --version
+    - coverage run -m pytest --junitxml=report.xml
   artifacts:
     reports:
       junit: report.xml
