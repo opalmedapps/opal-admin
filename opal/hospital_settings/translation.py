@@ -8,7 +8,7 @@ from .models import Institution, Site
 class InstitutionTranslationOptions(TranslationOptions):
     """This class provides translation options for ``Institution``."""
 
-    fields = ('name', )
+    fields = ('name',)
 
 
 @register(Site)
