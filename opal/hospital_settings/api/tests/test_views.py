@@ -5,7 +5,7 @@ from django.urls.base import reverse
 import pytest
 from rest_framework.test import APIClient
 
-from ..models import Institution, Site
+from opal.hospital_settings.models import Institution, Site
 
 pytestmark = pytest.mark.django_db
 
