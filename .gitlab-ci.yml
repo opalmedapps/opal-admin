@@ -38,6 +38,7 @@ before_script:
 stages:
   - Static Analysis
   - Test
+  - Documentation
 
 setup:
   stage: .pre
@@ -103,3 +104,18 @@ coverage:
   artifacts:
     reports:
       cobertura: coverage.xml
+
+# Publish docs to GitLab Pages
+# see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
+#
+pages:
+  stage: Documentation
+  only:
+    - main
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements/docs.txt
+    - mkdocs build --site-dir public
+  artifacts:
+    paths:
+      - public

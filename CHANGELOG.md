@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * REST API endpoints for authentication (!8)
 * CORS headers required for cross-site requests (#26 via !8)
 
+### Documentation
+
+* Add mkdocs-based documentation site (!35)
+
 ### Miscellaneous Chores
 
 * build: Docker support (#5)
