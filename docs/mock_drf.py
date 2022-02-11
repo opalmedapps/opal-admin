@@ -1,33 +1,34 @@
-"""Mocks pytkdocs to workaround issues with Django REST framework."""
+"""
+Mocks pytkdocs to workaround issues with Django REST framework.
 
-from operator import attrgetter
+See: https://github.com/mkdocstrings/mkdocstrings/issues/141
+"""
+
+from typing import Any
 from unittest.mock import MagicMock
 
-from pytkdocs.loader import Loader, split_attr_name
+from pytkdocs.loader import Loader, ObjectNode
+from pytkdocs.objects import Object
 
-print('mocking pytkdocs to support DRF')
-
+# keep original add_fields in order to be able to call it in certain cases when mocking
 original_add_fields = Loader.add_fields
 
 
-def add_fields(loader, node, root_object, *args, **kwargs) -> None:
+def add_fields(loader: Loader, node: ObjectNode, root_object: Object, *args: Any, **kwargs: Any) -> None:
+    """
+    Mock the `add_fields` method to not add fields for `Meta` special classes.
+
+    Args:
+        loader: the `pytkdocs` loader instance
+        node: the current object node
+        root_object: the current object
+        args: additional arguments
+        kwargs: additional keyword arguments
+    """
     if not str(root_object).endswith('.Meta.model'):
         original_add_fields(loader, node, root_object, *args, **kwargs)
 
 
-def detect_field_model(loader, attr_name: str, direct_members, all_members) -> bool:
-    first_order_attr_name, remainder = split_attr_name(attr_name)
-    if not (
-        first_order_attr_name in direct_members
-        or (loader.select_inherited_members and first_order_attr_name in all_members)
-    ):
-        return False
-
-    return not remainder and attrgetter(remainder)(all_members[first_order_attr_name])
-    # if remainder and not attrgetter(remainder)(all_members[first_order_attr_name]):
-    #     return False
-    # return True
-
-
-Loader.get_marshmallow_field_documentation = lambda *args, **kwargs: MagicMock()
-Loader.add_fields = lambda *args, **kwargs: add_fields(*args, **kwargs)
+# mock in order to avoid missing metadata error caused by Django REST framework
+Loader.get_marshmallow_field_documentation = MagicMock()  # type: ignore[assignment]
+Loader.add_fields = add_fields  # type: ignore[assignment]

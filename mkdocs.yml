@@ -15,7 +15,6 @@ nav:
   - Home: index.md
   - Changelog: changelog.md
   - Code Reference: reference/
-  - Module Index: module-index.md
 
 # Configuration
 theme:
@@ -54,13 +53,13 @@ theme:
 # Plugins
 plugins:
   - search
-  # show last updated date at the bottom of each page
-  # Does not work for generated files
-  # - git-revision-date
+  # generate code reference documents from code base
   - gen-files:
       scripts:
         - docs/gen_reference_nav.py
-  - literate-nav
+  # auto-generate navigation structure for code reference
+  - literate-nav:
+      nav_file: SUMMARY.md
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -70,6 +69,8 @@ plugins:
             - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opal.settings")
             - import django
             - django.setup()
+            # mock pytkdocs to support Django REST framework
+            # see: https://github.com/mkdocstrings/mkdocstrings/issues/141
             - import docs.mock_drf
       watch:
         - opal/
