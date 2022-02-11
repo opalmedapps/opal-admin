@@ -14,6 +14,8 @@ copyright: Copyright &copy; 2022 Opal Health Informatics Group (O-HIG)
 nav:
   - Home: index.md
   - Changelog: changelog.md
+  - Code Reference: reference/
+  - Module Index: module-index.md
 
 # Configuration
 theme:
@@ -53,7 +55,24 @@ theme:
 plugins:
   - search
   # show last updated date at the bottom of each page
-  - git-revision-date
+  # Does not work for generated files
+  # - git-revision-date
+  - gen-files:
+      scripts:
+        - docs/gen_reference_nav.py
+  - literate-nav
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          setup_commands:
+            - import os
+            - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opal.settings")
+            - import django
+            - django.setup()
+            - import docs.mock_drf
+      watch:
+        - opal/
 
 # Extensions
 markdown_extensions:
