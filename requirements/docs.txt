@@ -1,0 +1,4 @@
+mkdocs-material==8.1.10  # https://github.com/squidfunk/mkdocs-material
+mkdocstrings==0.18.0  # https://github.com/mkdocstrings/mkdocstrings/
+mkdocs-gen-files==0.3.4  # https://github.com/oprypin/mkdocs-gen-files
+mkdocs-literate-nav==0.4.1  # https://github.com/oprypin/mkdocs-literate-nav
