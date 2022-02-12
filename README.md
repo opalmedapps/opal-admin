@@ -1,4 +1,4 @@
-# Opal Backend Prototype
+# Opal Backend Pilot
 
 [![pipeline status](https://gitlab.com/mschoettle/backend-prototype/badges/main/pipeline.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main) [![coverage report](https://gitlab.com/mschoettle/backend-prototype/badges/main/coverage.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main)
 
@@ -34,12 +34,32 @@ To connect to the app container, run `docker compose exec app bash` (or any spec
 
 ### Python virtual environment
 
-In order for linting, type checking, unit testing etc. to be available in your IDE and for `pre-commit` (with the same configuration) we recommend to set up a local virtual environment. This also makes it possible to execute management commands directly from the virtual environment. Otherwise, everything has to be run from inside the container (e.g., by using the [Remote Containers vscode extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)).
+??? question "Why a virtual environment when there is already a Docker container?"
+
+    While this is not ideal, it makes it easier to run `pre-commit` with the same setup/dependencies for `flake8` and `mypy`. In addition, `vscode` can make use of the virtual environment to call `flake8` and `mypy` and provide the results directly in the editor. Alternatively, the [Remote Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) could be used to develop fully within the container. If you figure out a proper configuration to have linting, typechecking and `pre-commit` running in there, please provide a merge request.
+
+In order for linting, type checking, unit testing etc. to be available in your IDE, and for `pre-commit` to use the same configuration, we recommend to set up a local virtual environment. This also makes it possible to execute management commands directly from the virtual environment without having to execute them within the container. Otherwise, everything has to be run from inside the container (e.g., by calling `docker compose exec app <command>`).
 
 1. `python3 -m venv --prompt 'opal' .venv`
 2. `source .venv/bin/activate`
 3. `python -m pip install --upgrade pip`
 4. `python -m pip install -r requirements/development.txt`
+
+??? tip "Installing `mysqlclient` fails"
+
+    In case installing the `mysqlclient` package does not provide a binary for your platform it needs to be built. To do so, the mysql client library needs to be installed on the system.
+
+    The easiest is to install it via Homebrew:
+
+    === "macOS"
+        ```shell
+        brew install mysql-client
+        export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+        # install dependencies via pip install
+        ```
+
+    === "Windows"
+        No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the mysqlclient package.
 
 ### Migrate Database and Create Superuser
 
