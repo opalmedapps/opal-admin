@@ -1,6 +1,6 @@
 # Opal Backend Pilot
 
-[![pipeline status](https://gitlab.com/mschoettle/backend-prototype/badges/main/pipeline.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main) [![coverage report](https://gitlab.com/mschoettle/backend-prototype/badges/main/coverage.svg)](https://gitlab.com/mschoettle/backend-prototype/-/commits/main)
+[![pipeline status](https://gitlab.com/opalmedapps/backend-pilot/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend-pilot/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main)
 
 ## Requirements
 
@@ -78,7 +78,7 @@ Install the `pre-commit` hooks via `pre-commit install`.
 
 ## Documentation
 
-The documentation is deployed to [https://mschoettle.gitlab.io/backend-prototype](https://mschoettle.gitlab.io/backend-prototype). It is deployed automatically when commits are pushed to `main`.
+The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](https://opalmedapps.gitlab.io/backend-pilot). It is deployed automatically when commits are pushed to `main`.
 
 To view the documentation during development, run the following commands:
 
