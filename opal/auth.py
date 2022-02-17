@@ -6,11 +6,12 @@ from typing import Optional, Type
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
-from django.contrib.auth.models import User
 from django.http import HttpRequest
 
 import requests
 from requests.exceptions import RequestException
+
+from opal.users.models import User
 
 UserModel: Type[User] = get_user_model()
 UserData = namedtuple('UserData', ['email', 'first_name', 'last_name'])
