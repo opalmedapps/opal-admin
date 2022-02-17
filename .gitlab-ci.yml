@@ -79,7 +79,8 @@ flake8:
 mypy:
   stage: Static Analysis
   script:
-    - mypy --version .
+    - mypy --version
+    - mypy opal/
 
 test:
   stage: Test

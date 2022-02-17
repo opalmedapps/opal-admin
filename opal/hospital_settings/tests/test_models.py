@@ -4,8 +4,10 @@ from ..models import Institution, Site
 
 TEST_HOSPITAL = 'Test Hospital'
 
+pytestmark = pytest.mark.django_db
 
-def test_location_string():
+
+def test_location_string() -> None:
     """This test ensures the __str__ method is defined."""
     # Location is abstract and cannot be instantiated directly
     institution = Institution(name=TEST_HOSPITAL, code='TH')
@@ -13,8 +15,7 @@ def test_location_string():
     assert str(institution) == TEST_HOSPITAL
 
 
-@pytest.mark.django_db()
-def test_institution_ordered():
+def test_institution_ordered() -> None:
     """This test ensures that the institutions are ordered by name."""
     Institution.objects.create(name=TEST_HOSPITAL, code='TH')
     Institution.objects.create(name='ATest Hospital', code='TH2')
@@ -24,8 +25,7 @@ def test_institution_ordered():
     assert first.name == 'ATest Hospital'
 
 
-@pytest.mark.django_db()
-def test_site_ordered():
+def test_site_ordered() -> None:
     """This test ensures that the sites are ordered by name."""
     institution = Institution.objects.create(name=TEST_HOSPITAL, code='TH')
 
