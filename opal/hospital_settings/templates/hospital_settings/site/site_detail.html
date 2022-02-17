@@ -1,0 +1,48 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content-header-page-name %}Site Detail{% endblock %}
+
+{% block content %}
+  {% comment %} Main content {% endcomment %}
+  <section class="content">
+    {% comment %} Default box {% endcomment %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                      <div class="form-group">
+                        <label for="siteCode">Code</label>
+                        <input type="text" id="siteCode" class="form-control" name="siteCode" value="{{ object.code }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="siteNameEn">Name (English)</label>
+                        <input type="text" id="siteNameEn" class="form-control" name="siteNameEn" value="{{ object.name_en }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="siteNameFr">Name (French)</label>
+                        <input type="text" id="siteNameFr" class="form-control" name="siteNameFr" value="{{ object.name_fr }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="parkingInfoEn">Parking Info (English)</label>
+                        <input type="text" id="parkingInfoEn" class="form-control" name="parkingInfoEn" value="{{ object.parking_url_en }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="parkingInfoFr">Parking Info (French)</label>
+                        <input type="text" id="parkingInfoFr" class="form-control" name="parkingInfoFr" value="{{ object.parking_url_fr }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="institution">Institution</label>
+                        <input type="text" id="institution" class="form-control" name="institution" value="{{ object.institution }}" readonly>
+                      </div>
+                    </div>
+                    {% comment %} /.card-body {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %} /.card {% endcomment %}
+  </section>
+{% comment %} /.content {% endcomment %}
+{% endblock %}

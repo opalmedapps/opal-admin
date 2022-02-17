@@ -46,6 +46,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
 ]
 THIRD_PARTY_APPS = [
     'django_extensions',
@@ -99,6 +100,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.static',
+                'opal.context_processors.opal_admin',
             ],
         },
     },
@@ -302,3 +304,10 @@ DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '
 
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+
+# Crispy forms
+#
+# Use Twitter Bootstrap (version 4) as a default template for the project
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+OPAL_ADMIN_URL = env.str('OPAL_ADMIN_URL')

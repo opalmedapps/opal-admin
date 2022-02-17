@@ -53,3 +53,7 @@ pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
 # Pre-commit
 #
 pre-commit==2.17.0 # https://github.com/pre-commit/pre-commit
+
+# Beautiful Soup parser for unit tests
+#
+beautifulsoup4==4.10.0 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
