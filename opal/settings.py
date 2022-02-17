@@ -59,7 +59,8 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'opal.hospital_settings.apps.HospitalSettingsConfig',
+    'opal.hospital_settings',
+    'opal.users',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -142,6 +143,9 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'opal.auth.FedAuthBackend',
 ]
+# https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
+# also: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model
+AUTH_USER_MODEL = 'users.User'
 
 # fedauth webservice API
 FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
