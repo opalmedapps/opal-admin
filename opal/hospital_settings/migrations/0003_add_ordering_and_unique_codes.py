@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('hospital_settings', '0002_auto_20211222_1104'),
+        ('hospital_settings', '0002_fields_translation'),
     ]
 
     operations = [
