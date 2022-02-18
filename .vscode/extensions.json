@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "batisteo.vscode-django",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "timonwong.shellcheck",
+    "davidanson.vscode-markdownlint"
+  ]
+}
