@@ -8,7 +8,7 @@ from rest_framework import permissions
 
 class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
     """
-    Custom [rest_framework.permissions.DjangoModelPermissions][] permission which is more restrictive.
+    Custom DRF `DjangoModelPermissions` permission which is more restrictive.
 
     Restricts GET operations to require the `view` permission on the model.
 
