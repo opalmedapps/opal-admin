@@ -1,7 +1,8 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block content-header-page-name %}Institution Detail{% endblock %}
+{% block content-header-page-name %}{% translate "Institution Detail" %}{% endblock %}
 
 {% block content %}
   {% comment %} Main content {% endcomment %}
@@ -13,15 +14,15 @@
                 <div class="card">
                     <div class="card-body">
                       <div class="form-group">
-                        <label for="institutionCode">Code</label>
+                        <label for="institutionCode">{% translate "Code" %}</label>
                         <input type="text" id="institutionCode" class="form-control" name="institutionCode" value="{{ object.code }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="institutionNameEn">Name (English)</label>
+                        <label for="institutionNameEn">{% translate "Name (English)" %}</label>
                         <input type="text" id="institutionNameEn" class="form-control" name="institutionNameEn" value="{{ object.name_en }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="institutionNameFr">Name (French)</label>
+                        <label for="institutionNameFr">{% translate "Name (French)" %}</label>
                         <input type="text" id="institutionNameFr" class="form-control" name="institutionNameFr" value="{{ object.name_fr }}" readonly>
                       </div>
                     </div>

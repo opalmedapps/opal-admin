@@ -1,7 +1,8 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block content-header-page-name %}Delete Site{% endblock %}
+{% block content-header-page-name %}{% translate "Delete Site" %}{% endblock %}
 
 {% block content %}
   <section class="content">
@@ -9,7 +10,7 @@
         <div class="row">
             <div class="col-12">
                   <div class="callout callout-danger">
-                    <h5>Are you sure you want to delete the following site: {{ object }}?</h5>
+                    <h5>{% translate "Are you sure you want to delete the following site:" %} {{ object }}?</h5>
 
                     <form action="" method="POST">
                       {% csrf_token %}

@@ -1,7 +1,8 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block content-header-page-name %}Site Detail{% endblock %}
+{% block content-header-page-name %}{% translate "Site Detail" %}{% endblock %}
 
 {% block content %}
   {% comment %} Main content {% endcomment %}
@@ -13,27 +14,27 @@
                 <div class="card">
                     <div class="card-body">
                       <div class="form-group">
-                        <label for="siteCode">Code</label>
+                        <label for="siteCode">{% translate "Code" %}</label>
                         <input type="text" id="siteCode" class="form-control" name="siteCode" value="{{ object.code }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="siteNameEn">Name (English)</label>
+                        <label for="siteNameEn">{% translate "Name (English)" %}</label>
                         <input type="text" id="siteNameEn" class="form-control" name="siteNameEn" value="{{ object.name_en }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="siteNameFr">Name (French)</label>
+                        <label for="siteNameFr">{% translate "Name (French)" %}</label>
                         <input type="text" id="siteNameFr" class="form-control" name="siteNameFr" value="{{ object.name_fr }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="parkingInfoEn">Parking Info (English)</label>
+                        <label for="parkingInfoEn">{% translate "Parking Info (English)" %}</label>
                         <input type="text" id="parkingInfoEn" class="form-control" name="parkingInfoEn" value="{{ object.parking_url_en }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="parkingInfoFr">Parking Info (French)</label>
+                        <label for="parkingInfoFr">{% translate "Parking Info (French)" %}</label>
                         <input type="text" id="parkingInfoFr" class="form-control" name="parkingInfoFr" value="{{ object.parking_url_fr }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="institution">Institution</label>
+                        <label for="institution">{% translate "Institution" %}</label>
                         <input type="text" id="institution" class="form-control" name="institution" value="{{ object.institution }}" readonly>
                       </div>
                     </div>
