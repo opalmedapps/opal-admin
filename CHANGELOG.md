@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Documentation
 
 * Add mkdocs-based documentation site (!35)
+* Improve getting started documentation for Windows users (!42)
 
 ### Miscellaneous Chores
 

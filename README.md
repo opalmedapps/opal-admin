@@ -1,6 +1,6 @@
 # Opal Backend Pilot
 
-[![pipeline status](https://gitlab.com/opalmedapps/backend-pilot/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend-pilot/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main)
+[![pipeline status](https://gitlab.com/opalmedapps/backend-pilot/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend-pilot/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/docs-available-brightgreen.svg)](https://opalmedapps.gitlab.io/docs)
 
 ## Requirements
 
@@ -40,18 +40,34 @@ To connect to the app container, run `docker compose exec app bash` (or any spec
 
 In order for linting, type checking, unit testing etc. to be available in your IDE, and for `pre-commit` to use the same configuration, we recommend to set up a local virtual environment. This also makes it possible to execute management commands directly from the virtual environment without having to execute them within the container. Otherwise, everything has to be run from inside the container (e.g., by calling `docker compose exec app <command>`).
 
-1. `python3 -m venv --prompt 'opal' .venv`
-2. `source .venv/bin/activate`
-3. `python -m pip install --upgrade pip`
-4. `python -m pip install -r requirements/development.txt`
+#### Set up the virtual environment
+
+=== "macOS/Linux"
+
+    1. `python3 -m venv --prompt 'opal' .venv`
+    2. `source .venv/bin/activate`
+
+=== "Windows"
+
+    1. `python -m venv --prompt 'opal' .venv`
+    2. `.\.venv\Scripts\activate`
+
+    **Note:** If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion](https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+
+#### Install dependencies
+
+Run the following commands within the virtual environment:
+
+1. `python -m pip install --upgrade pip`
+2. `python -m pip install -r requirements/development.txt`
 
 ??? tip "Installing `mysqlclient` fails"
 
     In case installing the `mysqlclient` package does not provide a binary for your platform it needs to be built. To do so, the mysql client library needs to be installed on the system.
 
-    The easiest is to install it via Homebrew:
-
     === "macOS"
+        The easiest is to install it via Homebrew:
+
         ```shell
         brew install mysql-client
         export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
@@ -59,7 +75,7 @@ In order for linting, type checking, unit testing etc. to be available in your I
         ```
 
     === "Windows"
-        No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the mysqlclient package.
+        No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the `mysqlclient` package.
 
 ### Migrate Database and Create Superuser
 
@@ -75,6 +91,14 @@ Once this is done, you can go to [http://localhost:8000](http://localhost:8000) 
 This project contains a configuration for [`pre-commit`](https://pre-commit.com/) (see `.pre-commit-config.yaml`).
 
 Install the `pre-commit` hooks via `pre-commit install`.
+
+??? note "Using pre-commit with a git GUI"
+
+    If you are using a git GUI tool (such as Sourcetree) the path might not be set up correctly and pre-commit might not be able to find `flake8` and `mypy`.
+
+    The current known workaround is to specify the required `PATH` for the `pre-commit` hook. Add the following line at the top of `.git/hooks/pre-commit` (after the first line with the bash interpreter):
+
+    ```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
 
 ### Recommended vscode extensions
 
@@ -93,16 +117,18 @@ The following extensions are required or strongly recommended:
 
 ??? note "shellcheck on Apple Silicon"
 
-Currently the *shellcheck* extension does not come with a binary for `arm64`. Install `shellcheck` via `brew install shellcheck`.
+    Currently the *shellcheck* extension does not come with a binary for `arm64`.
+    Install `shellcheck` via `brew install shellcheck`.
 
 ## Documentation
 
 The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](https://opalmedapps.gitlab.io/backend-pilot). It is deployed automatically when commits are pushed to `main`.
 
-To view the documentation during development, run the following commands:
+To view the documentation during development, run the following commands in your virtual environment:
 
 1. `pip install -r requirements/docs.txt`
-2. `mkdocs serve`
+2. `mkdocs serve -a localhost:8001`
+3. Open http://localhost:8001
 
 ## Development
 
