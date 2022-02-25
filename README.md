@@ -44,22 +44,28 @@ In order for linting, type checking, unit testing etc. to be available in your I
 
 === "macOS/Linux"
 
-    1. `python3 -m venv --prompt 'opal' .venv`
-    2. `source .venv/bin/activate`
+    ```sh
+    python3 -m venv --prompt 'opal' .venv
+    source .venv/bin/activate
+    ```
 
 === "Windows"
 
-    1. `python -m venv --prompt 'opal' .venv`
-    2. `.\.venv\Scripts\activate`
+    ```sh
+    python -m venv --prompt 'opal' .venv
+    .\.venv\Scripts\activate
+    ```
 
-    **Note:** If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion](https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+    **Note:**  If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion]   (https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
 
 #### Install dependencies
 
 Run the following commands within the virtual environment:
 
-1. `python -m pip install --upgrade pip`
-2. `python -m pip install -r requirements/development.txt`
+```sh
+python -m pip install --upgrade pip
+python -m pip install -r requirements/development.txt
+```
 
 ??? tip "Installing `mysqlclient` fails"
 
@@ -68,7 +74,7 @@ Run the following commands within the virtual environment:
     === "macOS"
         The easiest is to install it via Homebrew:
 
-        ```shell
+        ```sh
         brew install mysql-client
         export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
         # install dependencies via pip install
@@ -81,8 +87,10 @@ Run the following commands within the virtual environment:
 
 Before you can start, you need to migrate the database and create a superuser. Execute the following commands either in the virtual environment or in the `app` container.
 
-1. `python manage.py migrate`
-2. `python manage.py createsuperuser`
+```sh
+python manage.py migrate
+python manage.py createsuperuser
+```
 
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
 
@@ -98,7 +106,7 @@ Install the `pre-commit` hooks via `pre-commit install`.
 
     The current known workaround is to specify the required `PATH` for the `pre-commit` hook. Add the following line at the top of `.git/hooks/pre-commit` (after the first line with the bash interpreter):
 
-    ```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
+```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
 
 ### Recommended vscode extensions
 
@@ -126,9 +134,12 @@ The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](h
 
 To view the documentation during development, run the following commands in your virtual environment:
 
-1. `pip install -r requirements/docs.txt`
-2. `mkdocs serve -a localhost:8001`
-3. Open http://localhost:8001
+```sh
+pip install -r requirements/docs.txt
+mkdocs serve -a localhost:8001
+```
+
+Then open http://localhost:8001 to view the generated documentation site.
 
 ## Development
 
