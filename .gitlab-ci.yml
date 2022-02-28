@@ -1,7 +1,7 @@
 image: python:3.9.9-slim-buster
 
 services:
-  - mariadb:10.7.1-focal
+  - mariadb:10.8.2-focal
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
