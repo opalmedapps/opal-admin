@@ -22,7 +22,7 @@ flake8==4.0.1  # https://github.com/PyCQA/flake8
 
 # Temporarily pin bandit until flake8-bandit gets updated
 # see: https://github.com/tylerwince/flake8-bandit/issues/21
-bandit==1.7.2  # https://github.com/PyCQA/bandit
+bandit==1.7.3  # https://github.com/PyCQA/bandit
 
 # wemake Python Styleguide
 # see: https://wemake-python-stylegui.de/en/latest/index.html
