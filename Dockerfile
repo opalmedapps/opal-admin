@@ -7,6 +7,8 @@ ARG ENV=development
 RUN apt-get update \
   # dependencies for building Python packages
   && apt-get install -y build-essential \
+  #install git
+  && apt-get install git -y \
   # mysqlclient dependencies
   && apt-get install -y default-libmysqlclient-dev \
   # argon2-cffi dependencies
