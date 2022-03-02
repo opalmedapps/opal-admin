@@ -278,16 +278,24 @@ LOGGING = {
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
 
+# Legacy OpalAdmin related settings
+#
+# base URL to old OpalAdmin
+OPAL_ADMIN_URL = env.str('OPAL_ADMIN_URL')
+
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
 # Django REST framework
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        'opal.utils.drf_permissions.CustomDjangoModelPermissions',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -313,5 +321,3 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 #
 # Use Twitter Bootstrap (version 4) as a default template for the project
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-OPAL_ADMIN_URL = env.str('OPAL_ADMIN_URL')

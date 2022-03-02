@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * CORS headers required for cross-site requests (#26 via !8)
 * New Frontend and views for hospital-settings app (!31)
 * Users app with custom user model (!39)
+* Enforce authenticated requests to the API endpoints (!41)
 
 ### Documentation
 
