@@ -13,6 +13,8 @@ copyright: Copyright &copy; 2022 Opal Health Informatics Group (O-HIG)
 # Content
 nav:
   - Home: index.md
+  - REST API:
+      - Authentication: authentication.md
   - Changelog: changelog.md
   - Code Reference: reference/
 
