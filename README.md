@@ -134,10 +134,21 @@ The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](h
 
 To view the documentation during development, run the following commands in your virtual environment:
 
-```sh
-pip install -r requirements/docs.txt
-mkdocs serve -a localhost:8001
-```
+=== "macOS/Linux"
+
+    ```sh
+    pip install -r requirements/docs.txt
+    mkdocs serve -a localhost:8001
+    ```
+
+=== "Windows"
+
+    ```sh
+    pip install -r requirements/docs.txt
+    python -m mkdocs serve -a localhost:8001
+    ```
+
+    For more details on why the command on Windows is prefixed with `python -m`, see the [mkdocs installation notes](https://www.mkdocs.org/user-guide/installation/).
 
 Then open http://localhost:8001 to view the generated documentation site.
 
