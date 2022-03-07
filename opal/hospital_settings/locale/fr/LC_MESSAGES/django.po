@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/hospital_settings/apps.py:12
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitaliers"
+msgstr "Paramètres Hospitalier"
 
 #: opal/hospital_settings/models.py:9
 msgid "Name"
@@ -32,7 +32,7 @@ msgstr "Nom"
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:19
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:32
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 #: opal/hospital_settings/models.py:35
 msgid "Parking Info"
@@ -43,11 +43,11 @@ msgstr "Informations sur le stationnement"
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:39
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:41
 msgid "Institution"
-msgstr "Institution"
+msgstr "Établissement"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:5
 msgid "Delete Institution"
-msgstr "Supprimer l'nstitution"
+msgstr "Supprimer l'établissement"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:13
 msgid "Are you sure you want to delete the following institution:"
@@ -55,7 +55,7 @@ msgstr "Voulez-vous vraiment supprimer l'établissement suivant :"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:5
 msgid "Institution Detail"
-msgstr "Détail de l'nstitution"
+msgstr "Détail de l'institution"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:23
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
@@ -99,16 +99,16 @@ msgstr "Voir"
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:64
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:72
 msgid "Edit"
-msgstr "Éditer"
+msgstr "Modifier"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:67
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:75
 msgid "Delete"
-msgstr "Supprimer"
+msgstr "Effacer"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html:5
 msgid "Delete Site"
-msgstr "Supprimer le site"
+msgstr "Effacer le site"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html:13
 msgid "Are you sure you want to delete the following site:"
@@ -128,8 +128,8 @@ msgstr "Informations sur le stationnement (français)"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html:7
 msgid "Site"
-msgstr "Le site"
+msgstr "Site"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:14
 msgid "Sites"
-msgstr "Des sites"
+msgstr "Des Sites"

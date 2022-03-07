@@ -35,8 +35,8 @@ msgid "opal ADMIN"
 msgstr "opal ADMIN"
 
 #: opal/templates/layouts/base.html:78
-msgid "HOSPITAL SETTINGS"
-msgstr "PARAMÈTRES HOSPITALIERS"
+msgid "Hospital Settings"
+msgstr "Paramètres Hospitalier"
 
 #: opal/templates/layouts/base.html:86
 msgid "Institutions"
@@ -44,10 +44,10 @@ msgstr "Établissements"
 
 #: opal/templates/layouts/base.html:92
 msgid "Sites"
-msgstr "Des sites"
+msgstr "Des site"
 
 #: opal/templates/layouts/base.html:101
-msgid "PROFILE"
+msgid "Profile"
 msgstr "Profil"
 
 #: opal/templates/layouts/base.html:109
@@ -60,7 +60,7 @@ msgstr "Copyright"
 
 #: opal/templates/layouts/base.html:156
 msgid "2022 Opal Health Informatics Group."
-msgstr "2022 Opal Health Informatics Group."
+msgstr "2022 Le Groupe Informatique Opal Santé."
 
 #: opal/templates/layouts/base.html:156
 msgid "Privacy"
@@ -68,7 +68,7 @@ msgstr "Privacy"
 
 #: opal/templates/layouts/base.html:156
 msgid "Terms"
-msgstr "Terms"
+msgstr "Termes"
 
 #: opal/urls.py:44
 msgid "Opal Management"
@@ -80,4 +80,4 @@ msgstr "Administrateur principal d'Opal"
 
 #: opal/users/apps.py:11
 msgid "Users"
-msgstr "Users"
+msgstr "Utilisateur"
