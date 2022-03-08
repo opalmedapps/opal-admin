@@ -27,6 +27,8 @@ class Institution(Location):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'Institution'
+        verbose_name_plural = 'Institutions'
 
 
 class Site(Location):
@@ -42,3 +44,5 @@ class Site(Location):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'Site'
+        verbose_name_plural = 'Sites'
