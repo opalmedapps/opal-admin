@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-22 10:47-0500\n"
+"POT-Creation-Date: 2022-03-07 19:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,15 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
 #: opal/hospital_settings/apps.py:12
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
+msgstr ""
 
 #: opal/hospital_settings/models.py:9
+#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:23
+#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:27
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:27
 msgid "Name"
 msgstr "Nom"
 
@@ -35,6 +38,8 @@ msgid "Code"
 msgstr "Code"
 
 #: opal/hospital_settings/models.py:35
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
 msgid "Parking Info"
 msgstr "Informations sur le stationnement"
 
@@ -51,21 +56,27 @@ msgstr "Supprimer l'établissement"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:13
 msgid "Are you sure you want to delete the following institution:"
-msgstr "Voulez-vous vraiment supprimer l'établissement suivant :"
+msgstr "Voulez-vous vraiment supprimer l'établissement suivant:"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:5
 msgid "Institution Detail"
 msgstr "Détail de l'institution"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:23
+#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:35
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
-msgid "Name (English)"
-msgstr "Nom (anglais)"
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
+#: opal/hospital_settings/templates/hospital_settings/site/site_list.html:35
+msgid "English"
+msgstr "Anglais"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:27
+#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:38
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:27
-msgid "Name (French)"
-msgstr "Nom (français)"
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
+#: opal/hospital_settings/templates/hospital_settings/site/site_list.html:38
+msgid "French"
+msgstr "Français"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html:7
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html:7
@@ -80,16 +91,6 @@ msgstr "Créer"
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:14
 msgid "Institutions"
 msgstr "Institutions"
-
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:35
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html:35
-msgid "English"
-msgstr "Anglais"
-
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:38
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html:38
-msgid "French"
-msgstr "Français"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:60
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:68
@@ -112,19 +113,11 @@ msgstr "Effacer le site"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html:13
 msgid "Are you sure you want to delete the following site:"
-msgstr "Voulez-vous vraiment supprimer le site suivant :"
+msgstr "Voulez-vous vraiment supprimer le site suivant:"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:5
 msgid "Site Detail"
 msgstr "Détails du site"
-
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
-msgid "Parking Info (English)"
-msgstr "Informations sur le stationnement (anglais)"
-
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
-msgid "Parking Info (French)"
-msgstr "Informations sur le stationnement (français)"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html:7
 msgid "Site"

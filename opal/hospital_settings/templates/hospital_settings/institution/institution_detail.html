@@ -18,11 +18,11 @@
                         <input type="text" id="institutionCode" class="form-control" name="institutionCode" value="{{ object.code }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="institutionNameEn">{% translate "Name (English)" %}</label>
+                        <label for="institutionNameEn">{% translate "Name" %} ({% translate "English" %})</label>
                         <input type="text" id="institutionNameEn" class="form-control" name="institutionNameEn" value="{{ object.name_en }}" readonly>
                       </div>
                       <div class="form-group">
-                        <label for="institutionNameFr">{% translate "Name (French)" %}</label>
+                        <label for="institutionNameFr">{% translate "Name" %} ({% translate "French" %}){% endblocktranslate %}</label>
                         <input type="text" id="institutionNameFr" class="form-control" name="institutionNameFr" value="{{ object.name_fr }}" readonly>
                       </div>
                     </div>
