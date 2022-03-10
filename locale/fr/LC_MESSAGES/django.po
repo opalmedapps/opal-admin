@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-22 17:08+0000\n"
+"POT-Creation-Date: 2022-03-09 12:50-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,18 +18,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/settings.py:194
+#: opal/settings.py:217
 msgid "English"
 msgstr "Anglais"
 
-#: opal/settings.py:195
+#: opal/settings.py:218
 msgid "French"
 msgstr "Français"
 
-#: opal/urls.py:28
+#: opal/templates/base_generic.html:12
+msgid "OpalAdmin v2"
+msgstr "OpalAdmin v2"
+
+#: opal/templates/layouts/base.html:61
+msgid "opal ADMIN"
+msgstr "opal ADMIN"
+
+#: opal/templates/layouts/base.html:78
+msgid "Hospital Settings"
+msgstr "Paramètres Hospitalier"
+
+#: opal/templates/layouts/base.html:86
+msgid "Institutions"
+msgstr "Établissements"
+
+#: opal/templates/layouts/base.html:92
+msgid "Sites"
+msgstr "Sites"
+
+#: opal/templates/layouts/base.html:101
+msgid "Profile"
+msgstr "Profil"
+
+#: opal/templates/layouts/base.html:109
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: opal/templates/layouts/base.html:154
+msgid "Copyright"
+msgstr "Copyright"
+
+#: opal/templates/layouts/base.html:154
+msgid "All rights reserved."
+msgstr "Tous droits réservés."
+
+#: opal/templates/layouts/base.html:155
+msgid "2022 Opal Health Informatics Group."
+msgstr "2022 Le Groupe Informatique Opal Santé."
+
+#: opal/templates/layouts/base.html:155
+msgid "Privacy"
+msgstr "Politique de confidentialité"
+
+#: opal/templates/layouts/base.html:155
+msgid "Terms"
+msgstr "Conditions d'utilisation"
+
+#: opal/urls.py:44
 msgid "Opal Management"
 msgstr "Administration d'Opal"
 
-#: opal/urls.py:29
+#: opal/urls.py:45
 msgid "Opal Backend Admin"
 msgstr "Administrateur principal d'Opal"
+
+#: opal/users/apps.py:11
+msgid "Users"
+msgstr "Utilisateur"

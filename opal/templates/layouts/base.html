@@ -1,5 +1,6 @@
 {% extends "base_generic.html" %}
 {% load static %}
+{% load i18n %}
 
 
 {% block stylesheets %}
@@ -48,7 +49,7 @@
     <a href="{{ OPAL_ADMIN_URL }}" class="brand-link">
       <img src="{% static 'images/opal_logo_transparent_purple.png' %}" alt="opal ADMIN" class="brand-image img-circle"
         style="opacity: .8">
-      <span class="brand-text font-weight-light">opal ADMIN</span>
+      <span class="brand-text font-weight-light">{% translate "opal ADMIN" %}</span>
     </a>
 
     {% comment %} Sidebar {% endcomment %}
@@ -63,7 +64,7 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
-                HOSPITAL SETTINGS
+                {% translate "Hospital Settings"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
@@ -71,13 +72,13 @@
               <li>
                 <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-building"></i>
-                  <p class="text">Institutions</p>
+                  <p class="text">{% translate "Institutions" %}</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'hospital-settings:site-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-sitemap"></i>
-                  <p class="text">Sites</p>
+                  <p class="text">{% translate "Sites" %}</p>
                 </a>
               </li>
             </ul>
@@ -86,7 +87,7 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
-                PROFILE
+                {% translate "Profile"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
@@ -94,7 +95,7 @@
               <li class="nav-item">
                 <a href="#" class="nav-link logout">
                   <i class="nav-icon fas fa-sign-out-alt"></i>
-                  <p>Logout</p>
+                  <p>{% translate "Logout" %}</p>
                 </a>
               </li>
             </ul>
@@ -133,9 +134,8 @@
   <footer class="main-footer">
     {% comment %} Copyright {% endcomment %}
     <div class="footer-copyright text-center">
-      <strong>Copyright &copy; </strong> All rights
-      reserved.
-      <p>&copy; 2022 Opal Health Informatics Group. &middot; <a href="#">Privacy</a> &middot; <a href="#">Terms</a></p>
+      <strong>{% translate "Copyright" %} &copy; </strong> {% translate "All rights reserved." %}
+      <p>&copy; {% translate "2022 Opal Health Informatics Group." %} &middot; <a href="#">{% translate "Privacy" %}</a> &middot; <a href="#">{% translate "Terms" %}</a></p>
     </div>
   </footer>
   {% endblock %}

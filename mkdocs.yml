@@ -15,6 +15,7 @@ nav:
   - Home: index.md
   - REST API:
       - Authentication: authentication.md
+  - Translation: translation.md
   - Changelog: changelog.md
   - Code Reference: reference/
 

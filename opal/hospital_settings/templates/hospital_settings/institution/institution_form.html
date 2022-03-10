@@ -1,9 +1,10 @@
 {% extends "layouts/base.html" %}
+{% load i18n %}
 
 {% load crispy_forms_tags %}
 
 {% block content-header-page-name %}
-  {% if object %}Update{% else %}Create{% endif %} Institution
+  {% if object %}{% translate "Update" %}{% else %}{% translate "Create" %}{% endif %} {% translate "Institution" %}
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,7 @@
                       <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <input type="submit" class="btn btn-primary" value="Save">
+                        <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
                       </form>
                     </div>
                     {% comment %} /.card-body {% endcomment %}
