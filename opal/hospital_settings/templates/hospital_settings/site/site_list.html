@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 
 
 {% block stylesheets %}
@@ -9,7 +10,7 @@
   <link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
 {% endblock %}
 
-{% block content-header-page-name %}Sites{% endblock %}
+{% block content-header-page-name %}{% translate "Sites" %}{% endblock %}
 
 {% block content %}
     {% comment %} Main content {% endcomment %}
@@ -25,16 +26,16 @@
                                 <thead>
                                 <tr>
                                     <th>
-                                        Code
+                                      {% translate "Code" %}
                                     </th>
                                     <th>
-                                        English
+                                      {% translate "English" %}
                                     </th>
                                     <th>
-                                        French
+                                      {% translate "French" %}
                                     </th>
                                     <th>
-                                      Institution
+                                      {% translate "Institution" %}
                                     </th>
                                     <th style="width: 25%">
                                     </th>
@@ -61,14 +62,14 @@
                                         <div class="btn-toolbar" role="group">
                                           <a class="btn btn-primary btn-sm mr-2" href="{% url 'hospital-settings:site-detail' site.id %}">
                                               <i class="fas fa-eye"></i>
-                                              View
+                                              {% translate "View" %}
                                           </a>
                                           <a class="btn btn-info btn-sm mr-2" href="{% url 'hospital-settings:site-update' site.id %}">
                                               <i class="fas fa-pencil-alt"></i>
-                                              Edit
+                                              {% translate "Edit" %}
                                           </a>
                                           <a class="btn btn-danger btn-sm mr-2" href="{% url 'hospital-settings:site-delete' site.id %}">
-                                            Delete
+                                            {% translate "Delete" %}
                                           </a>
                                         </div>
                                       </td>
