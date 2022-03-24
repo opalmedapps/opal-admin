@@ -3,3 +3,6 @@ mkdocstrings[python-legacy]==0.18.1  # https://github.com/mkdocstrings/mkdocstri
 mkdocs-autorefs==0.4.1  # https://github.com/mkdocstrings/autorefs
 mkdocs-gen-files==0.3.4  # https://github.com/oprypin/mkdocs-gen-files
 mkdocs-literate-nav==0.4.1  # https://github.com/oprypin/mkdocs-literate-nav
+# pin jinja2 dependency
+# until https://github.com/mkdocs/mkdocs/issues/2799 is fixed
+jinja2==3.0.3
