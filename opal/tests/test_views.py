@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.test.client import Client
 from django.urls.base import reverse
 
@@ -5,8 +7,11 @@ import pytest
 from pytest_django.asserts import assertContains
 from pytest_django.fixtures import SettingsWrapper
 
+from opal.users.models import User
 
-@pytest.mark.django_db()
+pytestmark = pytest.mark.django_db()
+
+
 def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) -> None:
     """Ensure that the OpalAdmin URL is used in the template."""
     url = 'https://example.opal'
@@ -16,3 +21,64 @@ def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) ->
     response = user_client.get(reverse('start'), follow=True)
 
     assertContains(response, text='href="{url}"'.format(url=url))
+
+
+def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -> None:
+    """Ensure that an unauthenticated request is redirected to the login page."""
+    response = client.get(reverse(settings.LOGIN_REDIRECT_URL))
+    assert response.status_code == HTTPStatus.FOUND
+    assert response.url == '{url}?next=/'.format(url=reverse(settings.LOGIN_URL))
+
+
+def test_loginview_success(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
+    """Ensure that submitting the login form with correct credentials authenticates the user."""
+    credentials = {
+        'username': 'testuser',
+        'password': 'testpass',
+    }
+    user: User = django_user_model.objects.create(username=credentials['username'])
+    user.set_password(credentials['password'])
+    user.save()
+
+    response = client.post(
+        reverse(settings.LOGIN_URL),
+        data=credentials,
+    )
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response.url == reverse(settings.LOGIN_REDIRECT_URL)
+
+
+def test_loginview_error(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
+    """Ensure that submitting the login form with incorrect credentials fails authenticating the user."""
+    # assume that the FedAuthBackend is enabled and remove it (to avoid making outgoing requests during tests)
+    # if it is not enabled in the future, remove these lines
+    assert 'opal.auth.FedAuthBackend' in settings.AUTHENTICATION_BACKENDS
+    settings.AUTHENTICATION_BACKENDS.remove('opal.auth.FedAuthBackend')
+
+    credentials = {
+        'username': 'testuser',
+        'password': 'invalid',
+    }
+    django_user_model.objects.create(username=credentials['username'])
+
+    response = client.post(
+        reverse(settings.LOGIN_URL),
+        data=credentials,
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assertContains(response, 'class="errornote"')
+    assertContains(
+        response,
+        'Please enter a correct username and password. Note that both fields may be case-sensitive.',
+    )
+
+
+def test_logout_redirects_to_login(user_client: Client, settings: SettingsWrapper) -> None:
+    """Ensure that a logged in user can log out."""
+    response = user_client.get(reverse('logout'))
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response.url == reverse(settings.LOGIN_URL)
+    assert not response.wsgi_request.user.is_authenticated
