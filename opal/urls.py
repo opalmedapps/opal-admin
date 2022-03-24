@@ -15,6 +15,7 @@ Examples:
         1. Import the include() function: from django.urls import include, path
         2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path
@@ -23,8 +24,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    # REST API authentification
-    path('api/auth/', include('dj_rest_auth.urls')),
+    # REST API authentication
+    path('{api_root}auth/'.format(api_root=settings.API_ROOT), include('dj_rest_auth.urls')),
 
     # global config
     path('admin/', admin.site.urls),

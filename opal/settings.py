@@ -302,6 +302,9 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
+# Root path for API URLs
+API_ROOT = 'api/'
+
 # CORS headers
 #
 # A list of origins that are authorized to make cross-site HTTP requests.

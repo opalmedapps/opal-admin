@@ -1,9 +1,10 @@
 from http import HTTPStatus
 
 from django.test.client import Client
-from django.urls.base import reverse
+from django.urls import reverse
 
 import pytest
+from pytest_django.fixtures import SettingsWrapper
 
 
 def test_start_defined() -> None:
@@ -29,3 +30,8 @@ def test_favicon_url_defined(client: Client) -> None:
     assert reverse('favicon.ico') is not None
 
     assert client.get('/favicon.ico').status_code != HTTPStatus.NOT_FOUND
+
+
+def test_api_auth_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth endpoints are defined."""
+    assert reverse('rest_login') == '/{api_root}auth/login/'.format(api_root=settings.API_ROOT)
