@@ -12,7 +12,9 @@ pytestmark = pytest.mark.django_db
 def test_loginrequired_api_urls_excluded(client: Client, settings: SettingsWrapper) -> None:
     """Ensure that API URLs are not handled by the LoginRequiredMiddleware."""
     response = client.get('/{api_root}'.format(api_root=settings.API_ROOT))
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    # the API root is reachable even when non-authenticated
+    # this seems to be a bug, see: https://github.com/encode/django-rest-framework/issues/8425
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_loginrequired_unauthenticated_with_next(client: Client) -> None:

@@ -7,12 +7,12 @@ from pytest_django.fixtures import SettingsWrapper
 
 
 @pytest.mark.django_db()
-def test_opal_admin_url_shown(client: Client, settings: SettingsWrapper) -> None:
-    """This test ensures that the OpalAdmin URL is used in the template."""
+def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) -> None:
+    """Ensure that the OpalAdmin URL is used in the template."""
     url = 'https://example.opal'
     settings.OPAL_ADMIN_URL = url
 
     # follow any redirect to retrieve content
-    response = client.get(reverse('start'), follow=True)
+    response = user_client.get(reverse('start'), follow=True)
 
     assertContains(response, text='href="{url}"'.format(url=url))
