@@ -15,4 +15,4 @@ class InstitutionTranslationOptions(TranslationOptions):
 class SiteTranslationOptions(TranslationOptions):
     """This class provides translation options for ``Site``."""
 
-    fields = ('name', 'parking_url')
+    fields = ('name', 'parking_url', 'direction_url')

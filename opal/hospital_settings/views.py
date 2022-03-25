@@ -89,7 +89,16 @@ class SiteCreateView(CreateView):
 
     model = Site
     template_name = 'hospital_settings/site/site_form.html'
-    fields = ['name_en', 'name_fr', 'parking_url_en', 'parking_url_fr', 'code', 'institution']
+    fields = [
+        'name_en',
+        'name_fr',
+        'parking_url_en',
+        'parking_url_fr',
+        'direction_url_en',
+        'direction_url_fr',
+        'code',
+        'institution',
+    ]
     success_url = reverse_lazy('hospital-settings:site-list')
 
 
@@ -111,7 +120,16 @@ class SiteUpdateView(UpdateView):
 
     model = Site
     template_name = 'hospital_settings/site/site_form.html'
-    fields = ['name_en', 'name_fr', 'parking_url_en', 'parking_url_fr', 'code', 'institution']
+    fields = [
+        'name_en',
+        'name_fr',
+        'parking_url_en',
+        'parking_url_fr',
+        'direction_url_en',
+        'direction_url_fr',
+        'code',
+        'institution',
+    ]
     success_url = reverse_lazy('hospital-settings:site-list')
 
 
