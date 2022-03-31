@@ -257,3 +257,69 @@ The configuration (such as which files to exclude) is located in `setup.cfg` and
     1. Erase old coverage data: `coverage erase`
 
 `vscode` should pick up the virtual environment and run `flake8` and `mypy` while writing code.
+
+## Contributing
+
+### Commit Message Format
+
+*This specification is inspired by [Angular commit message format](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format)*.
+
+We have very precise rules over how our Git commit messages must be formatted. It is based on the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) which has the following advantages (non-exhaustive list):
+
+* communicates the nature of changes to others
+* allows a tool to automatically determine a version bump
+* allows a tool to automatically generate the CHANGELOG
+
+Each commit message consists of a **header**, a **body**, and a **footer**.
+
+#### Commit Message Header
+
+```text
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: deps|lang
+  │
+  └─⫸ Commit Type: build|chore|ci|docs|feat|fix|perf|refactor|style|test
+```
+
+The `<type>` and `<summary>` fields are mandatory, the `(<scope>)` field is optional.
+
+**Breaking Changes** must append a `!` after the type/scope.
+
+##### Summary
+
+Use the summary field to provide a succinct description of the change:
+
+* use the imperative, present tense: "change" not "changed" nor "changes"
+* don't capitalize the first letter
+* no dot (.) at the end
+
+##### Type
+
+Must be one of the following:
+
+* **build**: Changes that affect the build system or external dependencies (i.e., pip, Docker)
+* **chore**: Other changes that don't modify source or test files (e.g., a grunt task)
+* **ci**: Changes to our CI configuration files and scripts (i.e., GitLab CI)
+* **docs**: Documentation only changes
+* **feat**: A new feature
+* **fix**: A bug fix
+* **perf**: A code change that improves performance
+* **refactor**: A code change that neither fixes a bug nor adds a feature
+* **style**: Changes that do not affect the meaning of the code (whitespace, formatting etc.)
+* **test**: Adding missing tests or correcting existing tests
+
+##### Scope
+
+The (optional) scope provides additional contextual information.
+
+The following is the list of supported scopes:
+
+* **deps**: Changes to the dependencies
+* **lang**: Changes to the translations (i18n) and localizations (l10n)
+
+#### Breaking Changes
+
+In addition to appending a `!` after the type/scope in the commit message header, a breaking change must also be described in more detail in the commit message body prefixed with `BREAKING CHANGE:` (see [specification](https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with-both--and-breaking-change-footer)).
