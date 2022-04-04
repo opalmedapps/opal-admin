@@ -1,79 +1,83 @@
-from django.test import Client
-from django.urls.base import reverse
-
 import pytest
+
+from opal.hospital_settings.views import InstitutionCreateView, InstitutionUpdateView, SiteCreateView, SiteUpdateView
 
 from ..models import Institution, Site
 
 pytestmark = pytest.mark.django_db
 
 
-def test_institution_create(client: Client) -> None:
-    """Ensures that an institution can be created successfully."""
-    url = reverse('hospital-settings:institution-create')
+def test_institution_create() -> None:
+    """Ensures that the institution create form is valid."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
         'code': 'TST',
     }
 
-    client.post(url, data=form_data)
+    view = InstitutionCreateView()
+    form = view.get_form_class()(data=form_data)
+    assert form.is_valid()
 
-    assert Institution.objects.count() == 1
-    assert Institution.objects.filter(code='TST').exists()
 
-
-def test_institution_create_with_missing_code(client: Client) -> None:
+def test_institution_create_with_missing_code() -> None:
     """Ensures that the institution form checks for missing code field at the moment of creating a new institution."""
-    url = reverse('hospital-settings:institution-create')
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
     }
-    response = client.post(url, data=form_data)
 
-    assert Institution.objects.count() == 0
-    assert 'This field is required' in response.content.decode('utf-8')
+    view = InstitutionCreateView()
+    form = view.get_form_class()(data=form_data)
+    assert not form.is_valid()
 
 
-def test_institution_update_with_missing_field(client: Client, institution: Institution) -> None:
+def test_institution_update() -> None:
+    """Ensures that the institution form checks for missing code field at the moment of creating a new institution."""
+    form_data = {
+        'name_en': 'TEST1_EN',
+        'name_fr': 'TEST1_FR',
+        'code': 'TST',
+    }
+
+    view = InstitutionUpdateView()
+    form = view.get_form_class()(data=form_data)
+    assert form.is_valid()
+
+
+def test_institution_update_with_missing_field(institution: Institution) -> None:
     """Ensures that the institution form checks for missing code field at the moment of updating an institution."""
-    url = reverse('hospital-settings:institution-update', args=(institution.id,))
     form_data = {
         'name_en': 'TEST1_EN_EDIT',
         'name_fr': 'TEST1_FR_EDIT',
     }
-    response = client.post(url, data=form_data)
 
-    institution.refresh_from_db()
-    assert institution.name != 'TEST1_EN_EDIT'
-    assert 'This field is required' in response.content.decode('utf-8')
+    view = InstitutionUpdateView()
+    form = view.get_form_class()(data=form_data)
+    assert not form.is_valid()
 
 
 # SITES
 
 
-def test_site_create(client: Client, institution: Institution) -> None:
-    """Ensures that a site can be created successfully."""
-    url = reverse('hospital-settings:site-create')
+def test_site_create(institution: Institution) -> None:
+    """Ensures that the site create form is valid."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
-        'institution': institution.pk,
+        'institution': institution.id,
     }
 
-    client.post(url, data=form_data)
+    view = SiteCreateView()
+    form = view.get_form_class()(data=form_data)
+    assert form.is_valid()
 
-    assert Site.objects.count() == 1
-    assert Site.objects.filter(code='TEST1').exists()
 
-
-def test_site_create_with_missing_field(client: Client) -> None:
+def test_site_create_with_missing_field() -> None:
     """Ensures that the site form checks for missing institution field at the moment of creating a new site."""
-    url = reverse('hospital-settings:site-create')
     Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='ALL_SITES')
     form_data = {
         'name_en': 'TEST1_EN',
@@ -82,19 +86,37 @@ def test_site_create_with_missing_field(client: Client) -> None:
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
     }
-    response = client.post(url, data=form_data)
-    assert 'This field is required' in response.content.decode('utf-8')
+
+    view = SiteCreateView()
+    form = view.get_form_class()(data=form_data)
+    assert not form.is_valid()
 
 
-def test_site_update_with_missing_field(client: Client, site: Site) -> None:
+def test_site_update(institution: Institution) -> None:
+    """Ensures that the site create form is valid."""
+    form_data = {
+        'name_en': 'TEST1_EN',
+        'name_fr': 'TEST1_FR',
+        'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'code': 'TEST1',
+        'institution': institution.id,
+    }
+
+    view = SiteUpdateView()
+    form = view.get_form_class()(data=form_data)
+    assert form.is_valid()
+
+
+def test_site_update_with_missing_field(site: Site) -> None:
     """Ensures that the site form checks for missing institution field at the moment of updating a site."""
-    url = reverse('hospital-settings:site-update', args=(site.id,))
     form_data = {
         'name_en': 'TEST1_EN_updated',
         'name_fr': 'TEST1_FR_updated',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
     }
-    response = client.post(url, data=form_data)
 
-    assert 'This field is required' in response.content.decode('utf-8')
+    view = SiteUpdateView()
+    form = view.get_form_class()(data=form_data)
+    assert not form.is_valid()

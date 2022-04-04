@@ -20,15 +20,15 @@ testdata: List[Tuple] = [
 ]
 
 
-@pytest.mark.parametrize(('view_class', 'path_name', 'url'), testdata)
-def test_hospital_settings_urls(view_class, path_name, url):
+@pytest.mark.parametrize(('view_class', 'url_name', 'url_path'), testdata)
+def test_hospital_settings_urls(view_class, url_name, url_path):
     """
     This test ensures that an URL name resolves to the appropriate URL address.
 
     It also checks that the URL is served with the correct view.
     """
-    assertURLEqual(reverse(path_name), url)
-    assert resolve(url).func.__name__ == view_class.as_view().__name__
+    assertURLEqual(reverse(url_name), url_path)
+    assert resolve(url_path).func.__name__ == view_class.as_view().__name__
 
 
 # INSTITUTIONS
