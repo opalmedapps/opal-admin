@@ -1,6 +1,6 @@
-# Opal Backend Pilot
+# Opal Backend
 
-[![pipeline status](https://gitlab.com/opalmedapps/backend-pilot/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend-pilot/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend-pilot/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/docs-available-brightgreen.svg)](https://opalmedapps.gitlab.io/docs)
+[![pipeline status](https://gitlab.com/opalmedapps/backend/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/docs-available-brightgreen.svg)](https://opalmedapps.gitlab.io/docs)
 
 ## Requirements
 
@@ -204,7 +204,7 @@ Install the `pre-commit` hooks via `pre-commit install`.
 
 ## Documentation
 
-The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](https://opalmedapps.gitlab.io/backend-pilot). It is deployed automatically when commits are pushed to `main`.
+The documentation is deployed to [https://opalmedapps.gitlab.io/backend](https://opalmedapps.gitlab.io/backend). It is deployed automatically when commits are pushed to `main`.
 
 To view the documentation during development, run the following commands in your virtual environment:
 
