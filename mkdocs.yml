@@ -1,11 +1,11 @@
 # Project information
-site_name: Backend Pilot
-site_url: https://opalmedapps.gitlab.io/backend-pilot
+site_name: Backend
+site_url: https://opalmedapps.gitlab.io/backend
 site_author: Opal Health Informatics Group (O-HIG)
 
 # Repository
-repo_name: opalmedapps/backend-pilot
-repo_url: https://gitlab.com/opalmedapps/backend-pilot
+repo_name: opalmedapps/backend
+repo_url: https://gitlab.com/opalmedapps/backend
 
 # Copyright
 copyright: Copyright &copy; 2022 Opal Health Informatics Group (O-HIG)
