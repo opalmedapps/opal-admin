@@ -32,7 +32,7 @@ class Institution(Location):
 
 
 class Site(Location):
-    """A site belonging to an ``Institution`` with its specific properties."""
+    """A site belonging to an [Institution][opal.hospital_settings.models.Institution] with its specific properties."""
 
     parking_url = models.URLField(_('Parking Info'))
     institution = models.ForeignKey(

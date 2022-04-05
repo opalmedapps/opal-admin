@@ -135,7 +135,7 @@ def test_authenticate_missing_params():
 
 def test_authenticate_wrong_credentials(mocker: MockerFixture):
     """Ensure authenticate returns `None` for unsuccessful authentication attempts."""
-    # mock authentification and pretend it was unsuccessful
+    # mock authentication and pretend it was unsuccessful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
@@ -145,7 +145,7 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture):
 @pytest.mark.django_db()
 def test_authenticate_user_does_not_exist(mocker: MockerFixture):
     """Ensure a user instance is created if the user authenticates for the first time."""
-    # mock authentification and pretend it was successful
+    # mock authentication and pretend it was successful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
 
@@ -163,7 +163,7 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture):
 @pytest.mark.django_db()
 def test_authenticate_user_already_exists(mocker: MockerFixture):
     """Ensure the existing user instance is returned if the user already exists."""
-    # mock authentification and pretend it was successful
+    # mock authentication and pretend it was successful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
 
