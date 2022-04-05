@@ -1,10 +1,12 @@
 import json
 from http import HTTPStatus
+from unittest.mock import MagicMock
 
 from django.contrib.auth import authenticate
 from django.test import Client
 
 import pytest
+from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
 from requests.exceptions import ConnectionError
@@ -16,7 +18,7 @@ ENCODING = 'utf-8'
 auth_backend = FedAuthBackend()
 
 
-def _create_auth_data(success: str):
+def _create_auth_data(success: str) -> dict[str, str]:
     return {
         'authenticate': success,
         'mail': 'user@example.com',
@@ -25,7 +27,7 @@ def _create_auth_data(success: str):
     }
 
 
-def _mock_requests_post(mocker: MockerFixture, auth_data):
+def _mock_requests_post(mocker: MockerFixture, auth_data: dict[str, str]) -> MagicMock:
     # mock actual web API call
     mock_post = mocker.patch('requests.post')
     response = Response()
@@ -41,7 +43,7 @@ def _mock_requests_post(mocker: MockerFixture, auth_data):
     (AUTHENTICATION_FAILURE, None),
     (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
 ])
-def test_parse_response(success, expected):
+def test_parse_response(success: str, expected: str) -> None:
     """Ensure JSON response is parsed correctly."""
     response: Response = Response()
     response.status_code = HTTPStatus.OK
@@ -51,7 +53,7 @@ def test_parse_response(success, expected):
     assert auth_backend._parse_response(response) == expected
 
 
-def test_parse_response_empty_response():
+def test_parse_response_empty_response() -> None:
     """Ensure an empty JSON response does not cause an error."""
     response: Response = Response()
     response.status_code = HTTPStatus.OK
@@ -60,7 +62,7 @@ def test_parse_response_empty_response():
     assert auth_backend._parse_response(response) is None
 
 
-def test_parse_response_response_code_not_ok():
+def test_parse_response_response_code_not_ok() -> None:
     """Ensure a non-OK status code is properly handled."""
     response: Response = Response()
     response.status_code = HTTPStatus.BAD_REQUEST
@@ -68,7 +70,7 @@ def test_parse_response_response_code_not_ok():
     assert auth_backend._parse_response(response) is None
 
 
-def test_authenticate_fedauth(mocker: MockerFixture):
+def test_authenticate_fedauth(mocker: MockerFixture) -> None:
     """Ensure authenticating against fed auth returns the proper user data."""
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
     mock_post = _mock_requests_post(mocker, auth_data)
@@ -82,7 +84,7 @@ def test_authenticate_fedauth(mocker: MockerFixture):
     assert list(post_data.keys()) == ['institution', 'uid', 'pwd']
 
 
-def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings):
+def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
     """Ensure authenticate uses the fed auth settings."""
     settings.FEDAUTH_API_ENDPOINT = 'http://localhost/api/login'
     settings.FEDAUTH_INSTITUTION = '99-fake-institution'
@@ -101,7 +103,7 @@ def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings):
     })
 
 
-def test_authenticate_fedauth_error(mocker: MockerFixture):
+def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:
     """Ensure connection failure is handled and does not result in error."""
     # mock actual web API call to raise a connection error
     mock_post = mocker.patch('requests.post')
@@ -113,7 +115,7 @@ def test_authenticate_fedauth_error(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_get_user():
+def test_get_user() -> None:
     """Ensure get_user returns the user instance."""
     user = UserModel.objects.create(username='testuser')
 
@@ -121,19 +123,19 @@ def test_get_user():
 
 
 @pytest.mark.django_db()
-def test_get_user_does_not_exist():
+def test_get_user_does_not_exist() -> None:
     """Ensure get_user returns `None` if the user does not exist."""
     assert auth_backend.get_user(1) is None
 
 
-def test_authenticate_missing_params():
+def test_authenticate_missing_params() -> None:
     """Ensure authenticate can handle missing parameters."""
     assert auth_backend.authenticate(None, None, None) is None
     assert auth_backend.authenticate(None, 'testuser', None) is None
     assert auth_backend.authenticate(None, None, 'testpass') is None
 
 
-def test_authenticate_wrong_credentials(mocker: MockerFixture):
+def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
     """Ensure authenticate returns `None` for unsuccessful authentication attempts."""
     # mock authentication and pretend it was unsuccessful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
@@ -143,7 +145,7 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_authenticate_user_does_not_exist(mocker: MockerFixture):
+def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
     """Ensure a user instance is created if the user authenticates for the first time."""
     # mock authentication and pretend it was successful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
@@ -161,7 +163,7 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_authenticate_user_already_exists(mocker: MockerFixture):
+def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
     """Ensure the existing user instance is returned if the user already exists."""
     # mock authentication and pretend it was successful
     mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
@@ -175,7 +177,7 @@ def test_authenticate_user_already_exists(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_authenticate_integration(mocker: MockerFixture):
+def test_authenticate_integration(mocker: MockerFixture) -> None:
     """Authenticate should return new user if fed auth is successful."""
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
     _mock_requests_post(mocker, auth_data)
@@ -187,7 +189,7 @@ def test_authenticate_integration(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_authenticate_integration_error(mocker: MockerFixture):
+def test_authenticate_integration_error(mocker: MockerFixture) -> None:
     """Incomplete response should not fail and return `None`."""
     # assume incomplete data is returned
     auth_data = {
@@ -201,7 +203,7 @@ def test_authenticate_integration_error(mocker: MockerFixture):
 
 
 @pytest.mark.django_db()
-def test_django_authentication_integration(client: Client, mocker: MockerFixture):
+def test_django_authentication_integration(client: Client, mocker: MockerFixture) -> None:
     """Django authenticate should return user on successful authentication using fed auth."""
     user = UserModel.objects.create(username='testuser')
 
