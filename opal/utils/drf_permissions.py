@@ -15,7 +15,7 @@ class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
     See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
     """
 
-    # overriden from DjangoModelPermissions
+    # taken from DjangoModelPermissions and added the permission for GET
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],  # noqa: WPS323
         'OPTIONS': [],

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * New Frontend and views for hospital-settings app (!31)
 * Users app with custom user model (!39)
 * Enforce authenticated requests to the API endpoints (!41)
+* Enforce authenticated user for all URLs (!72)
 
 ### Documentation
 
