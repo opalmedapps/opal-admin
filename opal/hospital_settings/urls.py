@@ -3,6 +3,7 @@ URL configuration for hospital-specific settings.
 
 Provides URLs for the API and any additional paths for regular views.
 """
+from django.conf import settings
 from django.urls import path
 from django.urls.conf import include
 
@@ -12,7 +13,7 @@ app_name = 'hospital-settings'
 
 urlpatterns = [
     # REST API
-    path('api/', include('opal.hospital_settings.api.urls')),
+    path('{api_root}/'.format(api_root=settings.API_ROOT), include('opal.hospital_settings.api.urls')),
     # Web pages
     # Hospital settings index page
     path('hospital-settings/', views.IndexTemplateView.as_view(), name='index'),

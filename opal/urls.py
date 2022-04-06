@@ -15,24 +15,33 @@ Examples:
         1. Import the include() function: from django.urls import include, path
         2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path
 from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
+from .views import LoginView
+
 urlpatterns = [
-    # REST API authentification
-    path('api/auth/', include('dj_rest_auth.urls')),
+    # REST API authentication
+    path('{api_root}/auth/'.format(api_root=settings.API_ROOT), include('dj_rest_auth.urls')),
+
+    # apps
+    # hospital settings app
+    path('', include('opal.hospital_settings.urls')),
 
     # global config
     path('admin/', admin.site.urls),
+    # define simple login view reusing the admin template
+    path('login', LoginView.as_view(), name='login'),
+    path('logout', LogoutView.as_view(), name='logout'),
     # define start URL as this might be expected by certain packages to exist
     # (e.g., DRF auth/login without a ?next parameter)
     path('', RedirectView.as_view(url='/hospital-settings/'), name='start'),
-    # hospital settings app
-    path('', include('opal.hospital_settings.urls')),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',
