@@ -17,7 +17,7 @@ class LoginRequiredMiddleware():
     in `settings.py` under `MIDDLEWARE`.
 
     Inspired by this discussion: https://stackoverflow.com/q/3214589
-    See also: https://docs.djangoproject.com/en/4.0/topics/http/middleware/#writing-your-own-middleware
+    See also: https://docs.djangoproject.com/en/dev/topics/http/middleware/#writing-your-own-middleware
     """
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:

@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_institution_create() -> None:
-    """Ensures that the institution create form is valid."""
+    """Ensure that the institution create form is valid."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -21,7 +21,7 @@ def test_institution_create() -> None:
 
 
 def test_institution_create_with_missing_code() -> None:
-    """Ensures that the institution form checks for missing code field at the moment of creating a new institution."""
+    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -33,7 +33,7 @@ def test_institution_create_with_missing_code() -> None:
 
 
 def test_institution_update() -> None:
-    """Ensures that the institution form checks for missing code field at the moment of creating a new institution."""
+    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -46,7 +46,7 @@ def test_institution_update() -> None:
 
 
 def test_institution_update_with_missing_field(institution: Institution) -> None:
-    """Ensures that the institution form checks for missing code field at the moment of updating an institution."""
+    """Ensure that the institution form checks for missing code field at the moment of updating an institution."""
     form_data = {
         'name_en': 'TEST1_EN_EDIT',
         'name_fr': 'TEST1_FR_EDIT',
@@ -61,7 +61,7 @@ def test_institution_update_with_missing_field(institution: Institution) -> None
 
 
 def test_site_create(institution: Institution) -> None:
-    """Ensures that the site create form is valid."""
+    """Ensure that the site create form is valid."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -77,7 +77,7 @@ def test_site_create(institution: Institution) -> None:
 
 
 def test_site_create_with_missing_field() -> None:
-    """Ensures that the site form checks for missing institution field at the moment of creating a new site."""
+    """Ensure that the site form checks for missing institution field at the moment of creating a new site."""
     Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='ALL_SITES')
     form_data = {
         'name_en': 'TEST1_EN',
@@ -93,7 +93,7 @@ def test_site_create_with_missing_field() -> None:
 
 
 def test_site_update(institution: Institution) -> None:
-    """Ensures that the site create form is valid."""
+    """Ensure that the site create form is valid."""
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -109,7 +109,7 @@ def test_site_update(institution: Institution) -> None:
 
 
 def test_site_update_with_missing_field(site: Site) -> None:
-    """Ensures that the site form checks for missing institution field at the moment of updating a site."""
+    """Ensure that the site form checks for missing institution field at the moment of updating a site."""
     form_data = {
         'name_en': 'TEST1_EN_updated',
         'name_fr': 'TEST1_FR_updated',

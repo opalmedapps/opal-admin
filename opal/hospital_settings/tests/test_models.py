@@ -10,14 +10,14 @@ pytestmark = pytest.mark.django_db
 
 
 def test_institution_string_method() -> None:
-    """This test ensures the `__str__` method is defined for the `Institution` model."""
+    """Ensure the `__str__` method is defined for the `Institution` model."""
     # Location is abstract and cannot be instantiated directly
     institution = Institution(name=TEST_HOSPITAL, code='TH')
     assert str(institution) == TEST_HOSPITAL
 
 
 def test_institution_ordered() -> None:
-    """This test ensures that the institutions are ordered by name."""
+    """Ensure that the institutions are ordered by name."""
     Institution.objects.create(name=TEST_HOSPITAL, code='TH')
     Institution.objects.create(name='ATest Hospital', code='TH2')
     first = Institution.objects.all()[0]
@@ -105,14 +105,14 @@ def test_site_parking_url_label(site: Site) -> None:
 
 
 def test_site_string_method(institution: Institution) -> None:
-    """This test ensures the `__str__` method is defined for the `Site` model."""
+    """Ensure the `__str__` method is defined for the `Site` model."""
     # Location is abstract and cannot be instantiated directly
     site = Site(name=TEST_HOSPITAL, code='TH', institution=institution)
     assert str(site) == TEST_HOSPITAL
 
 
 def test_site_ordered() -> None:
-    """This test ensures that the sites are ordered by name."""
+    """Ensure that the sites are ordered by name."""
     institution = Institution.objects.create(name=TEST_HOSPITAL, code='TH')
     Site.objects.create(name='Test Site', code='TST', institution=institution)
     Site.objects.create(name='ATest Site', code='TST2', institution=institution)

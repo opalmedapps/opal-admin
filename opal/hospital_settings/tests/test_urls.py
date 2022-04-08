@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Tuple, Type
 
 from django.urls.base import resolve, reverse
 
@@ -11,7 +11,7 @@ from ..models import Institution, Site
 pytestmark = pytest.mark.django_db
 
 # tuple with expected data (view class, url name, url path)
-testdata: List[Tuple] = [
+testdata: list[Tuple] = [
     (views.IndexTemplateView, 'hospital-settings:index', '/hospital-settings/'),
     (views.InstitutionListView, 'hospital-settings:institution-list', '/hospital-settings/institutions/'),
     (views.InstitutionCreateView, 'hospital-settings:institution-create', '/hospital-settings/institution/create/'),
@@ -21,9 +21,9 @@ testdata: List[Tuple] = [
 
 
 @pytest.mark.parametrize(('view_class', 'url_name', 'url_path'), testdata)
-def test_hospital_settings_urls(view_class, url_name, url_path):
+def test_hospital_settings_urls(view_class: Type, url_name: str, url_path: str) -> None:
     """
-    This test ensures that an URL name resolves to the appropriate URL address.
+    Ensure that an URL name resolves to the appropriate URL address.
 
     It also checks that the URL is served with the correct view.
     """
@@ -35,7 +35,7 @@ def test_hospital_settings_urls(view_class, url_name, url_path):
 
 def test_institution_detail_url_is_resolved(institution: Institution) -> None:
     """
-    This test ensures that `institution-detail` URL name resolves to the appropriate URL.
+    Ensure that `institution-detail` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
@@ -49,7 +49,7 @@ def test_institution_detail_url_is_resolved(institution: Institution) -> None:
 
 def test_institution_update_url_is_resolved(institution: Institution) -> None:
     """
-    This test ensures that `institution-update` URL name resolves to the appropriate URL.
+    Ensure that `institution-update` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
@@ -63,7 +63,7 @@ def test_institution_update_url_is_resolved(institution: Institution) -> None:
 
 def test_institution_delete_url_is_resolved(institution: Institution) -> None:
     """
-    This test ensures that `institution-delete` URL name resolves to the appropriate URL.
+    Ensure that `institution-delete` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
@@ -79,7 +79,7 @@ def test_institution_delete_url_is_resolved(institution: Institution) -> None:
 
 def test_site_detail_url_is_resolved(site: Site) -> None:
     """
-    This test ensures that `site-detail` URL name resolves to the appropriate URL.
+    Ensure that `site-detail` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
@@ -93,7 +93,7 @@ def test_site_detail_url_is_resolved(site: Site) -> None:
 
 def test_site_update_url_is_resolved(site: Site) -> None:
     """
-    This test ensures that `site-update` URL name resolves to the appropriate URL.
+    Ensure that `site-update` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
@@ -107,7 +107,7 @@ def test_site_update_url_is_resolved(site: Site) -> None:
 
 def test_site_delete_url_is_resolved(site: Site) -> None:
     """
-    This test ensures that `site-delete` URL name resolves to the appropriate URL.
+    Ensure that `site-delete` URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
