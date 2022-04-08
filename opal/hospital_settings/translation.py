@@ -6,13 +6,13 @@ from .models import Institution, Site
 
 @register(Institution)
 class InstitutionTranslationOptions(TranslationOptions):
-    """This class provides translation options for ``Institution``."""
+    """This class provides translation options for [Institution][opal.hospital_settings.models.Institution]."""
 
     fields = ('name',)
 
 
 @register(Site)
 class SiteTranslationOptions(TranslationOptions):
-    """This class provides translation options for ``Site``."""
+    """This class provides translation options for [Site][opal.hospital_settings.models.Site]."""
 
     fields = ('name', 'parking_url')
