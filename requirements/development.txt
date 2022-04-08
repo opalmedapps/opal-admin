@@ -58,4 +58,4 @@ pre-commit==2.18.1 # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
-beautifulsoup4==4.10.0 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+beautifulsoup4==4.11.0 # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
