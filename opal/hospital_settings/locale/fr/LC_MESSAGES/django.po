@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 12:50-0500\n"
+"POT-Creation-Date: 2022-03-25 13:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
 #: opal/hospital_settings/apps.py:12
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
@@ -37,9 +38,9 @@ msgstr "Nom"
 msgid "Code"
 msgstr "Code"
 
-#: opal/hospital_settings/models.py:30 opal/hospital_settings/models.py:42
+#: opal/hospital_settings/models.py:30 opal/hospital_settings/models.py:46
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html:7
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:39
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:47
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:41
 msgid "Institution"
 msgstr "Établissement"
@@ -52,15 +53,21 @@ msgstr "Établissements"
 #: opal/hospital_settings/models.py:37
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
-msgid "Parking Info"
-msgstr "Informations sur le stationnement"
+msgid "Parking Info (URL)"
+msgstr "Informations sur le stationnement (URL)"
 
-#: opal/hospital_settings/models.py:47
+#: opal/hospital_settings/models.py:39
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:39
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:43
+msgid "Getting to the Hospital (URL)"
+msgstr "Itinéraire vers l’hôpital (URL)"
+
+#: opal/hospital_settings/models.py:51
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html:7
 msgid "Site"
 msgstr "Site"
 
-#: opal/hospital_settings/models.py:48
+#: opal/hospital_settings/models.py:52
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:14
 msgid "Sites"
 msgstr "Sites"
@@ -94,6 +101,7 @@ msgstr "Détail de l'établissement"
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:35
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:39
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:35
 msgid "English"
 msgstr "Anglais"
@@ -102,6 +110,7 @@ msgstr "Anglais"
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:38
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:27
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
+#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:43
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:38
 msgid "French"
 msgstr "Français"

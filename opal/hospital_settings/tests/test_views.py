@@ -237,6 +237,8 @@ def test_site_successful_create_redirects(user_client: Client, institution: Inst
         'name_fr': 'TEST1_FR',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
         'institution': institution.id,
     }
@@ -256,6 +258,8 @@ def test_site_successful_update_redirects(
         'name_fr': 'TEST1_FR_updated',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
         'institution': institution.id,
     }

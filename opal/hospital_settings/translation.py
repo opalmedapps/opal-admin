@@ -9,10 +9,12 @@ class InstitutionTranslationOptions(TranslationOptions):
     """This class provides translation options for [Institution][opal.hospital_settings.models.Institution]."""
 
     fields = ('name',)
+    required_languages = ('en', 'fr')
 
 
 @register(Site)
 class SiteTranslationOptions(TranslationOptions):
     """This class provides translation options for [Site][opal.hospital_settings.models.Site]."""
 
-    fields = ('name', 'parking_url')
+    fields = ('name', 'parking_url', 'direction_url')
+    required_languages = ('en', 'fr')

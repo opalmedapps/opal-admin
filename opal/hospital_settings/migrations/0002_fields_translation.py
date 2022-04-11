@@ -44,11 +44,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='site',
             name='parking_url_en',
-            field=models.URLField(null=True, verbose_name='Parking Info'),
+            field=models.URLField(null=True, verbose_name='Parking Info (URL)'),
         ),
         migrations.AddField(
             model_name='site',
             name='parking_url_fr',
-            field=models.URLField(null=True, verbose_name='Parking Info'),
+            field=models.URLField(null=True, verbose_name='Parking Info (URL)'),
         ),
     ]

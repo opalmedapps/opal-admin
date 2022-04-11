@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100, verbose_name='Name')),
                 ('code', models.CharField(max_length=10, verbose_name='Code')),
-                ('parking_url', models.URLField(verbose_name='Parking Info')),
+                ('parking_url', models.URLField(verbose_name='Parking Info (URL)')),
                 ('institution', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sites', to='hospital_settings.institution', verbose_name='Institution')),
             ],
             options={
