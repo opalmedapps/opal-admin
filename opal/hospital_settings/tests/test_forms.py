@@ -67,6 +67,8 @@ def test_site_create(institution: Institution) -> None:
         'name_fr': 'TEST1_FR',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
         'institution': institution.id,
     }
@@ -99,6 +101,8 @@ def test_site_update(institution: Institution) -> None:
         'name_fr': 'TEST1_FR',
         'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
+        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
         'institution': institution.id,
     }

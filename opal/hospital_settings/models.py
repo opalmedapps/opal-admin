@@ -34,7 +34,8 @@ class Institution(Location):
 class Site(Location):
     """A site belonging to an [Institution][opal.hospital_settings.models.Institution] with its specific properties."""
 
-    parking_url = models.URLField(_('Parking Info'))
+    parking_url = models.URLField(_('Parking Info (URL)'))
+    direction_url = models.URLField(_('Getting to the Hospital (URL)'))
     institution = models.ForeignKey(
         to=Institution,
         on_delete=models.CASCADE,
