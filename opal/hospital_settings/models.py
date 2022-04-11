@@ -1,8 +1,11 @@
 """This module provides models for hospital-specific settings."""
+
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator, MaxValueValidator
-from .constants import *
+
+from .constants import MAX_AGE, MAX_LENGTH_DESCRIPTION, MAX_LENGTH_NAME, MIN_AGE
+
 
 class Location(models.Model):
     """Abstract class representing a hospital location with a name and code."""
@@ -49,24 +52,22 @@ class Site(Location):
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
 
+
 class CaregiverRelationships(models.Model):
     """Caregiver relationships available."""
-    name = models.CharField(
-        max_length=25,
-        help_text=''
-    )
-    description = models.CharField(max_length=200)
+
+    name = models.CharField(max_length=MAX_LENGTH_NAME)
+    description = models.CharField(max_length=MAX_LENGTH_DESCRIPTION)
     start_age = models.PositiveIntegerField(
-        help_text='',
         validators=[
             MinValueValidator(MIN_AGE),
-            MaxValueValidator(MAX_AGE)
+            MaxValueValidator(MAX_AGE),
         ])
     end_age = models.PositiveIntegerField(
         null=True,
         validators=[
             MinValueValidator(MIN_AGE),
-            MaxValueValidator(MAX_AGE)
+            MaxValueValidator(MAX_AGE),
         ])
     form_required = models.BooleanField(default=False)
 
@@ -74,3 +75,12 @@ class CaregiverRelationships(models.Model):
         ordering = ['name']
         verbose_name = _('Caregiver Relationship')
         verbose_name_plural = _('Caregiver Relationships')
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the caregiver relationships.
+
+        Returns:
+            the name of the aregiver relationship
+        """
+        return self.name

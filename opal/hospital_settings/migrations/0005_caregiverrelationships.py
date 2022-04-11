@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """Add caregiver relationships table."""
 
     dependencies = [
         ('hospital_settings', '0004_add_verbose_name_plural'),

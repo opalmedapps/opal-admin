@@ -1,7 +1,7 @@
 """This module provides translation options for hospital-specific settings models."""
 from modeltranslation.translator import TranslationOptions, register
 
-from .models import Institution, Site, CaregiverRelationships
+from .models import CaregiverRelationships, Institution, Site
 
 
 @register(Institution)
