@@ -14,7 +14,12 @@ class InstitutionTranslationOptions(TranslationOptions):
 
 @register(Site)
 class SiteTranslationOptions(TranslationOptions):
-    """This class provides translation options for [Site][opal.hospital_settings.models.Site]."""
+    """
+    Translations for UserPatientRelationshipType.
+
+    This class provides translation options for [UserPatientRelationshipType]
+    [opal.hospital_settings.models.UserPatientRelationshipType].
+    """
 
     fields = ('name', 'parking_url', 'direction_url')
     required_languages = ('en', 'fr')
