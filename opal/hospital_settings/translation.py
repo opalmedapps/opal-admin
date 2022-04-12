@@ -29,4 +29,4 @@ class SiteTranslationOptions(TranslationOptions):
 class CaregiverRelationshipsTranslationOptions(TranslationOptions):
     """This class provides translation options for ``UserPatientRelationshipType``."""
 
-    fields = ('name', 'description', 'start_age', 'end_age', 'form_required')
+    fields = ('name', 'description')
