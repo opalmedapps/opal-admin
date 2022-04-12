@@ -53,23 +53,34 @@ class Site(Location):
         verbose_name_plural = _('Sites')
 
 
-class CaregiverRelationships(models.Model):
-    """Caregiver relationships available."""
+class UserPatientRelationshipType(models.Model):
+    """User Patient Relationship Type available."""
 
-    name = models.CharField(max_length=MAX_LENGTH_NAME)
-    description = models.CharField(max_length=MAX_LENGTH_DESCRIPTION)
+    name = models.CharField(
+        _('Name'),
+        max_length=MAX_LENGTH_NAME
+    )
+    description = models.CharField(
+        _('Description'),
+        max_length=MAX_LENGTH_DESCRIPTION
+    )
     start_age = models.PositiveIntegerField(
+        _('Start age'),
         validators=[
             MinValueValidator(MIN_AGE),
             MaxValueValidator(MAX_AGE),
         ])
     end_age = models.PositiveIntegerField(
+        _('End age'),
         null=True,
         validators=[
             MinValueValidator(MIN_AGE),
             MaxValueValidator(MAX_AGE),
         ])
-    form_required = models.BooleanField(default=False)
+    form_required = models.BooleanField(
+        _('Form required'),
+        default=False
+    )
 
     class Meta:
         ordering = ['name']
@@ -78,9 +89,10 @@ class CaregiverRelationships(models.Model):
 
     def __str__(self) -> str:
         """
-        Return the string representation of the caregiver relationships.
+        Return the string representation of the User Patient
+        Relationship Type.
 
         Returns:
-            the name of the aregiver relationship
+            the name of the user patient relationship type
         """
         return self.name

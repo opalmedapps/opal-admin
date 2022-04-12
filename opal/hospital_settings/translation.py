@@ -1,7 +1,7 @@
 """This module provides translation options for hospital-specific settings models."""
 from modeltranslation.translator import TranslationOptions, register
 
-from .models import CaregiverRelationships, Institution, Site
+from .models import UserPatientRelationshipType, Institution, Site
 
 
 @register(Institution)
@@ -20,8 +20,11 @@ class SiteTranslationOptions(TranslationOptions):
     required_languages = ('en', 'fr')
 
 
-@register(CaregiverRelationships)
+@register(UserPatientRelationshipType)
 class CaregiverRelationshipsTranslationOptions(TranslationOptions):
-    """This class provides translation options for ``CaregiverRelationships``."""
+    """
+    This class provides translation options for
+    ``UserPatientRelationshipType``.
+    """
 
-    fields = ('name', 'description')
+    fields = ('name', 'description', 'start_age', 'end_age', 'form_required')
