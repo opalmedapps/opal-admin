@@ -66,12 +66,14 @@ class UserPatientRelationshipType(models.Model):
     )
     start_age = models.PositiveIntegerField(
         _('Start age'),
+        help_text=_('Age the relationship starts.'),
         validators=[
             MinValueValidator(MIN_AGE),
             MaxValueValidator(MAX_AGE),
         ])
     end_age = models.PositiveIntegerField(
         _('End age'),
+        help_text=_('Age the relationship ends.'),
         null=True,
         validators=[
             MinValueValidator(MIN_AGE),

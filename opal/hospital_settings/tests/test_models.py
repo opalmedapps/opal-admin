@@ -2,9 +2,10 @@ from django.db import models
 
 import pytest
 
-from ..models import Institution, Site
+from ..models import Institution, Site, UserPatientRelationshipType
 
 TEST_HOSPITAL = 'Test Hospital'
+TEST_REL_TYPE = 'Test User Patient Relationship Type'
 
 pytestmark = pytest.mark.django_db
 
@@ -304,3 +305,9 @@ def test_site_ordered() -> None:
     Site.objects.create(name='ATest Site', code='TST2', institution=institution)
     first = Site.objects.all()[0]
     assert first.name == 'ATest Site'
+
+
+def test_user_patient_rel_type_string_method() -> None:
+    """Ensure the `__str__` method is defined for the `UserPatientRelationshipType` model."""
+    user_patient_relationship_type = UserPatientRelationshipType(name=TEST_REL_TYPE)
+    assert str(user_patient_relationship_type) == TEST_REL_TYPE

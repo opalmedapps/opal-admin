@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-25 13:19-0400\n"
+"POT-Creation-Date: 2022-04-12 14:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgstr ""
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
-#: opal/hospital_settings/models.py:9
+#: opal/hospital_settings/models.py:13 opal/hospital_settings/models.py:59
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:23
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:27
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
@@ -30,7 +30,7 @@ msgstr "Paramètres Hospitalier"
 msgid "Name"
 msgstr "Nom"
 
-#: opal/hospital_settings/models.py:10
+#: opal/hospital_settings/models.py:14
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:19
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:32
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:19
@@ -38,19 +38,19 @@ msgstr "Nom"
 msgid "Code"
 msgstr "Code"
 
-#: opal/hospital_settings/models.py:30 opal/hospital_settings/models.py:46
+#: opal/hospital_settings/models.py:34 opal/hospital_settings/models.py:46
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html:7
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:47
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:41
 msgid "Institution"
 msgstr "Établissement"
 
-#: opal/hospital_settings/models.py:31
+#: opal/hospital_settings/models.py:35
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html:14
 msgid "Institutions"
 msgstr "Établissements"
 
-#: opal/hospital_settings/models.py:37
+#: opal/hospital_settings/models.py:41
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:31
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:35
 msgid "Parking Info (URL)"
@@ -71,6 +71,38 @@ msgstr "Site"
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html:14
 msgid "Sites"
 msgstr "Sites"
+
+#: opal/hospital_settings/models.py:63
+msgid "Description"
+msgstr ""
+
+#: opal/hospital_settings/models.py:67
+msgid "Start age"
+msgstr ""
+
+#: opal/hospital_settings/models.py:68
+msgid "Age the relationship starts."
+msgstr ""
+
+#: opal/hospital_settings/models.py:74
+msgid "End age"
+msgstr ""
+
+#: opal/hospital_settings/models.py:75
+msgid "Age the relationship ends."
+msgstr ""
+
+#: opal/hospital_settings/models.py:82
+msgid "Form required"
+msgstr ""
+
+#: opal/hospital_settings/models.py:88
+msgid "Caregiver Relationship"
+msgstr ""
+
+#: opal/hospital_settings/models.py:89
+msgid "Caregiver Relationships"
+msgstr ""
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:5
 msgid "Delete Institution"
