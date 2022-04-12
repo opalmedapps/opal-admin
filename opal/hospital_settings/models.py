@@ -58,11 +58,11 @@ class UserPatientRelationshipType(models.Model):
 
     name = models.CharField(
         _('Name'),
-        max_length=MAX_LENGTH_NAME
+        max_length=MAX_LENGTH_NAME,
     )
     description = models.CharField(
         _('Description'),
-        max_length=MAX_LENGTH_DESCRIPTION
+        max_length=MAX_LENGTH_DESCRIPTION,
     )
     start_age = models.PositiveIntegerField(
         _('Start age'),
@@ -79,7 +79,7 @@ class UserPatientRelationshipType(models.Model):
         ])
     form_required = models.BooleanField(
         _('Form required'),
-        default=False
+        default=False,
     )
 
     class Meta:
@@ -88,9 +88,7 @@ class UserPatientRelationshipType(models.Model):
         verbose_name_plural = _('Caregiver Relationships')
 
     def __str__(self) -> str:
-        """
-        Return the string representation of the User Patient
-        Relationship Type.
+        """Return the string representation of the User Patient Relationship Type.
 
         Returns:
             the name of the user patient relationship type
