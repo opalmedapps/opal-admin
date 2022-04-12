@@ -79,10 +79,7 @@ class UserPatientRelationshipType(models.Model):
             MinValueValidator(MIN_AGE),
             MaxValueValidator(MAX_AGE),
         ])
-    form_required = models.BooleanField(
-        _('Form required'),
-        default=False,
-    )
+    form_required = models.BooleanField(_('Form required'))
 
     class Meta:
         ordering = ['name']
