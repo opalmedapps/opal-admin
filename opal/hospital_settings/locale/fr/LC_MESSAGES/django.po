@@ -98,11 +98,11 @@ msgstr "Formulaire obligatoire"
 
 #: opal/hospital_settings/models.py:88
 msgid "Caregiver Relationship"
-msgstr "Relation avec le(la) soignant(e)"
+msgstr "Relation avec la personne aidante"
 
 #: opal/hospital_settings/models.py:89
 msgid "Caregiver Relationships"
-msgstr "Relations avec le(la) soignant(e)"
+msgstr "Relations avec la personne aidante"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:5
 msgid "Delete Institution"
