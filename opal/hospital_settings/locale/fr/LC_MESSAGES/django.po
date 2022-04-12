@@ -74,35 +74,35 @@ msgstr "Sites"
 
 #: opal/hospital_settings/models.py:63
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: opal/hospital_settings/models.py:67
 msgid "Start age"
-msgstr ""
+msgstr "Âge de début"
 
 #: opal/hospital_settings/models.py:68
 msgid "Age the relationship starts."
-msgstr ""
+msgstr "L'âge auquel la relation commence."
 
 #: opal/hospital_settings/models.py:74
 msgid "End age"
-msgstr ""
+msgstr "Âge de fin"
 
 #: opal/hospital_settings/models.py:75
 msgid "Age the relationship ends."
-msgstr ""
+msgstr "L'âge auquel la relation se termine."
 
 #: opal/hospital_settings/models.py:82
 msgid "Form required"
-msgstr ""
+msgstr "Formulaire obligatoire"
 
 #: opal/hospital_settings/models.py:88
 msgid "Caregiver Relationship"
-msgstr ""
+msgstr "Relation avec le(la) soignant(e)"
 
 #: opal/hospital_settings/models.py:89
 msgid "Caregiver Relationships"
-msgstr ""
+msgstr "Relations avec le(la) soignant(e)"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:5
 msgid "Delete Institution"
