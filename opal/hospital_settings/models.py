@@ -54,7 +54,7 @@ class Site(Location):
 
 
 class UserPatientRelationshipType(models.Model):
-    """User Patient Relationship Type available."""
+    """List of user Patient Relationship Types. All possible relationships with patients are described self included."""
 
     name = models.CharField(
         _('Name'),
@@ -75,6 +75,7 @@ class UserPatientRelationshipType(models.Model):
         _('End age'),
         help_text=_('Age the relationship ends.'),
         null=True,
+        blank=True,
         validators=[
             MinValueValidator(MIN_AGE),
             MaxValueValidator(MAX_AGE),
