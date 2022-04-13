@@ -23,7 +23,9 @@ class SiteTranslationOptions(TranslationOptions):
 @register(UserPatientRelationshipType)
 class CaregiverRelationshipsTranslationOptions(TranslationOptions):
     """
-    Translations for UserPatientRelationshipType.
+    """
+    This class provides translation options for [UserPatientRelationshipType][opal.hospital_settings.models.UserPatientRelationshipType].  # noqa E501
+    """
 
     This class provides translation options for [UserPatientRelationshipType]
     [opal.hospital_settings.models.UserPatientRelationshipType].
