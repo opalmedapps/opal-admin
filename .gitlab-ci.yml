@@ -75,6 +75,7 @@ flake8:
     - pip install flake8-gl-codeclimate
     - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json
   artifacts:
+    when: always
     reports:
       codequality: gl-code-quality-report.json
 
@@ -90,6 +91,7 @@ test:
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
   artifacts:
+    when: always
     reports:
       junit: report.xml
     paths:
@@ -105,6 +107,7 @@ coverage:
     - job: setup
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
+    when: always
     reports:
       cobertura: coverage.xml
 
