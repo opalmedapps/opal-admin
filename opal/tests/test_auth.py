@@ -1,5 +1,6 @@
 import json
 from http import HTTPStatus
+from typing import Optional
 from unittest.mock import MagicMock
 
 from django.contrib.auth import authenticate
@@ -43,7 +44,7 @@ def _mock_requests_post(mocker: MockerFixture, auth_data: dict[str, str]) -> Mag
     (AUTHENTICATION_FAILURE, None),
     (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
 ])
-def test_parse_response(success: str, expected: str) -> None:
+def test_parse_response(success: str, expected: Optional[UserData]) -> None:
     """Ensure JSON response is parsed correctly."""
     response: Response = Response()
     response.status_code = HTTPStatus.OK
