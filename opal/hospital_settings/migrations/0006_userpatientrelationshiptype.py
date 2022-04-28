@@ -5,10 +5,10 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Add a user patient relationship type table."""
+    """Add a user patient relationship type model."""
 
     dependencies = [
-        ('hospital_settings', '0004_add_verbose_name_plural'),
+        ('hospital_settings', '0005_add_site_direction_url'),
     ]
 
     operations = [
