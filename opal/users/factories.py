@@ -2,8 +2,9 @@
 Module providing model factories for user app models.
 
 Inspired by:
-    * https://adamj.eu/tech/2014/09/03/factory-boy-fun/
-    * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
+
+  * https://adamj.eu/tech/2014/09/03/factory-boy-fun/
+  * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 from django.template.defaultfilters import slugify
 
@@ -13,7 +14,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-def slugify_user(user: models.User) -> str:
+def _slugify_user(user: models.User) -> str:
     """
     Slugify the user based on the user's first and last name.
 
@@ -35,7 +36,7 @@ class User(DjangoModelFactory):
 
     first_name = Faker('first_name')
     last_name = Faker('last_name')
-    username = lazy_attribute(slugify_user)
+    username = lazy_attribute(_slugify_user)
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
 
 
