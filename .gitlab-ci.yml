@@ -38,6 +38,7 @@ before_script:
 stages:
   - Static Analysis
   - Test
+  - Checks
   - Build
   - Documentation
 
@@ -110,6 +111,34 @@ coverage:
     when: always
     reports:
       cobertura: coverage.xml
+
+django:
+  stage: Checks
+  script:
+    # Run checks to be sure we follow all django's best practices:
+    - python manage.py check --fail-level WARNING
+    # Check that all migrations worked fine:
+    - python manage.py makemigrations --dry-run --check
+    # Check templates
+    - python manage.py validate_templates
+    # Check that translation files have been updated
+    - python manage.py makemessages --add-location file -l fr
+    - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
+    # Ensure that migrations are not auto-named
+    # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
+    # Return exit code of 1 if results found, 0 otherwise
+    # See: https://serverfault.com/q/225798
+    - ! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .
+
+safety:
+  stage: Checks
+  script:
+    # Checking if all the dependencies are secure and do not have any
+    # known vulnerabilities:
+    - pip install safety
+    - safety check --full-report
+  # allow failure for now until it is established
+  allow_failure: true
 
 # Try building the documentation site to ensure there are no issues
 build docs:
