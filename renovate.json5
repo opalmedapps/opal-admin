@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":rebaseStalePrs"
+  ],
+  "pip_requirements": {
+    "fileMatch": ["^requirements/.*\\.txt$"]
+  },
+  "assignees": ["mschoettle"],
+  "labels": ["dependencies"],
+  "packageRules": [
+    // Change commit type to build for Docker-related updates
+    {
+      "matchDatasources": ["docker"],
+      "semanticCommitType": "build"
+    },
+    // Group flake8-related updates
+    {
+      "matchPackagePatterns": ["flake8"],
+      "groupName": "flake8 packages"
+    },
+    // Combine mkdocs-material updates for Python and Docker
+    {
+      "matchPackagePatterns": ["mkdocs-material"],
+      "groupName": "mkdocs-material"
+    },
+    // Group all mypy stub updates together
+    {
+      "matchPackagePatterns": ["-stubs$", "^types-"],
+      "groupName": "mypy type stubs"
+    }
+    // Group all pytest package updates together
+    {
+      "matchPackagePatterns": ["pytest"],
+      "groupName": "pytest packages"
+    }
+  ]
+}
