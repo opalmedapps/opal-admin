@@ -21,6 +21,11 @@ repos:
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 -   repo: local
     hooks:
+    -   id: no-auto-migrations
+        name: no auto-named migrations
+        entry: please provide a descriptive name for migrations
+        language: fail
+        files: .*/migrations/.*_auto_.*\.py$
     -   id: flake8
         name: flake8
         description: wemake-python-styleguide++ enforcement
