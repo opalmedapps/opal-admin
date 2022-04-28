@@ -32,6 +32,17 @@ def test_user_type_constraint() -> None:
         user.save()
 
 
+def test_user_language_constraint() -> None:
+    """User cannot be saved when assigning an invalid language."""
+    user = UserModel.objects.create()
+    user.language = 'DE'
+
+    constraint_name = 'users_user_language_valid'
+    # see: https://github.com/pytest-dev/pytest-django/issues/1009
+    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+        user.save()
+
+
 def test_user_save_existing() -> None:
     """User type is not changed to the default type by save() when changing it on an existing user."""
     user = ClinicalStaff.objects.create()
