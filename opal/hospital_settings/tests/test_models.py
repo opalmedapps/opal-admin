@@ -1,11 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 
+from .. import constants
 from ..models import Institution, Site, UserPatientRelationshipType
 
 TEST_HOSPITAL = 'Test Hospital'
-TEST_REL_TYPE = 'Test User Patient Relationship Type'
 
 pytestmark = pytest.mark.django_db
 
@@ -307,7 +309,77 @@ def test_site_ordered() -> None:
     assert first.name == 'ATest Site'
 
 
-def test_user_patient_rel_type_string_method() -> None:
+def test_relationshiptype_str() -> None:
     """Ensure the `__str__` method is defined for the `UserPatientRelationshipType` model."""
-    user_patient_relationship_type = UserPatientRelationshipType(name=TEST_REL_TYPE)
-    assert str(user_patient_relationship_type) == TEST_REL_TYPE
+    user_patient_relationship_type = UserPatientRelationshipType(name='Test User Patient Relationship Type')
+    assert str(user_patient_relationship_type) == 'Test User Patient Relationship Type'
+
+
+# TODO: Replace with proper factory once factory-boy is added
+def _create_relationshiptype() -> UserPatientRelationshipType:
+    relationship_type = UserPatientRelationshipType()
+    relationship_type.name = 'Self'
+    relationship_type.description = 'The patient'
+    relationship_type.start_age = 0
+    relationship_type.end_age = 14
+    relationship_type.form_required = False
+
+    relationship_type.full_clean()
+
+    return relationship_type
+
+
+def test_relationshiptype_min_age_lowerbound() -> None:
+    """Ensure the minimum age lower bound is validated correctly."""
+    relationship_type = _create_relationshiptype()
+    relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE - 1
+
+    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE)
+
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.full_clean()
+
+    relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE
+    relationship_type.full_clean()
+
+
+def test_relationshiptype_min_age_upperbound() -> None:
+    """Ensure the minimum age upper bound is validated correctly."""
+    relationship_type = _create_relationshiptype()
+    relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE
+
+    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE - 1)
+
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.full_clean()
+
+    relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE - 1
+    relationship_type.full_clean()
+
+
+def test_relationshiptype_max_age_lowerbound() -> None:
+    """Ensure the maximum age lower bound is validated correctly."""
+    relationship_type = _create_relationshiptype()
+    relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE
+
+    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE + 1)
+
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.full_clean()
+
+    relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE + 1
+    relationship_type.full_clean()
+
+
+def test_relationshiptype_max_age_upperbound() -> None:
+    """Ensure the maximum age upper bound is validated correctly."""
+    relationship_type = _create_relationshiptype()
+    relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE + 1
+
+    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE)
+
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.full_clean()
+
+    relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE
+    relationship_type.full_clean()

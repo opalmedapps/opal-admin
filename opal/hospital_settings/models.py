@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .constants import MAX_AGE, MAX_LENGTH_DESCRIPTION, MAX_LENGTH_NAME, MIN_AGE
+from . import constants
 
 
 class Location(models.Model):
@@ -54,38 +54,32 @@ class Site(Location):
 
 
 class UserPatientRelationshipType(models.Model):
-    """List of user Patient Relationship Types. All possible relationships with patients are described self included."""
+    """A type of relationship between a user and patient."""
 
-    name = models.CharField(
-        _('Name'),
-        max_length=MAX_LENGTH_NAME,
-    )
-    description = models.CharField(
-        _('Description'),
-        max_length=MAX_LENGTH_DESCRIPTION,
-    )
+    name = models.CharField(_('Name'), max_length=25)
+    description = models.CharField(_('Description'), max_length=200)
     start_age = models.PositiveIntegerField(
         _('Start age'),
-        help_text=_('Age the relationship starts.'),
+        help_text=_('Minimum age the relationship is allowed to start.'),
         validators=[
-            MinValueValidator(MIN_AGE),
-            MaxValueValidator(MAX_AGE),
+            MinValueValidator(constants.RELATIONSHIP_MIN_AGE),
+            MaxValueValidator(constants.RELATIONSHIP_MAX_AGE - 1),
         ])
     end_age = models.PositiveIntegerField(
         _('End age'),
-        help_text=_('Age the relationship ends.'),
+        help_text=_('Age at which the relationship ends automatically.'),
         null=True,
         blank=True,
         validators=[
-            MinValueValidator(MIN_AGE),
-            MaxValueValidator(MAX_AGE),
+            MinValueValidator(constants.RELATIONSHIP_MIN_AGE + 1),
+            MaxValueValidator(constants.RELATIONSHIP_MAX_AGE),
         ])
     form_required = models.BooleanField(_('Form required'))
 
     class Meta:
         ordering = ['name']
-        verbose_name = _('Caregiver Relationship')
-        verbose_name_plural = _('Caregiver Relationships')
+        verbose_name = _('Caregiver Relationship Type')
+        verbose_name_plural = _('Caregiver Relationship Types')
 
     def __str__(self) -> str:
         """Return the string representation of the User Patient Relationship Type.
