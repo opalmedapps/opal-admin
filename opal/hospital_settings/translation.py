@@ -1,7 +1,7 @@
 """This module provides translation options for hospital-specific settings models."""
 from modeltranslation.translator import TranslationOptions, register
 
-from .models import Institution, Site, UserPatientRelationshipType
+from .models import Institution, RelationshipType, Site
 
 
 @register(Institution)
@@ -20,12 +20,12 @@ class SiteTranslationOptions(TranslationOptions):
     required_languages = ('en', 'fr')
 
 
-@register(UserPatientRelationshipType)
-class UserPatientRelationshipTypeTranslationOptions(TranslationOptions):
+@register(RelationshipType)
+class RelationshipTypeTranslationOptions(TranslationOptions):
     """
-    This class provides translation options for `UserPatientRelationshipType`.
+    This class provides translation options for `RelationshipType`.
 
-    See [UserPatientRelationshipType][opal.hospital_settings.models.UserPatientRelationshipType].
+    See [RelationshipType][opal.hospital_settings.models.RelationshipType].
     """
 
     fields = ('name', 'description')

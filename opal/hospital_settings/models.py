@@ -53,8 +53,8 @@ class Site(Location):
         verbose_name_plural = _('Sites')
 
 
-class UserPatientRelationshipType(models.Model):
-    """A type of relationship between a user and patient."""
+class RelationshipType(models.Model):
+    """A type of relationship between a user (aka caregiver) and patient."""
 
     name = models.CharField(_('Name'), max_length=25)
     description = models.CharField(_('Description'), max_length=200)

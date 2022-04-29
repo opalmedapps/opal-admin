@@ -3,7 +3,7 @@ from django.contrib import admin
 
 from modeltranslation.admin import TranslationAdmin
 
-from .models import Institution, Site
+from .models import Institution, RelationshipType, Site
 
 
 # need to use modeltranslation's admin
@@ -20,5 +20,12 @@ class SiteAdmin(TranslationAdmin):
     pass  # noqa: WPS420, WPS604
 
 
+class RelationshipTypeAdmin(TranslationAdmin):
+    """This class provides admin options for `RelationshipType`."""
+
+    pass  # noqa: WPS420, WPS604
+
+
 admin.site.register(Institution, InstitutionAdmin)
 admin.site.register(Site, SiteAdmin)
+admin.site.register(RelationshipType, RelationshipTypeAdmin)

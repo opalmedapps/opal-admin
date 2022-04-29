@@ -5,7 +5,7 @@ import pytest
 from pytest_django.asserts import assertRaisesMessage
 
 from .. import constants
-from ..models import Institution, Site, UserPatientRelationshipType
+from ..models import Institution, RelationshipType, Site
 
 TEST_HOSPITAL = 'Test Hospital'
 
@@ -310,14 +310,14 @@ def test_site_ordered() -> None:
 
 
 def test_relationshiptype_str() -> None:
-    """Ensure the `__str__` method is defined for the `UserPatientRelationshipType` model."""
-    user_patient_relationship_type = UserPatientRelationshipType(name='Test User Patient Relationship Type')
-    assert str(user_patient_relationship_type) == 'Test User Patient Relationship Type'
+    """Ensure the `__str__` method is defined for the `RelationshipType` model."""
+    relationship_type = RelationshipType(name='Test User Patient Relationship Type')
+    assert str(relationship_type) == 'Test User Patient Relationship Type'
 
 
 # TODO: Replace with proper factory once factory-boy is added
-def _create_relationshiptype() -> UserPatientRelationshipType:
-    relationship_type = UserPatientRelationshipType()
+def _create_relationshiptype() -> RelationshipType:
+    relationship_type = RelationshipType()
     relationship_type.name = 'Self'
     relationship_type.description = 'The patient'
     relationship_type.start_age = 0
