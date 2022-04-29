@@ -115,8 +115,8 @@ coverage:
 django:
   stage: Checks
   script:
-    # install dependencies for makemessages
-    - apt update && apt-get install -y gettext
+    # install dependencies for makemessages and git diff
+    - apt update && apt-get install -y gettext git
     # Change DB to use the test DB since the MariaDB user has access to it
     - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=test_$DB_NAME/" .env
     # Run checks to be sure we follow all django's best practices:
