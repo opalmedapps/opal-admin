@@ -56,17 +56,24 @@ class Site(Location):
 class RelationshipType(models.Model):
     """A type of relationship between a user (aka caregiver) and patient."""
 
-    name = models.CharField(_('Name'), max_length=25)
-    description = models.CharField(_('Description'), max_length=200)
+    name = models.CharField(
+        verbose_name=_('Name'),
+        max_length=25,
+        unique=True,
+    )
+    description = models.CharField(
+        verbose_name=_('Description'),
+        max_length=200,
+    )
     start_age = models.PositiveIntegerField(
-        _('Start age'),
+        verbose_name=_('Start age'),
         help_text=_('Minimum age the relationship is allowed to start.'),
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE - 1),
         ])
     end_age = models.PositiveIntegerField(
-        _('End age'),
+        verbose_name=_('End age'),
         help_text=_('Age at which the relationship ends automatically.'),
         null=True,
         blank=True,
@@ -75,7 +82,7 @@ class RelationshipType(models.Model):
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE),
         ])
     form_required = models.BooleanField(
-        _('Form required'),
+        verbose_name=_('Form required'),
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )

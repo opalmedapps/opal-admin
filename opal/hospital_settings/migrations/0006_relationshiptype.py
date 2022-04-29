@@ -16,9 +16,9 @@ class Migration(migrations.Migration):
             name='RelationshipType',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=25, verbose_name='Name')),
-                ('name_en', models.CharField(max_length=25, null=True, verbose_name='Name')),
-                ('name_fr', models.CharField(max_length=25, null=True, verbose_name='Name')),
+                ('name', models.CharField(max_length=25, unique=True, verbose_name='Name')),
+                ('name_en', models.CharField(max_length=25, null=True, unique=True, verbose_name='Name')),
+                ('name_fr', models.CharField(max_length=25, null=True, unique=True, verbose_name='Name')),
                 ('description', models.CharField(max_length=200, verbose_name='Description')),
                 ('description_en', models.CharField(max_length=200, null=True, verbose_name='Description')),
                 ('description_fr', models.CharField(max_length=200, null=True, verbose_name='Description')),

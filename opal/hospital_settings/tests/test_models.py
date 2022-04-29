@@ -1,10 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 
-from .. import constants
+from .. import constants, factories
 from ..models import Institution, RelationshipType, Site
 
 TEST_HOSPITAL = 'Test Hospital'
@@ -315,23 +315,17 @@ def test_relationshiptype_str() -> None:
     assert str(relationship_type) == 'Test User Patient Relationship Type'
 
 
-# TODO: Replace with proper factory once factory-boy is added
-def _create_relationshiptype() -> RelationshipType:
-    relationship_type = RelationshipType()
-    relationship_type.name = 'Self'
-    relationship_type.description = 'The patient'
-    relationship_type.start_age = 0
-    relationship_type.end_age = 14
-    relationship_type.form_required = False
+def test_relationshiptype_duplicate_names() -> None:
+    """Ensure that the relationship type name is unique."""
+    factories.RelationshipType(name='Self')
 
-    relationship_type.full_clean()
-
-    return relationship_type
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):  # type: ignore[arg-type]
+        factories.RelationshipType(name='Self')
 
 
 def test_relationshiptype_min_age_lowerbound() -> None:
     """Ensure the minimum age lower bound is validated correctly."""
-    relationship_type = _create_relationshiptype()
+    relationship_type = factories.RelationshipType()
     relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE - 1
 
     message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE)
@@ -345,7 +339,7 @@ def test_relationshiptype_min_age_lowerbound() -> None:
 
 def test_relationshiptype_min_age_upperbound() -> None:
     """Ensure the minimum age upper bound is validated correctly."""
-    relationship_type = _create_relationshiptype()
+    relationship_type = factories.RelationshipType()
     relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE
 
     message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE - 1)
@@ -359,7 +353,7 @@ def test_relationshiptype_min_age_upperbound() -> None:
 
 def test_relationshiptype_max_age_lowerbound() -> None:
     """Ensure the maximum age lower bound is validated correctly."""
-    relationship_type = _create_relationshiptype()
+    relationship_type = factories.RelationshipType()
     relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE
 
     message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE + 1)
@@ -373,7 +367,7 @@ def test_relationshiptype_max_age_lowerbound() -> None:
 
 def test_relationshiptype_max_age_upperbound() -> None:
     """Ensure the maximum age upper bound is validated correctly."""
-    relationship_type = _create_relationshiptype()
+    relationship_type = factories.RelationshipType()
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE + 1
 
     message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE)
