@@ -74,7 +74,11 @@ class RelationshipType(models.Model):
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE + 1),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE),
         ])
-    form_required = models.BooleanField(_('Form required'))
+    form_required = models.BooleanField(
+        _('Form required'),
+        default=True,
+        help_text=_('Whether the hospital form is required to be completed by the caregiver'),
+    )
 
     class Meta:
         ordering = ['name']

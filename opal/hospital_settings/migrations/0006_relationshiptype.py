@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('description_fr', models.CharField(max_length=200, null=True, verbose_name='Description')),
                 ('start_age', models.PositiveIntegerField(help_text='Minimum age the relationship is allowed to start.', validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(149)], verbose_name='Start age')),
                 ('end_age', models.PositiveIntegerField(blank=True, help_text='Age at which the relationship ends automatically.', null=True, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(150)], verbose_name='End age')),
-                ('form_required', models.BooleanField(verbose_name='Form required')),
+                ('form_required', models.BooleanField(default=True, help_text='Whether the hospital form is required to be completed by the caregiver', verbose_name='Form required')),
             ],
             options={
                 'verbose_name': 'Caregiver Relationship Type',

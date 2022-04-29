@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-14 13:25+0000\n"
+"POT-Creation-Date: 2022-04-29 11:09-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgstr ""
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
-#: opal/hospital_settings/models.py:13 opal/hospital_settings/models.py:60
+#: opal/hospital_settings/models.py:13 opal/hospital_settings/models.py:59
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:23
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html:27
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html:23
@@ -72,37 +72,41 @@ msgstr "Site"
 msgid "Sites"
 msgstr "Sites"
 
-#: opal/hospital_settings/models.py:64
+#: opal/hospital_settings/models.py:60
 msgid "Description"
 msgstr "Description"
 
-#: opal/hospital_settings/models.py:68
+#: opal/hospital_settings/models.py:62
 msgid "Start age"
 msgstr "Âge de début"
 
-#: opal/hospital_settings/models.py:69
-msgid "Age the relationship starts."
-msgstr "L'âge auquel la relation commence."
+#: opal/hospital_settings/models.py:63
+msgid "Minimum age the relationship is allowed to start."
+msgstr "L'âge auquel la relation peut commencer."
 
-#: opal/hospital_settings/models.py:75
+#: opal/hospital_settings/models.py:69
 msgid "End age"
 msgstr "Âge de fin"
 
-#: opal/hospital_settings/models.py:76
-msgid "Age the relationship ends."
+#: opal/hospital_settings/models.py:70
+msgid "Age at which the relationship ends automatically."
 msgstr "L'âge auquel la relation se termine."
 
-#: opal/hospital_settings/models.py:83
+#: opal/hospital_settings/models.py:78
 msgid "Form required"
 msgstr "Formulaire obligatoire"
 
-#: opal/hospital_settings/models.py:87
-msgid "Caregiver Relationship"
-msgstr "Relation avec la personne aidante"
+#: opal/hospital_settings/models.py:80
+msgid "Whether the hospital form is required to be completed by the caregiver"
+msgstr "Si le formulaire hospitalier doit être rempli par la aidante"
 
-#: opal/hospital_settings/models.py:88
-msgid "Caregiver Relationships"
-msgstr "Relations avec la personne aidante"
+#: opal/hospital_settings/models.py:85
+msgid "Caregiver Relationship Type"
+msgstr "Type de relation avec la personne aidante"
+
+#: opal/hospital_settings/models.py:86
+msgid "Caregiver Relationship Types"
+msgstr "Types de relations avec la personne aidante"
 
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html:5
 msgid "Delete Institution"

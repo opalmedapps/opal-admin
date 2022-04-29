@@ -29,3 +29,4 @@ class RelationshipTypeTranslationOptions(TranslationOptions):
     """
 
     fields = ('name', 'description')
+    required_languages = ('en', 'fr')
