@@ -14,7 +14,7 @@ def test_useradmin_extra_fieldsets() -> None:
 
     assert 'Extra' in last_fieldset
 
-    expected_fields = ('type', 'language')
+    expected_fields = ('type', 'language', 'phone_number')
     actual_fields = last_fieldset[1]['fields']
 
     assert actual_fields == expected_fields

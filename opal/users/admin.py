@@ -17,7 +17,7 @@ class UserAdmin(DjangoUserAdmin):
 
         # add our additional custom fields to the default fieldset
         new_fieldsets = list(self.fieldsets)
-        new_fieldsets.append((_('Extra'), {'fields': ('type', 'language')}))
+        new_fieldsets.append((_('Extra'), {'fields': ('type', 'language', 'phone_number')}))
 
         self.fieldsets = tuple(new_fieldsets)
 

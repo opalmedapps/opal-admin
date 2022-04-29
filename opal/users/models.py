@@ -7,6 +7,7 @@ For more information see the [Django documentation on customizing the user model
 from typing import Any
 
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -35,6 +36,14 @@ class User(AbstractUser):
         max_length=2,
         choices=Language.choices,
         default=Language.ENGLISH,
+    )
+    phone_number = models.CharField(
+        verbose_name=_('Phone Number'),
+        max_length=16,
+        blank=True,
+        # Based on a suggestion from here: https://www.twilio.com/docs/glossary/what-e164
+        validators=[RegexValidator(r'^\+[1-9]\d{6,14}$')],
+        help_text=_('Write in E.164 format (+[countryCode][phoneNumber]), for example +15141234567'),
     )
     type = models.CharField(  # noqa: A003
         verbose_name=_('Type'),
