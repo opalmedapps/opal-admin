@@ -72,9 +72,8 @@ plugins:
             - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opal.settings")
             - import django
             - django.setup()
-            # mock pytkdocs to support Django REST framework
-            # see: https://github.com/mkdocstrings/mkdocstrings/issues/141
-            - import docs.mock_drf
+            # mock pytkdocs to workaround Django and Django REST framework issues
+            - import docs.mock_django
           import:
             # import Sphinx objects inventories to support referencing other elements in docs
             - https://docs.python.org/3.9/objects.inv
