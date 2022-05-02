@@ -1,6 +1,7 @@
 from typing import Type
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 import pytest
@@ -61,6 +62,52 @@ def test_user_objects() -> None:
     factories.Caregiver()
 
     assert UserModel.objects.count() == 2
+
+
+def test_user_phone_number_optional() -> None:
+    """User phone number is optional and if not set is stored as an empty string."""
+    user = factories.User()
+    user.full_clean()
+
+    assert user.phone_number == ''
+
+
+@pytest.mark.parametrize('phone_number', [
+    # min number of digits
+    '+1514123',
+    # max number of digits
+    '+151412345678901',
+    # international number
+    '+49745812345',
+])
+def test_user_phone_number_regex(phone_number: str) -> None:
+    """Phone number regex handles E.164 format."""
+    user = factories.User()
+    user.full_clean()
+
+    user.phone_number = phone_number
+    user.full_clean()
+
+
+@pytest.mark.parametrize('phone_number', [
+    # not enough number of digits
+    '+151412',
+    # too many digits
+    '+1514123456789012',
+    # needs international country code prefix
+    '5141234567',
+    # country codes don't start with a zero
+    '+01234567',
+])
+def test_user_phone_number_regex_invalid(phone_number: str) -> None:
+    """Phone number regex excludes invalid cases."""
+    user = factories.User()
+    user.full_clean()
+
+    user.phone_number = phone_number
+
+    with assertRaisesMessage(ValidationError, 'phone_number'):  # type: ignore[arg-type]
+        user.full_clean()
 
 
 def test_caregiver_correct_type() -> None:

@@ -6,9 +6,10 @@ Inspired by:
   * https://adamj.eu/tech/2014/09/03/factory-boy-fun/
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
+from django.contrib.auth.hashers import make_password
 from django.template.defaultfilters import slugify
 
-from factory import Faker, lazy_attribute
+from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from . import models
@@ -37,6 +38,8 @@ class User(DjangoModelFactory):
     first_name = Faker('first_name')
     last_name = Faker('last_name')
     username = lazy_attribute(_slugify_user)
+    # produce a different hash for the same password for each user
+    password = LazyFunction(lambda: make_password('thisisatest'))
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
 
 
