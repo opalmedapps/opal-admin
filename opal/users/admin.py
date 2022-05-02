@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Caregiver, ClinicalStaff, User
+from .models import Caregiver, CaregiverProfile, ClinicalStaff, User
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -25,4 +25,5 @@ class UserAdmin(DjangoUserAdmin):
 # use Django's default UserAdmin for now (until the User is actually customized)
 admin.site.register(User, UserAdmin)
 admin.site.register(Caregiver, UserAdmin)
+admin.site.register(CaregiverProfile, admin.ModelAdmin)
 admin.site.register(ClinicalStaff, UserAdmin)

@@ -7,7 +7,7 @@ For more information see the [Django documentation on customizing the user model
 from typing import Any
 
 from django.contrib.auth.models import AbstractUser, UserManager
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -149,3 +149,33 @@ class Caregiver(User):
         proxy = True
         verbose_name = _('Caregiver')
         verbose_name_plural = _('Caregivers')
+
+
+class CaregiverProfile(models.Model):
+    """Profile for caregiver users."""
+
+    user = models.OneToOneField(
+        verbose_name=_('User'),
+        to=User,
+        on_delete=models.PROTECT,
+        limit_choices_to={'type': UserType.CAREGIVER},
+    )
+    legacy_id = models.PositiveIntegerField(
+        verbose_name=_('Legacy ID'),
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _('Caregiver Profile')
+        verbose_name_plural = _('Caregiver Profiles')
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the associated user.
+
+        Returns:
+            the name of the associated user
+        """
+        return '{first} {last}'.format(first=self.user.first_name, last=self.user.last_name)
