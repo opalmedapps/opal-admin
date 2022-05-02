@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Enforce authenticated user for all URLs (!72)
 * feat: Add direction url field for sites (!73)
 * feat: Add user patient relationship type model (!84)
+* Add user types (!91)
 
 ### Documentation
 
