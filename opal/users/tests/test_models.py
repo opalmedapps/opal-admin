@@ -114,6 +114,42 @@ def test_user_phone_number_regex_invalid(phone_number: str) -> None:
         user.full_clean()
 
 
+@pytest.mark.parametrize('phone_number', [
+    # min number of digits
+    '+1514123x1',
+    # max number of digits
+    '+151412345678901x12345',
+    # international number
+    '+49745812345x0',
+    # extension with leading zeros
+    '+15141234567x00010',
+])
+def test_user_phone_number_ext_regex(phone_number: str) -> None:
+    """Phone number regex handles extension."""
+    user = factories.User()
+
+    user.phone_number = phone_number
+    user.full_clean()
+
+
+@pytest.mark.parametrize('phone_number', [
+    # no extension digits
+    '+1514123x',
+    # too many extension digits
+    '+1514123x123456',
+    # invalid separator
+    '+49745812345ext0',
+])
+def test_user_phone_number_ext_regex_invalid(phone_number: str) -> None:
+    """Phone number regex excludes invalid cases for the extension."""
+    user = factories.User()
+
+    user.phone_number = phone_number
+
+    with assertRaisesMessage(ValidationError, 'phone_number'):  # type: ignore[arg-type]
+        user.full_clean()
+
+
 def test_caregiver_correct_type() -> None:
     """Caregiver has the correct user type set."""
     user = Caregiver.objects.create()

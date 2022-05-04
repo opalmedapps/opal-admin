@@ -47,11 +47,11 @@ class User(AbstractUser):
     )
     phone_number = models.CharField(
         verbose_name=_('Phone Number'),
-        max_length=16,
+        max_length=22,
         blank=True,
         # Based on a suggestion from here: https://www.twilio.com/docs/glossary/what-e164
-        validators=[RegexValidator(r'^\+[1-9]\d{6,14}$')],
-        help_text=_('Write in E.164 format (+[countryCode][phoneNumber]), for example +15141234567'),
+        validators=[RegexValidator(r'^\+[1-9]\d{6,14}(x\d{1,5})?$')],
+        help_text=_('Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"'),
     )
     type = models.CharField(  # noqa: A003
         verbose_name=_('Type'),
