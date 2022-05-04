@@ -3,6 +3,14 @@ Module providing models for the users app.
 
 Provides a custom user model based on Django's [django.contrib.auth.models.AbstractUser][].
 For more information see the [Django documentation on customizing the user model](https://docs.djangoproject.com/en/dev/topics/auth/customizing/#using-a-custom-user-model-when-starting-a-project)
+
+Contains user types and a proxy model for each user type.
+To facilitate dealing with user types, each proxy model has a dedicated model manager.
+
+This is based on Two Scoops of Django, Section 22.3.
+
+If a user type requires additional fields that are not common to all users,
+a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """  # noqa: E501
 from typing import Any
 
