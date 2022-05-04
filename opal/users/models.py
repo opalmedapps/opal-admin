@@ -35,7 +35,7 @@ class User(AbstractUser):
         verbose_name=_('Language'),
         max_length=2,
         choices=Language.choices,
-        default=Language.ENGLISH,
+        default=Language.FRENCH,
     )
     phone_number = models.CharField(
         verbose_name=_('Phone Number'),
@@ -112,7 +112,7 @@ class ClinicalStaff(User):
 
     class Meta:
         proxy = True
-        verbose_name = _('Clinical Staff')
+        verbose_name = _('Clinical Staff Member')
         verbose_name_plural = _('Clinical Staff')
 
 

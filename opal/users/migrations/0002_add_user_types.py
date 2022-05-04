@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             fields=[
             ],
             options={
-                'verbose_name': 'Clinical Staff',
+                'verbose_name': 'Clinical Staff Member',
                 'verbose_name_plural': 'Clinical Staff',
                 'proxy': True,
                 'indexes': [],

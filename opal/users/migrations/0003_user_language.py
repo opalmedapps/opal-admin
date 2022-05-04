@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='language',
-            field=models.CharField(choices=[('EN', 'English'), ('FR', 'French')], default='EN', max_length=2, verbose_name='Language'),
+            field=models.CharField(choices=[('EN', 'English'), ('FR', 'French')], default='FR', max_length=2, verbose_name='Language'),
         ),
         migrations.AddConstraint(
             model_name='user',
