@@ -57,6 +57,12 @@ def test_user_save_existing() -> None:
     assert user.type == UserType.CAREGIVER
 
 
+def test_user_factory() -> None:
+    """The factory for `User` creates a valid user instance."""
+    user = factories.User()
+    user.full_clean()
+
+
 def test_user_objects() -> None:
     """All users are returned by the user manager."""
     factories.User()
@@ -68,7 +74,6 @@ def test_user_objects() -> None:
 def test_user_phone_number_optional() -> None:
     """User phone number is optional and if not set is stored as an empty string."""
     user = factories.User()
-    user.full_clean()
 
     assert user.phone_number == ''
 
@@ -84,7 +89,6 @@ def test_user_phone_number_optional() -> None:
 def test_user_phone_number_regex(phone_number: str) -> None:
     """Phone number regex handles E.164 format."""
     user = factories.User()
-    user.full_clean()
 
     user.phone_number = phone_number
     user.full_clean()
@@ -103,7 +107,6 @@ def test_user_phone_number_regex(phone_number: str) -> None:
 def test_user_phone_number_regex_invalid(phone_number: str) -> None:
     """Phone number regex excludes invalid cases."""
     user = factories.User()
-    user.full_clean()
 
     user.phone_number = phone_number
 
@@ -117,6 +120,13 @@ def test_caregiver_correct_type() -> None:
 
     assert user.type == Caregiver.base_type
     assert user.type == UserType.CAREGIVER
+
+
+def test_caregiver_factory() -> None:
+    """The factory for `Caregiver` creates a valid instance."""
+    caregiver = factories.Caregiver()
+
+    caregiver.full_clean()
 
 
 def test_caregiver_objects() -> None:
