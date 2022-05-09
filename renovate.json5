@@ -29,11 +29,16 @@
     {
       "matchPackagePatterns": ["-stubs$", "^types-"],
       "groupName": "mypy type stubs"
-    }
+    },
     // Group all pytest package updates together
     {
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
-    }
+    },
+    // Allow to receive patch updates for Pythin while waiting with upgrading to the next minor version
+    {
+      "matchPackagePatterns": ["python"],
+      "separateMinorPatch": true
+    },
   ]
 }
