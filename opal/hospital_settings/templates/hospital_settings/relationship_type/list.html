@@ -1,0 +1,88 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "Relationship Types" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+
+        {% comment %} Default box {% endcomment %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                              <a class="btn btn-primary" href="{% url 'hospital-settings:relationshiptype-create' %}">
+                                <i class="fas fa-plus"></i>
+                                Add Relationship Type</a>
+                            </div>
+                            <table id="relationshipTypesTable" class="table table-striped relationshiptype">
+                                <thead>
+                                <tr>
+                                    <th>
+                                      {% translate "Name" %}
+                                    </th>
+                                    <th>
+                                      {% translate "Description" %}
+                                    </th>
+                                    <th>
+                                      {% translate "Start age" %}
+                                    </th>
+                                    <th>
+                                      {% translate "End age" %}
+                                    </th>
+                                    <th>
+                                      {% translate "Form required" %}
+                                    </th>
+                                    <th style="width: 33%">
+                                      {% translate "Actions" %}
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                  {% for type in object_list %}
+                                    <tr>
+                                      <td>
+                                        {{ type.name }}
+                                      </td>
+                                      <td>
+                                        {{ type.description }}
+                                      </td>
+                                      <td>
+                                        {{ type.start_age }}
+                                      </td>
+                                      <td>
+                                        {{ type.end_age|default_if_none:"Death" }}
+                                      </td>
+                                      <td>
+                                        {% if type.form_required %}{% translate "Yes" %}{% else %}{% translate "No" %}{% endif %}
+                                      </td>
+                                      <td class="project-actions text-right">
+                                        <div class="btn-toolbar" role="group">
+                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'hospital-settings:relationshiptype-update' type.id %}">
+                                              <i class="fas fa-pencil-alt"></i>
+                                              {% translate "Edit" %}
+                                          </a>
+                                          <a class="btn btn-danger btn-sm mr-2" href="{% url 'hospital-settings:relationshiptype-delete' type.id %}">
+                                            {% translate "Delete" %}
+                                          </a>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% comment %} /.card-body {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %} /.card {% endcomment %}
+
+    </section>
+    {% comment %} /.content {% endcomment %}
+{% endblock %}
