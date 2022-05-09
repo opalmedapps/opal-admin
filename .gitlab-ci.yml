@@ -1,4 +1,4 @@
-image: python:3.9.10-slim-buster
+image: python:3.9.10-slim-bullseye
 
 services:
   - mariadb:10.7.1-focal
@@ -110,7 +110,9 @@ coverage:
   artifacts:
     when: always
     reports:
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 django:
   stage: Checks
