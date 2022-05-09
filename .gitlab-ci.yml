@@ -26,7 +26,7 @@ before_script:
   - source .venv/bin/activate || true
   # set up env file for DB service
   # use sample env file
-  - mv .env.sample .env
+  - cp .env.sample .env
   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
@@ -124,8 +124,8 @@ django:
     # Run checks to be sure we follow all django's best practices:
     - python manage.py check --fail-level WARNING
     # Check that there are no model changes for which there is no migration
-    # TODO: remove '|| true' once easyaudit is updated
-    - python manage.py makemigrations --dry-run --check || true
+    # TODO: remove || true and pipe with grep once easyaudit is updated
+    - (python manage.py makemigrations --dry-run --check || true) | grep -q easyaudit
     # Check templates
     - python manage.py validate_templates
     # Check that translation files have been updated
@@ -134,13 +134,13 @@ django:
     # Ensure that migrations are not auto-named
     # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
     # Return exit code of 1 if results found, 0 otherwise
-    # See: https://serverfault.com/q/225798
-    - ! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .
+    # See: https://serverfault.com/q/225798 and https://stackoverflow.com/a/53753605
+    - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
   needs:
     - job: setup
   # allow failure until new version of easyaudit is released
   # easyaudit causes additional migrations to be created
-  allow_failure: true
+  # allow_failure: true
 
 safety:
   stage: Checks
