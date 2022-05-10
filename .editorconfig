@@ -24,7 +24,7 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 
-[*.{html,css,scss,json,yml}]
+[*.{html,css,scss,json,yml,yaml}]
 indent_style = space
 indent_size = 2
 
