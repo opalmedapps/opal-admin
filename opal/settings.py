@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    'opal.core',
     'opal.hospital_settings',
     'opal.users',
 ]
