@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-14 13:25+0000\n"
+"POT-Creation-Date: 2022-05-02 13:45-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/settings.py:221
+#: opal/settings.py:221 opal/users/models.py:18
 msgid "English"
 msgstr "Anglais"
 
-#: opal/settings.py:222
+#: opal/settings.py:222 opal/users/models.py:19
 msgid "French"
 msgstr "Français"
 
@@ -81,7 +81,3 @@ msgstr "Administration d'Opal"
 #: opal/urls.py:54
 msgid "Opal Backend Admin"
 msgstr "Administrateur principal d'Opal"
-
-#: opal/users/apps.py:11
-msgid "Users"
-msgstr "Utilisateur"
