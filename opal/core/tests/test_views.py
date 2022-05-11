@@ -64,8 +64,8 @@ def test_loginview_error(client: Client, settings: SettingsWrapper) -> None:
     """Ensure that submitting the login form with incorrect credentials fails authenticating the user."""
     # assume that the FedAuthBackend is enabled and remove it (to avoid making outgoing requests during tests)
     # if it is not enabled in the future, remove these lines
-    assert 'opal.auth.FedAuthBackend' in settings.AUTHENTICATION_BACKENDS
-    settings.AUTHENTICATION_BACKENDS.remove('opal.auth.FedAuthBackend')
+    assert 'opal.core.auth.FedAuthBackend' in settings.AUTHENTICATION_BACKENDS
+    settings.AUTHENTICATION_BACKENDS.remove('opal.core.auth.FedAuthBackend')
 
     credentials = {
         'username': 'testuser',

@@ -77,7 +77,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'opal.middleware.LoginRequiredMiddleware',
+    'opal.core.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
@@ -103,7 +103,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.static',
-                'opal.context_processors.opal_admin',
+                'opal.core.context_processors.opal_admin',
             ],
         },
     },
@@ -146,7 +146,7 @@ AUTH_EXEMPT_ROUTES = env.tuple('AUTH_EXEMPT_ROUTES')
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'opal.auth.FedAuthBackend',
+    'opal.core.auth.FedAuthBackend',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 # also: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model
@@ -305,7 +305,7 @@ REST_FRAMEWORK = {
     ],
     # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [
-        'opal.utils.drf_permissions.CustomDjangoModelPermissions',
+        'opal.core.drf_permissions.CustomDjangoModelPermissions',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,

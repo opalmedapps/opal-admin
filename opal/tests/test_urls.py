@@ -9,7 +9,7 @@ import pytest
 from pytest_django.fixtures import SettingsWrapper
 from rest_framework.routers import APIRootView
 
-from ..views import LoginView
+from opal.core.views import LoginView
 
 
 def assert_path_uses_view(path: str, view_class: Type) -> None:
