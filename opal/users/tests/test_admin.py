@@ -1,0 +1,20 @@
+from django.contrib.admin.sites import AdminSite
+
+from ..admin import UserAdmin
+from ..models import User
+
+site = AdminSite()
+
+
+def test_useradmin_extra_fieldsets() -> None:
+    """The custom user model fields are added to the UserAdmin's fieldsets."""
+    admin = UserAdmin(User, site)
+
+    last_fieldset = admin.fieldsets[-1]
+
+    assert 'Extra' in last_fieldset
+
+    expected_fields = ('type', 'language', 'phone_number')
+    actual_fields = last_fieldset[1]['fields']
+
+    assert actual_fields == expected_fields
