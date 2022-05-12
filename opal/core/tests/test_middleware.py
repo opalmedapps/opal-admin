@@ -8,7 +8,7 @@ from pytest_django.asserts import assertRedirects
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 
-from opal.middleware import LoginRequiredMiddleware
+from ..middleware import LoginRequiredMiddleware
 
 pytestmark = pytest.mark.django_db
 
