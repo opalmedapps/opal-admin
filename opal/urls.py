@@ -24,7 +24,7 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from .views import LoginView
+from .core.views import LoginView
 
 urlpatterns = [
     # REST API authentication

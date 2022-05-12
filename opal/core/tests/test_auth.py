@@ -139,7 +139,7 @@ def test_authenticate_missing_params() -> None:
 def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
     """Ensure authenticate returns `None` for unsuccessful authentication attempts."""
     # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
     assert auth_backend.authenticate(None, 'testuser', 'testpass') is None
@@ -149,7 +149,7 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
 def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
     """Ensure a user instance is created if the user authenticates for the first time."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
 
     user = auth_backend.authenticate(None, 'testuser', 'testpass')
@@ -167,7 +167,7 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
 def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
     """Ensure the existing user instance is returned if the user already exists."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
 
     user = UserModel.objects.create(username='testuser')
