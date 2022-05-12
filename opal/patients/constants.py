@@ -1,4 +1,4 @@
-"""List of constants for Hospital Settings."""
+"""List of constants for the patients app."""
 from typing import Final
 
 #: Maximum possible patient age for a relationship.
