@@ -62,6 +62,7 @@ LOCAL_APPS = [
     'opal.hospital_settings',
     'opal.users',
     'opal.caregivers',
+    'opal.patients',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
