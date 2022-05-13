@@ -27,7 +27,7 @@ To specify a translation string in a template code, include **{% load i18n %}** 
 To create or update a message file that keeps all the translations, run this command:
 
 ```sh
-django-admin makemessages -l fr
+django-admin makemessages --add-location file -l fr
 ```
 
 where **fr** is the locale name for the message file you want to create.
