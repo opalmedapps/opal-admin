@@ -1,5 +1,8 @@
 line-length: false
 
+ul-indent:
+  indent: 4
+
 # Allow bare URLs since we use magiclink to convert bare URLs automatically to links
 MD034: false
 
