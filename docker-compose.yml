@@ -21,6 +21,7 @@ services:
     environment:
       # overwrite for container to allow both container and local venv
       - DATABASE_HOST=db
+      - LEGACY_DATABASE_HOST=host.docker.internal
     volumes:
       - .:/app
     ports:

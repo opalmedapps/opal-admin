@@ -139,6 +139,9 @@ DATABASES = {
     },
 }
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
+DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
+
 # Default primary key field
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 # See also: https://docs.djangoproject.com/en/dev/releases/dev/#customizing-type-of-auto-created-primary-keys
