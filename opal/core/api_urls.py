@@ -13,8 +13,8 @@ from opal.hospital_settings.api import viewsets as settings_views
 # add trailing_slash=False if the trailing slash should not be enforced
 # see: https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 router = DefaultRouter()
-router.register('institutions', settings_views.InstitutionViewSet, basename='institution')
-router.register('sites', settings_views.SiteViewSet, basename='site')
+router.register('institutions', settings_views.InstitutionViewSet, basename='institutions')
+router.register('sites', settings_views.SiteViewSet, basename='sites')
 
 app_name = 'core'
 
