@@ -1,6 +1,6 @@
 from typing import Tuple, Type
 
-from django.urls.base import resolve, reverse
+from django.urls import resolve, reverse
 
 import pytest
 from pytest_django.asserts import assertURLEqual
