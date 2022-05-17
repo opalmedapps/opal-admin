@@ -55,7 +55,7 @@ def test_api_root_defined(settings: SettingsWrapper) -> None:
 
 def test_api_auth_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API auth endpoints are defined."""
-    assert reverse('rest_login') == '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:rest_login') == '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
 
 
 def test_login_defined(settings: SettingsWrapper) -> None:
