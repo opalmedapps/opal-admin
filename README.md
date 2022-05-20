@@ -21,6 +21,9 @@ Copy the `.env.sample` to `.env` and adjust the values as necessary. You need to
 
 These configuration parameters are read by `docker compose` and by `settings.py` (via [`django-environ`](https://github.com/joke2k/django-environ)).
 
+!!! note
+    The legacy database is currently provided by the [`db-docker`](https://gitlab.com/opalmedapps/db-docker/). For information on the legacy database, please see the [Legacy DB Connection](legacy_db) page.
+
 ### Docker
 
 This project comes with a `docker-compose.yml` file providing you with a database and the app in their respective containers.
@@ -234,7 +237,7 @@ See the `requirements/` folder for the requirement files depending on the enviro
 
 #### Update dependencies
 
-The dependencies are kept up-to-date by using [Renovate Bot](https://www.whitesourcesoftware.com/free-developer-tools/renovate/). See the file `renovate.json` for its configuration.
+The dependencies are kept up-to-date by using [Renovate Bot](https://www.whitesourcesoftware.com/free-developer-tools/renovate/). See the file `renovate.json5` for its configuration.
 
 However, you can also manually update dependencies:
 
@@ -279,7 +282,7 @@ Each commit message consists of a **header**, a **body**, and a **footer**.
   │       │             │
   │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
   │       │
-  │       └─⫸ Commit Scope: deps|lang
+  │       └─⫸ Commit Scope: deps|i18n
   │
   └─⫸ Commit Type: build|chore|ci|docs|feat|fix|perf|refactor|style|test
 ```
@@ -318,7 +321,7 @@ The (optional) scope provides additional contextual information.
 The following is the list of supported scopes:
 
 * **deps**: Changes to the dependencies
-* **lang**: Changes to the translations (i18n) and localizations (l10n)
+* **i18n**: Changes to the translations (i18n)
 
 #### Breaking Changes
 
