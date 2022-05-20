@@ -64,6 +64,7 @@ LOCAL_APPS = [
     'opal.users',
     'opal.caregivers',
     'opal.patients',
+    'opal.legacy',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -128,7 +129,18 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
     },
+    'legacy': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('LEGACY_DATABASE_NAME'),
+        'USER': env('LEGACY_DATABASE_USER'),
+        'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
+        'HOST': env('LEGACY_DATABASE_HOST'),
+        'PORT': env('LEGACY_DATABASE_PORT'),
+    },
 }
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
+DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
 
 # Default primary key field
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEFAULT_AUTO_FIELD

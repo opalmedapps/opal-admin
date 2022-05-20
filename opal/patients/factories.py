@@ -5,7 +5,7 @@ from . import models
 
 
 class RelationshipType(DjangoModelFactory):
-    """Model factory to create [opal.hospital_settings.models.RelationshipType][] models."""
+    """Model factory to create [opal.patients.models.RelationshipType][] models."""
 
     class Meta:
         model = models.RelationshipType

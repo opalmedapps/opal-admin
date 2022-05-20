@@ -31,6 +31,13 @@ before_script:
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+  # set up legacy DB connection
+  # reuse the same database as for the other tests to make it easier
+  - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+  - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=$DB_NAME/" .env
+  - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+  - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
   # generate secret key
   - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
   - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
@@ -119,7 +126,8 @@ build docs:
   script:
     - pip install -r requirements/docs.txt
     - mkdocs --version
-    - mkdocs build
+    # abort on warnings to catch invalid cross-references
+    - mkdocs build --strict
   # cannot restrict to only merge requests due to the following issue:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
