@@ -16,7 +16,7 @@ def test_rest_api_institution_list(api_client: APIClient, admin_user: User) -> N
     api_client.force_login(user=admin_user)
 
     Institution.objects.create(name='Test Hospital', code='TH')
-    response = api_client.get(reverse('hospital-settings:api:institution-list'))
+    response = api_client.get(reverse('api:institutions-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
@@ -29,7 +29,7 @@ def test_rest_api_site_list(api_client: APIClient, admin_user: User) -> None:
     institution = Institution.objects.create(name='Test Hospital', code='TH')
     Site.objects.create(name='Test Site', code='TST', institution=institution)
 
-    response = api_client.get(reverse('hospital-settings:api:site-list'))
+    response = api_client.get(reverse('api:sites-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
