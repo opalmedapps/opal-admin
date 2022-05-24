@@ -7,7 +7,6 @@ from django.urls import resolve, reverse
 
 import pytest
 from pytest_django.fixtures import SettingsWrapper
-from rest_framework.routers import APIRootView
 
 from opal.core.views import LoginView
 
@@ -45,17 +44,6 @@ def test_favicon_url_defined(client: Client) -> None:
     assert reverse('favicon.ico') is not None
 
     assert client.get('/favicon.ico').status_code != HTTPStatus.NOT_FOUND
-
-
-def test_api_root_defined(settings: SettingsWrapper) -> None:
-    """Ensure that the API root is defined."""
-    path = '/{api_root}/'.format(api_root=settings.API_ROOT)
-    assert_path_uses_view(path, APIRootView)
-
-
-def test_api_auth_defined(settings: SettingsWrapper) -> None:
-    """Ensure that the REST API auth endpoints are defined."""
-    assert reverse('rest_login') == '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
 
 
 def test_login_defined(settings: SettingsWrapper) -> None:
