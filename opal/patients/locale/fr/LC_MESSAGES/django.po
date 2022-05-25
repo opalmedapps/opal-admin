@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-10 08:44-0400\n"
+"POT-Creation-Date: 2022-05-20 17:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/patients/apps.py
+#: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
 msgstr "Patients"
 
@@ -61,3 +61,85 @@ msgstr "Type de relation avec le proche aidant"
 #: opal/patients/models.py
 msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
+
+#: opal/patients/models.py
+msgid "First Name"
+msgstr "Prénom"
+
+#: opal/patients/models.py
+msgid "Last Name"
+msgstr "Nom de famille"
+
+#: opal/patients/models.py
+msgid "Patient Date of Birth"
+msgstr "Date de naissance du patient"
+
+#: opal/patients/models.py
+msgid "Caregivers"
+msgstr "Proches aidants"
+
+#: opal/patients/models.py
+msgid "Legacy ID"
+msgstr "Identifiant existant"
+
+#: opal/patients/models.py
+#, fuzzy
+#| msgid "Patients"
+msgid "Patient"
+msgstr "Patients"
+
+#: opal/patients/models.py
+msgid "Pending"
+msgstr "En attendant"
+
+#: opal/patients/models.py
+msgid "Confirmed"
+msgstr "Confirmé"
+
+#: opal/patients/models.py
+msgid "Denied"
+msgstr "Refusé"
+
+#: opal/patients/models.py
+msgid "Expired"
+msgstr "Expiré"
+
+#: opal/patients/models.py
+msgid "Revoked"
+msgstr "Révoqué"
+
+#: opal/patients/models.py
+msgid "Caregiver"
+msgstr "Proche aidant"
+
+#: opal/patients/models.py
+msgid "Relationship Type"
+msgstr "Type de relation avec le proche aidant"
+
+#: opal/patients/models.py
+msgid "Relationship Status"
+msgstr "Statut de la relation"
+
+#: opal/patients/models.py
+msgid "Relationship Request Date"
+msgstr "Date de la demande de relation"
+
+#: opal/patients/models.py
+msgid "Relationship Start Date"
+msgstr "Date de début de la relation"
+
+#: opal/patients/models.py
+msgid "Relationship End Date"
+msgstr "Date de fin de relation"
+
+#: opal/patients/models.py
+msgid "Relationship"
+msgstr "Relation"
+
+#: opal/patients/models.py
+msgid "Relationships"
+msgstr "Relations"
+
+#: opal/patients/models.py
+msgid "Start date should be earlier than end date."
+msgstr "Date de début doit être antérieure à la date de fin."
