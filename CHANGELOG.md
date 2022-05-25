@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: Add direction url field for sites (!73)
 * feat: Add user patient relationship type model (!84)
 * Add user types (!91)
+* Add patient model (!98)
 
 ### Documentation
 
