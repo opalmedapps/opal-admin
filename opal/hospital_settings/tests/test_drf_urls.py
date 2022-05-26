@@ -2,7 +2,7 @@ from django.urls import resolve, reverse
 
 import pytest
 
-from ..models import Institution, Site
+from .. import factories
 
 pytestmark = pytest.mark.django_db
 
@@ -13,8 +13,10 @@ def test_institutions_list() -> None:
     assert resolve('/api/institutions/').view_name == 'api:institutions-list'
 
 
-def test_institutions_detail(institution: Institution) -> None:
+def test_institutions_detail() -> None:
     """Ensure institutions detail is defined."""
+    institution = factories.Institution()
+
     path = f'/api/institutions/{institution.pk}/'
     assert reverse('api:institutions-detail', kwargs={'pk': institution.pk}) == path
     assert resolve(path).view_name == 'api:institutions-detail'
@@ -26,8 +28,10 @@ def test_sites_list() -> None:
     assert resolve('/api/sites/').view_name == 'api:sites-list'
 
 
-def test_sites_detail(site: Site) -> None:
+def test_sites_detail() -> None:
     """Ensure sites detail is defined."""
+    site = factories.Site()
+
     path = f'/api/sites/{site.pk}/'
     assert reverse('api:sites-detail', kwargs={'pk': site.pk}) == path
     assert resolve(path).view_name == 'api:sites-detail'
