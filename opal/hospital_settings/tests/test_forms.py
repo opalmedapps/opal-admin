@@ -2,7 +2,7 @@ import pytest
 
 from opal.hospital_settings.views import InstitutionCreateView, InstitutionUpdateView, SiteCreateView, SiteUpdateView
 
-from ..models import Institution, Site
+from .. import factories
 
 pytestmark = pytest.mark.django_db
 
@@ -17,6 +17,7 @@ def test_institution_create() -> None:
 
     view = InstitutionCreateView()
     form = view.get_form_class()(data=form_data)
+
     assert form.is_valid()
 
 
@@ -29,11 +30,14 @@ def test_institution_create_with_missing_code() -> None:
 
     view = InstitutionCreateView()
     form = view.get_form_class()(data=form_data)
+
     assert not form.is_valid()
 
 
 def test_institution_update() -> None:
     """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
+    institution = factories.Institution()
+
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -41,27 +45,36 @@ def test_institution_update() -> None:
     }
 
     view = InstitutionUpdateView()
-    form = view.get_form_class()(data=form_data)
+    form = view.get_form_class()(data=form_data, instance=institution)
+
     assert form.is_valid()
+    form.save()
+    institution.refresh_from_db()
+    assert institution.name == 'TEST1_EN'
 
 
-def test_institution_update_with_missing_field(institution: Institution) -> None:
+def test_institution_update_with_missing_field() -> None:
     """Ensure that the institution form checks for missing code field at the moment of updating an institution."""
+    institution = factories.Institution()
+
     form_data = {
         'name_en': 'TEST1_EN_EDIT',
         'name_fr': 'TEST1_FR_EDIT',
     }
 
     view = InstitutionUpdateView()
-    form = view.get_form_class()(data=form_data)
+    form = view.get_form_class()(data=form_data, instance=institution)
+
     assert not form.is_valid()
 
 
 # SITES
 
 
-def test_site_create(institution: Institution) -> None:
+def test_site_create() -> None:
     """Ensure that the site create form is valid."""
+    institution = factories.Institution()
+
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -75,12 +88,12 @@ def test_site_create(institution: Institution) -> None:
 
     view = SiteCreateView()
     form = view.get_form_class()(data=form_data)
+
     assert form.is_valid()
 
 
 def test_site_create_with_missing_field() -> None:
     """Ensure that the site form checks for missing institution field at the moment of creating a new site."""
-    Institution.objects.create(name_en='TEST1_EN', name_fr='TEST1_FR', code='ALL_SITES')
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -94,8 +107,10 @@ def test_site_create_with_missing_field() -> None:
     assert not form.is_valid()
 
 
-def test_site_update(institution: Institution) -> None:
+def test_site_update() -> None:
     """Ensure that the site create form is valid."""
+    site = factories.Site()
+
     form_data = {
         'name_en': 'TEST1_EN',
         'name_fr': 'TEST1_FR',
@@ -104,16 +119,22 @@ def test_site_update(institution: Institution) -> None:
         'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'code': 'TEST1',
-        'institution': institution.id,
+        'institution': site.institution.id,
     }
 
     view = SiteUpdateView()
-    form = view.get_form_class()(data=form_data)
+    form = view.get_form_class()(data=form_data, instance=site)
+
     assert form.is_valid()
+    form.save()
+    site.refresh_from_db()
+    assert site.name == 'TEST1_EN'
 
 
-def test_site_update_with_missing_field(site: Site) -> None:
+def test_site_update_with_missing_field() -> None:
     """Ensure that the site form checks for missing institution field at the moment of updating a site."""
+    site = factories.Site()
+
     form_data = {
         'name_en': 'TEST1_EN_updated',
         'name_fr': 'TEST1_FR_updated',
@@ -122,5 +143,6 @@ def test_site_update_with_missing_field(site: Site) -> None:
     }
 
     view = SiteUpdateView()
-    form = view.get_form_class()(data=form_data)
+    form = view.get_form_class()(data=form_data, instance=site)
+
     assert not form.is_valid()
