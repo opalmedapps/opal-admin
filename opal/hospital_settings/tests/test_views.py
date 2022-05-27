@@ -147,9 +147,9 @@ def test_site_urls_use_correct_template(
 
 def test_list_all_sites(user_client: Client) -> None:
     """Ensure that the site list page template displays all the institutions."""
-    factories.Site()
-    factories.Site()
-    factories.Site()
+    factories.Site(name='ST1')
+    factories.Site(name='ST2')
+    factories.Site(name='ST3')
 
     url = reverse('hospital-settings:site-list')
     response = user_client.get(url)
@@ -180,20 +180,41 @@ def test_site_update_object_displayed(user_client: Client) -> None:
     assertContains(response, 'TEST1')
     assertContains(response, site.institution.name)
 
-# SUCCESSFUL REDIRECTS
+
+def test_institution_created(user_client: Client) -> None:
+    """Ensure that an institution can be successfully created."""
+    url = reverse('hospital-settings:institution-create')
+    institution = factories.Institution.build()
+    form_data = model_to_dict(institution, exclude=['id'])
+
+    user_client.post(url, data=form_data)
+
+    assert Institution.objects.count() == 1
+    assert Institution.objects.all()[0].name == institution.name
 
 
 def test_institution_successful_create_redirects(user_client: Client) -> None:
     """Ensure that after a successful creation of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-create')
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TEST1',
-    }
+    institution = factories.Institution.build()
+    form_data = model_to_dict(institution, exclude=['id'])
+
     response = user_client.post(url, data=form_data)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
+
+
+def test_institution_updated(user_client: Client) -> None:
+    """Ensure that an institution can be successfully updated."""
+    institution = factories.Institution()
+
+    url = reverse('hospital-settings:institution-update', args=(institution.id,))
+    institution.name = 'updated'
+    form_data = model_to_dict(institution)
+
+    user_client.post(url, data=form_data)
+
+    assert Institution.objects.all()[0].name == 'updated'
 
 
 def test_institution_successful_update_redirects(user_client: Client, institution: Institution) -> None:
@@ -222,6 +243,18 @@ def test_institution_deleted(user_client: Client, institution: Institution) -> N
     assert Institution.objects.count() == 0
 
 
+def test_site_created(user_client: Client, institution: Institution) -> None:
+    """Ensure that a site can be successfully created."""
+    url = reverse('hospital-settings:site-create')
+    site = factories.Site.build(institution=institution)
+    form_data = model_to_dict(site, exclude=['id'])
+
+    user_client.post(url, data=form_data)
+
+    assert Site.objects.count() == 1
+    assert Site.objects.all()[0].name == site.name
+
+
 def test_site_successful_create_redirects(user_client: Client, institution: Institution) -> None:
     """Ensure that after a successful creation of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-create')
@@ -231,6 +264,19 @@ def test_site_successful_create_redirects(user_client: Client, institution: Inst
     response = user_client.post(url, data=form_data)
 
     assertRedirects(response, reverse('hospital-settings:site-list'))
+
+
+def test_site_updated(user_client: Client) -> None:
+    """Ensure that a site can be successfully updated."""
+    site = factories.Site()
+
+    url = reverse('hospital-settings:site-update', args=(site.id,))
+    site.name = 'updated'
+    form_data = model_to_dict(site)
+
+    user_client.post(url, data=form_data)
+
+    assert Site.objects.all()[0].name == 'updated'
 
 
 def test_site_successful_update_redirects(
