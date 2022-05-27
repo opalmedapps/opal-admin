@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import Tuple
 
+from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls.base import reverse
 
@@ -8,6 +9,7 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
 
+from .. import factories
 from ..models import Institution, Site
 
 pytestmark = pytest.mark.django_db
@@ -29,6 +31,7 @@ test_url_template_data: list[Tuple] = [
 def test_hospital_settings_urls_exist(user_client: Client, url: str, template: str) -> None:
     """Ensure that a page exists at desired URL address."""
     response = user_client.get(url)
+
     assert response.status_code == HTTPStatus.OK
 
 
@@ -36,6 +39,7 @@ def test_hospital_settings_urls_exist(user_client: Client, url: str, template: s
 def test_views_use_correct_template(user_client: Client, url: str, template: str) -> None:
     """Ensure that a page uses appropriate templates."""
     response = user_client.get(url)
+
     assertTemplateUsed(response, template)
 
 
@@ -59,6 +63,7 @@ def test_institution_urls_exist(
     """Ensure that `Institution` pages exists at desired URL address."""
     url = reverse(url_name, args=(institution.id,))
     response = user_client.get(url)
+
     assert response.status_code == HTTPStatus.OK
 
 
@@ -72,27 +77,32 @@ def test_institution_urls_use_correct_template(
     """Ensure that `Institution` pages exists at desired URL address."""
     url = reverse(url_name, args=(institution.id,))
     response = user_client.get(url)
+
     assertTemplateUsed(response, template)
 
 
 def test_institution_list_displays_all(user_client: Client) -> None:
     """Ensure that the institution list page template displays all the institutions."""
-    Institution.objects.bulk_create([
-        Institution(name_en='TEST1_EN', name_fr='TEST1_FR', code='TEST1'),
-        Institution(name_en='TEST2_EN', name_fr='TEST2_FR', code='TEST2'),
-        Institution(name_en='TEST3_EN', name_fr='TEST3_FR', code='TEST3'),
-    ])
+    factories.Institution(name='INS1')
+    factories.Institution(name='INS2')
+    factories.Institution(name='INS3')
+
     url = reverse('hospital-settings:institution-list')
     response = user_client.get(url)
+
+    # determine how many institutions are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
     returned_institutions = soup.find('tbody').find_all('tr')
     assert len(returned_institutions) == Institution.objects.count()
 
 
-def test_institution_update_object_displayed(user_client: Client, institution: Institution) -> None:
+def test_institution_update_object_displayed(user_client: Client) -> None:
     """Ensure that the institution detail page displays all fields."""
+    institution = factories.Institution(name_en='TEST1_EN', name_fr='TEST1_FR')
+
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     response = user_client.get(url)
+
     assertContains(response, 'TEST1_EN')
     assertContains(response, 'TEST1_FR')
     assertContains(response, 'TEST1')
@@ -118,6 +128,7 @@ def test_site_urls_exist(
     """Ensure that `Site` pages exist at desired URL address."""
     url = reverse(url_name, args=(site.id,))
     response = user_client.get(url)
+
     assert response.status_code == HTTPStatus.OK
 
 
@@ -134,59 +145,40 @@ def test_site_urls_use_correct_template(
     assertTemplateUsed(response, template)
 
 
-def test_list_all_sites(user_client: Client, institution: Institution) -> None:
+def test_list_all_sites(user_client: Client) -> None:
     """Ensure that the site list page template displays all the institutions."""
-    Site.objects.bulk_create([
-        Site(
-            name_en='TEST1_EN',
-            name_fr='TEST1_FR',
-            parking_url_en='http://127.0.0.1:8000/hospital-settings/site/1/',
-            parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/1/',
-            code='TEST1',
-            institution=institution,
-        ),
-        Site(
-            name_en='TEST2_EN',
-            name_fr='TEST2_FR',
-            parking_url_en='http://127.0.0.1:8000/hospital-settings/site/2/',
-            parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/2/',
-            code='TEST2',
-            institution=institution,
-        ),
-        Site(
-            name_en='TEST3_EN',
-            name_fr='TEST3_FR',
-            parking_url_en='http://127.0.0.1:8000/hospital-settings/site/3/',
-            parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/3/',
-            code='TEST3',
-            institution=institution,
-        ),
-    ])
+    factories.Site()
+    factories.Site()
+    factories.Site()
+
     url = reverse('hospital-settings:site-list')
     response = user_client.get(url)
+
+    # determine how many sites are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
     returned_sites = soup.find('tbody').find_all('tr')
     assert len(returned_sites) == Site.objects.count()
 
 
-def test_site_update_object_displayed(user_client: Client, institution: Institution) -> None:
+def test_site_update_object_displayed(user_client: Client) -> None:
     """Ensure that the site detail page displays all the fields."""
-    site = Site.objects.create(
+    site = factories.Site(
         name_en='TEST1_EN',
         name_fr='TEST1_FR',
         parking_url_en='http://127.0.0.1:8000/hospital-settings/site/1/fr',
         parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/1/en',
         code='TEST1',
-        institution=institution,
     )
+
     url = reverse('hospital-settings:site-update', args=(site.id,))
     response = user_client.get(url)
+
     assertContains(response, 'TEST1_EN')
     assertContains(response, 'TEST1_FR')
     assertContains(response, 'http://127.0.0.1:8000/hospital-settings/site/1/fr')
     assertContains(response, 'http://127.0.0.1:8000/hospital-settings/site/1/en')
     assertContains(response, 'TEST1')
-    assertContains(response, institution.name)
+    assertContains(response, site.institution.name)
 
 # SUCCESSFUL REDIRECTS
 
@@ -200,18 +192,17 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
         'code': 'TEST1',
     }
     response = user_client.post(url, data=form_data)
+
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
 def test_institution_successful_update_redirects(user_client: Client, institution: Institution) -> None:
     """Ensure that after a successful update of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TEST1',
-    }
+    form_data = model_to_dict(institution)
+
     response = user_client.post(url, data=form_data)
+
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
@@ -219,6 +210,7 @@ def test_institution_successful_delete_redirects(user_client: Client, institutio
     """Ensure that after a successful delete of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
     response = user_client.delete(url)
+
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
@@ -226,56 +218,47 @@ def test_institution_deleted(user_client: Client, institution: Institution) -> N
     """Ensure that an institution is deleted from the database."""
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
     user_client.delete(url)
+
     assert Institution.objects.count() == 0
 
 
 def test_site_successful_create_redirects(user_client: Client, institution: Institution) -> None:
     """Ensure that after a successful creation of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-create')
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'code': 'TEST1',
-        'institution': institution.id,
-    }
+    site = factories.Site.build(institution=institution)
+    form_data = model_to_dict(site, exclude=['id'])
+
     response = user_client.post(url, data=form_data)
+
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
 def test_site_successful_update_redirects(
     user_client: Client,
-    institution: Institution,
     site: Site,
 ) -> None:
     """Ensure that after a successful update of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-update', args=(site.id,))
-    form_data = {
-        'name_en': 'TEST1_EN_updated',
-        'name_fr': 'TEST1_FR_updated',
-        'parking_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'direction_url_en': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
-        'code': 'TEST1',
-        'institution': institution.id,
-    }
+    form_data = model_to_dict(site)
+
     response = user_client.post(url, data=form_data)
+
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
 def test_site_successful_delete_redirects(user_client: Client, site: Site) -> None:
     """Ensure that after a successful delete of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-delete', args=(site.id,))
+
     response = user_client.delete(url)
+
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
 def test_site_deleted(user_client: Client, site: Site) -> None:
     """Ensure that a site is deleted from the database."""
     url = reverse('hospital-settings:site-delete', args=(site.id,))
+
     user_client.delete(url)
+
     assert Site.objects.count() == 0
