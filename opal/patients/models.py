@@ -191,10 +191,6 @@ class Relationship(models.Model):
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
 
-    id = models.AutoField(
-        verbose_name=_('HospitalPatient Id'),
-        primary_key=True,
-    )
     patient = models.ForeignKey(
         to=Patient,
         verbose_name=_('Patient'),

@@ -73,7 +73,6 @@ class HospitalPatient(DjangoModelFactory):
     class Meta:
         model = models.HospitalPatient
 
-    id = Sequence(lambda number: number + 1)
     patient = SubFactory(Patient)
     site = SubFactory(Site)
     mrn = '9999996'

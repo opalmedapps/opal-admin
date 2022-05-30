@@ -172,6 +172,3 @@ def test_relationship_status_constraint() -> None:
     constraint_name = 'patients_relationship_status_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
         relationship.save()
-
-
-"""======================= Test model PatientHospitalIdentifier =========================="""
