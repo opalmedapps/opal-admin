@@ -6,6 +6,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
+from opal.hospital_settings.models import Site
 
 from . import constants
 
@@ -185,3 +186,48 @@ class Relationship(models.Model):
         """
         if self.end_date is not None and self.start_date >= self.end_date:
             raise ValidationError({'start_date': _('Start date should be earlier than end date.')})
+
+
+class HospitalPatient(models.Model):
+    """Hospital Patient model."""
+
+    id = models.AutoField(
+        verbose_name=_('HospitalPatient Id'),
+        primary_key=True,
+    )
+    patient = models.ForeignKey(
+        to=Patient,
+        verbose_name=_('Patient'),
+        related_name='hospital_patients',
+        on_delete=models.CASCADE,
+    )
+    site = models.ForeignKey(
+        to=Site,
+        verbose_name=_('Site'),
+        related_name='hospital_patients',
+        max_length=20,
+        on_delete=models.CASCADE,
+    )
+    mrn = models.CharField(
+        verbose_name=_('MRN'),
+        max_length=20,
+    )
+    is_active = models.SmallIntegerField(
+        verbose_name=_('Is Active'),
+    )
+
+    class Meta:
+        verbose_name = _('Hospital Patient')
+        verbose_name_plural = _('Hospital Patients')
+        unique_together = (('patient', 'site', 'mrn'),)
+
+    def __str__(self) -> str:
+        """Return the Patient Hospital Identifier of the Patient.
+
+        Returns:
+            the Patient Hospital Identifier of the Patient
+        """
+        return '{patient} [{hospital}]'.format(
+            patient=str(self.patient),
+            hospital=str(self.site),
+        )
