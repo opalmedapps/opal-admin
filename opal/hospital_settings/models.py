@@ -48,38 +48,3 @@ class Site(Location):
         ordering = ['name']
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
-
-
-class HospitalIdentifierType(models.Model):
-    """Hospital Identifier Type model."""
-
-    id = models.AutoField(
-        verbose_name=_('Patient Hospital Identifier Id'),
-        primary_key=True,
-    )
-    code = models.CharField(
-        verbose_name=_('Code'),
-        unique=True,
-        max_length=20,
-    )
-    adt_web_service_code = models.CharField(
-        verbose_name=_('ADT Web Service Code'),
-        max_length=20,
-    )
-    description = models.CharField(
-        verbose_name=_('Description'),
-        max_length=250,
-    )
-
-    class Meta:
-        verbose_name = _('Hospital Identifier Type')
-        verbose_name_plural = _('Hospital Identifier Types')
-
-    def __str__(self) -> str:
-        """
-        Return the string representation of the associated HospitalIdentifierType.
-
-        Returns:
-            the name of the associated HospitalIdentifierType
-        """
-        return '{description}'.format(description=self.description)

@@ -8,11 +8,9 @@ from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
-from opal.hospital_settings.models import HospitalIdentifierType
 
 from .. import constants, factories
 from ..models import RelationshipStatus, RelationshipType
-from ..models import PatientHospitalIdentifier
 
 pytestmark = pytest.mark.django_db
 
@@ -177,22 +175,3 @@ def test_relationship_status_constraint() -> None:
 
 
 """======================= Test model PatientHospitalIdentifier =========================="""
-
-
-def test_HospitalIdentifierType_str() -> None:
-    """Ensure the `__str__` method is defined for the `HospitalIdentifierType` model."""
-    patient = factories.HospitalIdentifierType(description='Montreal Children''s Hospital')
-    assert str(patient) == 'Montreal Children''s Hospital'
-
-
-def test_PatientHospitalIdentifier_str() -> None:
-    """Ensure the `__str__` method is defined for the `PatientHospitalIdentifier` model."""
-    patient = factories.Patient(first_name='aaa', last_name='bbb')
-
-    hospitalIdentifierType = factories.HospitalIdentifierType(description='Montreal Children''s Hospital')
-
-    patientHospitalIdentifier = factories.PatientHospitalIdentifier()
-    patientHospitalIdentifier.patient = patient
-    patientHospitalIdentifier.Hospital_Identifier_Type_Code = hospitalIdentifierType
-
-    assert str(patientHospitalIdentifier) == 'aaa bbb [Montreal Children''s Hospital]'
