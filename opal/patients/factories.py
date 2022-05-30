@@ -64,3 +64,28 @@ class CaregiverWithPatients(CaregiverProfile):
         Relationship,
         factory_related_name='caregiver',
     )
+
+
+class HospitalIdentifierType(DjangoModelFactory):
+    """Model factory to create [opal.hospital_settins.models.HospitalIdentifierType][] models."""
+
+    class Meta:
+        model = models.HospitalIdentifierType
+
+    id = Sequence(lambda number: number + 1)
+    code = 'MC_ADT'
+    description = 'Montreal Children''s Hospital'
+    description_fr = 'Hôpital de Montréal pour enfants'
+
+
+class PatientHospitalIdentifier(DjangoModelFactory):
+    """Model factory to create [opal.patients.models.Patient][] models."""
+
+    class Meta:
+        model = models.PatientHospitalIdentifier
+
+    id = Sequence(lambda number: number + 1)
+    patient = SubFactory(Patient)
+    Hospital_Identifier_Type_Code = SubFactory(HospitalIdentifierType)
+    mrn = '9999996'
+    is_active = 1
