@@ -5,31 +5,96 @@ from django.urls.base import reverse
 import pytest
 from rest_framework.test import APIClient
 
-from opal.hospital_settings.models import Institution, Site
 from opal.users.models import User
+
+from .. import factories
 
 pytestmark = pytest.mark.django_db
 
 
-def test_rest_api_institution_list(api_client: APIClient, admin_user: User) -> None:
+HTTP_METHODS_READ_ONLY = 'GET, HEAD, OPTIONS'
+
+
+def test_api_institutions_list(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the API to list institutions works."""
     api_client.force_login(user=admin_user)
 
-    Institution.objects.create(name='Test Hospital', code='TH')
+    institution = factories.Institution()
     response = api_client.get(reverse('api:institutions-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
+    assert response.data['results'][0]['id'] == institution.pk
 
 
-def test_rest_api_site_list(api_client: APIClient, admin_user: User) -> None:
+def test_api_institutions_list_allowed_methods(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that an institution can only be retrieved."""
+    api_client.force_login(user=admin_user)
+
+    response = api_client.options(reverse('api:institutions-list'))
+
+    assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
+
+
+def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that an institution can only be retrieved."""
+    api_client.force_login(user=admin_user)
+    institution = factories.Institution()
+
+    response = api_client.options(reverse('api:institutions-detail', kwargs={'pk': institution.pk}))
+
+    assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
+
+
+def test_api_institution_retrieve(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that an institution can be retrieved."""
+    api_client.force_login(user=admin_user)
+    institution = factories.Institution()
+
+    response = api_client.get(reverse('api:institutions-detail', kwargs={'pk': institution.pk}))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['id'] == institution.pk
+
+
+def test_api_site_list(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the API to list sites works."""
     api_client.force_login(user=admin_user)
 
-    institution = Institution.objects.create(name='Test Hospital', code='TH')
-    Site.objects.create(name='Test Site', code='TST', institution=institution)
+    site = factories.Site()
 
     response = api_client.get(reverse('api:sites-list'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 1
+    assert response.data['results'][0]['id'] == site.pk
+
+
+def test_api_site_retrieve(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that an institution can be retrieved."""
+    api_client.force_login(user=admin_user)
+    site = factories.Site()
+
+    response = api_client.get(reverse('api:sites-detail', kwargs={'pk': site.pk}))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['id'] == site.pk
+
+
+def test_api_sites_list_allowed_methods(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that sites can only be retrieved."""
+    api_client.force_login(user=admin_user)
+
+    response = api_client.options(reverse('api:sites-list'))
+
+    assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
+
+
+def test_api_sites_detail_allowed_methods(api_client: APIClient, admin_user: User) -> None:
+    """Ensure that a site can only be retrieved."""
+    api_client.force_login(user=admin_user)
+    site = factories.Site()
+
+    response = api_client.options(reverse('api:sites-detail', kwargs={'pk': site.pk}))
+
+    assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY

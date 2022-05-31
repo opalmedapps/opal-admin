@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from django.contrib.auth.models import AbstractUser
 from django.test.client import Client
 from django.urls.base import reverse
 
@@ -8,7 +9,7 @@ from pytest_django.asserts import assertContains, assertRedirects
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
-from opal.users.models import User
+from .. import views
 
 pytestmark = pytest.mark.django_db()
 
@@ -39,13 +40,13 @@ def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -
     assertRedirects(response, '{url}?next=/'.format(url=reverse(settings.LOGIN_URL)))
 
 
-def test_loginview_success(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
+def test_loginview_success(client: Client, django_user_model: AbstractUser, settings: SettingsWrapper) -> None:
     """Ensure that submitting the login form with correct credentials authenticates the user."""
     credentials = {
         'username': 'testuser',
         'password': 'testpass',
     }
-    user: User = django_user_model.objects.create(username=credentials['username'])
+    user = django_user_model.objects.create(username=credentials['username'])
     user.set_password(credentials['password'])
     user.save()
 
@@ -101,3 +102,26 @@ def test_logout_redirects(user_client: Client, settings: SettingsWrapper) -> Non
     )
 
     assert not response.wsgi_request.user.is_authenticated
+
+
+def test_createupdateview_create(django_user_model: AbstractUser) -> None:
+    """The `CreateUpdateView` can handle creation of a new object."""
+    # simulate a create
+    view = views.CreateUpdateView(
+        queryset=django_user_model.objects.all(),
+    )
+
+    assert view.get_object() is None
+
+
+def test_createupdateview_update(django_user_model: AbstractUser) -> None:
+    """The `CreateUpdateView` can handle updating an existing object."""
+    user = django_user_model.objects.create(username='testuser')
+
+    # simulate an update for a specific object
+    view = views.CreateUpdateView(
+        queryset=django_user_model.objects.all(),
+        kwargs={'pk': user.pk},
+    )
+
+    assert view.get_object() == user
