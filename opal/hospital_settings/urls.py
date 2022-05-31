@@ -12,56 +12,56 @@ app_name = 'hospital-settings'
 urlpatterns = [
     # Web pages
     # Hospital settings index page
-    path('hospital-settings/', views.IndexTemplateView.as_view(), name='index'),
+    path('', views.IndexTemplateView.as_view(), name='index'),
     # Institution pages
     path(
-        'hospital-settings/institutions/',
+        'institutions/',
         views.InstitutionListView.as_view(),
         name='institution-list',
     ),
     path(
-        'hospital-settings/institution/<int:pk>/',
+        'institution/<int:pk>/',
         views.InstitutionDetailView.as_view(),
         name='institution-detail',
     ),
     path(
-        'hospital-settings/institution/create/',
-        views.InstitutionCreateView.as_view(),
+        'institution/create/',
+        views.InstitutionCreateUpdateView.as_view(),
         name='institution-create',
     ),
     path(
-        'hospital-settings/institution/<int:pk>/update/',
-        views.InstitutionUpdateView.as_view(),
+        'institution/<int:pk>/update/',
+        views.InstitutionCreateUpdateView.as_view(),
         name='institution-update',
     ),
     path(
-        'hospital-settings/institution/<int:pk>/delete/',
+        'institution/<int:pk>/delete/',
         views.InstitutionDeleteView.as_view(),
         name='institution-delete',
     ),
     # Site pages
     path(
-        'hospital-settings/sites/',
+        'sites/',
         views.SiteListView.as_view(),
         name='site-list',
     ),
     path(
-        'hospital-settings/site/<int:pk>/',
+        'site/<int:pk>/',
         views.SiteDetailView.as_view(),
         name='site-detail',
     ),
     path(
-        'hospital-settings/site/create/',
-        views.SiteCreateView.as_view(),
+        'site/create/',
+        views.SiteCreateUpdateView.as_view(),
         name='site-create',
     ),
     path(
-        'hospital-settings/site/<int:pk>/update/',
-        views.SiteUpdateView.as_view(),
+        'site/<int:pk>/update/',
+        views.SiteCreateUpdateView.as_view(),
         name='site-update',
     ),
     path(
-        'hospital-settings/site/<int:pk>/delete/',
+        'site/<int:pk>/delete/',
         views.SiteDeleteView.as_view(),
         name='site-delete',
     ),

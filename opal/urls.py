@@ -31,7 +31,7 @@ urlpatterns = [
 
     # apps
     # hospital settings app
-    path('', include('opal.hospital_settings.urls')),
+    path('hospital-settings/', include('opal.hospital_settings.urls')),
 
     # global config
     path('admin/', admin.site.urls),

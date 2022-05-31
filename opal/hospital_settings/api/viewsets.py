@@ -5,7 +5,7 @@ from ..models import Institution, Site
 from .serializers import InstitutionSerializer, SiteSerializer
 
 
-class InstitutionViewSet(viewsets.ModelViewSet):
+class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset provides an API view for `Institution`.
 
@@ -17,7 +17,7 @@ class InstitutionViewSet(viewsets.ModelViewSet):
     filterset_fields = ['code']
 
 
-class SiteViewSet(viewsets.ModelViewSet):
+class SiteViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset provides an API view for `Site`.
 
