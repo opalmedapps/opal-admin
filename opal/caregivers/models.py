@@ -154,7 +154,7 @@ class SecurityAnswer(models.Model):
         if self.created_at is not None and self.created_at > self.updated_at:
             raise ValidationError({'created_at': _('Creation date should be earlier than last updated date.')})
 
-    def set_hash_answer(self, raw_answer) -> None:
+    def set_hash_answer(self, raw_answer: str) -> None:
         """Set answer text.
 
         Args:
@@ -165,7 +165,7 @@ class SecurityAnswer(models.Model):
         # we need to use salt, so that the hash result is not random
         self.answer = hashers.make_password(raw_answer, self.HASH_SALT)
 
-    def update_answer(self, raw_answer) -> None:
+    def update_answer(self, raw_answer: str) -> None:
         """Update answer text.
 
         Args:
@@ -174,7 +174,7 @@ class SecurityAnswer(models.Model):
         self.set_hash_answer(raw_answer)
         self.save(update_fields=['answer'])
 
-    def check_answer(self, raw_answer) -> bool:
+    def check_answer(self, raw_answer: str) -> bool:
         """Check and save answer text. (api function).
 
         Args:
