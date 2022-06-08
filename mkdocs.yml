@@ -13,6 +13,7 @@ copyright: Copyright &copy; 2022 Opal Health Informatics Group (O-HIG)
 # Content
 nav:
   - Home: index.md
+  - Architecture: architecture.md
   - Apps:
       - App Structure: apps/structure.md
       - Caregivers: apps/caregivers.md
