@@ -188,7 +188,7 @@ class SecurityAnswer(models.Model):
 
         return hashers.check_password(raw_answer, self.answer, self.update_answer)
 
-    def set_unusable_answer(self) -> str:
+    def set_unusable_answer(self) -> None:
         """Set unusable answer."""
         self.answer = hashers.make_password(None)
 
