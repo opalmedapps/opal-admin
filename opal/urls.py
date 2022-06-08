@@ -15,6 +15,8 @@ Examples:
         1. Import the include() function: from django.urls import include, path
         2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -33,6 +35,9 @@ urlpatterns = [
     # hospital settings app
     path('hospital-settings/', include('opal.hospital_settings.urls')),
 
+    # report settings app
+    path('report-settings/', include('opal.report_settings.urls')),
+
     # global config
     path('admin/', admin.site.urls),
     # define simple login view reusing the admin template
@@ -47,7 +52,7 @@ urlpatterns = [
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
         name='favicon.ico',
     ),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')

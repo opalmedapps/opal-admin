@@ -65,6 +65,7 @@ LOCAL_APPS = [
     'opal.caregivers',
     'opal.patients',
     'opal.legacy',
+    'opal.report_settings',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -255,6 +256,16 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
+
+# Media files (ONLY DURING DEVELOPMENT!!!)
+# Serving files uploaded by a user during development
+# https://docs.djangoproject.com/en/4.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development
+#
+# For the prod deployemnt, follow the guides:
+# https://docs.djangoproject.com/en/4.0/howto/static-files/deployment/#how-to-deploy-static-files
+# https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Deployment
+MEDIA_URL = '/media/'
+MEDIA_ROOT = APPS_DIR / 'uploads'
 
 
 # SECURITY

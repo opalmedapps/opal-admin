@@ -87,6 +87,25 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
+                {% translate "PDF Report Settings"|upper %}
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                {% for template in REPORT_TEMPLATES %}
+                  <a href="{{ template.get_absolute_url }}" class="nav-link logout">
+                    <i class="nav-icon {{ template.favicon }}"></i>
+                    <p>{{template.name}}</p>
+                  </a>
+                {% endfor %}
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link">
+              <p>
                 {% translate "Profile"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
