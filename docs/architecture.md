@@ -87,3 +87,5 @@ opal/
 ```
 
 [Apps](https://docs.djangoproject.com/en/dev/ref/applications/) provide a way to structure certain functionality. An app should focus on a single aspect of a project. The [App Structure page](apps/structure.md) contains information about how an app is structured.
+
+For more information on app design please see *Two Scoops of Django* Chapter 4.

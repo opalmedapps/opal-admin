@@ -10,8 +10,8 @@ opal/hospital_settings/
 │   ├── views.py            # DRF views
 │   └── viewsets.py         # DRF viewsets
 ├── locale                  # translation files
-├── migrations              # migrations module
-│   └── __init__.py
+├── management              # management commands
+├── migrations              # DB migrations
 ├── static
 │   └── hospital_settings   # app-specific static files
 ├── templates
@@ -23,6 +23,7 @@ opal/hospital_settings/
 ├── admin.py                # admin sites
 ├── apps.py                 # app config
 ├── conftest.py             # app-specific pytest fixtures
+├── constants.py            # app-specific constants
 ├── factories.py            # factory-boy model factories
 ├── forms.py
 ├── models.py
@@ -30,6 +31,8 @@ opal/hospital_settings/
 ├── urls.py                 # app-specific URLs (with relative paths)
 └── views.py
 ```
+
+For more details please refer to *Two Scoops of Django* Section 4.4.
 
 ## Creating a new app
 
