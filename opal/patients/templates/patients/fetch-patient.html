@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Patient Details" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "Who's patient data will be accessed?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">First name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col">Birth Date</th>
+                  <th scope="col">RAMQ</th>
+                  <th scope="col">Correct?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{firstName}}</td>
+                  <td>{{lastName}}</td>
+                  <td>{{dateOfBirth}}</td>
+                  <td>{{ramq}}</td>
+                  <td>
+                    <div class="form-check">
+                      <form action="{% url 'patients:requestor-details' %}" method="post">
+                        {% csrf_token %}
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onChange="this.form.submit()">
+                        <label class="form-check-label" for="flexCheckDefault">
+                          Yes
+                        </label>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}

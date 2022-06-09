@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "Opal Registration Code Created" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-auto">{% translate "Code" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-9 text-left">{% translate "The following unique one-time code has been generated for the patient and caregiver:" %}</div>
+              <div class="col-sm-3 text-right"></div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col"><p><b>{% translate "Patient:" %}</b> {{fullName}}</p></div>
+            </div>
+            <div class="row">
+              <div class="col"><p><b>{% translate "Requestor:" %}</b> {{fullName}}</p></div>
+            </div>
+            <div class="row">
+              <div class="col center"><h2>mxRgDQbz6T</h2></div>
+              <div class="col"><i class="fa fa-qrcode fa-5x" aria-hidden="true"></i></div>
+            </div>
+            <div class="row">
+              <div class="col-md-3">
+                <p><b>{% translate "Send vis SMS:" %}</b></p>
+              </div>
+              <div class="col-md-3">
+                <select class="form-control" name="langType">
+                  <option selected value="en">English</option>
+                  <option value="fr">French</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input type="text" class="form-control" name="medicalNo" value="" placeholder="{% translate "Phone Number" %}">
+              </div>
+              <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">{% translate "Send" %}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-auto">{% translate "Instruction" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-unstyled">
+              <li>Inform the requestor that the code is valid for 24 hours</li>
+              <li>Inform the requestor that access to patient data is subject to approval by Medical Records and inform them about any steps required to be done as per hospital policy. Upon confirmation by Medical Records, the user will receive a push notification and email to inform them that they can access the patient's data in the app.</li>
+              <li>Inform the requestor how to proceed if the code expired (as per hopital policy)</li>
+              <li>Inform the requestor to create their Opal user account using the above code
+                  <ul>
+                      <li>URL: <a href="https://registration.opalmedapps.ca">https://registration.opalmedapps.ca</a></li>
+                      <li>Offer to scan the QR code to open the registration website</li>
+                      <li>Offer to receive the registration link via SMS</li>
+                  </ul>
+              </li>
+          </ul>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-6 text-left"></div>
+          <div class="col-sm-6 text-right">
+            <a class="btn btn-success btn-sm mr-2" href="{% url 'patients:index' %}">{% translate "Done" %}</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% comment %} .content {% endcomment %}
+{% endblock %}

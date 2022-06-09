@@ -150,7 +150,7 @@ msgstr "Nouvelle demande d'accès aux données patient"
 
 #: opal/patients/templates/patients/index.html
 msgid "Hospital Information"
-msgstr "Informations sur l'hôpital
+msgstr "Informations sur l'hôpital"
 
 #: opal/patients/templates/patients/index.html
 msgid "At which hospital is the patient?"

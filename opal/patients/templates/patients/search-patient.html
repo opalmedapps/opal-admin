@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Patient Details" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "Who's patient data will be accessed?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="{% url 'patients:fetch-patient' %}" method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-2">
+                  <select class="form-control" name="medicalType">
+                    <option selected value="mrn">MRN</option>
+                    <option value="ramq">RAMQ</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control is-valid" name="medicalNo" value="{{MRN}}" required>
+                </div>
+                <div class="col-md-4">
+                  <button type="submit" class="btn btn-outline-secondary">{% translate "Find Patient" %}</button>
+                  <input type="hidden" name="siteCode" value="{{siteCode}}">
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-sm-6 text-left"></div>
+              <div class="col-sm-6 text-right">
+                <a class="btn btn-info btn-sm mr-2" href="{{request.META.HTTP_REFERER|escape}}">{% translate "Back" %}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
