@@ -26,5 +26,6 @@ app_name = 'core'
 
 urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
+    path('reports/', include('opal.report_settings.api.urls')),
     path('', include(router.urls)),
 ]
