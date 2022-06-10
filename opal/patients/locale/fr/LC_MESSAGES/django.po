@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-20 17:59+0000\n"
+"POT-Creation-Date: 2022-06-09 14:49-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -143,3 +143,23 @@ msgstr "Relations"
 #: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
+
+#: opal/patients/models.py
+msgid "Site"
+msgstr "Site"
+
+#: opal/patients/models.py
+msgid "Medical Record Number"
+msgstr "Numéro de dossier médical"
+
+#: opal/patients/models.py
+msgid "Active"
+msgstr "Actif"
+
+#: opal/patients/models.py
+msgid "Hospital Patient"
+msgstr "Patient de l'hôpital"
+
+#: opal/patients/models.py
+msgid "Hospital Patients"
+msgstr "Patients de l'hôpital"

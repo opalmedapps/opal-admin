@@ -13,6 +13,7 @@ from factory import RelatedFactory, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile
+from opal.hospital_settings.factories import Site
 
 from . import models
 
@@ -64,3 +65,15 @@ class CaregiverWithPatients(CaregiverProfile):
         Relationship,
         factory_related_name='caregiver',
     )
+
+
+class HospitalPatient(DjangoModelFactory):
+    """Model factory to create [opal.patients.models.HospitalPatient][] models."""
+
+    class Meta:
+        model = models.HospitalPatient
+
+    patient = SubFactory(Patient)
+    site = SubFactory(Site)
+    mrn = '9999996'
+    is_active = True
