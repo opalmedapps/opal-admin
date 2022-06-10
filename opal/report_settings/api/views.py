@@ -1,6 +1,10 @@
 """This module provides `APIViews` for the report settings REST API."""
+import json
 from typing import Any
 
+from django.conf import settings
+
+import requests
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -32,6 +36,14 @@ class QuestionnairesReportCreateAPIView(CreateAPIView):
         if not serializer.is_valid():
             return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        # TODO: call php legacy backend
+        pload = json.dumps({
+            'patient_id': 51,
+            'patient_name': 'Test name',
+            'patient_mrn': '999996',
+            'patient_language': 'FR',
+        })
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(settings.LEGACY_QUESTIONNAIRES_REPORT_URL, headers=headers, data=pload)
+
         # TODO: call OIE
-        return Response({'status': 'success', 'data': ''}, status=status.HTTP_200_OK)
+        return Response({'status': response.status_code, 'data': response.content}, status=status.HTTP_200_OK)
