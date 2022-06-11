@@ -16,12 +16,12 @@
 
                     <form action="" method="POST">
                       {% csrf_token %}
-                      <button class="btn btn-primary btn-sm mr-2" href="{% url 'hospital-settings:relationshiptype-list' %}">
-                        {% translate "Cancel" %}
-                      </button>
                       <input class="btn btn-danger btn-sm" type="submit" value="{% translate "Yes" %}, {% translate "Delete"|lower %}.">
                     </form>
                   </div>
+                  <a class="btn btn-secondary mr-2" href="{% url 'patients:relationshiptype-list' %}">
+                    {% translate "Cancel" %}
+                  </a>
             </div>
         </div>
     </div>

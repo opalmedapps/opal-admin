@@ -65,25 +65,4 @@ urlpatterns = [
         views.SiteDeleteView.as_view(),
         name='site-delete',
     ),
-    # Relationship Types Pages
-    path(
-        'hospital-settings/relationship-types/',
-        views.RelationshipTypeListView.as_view(),
-        name='relationshiptype-list',
-    ),
-    path(
-        'hospital-settings/relationship-type/create/',
-        views.RelationshipTypeCreateUpdateView.as_view(),
-        name='relationshiptype-create',
-    ),
-    path(
-        'hospital-settings/relationship-type/<int:pk>/update/',
-        views.RelationshipTypeCreateUpdateView.as_view(),
-        name='relationshiptype-update',
-    ),
-    path(
-        'hospital-settings/relationship-type/<int:pk>/delete/',
-        views.RelationshipTypeDeleteView.as_view(),
-        name='relationshiptype-delete',
-    ),
 ]

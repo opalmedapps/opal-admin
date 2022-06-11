@@ -19,7 +19,7 @@
                       <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:relationshiptype-list' %}">
+                        <a class="btn btn-secondary mr-2" href="{% url 'patients:relationshiptype-list' %}">
                           {% translate "Cancel" %}
                         </a>
                         <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">

@@ -15,7 +15,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                              <a class="btn btn-primary" href="{% url 'hospital-settings:relationshiptype-create' %}">
+                              <a class="btn btn-primary" href="{% url 'patients:relationshiptype-create' %}">
                                 <i class="fas fa-plus"></i>
                                 Add Relationship Type</a>
                             </div>
@@ -62,11 +62,11 @@
                                       </td>
                                       <td class="project-actions text-right">
                                         <div class="btn-toolbar" role="group">
-                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'hospital-settings:relationshiptype-update' type.id %}">
+                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'patients:relationshiptype-update' type.id %}">
                                               <i class="fas fa-pencil-alt"></i>
                                               {% translate "Edit" %}
                                           </a>
-                                          <a class="btn btn-danger btn-sm mr-2" href="{% url 'hospital-settings:relationshiptype-delete' type.id %}">
+                                          <a class="btn btn-danger btn-sm mr-2" href="{% url 'patients:relationshiptype-delete' type.id %}">
                                             {% translate "Delete" %}
                                           </a>
                                         </div>
