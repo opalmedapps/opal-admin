@@ -43,6 +43,18 @@ class Site(Location):
         related_name='sites',
         verbose_name=_('Institution'),
     )
+    longitude = models.DecimalField(
+        max_digits=22,
+        decimal_places=16,
+        default=None,
+        verbose_name=_('Longitude'),
+    )
+    latitude = models.DecimalField(
+        max_digits=22,
+        decimal_places=16,
+        default=None,
+        verbose_name=_('Latitude'),
+    )
 
     class Meta:
         ordering = ['name']
