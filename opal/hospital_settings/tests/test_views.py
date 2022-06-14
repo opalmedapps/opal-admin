@@ -168,6 +168,8 @@ def test_site_update_object_displayed(user_client: Client) -> None:
         parking_url_en='http://127.0.0.1:8000/hospital-settings/site/1/fr',
         parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/1/en',
         code='TEST1',
+        longitude=13.381969928741455,
+        latitude=52.50479381812203,
     )
 
     url = reverse('hospital-settings:site-update', args=(site.id,))
@@ -273,7 +275,6 @@ def test_site_updated(user_client: Client) -> None:
     url = reverse('hospital-settings:site-update', args=(site.id,))
     site.name = 'updated'
     form_data = model_to_dict(site)
-
     user_client.post(url, data=form_data)
 
     assert Site.objects.all()[0].name == 'updated'

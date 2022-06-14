@@ -45,6 +45,14 @@
                         <label for="institution">{% translate "Institution" %}</label>
                         <input type="text" id="institution" class="form-control" name="institution" value="{{ object.institution }}" readonly>
                       </div>
+                      <div class="form-group">
+                        <label for="longitude">{% translate "Longitude" %}</label>
+                        <input type="text" id="longitude" class="form-control" name="longitude" value="{{ object.longitude }}" readonly>
+                      </div>
+                      <div class="form-group">
+                        <label for="latitude">{% translate "Latitude" %}</label>
+                        <input type="text" id="latitude" class="form-control" name="latitude" value="{{ object.latitude }}" readonly>
+                      </div>
                     </div>
                     {% comment %} /.card-body {% endcomment %}
                 </div>
