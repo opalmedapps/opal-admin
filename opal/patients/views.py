@@ -1,17 +1,20 @@
 """This module provides views for hospital-specific settings."""
 from django.urls import reverse_lazy
 from django.views.generic.edit import DeleteView
-from django.views.generic.list import ListView
+
+from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
 from .models import RelationshipType
+from .tables import RelationshipTypeTable
 
 
-class RelationshipTypeListView(ListView):
-    """This `ListView` provides a page that displays a list of `RelationshipType` objects."""
+class RelationshipTypeListView(SingleTableView):
+    """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = RelationshipType
+    table_class = RelationshipTypeTable
     ordering = ['pk']
     template_name = 'patients/relationship_type/list.html'
 
