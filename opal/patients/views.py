@@ -8,7 +8,8 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView, View
 
 from opal.hospital_settings.models import Site
-from opal.patients.models import Patient, RelationshipType
+from opal.patients.forms import RelationshipTypeForm
+from opal.patients.models import Patient
 from opal.users.models import Caregiver
 
 
@@ -49,7 +50,7 @@ class SearchPatientView(View):
         Returns:
             the object of HttpResponse
         """
-        context = {'MRN': 'MRN0000011111'}
+        context = {'MRN': 'TESS53510111'}
         if (request.POST['siteCode']):
             context['siteCode'] = request.POST['siteCode']
         return render(request, self.template_name, context=context)
@@ -109,7 +110,7 @@ def fetch_patient_record(patient_parameters: Any) -> str:
     data_set = {
         'status': 'success',
         'data': {
-            'dateOfBirth': '1953-01-01 00:00:00',
+            'dateOfBirth': '2007-01-01 00:00:00',
             'firstName': 'SANDRA',
             'lastName': 'TESTMUSEMGHPROD',
             'sex': 'F',
@@ -144,7 +145,7 @@ class RequestorDetailsView(View):
         Returns:
             the object of HttpResponse
         """
-        context = {'relationshiptype': RelationshipType.objects.all()}
+        context = {'form': RelationshipTypeForm(date_of_birth=request.POST['dateOfBirth'])}
         return render(request, self.template_name, context=context)
 
 
@@ -163,11 +164,7 @@ class VerifyIdentificationView(View):
         Returns:
             the object of HttpResponse
         """
-        context = {}
-        if (request.POST['isRequestFilled']):
-            context = {'isRequestFilled': request.POST['isRequestFilled']}
-
-        return render(request, self.template_name, context=context)
+        return render(request, self.template_name, context={})
 
 
 class GenerateQRView(View):

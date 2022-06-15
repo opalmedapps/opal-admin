@@ -1,13 +1,32 @@
 """Module providing models for the patients app."""
-
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext_lazy as _
+
+from modeltranslation.manager import MultilingualManager
 
 from opal.caregivers.models import CaregiverProfile
 
 from . import constants
+
+
+class RelationshipTypeManager(MultilingualManager):
+    """relationshiptype manager."""
+
+    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
+        """Return a new QuerySet filtered by the patient age between start_age and end_age.
+
+        Args:
+            patient_age: patient's ages.
+
+        Returns:
+            a queryset of the relationship type.
+        """
+        return self.annotate(  # type: ignore[no-any-return]
+            end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
+        ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
 
 
 class RelationshipType(models.Model):
@@ -43,6 +62,7 @@ class RelationshipType(models.Model):
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )
+    objects = RelationshipTypeManager()
 
     class Meta:
         ordering = ['name']
