@@ -24,7 +24,7 @@
             <form action="{% url 'patients:search-patient' %}" method="post">
               {% csrf_token %}
               {% for site in sites %}
-                <button type="submit" class="btn btn-secondary btn-lg" name="siteCode" value="{{site.code}}">{{ site.name_en }}</button>
+                <button type="submit" class="btn btn-secondary btn-lg" name="sitecode" value="{{site.code}}">{{ site.name_en }}</button>
               {% endfor %}
             </form>
           </div>

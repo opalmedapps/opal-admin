@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView, View
 
 from opal.hospital_settings.models import Site
-from opal.patients.forms import RelationshipTypeForm
+from opal.patients.forms import MedicalCardForm, RelationshipTypeForm
 from opal.patients.models import Patient
 from opal.users.models import Caregiver
 
@@ -50,9 +50,7 @@ class SearchPatientView(View):
         Returns:
             the object of HttpResponse
         """
-        context = {'MRN': 'TESS53510111'}
-        if (request.POST['siteCode']):
-            context['siteCode'] = request.POST['siteCode']
+        context = {'form': MedicalCardForm(mrn='TESS53510111', sitecode=request.POST['sitecode'])}
         return render(request, self.template_name, context=context)
 
 
@@ -72,12 +70,12 @@ class FetchPatientView(View):
             the object of HttpResponse
         """
         # OIE JSON endpoint url : https://172.26.125.233/Patient/get
-        if (request.POST['medicalType']):
-            medicaltype = request.POST['medicalType']
-        if (request.POST['medicalNo']):
-            medicalno = request.POST['medicalNo']
-        if (request.POST['siteCode']):
-            sitecode = request.POST['siteCode']
+        if (request.POST['medical_type']):
+            medicaltype = request.POST['medical_type']
+        if (request.POST['medical_number']):
+            medicalno = request.POST['medical_number']
+        if (request.POST['site_code']):
+            sitecode = request.POST['site_code']
 
         patient_parameters = {}
         if (medicaltype == 'ramq'):

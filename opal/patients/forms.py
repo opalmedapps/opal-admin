@@ -53,3 +53,36 @@ def calculate_age(birthdate: date) -> int:
     # The difference in years is not enough.
     # To get it right, subtract 1 or 0 based on if today precedes the birthdate's month/day.
     return year_difference - one_or_zero
+
+
+class MedicalCardForm(forms.Form):
+    """This `MedicalCardForm` provide layout for MRN or RAMQ type and number."""
+
+    medical_card_types = [
+        ('mrn', 'MRN'),
+        ('ramq', 'RAMQ'),
+    ]
+
+    medical_type = forms.ChoiceField(
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        choices=medical_card_types,
+        initial='mrn',
+    )
+    medical_number = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    site_code = forms.CharField(
+        widget=forms.HiddenInput(),
+    )
+
+    def __init__(self, mrn: str, sitecode: str) -> None:
+        """
+        Initialize value for medical number and site code.
+
+        Args:
+            mrn: patient's MRN number.
+            sitecode: the site code.
+        """
+        super().__init__()
+        self.fields['medical_number'].initial = mrn
+        self.fields['site_code'].initial = sitecode
