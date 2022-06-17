@@ -1,15 +1,13 @@
 """This module provides `APIViews` for the report settings REST API."""
-import json
 from typing import Any
 
-from django.conf import settings
-
-import requests
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+
+from opal.core.services.reports import QuestionnaireReportService
 
 from .serializers import QuestionnaireReportRequestSerializer
 
@@ -33,17 +31,21 @@ class QuestionnairesReportCreateAPIView(CreateAPIView):
             HTTP `Response` with results of report generation
         """
         serializer = QuestionnaireReportRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
-        pload = json.dumps({
-            'patient_id': 51,
-            'patient_name': 'Test name',
-            'patient_mrn': '999996',
-            'patient_language': 'FR',
-        })
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(settings.LEGACY_QUESTIONNAIRES_REPORT_URL, headers=headers, data=pload)
+        report_service = QuestionnaireReportService()
+        encoded_report = report_service.generate(
+            request.data['patient_id'],
+            request.data['language'],
+        )
 
-        # TODO: call OIE
-        return Response({'status': response.status_code, 'data': response.content}, status=status.HTTP_200_OK)
+        if encoded_report == '':
+            return Response(
+                {
+                    'status': 'error',
+                    'data': 'Bad request: an error occured during report generation.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({'data': encoded_report}, status=status.HTTP_200_OK)
