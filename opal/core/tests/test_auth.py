@@ -164,6 +164,32 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.django_db()
+def test_authenticate_new_user_clinical_staff(mocker: MockerFixture) -> None:
+    """Ensure a user instance is created with the user type `CLINICAL_STAFF`."""
+    # mock authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
+
+    user = auth_backend.authenticate(None, 'testuser', 'testpass')
+
+    assert user is not None
+    assert user.type == UserModel.UserType.CLINICAL_STAFF
+
+
+@pytest.mark.django_db()
+def test_authenticate_new_user_unusable_password(mocker: MockerFixture) -> None:
+    """Ensure a user instance is created with an unusable password."""
+    # mock authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
+
+    user = auth_backend.authenticate(None, 'testuser', 'testpass')
+
+    assert user is not None
+    assert not user.has_usable_password()
+
+
+@pytest.mark.django_db()
 def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
     """Ensure the existing user instance is returned if the user already exists."""
     # mock authentication and pretend it was successful
