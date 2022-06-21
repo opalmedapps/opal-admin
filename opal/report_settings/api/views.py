@@ -1,4 +1,5 @@
 """This module provides `APIViews` for the report settings REST API."""
+import json
 from typing import Any
 
 import requests
@@ -54,18 +55,18 @@ class QuestionnairesReportCreateAPIView(CreateAPIView):
 
         # Submit report to the OIE
         oie = OIECommunicationService()
-        response: requests.Response = oie.export_questionnaire_report(encoded_report)
+        json_response = json.loads(oie.export_questionnaire_report(encoded_report).content)
 
         # Try to decode JSON response
         try:
             # If HTTP status code is not success (e.g, different than 2**)
-            if status.is_success(response.json()['status']) is False:
+            if json_response['status'] != status.HTTP_200_OK:
                 return Response(
                     {
                         'status': 'error',
-                        'data': 'Bad request: {0}'.format(response.json()['message']),
+                        'data': 'Bad request: {0}'.format(json_response['message']),
                     },
-                    status=response.json()['status'],
+                    status=json_response['status'],
                 )
         except requests.exceptions.JSONDecodeError:
             return Response(
@@ -88,5 +89,4 @@ class QuestionnairesReportCreateAPIView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # TODO: return Response(response.json())
-        return Response({'data': encoded_report, 'oie_response': response.content}, status=status.HTTP_200_OK)
+        return Response(json_response)

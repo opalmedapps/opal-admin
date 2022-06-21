@@ -42,6 +42,7 @@ class OIECommunicationService:
                 settings.OIE_REPORT_POST_URL,
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 json=pload,
+                timeout=5,
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
