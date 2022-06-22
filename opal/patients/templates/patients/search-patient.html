@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Patient Details" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "Who's patient data will be accessed?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="{% url 'patients:fetch-patient' %}" method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-2">
+                  {{ form.medical_type }}
+                </div>
+                <div class="col-md-6">
+                  {{ form.medical_number }}
+                </div>
+                <div class="col-md-4">
+                  <button type="submit" class="btn btn-outline-secondary">{% translate "Find Patient" %}</button>
+                  {{ form.site_code }}
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-sm-6 text-left"></div>
+              <div class="col-sm-6 text-right">
+                <a class="btn btn-info btn-sm mr-2" href="{{request.META.HTTP_REFERER|escape}}">{% translate "Back" %}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}

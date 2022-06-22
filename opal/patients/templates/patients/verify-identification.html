@@ -1,0 +1,99 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Requestor Details" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "Who is requesting the code?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="{% url 'patients:generate-qr' %}" method="post">
+              {% csrf_token %}
+              <div class="row mb-10">
+                <div class="col-4">
+                  <select class="form-control" name="medicalType">
+                    <option selected value="new">New Opal User</option>
+                    <option value="exist">Existing Opal User</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col"><p>{% translate "Enter requestor's first and last name, and verify the requestor's identification (as per hopital policy)" %}</p></div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th scope="col">First name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">ID Checked?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><input type="text" class="form-control" id="fName" name="fName"></td>
+                        <td><input type="text" class="form-control" id="lName" name="lName"></td>
+                        <td style="text-align: left;vertical-align: middle;">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                              Yes
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div id='genBtn'></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block javascripts_footer %}
+  {{ block.super }}
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <script>
+    $(document).ready(function(){
+
+      $("#flexCheckDefault").on('change',function(){
+        $("#genBtn").html('');
+        if ($('#flexCheckDefault').prop('checked')) {
+          $("#genBtn").html('<div class="row"><div class="col"><input type="submit" class="btn btn-primary" value="Generate"></div></div>');
+        }
+      });
+
+      $("#fName, #lName").on('change',function(){
+        if(onlyLettersAndNumbers($(this).val())){
+          $(this).addClass("is-valid");
+        }
+        else{
+          $(this).addClass("is-invalid");
+        }
+      });
+    });
+
+    function onlyLettersAndNumbers(str) {
+      return /^[A-Za-z0-9]*$/.test(str);
+    }
+  </script>
+{% endblock %}

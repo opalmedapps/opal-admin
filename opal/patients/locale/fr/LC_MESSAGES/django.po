@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-14 11:09-0400\n"
+"POT-Creation-Date: 2022-05-27 14:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,3 +163,19 @@ msgstr "Patient de l'hôpital"
 #: opal/patients/models.py
 msgid "Hospital Patients"
 msgstr "Patients de l'hôpital"
+
+#: opal/patients/templates/patients/index.html
+msgid "New Patient Data Access Request"
+msgstr "Nouvelle demande d'accès aux données patient"
+
+#: opal/patients/templates/patients/index.html
+msgid "Hospital Information"
+msgstr "Informations sur l'hôpital"
+
+#: opal/patients/templates/patients/index.html
+msgid "At which hospital is the patient?"
+msgstr "Dans quel hôpital se trouve le patient ?"
+
+#: opal/patients/templates/patients/index.html
+msgid "Incomplete"
+msgstr "Incomplet"

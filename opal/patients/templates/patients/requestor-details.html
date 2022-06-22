@@ -1,0 +1,37 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Requestor Details" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "Who is requesting the code?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="{% url 'patients:verify-identification' %}" id="target" method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col"><p>{% translate "Relationship to the patient:" %}</p></div>
+              </div>
+              {{ form | crispy }}
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}

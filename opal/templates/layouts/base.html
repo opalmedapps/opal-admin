@@ -87,6 +87,23 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
+                {% translate "Patient Data Access"|upper %}
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'patients:index' %}" class="nav-link">
+                  <i class="nav-icon fas fa-user-lock"></i>
+                  <p>{% translate "Patients" %}</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link">
+              <p>
                 {% translate "Profile"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
@@ -116,10 +133,10 @@
     <section class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
+          <div class="col-sm-9">
             <h1>{% block content-header-page-name %}{% endblock %}</h1>
           </div>
-          <div class="col-sm-6">
+          <div class="col-sm-3">
           </div>
         </div>
       </div>

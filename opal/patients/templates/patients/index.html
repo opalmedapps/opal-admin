@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content-header-page-name %}{% translate "New Patient Data Access Request" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!--div class="col"><hr></div-->
+          <div class="col-auto">{% translate "Hospital Information" %}</div>
+          <div class="col"><hr></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-sm-6 text-left">{% translate "At which hospital is the patient?" %}</div>
+              <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form action="{% url 'patients:search-patient' %}" method="post">
+              {% csrf_token %}
+              {% for site in sites %}
+                <button type="submit" class="btn btn-secondary btn-lg" name="sitecode" value="{{site.code}}">{{ site.name_en }}</button>
+              {% endfor %}
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% comment %} .content {% endcomment %}
+{% endblock %}
