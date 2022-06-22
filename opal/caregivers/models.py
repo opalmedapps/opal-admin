@@ -42,14 +42,9 @@ class CaregiverProfile(models.Model):
 class SecurityQuestion(models.Model):
     """Security question model."""
 
-    question_en = models.CharField(
-        verbose_name=_('Question Text EN'),
-        max_length=2056,
-    )
-
-    question_fr = models.CharField(
-        verbose_name=_('Question Text FR'),
-        max_length=2056,
+    question = models.CharField(
+        verbose_name=_('Question Text'),
+        max_length=100,
     )
 
     is_active = models.BooleanField(
@@ -67,17 +62,11 @@ class SecurityQuestion(models.Model):
         Returns:
             the question text EN as default.
         """
-        return '{en} {fr}'.format(en=self.question_en, fr=self.question_fr)
+        return '{question}'.format(question=self.question)
 
 
 class SecurityAnswer(models.Model):
     """Security answer model."""
-
-    question = models.CharField(
-        to=SecurityQuestion,
-        verbose_name=_('Security Question'),
-        related_name='security_answers',
-    )
 
     profile = models.ForeignKey(
         to=CaregiverProfile,
@@ -86,17 +75,14 @@ class SecurityAnswer(models.Model):
         on_delete=models.CASCADE,
     )
 
+    question = models.CharField(
+        verbose_name=_('Security Question'),
+        max_length=100,
+    )
+
     answer = models.CharField(
         verbose_name=_('Security Answer'),
-        max_length=2056,
-    )
-
-    created_at = models.DateField(
-        verbose_name=_('Creation Date'),
-    )
-
-    updated_at = models.DateField(
-        verbose_name=_('Last Updated'),
+        max_length=128,
     )
 
     class Meta:
