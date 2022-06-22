@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: Add user patient relationship type model (!84)
 * Add user types (!91)
 * Add patient model (!98)
+* Feat: Get all data needed for the app home view request (!118)
 
 ### Documentation
 
