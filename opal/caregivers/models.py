@@ -52,29 +52,14 @@ class SecurityQuestion(models.Model):
         max_length=2056,
     )
 
-    created_at = models.DateField(
-        verbose_name=_('Creation Date'),
-    )
-
-    updated_at = models.DateField(
-        verbose_name=_('Last Updated'),
-    )
-
     is_active = models.BooleanField(
-        verbose_name=_('Is Active'),
+        verbose_name=_('Active'),
         default=True,
     )
 
     class Meta:
         verbose_name = _('Security Question')
         verbose_name_plural = _('Security Questions')
-
-        constraints = [
-            models.CheckConstraint(
-                name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
-                check=models.Q(created_at__lte=models.F('updated_at')),
-            ),
-        ]
 
     def __str__(self) -> str:
         """Return the question text EN as default.
@@ -84,20 +69,9 @@ class SecurityQuestion(models.Model):
         """
         return '{en} {fr}'.format(en=self.question_en, fr=self.question_fr)
 
-    def clean(self) -> None:
-        """Validate if last updated date is earlier creation date.
-
-        Raises:
-            ValidationError: the error shows when updated_at is earlier than created_at
-        """
-        if self.created_at is not None and self.created_at > self.updated_at:
-            raise ValidationError({'created_at': _('Creation date should be earlier than last updated date.')})
-
 
 class SecurityAnswer(models.Model):
     """Security answer model."""
-
-    HASH_SALT = 'MUHC_MCGILL'
 
     question = models.ForeignKey(
         to=SecurityQuestion,

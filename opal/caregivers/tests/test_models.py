@@ -90,34 +90,6 @@ def test_security_question_active() -> None:
     assert question.is_active == 1
 
 
-def test_security_question_clean_valid_dates() -> None:
-    """Ensure that the date is valid if created_at is earlier than updated_at."""
-    question = factories.SecurityQuestion(created_at='2022-06-06', updated_at='2022-06-07')
-    question.clean()
-
-
-def test_security_question_clean_invalid_dates() -> None:
-    """Ensure that the date is invalid if created_at is later than updated_at."""
-    question = factories.SecurityQuestion()
-    question.created_at = datetime.date(2022, 6, 8)
-    question.updated_at = datetime.date(2022, 6, 6)
-
-    expected_message = 'Creation date should be earlier than last updated date.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        question.clean()
-
-
-def test_security_question_dates_constraint() -> None:
-    """Ensure that the date cannot be saved if created_at is later than updated_at."""
-    question = factories.SecurityQuestion()
-    question.created_at = datetime.date(2022, 6, 8)
-    question.updated_at = datetime.date(2022, 6, 6)
-
-    constraint_name = 'caregivers_securityquestion_date_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
-        question.save()
-
-
 def test_security_answer_str() -> None:
     """The `str` method returns the name of the user and the answer of security answer."""
     answer = factories.SecurityAnswer()

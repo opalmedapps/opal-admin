@@ -28,9 +28,7 @@ class SecurityQuestion(DjangoModelFactory):
 
     question_en = 'question_one'
     question_fr = 'question_un'
-    created_at = datetime.date(2022, 6, 6)
-    updated_at = datetime.date(2022, 6, 6)
-    is_active = 1
+    is_active = True
 
 
 class SecurityAnswer(DjangoModelFactory):
