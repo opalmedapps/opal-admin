@@ -73,11 +73,10 @@ class SecurityQuestion(models.Model):
 class SecurityAnswer(models.Model):
     """Security answer model."""
 
-    question = models.ForeignKey(
+    question = models.CharField(
         to=SecurityQuestion,
         verbose_name=_('Security Question'),
         related_name='security_answers',
-        on_delete=models.CASCADE,
     )
 
     profile = models.ForeignKey(
