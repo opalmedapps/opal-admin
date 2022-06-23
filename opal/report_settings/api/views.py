@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from opal.core.services.hospital import OIECommunicationService
-from opal.core.services.reports import QuestionnaireReportService
+from opal.services.hospital import OIECommunicationService
+from opal.services.reports import QuestionnaireReportService
 
 from .serializers import QuestionnaireReportRequestSerializer
 
