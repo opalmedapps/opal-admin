@@ -30,8 +30,8 @@ urlpatterns = [
     path('api/', include('opal.core.api_urls', namespace='api')),
 
     # apps
-    # hospital settings app
     path('hospital-settings/', include('opal.hospital_settings.urls')),
+    path('patients/', include('opal.patients.urls')),
 
     # global config
     path('admin/', admin.site.urls),

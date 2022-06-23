@@ -54,6 +54,7 @@ THIRD_PARTY_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'django_filters',
+    'django_tables2',
     'corsheaders',
     'easyaudit',
 ]
@@ -353,3 +354,8 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 #
 # Use Twitter Bootstrap (version 4) as a default template for the project
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# Django Tables2
+#
+# Set a default template to use
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'

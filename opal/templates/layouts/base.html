@@ -87,6 +87,23 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
+                {% translate "Patients"|upper %}
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'patients:relationshiptype-list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-people-arrows"></i>
+                  <p class="text">{% translate "Relationship Types" %}</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link">
+              <p>
                 {% translate "Profile"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
