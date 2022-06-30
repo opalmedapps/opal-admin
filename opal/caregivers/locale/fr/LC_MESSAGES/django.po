@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-14 11:09-0400\n"
+"POT-Creation-Date: 2022-06-30 12:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,3 +37,51 @@ msgstr "Profil de proche aidant"
 #: opal/caregivers/models.py
 msgid "Caregiver Profiles"
 msgstr "Profils des proches aidants"
+
+#: opal/caregivers/models.py
+msgid "New"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registered"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Expired"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Blocked"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Relationship"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Status"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Creation Date"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Attempts"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Email Verification Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registration Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registration Codes"
+msgstr ""
