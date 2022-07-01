@@ -17,7 +17,7 @@ opal/hospital_settings/
 ├── templates
 │   └── hospital_settings   # app-specific template files
 ├── tests                   # test files
-│   ├── __init__.py         # 
+│   ├── __init__.py         #
 │   └── ...                 # also contains API tests (prefix file with test_drf_ instead of test_)
 ├── __init__.py
 ├── admin.py                # admin sites
@@ -27,6 +27,7 @@ opal/hospital_settings/
 ├── factories.py            # factory-boy model factories
 ├── forms.py
 ├── models.py
+├── tables.py               # table definitions
 ├── translation.py          # translation options for models
 ├── urls.py                 # app-specific URLs (with relative paths)
 └── views.py

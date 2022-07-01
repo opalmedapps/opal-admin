@@ -14,6 +14,7 @@ The following (non-exhaustive) list gives an overview of packages used on top of
 * [Django Easy Audit](https://github.com/soynatan/django-easy-audit): Auditing package to log all login, requests and CRUD operations on models. Stores these in the database.
 * [Django Crispy Forms](https://github.com/django-crispy-forms/django-crispy-forms): For a simple way to build nice looking templates.
 * [Django Filter](https://django-filter.readthedocs.io/en/main/): For filtering querysets via URL parameters.
+* [django-tables2](https://django-tables2.readthedocs.io/en/latest/): For a simple way to define tables.
 
 This list only covers an excerpt of the most important packages. Please see the base dependencies in `requirements/base.txt` for the full list.
 
