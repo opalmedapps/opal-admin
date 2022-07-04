@@ -37,6 +37,10 @@ msgid "Code"
 msgstr "Code"
 
 #: opal/hospital_settings/models.py
+msgid "Logo"
+msgstr "Logo"
+
+#: opal/hospital_settings/models.py
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
 #: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html
