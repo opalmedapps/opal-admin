@@ -132,6 +132,7 @@ DATABASES = {
         'TEST': {
             'NAME': 'test_{0}'.format(env('DATABASE_NAME')),
         },
+        'ATOMIC_REQUESTS': True,
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
