@@ -14,13 +14,9 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                      <form method="post">
+                      <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form|crispy }}
-                        <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:institution-list' %}">
-                          {% translate "Cancel" %}
-                        </a>
-                        <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
+                        {% crispy form %}
                       </form>
                     </div>
                 </div>
