@@ -1,12 +1,13 @@
 """This module provides views for hospital-specific settings."""
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
-from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
-from django.views.generic.list import ListView
+
+from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
+from . import tables
 from .models import Institution, Site
 
 
@@ -18,10 +19,11 @@ class IndexTemplateView(TemplateView):
 
 
 # INSTITUTIONS
-class InstitutionListView(ListView):
-    """This `ListView` provides a page that displays a list of institution objects."""
+class InstitutionListView(SingleTableView):
+    """This table view provides a page that displays a list of institution objects."""
 
     model = Institution
+    table_class = tables.InstitutionTable
     template_name = 'hospital_settings/institution/institution_list.html'
 
 
@@ -36,13 +38,6 @@ class InstitutionCreateUpdateView(CreateUpdateView):
     template_name = 'hospital_settings/institution/institution_form.html'
     fields = ['name_en', 'name_fr', 'code']
     success_url = reverse_lazy('hospital-settings:institution-list')
-
-
-class InstitutionDetailView(DetailView):
-    """This `DetailView` provides a page that displays a single institution object."""
-
-    model = Institution
-    template_name = 'hospital_settings/institution/institution_detail.html'
 
 
 class InstitutionDeleteView(DeleteView):
@@ -60,10 +55,11 @@ class InstitutionDeleteView(DeleteView):
 
 
 # SITES
-class SiteListView(ListView):
-    """This `ListView` provides a page that displays a list of site objects."""
+class SiteListView(SingleTableView):
+    """This table view provides a page that displays a list of site objects."""
 
     model = Site
+    table_class = tables.SiteTable
     template_name = 'hospital_settings/site/site_list.html'
 
 
@@ -89,13 +85,6 @@ class SiteCreateUpdateView(CreateUpdateView):
         'latitude',
     ]
     success_url = reverse_lazy('hospital-settings:site-list')
-
-
-class SiteDetailView(DetailView):
-    """This `DetailView` provides a page that displays a single site object."""
-
-    model = Site
-    template_name = 'hospital_settings/site/site_detail.html'
 
 
 class SiteDeleteView(DeleteView):
