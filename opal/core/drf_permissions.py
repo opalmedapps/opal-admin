@@ -3,7 +3,10 @@ This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
+from django.http import HttpRequest
+
 from rest_framework import permissions
+from rest_framework.views import APIView
 
 from ..caregivers.models import CaregiverProfile
 from ..patients.models import Relationship, RelationshipStatus
@@ -39,7 +42,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: HttpRequest, view: APIView) -> bool:
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
