@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from opal.legacy.utils import get_patient_sernum
 
+from ...core.drf_permissions import CaregiverPatientPermissions
 from ..models import LegacyAppointment, LegacyNotification
 from .serializers import LegacyAppointmentSerializer
 
@@ -71,3 +72,30 @@ class AppHomeView(APIView):
             Number of unread notifications.
         """
         return LegacyNotification.objects.filter(patientsernum=sernum, readstatus=0).count()
+
+
+class CaregiverPermissionsView(APIView):
+    """
+    Bare-bones API view used to perform a simple caregiver-patient permissions check.
+
+    Validates that a caregiver has permission to view data for a specific patient (based on their relationship).
+    Used by the legacy part of the listener to access functionality from CaregiverPatientPermissions.
+    """
+
+    # The essential work for this request is done by CaregiverPatientPermissions
+    permission_classes = [CaregiverPatientPermissions]
+
+    def get(self, request: HttpRequest, legacy_id: int) -> HttpResponse:
+        """
+        Handle GET requests on `patients/legacy/<legacy_id>/check_permissions`.
+
+        Args:
+            request: Http request made by the listener.
+            legacy_id: The legacy ID used to represent the target patient.
+
+        Returns:
+            Http response containing no data if the permission checks succeed (200 OK), or a permission denied
+            response if the permission checks fail.
+        """
+        # The following empty success response is only returned if CaregiverPatientPermissions succeeds
+        return Response({})
