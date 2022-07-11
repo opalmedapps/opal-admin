@@ -2,7 +2,7 @@
 #
 django==3.2.14
 django-environ==0.9.0  # https://github.com/joke2k/django-environ
-django-extensions==3.1.5  # https://github.com/django-extensions/django-extensions
+django-extensions==3.2.0  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.2  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.13.1  # https://www.django-rest-framework.org/
 dj-rest-auth==2.2.4  # https://github.com/iMerica/dj-rest-auth
