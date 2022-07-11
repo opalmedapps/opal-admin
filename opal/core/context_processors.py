@@ -5,7 +5,7 @@ from django.conf import settings
 from django.http import HttpRequest
 
 
-def opal_admin(request: HttpRequest) -> Dict:
+def opal_global_settings(request: HttpRequest) -> Dict:
     """
     Provide custom context processor that returns a dictionary with the `OpalAdmin` global values.
 
