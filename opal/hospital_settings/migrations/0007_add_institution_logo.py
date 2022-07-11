@@ -14,17 +14,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='institution',
             name='logo',
-            field=models.ImageField(default=None, upload_to='uploads/institution-logo/2022/07/04/', verbose_name='Logo'),
+            field=models.ImageField(default=None, upload_to='uploads/institution-logo/', verbose_name='Logo'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='institution',
             name='logo_en',
-            field=models.ImageField(null=True, upload_to='uploads/institution-logo/2022/07/04/', verbose_name='Logo'),
+            field=models.ImageField(null=True, upload_to='uploads/institution-logo/', verbose_name='Logo'),
         ),
         migrations.AddField(
             model_name='institution',
             name='logo_fr',
-            field=models.ImageField(null=True, upload_to='uploads/institution-logo/2022/07/04/', verbose_name='Logo'),
+            field=models.ImageField(null=True, upload_to='uploads/institution-logo/', verbose_name='Logo'),
         ),
     ]
