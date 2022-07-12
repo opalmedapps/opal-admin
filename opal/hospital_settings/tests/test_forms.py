@@ -1,10 +1,10 @@
 import decimal
+from pathlib import Path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 import pytest
 
-from opal import settings
 from opal.hospital_settings.views import InstitutionCreateUpdateView, SiteCreateUpdateView
 
 from .. import factories
@@ -20,8 +20,8 @@ def test_institution_create() -> None:
         'code': 'TST',
     }
 
-    with open('{0}/images/opal_logo_transparent_purple.png'.format(settings.STATICFILES_DIRS[0]), 'rb') as logo_file:
-        file_content = logo_file.read()
+    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+        file_content = image_logo.read()
 
     files_data = {
         'logo_en': SimpleUploadedFile(
