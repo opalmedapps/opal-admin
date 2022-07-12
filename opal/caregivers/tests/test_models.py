@@ -70,6 +70,40 @@ def test_caregiverprofile_legacy_id() -> None:
     profile.full_clean()
 
 
+def test_security_question_str() -> None:
+    """The `str` method returns the name of the security_question."""
+    question = factories.SecurityQuestion()
+    assert str(question) == 'Apple'
+
+
+def test_security_question_factory() -> None:
+    """Ensure the SecurityQuestion factory is building properly."""
+    question = factories.SecurityQuestion()
+    question.full_clean()
+
+
+def test_security_question_active() -> None:
+    """Security Question is active as default."""
+    question = factories.SecurityQuestion()
+    assert question.is_active
+
+
+def test_security_answer_str() -> None:
+    """The `str` method returns the name of the user and the answer of security answer."""
+    answer = factories.SecurityAnswer()
+    caregiver = user_factories.Caregiver(first_name='first_name', last_name='last_name')
+    profile = CaregiverProfile()
+    profile.user = caregiver
+    answer.user = profile
+    assert str(answer) == 'Apple'
+
+
+def test_security_answer_factory() -> None:
+    """Ensure the SecurityAnswer factory is building properly."""
+    answer = factories.SecurityAnswer()
+    answer.full_clean()
+
+
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
     """The `str` method returns the registration code and status."""
     registration_code = factories.RegistrationCode()

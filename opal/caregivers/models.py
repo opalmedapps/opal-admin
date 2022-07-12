@@ -37,6 +37,65 @@ class CaregiverProfile(models.Model):
         return '{first} {last}'.format(first=self.user.first_name, last=self.user.last_name)
 
 
+class SecurityQuestion(models.Model):
+    """Security question model."""
+
+    title = models.CharField(
+        verbose_name=_('Title'),
+        max_length=100,
+    )
+
+    is_active = models.BooleanField(
+        verbose_name=_('Active'),
+        default=True,
+    )
+
+    class Meta:
+        verbose_name = _('Security Question')
+        verbose_name_plural = _('Security Questions')
+
+    def __str__(self) -> str:
+        """Return the question text.
+
+        Returns:
+            the question text.
+        """
+        return self.title
+
+
+class SecurityAnswer(models.Model):
+    """Security answer model."""
+
+    question = models.CharField(
+        verbose_name=_('Question'),
+        max_length=100,
+    )
+
+    user = models.ForeignKey(
+        to=CaregiverProfile,
+        verbose_name=_('Caregiver Profile'),
+        related_name='security_answers',
+        on_delete=models.CASCADE,
+    )
+
+    answer = models.CharField(
+        verbose_name=_('Answer'),
+        max_length=128,
+    )
+
+    class Meta:
+        verbose_name = _('Security Answer')
+        verbose_name_plural = _('Security Answers')
+
+    def __str__(self) -> str:
+        """Return the caregiver and the question.
+
+        Returns:
+            the caregiver and the question.
+        """
+        return self.question
+
+
 class RegistrationCodeStatus(models.TextChoices):
     """Valid choice of status of a `RegistrationCode`."""
 
