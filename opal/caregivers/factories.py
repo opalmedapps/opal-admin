@@ -18,6 +18,27 @@ class CaregiverProfile(DjangoModelFactory):
     legacy_id = Sequence(lambda number: number + 1)
 
 
+class SecurityQuestion(DjangoModelFactory):
+    """Model factory to create [opal.caregivers.models.SecurityQuestion][] models."""
+
+    class Meta:
+        model = models.SecurityQuestion
+
+    title = 'Apple'
+    title_fr = 'Pomme'
+
+
+class SecurityAnswer(DjangoModelFactory):
+    """Model factory to create [opal.caregivers.models.SecurityAnswer][] models."""
+
+    class Meta:
+        model = models.SecurityAnswer
+
+    question = 'Apple'
+    user = SubFactory(CaregiverProfile)
+    answer = 'answer'
+
+
 class RegistrationCode(DjangoModelFactory):
     """Model factory to create [opal.caregivers.models.RegistrationCode][] models."""
 
