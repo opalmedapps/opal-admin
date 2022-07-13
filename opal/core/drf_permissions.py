@@ -6,7 +6,6 @@ These permissions are provided for the project and intended to be reused.
 from django.http import HttpRequest
 
 from rest_framework import permissions
-from rest_framework.views import APIView
 
 from ..caregivers.models import CaregiverProfile
 from ..patients.models import Relationship, RelationshipStatus
@@ -42,7 +41,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: APIView) -> bool:
+    # view: APIView (cannot import due to circular dependency)
+    def has_permission(self, request: HttpRequest, view) -> bool:  # type: ignore
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -62,7 +62,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         self_caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
 
         # Get the list of relationships between the caregiver and the target patient
-        relationships_with_target = self_caregiver_profile.relationships.filter(
+        # (mypy) relationships exists as a 'related_name' in the Relationship model
+        relationships_with_target = self_caregiver_profile.relationships.filter(  # type: ignore
             patient__legacy_id=patient_legacy_id,
         ) if self_caregiver_profile else Relationship.objects.none()
 
