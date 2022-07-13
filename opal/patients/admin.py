@@ -3,7 +3,7 @@ from django.contrib import admin
 
 from modeltranslation.admin import TranslationAdmin
 
-from .models import RelationshipType
+from . import models
 
 
 class RelationshipTypeAdmin(TranslationAdmin):
@@ -12,4 +12,7 @@ class RelationshipTypeAdmin(TranslationAdmin):
     pass  # noqa: WPS420, WPS604
 
 
-admin.site.register(RelationshipType, RelationshipTypeAdmin)
+admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
+admin.site.register(models.Relationship, admin.ModelAdmin)
+admin.site.register(models.HospitalPatient, admin.ModelAdmin)
+admin.site.register(models.Patient, admin.ModelAdmin)
