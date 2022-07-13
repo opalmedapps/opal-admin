@@ -8,7 +8,9 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Button, Layout, Submit
+from crispy_forms.layout import Button, Layout, Submit
+
+from opal.core.fields import ImageFieldWithPreview
 
 from .models import Institution
 
@@ -30,23 +32,12 @@ class InstitutionForm(forms.ModelForm):
         """
         super(InstitutionForm, self).__init__(*args, **kwargs)  # noqa: WPS608
         self.helper = FormHelper(self)
-        image_html_en = """
-            {% if form.logo_en.value %}
-                <img class="img-fluid" src="{{ MEDIA_URL }}{{ form.logo_en.value }}">
-            {% endif %}
-        """
-        image_html_fr = """
-            {% if form.logo_fr.value %}
-                <img class="img-fluid" src="{{ MEDIA_URL }}{{ form.logo_fr.value }}">
-            {% endif %}
-        """
+
         self.helper.layout = Layout(
             'name_en',
             'name_fr',
-            'logo_en',
-            HTML(image_html_en),
-            'logo_fr',
-            HTML(image_html_fr),
+            ImageFieldWithPreview('logo_en'),
+            ImageFieldWithPreview('logo_fr'),
             'code',
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
