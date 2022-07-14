@@ -1,22 +1,23 @@
-from django.http import HttpResponse
+"""This module is an API view that return the encryption value required to handle registration listener's requests."""
+from django.db.models.functions import SHA512
 
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView
 
 from opal.caregivers.api.serializer import RegistrationEncryptionInfoSerializer
-from opal.caregivers.models import RegistrationCode
-from opal.patients.models import HospitalPatient
+from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 
 
-class GetRegistrationEncryptionInfo(APIView):
+class GetRegistrationEncryptionInfo(RetrieveAPIView):
+    """Class handling gets requests for registration encryption values."""
 
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request, hashcode: str) -> HttpResponse:
-        patientinfo = RegistrationCode.objects.select_related('relationship').get(code=hashcode, status='NEW')
-        mrns = HospitalPatient.objects.filter(patient=patientinfo.relationship.patient)
-        print(mrns)
-        print(patientinfo)
-        return Response(patientinfo.id)
+    queryset = (
+        RegistrationCode.objects.select_related(
+            'relationship',
+            'relationship__patient',
+        ).prefetch_related(
+            'relationship__patient__hospital_patients',
+        ).annotate(code_sha512=SHA512('code')).filter(status=RegistrationCodeStatus.NEW)
+    )
+    serializer_class = RegistrationEncryptionInfoSerializer
+    lookup_url_kwarg = 'hash'
+    lookup_field = 'code_sha512'
