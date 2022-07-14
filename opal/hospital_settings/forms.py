@@ -8,9 +8,9 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Button, Layout, Submit
+from crispy_forms.layout import Layout, Submit
 
-from opal.core.form_layouts import ImageFieldWithPreview
+from opal.core.form_layouts import CancelButton, ImageFieldWithPreview
 
 from .models import Institution
 
@@ -41,13 +41,6 @@ class InstitutionForm(forms.ModelForm):
             'code',
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
-                Button(
-                    'cancel',
-                    _('Cancel'),
-                    css_class='btn btn-secondary mr-2',
-                    onclick="window.location.href = '{0}';".format(
-                        reverse_lazy('hospital-settings:institution-list'),
-                    ),
-                ),
+                CancelButton(reverse_lazy('hospital-settings:institution-list')),
             ),
         )
