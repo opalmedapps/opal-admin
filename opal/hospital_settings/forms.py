@@ -10,7 +10,7 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Button, Layout, Submit
 
-from opal.core.fields import ImageFieldWithPreview
+from opal.core.form_layouts import ImageFieldWithPreview
 
 from .models import Institution
 
