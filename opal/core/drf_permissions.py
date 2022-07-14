@@ -42,7 +42,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
     """
 
     # view: APIView (cannot import due to circular dependency)
-    def has_permission(self, request: HttpRequest, view) -> bool:  # type: ignore
+    def has_permission(self, request: HttpRequest, view) -> bool:  # type: ignore  # noqa: WPS231
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -55,7 +55,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Returns:
             True if the caregiver has a confirmed relationship with the patient; false otherwise.
         """
-        caregiver_username = request.headers['Appuserid']
+        caregiver_username = request.headers.get('Appuserid')
         patient_legacy_id = view.kwargs.get('legacy_id')
 
         # Find the caregiver
@@ -73,13 +73,15 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         )
 
         # Set BasePermission's message field to explain the returned result (non-user-facing)
-        if not self_caregiver_profile:  # noqa: WPS504
+        if not caregiver_username:  # noqa: WPS223
+            self.message = "Requests to APIs using CaregiverPatientPermissions must provide an 'Appuserid' header representing the current user."  # noqa: E501
+        elif not patient_legacy_id:
+            self.message = "Requests to APIs using CaregiverPatientPermissions must provide a 'legacy_id' URL argument representing the target patient."  # noqa: E501
+        elif not self_caregiver_profile:
             self.message = 'Caregiver not found.'
-        elif not relationships_with_target:  # noqa: WPS504
+        elif not relationships_with_target:
             self.message = 'Caregiver does not have a relationship with the patient.'
-        elif not has_valid_relationship:  # noqa: WPS504
+        elif not has_valid_relationship:
             self.message = "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
-        else:
-            self.message = 'Caregiver has a confirmed relationship with the patient.'
 
         return has_valid_relationship
