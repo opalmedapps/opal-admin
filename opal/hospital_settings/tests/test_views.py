@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
 
 from .. import factories
+from ..forms import InstitutionForm
 from ..models import Institution, Site
 
 pytestmark = pytest.mark.django_db
@@ -97,7 +98,7 @@ def test_institution_list_displays_all(user_client: Client) -> None:
 
 def test_institution_update_object_displayed(user_client: Client) -> None:
     """Ensure that the institution detail page displays all fields."""
-    institution = factories.Institution(name_en='TEST1_EN', name_fr='TEST1_FR')
+    institution = factories.Institution(name='TEST1_EN', name_fr='TEST1_FR')
 
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     response = user_client.get(url)
@@ -181,48 +182,136 @@ def test_site_update_object_displayed(user_client: Client) -> None:
     assertContains(response, site.institution.name)
 
 
-def test_institution_created(user_client: Client) -> None:
+def test_institution_created(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully created."""
     url = reverse('hospital-settings:institution-create')
-    institution = factories.Institution.build()
-    form_data = model_to_dict(institution, exclude=['id'])
 
-    user_client.post(url, data=form_data)
+    assert institution_form.is_valid()
+
+    user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assert Institution.objects.count() == 1
-    assert Institution.objects.all()[0].name == institution.name
+    assert Institution.objects.all()[0].name == institution_form.cleaned_data['name_en']
 
 
-def test_institution_successful_create_redirects(user_client: Client) -> None:
+def test_incomplete_institution_create(
+    user_client: Client,
+    incomplete_institution_form: InstitutionForm,
+) -> None:
+    """Ensure that new incomplete institution (with missing institution code) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+
+    response = user_client.post(
+        url,
+        data=incomplete_institution_form.data,
+        files=incomplete_institution_form.files,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
+def test_institution_with_no_logos_create(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that new incomplete institution (with missing logo images) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+
+    response = user_client.post(
+        url,
+        data=institution_form.data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
+def test_institution_successful_create_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that after a successful creation of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-create')
-    institution = factories.Institution.build()
-    form_data = model_to_dict(institution, exclude=['id'])
-
-    response = user_client.post(url, data=form_data)
+    assert institution_form.is_valid()
+    response = user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
-def test_institution_updated(user_client: Client) -> None:
+def test_institution_updated(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully updated."""
-    institution = factories.Institution()
+    assert institution_form.is_valid()
 
-    url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    institution.name = 'updated'
-    form_data = model_to_dict(institution)
+    institution_form.save()
 
-    user_client.post(url, data=form_data)
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
 
-    assert Institution.objects.all()[0].name == 'updated'
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    user_client.post(path=url, data=form_data, files=institution_form.files)
+
+    assert Institution.objects.all()[0].name_en == 'updated name_en'
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
 
 
-def test_institution_successful_update_redirects(user_client: Client, institution: Institution) -> None:
+def test_incomplete_institution_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that incomplete institution (with missing institution code) form cannot update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('code')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+        files=institution_form.files,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.all()[0].name_en != 'updated name_en'
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'
+
+
+def test_institution_with_no_logos_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that institution form (with missing logo images) can update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertRedirects(response, reverse('hospital-settings:institution-list'))
+    assert Institution.objects.all()[0].name_en == 'updated name_en'
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+
+
+def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that after a successful update of an institution, the page is redirected to the list page."""
-    url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    form_data = model_to_dict(institution)
+    assert institution_form.is_valid()
+    institution_form.save()
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
 
-    response = user_client.post(url, data=form_data)
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+
+    response = user_client.post(url, data=form_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 

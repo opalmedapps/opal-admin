@@ -15,6 +15,8 @@ Examples:
         1. Import the include() function: from django.urls import include, path
         2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -25,6 +27,9 @@ from django.views.generic.base import RedirectView
 
 from .core.views import LoginView
 
+# This approach for serving static files is only for develpoment!
+# Please see: https://docs.djangoproject.com/en/3.2/howto/static-files/deployment/
+# TODO: Serving static files in production
 urlpatterns = [
     # REST API
     path('api/', include('opal.core.api_urls', namespace='api')),
@@ -48,6 +53,8 @@ urlpatterns = [
         name='favicon.ico',
     ),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')

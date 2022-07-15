@@ -107,7 +107,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.static',
-                'opal.core.context_processors.opal_admin',
+                'django.template.context_processors.media',
+                'opal.core.context_processors.opal_global_settings',
             ],
         },
     },
@@ -259,6 +260,15 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
+# Media files (ONLY DURING DEVELOPMENT!!!)
+# Serving files uploaded by a user during development
+# https://docs.djangoproject.com/en/4.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development
+#
+# For the prod deployemnt, follow the guides:
+# https://docs.djangoproject.com/en/4.0/howto/static-files/deployment/#how-to-deploy-static-files
+# https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Deployment
+MEDIA_URL = '/media/'
+MEDIA_ROOT = APPS_DIR / 'media'
 
 # SECURITY
 # ------------------------------------------------------------------------------
