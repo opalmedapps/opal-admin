@@ -1,5 +1,6 @@
 """This module provides models for hospital-specific settings."""
 
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -25,6 +26,11 @@ class Location(models.Model):
 
 class Institution(Location):
     """A hospital institution."""
+
+    logo = models.ImageField(
+        _('Logo'),
+        upload_to='uploads/institution-logo/',
+    )
 
     class Meta:
         ordering = ['name']
