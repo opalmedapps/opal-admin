@@ -1,7 +1,9 @@
 """Module providing business logic for the hospital's internal communicatoin (e.g., Opal Integration Engine)."""
 
 import json
+from datetime import datetime
 from http import HTTPStatus
+from typing import NamedTuple
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -11,32 +13,37 @@ from requests.auth import HTTPBasicAuth
 from requests.exceptions import RequestException
 
 
+class QuestionnairePDFReport(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for exporting questionnaire PDF report to the OIE."""
+
+    mrn: str                 # one of the patient's MRNs for the site
+    site: str                # one of the patient's site code for the MRN
+    base64_content: str      # the base64-encoded PDF
+    document_type: str       # the document number (e.g., FMU-... or MU-...)
+    document_date: datetime  # the datetime in YYYY-MM-DD HH:II:SS
+
+
 class OIECommunicationService:
     """Service that provides functionality for communication with Opal Integration Engine (OIE)."""
 
     def export_questionnaire_report(
         self,
-        mrn: str,
-        site: str,
-        base64_content: bytes,
-        document_type: str,
-        document_date,
+        report_data: QuestionnairePDFReport,
     ) -> JsonResponse:
         """Send base64 encoded questionnaire PDF report to the OIE.
 
         Args:
-            report (str): questionnaire PDF report in a base64 string format
+            report_data (QuestionnairePDFReport): questionnaire PDF report data needed to call OIE endpoint
 
         Returns:
             JsonResponse: HTTP JSON response
         """
         pload = json.dumps({
-            'mrn': '999996',
-            'site': 'RVH',
-            'reportContent': report,
-            'docType': 'Opal Completed Questionnaires',
-            'documentDate': '2022-06-20 10:17:30',
-            'destination': 'Streamline',
+            'mrn': report_data.mrn,
+            'site': report_data.site,
+            'reportContent': report_data.base64_content,
+            'docType': report_data.document_type,
+            'documentDate': report_data.document_date,
         })
 
         # Try to send a request and get a response
