@@ -326,6 +326,14 @@ LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)
 # Legacy URL for generating questionnaires report
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
 
+# Opal Integration Engine (OIE) URLs
+#
+# Credentials
+OIE_USER = env('OIE_USER')
+OIE_PASSWORD = env('OIE_PASSWORD')
+# API endpoint for publishing reports
+OIE_HOST = env.url('OIE_HOST').geturl()
+
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
