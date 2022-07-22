@@ -57,6 +57,7 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
+    'formtools',
 ]
 
 LOCAL_APPS = [
