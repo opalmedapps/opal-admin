@@ -323,6 +323,9 @@ OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
 LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)
 
+# Legacy URL for generating questionnaires report
+LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
+
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
