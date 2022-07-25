@@ -47,5 +47,5 @@ class Base64Util:
 
         try:
             return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
-        except ValueError:
+        except (ValueError, TypeError):
             return False

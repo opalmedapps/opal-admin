@@ -11,9 +11,10 @@ from django.http import JsonResponse
 
 import requests
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import RequestException
 
-from opal.utils.base64_util import Base64Util
+from ..hospital_settings.models import Site
+from ..patients.models import HospitalPatient
+from ..utils.base64_util import Base64Util
 
 
 class OIEReportExportData(NamedTuple):
@@ -71,7 +72,7 @@ class OIECommunicationService:
                 timeout=5,
                 verify=False,  # noqa: S501
             )
-        except RequestException as req_exp:
+        except requests.exceptions.RequestException as req_exp:
             return JsonResponse({'status': HTTPStatus.BAD_REQUEST, 'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
@@ -82,7 +83,10 @@ class OIECommunicationService:
 
         return JsonResponse(json_data)
 
-    def _is_report_export_data_valid(self, report_data: OIEReportExportData) -> bool:
+    def _is_report_export_data_valid(
+        self,
+        report_data: OIEReportExportData,
+    ) -> bool:
         """Check if OIE report export data is valid.
 
         Args:
@@ -91,17 +95,13 @@ class OIECommunicationService:
         Returns:
             bool: boolean value showing if OIE report export data is valid
         """
-        # check if mrn exists
-        # if LegacyPatientHospitalIdentifier.objects.filter(MRN=report_data.mrn).exists()
-
-        # check if site exists
-        # if LegacyPatientHospitalIdentifier.objects.filter(
-        # Hospital_Identifier_Type_Code=report_data.site
-        # ).exists()
-
-        return (  # check if report content is base64
-            Base64Util().base64_util.is_base64(report_data.base64_content)
-            # check if document type format is valid?
-            and re.compile('(^FU-[a-zA-Z]+$)|(^FMU-[a-zA-Z]+$)')
-            # check document date?
+        reg_exp = re.compile('(^FU-[a-zA-Z]+$)|(^FMU-[a-zA-Z]+$)')
+        return (  # check if mrn exists
+            HospitalPatient.objects.filter(mrn=report_data.mrn).exists()
+            # check if site exists
+            and Site.objects.filter(code=report_data.site).exists()
+            # check if report content is base64
+            and Base64Util().is_base64(report_data.base64_content)
+            # check if document type format is valid
+            and bool(reg_exp.match(report_data.document_type))
         )

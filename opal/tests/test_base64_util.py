@@ -21,7 +21,6 @@ def test_is_base64_valid_string_returns_true() -> None:
 def test_is_base64_invalid_string_returns_false() -> None:
     """Ensure `False` value is returned for an invalid base64 string."""
     assert base64_util.is_base64('TEST1') is False
-    assert base64_util.is_base64(b'TEST1') is False
     assert base64_util.is_base64('TEST==') is False
     assert base64_util.is_base64('==') is False
     assert base64_util.is_base64('.') is False
@@ -36,27 +35,37 @@ def test_is_base64_empty_string_returns_false() -> None:
     assert base64_util.is_base64('\r\n') is False
 
 
-def test_is_base64_none_returns_false() -> None:
-    """Ensure `False` value is returned for a passed `None` value."""
-    assert base64_util.is_base64(None) is False
+def test_is_base64_type_error_returns_false() -> None:
+    """Ensure `False` value is returned for a passed non-string value."""
+    is_base64 = False
+    try:
+        assert base64_util.is_base64(b'OPALTEST') is False  # type: ignore
+    except TypeError:
+        assert is_base64 is False
+
+    is_base64 = False
+    try:
+        assert base64_util.is_base64(None) is False  # type: ignore
+    except TypeError:
+        assert is_base64 is False
 
 
 def test_is_base64_non_ascii_error() -> None:
     """Ensure function catches non-ascii character exceptions/errors."""
-    string = ''
+    is_base64 = False
     try:
-        string = base64_util.is_base64('Centre universitaire de santé McGill')
+        is_base64 = base64_util.is_base64('Centre universitaire de santé McGill')
     except ValueError:
-        assert string == ''
+        assert is_base64 is False
 
 
 def test_is_base64_non_base64_error() -> None:
     """Ensure function catches non-base64 character exceptions/errors."""
-    string = ''
+    is_base64 = False
     try:
-        string = base64_util.is_base64('@opal@')
+        is_base64 = base64_util.is_base64('@opal@')
     except ValueError:
-        assert string == ''
+        assert is_base64 is False
 
 
 # encode_image_to_base64 function tests
