@@ -14,7 +14,7 @@ from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
-from opal.patients.forms import SelectSiteForm
+from opal.patients.forms import SearchForm, SelectSiteForm
 
 from .models import RelationshipType, Site
 from .tables import RelationshipTypeTable
@@ -73,8 +73,14 @@ class AccessRequestView(SessionWizardView):
     """
 
     model = Site
-    form_list = [('site', SelectSiteForm)]
-    template_list = {'site': 'patients/access_request/access_request.html'}
+    form_list = [
+        ('site', SelectSiteForm),
+        ('search', SearchForm),
+    ]
+    template_list = {
+        'site': 'patients/access_request/access_request.html',
+        'search': 'patients/access_request/access_request.html',
+    }
 
     def get_template_names(self) -> List[str]:
         """

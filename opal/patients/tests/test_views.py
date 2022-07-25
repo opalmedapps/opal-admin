@@ -131,16 +131,28 @@ def test_patient_wizard_current_step(
     assertQuerysetEqual(management_form['current_step'].value(), 'site')
 
 
-def test_access_request_done_redirects(user_client: Client) -> None:
+def test_access_request_done_redirects_temp(user_client: Client) -> None:
     """Ensure that when the page is submitted it redirects to the final page."""
     url = reverse('patients:access-request')
     site = factories.Site()
-    form_data = {
-        'site-sites': site.pk,
-        'access_request_view-current_step': 'site',
-    }
 
-    response = user_client.post(url, data=form_data)
+    form_data = [
+        ('site', {'sites': site.pk}),
+        ('search', {'medical_card': 'mrn', 'medical_number': '999996'}),
+    ]
 
-    assert response.status_code == HTTPStatus.OK
-    assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
+    for step, step_data in form_data:
+        step_data = {
+            '{0}-{1}'.format(step, key): value
+            for key, value in step_data.items()
+        }
+        step_data['access_request_view-current_step'] = step
+        response = user_client.post(url, step_data, follow=True)
+        assert response.status_code == HTTPStatus.OK
+
+        if 'site' in step:
+            management_form = response.context['wizard']['management_form']
+            assertQuerysetEqual(management_form['current_step'].value(), 'search')
+
+        elif 'search' in step:
+            assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')

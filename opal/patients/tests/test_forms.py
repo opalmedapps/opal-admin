@@ -1,7 +1,7 @@
 import pytest
 
 from opal.hospital_settings import factories
-from opal.patients.forms import SelectSiteForm
+from opal.patients.forms import SearchForm, SelectSiteForm
 
 pytestmark = pytest.mark.django_db
 
@@ -25,5 +25,29 @@ def test_site_selection_not_exist() -> None:
     }
 
     form = SelectSiteForm(data=form_data)
+
+    assert not form.is_valid()
+
+
+def test_search_form_valid() -> None:
+    """Ensure that the search form is valid."""
+    form_data = {
+        'medical_card': 'mrn',
+        'medical_number': '999996',
+    }
+
+    form = SearchForm(data=form_data)
+
+    assert form.is_valid()
+
+
+def test_search_form_invalid() -> None:
+    """Ensure that the search form is invalid."""
+    form_data = {
+        'medical_card': '',
+        'medical_number': '',
+    }
+
+    form = SearchForm(data=form_data)
 
     assert not form.is_valid()
