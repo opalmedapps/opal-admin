@@ -60,36 +60,6 @@ def test_is_report_export_data_valid_success() -> None:
     assert oie_service._is_report_export_data_valid(report_data)
 
 
-def test_is_report_export_data_invalid_mrn() -> None:
-    """Ensure `OIEReportExportData` with invalid MRN are handled and does not result in an error."""
-    hospital_patient = HospitalPatient()
-
-    report_data = OIEReportExportData(
-        mrn='INVALID MRN',
-        site=hospital_patient.site.code,
-        base64_content=BASE64_ENCODED_REPORT,
-        document_type=DOCUMENT_TYPE,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
-
-
-def test_is_report_export_data_invalid_site() -> None:
-    """Ensure `OIEReportExportData` with invalid site are handled and does not result in an error."""
-    hospital_patient = HospitalPatient()
-
-    report_data = OIEReportExportData(
-        mrn=hospital_patient.mrn,
-        site='INVALID SITE',
-        base64_content=BASE64_ENCODED_REPORT,
-        document_type=DOCUMENT_TYPE,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
-
-
 def test_is_report_export_data_invalid_content() -> None:
     """Ensure `OIEReportExportData` with invalid base64 content are handled and does not result in an error."""
     hospital_patient = HospitalPatient()
@@ -236,54 +206,6 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         timeout=5,
         verify=False,
     )
-
-
-def test_export_pdf_report_ivalid_mrn(mocker: MockerFixture) -> None:
-    """Ensure report export request with invalid MRN is handled and does not result in an error."""
-    hospital_patient = HospitalPatient()
-
-    # mock actual OIE API call
-    generated_report_data = _create_report_export_response_data()
-    mock_post = _mock_requests_post(mocker, generated_report_data)
-    mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
-
-    report_data = oie_service.export_pdf_report(
-        OIEReportExportData(
-            mrn='invalid MRN',
-            site=hospital_patient.site.code,
-            base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
-            document_date=datetime.now(),
-        ),
-    )
-
-    assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
-
-
-def test_export_pdf_report_ivalid_site(mocker: MockerFixture) -> None:
-    """Ensure report export request with invalid site is handled and does not result in an error."""
-    hospital_patient = HospitalPatient()
-
-    # mock actual OIE API call
-    generated_report_data = _create_report_export_response_data()
-    mock_post = _mock_requests_post(mocker, generated_report_data)
-    mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
-
-    report_data = oie_service.export_pdf_report(
-        OIEReportExportData(
-            mrn=hospital_patient.mrn,
-            site='invalid site code',
-            base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
-            document_date=datetime.now(),
-        ),
-    )
-
-    assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
 
 
 def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:

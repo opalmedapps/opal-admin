@@ -10,7 +10,6 @@ import requests
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
-from opal.legacy.models import LegacyPatient
 from opal.utils.base64 import Base64Util
 
 
@@ -109,10 +108,8 @@ class ReportService():
         """
         languages = dict(settings.LANGUAGES)
 
-        return (  # check if patient_id (PatientSerNum) exists
-            LegacyPatient.objects.filter(patientsernum=report_data.patient_id).exists()
-            # check if logo_path exists
-            and report_data.logo_path.exists()
+        return (  # check if logo_path exists
+            report_data.logo_path.exists()
             # check if language exists
             and report_data.language in languages
         )

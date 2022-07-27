@@ -65,19 +65,6 @@ def test_is_questionnaire_report_data_valid() -> None:
     assert reports_service._is_questionnaire_report_request_data_valid(report_data)
 
 
-def test_is_questionnaire_report_invalid_patient() -> None:
-    """Ensure invalid `QuestionnaireReportRequestData` (invalid patient) are handled and does not result in an error."""
-    LegacyPatientFactory()
-
-    report_data = QuestionnaireReportRequestData(
-        patient_id=INVALID_PATIENT_SER_NUM,
-        logo_path=LOGO_PATH,
-        language='en',
-    )
-
-    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
-
-
 def test_is_questionnaire_report_invalid_logo() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid logo) are handled and does not result in an error."""
     LegacyPatientFactory()
@@ -308,24 +295,6 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert base64_report == ''
-
-
-def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
-    """Ensure invalid patient id is handled and does not result in an error."""
-    LegacyPatientFactory()
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
-    mock_post = _mock_requests_post(mocker, generated_report_data)
-
-    base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=INVALID_PATIENT_SER_NUM,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
-    )
-
-    assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report == ''
 
 
