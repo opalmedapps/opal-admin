@@ -259,7 +259,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     assert mock_post.return_value.status_code == HTTPStatus.OK
 
     headers = {'Content-Type': 'application/json'}
-    pload = json.dumps({
+    payload = json.dumps({
         'patient_id': PATIENT_SER_NUM,
         'logo_base64': Base64Util().encode_image_to_base64(LOGO_PATH),
         'language': 'en',
@@ -267,7 +267,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     mock_post.assert_called_once_with(
         url=TEST_LEGACY_QUESTIONNAIRES_REPORT_URL,
         headers=headers,
-        data=pload,
+        data=payload,
     )
 
 

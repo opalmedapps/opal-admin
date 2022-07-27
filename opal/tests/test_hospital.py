@@ -222,7 +222,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
 
     assert report_data.status_code == HTTPStatus.OK
 
-    pload = json.dumps({
+    payload = json.dumps({
         'mrn': hospital_patient.mrn,
         'site': hospital_patient.site.code,
         'reportContent': BASE64_ENCODED_REPORT,
@@ -231,7 +231,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
     })
     mock_post.assert_called_once_with(
         '{0}{1}'.format(OIE_HOST, 'reports/post'),
-        json=pload,
+        json=payload,
         auth=HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
         timeout=5,
         verify=False,

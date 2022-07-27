@@ -56,7 +56,7 @@ class OIECommunicationService:
                 status=HTTPStatus.BAD_REQUEST,
             )
 
-        pload = json.dumps({
+        payload = json.dumps({
             'mrn': report_data.mrn,
             'site': report_data.site,
             'reportContent': report_data.base64_content,
@@ -70,7 +70,7 @@ class OIECommunicationService:
             response = requests.post(
                 '{0}{1}'.format(settings.OIE_HOST, 'reports/post'),
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
-                json=pload,
+                json=payload,
                 timeout=5,
                 verify=False,  # noqa: S501
             )
