@@ -30,5 +30,6 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
+    path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
     path('', include(router.urls)),
 ]
