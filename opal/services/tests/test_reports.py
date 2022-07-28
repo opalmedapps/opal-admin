@@ -9,13 +9,12 @@ from pytest_mock.plugin import MockerFixture
 from requests import Response
 from requests.exceptions import RequestException
 
-from opal.legacy.factories import LegacyPatientFactory
 from opal.services.reports import QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
-INVALID_PATIENT_SER_NUM = 0
+INVALID_PATIENT_SER_NUM = -1
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
 PATIENT_SER_NUM = 51
@@ -54,8 +53,6 @@ def _mock_requests_post(
 
 def test_is_questionnaire_report_data_valid() -> None:
     """Ensure `QuestionnaireReportRequestData` successfully validates."""
-    LegacyPatientFactory()
-
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
         logo_path=LOGO_PATH,
@@ -65,10 +62,19 @@ def test_is_questionnaire_report_data_valid() -> None:
     assert reports_service._is_questionnaire_report_request_data_valid(report_data)
 
 
+def test_is_questionnaire_report_invalid_patient() -> None:
+    """Ensure invalid `QuestionnaireReportRequestData` (invalid patient) are handled and does not result in an error."""
+    report_data = QuestionnaireReportRequestData(
+        patient_id=INVALID_PATIENT_SER_NUM,
+        logo_path=LOGO_PATH,
+        language='en',
+    )
+
+    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
+
+
 def test_is_questionnaire_report_invalid_logo() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid logo) are handled and does not result in an error."""
-    LegacyPatientFactory()
-
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
         logo_path=Path('invalid/logo/path'),
@@ -80,8 +86,6 @@ def test_is_questionnaire_report_invalid_logo() -> None:
 
 def test_is_questionnaire_report_invalid_language() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid language) are handled without errors."""
-    LegacyPatientFactory()
-
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
         logo_path=LOGO_PATH,
@@ -262,13 +266,12 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 
 def test_questionnaire_report(mocker: MockerFixture) -> None:
     """Ensure the returned value is base64 encoded pdf report."""
-    patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
-            patient_id=patient.patientsernum,
+            patient_id=PATIENT_SER_NUM,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -281,14 +284,13 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     """Ensure function failure is handled and does not result in an error."""
-    patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.BAD_REQUEST))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
-            patient_id=patient.patientsernum,
+            patient_id=INVALID_PATIENT_SER_NUM,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -298,15 +300,31 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     assert base64_report == ''
 
 
-def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
-    """Ensure invalid logo path is handled and does not result in an error."""
-    patient = LegacyPatientFactory()
+def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
+    """Ensure invalid patient id is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
-            patient_id=patient.patientsernum,
+            patient_id=INVALID_PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
+    )
+
+    assert mock_post.return_value.status_code == HTTPStatus.OK
+    assert base64_report == ''
+
+
+def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
+    """Ensure invalid logo path is handled and does not result in an error."""
+    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    mock_post = _mock_requests_post(mocker, generated_report_data)
+
+    base64_report = reports_service.generate_questionnaire_report(
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
             logo_path=Path('invalid/logo/path'),
             language='en',
         ),
@@ -318,13 +336,12 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     """Ensure invalid language is handled and does not result in an error."""
-    patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
-            patient_id=patient.patientsernum,
+            patient_id=PATIENT_SER_NUM,
             logo_path=LOGO_PATH,
             language='invalid language',
         ),

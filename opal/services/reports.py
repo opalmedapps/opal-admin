@@ -108,8 +108,10 @@ class ReportService():
         """
         languages = dict(settings.LANGUAGES)
 
-        return (  # check if logo_path exists
-            report_data.logo_path.exists()
+        return (  # check if patient_id is a positive number
+            report_data.patient_id >= 0
+            # check if logo_path exists
+            and report_data.logo_path.exists()
             # check if language exists
             and report_data.language in languages
         )

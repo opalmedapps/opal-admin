@@ -105,6 +105,7 @@ class OIECommunicationService:
         Returns:
             bool: boolean value showing if OIE report export data is valid
         """
+        # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
         reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
         return (  # check if MRN is not empty
             bool(report_data.mrn.strip())
