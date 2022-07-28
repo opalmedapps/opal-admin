@@ -14,3 +14,13 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = LegacyAppointment
         fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible']
+
+
+class UnreadCountSerializer(serializers.Serializer):
+    """Serializer a dictionary having several key-value pairs."""
+
+    unread_appointment_count = serializers.IntegerField()
+    unread_document_count = serializers.IntegerField()
+    unread_txteammessage_count = serializers.IntegerField()
+    unread_educationalmaterial_count = serializers.IntegerField()
+    unread_questionnaire_count = serializers.IntegerField()

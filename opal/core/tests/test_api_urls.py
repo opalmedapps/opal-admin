@@ -39,3 +39,10 @@ def test_api_auth_defined(settings: SettingsWrapper) -> None:
     auth_login_path = '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
     assert reverse('api:rest_login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:rest_login'
+
+
+def test_api_app_chart_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API app chart endpoints are defined."""
+    app_chart_path = '/{api_root}/app/chart/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:app-chart') == app_chart_path
+    assert resolve(app_chart_path).view_name == 'api:app-chart'

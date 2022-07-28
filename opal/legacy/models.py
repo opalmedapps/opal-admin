@@ -17,6 +17,8 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 """
 from django.db import models
 
+from . import managers
+
 
 class LegacyUsers(models.Model):
     """User model from the legacy database OpalDB."""
@@ -47,6 +49,7 @@ class LegacyNotification(models.Model):
     notificationsernum = models.AutoField(db_column='NotificationSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyNotificationManager = managers.LegacyNotificationManager()
 
     class Meta:
         managed = False
@@ -71,6 +74,8 @@ class LegacyAppointment(models.Model):
     scheduledstarttime = models.DateTimeField(db_column='ScheduledStartTime')
     checkin = models.IntegerField(db_column='Checkin')
     status = models.CharField(db_column='Status', max_length=100)
+    readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
     class Meta:
         managed = False
@@ -113,3 +118,55 @@ class LegacyAppointmentcheckin(models.Model):
     class Meta:
         managed = False
         db_table = 'AppointmentCheckin'
+
+
+class LegacyDocument(models.Model):
+    """Document model from the legacy database OpalDB."""
+
+    documentsernum = models.AutoField(db_column='DocumentSerNum', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyDocumentManager = managers.LegacyDocumentManager()
+
+    class Meta:
+        managed = False
+        db_table = 'Document'
+
+
+class LegacyTxTeamMessage(models.Model):
+    """Txteammessage model from the legacy database OpalDB."""
+
+    txteammessagesernum = models.AutoField(db_column='TxTeamMessageSerNum', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyTxTeamMessageManager = managers.LegacyTxTeamMessageManager()
+
+    class Meta:
+        managed = False
+        db_table = 'TxTeamMessage'
+
+
+class LegacyEducationalMaterial(models.Model):
+    """Educationalmaterial model from the legacy database OpalDB."""
+
+    educationalmaterialsernum = models.AutoField(db_column='EducationalMaterialSerNum', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyEducationalMaterialManager = managers.LegacyEducationalMaterialManager()
+
+    class Meta:
+        managed = False
+        db_table = 'EducationalMaterial'
+
+
+class LegacyQuestionnaire(models.Model):
+    """Questionnaire model from the legacy database OpalDB."""
+
+    questionnairesernum = models.BigAutoField(db_column='QuestionnaireSerNum', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    completedflag = models.IntegerField(db_column='CompletedFlag')
+    objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
+
+    class Meta:
+        managed = False
+        db_table = 'Questionnaire'
