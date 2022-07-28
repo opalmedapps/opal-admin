@@ -20,6 +20,8 @@ services:
     command: python manage.py runserver 0:8000
     environment:
       # overwrite for container to allow both container and local venv
+      # for linux users, you can replace the host.docker.internal by 172.17.0.1 which is the
+      # default docker address, because host.docker.internal does not work in linux - docker-compose
       - DATABASE_HOST=db
       - LEGACY_DATABASE_HOST=host.docker.internal
     volumes:
