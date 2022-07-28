@@ -53,7 +53,7 @@ def test_is_report_export_data_valid_success() -> None:
         mrn=hospital_patient.mrn,
         site=hospital_patient.site.code,
         base64_content=BASE64_ENCODED_REPORT,
-        document_type=DOCUMENT_TYPE,
+        document_number=DOCUMENT_TYPE,
         document_date=datetime.now(),
     )
 
@@ -68,7 +68,7 @@ def test_is_report_export_data_invalid_content() -> None:
         mrn=hospital_patient.mrn,
         site=hospital_patient.site.code,
         base64_content='INVALID CONTENT',
-        document_type=DOCUMENT_TYPE,
+        document_number=DOCUMENT_TYPE,
         document_date=datetime.now(),
     )
 
@@ -83,7 +83,7 @@ def test_is_report_export_data_invalid_doc_type() -> None:
         mrn=hospital_patient.mrn,
         site=hospital_patient.site.code,
         base64_content=BASE64_ENCODED_REPORT,
-        document_type='FU-INVALID DOCUMENT TYPE',
+        document_number='FU-INVALID DOCUMENT TYPE',
         document_date=datetime.now(),
     )
 
@@ -105,7 +105,7 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
+            document_number=DOCUMENT_TYPE,
             document_date=datetime.now(),
         ),
     )
@@ -134,7 +134,7 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
+            document_number=DOCUMENT_TYPE,
             document_date=datetime.now(),
         ),
     )
@@ -158,7 +158,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
+            document_number=DOCUMENT_TYPE,
             document_date=datetime.now(),
         ),
     )
@@ -185,7 +185,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content=BASE64_ENCODED_REPORT,
-            document_type=DOCUMENT_TYPE,
+            document_number=DOCUMENT_TYPE,
             document_date=datetime.now(),
         ),
     )
@@ -222,7 +222,7 @@ def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content='',
-            document_type=DOCUMENT_TYPE,
+            document_number=DOCUMENT_TYPE,
             document_date=datetime.now(),
         ),
     )
@@ -246,7 +246,7 @@ def test_export_pdf_report_ivalid_doc_type(mocker: MockerFixture) -> None:
             mrn=hospital_patient.mrn,
             site=hospital_patient.site.code,
             base64_content=BASE64_ENCODED_REPORT,
-            document_type='invalid document type',
+            document_number='invalid document type',
             document_date=datetime.now(),
         ),
     )

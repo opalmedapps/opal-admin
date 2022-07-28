@@ -12,7 +12,7 @@ from django.http import JsonResponse
 import requests
 from requests.auth import HTTPBasicAuth
 
-from ..utils.base64 import Base64Util
+from opal.utils.base64 import Base64Util
 
 
 class OIEReportExportData(NamedTuple):
@@ -22,14 +22,14 @@ class OIEReportExportData(NamedTuple):
         mrn (str): one of the patient's MRNs for the site
         site (str): one of the patient's site code for the MRN
         base64_content (str): the base64-encoded PDF (e.g., questionnaire PDF report)
-        document_type (str): the document number (e.g., FMU-... or MU-...)
+        document_number (str): the document number (e.g., FMU-... or MU-...)
         document_date (datetime): the datetime in YYYY-MM-DD HH:II:SS
     """
 
     mrn: str
     site: str
     base64_content: str
-    document_type: str
+    document_number: str
     document_date: datetime
 
 
@@ -59,7 +59,7 @@ class OIECommunicationService:
             'mrn': report_data.mrn,
             'site': report_data.site,
             'reportContent': report_data.base64_content,
-            'docType': report_data.document_type,
+            'docType': report_data.document_number,
             'documentDate': report_data.document_date.strftime('%Y-%m-%d %H:%M:%S'),
         })
 
@@ -106,8 +106,12 @@ class OIECommunicationService:
             bool: boolean value showing if OIE report export data is valid
         """
         reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
-        return (  # check if report content is base64
-            Base64Util().is_base64(report_data.base64_content)
+        return (  # check if MRN is not empty
+            bool(report_data.mrn.strip())
+            # check if site is not empty
+            and bool(report_data.site.strip())
+            # check if report content is base64
+            and Base64Util().is_base64(report_data.base64_content)
             # check if document type format is valid
-            and bool(reg_exp.match(report_data.document_type))
+            and bool(reg_exp.match(report_data.document_number))
         )
