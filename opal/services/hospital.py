@@ -55,6 +55,7 @@ class OIECommunicationService:
                 status=HTTPStatus.BAD_REQUEST,
             )
 
+        # TODO: Change docType to docNumber once the OIE's endpoint is updated
         payload = json.dumps({
             'mrn': report_data.mrn,
             'site': report_data.site,
@@ -106,6 +107,7 @@ class OIECommunicationService:
             bool: boolean value showing if OIE report export data is valid
         """
         # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
+        # TODO: Confirm the regex pattern for the document number
         reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
         return (  # check if MRN is not empty
             bool(report_data.mrn.strip())

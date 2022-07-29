@@ -83,12 +83,12 @@ def test_encode_image_to_base64_invalid_path() -> None:
     base64_str = ''
     try:
         base64_str = base64_util.encode_image_to_base64(Path('test/invalid/path'))
-    except IOError:
+    except OSError:
         assert base64_str == ''
 
     try:
         base64_str = base64_util.encode_image_to_base64(Path(''))
-    except IOError:
+    except OSError:
         assert base64_str == ''
 
 
