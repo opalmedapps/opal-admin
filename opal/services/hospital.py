@@ -4,10 +4,9 @@ import json
 import re
 from datetime import datetime
 from http import HTTPStatus
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from django.conf import settings
-from django.http import JsonResponse
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -36,24 +35,29 @@ class OIEReportExportData(NamedTuple):
 class OIECommunicationService:
     """Service that provides functionality for communication with Opal Integration Engine (OIE)."""
 
+    # TODO: Update return format/data type
+    # TODO: Raise user-defined exceptions for the error cases
     def export_pdf_report(
         self,
         report_data: OIEReportExportData,
-    ) -> JsonResponse:
+    ) -> dict[str, Any]:
         """Send base64 encoded PDF report to the OIE.
 
         Args:
             report_data (OIEReportExportData): PDF report data needed to call OIE endpoint
 
         Returns:
-            JsonResponse: HTTP JSON response
+            dict[str, dict]: JSON object response
         """
-        # return a `JsonResponse` with a BAD_REQUEST if `OIEReportExportData` is not valid
+        # Return a `JsonResponse` with a BAD_REQUEST if `OIEReportExportData` is not valid
         if not self._is_report_export_data_valid(report_data):
-            return JsonResponse(
-                data={'status': HTTPStatus.BAD_REQUEST, 'message': 'invalid export data'},
-                status=HTTPStatus.BAD_REQUEST,
-            )
+            return {
+                'status': 'error',
+                'data': {
+                    'message': 'Provided request data are invalid.',
+                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
+                },
+            }
 
         # TODO: Change docType to docNumber once the OIE's endpoint is updated
         payload = json.dumps({
@@ -76,24 +80,33 @@ class OIECommunicationService:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return JsonResponse(
-                data={'status': HTTPStatus.BAD_REQUEST, 'message': str(req_exp)},
-                status=HTTPStatus.BAD_REQUEST,
-            )
+            return {
+                'status': 'error',
+                'data': {
+                    'message': str(req_exp),
+                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
+                },
+            }
 
         # Try to return a JSON object of the response content
         try:
             json_data = response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return JsonResponse(
-                data={'status': HTTPStatus.BAD_REQUEST, 'message': str(decode_err)},
-                status=HTTPStatus.BAD_REQUEST,
-            )
+            return {
+                'status': 'error',
+                'data': {
+                    'message': str(decode_err),
+                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
+                },
+            }
 
-        return JsonResponse(
-            data=json_data,
-            status=response.status_code,
-        )
+        return {
+            'status': 'success',
+            'data': {
+                'message': json_data,
+                'HTTPStatusCode': response.status_code,
+            },
+        }
 
     def _is_report_export_data_valid(
         self,

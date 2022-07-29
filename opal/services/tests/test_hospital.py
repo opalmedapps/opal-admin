@@ -18,7 +18,7 @@ MRN = '9999996'
 SITE_CODE = 'MUHC'
 OIE_CREDENTIALS_USER = 'questionnaire'
 OIE_CREDENTIALS = '12345Opal!!'
-OIE_HOST = 'https://localhost/'
+OIE_HOST = 'https://localhost'
 
 oie_service = OIECommunicationService()
 
@@ -130,7 +130,7 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert json.loads(report_data.content)['status'] == 'success'
+    assert report_data['status'] == 'success'
 
     mock_post.assert_called_once()
     post_data = json.loads(mock_post.call_args[1]['json'])
@@ -157,7 +157,13 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content) == {'status': HTTPStatus.BAD_REQUEST, 'message': 'request failed'}
+    assert report_data == {
+        'status': 'error',
+        'data': {
+            'message': 'request failed',
+            'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
+        },
+    }
 
 
 def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
@@ -179,8 +185,8 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'Expecting value: line 1 column 1 (char 0)'
+    assert report_data['status'] == 'error'
+    assert report_data['data']['message'] == 'Expecting value: line 1 column 1 (char 0)'
 
 
 def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
@@ -203,7 +209,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         ),
     )
 
-    assert report_data.status_code == HTTPStatus.OK
+    assert report_data['status'] == 'success'
 
     payload = json.dumps({
         'mrn': MRN,
@@ -213,7 +219,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         'documentDate': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
     })
     mock_post.assert_called_once_with(
-        '{0}{1}'.format(OIE_HOST, 'reports/post'),
+        '{0}{1}'.format(OIE_HOST, ':6682/reports/post'),
         json=payload,
         auth=HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
         timeout=5,
@@ -239,8 +245,8 @@ def test_export_pdf_report_ivalid_mrn(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
+    assert report_data['status'] == 'error'
+    assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
 def test_export_pdf_report_ivalid_site(mocker: MockerFixture) -> None:
@@ -262,8 +268,8 @@ def test_export_pdf_report_ivalid_site(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
+    assert report_data['status'] == 'error'
+    assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
 def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:
@@ -284,8 +290,8 @@ def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
+    assert report_data['status'] == 'error'
+    assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
 def test_export_pdf_report_ivalid_doc_type(mocker: MockerFixture) -> None:
@@ -306,5 +312,5 @@ def test_export_pdf_report_ivalid_doc_type(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['status'] == HTTPStatus.BAD_REQUEST
-    assert json.loads(report_data.content)['message'] == 'invalid export data'
+    assert report_data['status'] == 'error'
+    assert report_data['data']['message'] == 'Provided request data are invalid.'
