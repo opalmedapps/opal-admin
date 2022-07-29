@@ -99,5 +99,5 @@ def test_encode_image_to_base64_not_image() -> None:
         base64_str = base64_util.encode_image_to_base64(
             NON_IMAGE_FILE,
         )
-    except IOError:
+    except OSError:
         assert base64_str == ''
