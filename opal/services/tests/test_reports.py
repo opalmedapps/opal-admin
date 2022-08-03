@@ -26,6 +26,14 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def _create_generated_report_data(status: str) -> dict[str, dict[str, str]]:
+    """Create mock `dict` response on the `report` HTTP POST request.
+
+    Args:
+        status (str): response status code
+
+    Returns:
+        dict[str, dict[str, str]]: mock data response
+    """
     return {
         'data': {
             'status': 'Success: {0}'.format(status),
@@ -38,7 +46,15 @@ def _mock_requests_post(
     mocker: MockerFixture,
     generated_report_data: dict[str, dict[str, str]],
 ) -> MagicMock:
-    # mock actual web API call
+    """Mock actual HTTP POST web API call to the legacy PHP report service.
+
+    Args:
+        mocker (MockerFixture): object that provides the same interface to functions in the mock module
+        generated_report_data (dict[str, dict[str, str]]): generated mock response data
+
+    Returns:
+        MagicMock: object that mocks HTTP post request to the legacy PHP report service
+    """
     mock_post = mocker.patch('requests.post')
     response = Response()
     response.status_code = HTTPStatus.OK

@@ -26,6 +26,11 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def _create_report_export_response_data() -> dict[str, str]:
+    """Create mock `dict` response on the `report export` HTTP POST request.
+
+    Returns:
+        dict[str, str]: mock data response
+    """
     return {'status': 'success'}
 
 
@@ -33,7 +38,15 @@ def _mock_requests_post(
     mocker: MockerFixture,
     generated_report_export_response_data: dict[str, str],
 ) -> MagicMock:
-    # mock actual web API call
+    """Mock actual HTTP POST web API call to the OIE.
+
+    Args:
+        mocker (MockerFixture): object that provides the same interface to functions in the mock module
+        generated_report_export_response_data (dict[str, str]): generated mock response data
+
+    Returns:
+        MagicMock: object that mocks HTTP post request to the OIE for exporting reports
+    """
     mock_post = mocker.patch('requests.post')
     response = Response()
     response.status_code = HTTPStatus.OK
@@ -218,6 +231,9 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         'docType': DOCUMENT_NUMBER,
         'documentDate': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
     })
+    # assert that the mock was called exactly once and that the call was with exactly the same
+    # parameters as in the `export_pdf_report` post request.
+    # Arguments: *args, **kwargs
     mock_post.assert_called_once_with(
         '{0}{1}'.format(OIE_HOST, ':6682/reports/post'),
         json=payload,
@@ -227,7 +243,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
     )
 
 
-def test_export_pdf_report_ivalid_mrn(mocker: MockerFixture) -> None:
+def test_export_pdf_report_invalid_mrn(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid MRN is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
@@ -249,7 +265,7 @@ def test_export_pdf_report_ivalid_mrn(mocker: MockerFixture) -> None:
     assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
-def test_export_pdf_report_ivalid_site(mocker: MockerFixture) -> None:
+def test_export_pdf_report_invalid_site(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid site is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
@@ -272,7 +288,7 @@ def test_export_pdf_report_ivalid_site(mocker: MockerFixture) -> None:
     assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
-def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:
+def test_export_pdf_report_invalid_base64(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid base64 content is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
@@ -294,7 +310,7 @@ def test_export_pdf_report_ivalid_base64(mocker: MockerFixture) -> None:
     assert report_data['data']['message'] == 'Provided request data are invalid.'
 
 
-def test_export_pdf_report_ivalid_doc_type(mocker: MockerFixture) -> None:
+def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid document type is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
