@@ -28,8 +28,8 @@ class OIEReportExportData(NamedTuple):
     document_date: datetime
 
 
-class OIECommunicationService:
-    """Service that provides functionality for communication with Opal Integration Engine (OIE)."""
+class OIEService:
+    """Service that provides an interface (a.k.a., Facade) for interaction with the Opal Integration Engine (OIE)."""
 
     def export_pdf_report(
         self,
@@ -43,8 +43,8 @@ class OIECommunicationService:
         Returns:
             Any: JSON object response
         """
-        # Return a `JsonResponse` with a BAD_REQUEST if `OIEReportExportData` is not valid
-        if not hospital_validation.is_report_export_data_valid(report_data):
+        # Return a JSON format error if `OIEReportExportData` is not valid
+        if not hospital_validation.is_report_export_request_valid(report_data):
             return hospital_error.generate_json_error({'message': 'Provided request data are invalid.'})
 
         # TODO: Change docType to docNumber once the OIE's endpoint is updated

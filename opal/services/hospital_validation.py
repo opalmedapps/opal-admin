@@ -1,3 +1,4 @@
+"""Module providing validation rules for the data being sent/received to/from the OIE."""
 import re
 
 from opal.utils.base64 import Base64Util
@@ -5,7 +6,7 @@ from opal.utils.base64 import Base64Util
 from .hospital import OIEReportExportData
 
 
-def is_report_export_data_valid(
+def is_report_export_request_valid(
     report_data: OIEReportExportData,
 ) -> bool:
     """Check if OIE report export data is valid.
