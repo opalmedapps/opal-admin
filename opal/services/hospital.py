@@ -4,10 +4,9 @@
 from datetime import datetime
 from typing import Any, NamedTuple
 
-import hospital_error
-import hospital_validation
-
 from .hospital_communication import OIEHTTPCommunicationManager
+from .hospital_error import OIEErrorHandler
+from .hospital_validation import OIEValidator
 
 
 class OIEReportExportData(NamedTuple):
@@ -29,7 +28,20 @@ class OIEReportExportData(NamedTuple):
 
 
 class OIEService:
-    """Service that provides an interface (a.k.a., Facade) for interaction with the Opal Integration Engine (OIE)."""
+    """Service that provides an interface (a.k.a., Facade) for interaction with the Opal Integration Engine (OIE).
+
+    All the provided functions contain the following business logic:
+        * validate the input data (a.k.a., parameters)
+        * send an HTTP request to the OIE
+        * validate the response data received from the OIE
+        * return response data or an error in JSON format
+    """
+
+    def __init__(self) -> None:
+        """Initialize OIE helper services."""
+        self.communication_manager = OIEHTTPCommunicationManager()
+        self.error_handler = OIEErrorHandler()
+        self.validator = OIEValidator()
 
     def export_pdf_report(
         self,
@@ -44,8 +56,10 @@ class OIEService:
             Any: JSON object response
         """
         # Return a JSON format error if `OIEReportExportData` is not valid
-        if not hospital_validation.is_report_export_request_valid(report_data):
-            return hospital_error.generate_json_error({'message': 'Provided request data are invalid.'})
+        if not self.validator.is_report_export_request_valid(report_data):
+            return self.error_handler.generate_error(
+                {'message': 'Provided request data are invalid.'},
+            )
 
         # TODO: Change docType to docNumber once the OIE's endpoint is updated
         payload = {
@@ -56,16 +70,15 @@ class OIEService:
             'documentDate': report_data.document_date.strftime('%Y-%m-%d %H:%M:%S'),
         }
 
-        communication_manager = OIEHTTPCommunicationManager()
-        response_data = communication_manager.submit(
+        response_data = self.communication_manager.submit(
             endpoint='/reports/post',
             payload=payload,
         )
 
-        if hospital_validation.is_report_export_response_valid(response_data):
+        if self.validator.is_report_export_response_valid(response_data):
             return response_data
 
-        return hospital_error.generate_json_error(
+        return self.error_handler.generate_error(
             {
                 'message': 'OIE response format is not valid.',
                 'responseData': response_data,

@@ -9,7 +9,7 @@ from pytest_mock.plugin import MockerFixture
 from requests import RequestException, Response
 from requests.auth import HTTPBasicAuth
 
-from opal.services.hospital import OIECommunicationService, OIEReportExportData
+from opal.services.hospital import OIEReportExportData, OIEService
 
 ENCODING = 'utf-8'
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
@@ -20,7 +20,7 @@ OIE_CREDENTIALS_USER = 'questionnaire'
 OIE_CREDENTIALS = '12345Opal!!'
 OIE_HOST = 'https://localhost'
 
-oie_service = OIECommunicationService()
+oie_service = OIEService()
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

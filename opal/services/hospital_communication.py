@@ -15,7 +15,7 @@ class OIEHTTPCommunicationManager:
 
     The manager is responsible only for the HTTP commnication and handling any communication-related errors.
 
-    The manager is not responsible for the data content being transfarred.
+    The manager is not responsible for the data content being transferred.
     """
 
     # TODO: make function async
@@ -51,13 +51,13 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return hospital_error.generate_json_error({'message': str(req_exp)})
+            return hospital_error.generate_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return hospital_error.generate_json_error({'message': str(decode_err)})
+            return hospital_error.generate_error({'message': str(decode_err)})
 
     # TODO: make function async
     def fetch(
@@ -92,10 +92,10 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return hospital_error.generate_json_error({'message': str(req_exp)})
+            return hospital_error.generate_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return hospital_error.generate_json_error({'message': str(decode_err)})
+            return hospital_error.generate_error({'message': str(decode_err)})

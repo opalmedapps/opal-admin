@@ -2,18 +2,22 @@
 from typing import Any
 
 
-def generate_json_error(
-    response_data: dict[str, Any],
-) -> dict[str, Any]:
-    """Create error response in a JSON format that contains `data` field with the specific details.
+class OIEErrorHandler:
+    """OIE helper service that handles OIE errors and produces error messages."""
 
-    Args:
-        response_data (dict[str, Any]): data that needs to be included into error response
+    def generate_error(
+        self,
+        response_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Create error response in a JSON format that contains `data` field with the specific details.
 
-    Returns:
-        dict[str, Any]: error response in JSON format
-    """
-    return {
-        'status': 'error',
-        'data': response_data,
-    }
+        Args:
+            response_data (dict[str, Any]): data that needs to be included into error response message
+
+        Returns:
+            dict[str, Any]: error response in JSON format
+        """
+        return {
+            'status': 'error',
+            'data': response_data,
+        }
