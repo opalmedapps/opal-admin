@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 
+import hospital_error
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -22,7 +23,7 @@ class OIEHTTPCommunicationManager:
         self,
         endpoint: str,
         payload: dict[str, Any],
-        port: int = 6682,
+        port: int = settings.OIE_DEFAULT_PORT,
         metadata: dict[str, Any] = None,
     ) -> Any:
         """Send data to the OIE by making HTTP POST request.
@@ -50,13 +51,13 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return self._generate_error_response({'message': str(req_exp)})
+            return hospital_error.generate_json_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return self._generate_error_response({'message': str(decode_err)})
+            return hospital_error.generate_json_error({'message': str(decode_err)})
 
     # TODO: make function async
     def fetch(
@@ -91,19 +92,10 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return self._generate_error_response({'message': str(req_exp)})
+            return hospital_error.generate_json_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return self._generate_error_response({'message': str(decode_err)})
-
-    def _generate_error_response(
-        self,
-        response_data: dict[str, Any],
-    ) -> dict[str, Any]:
-        return {
-            'status': 'error',
-            'data': response_data,
-        }
+            return hospital_error.generate_json_error({'message': str(decode_err)})

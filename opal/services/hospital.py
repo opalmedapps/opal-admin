@@ -1,17 +1,13 @@
 """Module providing business logic for the hospital's internal communicatoin (e.g., Opal Integration Engine)."""
 
-import json
-import re
+
 from datetime import datetime
-from http import HTTPStatus
 from typing import Any, NamedTuple
 
-from django.conf import settings
+import hospital_error
+import hospital_validation
 
-import requests
-from requests.auth import HTTPBasicAuth
-
-from opal.utils.base64 import Base64Util
+from .hospital_communication import OIEHTTPCommunicationManager
 
 
 class OIEReportExportData(NamedTuple):
@@ -35,100 +31,43 @@ class OIEReportExportData(NamedTuple):
 class OIECommunicationService:
     """Service that provides functionality for communication with Opal Integration Engine (OIE)."""
 
-    # TODO: Update return format/data type
-    # TODO: Raise user-defined exceptions for the error cases
     def export_pdf_report(
         self,
         report_data: OIEReportExportData,
-    ) -> dict[str, Any]:
+    ) -> Any:
         """Send base64 encoded PDF report to the OIE.
 
         Args:
             report_data (OIEReportExportData): PDF report data needed to call OIE endpoint
 
         Returns:
-            dict[str, dict]: JSON object response
+            Any: JSON object response
         """
         # Return a `JsonResponse` with a BAD_REQUEST if `OIEReportExportData` is not valid
-        if not self._is_report_export_data_valid(report_data):
-            return {
-                'status': 'error',
-                'data': {
-                    'message': 'Provided request data are invalid.',
-                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
-                },
-            }
+        if not hospital_validation.is_report_export_data_valid(report_data):
+            return hospital_error.generate_json_error({'message': 'Provided request data are invalid.'})
 
         # TODO: Change docType to docNumber once the OIE's endpoint is updated
-        payload = json.dumps({
+        payload = {
             'mrn': report_data.mrn,
             'site': report_data.site,
             'reportContent': report_data.base64_content,
             'docType': report_data.document_number,
             'documentDate': report_data.document_date.strftime('%Y-%m-%d %H:%M:%S'),
-        })
-
-        # Try to send a request and get a response
-        try:
-            # TODO: OIE server should support SSL certificates. This will allow to use `verify=True` that fixes S501
-            # TODO: Remove the hardcoded 6682 port once the OIE changes are finalized. Update the .env file
-            response = requests.post(
-                '{0}{1}'.format(settings.OIE_HOST, ':6682/reports/post'),
-                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
-                json=payload,
-                timeout=5,
-                verify=False,  # noqa: S501
-            )
-        except requests.exceptions.RequestException as req_exp:
-            return {
-                'status': 'error',
-                'data': {
-                    'message': str(req_exp),
-                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
-                },
-            }
-
-        # Try to return a JSON object of the response content
-        try:
-            json_data = response.json()
-        except requests.exceptions.JSONDecodeError as decode_err:
-            return {
-                'status': 'error',
-                'data': {
-                    'message': str(decode_err),
-                    'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
-                },
-            }
-
-        return {
-            'status': 'success',
-            'data': {
-                'message': json_data,
-                'HTTPStatusCode': response.status_code,
-            },
         }
 
-    def _is_report_export_data_valid(
-        self,
-        report_data: OIEReportExportData,
-    ) -> bool:
-        """Check if OIE report export data is valid.
+        communication_manager = OIEHTTPCommunicationManager()
+        response_data = communication_manager.submit(
+            endpoint='/reports/post',
+            payload=payload,
+        )
 
-        Args:
-            report_data (OIEReportExportData): OIE report export data needed to call OIE endpoint
+        if hospital_validation.is_report_export_response_valid(response_data):
+            return response_data
 
-        Returns:
-            bool: boolean value showing if OIE report export data is valid
-        """
-        # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
-        # TODO: Confirm the regex pattern for the document number
-        reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
-        return (  # check if MRN is not empty
-            bool(report_data.mrn.strip())
-            # check if site is not empty
-            and bool(report_data.site.strip())
-            # check if report content is base64
-            and Base64Util().is_base64(report_data.base64_content)
-            # check if document type format is valid
-            and bool(reg_exp.match(report_data.document_number))
+        return hospital_error.generate_json_error(
+            {
+                'message': 'OIE response format is not valid.',
+                'responseData': response_data,
+            },
         )
