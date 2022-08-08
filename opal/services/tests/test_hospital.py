@@ -4,12 +4,14 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
-from requests import RequestException, Response
-from requests.auth import HTTPBasicAuth
 
 from opal.services.hospital import OIEReportExportData, OIEService
+from opal.services.hospital_communication import OIEHTTPCommunicationManager
+from opal.services.hospital_error import OIEErrorHandler
+from opal.services.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
@@ -48,7 +50,7 @@ def _mock_requests_post(
         MagicMock: object that mocks HTTP post request to the OIE for exporting reports
     """
     mock_post = mocker.patch('requests.post')
-    response = Response()
+    response = requests.Response()
     response.status_code = HTTPStatus.OK
 
     response._content = json.dumps(generated_report_export_response_data).encode(ENCODING)
@@ -57,71 +59,20 @@ def _mock_requests_post(
     return mock_post
 
 
-# _is_report_export_data_valid
+# __init__
 
-def test_is_report_export_data_valid_success() -> None:
-    """Ensure `OIEReportExportData` successfully validates."""
-    report_data = OIEReportExportData(
-        mrn=MRN,
-        site=SITE_CODE,
-        base64_content=BASE64_ENCODED_REPORT,
-        document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data)
+def test_init_types() -> None:
+    """Ensuer init function creates helper services of certain types."""
+    assert isinstance(oie_service.communication_manager, OIEHTTPCommunicationManager)
+    assert isinstance(oie_service.error_handler, OIEErrorHandler)
+    assert isinstance(oie_service.validator, OIEValidator)
 
 
-def test_is_report_export_data_invalid_mrn() -> None:
-    """Ensure `OIEReportExportData` with invalid MRN are handled and does not result in an error."""
-    report_data = OIEReportExportData(
-        mrn='',
-        site=SITE_CODE,
-        base64_content=BASE64_ENCODED_REPORT,
-        document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
-
-
-def test_is_report_export_data_invalid_site() -> None:
-    """Ensure `OIEReportExportData` with invalid site are handled and does not result in an error."""
-    report_data = OIEReportExportData(
-        mrn=MRN,
-        site='',
-        base64_content=BASE64_ENCODED_REPORT,
-        document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
-
-
-def test_is_report_export_data_invalid_content() -> None:
-    """Ensure `OIEReportExportData` with invalid base64 content are handled and does not result in an error."""
-    report_data = OIEReportExportData(
-        mrn=MRN,
-        site=SITE_CODE,
-        base64_content='INVALID CONTENT',
-        document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
-
-
-def test_is_report_export_data_invalid_doc_type() -> None:
-    """Ensure `OIEReportExportData` with invalid document type are handled and does not result in an error."""
-    report_data = OIEReportExportData(
-        mrn=MRN,
-        site=SITE_CODE,
-        base64_content=BASE64_ENCODED_REPORT,
-        document_number='FU-INVALID DOCUMENT TYPE',
-        document_date=datetime.now(),
-    )
-
-    assert oie_service._is_report_export_data_valid(report_data) is False
+def test_init_not_none() -> None:
+    """Ensuer init function creates helper services that are not `None`."""
+    assert oie_service.communication_manager is not None
+    assert oie_service.error_handler is not None
+    assert oie_service.validator is not None
 
 
 # export_pdf_report
@@ -156,7 +107,7 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
     # mock actual OIE API call to raise a request error
     generated_report_data: dict[str, str] = {}
     mock_post = _mock_requests_post(mocker, generated_report_data)
-    mock_post.side_effect = RequestException('request failed')
+    mock_post.side_effect = requests.RequestException('request failed')
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     report_data = oie_service.export_pdf_report(
@@ -174,7 +125,6 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
         'status': 'error',
         'data': {
             'message': 'request failed',
-            'HTTPStatusCode': HTTPStatus.BAD_REQUEST,
         },
     }
 
@@ -235,9 +185,10 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
     # parameters as in the `export_pdf_report` post request.
     # Arguments: *args, **kwargs
     mock_post.assert_called_once_with(
-        '{0}{1}'.format(OIE_HOST, ':6682/reports/post'),
+        url='{0}{1}'.format(OIE_HOST, ':6682/reports/post'),
+        auth=requests.auth.HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
+        headers=None,
         json=payload,
-        auth=HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
         timeout=5,
         verify=False,
     )

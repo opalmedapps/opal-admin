@@ -4,7 +4,7 @@ from typing import Any
 
 from opal.utils.base64 import Base64Util
 
-from .hospital import OIEReportExportData
+from .hospital_data import OIEReportExportData
 
 
 class OIEValidator:
@@ -52,4 +52,5 @@ class OIEValidator:
         except (TypeError, KeyError):
             return False
 
-        return status in {'success', 'error'}
+        # TODO: confirm validation rules (e.g., status in {'success', 'error'})
+        return isinstance(status, str)

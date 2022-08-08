@@ -1,30 +1,11 @@
 """Module providing business logic for the hospital's internal communicatoin (e.g., Opal Integration Engine)."""
 
-
-from datetime import datetime
-from typing import Any, NamedTuple
+from typing import Any
 
 from .hospital_communication import OIEHTTPCommunicationManager
+from .hospital_data import OIEReportExportData
 from .hospital_error import OIEErrorHandler
 from .hospital_validation import OIEValidator
-
-
-class OIEReportExportData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the OIE.
-
-    Attributes:
-        mrn (str): one of the patient's MRNs for the site
-        site (str): one of the patient's site code for the MRN
-        base64_content (str): the base64-encoded PDF (e.g., questionnaire PDF report)
-        document_number (str): the document number (e.g., FMU-... or MU-...)
-        document_date (datetime): the datetime in YYYY-MM-DD HH:II:SS
-    """
-
-    mrn: str
-    site: str
-    base64_content: str
-    document_number: str
-    document_date: datetime
 
 
 class OIEService:
@@ -76,6 +57,7 @@ class OIEService:
         )
 
         if self.validator.is_report_export_response_valid(response_data):
+            # TODO: confirm return format
             return response_data
 
         return self.error_handler.generate_error(

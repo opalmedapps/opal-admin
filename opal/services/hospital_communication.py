@@ -5,9 +5,10 @@ from typing import Any
 
 from django.conf import settings
 
-import hospital_error
 import requests
 from requests.auth import HTTPBasicAuth
+
+from .hospital_error import OIEErrorHandler
 
 
 class OIEHTTPCommunicationManager:
@@ -17,6 +18,10 @@ class OIEHTTPCommunicationManager:
 
     The manager is not responsible for the data content being transferred.
     """
+
+    def __init__(self) -> None:
+        """Initialize helper services."""
+        self.error_handler = OIEErrorHandler()
 
     # TODO: make function async
     def submit(
@@ -51,13 +56,13 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return hospital_error.generate_error({'message': str(req_exp)})
+            return self.error_handler.generate_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return hospital_error.generate_error({'message': str(decode_err)})
+            return self.error_handler.generate_error({'message': str(decode_err)})
 
     # TODO: make function async
     def fetch(
@@ -92,10 +97,10 @@ class OIEHTTPCommunicationManager:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return hospital_error.generate_error({'message': str(req_exp)})
+            return self.error_handler.generate_error({'message': str(req_exp)})
 
         # Try to return a JSON object of the response content
         try:
             return response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return hospital_error.generate_error({'message': str(decode_err)})
+            return self.error_handler.generate_error({'message': str(decode_err)})
