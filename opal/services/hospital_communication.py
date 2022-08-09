@@ -68,9 +68,9 @@ class OIEHTTPCommunicationManager:
     def fetch(
         self,
         endpoint: str,
-        params: dict[str, Any],
-        port: int,
-        metadata: dict[str, Any],
+        params: dict[str, Any] = None,
+        port: int = settings.OIE_DEFAULT_PORT,
+        metadata: dict[str, Any] = None,
     ) -> Any:
         """Retrieve data from the OIE by making HTTP GET request.
 

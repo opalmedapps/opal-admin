@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from opal.services.hospital_data import OIEReportExportData
 from opal.services.hospital_validation import OIEValidator
 
@@ -9,6 +11,8 @@ MRN = '9999996'
 SITE_CODE = 'MUHC'
 
 oie_validator = OIEValidator()
+
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 # is_report_export_request_valid

@@ -1,6 +1,10 @@
+import pytest
+
 from opal.services.hospital_error import OIEErrorHandler
 
 oie_error = OIEErrorHandler()
+
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 # generate_error
