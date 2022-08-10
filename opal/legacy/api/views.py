@@ -10,6 +10,7 @@ from django.utils import timezone
 import requests
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,7 +19,7 @@ from opal.legacy.utils import get_patient_sernum
 from ...services.hospital import OIECommunicationService
 from ...services.reports import ReportService
 from ..models import LegacyAppointment, LegacyNotification
-from .serializers import LegacyAppointmentSerializer
+from .serializers import LegacyAppointmentSerializer, QuestionnaireReportRequestSerializer
 
 
 class AppHomeView(APIView):
