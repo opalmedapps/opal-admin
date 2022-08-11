@@ -10,7 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.users import factories as user_factories
 
 from .. import factories
-from ..models import CaregiverProfile
+from ..models import CaregiverProfile, DeviceType
 
 pytestmark = pytest.mark.django_db
 
@@ -133,6 +133,32 @@ def test_security_answer_factory_multiple() -> None:
 
     assert answer != answer2
     assert answer.user != answer2.user
+
+
+def test_device_str() -> None:
+    """The `str` method returns the device_id and device type."""
+    device = factories.Device(device_id='1a2b3c', type=DeviceType.ANDROID)
+    assert str(device) == '1a2b3c (AND)'
+
+
+def test_device_factory() -> None:
+    """Ensure the Device factory is building properly."""
+    device = factories.Device()
+    device.full_clean()
+
+
+def test_device_factory_multiple() -> None:
+    """Ensure the Device factory can build multiple default model instances."""
+    device1 = factories.Device()
+    device2 = factories.Device()
+
+    assert device1.device_id != device2.device_id
+
+
+def test_device_untrusted_default() -> None:
+    """Ensure that a Device is untrusted by default."""
+    device = factories.Device()
+    assert not device.is_trusted
 
 
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
