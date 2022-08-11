@@ -12,6 +12,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api.views import GetRegistrationEncryptionInfoView
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api import views as legacy_views
+from opal.legacy.api.views import QuestionnairesReportCreateAPIView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -30,5 +31,6 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
+    path('questionnaires/reviewed/', QuestionnairesReportCreateAPIView.as_view(), name='questionnaires'),
     path('', include(router.urls)),
 ]
