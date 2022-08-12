@@ -1,6 +1,5 @@
 """Collection of api views used to send data to opal app through the listener request relay."""
 
-import datetime
 from pathlib import Path
 from typing import Any
 
@@ -132,13 +131,13 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
                 hospital.OIEReportExportData(
                     mrn=HospitalPatient.objects.filter(
                         patient__legacy_id=serializer.validated_data.patient_id,
-                    ).first().mrn,
+                    ).values_list('mrn', flat=True).get(pk=1),
                     site=HospitalPatient.objects.filter(
                         patient__legacy_id=serializer.validated_data.patient_id,
-                    ).first().site.name,
+                    ).values_list('site__name', flat=True).get(pk=1),
                     base64_content=encoded_report,
                     document_number='FMU',  # TODO: clarify where to get the value
-                    document_date=datetime.datetime.now(),  # TODO: get the exact time of the report creation
+                    document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
                 ),
             )
 
