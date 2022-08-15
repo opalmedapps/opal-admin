@@ -1,5 +1,6 @@
 """Collection of api views used to send data to opal app through the listener request relay."""
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +102,9 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
         Returns:
             HTTP `Response` with results of report generation
         """
+        # Get an instance of a logger
+        logger = logging.getLogger(__name__)
+
         with translation.override(request.headers['Accept-Language']):  # TODO: override the language in a middleware
             serializer = QuestionnaireReportRequestSerializer(data=request.data)
             # Validate received data. Return a 400 response if the data was invalid.
@@ -117,10 +121,13 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             )
 
             if encoded_report == '':
+                err_msg = 'An error occured during report generation.'
+                # Log an error message
+                logger.error(err_msg)
                 return response.Response(
                     {
                         'status': 'error',
-                        'message': 'An error occured during report generation.',
+                        'message': err_msg,
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -140,5 +147,8 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
                     document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
                 ),
             )
+
+            if 'status' not in export_result or export_result['status'] == 'error':
+                logger.error('An error occured while exporting a PDF report to the OIE.')
 
             return response.Response(export_result)
