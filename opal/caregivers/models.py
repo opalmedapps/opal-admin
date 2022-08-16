@@ -1,4 +1,5 @@
 """Module providing models for the caregivers app."""
+from uuid import uuid4
 
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
@@ -9,6 +10,13 @@ from opal.users.models import User
 
 class CaregiverProfile(models.Model):
     """Profile for caregiver users."""
+
+    uuid = models.UUIDField(
+        verbose_name=_('UUID'),
+        unique=True,
+        default=uuid4,
+        editable=False,
+    )
 
     user = models.OneToOneField(
         verbose_name=_('User'),
