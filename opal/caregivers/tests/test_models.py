@@ -27,6 +27,17 @@ def test_caregiverprofile_factory_multiple() -> None:
     profile2 = factories.CaregiverProfile()
 
     assert profile.user != profile2.user
+    assert profile.uuid != profile2.uuid
+
+
+def test_caregiverprofile_uuid_unique() -> None:
+    """Ensure that the field uuid of carigaver is unique."""
+    profile = factories.CaregiverProfile()
+    profile2 = factories.CaregiverProfile()
+    profile.uuid = profile2.uuid
+    message = 'Caregiver Profile with this UUID already exists.'
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        profile.full_clean()
 
 
 def test_caregiverprofile_str() -> None:
