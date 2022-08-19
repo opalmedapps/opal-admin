@@ -33,6 +33,11 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('caregivers/patients/', GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
+    path(
+        'patients/legacy/<int:legacy_id>/check_permissions/',
+        legacy_views.CaregiverPermissionsView.as_view(),
+        name='caregiver-permissions',
+    ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
     path('', include(router.urls)),
 ]
