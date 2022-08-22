@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: Registration encryption info endpoint (!170)
 * Add logo (image) field to the Institution model (!159)
 * feat: create permissions class to check caregiver-patient access (!169)
+* Adjust legacy chart api endpoint to use legacy_id (!185)
 
 ### Documentation
 

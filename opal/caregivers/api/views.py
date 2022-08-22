@@ -1,4 +1,5 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+
 from django.db.models.functions import SHA512
 
 from rest_framework import status
