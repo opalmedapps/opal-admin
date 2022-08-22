@@ -28,7 +28,7 @@ router.register('sites', settings_views.SiteViewSet, basename='sites')
 app_name = 'core'
 
 urlpatterns = [
-    path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
+    path('app/chart/<int:legacy_id>/', legacy_views.AppChartView.as_view(), name='app-chart'),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
     path('auth/', include('dj_rest_auth.urls')),
     path('caregivers/patients/', GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
