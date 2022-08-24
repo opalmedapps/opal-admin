@@ -69,7 +69,6 @@ def _manage_unmanaged_models() -> None:
         * https://www.caktusgroup.com/blog/2010/09/24/simplifying-the-testing-of-unmanaged-database-models-in-django/
         * https://stackoverflow.com/q/53289057
     """
-    print('manage unmanaged models')
     models = apps.get_models()
 
     unmanaged_models = [model for model in models if is_legacy_model(model)]
