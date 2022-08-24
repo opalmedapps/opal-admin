@@ -18,7 +18,9 @@ nav:
       - Caregivers: apps/caregivers.md
       - Patients: apps/patients.md
       - Users: apps/users.md
-  - Legacy DB Setup: legacy_db.md
+  - Database:
+      - Migrations: database/migrations.md
+      - Legacy DB Setup: database/legacy_db.md
   - REST API:
       - Authentication: authentication.md
   - Translation: translation.md
