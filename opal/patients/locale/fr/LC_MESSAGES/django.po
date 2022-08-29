@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-13 15:11-0400\n"
+"POT-Creation-Date: 2022-08-29 21:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -146,6 +146,10 @@ msgid "Relationship Status"
 msgstr "Statut de la relation"
 
 #: opal/patients/models.py
+msgid "Reason of Status Change"
+msgstr "Raison du changement de statut"
+
+#: opal/patients/models.py
 msgid "Relationship Request Date"
 msgstr "Date de la demande de relation"
 
@@ -168,6 +172,10 @@ msgstr "Relations"
 #: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
+
+#: opal/patients/models.py
+msgid "Reason is mandatory when status is denied or revoked."
+msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
 
 #: opal/patients/models.py
 msgid "Site"
