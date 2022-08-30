@@ -21,13 +21,13 @@ class Base64Util:
             # Return an empty string if a given file is not an image
             if imghdr.what(logo_path) is None:
                 return ''
-        except IOError:
+        except OSError:
             return ''
 
         try:
             with logo_path.open(mode='rb') as image_file:
                 data = base64.b64encode(image_file.read())
-        except IOError:
+        except OSError:
             return ''
 
         return data.decode('utf-8')
@@ -46,6 +46,8 @@ class Base64Util:
             return False
 
         try:
-            return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
-        except ValueError:
+            return (
+                base64.b64encode(base64.b64decode(string, validate=True)) == bytes(string, 'ascii')
+            )
+        except (ValueError, TypeError):
             return False
