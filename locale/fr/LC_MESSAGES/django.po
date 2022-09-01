@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-13 15:11-0400\n"
+"POT-Creation-Date: 2022-09-01 17:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/core/form_layouts.py
+msgid "Cancel"
+msgstr ""
+
+#: opal/core/validators.py
+msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
+msgstr "Entrez un numéro RAMQ valide composé de 4 lettres suivies de 8 chiffres"
 
 #: opal/core/views.py opal/templates/base_generic.html
 msgid "OpalAdmin v2"
