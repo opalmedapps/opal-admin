@@ -39,5 +39,6 @@ urlpatterns = [
         name='caregiver-permissions',
     ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
+    path('app/general/', legacy_views.AppGeneralView.as_view(), name='app-general'),
     path('', include(router.urls)),
 ]

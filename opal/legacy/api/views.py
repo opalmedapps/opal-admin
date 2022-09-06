@@ -11,7 +11,7 @@ from opal.core.drf_permissions import CaregiverPatientPermissions
 
 from .. import models
 from ..utils import get_patient_sernum
-from .serializers import LegacyAppointmentSerializer, UnreadCountSerializer
+from .serializers import AnnouncementUnreadCountSerializer, LegacyAppointmentSerializer, UnreadCountSerializer
 
 
 class AppHomeView(APIView):
@@ -101,3 +101,30 @@ class CaregiverPermissionsView(APIView):
         """
         # The following empty success response is only returned if CaregiverPatientPermissions succeeds
         return Response({})
+
+
+class AppGeneralView(APIView):
+    """Class to return general page required data."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        """
+        Handle GET requests from `api/app/general`.
+
+        The function provides the number of unread values for the user
+        and will provide them for the selected patient instead until the profile selector is finished.
+
+        Args:
+            request: Http request made by the listener.
+
+        Returns:
+            Http response with the data needed to display the general view.
+        """
+        patient_sernum = get_patient_sernum(request.headers['Appuserid'])
+        unread_count = {
+            'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
+                patient_sernum,
+            ).count(),
+        }
+        return Response(AnnouncementUnreadCountSerializer(unread_count).data)
