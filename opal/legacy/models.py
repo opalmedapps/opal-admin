@@ -170,3 +170,16 @@ class LegacyQuestionnaire(models.Model):
     class Meta:
         managed = False
         db_table = 'Questionnaire'
+
+
+class LegacyAnnouncement(models.Model):
+    """Announcement model from the legacy database OpalDB."""
+
+    announcementsernum = models.AutoField(db_column='AnnouncementSerNum', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    readstatus = models.IntegerField(db_column='ReadStatus')
+    objects: managers.LegacyAnnouncementManager = managers.LegacyAnnouncementManager()
+
+    class Meta:
+        managed = False
+        db_table = 'Announcement'

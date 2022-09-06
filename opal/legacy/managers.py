@@ -109,3 +109,7 @@ class LegacyQuestionnaireManager(models.Manager):
             Queryset of uncompleted questionnaires.
         """
         return self.filter(patientsernum=patient_sernum, completedflag=0)
+
+
+class LegacyAnnouncementManager(UnreadQuerySetMixin, models.Manager):
+    """legacy announcement manager."""
