@@ -13,6 +13,7 @@ from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationE
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api import views as legacy_views
+from opal.patients.api.views import PatientRetieveView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -39,5 +40,6 @@ urlpatterns = [
         name='caregiver-permissions',
     ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
+    path('registration/<str:code>/', PatientRetieveView.as_view(), name='registration-code'),
     path('', include(router.urls)),
 ]

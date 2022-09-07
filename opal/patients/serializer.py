@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
@@ -10,7 +11,7 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Patient
-        fields = ['health_insurance_number']
+        fields = ['first_name', 'last_name', 'health_insurance_number']
 
 
 class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
@@ -19,6 +20,14 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active']
+
+
+class InstitutionSiteSerializer(serializers.ModelSerializer):
+    """Hospital patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = Institution
+        fields = ['id', 'name']
 
 
 class CaregiverPatientSerializer(serializers.ModelSerializer):
