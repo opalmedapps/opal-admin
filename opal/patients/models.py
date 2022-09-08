@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
-from opal.patients.managers import RelationshipManager
+from opal.patients.managers import HospitalPatientManager, RelationshipManager
 
 from . import constants
 
@@ -263,6 +263,7 @@ class HospitalPatient(models.Model):
         verbose_name=_('Active'),
         default=True,
     )
+    objects: HospitalPatientManager = HospitalPatientManager()
 
     class Meta:
         verbose_name = _('Hospital Patient')

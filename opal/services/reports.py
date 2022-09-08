@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from django.conf import settings
 
@@ -35,7 +35,7 @@ class ReportService():
     def generate_questionnaire_report(
         self,
         report_data: QuestionnaireReportRequestData,
-    ) -> str:
+    ) -> Optional[str]:
         """Create PDF report in encoded base64 string format.
 
         Args:
@@ -44,18 +44,18 @@ class ReportService():
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        # return an empty string if questionnaire report request data is not valid
+        # return a `None` if questionnaire report request data is not valid
         if not self._is_questionnaire_report_request_data_valid(report_data):
-            return ''
+            return None
 
         base64_report = self._request_base64_report(report_data)
 
-        return base64_report if Base64Util().is_base64(base64_report) is True else ''
+        return base64_report if Base64Util().is_base64(base64_report) is True else None
 
     def _request_base64_report(
         self,
         report_data: QuestionnaireReportRequestData,
-    ) -> str:
+    ) -> Optional[str]:
         """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
@@ -79,20 +79,20 @@ class ReportService():
                 data=payload,
             )
         except RequestException:
-            return ''
+            return None
 
-        # Return an empty string if response status code is not success (e.g, different than 2**)
+        # Return a `None` if response status code is not success (e.g, different than 2**)
         if status.is_success(response.status_code) is False:
-            return ''
+            return None
 
-        # Return an empty string if cannot read encoded pdf report
+        # Return a `None` string if cannot read encoded pdf report
         try:
             base64_report = response.json()['data']['base64EncodedReport']
         except (KeyError, JSONDecodeError):
-            return ''
+            return None
 
-        # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return empty one.
-        return base64_report if isinstance(base64_report, str) else ''
+        # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return `None`.
+        return base64_report if isinstance(base64_report, str) else None
 
     def _is_questionnaire_report_request_data_valid(
         self,
