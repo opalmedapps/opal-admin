@@ -1,11 +1,12 @@
 """Module providing models for the patients app."""
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
 from opal.patients.managers import HospitalPatientManager, RelationshipManager
 
@@ -98,10 +99,16 @@ class Patient(models.Model):
         max_length=1,
         choices=SexType.choices,
     )
-    health_insurance_number = models.CharField(
-        verbose_name=_('Health Insurance Number'),
+    ramq = models.CharField(
+        verbose_name=_('RAMQ Number'),
         max_length=12,
+        validators=[
+            MinLengthValidator(12),
+            validate_ramq,
+        ],
         unique=True,
+        blank=True,
+        null=True,
     )
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),
