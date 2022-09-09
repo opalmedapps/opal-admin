@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patient',
             name='health_insurance_number',
-            field=models.CharField(default='UNDEFINED', max_length=12, unique=True, verbose_name='Health Insurance Number'),
+            field=models.CharField(blank=True, null=True, max_length=12, unique=True, verbose_name='Health Insurance Number'),
             preserve_default=False,
         ),
         migrations.AddField(
