@@ -6,12 +6,36 @@ from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
+class PatientDetailSerializer(serializers.ModelSerializer):
+    """Patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = Patient
+        fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'health_insurance_number']
+
+
 class PatientRegistrationSerializer(serializers.ModelSerializer):
     """Patient serializer used to get encryption values for registration web site."""
 
     class Meta:
         model = Patient
         fields = ['first_name', 'last_name', 'health_insurance_number']
+
+
+class InstitutionSiteSerializer(serializers.ModelSerializer):
+    """Hospital patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = Institution
+        fields = ['id', 'name']
+
+
+class SiteSerializer(serializers.ModelSerializer):
+    """Hospital patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = Site
+        fields = ['id', 'name']
 
 
 class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
@@ -22,11 +46,21 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
         fields = ['mrn', 'is_active']
 
 
-class InstitutionSiteSerializer(serializers.ModelSerializer):
+class HospitalInstitutionSerializer(serializers.ModelSerializer):
     """Hospital patient serializer used to get encryption values for registration web site."""
 
+    id = serializers.PrimaryKeyRelatedField(
+        source='site.institution.id',
+        read_only=True,
+    )
+
+    name = serializers.CharField(
+        source='site.institution.name',
+        read_only=True,
+    )
+
     class Meta:
-        model = Institution
+        model = HospitalPatient
         fields = ['id', 'name']
 
 

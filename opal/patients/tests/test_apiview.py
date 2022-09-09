@@ -3,12 +3,13 @@
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
+from django.db.models import Prefetch
 from django.urls import reverse
 
 from rest_framework.test import APIClient
 
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
-
+from opal.hospital_settings.models import Institution
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: AbstractUser) -> None:
@@ -23,6 +24,6 @@ def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user
         ).filter(status=RegistrationCodeStatus.NEW)
     )
 
-    print(queryset.query)
+    print(queryset.)
 
     assert 1 == 2
