@@ -127,16 +127,58 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_health_insurance_number_unique() -> None:
+def test_patient_ramq_unique() -> None:
     """Ensure that the health insurance number is unique."""
-    factories.Patient(health_insurance_number='TEST')
-    patient = factories.Patient(health_insurance_number='TEST2')
+    factories.Patient(ramq='TEST12345678')
+    patient = factories.Patient(ramq='TEST21234567')
 
-    message = "Duplicate entry 'TEST' for key 'health_insurance_number'"
+    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        patient.health_insurance_number = 'TEST'
+        patient.ramq = 'TEST12345678'
         patient.save()
+
+
+def test_patient_ramq_max() -> None:
+    """Ensure the length of patient ramq is not greater than 12."""
+    patient = factories.Patient()
+    patient.ramq = 'ABCD5678901234'
+    expected_message = '{0}, {1}'.format(
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
+        "'Ensure this value has at most 12 characters (it has 14).']",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_min() -> None:
+    """Ensure the length of patient ramq is not less than 12."""
+    patient = factories.Patient(ramq='ABCD56')
+    expected_message = '{0}'.format(
+        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_format() -> None:
+    """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
+    patient = factories.Patient(ramq='ABC123456789')
+    expected_message = '{0}'.format(
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_default_value() -> None:
+    """Ensure patient ramq default value is NULL."""
+    patient = Patient(
+        date_of_birth='2022-09-02',
+        sex='m',
+    )
+    patient.save()
+    assert patient.ramq is None
 
 
 def test_relationship_str() -> None:
@@ -265,7 +307,6 @@ def test_hospitalpatient_many_patients_one_site() -> None:
     patient2 = factories.Patient(
         first_name='bbb',
         last_name='222',
-        health_insurance_number='TEST',
     )
     site = factories.Site(name="Montreal Children's Hospital")
 
@@ -273,3 +314,72 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
+
+
+# tests for reason field constraints and validations
+def test_relationship_no_reason_invalid_revoked() -> None:
+    """Ensure that error is thrown when reason is empty and status is revoked."""
+    relationship = factories.Relationship()
+    relationship.reason = ''
+    relationship.status = RelationshipStatus.REVOKED
+
+    expected_message = 'Reason is mandatory when status is denied or revoked.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        relationship.clean()
+
+
+def test_relationship_no_reason_invalid_denied() -> None:
+    """Ensure that error is thrown when reason is empty and status is denied."""
+    relationship = factories.Relationship()
+    relationship.reason = ''
+    relationship.status = RelationshipStatus.DENIED
+
+    expected_message = 'Reason is mandatory when status is denied or revoked.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        relationship.clean()
+
+
+def test_relationship_valid_reason_pass_denied() -> None:
+    """Ensure that error is not thrown when reason field has content and status is denied."""
+    relationship = factories.Relationship()
+    relationship.status = RelationshipStatus.DENIED
+
+    relationship.clean()
+
+
+def test_relationship_valid_reason_pass_revoked() -> None:
+    """Ensure that error is not thrown when reason field has content and status is revoked."""
+    relationship = factories.Relationship()
+    relationship.status = RelationshipStatus.REVOKED
+
+    relationship.clean()
+
+
+def test_relationship_saved_valid_reason() -> None:
+    """Ensure that reason is saved properly in status other than expired or denied."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.EXPIRED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_saved_reason_valid_denied() -> None:
+    """Ensure that reason is saved properly in status denied."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.DENIED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_saved_reason_valid_revoked() -> None:
+    """Ensure that reason is saved properly in status revoked."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.REVOKED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'

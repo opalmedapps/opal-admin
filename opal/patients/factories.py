@@ -38,13 +38,13 @@ class Patient(DjangoModelFactory):
 
     class Meta:
         model = models.Patient
-        django_get_or_create = ('health_insurance_number',)
+        django_get_or_create = ('ramq',)
 
     first_name = 'Patient First Name'
     last_name = 'Patient Last Name'
     date_of_birth = datetime.date(1999, 1, 1)
     sex = models.Patient.SexType.MALE
-    health_insurance_number = 'OTES12345678'
+    ramq = ''
     legacy_id = Sequence(lambda number: number + 1)
 
 
@@ -60,6 +60,7 @@ class Relationship(DjangoModelFactory):
     request_date = datetime.date.today()
     start_date = datetime.date(2020, 1, 1)
     end_date = datetime.date(2020, 5, 1)
+    reason = 'REASON'
 
 
 class CaregiverWithPatients(CaregiverProfile):

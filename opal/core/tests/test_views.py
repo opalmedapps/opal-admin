@@ -8,6 +8,7 @@ import pytest
 from pytest_django.asserts import assertContains, assertRedirects
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
+from rest_framework.test import APIClient
 
 from .. import views
 
@@ -125,3 +126,23 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
     )
 
     assert view.get_object() == user
+
+
+def test_languagesview_get(
+    client: APIClient,
+    admin_user: AbstractUser,
+    settings: SettingsWrapper,
+) -> None:
+    """Ensure that the `LanguagesView` can return the languages in the settings."""
+    settings.LANGUAGES = [
+        ('lan1', 'language1'),
+        ('lan2', 'language2'),
+    ]
+    client.force_login(user=admin_user)
+    response = client.get(reverse('api:languages'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == [
+        {'code': 'lan1', 'name': 'language1'},
+        {'code': 'lan2', 'name': 'language2'},
+    ]
