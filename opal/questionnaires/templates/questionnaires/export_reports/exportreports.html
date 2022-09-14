@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+
+{% block content %}
+    <section class="content">
+        <div class="container-fluid">
+          <div class="btn-toolbar mb-4">
+             <button type="button" class="btn btn-primary mr-2" href="">
+              <i class="fas fa-database"></i> {% translate "ePRO Data Extractions" %}
+             </button>
+             <button type="button" class="btn btn-primary mr-2" disabled href="">
+              <i class="fas fa-plus"></i> {% translate "Usage Statistics" %}
+             </button>
+          </div>
+        </div>
+    </section>
+{% endblock %}
