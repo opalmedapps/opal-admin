@@ -1,20 +1,21 @@
 """This module provides views for patient settings."""
 import io
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
+from django.forms import Form
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import qrcode
-from coreapi import Object
 from django_tables2 import SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
-from opal.patients.forms import SelectSiteForm
+from opal.patients.forms import SearchForm, SelectSiteForm
 
 from .models import RelationshipType, Site
 from .tables import RelationshipTypeTable
@@ -73,8 +74,14 @@ class AccessRequestView(SessionWizardView):
     """
 
     model = Site
-    form_list = [('site', SelectSiteForm)]
-    template_list = {'site': 'patients/access_request/access_request.html'}
+    form_list = [
+        ('site', SelectSiteForm),
+        ('search', SearchForm),
+    ]
+    template_list = {
+        'site': 'patients/access_request/access_request.html',
+        'search': 'patients/access_request/access_request.html',
+    }
 
     def get_template_names(self) -> List[str]:
         """
@@ -85,7 +92,24 @@ class AccessRequestView(SessionWizardView):
         """
         return [self.template_list[self.steps.current]]
 
-    def get_context_data(self, form: Any, **kwargs: Any) -> Object:
+    def process_step(self, form: Form) -> Any:
+        """
+        Postprocess the form data.
+
+        Args:
+            form: the form of the step being processed
+
+        Returns:
+            the raw `form.data` dictionary
+        """
+        form_step_data = self.get_form_step_data(form)
+        if self.steps.current == 'site':
+            site_selection = form_step_data['site-sites']
+            self.request.session['site_selection'] = site_selection
+
+        return form_step_data
+
+    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -96,7 +120,34 @@ class AccessRequestView(SessionWizardView):
         Returns:
             the template context for a step
         """
-        return super().get_context_data(form=form, **kwargs)
+        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
+        if self.steps.current == 'site':
+            context.update({'header_title': _('Hospital Information')})
+        elif self.steps.current == 'search':  # pragma: no cover
+            context.update({'header_title': _('Patient Details')})
+
+        return context
+
+    def get_form_initial(self, step: str) -> dict[str, str]:
+        """
+        Return a dictionary which will be passed to the form for `step` as `initial`.
+
+        If no initial data was provided while initializing the form wizard, an empty dictionary will be returned.
+
+        Args:
+            step: a form step
+
+        Returns:
+            a dictionary or an empty dictionary for a step
+        """
+        initial: dict[str, str] = self.initial_dict.get(step, {})
+        if step == 'site' and 'site_selection' in self.request.session:
+            site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
+            if site_user_selection:
+                initial.update({
+                    'sites': site_user_selection,
+                })
+        return initial
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
         """
@@ -117,4 +168,5 @@ class AccessRequestView(SessionWizardView):
 
         return render(self.request, 'patients/access_request/test_qr_code.html', {
             'svg': stream.getvalue().decode(),
+            'header_title': _('QR Code Generation'),
         })

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-09 15:02-0400\n"
+"POT-Creation-Date: 2022-09-13 15:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,34 @@ msgstr ""
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
 msgstr "Patients"
+
+#: opal/patients/constants.py
+msgid "Medical Record Number (MRN)"
+msgstr "Numéro de dossier médical"
+
+#: opal/patients/constants.py
+msgid "Medicare Card Number (RAMQ)"
+msgstr "Numéro d'assurance maladie (RAMQ)"
+
+#: opal/patients/forms.py
+msgid "At which hospital is the patient?"
+msgstr "Dans quel hôpital se trouve le patient?"
+
+#: opal/patients/forms.py
+msgid "Next"
+msgstr "Suivant"
+
+#: opal/patients/forms.py
+msgid "Please Select A Card Type"
+msgstr "Veuillez sélectionner un type de carte"
+
+#: opal/patients/forms.py
+msgid "Please Input The Card Number"
+msgstr "Veuillez remplir le numéro de la carte"
+
+#: opal/patients/forms.py
+msgid "Generate QR Code"
+msgstr "Générer un code QR"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -107,8 +135,6 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Patient"
 msgstr "Patients"
 
@@ -199,11 +225,15 @@ msgstr "Patients de l'hôpital"
 
 #: opal/patients/tables.py
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: opal/patients/tables.py
 msgid "No relationship types defined."
-msgstr ""
+msgstr "Aucun type de relation défini."
+
+#: opal/patients/templates/patients/access_request/access_request.html
+msgid "New Patient Data Access Request"
+msgstr "Nouvelle demande d'accès aux données patient"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -247,3 +277,15 @@ msgstr ""
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
 msgstr ""
+
+#: opal/patients/views.py
+msgid "Hospital Information"
+msgstr "Patient de l'hôpital"
+
+#: opal/patients/views.py
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/views.py
+msgid "QR Code Generation"
+msgstr "Générateur de code QR"
