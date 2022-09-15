@@ -9,9 +9,9 @@
     <section class="content">
         <div class="container-fluid">
           <div class="btn-toolbar mb-4">
-             <button type="button" class="btn btn-primary mr-2" href="">
+             <a class="btn btn-primary mr-2" href="{% url 'questionnaires:exportreports-launch' %}">
               <i class="fas fa-database"></i> {% translate "ePRO Data Extractions" %}
-             </button>
+             </a>
              <button type="button" class="btn btn-primary mr-2" disabled href="">
               <i class="fas fa-plus"></i> {% translate "Usage Statistics" %}
              </button>

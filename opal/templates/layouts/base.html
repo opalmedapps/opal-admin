@@ -108,6 +108,7 @@
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
+            {% if user.is_superuser %}
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a href="{% url 'questionnaires:exportreport' %}" class="nav-link">
@@ -116,6 +117,7 @@
                 </a>
               </li>
             </ul>
+            {% endif %}
           </li>
 
           <li class="nav-item has-treeview menu-open">
