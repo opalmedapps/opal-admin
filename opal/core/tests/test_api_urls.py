@@ -79,3 +79,9 @@ def test_questionnaires_reviewed() -> None:
     """Ensure `questionnaires/reviewed/` endpoint is defined."""
     assert reverse('api:questionnaires-reviewed') == '/api/questionnaires/reviewed/'
     assert resolve('/api/questionnaires/reviewed/').view_name == 'api:questionnaires-reviewed'
+
+
+def test_retrieve_registration_code() -> None:
+    """Ensure `registration/<str:code>/` endpoint is defined."""
+    assert reverse('api:registration-code', kwargs={'code': 'ABCD12345678'}) == '/api/registration/ABCD12345678/'
+    assert resolve('/api/registration/ABCD12345678/').view_name == 'api:registration-code'
