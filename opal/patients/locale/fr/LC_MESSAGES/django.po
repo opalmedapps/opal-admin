@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-29 21:54+0300\n"
+"POT-Creation-Date: 2022-09-09 15:02-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -95,8 +95,8 @@ msgid "Sex"
 msgstr "Sexe"
 
 #: opal/patients/models.py
-msgid "Health Insurance Number"
-msgstr "Numéro d'assurance maladie"
+msgid "RAMQ Number"
+msgstr "Numéro de RAMQ"
 
 #: opal/patients/models.py
 msgid "Caregivers"
@@ -226,7 +226,7 @@ msgstr "Supprimer"
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationship_type/form.html
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
 #: opal/patients/templates/patients/relationship_type/form.html
 msgid "Update"

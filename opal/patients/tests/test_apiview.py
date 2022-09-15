@@ -24,6 +24,4 @@ def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user
         ).filter(status=RegistrationCodeStatus.NEW)
     )
 
-    print(queryset.)
-
     assert 1 == 2
