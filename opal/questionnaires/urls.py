@@ -16,7 +16,7 @@ urlpatterns = [
     path(
         'exportreports/',
         views.ExportReportTemplateView.as_view(),
-        name='exportreport',
+        name='exportreports',
     ),
     path(
         'exportreports/launch/',
