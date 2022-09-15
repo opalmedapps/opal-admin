@@ -9,7 +9,7 @@ from opal.patients.api.serializer import RegistrationCodePatientDetailedSerializ
 
 
 class PatientRetieveView(RetrieveAPIView):
-    """Class handling gets requests for registration code values."""
+    """Class handling GET requests for registration code values."""
 
     queryset = (
         RegistrationCode.objects.filter(status=RegistrationCodeStatus.NEW)
