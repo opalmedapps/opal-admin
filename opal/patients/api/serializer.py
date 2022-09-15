@@ -6,14 +6,14 @@ from opal.patients.serializer import (
     HospitalInstitutionSerializer,
     HospitalSiteSerializer,
     PatientDetailedSerializer,
-    PatientRegistrationSerializer,
+    PatientSummarySerializer,
 )
 
 
 class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     """Serializer for the return summary info of registration code."""
 
-    patient = PatientRegistrationSerializer(source='relationship.patient', many=False, read_only=True)
+    patient = PatientSummarySerializer(source='relationship.patient', many=False, read_only=True)
     institutions = HospitalInstitutionSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
