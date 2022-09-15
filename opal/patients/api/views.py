@@ -8,7 +8,7 @@ from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 from opal.patients.api.serializer import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 
 
-class PatientRetieveView(RetrieveAPIView):
+class RetrieveRegistrationDetailsView(RetrieveAPIView):
     """Class handling GET requests for registration code values."""
 
     queryset = (
