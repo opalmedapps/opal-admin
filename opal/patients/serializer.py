@@ -14,7 +14,7 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
 
 
 class PatientDetailedSerializer(serializers.ModelSerializer):
-    """Patient serializer used to get encryption values for registration web site."""
+    """Patient serializer used to get detailed patient information."""
 
     class Meta:
         model = Patient
@@ -22,7 +22,7 @@ class PatientDetailedSerializer(serializers.ModelSerializer):
 
 
 class PatientRegistrationSerializer(serializers.ModelSerializer):
-    """Patient serializer used to get encryption values for registration web site."""
+    """Patient serializer used to get summary patient information."""
 
     class Meta:
         model = Patient
@@ -30,7 +30,7 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
 
 
 class HospitalInstitutionSerializer(serializers.ModelSerializer):
-    """Hospital patient serializer used to get encryption values for registration web site."""
+    """Hospital patient serializer used to get institution information."""
 
     institution_id = serializers.IntegerField(
         source='site.institution.id',
@@ -48,7 +48,7 @@ class HospitalInstitutionSerializer(serializers.ModelSerializer):
 
 
 class HospitalSiteSerializer(serializers.ModelSerializer):
-    """Hospital patient serializer used to get encryption values for registration web site."""
+    """Hospital patient serializer used to get site information."""
 
     site_code = serializers.CharField(
         source='site.code',
