@@ -1,7 +1,8 @@
 """This module is an API view that returns the patient detaild and non-detailed info via registration code."""
 
-from typing import Any
+from typing import Any, Type
 
+from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
 
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
@@ -18,7 +19,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> Any:
+    def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serilizer based on the `detailed`.
 
         Args:
