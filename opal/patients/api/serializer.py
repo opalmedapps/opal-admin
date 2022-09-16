@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from opal.caregivers.models import RegistrationCode
 from opal.patients.serializer import (
-    HospitalInstitutionSerializer,
-    HospitalSiteSerializer,
+    HospitalPatientInstitutionSerializer,
+    HospitalPatientSiteSerializer,
     PatientDetailedSerializer,
     PatientSummarySerializer,
 )
@@ -14,7 +14,7 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     """Serializer for the return summary info of registration code."""
 
     patient = PatientSummarySerializer(source='relationship.patient', many=False, read_only=True)
-    institutions = HospitalInstitutionSerializer(
+    institutions = HospitalPatientInstitutionSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
         read_only=True,
@@ -29,7 +29,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
     """Serializer for the return detailed info of registration code."""
 
     patient = PatientDetailedSerializer(source='relationship.patient', many=False, read_only=True)
-    hosptial_patients = HospitalSiteSerializer(
+    hosptial_patients = HospitalPatientSiteSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
         read_only=True,

@@ -3,7 +3,6 @@ URL configuration for the project-wide REST API.
 
 Inspired by Two Scoops of Django Section 17.3.
 """
-# flake8: noqa
 from django.conf import settings
 from django.urls import path
 from django.urls.conf import include

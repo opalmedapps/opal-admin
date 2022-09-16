@@ -37,7 +37,7 @@ class PatientSummarySerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name']
 
 
-class HospitalInstitutionSerializer(serializers.ModelSerializer):
+class HospitalPatientInstitutionSerializer(serializers.ModelSerializer):
     """Hospital patient serializer used to get institution information."""
 
     institution_id = serializers.IntegerField(
@@ -55,7 +55,7 @@ class HospitalInstitutionSerializer(serializers.ModelSerializer):
         fields = ['institution_id', 'name']
 
 
-class HospitalSiteSerializer(serializers.ModelSerializer):
+class HospitalPatientSiteSerializer(serializers.ModelSerializer):
     """Hospital patient serializer used to get site information."""
 
     site_code = serializers.CharField(
