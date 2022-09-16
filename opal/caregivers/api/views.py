@@ -11,8 +11,8 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.serializer import RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
+from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
-from opal.patients.serializer import CaregiverPatientSerializer
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView):
