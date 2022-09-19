@@ -1,0 +1,13 @@
+* @mschoettle @anton.gladyr
+
+[Dependencies]
+requirements/*.txt @mschoettle
+
+[Setup]
+.gitlab-ci.yml @mschoettle
+
+setup.cfg @mschoettle
+pytest.ini @mschoettle
+renovate.json5 @mschoettle
+docker-compose.yml @mschoettle
+Dockerfile @mschoettle
