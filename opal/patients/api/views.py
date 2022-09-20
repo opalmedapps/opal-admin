@@ -13,7 +13,12 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     """Class handling GET requests for registration code values."""
 
     queryset = (
-        RegistrationCode.objects.filter(status=RegistrationCodeStatus.NEW)
+        RegistrationCode.objects.select_related(
+            'relationship',
+            'relationship__patient',
+        ).prefetch_related(
+            'relationship__patient__hospital_patients',
+        ).filter(status=RegistrationCodeStatus.NEW)
     )
 
     lookup_url_kwarg = 'code'
