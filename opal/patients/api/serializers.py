@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from opal.caregivers.models import RegistrationCode
+from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
@@ -13,28 +14,12 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
         fields = ['mrn', 'is_active']
 
 
-class PatientRegistrationSerializer(serializers.ModelSerializer):
-    """Patient serializer used to get encryption values for registration web site."""
-
-    class Meta:
-        model = Patient
-        fields = ['ramq']
-
-
-class PatientDetailedSerializer(serializers.ModelSerializer):
-    """Patient serializer used to get detailed patient information."""
+class PatientSerializer(DynamicFieldsSerializer):
+    """Patient serializer used to get patient information."""
 
     class Meta:
         model = Patient
         fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
-
-
-class PatientSummarySerializer(serializers.ModelSerializer):
-    """Patient serializer used to get summary patient information."""
-
-    class Meta:
-        model = Patient
-        fields = ['first_name', 'last_name']
 
 
 class HospitalPatientInstitutionSerializer(serializers.ModelSerializer):
@@ -84,7 +69,12 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
 class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     """Serializer for the return summary info of registration code."""
 
-    patient = PatientSummarySerializer(source='relationship.patient', many=False, read_only=True)
+    patient = PatientSerializer(
+        source='relationship.patient',
+        fields=('first_name', 'last_name'),
+        many=False,
+        read_only=True,
+    )
     institutions = HospitalPatientInstitutionSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
@@ -99,7 +89,11 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
 class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
     """Serializer for the return detailed info of registration code."""
 
-    patient = PatientDetailedSerializer(source='relationship.patient', many=False, read_only=True)
+    patient = PatientSerializer(
+        source='relationship.patient',
+        many=False,
+        read_only=True,
+    )
     hosptial_patients = HospitalPatientSiteSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
