@@ -14,7 +14,7 @@ class PatientSerializer(DynamicFieldsSerializer):
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
-    """Hospital patient serializer used to get Hospital patient information."""
+    """Hospital patient serializer used to get 'HospitalPatient' information."""
 
     class Meta:
         model = HospitalPatient
