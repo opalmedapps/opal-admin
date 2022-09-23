@@ -1,4 +1,4 @@
-"""This module provides Django REST framework serializers for PatietnView api return value."""
+"""This module provides Django REST framework serializers related to the `patients` app's models."""
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
@@ -19,24 +19,6 @@ class PatientSerializer(DynamicFieldsSerializer):
     class Meta:
         model = Patient
         fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
-
-
-class HospitalPatientInstitutionSerializer(serializers.ModelSerializer):
-    """Hospital patient serializer used to get institution information."""
-
-    institution_id = serializers.IntegerField(
-        source='site.institution.id',
-        read_only=True,
-    )
-
-    name = serializers.CharField(
-        source='site.institution.name',
-        read_only=True,
-    )
-
-    class Meta:
-        model = HospitalPatient
-        fields = ['institution_id', 'name']
 
 
 class HospitalPatientAndSiteSerializer(serializers.ModelSerializer):
