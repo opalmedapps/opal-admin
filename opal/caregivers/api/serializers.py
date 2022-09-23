@@ -6,11 +6,7 @@ from rest_framework import serializers
 from opal.caregivers.models import RegistrationCode, SecurityAnswer, SecurityQuestion
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
-from opal.patients.api.serializers import (
-    HospitalPatientAndSiteSerializer,
-    HospitalPatientRegistrationSerializer,
-    PatientSerializer,
-)
+from opal.patients.api.serializers import HospitalPatientAndSiteSerializer, HospitalPatientSerializer, PatientSerializer
 
 
 class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
@@ -22,7 +18,7 @@ class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
         many=False,
         read_only=True,
     )
-    hospital_patients = HospitalPatientRegistrationSerializer(
+    hospital_patients = HospitalPatientSerializer(
         source='relationship.patient.hospital_patients',
         many=True,
         read_only=True,
