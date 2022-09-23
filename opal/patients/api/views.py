@@ -5,7 +5,7 @@ from typing import Any, Type
 from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
 
-from opal.caregivers.api.serializer import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
+from opal.caregivers.api.serializers import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 
 
