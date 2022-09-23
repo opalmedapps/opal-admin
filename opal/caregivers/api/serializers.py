@@ -3,7 +3,7 @@ from typing import Dict
 
 from rest_framework import serializers
 
-from opal.caregivers.models import RegistrationCode
+from opal.caregivers.models import RegistrationCode, SecurityAnswer, SecurityQuestion
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import (
@@ -78,3 +78,37 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrationCode
         fields = ['patient', 'hospital_patients']
+
+
+class SecurityQuestionSerializer(serializers.ModelSerializer):
+    """Serializer for security questions."""
+
+    class Meta:
+        model = SecurityQuestion
+        fields = ['id', 'title_en', 'title_fr']
+
+
+class UpdateSecurityAnswerSerializer(serializers.ModelSerializer):
+    """Serializer for security answers."""
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question', 'answer']
+
+
+class SecurityAnswerSerializer(serializers.ModelSerializer):
+    """Serializer for security answers."""
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question']
+
+
+class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
+    """Serializer for Verify security answers."""
+
+    answer = serializers.CharField(max_length=128)  # noqa: WPS432
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['answer']

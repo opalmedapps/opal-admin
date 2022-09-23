@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-06 12:01-0400\n"
+"POT-Creation-Date: 2022-09-08 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,6 +34,10 @@ msgstr "Nom"
 #: opal/hospital_settings/models.py
 msgid "Code"
 msgstr "Code"
+
+#: opal/hospital_settings/models.py
+msgid "Terms of use"
+msgstr "Conditions d'utilisation"
 
 #: opal/hospital_settings/models.py
 msgid "Logo"

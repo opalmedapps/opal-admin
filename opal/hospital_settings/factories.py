@@ -18,6 +18,8 @@ class Institution(DjangoModelFactory):
     logo = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
     logo_fr = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
     code = factory.lazy_attribute(lambda institution: institution.name[:4].upper())
+    terms_of_use = factory.django.FileField(data=b'test PDF', filename='test_terms.pdf')
+    terms_of_use_fr = factory.django.FileField(data=b'PDF pour tester', filename='test_terms.pdf')
 
 
 class Site(DjangoModelFactory):
