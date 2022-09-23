@@ -34,7 +34,7 @@ class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
 
 
 class RegistrationCodePatientSerializer(serializers.ModelSerializer):
-    """Serializer for the return summary info of registration code."""
+    """Serializer that is providing summary info of a patient using `RegistrationCode` model."""
 
     patient = PatientSerializer(
         source='relationship.patient',
@@ -62,7 +62,7 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
 
 
 class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
-    """Serializer for the return detailed info of registration code."""
+    """Serializer that is providing detailed info of a patient using `RegistrationCode` model."""
 
     patient = PatientSerializer(
         source='relationship.patient',
