@@ -10,7 +10,7 @@ from opal.patients.api.serializers import HospitalPatientAndSiteSerializer, Hosp
 
 
 class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
-    """Serializer for the return value of registration encrytion info."""
+    """Serializer for the return value of registration encryption info."""
 
     patient = PatientSerializer(
         source='relationship.patient',
