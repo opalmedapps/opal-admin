@@ -14,14 +14,6 @@ class PatientSerializer(DynamicFieldsSerializer):
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
-    """Hospital patient serializer used to get 'HospitalPatient' information."""
-
-    class Meta:
-        model = HospitalPatient
-        fields = ['mrn', 'is_active']
-
-
-class HospitalPatientAndSiteSerializer(serializers.ModelSerializer):
     """Hospital patient serializer which also provides the site code."""
 
     site_code = serializers.CharField(
@@ -31,7 +23,7 @@ class HospitalPatientAndSiteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HospitalPatient
-        fields = ['mrn', 'site_code']
+        fields = ['mrn', 'is_active', 'site_code']
 
 
 class CaregiverPatientSerializer(serializers.ModelSerializer):
