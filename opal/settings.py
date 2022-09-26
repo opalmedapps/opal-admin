@@ -66,6 +66,7 @@ LOCAL_APPS = [
     'opal.caregivers',
     'opal.patients',
     'opal.legacy',
+    'opal.questionnaires',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -331,6 +332,9 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 # OIE Credentials
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
+
+# ePRO Data Extractions tool URL
+EPRO_DATA_EXTRACTIONS_URL = env.url('EPRO_URL').geturl()
 
 # Third party apps settings
 # ------------------------------------------------------------------------------

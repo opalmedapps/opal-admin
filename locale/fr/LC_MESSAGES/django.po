@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-06 12:01-0400\n"
+"POT-Creation-Date: 2022-09-16 10:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,11 +57,19 @@ msgstr "Sites"
 
 #: opal/templates/layouts/base.html
 msgid "Patients"
-msgstr ""
+msgstr "Patients"
 
 #: opal/templates/layouts/base.html
 msgid "Relationship Types"
-msgstr ""
+msgstr "Types de Relations"
+
+#: opal/templates/layouts/base.html
+msgid "Questionnaires"
+msgstr "Questionnaires"
+
+#: opal/templates/layouts/base.html
+msgid "Export Reports"
+msgstr "Exportation de Rapports"
 
 #: opal/templates/layouts/base.html
 msgid "Profile"
