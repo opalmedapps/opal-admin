@@ -104,6 +104,25 @@
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
+                {% translate "Questionnaires"|upper %}
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            {% if perms.questionnaires.export_report %}
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'questionnaires:exportreports' %}" class="nav-link">
+                  <i class="nav-icon fas fa-file-export"></i>
+                  <p class="text">{% translate "Export Reports" %}</p>
+                </a>
+              </li>
+            </ul>
+            {% endif %}
+          </li>
+
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link">
+              <p>
                 {% translate "Profile"|upper %}
                 <i class="right fas fa-angle-left"></i>
               </p>
