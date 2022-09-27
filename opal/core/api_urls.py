@@ -72,4 +72,5 @@ urlpatterns = [
         name='caregivers-securityquestions-verify',
     ),
     path('', include(router.urls)),
+    path('registration/', include('opal.patients.api.urls', namespace='registration')),
 ]

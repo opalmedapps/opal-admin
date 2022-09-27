@@ -13,6 +13,14 @@ class PatientSerializer(DynamicFieldsSerializer):
         fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
 
 
+class RelationshipSerializer(DynamicFieldsSerializer):
+    """Patient serializer used to get relationship information."""
+
+    class Meta:
+        model = Relationship
+        fields = ['id', 'status']
+
+
 class HospitalPatientSerializer(DynamicFieldsSerializer):
     """Hospital patient serializer which also provides the site code."""
 

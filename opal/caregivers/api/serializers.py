@@ -110,3 +110,10 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecurityAnswer
         fields = ['answer']
+
+
+class RegistrationCodeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['code']
