@@ -20,6 +20,7 @@ class Institution(DjangoModelFactory):
     code = factory.lazy_attribute(lambda institution: institution.name[:4].upper())
     terms_of_use = factory.django.FileField(data=b'test PDF', filename='test_terms.pdf')
     terms_of_use_fr = factory.django.FileField(data=b'PDF pour tester', filename='test_terms.pdf')
+    support_email = 'muhc@muhc.mcgill.ca'
 
 
 class Site(DjangoModelFactory):
