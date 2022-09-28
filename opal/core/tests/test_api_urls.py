@@ -118,7 +118,19 @@ def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
 
 
 # questionnaire report generation API endpoint: questionnaires/reviewed/
-def test_questionnaires_reviewed() -> None:
+def test_questionnaires_reviewed(settings: SettingsWrapper) -> None:
     """Ensure `questionnaires/reviewed/` endpoint is defined."""
-    assert reverse('api:questionnaires-reviewed') == '/api/questionnaires/reviewed/'
-    assert resolve('/api/questionnaires/reviewed/').view_name == 'api:questionnaires-reviewed'
+    url_path = '/{api_root}/questionnaires/reviewed/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:questionnaires-reviewed') == url_path
+    assert resolve(url_path).view_name == 'api:questionnaires-reviewed'
+
+
+def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/` endpoint is defined."""
+    registration_code = 'ABCD12345678'
+    url_path = '/{api_root}/registration/{code}/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:registration-code', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:registration-code'
