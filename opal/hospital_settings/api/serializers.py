@@ -1,6 +1,8 @@
 """This module provides Django REST framework serializers for hospital-specific settings models."""
 from rest_framework import serializers
 
+from opal.core.api.serializers import DynamicFieldsSerializer
+
 from ..models import Institution, Site
 
 
@@ -16,8 +18,13 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'url', 'name', 'code', 'direction_url', 'parking_url', 'longitude', 'latitude']
 
 
-class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
-    """This class defines how an `Institution` model is serialized for the REST API."""
+class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer):
+    """
+    This class defines how an `Institution` model is serialized for the REST API.
+
+    It inherits from core.api.serializers.DynamicFieldsSerializer,
+    and also provides the site code according to the 'fields' arguments.
+    """
 
     url = serializers.HyperlinkedIdentityField(view_name='api:institutions-detail')
     sites = SiteSerializer(many=True, read_only=True)
