@@ -36,6 +36,9 @@ class Institution(Location):
         _('Logo'),
         upload_to='uploads/institution-logo/',
     )
+    support_email = models.EmailField(
+        verbose_name=_('Support email'),
+    )
 
     class Meta:
         ordering = ['name']
