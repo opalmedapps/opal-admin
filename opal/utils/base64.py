@@ -49,3 +49,24 @@ class Base64Util:
             )
         except (ValueError, TypeError):
             return False
+
+    def encode_pdf_to_base64(self, file_path: Path) -> Optional[str]:
+        """Create base64 string of a given pdf file.
+
+        Args:
+            file_path (Path): file path of the pdf file
+
+        Returns:
+            str: encoded base64 string of the pdf file if the `file_path` is a valid pdf file, `None` otherwise
+        """
+        try:
+            # Return a `None` if a given file is not a pdf
+            if file_path.suffix == '.pdf':
+                with file_path.open(mode='rb') as pdf_file:
+                    data = base64.b64encode(pdf_file.read())
+            else:
+                return None
+        except OSError:
+            return None
+
+        return data.decode('utf-8')

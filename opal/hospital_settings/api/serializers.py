@@ -1,6 +1,9 @@
 """This module provides Django REST framework serializers for hospital-specific settings models."""
+from typing import Optional
+
 from rest_framework import serializers
 
+from ...core.drf_fields import Base64PDFFileField
 from ..models import Institution, Site
 
 
@@ -25,3 +28,27 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Institution
         fields = ['id', 'url', 'name', 'code', 'sites']
+
+
+class TermsOfUseSerialiser(serializers.HyperlinkedModelSerializer):
+    """This class defines how the `terms of use` of an `Institution` is serialized for an API."""
+
+    url = serializers.HyperlinkedIdentityField(view_name='api:institutions-detail')
+    terms_of_use_encoded = serializers.SerializerMethodField('get_terms_of_use_encoded')
+
+    class Meta:
+        model = Institution
+        fields = ['url', 'terms_of_use_encoded']
+
+    def get_terms_of_use_encoded(self, obj: Institution) -> Optional[str]:  # noqa: WPS615
+        """Get the terms of use content in base64 encoded form.
+
+        Args:
+            obj (Institution): Input Institution
+
+        Returns:
+            str: encoded base64 string of the file content
+            if the 'terms_of_use' field is a valid pdf file, `None` otherwise
+        """
+        pdf_field = Base64PDFFileField()
+        return pdf_field.to_representation(obj.terms_of_use.path)
