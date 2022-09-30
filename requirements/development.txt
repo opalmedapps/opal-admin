@@ -4,7 +4,7 @@
 #
 mypy==0.942  # https://github.com/python/mypy
 pytest==7.1.3  # https://github.com/pytest-dev/pytest
-pytest-mock==3.8.2  # https://github.com/pytest-dev/pytest-mock/
+pytest-mock==3.9.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.5.1  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.5  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.12.0  # https://github.com/pytest-dev/pytest-randomly
@@ -24,7 +24,7 @@ flake8==4.0.1  # https://github.com/PyCQA/flake8
 
 # wemake Python Styleguide
 # see: https://wemake-python-stylegui.de/en/latest/index.html
-wemake-python-styleguide==0.16.1
+wemake-python-styleguide==0.17.0
 # The following plugins are included in wemake-python-styleguide but listed here for information purposes
 # i.e., we would want to use these plugins even if we didn't use the wemake python styleguide
 # darglint==  # https://github.com/terrencepreilly/darglint
