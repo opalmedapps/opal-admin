@@ -9,8 +9,10 @@ from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
 
-from opal.caregivers.factories import RegistrationCode
+from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
+from opal.users.factories import User
 
 from ..factories import HospitalPatient, Patient, Relationship
 
@@ -84,4 +86,102 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
                 'site_code': site.code,
             },
         ],
+    }
+
+
+def test_registration_register_success(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test api registration code register success."""
+    api_client.force_login(user=admin_user)
+    # Build relationships: code -> relationship -> patient
+    patient = Patient()
+    user = User()
+    caregiver = CaregiverProfile(user=user)
+    relationship = Relationship(patient=patient, caregiver=caregiver)
+    registration_code = RegistrationCode(relationship=relationship)
+    valid_input_data = {
+        'patient': {
+            'legacy_id': 1,
+        },
+        'caregiver': {
+            'language': 'fr',
+            'phone_number': '+15141112222',
+            'email': 'aaa@aaa.com',
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
+        },
+    }
+
+    response = api_client.post(
+        reverse(
+            'api:registration-register',
+            kwargs={'code': registration_code.code},
+        ),
+        data=valid_input_data,
+        format='json',
+    )
+
+    registration_code.refresh_from_db()
+    security_answers = SecurityAnswer.objects.all()
+    assert response.status_code == HTTPStatus.OK
+    assert registration_code.status == RegistrationCodeStatus.REGISTERED
+    assert len(security_answers) == 2
+    assert response.json() == {
+        'data': 'Saved the patient data successfully.',
+    }
+
+
+def test_registration_register_invalid_email(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test api registration code register success."""
+    api_client.force_login(user=admin_user)
+    # Build relationships: code -> relationship -> patient
+    patient = Patient()
+    user = User()
+    caregiver = CaregiverProfile(user=user)
+    relationship = Relationship(patient=patient, caregiver=caregiver)
+    registration_code = RegistrationCode(relationship=relationship)
+    valid_input_data = {
+        'patient': {
+            'legacy_id': 1,
+        },
+        'caregiver': {
+            'language': 'fr',
+            'phone_number': '+15141112222',
+            'email': 'aaaaaaaaa',
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
+        },
+    }
+
+    response = api_client.post(
+        reverse(
+            'api:registration-register',
+            kwargs={'code': registration_code.code},
+        ),
+        data=valid_input_data,
+        format='json',
+    )
+
+    registration_code.refresh_from_db()
+    security_answers = SecurityAnswer.objects.all()
+    assert response.status_code == HTTPStatus.OK
+    assert registration_code.status == RegistrationCodeStatus.NEW
+    assert not security_answers
+    assert response.json() == {
+        'data': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
     }

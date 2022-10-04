@@ -23,7 +23,7 @@ class RelationshipSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = Relationship
-        fields = ['id', 'status']
+        fields = ['id', 'status', 'patient_id', 'caregiver_id']
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
