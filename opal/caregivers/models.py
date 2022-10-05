@@ -238,3 +238,45 @@ class RegistrationCode(models.Model):
             code=self.code,
             status=self.status,
         )
+
+
+class EmailVerification(models.Model):
+    """A model is used to save and verify the user email address."""
+
+    caregiver = models.ForeignKey(
+        to=CaregiverProfile,
+        verbose_name=_('Caregiver Profile'),
+        related_name='emails',
+        on_delete=models.CASCADE,
+    )
+
+    code = models.CharField(
+        verbose_name=_('Verification Code'),
+        max_length=6,
+        validators=[MinLengthValidator(6)],
+    )
+
+    is_verified = models.BooleanField(
+        verbose_name=_('Verfied'),
+        default=False,
+    )
+
+    sent_at = models.DateTimeField(
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = _('Email Verification Code')
+        verbose_name_plural = _('Email Verification Codes')
+
+    def __str__(self) -> str:
+        """
+        Return the string email verification code and its status.
+
+        Returns:
+            the string email verification code and its status
+        """
+        return 'Code: {code} (Status: {verified})'.format(
+            code=self.code,
+            verified=str(self.is_verified),
+        )
