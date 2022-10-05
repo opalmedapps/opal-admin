@@ -81,7 +81,6 @@ class RegistrationCode(DjangoModelFactory):
     # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
-    email_verification_code = '123456'
 
 
 class EmailVerification(DjangoModelFactory):
