@@ -235,7 +235,7 @@ class RegistrationCode(models.Model):
 
 
 class EmailVerification(models.Model):
-    """A model is used to save and verify the user email address."""
+    """A model to save verification codes along with its properties."""
 
     caregiver = models.ForeignKey(
         to=CaregiverProfile,
@@ -260,8 +260,8 @@ class EmailVerification(models.Model):
     )
 
     class Meta:
-        verbose_name = _('Email Verification Code')
-        verbose_name_plural = _('Email Verification Codes')
+        verbose_name = _('Email Verification')
+        verbose_name_plural = _('Email Verification')
 
     def __str__(self) -> str:
         """
