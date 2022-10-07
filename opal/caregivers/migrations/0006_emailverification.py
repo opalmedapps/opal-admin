@@ -30,8 +30,8 @@ class Migration(migrations.Migration):
                 ('caregiver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='emails', to='caregivers.caregiverprofile', verbose_name='Caregiver Profile')),
             ],
             options={
-                'verbose_name': 'Email Verification Code',
-                'verbose_name_plural': 'Email Verification Codes',
+                'verbose_name': 'Email Verification',
+                'verbose_name_plural': 'Email Verification',
             },
         ),
     ]
