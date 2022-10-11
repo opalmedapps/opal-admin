@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
+from opal.core.drf_fields import Base64FileField
 
 from ..models import Institution, Site
 
@@ -32,3 +33,14 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicField
     class Meta:
         model = Institution
         fields = ['id', 'url', 'name', 'code', 'support_email', 'sites']
+
+
+class TermsOfUseSerializer(serializers.HyperlinkedModelSerializer):
+    """This class defines how the `terms of use` of an `Institution` is serialized for an API."""
+
+    url = serializers.HyperlinkedIdentityField(view_name='api:institutions-terms-of-use')
+    terms_of_use = Base64FileField()
+
+    class Meta:
+        model = Institution
+        fields = ['id', 'url', 'terms_of_use']
