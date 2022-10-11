@@ -55,6 +55,8 @@ class UpdateDeviceView(UpdateAPIView):
         """
         if self.request.method == 'PUT':
             return self.update(request, *args, **kwargs)
+        elif self.request.method == 'PATCH':
+            return self.partial_update(request, *args, **kwargs)
         return Response({'status': status.HTTP_404_NOT_FOUND})
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -68,26 +70,23 @@ class UpdateDeviceView(UpdateAPIView):
         Returns:
             HTTP `Response` success or failure
         """
-        partial = self.kwargs.pop('partial', False)
+        partial = kwargs.pop('partial', False)
         device_instance = self.get_object_or_none()
-
         serializer = self.get_serializer(
             device_instance,
             data=request.data,
             partial=partial,
         )
         serializer.is_valid(raise_exception=True)
-
         if device_instance is None:
             lookup_value = self.kwargs[self.lookup_url_kwarg]
             extra_kwargs = {self.lookup_field: lookup_value}
             serializer.save(**extra_kwargs)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         serializer.save()
         return Response(serializer.data)
 
-    def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Any:
+    def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Set partial parameter and re-call update method.
 
         Args:
