@@ -66,7 +66,7 @@ class ReportService():
         """
         payload = json.dumps({
             'patient_id': report_data.patient_id,
-            'logo_base64': Base64Util().encode_image_to_base64(report_data.logo_path),
+            'logo_base64': Base64Util().encode_to_base64(report_data.logo_path),
             'language': report_data.language,
         })
 
