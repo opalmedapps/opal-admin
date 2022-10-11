@@ -134,3 +134,11 @@ def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:registration-code', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:registration-code'
+
+
+def test_retrieve_device_update(settings: SettingsWrapper) -> None:
+    """Ensure `caregivers/devices/<str:device_id>/` endpoint is defined."""
+    device_id = 'TJLNf6yqHdfc3yR3C2bW6546ZPl1'
+    url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
+    assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
+    assert resolve(url_path).view_name == 'api:devices-update-or-create'
