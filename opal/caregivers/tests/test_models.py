@@ -252,13 +252,18 @@ class TestEmailVerification:
 
     def test_model_str(self) -> None:
         """The `str` method returns the email verification code and status."""
-        email_verification = factories.EmailVerification()
-        assert str(email_verification) == 'Code: 123456 (Active: True)'
+        email_verification = factories.EmailVerification(is_verified=True)
+        assert str(email_verification) == 'Code: 123456 (Verified: True)'
 
     def test_factory(self) -> None:
         """Ensure the EmailVerification factory is building properly."""
         email_verification = factories.EmailVerification()
         email_verification.full_clean()
+
+    def test_default_email_not_verified(self) -> None:
+        """Ensure the email is not verified as default."""
+        email_verification = factories.EmailVerification()
+        assert email_verification.is_verified is False
 
     def test_email_code_too_long(self) -> None:
         """Ensure the length of email verification code is not greater than 6."""

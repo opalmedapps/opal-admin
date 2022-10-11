@@ -91,7 +91,6 @@ class EmailVerification(DjangoModelFactory):
 
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
-    is_verified = True
     sent_at = datetime.strptime(
         '2022-10-04 11:11:11',
         '%Y-%m-%d %H:%M:%S',

@@ -27,11 +27,11 @@ class Migration(migrations.Migration):
                 ('code', models.CharField(max_length=6, validators=[django.core.validators.MinLengthValidator(6)], verbose_name='Verification Code')),
                 ('is_verified', models.BooleanField(default=False, verbose_name='Verfied')),
                 ('sent_at', models.DateTimeField(null=True)),
-                ('caregiver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='emails', to='caregivers.caregiverprofile', verbose_name='Caregiver Profile')),
+                ('caregiver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='email_verifications', to='caregivers.caregiverprofile', verbose_name='Caregiver Profile')),
             ],
             options={
                 'verbose_name': 'Email Verification',
-                'verbose_name_plural': 'Email Verification',
+                'verbose_name_plural': 'Email Verifications',
             },
         ),
     ]
