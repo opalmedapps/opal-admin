@@ -1,9 +1,10 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
 from pathlib import Path
-from typing import Type
+from typing import Any, Type
 
 from django.apps import apps
 from django.conf import LazySettings
+from django.db import connections
 from django.db.models import Model
 from django.test import Client
 
@@ -86,3 +87,21 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
         settings (LazySettings): All the configurations of the `opalAdmin backend` service
     """
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
+
+
+@pytest.fixture(scope='session')
+def _django_db_setup(django_db_blocker: Any) -> None:
+    """Add test_QuestionnaireDB setup by executing code in tests/sql.
+
+    Args:
+        django_db_blocker (Any): pytest fixture to allow database access here only
+    """
+    # load test questionnaire db sql
+    with open('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1') as handle:
+        sql_content = handle.read()
+        handle.close()
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(sql_content)
+            conn.close()

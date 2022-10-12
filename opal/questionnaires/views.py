@@ -10,10 +10,14 @@ from django.http import HttpRequest, HttpResponse
 from django.views.generic.base import TemplateView
 
 import pandas as pd
+from easyaudit.models import RequestEvent
 
+from ..users.models import User
 from .backend import get_all_questionnaire, get_questionnaire_detail, get_tempC, make_tempC
 from .models import ExportReportPermission
 from .tables import ReportTable
+
+language_map = {'fr': 1, 'en': 2}  # All queries assume the integer representation of opal languages
 
 
 # QUESTIONNAIRES INDEX PAGE
@@ -41,7 +45,8 @@ class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView)
             dict containing questionnaire list.
         """
         context = super().get_context_data(**kwargs)
-        context['questionnaire_list'] = get_all_questionnaire()
+        requestor = User.objects.get(username=context['username'])
+        context['questionnaire_list'] = get_all_questionnaire(language_map[requestor.language])
         return context
 
 
@@ -65,6 +70,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             template rendered with updated context or HttpError
         """
         context = self.get_context_data()
+        requestor = User.objects.get(username=request.user)
 
         if 'questionnaireid' in request.POST.keys():
             try:
@@ -72,8 +78,14 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             except ValueError:
                 self.logger.error('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-            questionnaire_detail = get_questionnaire_detail(qid)
+            questionnaire_detail = get_questionnaire_detail(int(qid), language_map[requestor.language])
             context.update(questionnaire_detail)
+            # Also update auditing service with request details
+            request_event = RequestEvent.objects.filter(
+                url=request.path,
+            ).order_by('-datetime').first()
+            request_event.query_string = f'questionnaireid: {qid}'
+            request_event.save()
             return self.render_to_response(context)
         self.logger.error('Missing post key: questionnaireid')
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
@@ -101,7 +113,13 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         """
         context = self.get_context_data()
         context.update({'title': 'export questionnaire'})
-        complete_params_check = make_tempC(request.POST)  # create temporary table for requested questionnaire data
+
+        requestor = User.objects.get(username=request.user)
+
+        #  make_tempC() creates a temporary table in the QuestionnaireDB containing the desired data report
+        #  the function returns a boolean indicating if the table could be succesfully created given the query params
+        complete_params_check = make_tempC(request.POST, language_map[requestor.language])
+
         if not complete_params_check:  # fail with 400 error if query parameters are incomplete
             self.logger.error('Server received incomplete query parameters.')
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
@@ -118,6 +136,19 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
                 'end': request.POST.get('end'),
             },
         )
+
+        # Also update auditing service with request details
+        request_event = RequestEvent.objects.filter(
+            url=request.path,
+        ).order_by('-datetime').first()
+        request_event.query_string = {
+            f"questionnaireid: {request.POST.get('questionnaireid')}",
+            f"startdate: {request.POST.get('start')}",
+            f"enddate: {request.POST.get('end')}",
+            f"patientIdFilter: {request.POST.getlist('patientIDs')}",
+            f"questionIdFilter: {request.POST.getlist('questionIDs')}",
+        }
+        request_event.save()
 
         return self.render_to_response(context)
 
@@ -187,7 +218,6 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         """
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
-
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         report_dict = get_tempC()

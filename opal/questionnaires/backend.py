@@ -1,6 +1,4 @@
-# flake8: noqa
-
-import datetime
+"""This file contains SQL queries for the ePRO reporting tool."""
 import html
 import logging
 from typing import Any
@@ -16,21 +14,38 @@ logger = logging.getLogger(__name__)
 test_accounts = settings.TEST_PATIENTS
 
 
-def _getdescription(qid: int, langId: int) -> Any:
-    with connections['QuestionnaireDB'].cursor() as c:
-        c.execute(
-            f'SELECT description FROM questionnaire WHERE ID = {qid}'
+def _getdescription(qid: int, lang_id: int) -> Any:
+    """Get detailed description for selected questionnaire.
+
+    Args:
+        qid: Questionnaire id.
+        lang_id: requesting user language preference.
+
+    Returns:
+        description
+    """
+    with connections['questionnaire'].cursor() as conn:
+        conn.execute(
+            'SELECT description FROM questionnaire WHERE ID = %s', [qid],
         )
-        descriptionID = c.fetchone()[0]
-        c.execute(
-            f'SELECT content FROM dictionary WHERE contentId = {descriptionID} and languageId = {langId}'
+        description_id = conn.fetchone()[0]
+        conn.execute(
+            'SELECT content FROM dictionary WHERE contentId = %s and languageId = %s', [description_id, lang_id],
         )
-        description = c.fetchone()[0]
+        description = conn.fetchone()[0]
     return description
 
 
 def dictfetchall(cursor: Any) -> list[dict]:
-    """Return all rows from a cursor as a dict"""
+    """Return all rows from a cursor as a dict.
+
+    Args:
+        cursor: Database connection.
+
+    Returns:
+        dictionary list for query.
+
+    """
     columns = [col[0] for col in cursor.description]
     return [
         dict(zip(columns, row))
@@ -38,65 +53,93 @@ def dictfetchall(cursor: Any) -> list[dict]:
     ]
 
 
-def get_all_questionnaire() -> Any:
-    """Return list of non-test patient responded questionnaires from the DB"""
-    # TODO REMOVE: Hardcode questionnaire list to allow testing
-    return [{'ID': 11, 'name': 'Patient Satisfaction Questionnaire'}, {'ID': 12, 'name': 'Edmonton Symptom Assessment System'}, {'ID': 18, 'name': 'Breast Radiotherapy Symptoms'}]
+def get_all_questionnaire(lang_id: int) -> list[dict]:
+    """Get list of questionnaires which have non-zero number of responses.
+
+    Args:
+        lang_id: requesting user's language preference.
+
+    Returns:
+        dictionary list for the query.
+    """
     try:
-        with connections['QuestionnaireDB'].cursor() as c:
-            c.execute(f'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in {test_accounts}')
-            aq = tuple([row[0] for row in c.fetchall()])
-            c.execute(f'SELECT ID, getDisplayName(title, {2}) `name` FROM questionnaire WHERE ID in {aq}')
-            qs = dictfetchall(c)
+        with connections['questionnaire'].cursor() as conn:
+            if settings.DEBUG:  # when in debug just return all questionnaires
+                conn.execute('SELECT DISTINCT questionnaireId FROM answer where deleted=0')
+            else:  # if in prod disclude test responses
+                conn.execute(
+                    'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in %s',
+                    [test_accounts],
+                )
+            aq = tuple([row[0] for row in conn.fetchall()])
+            conn.execute(
+                'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID in %s',
+                [lang_id, aq],
+            )
+            qs = dictfetchall(conn)
     except DatabaseError as err:
-        logger.error(f'DatabaseError: No questionnaires found, are you sure you are connected to a production database? \n Error:  {err} ')
-        return {}
+        logger.error(f'DatabaseError: No questionnaires found, are you sure you are connected to a production database? \n Error:  {err} ')  # noqa: E501
+        return [{}]
     return qs
 
 
-def get_questionnaire_detail(qid: int) -> Any:
-    # TODO REMOVE for testing only
-    return {'questionnaire': {'ID': 12, 'name': 'Edmonton Symptom Assessment System'}, 'patientIDs': [37, 47, 49, 59, 67, 94, 111, 120, 163, 171, 190, 211, 238, 251, 252, 253, 257, 273, 338, 339, 340, 342, 344, 380, 383, 384, 396,
-399, 401, 407, 421, 449, 478, 479, 481, 482, 487, 513, 531, 578, 579, 611, 629, 664, 694, 695, 698, 727, 728, 775, 801, 870, 971, 1535], 'mindate': datetime.date(2019, 4, 10), 'maxdate': datetime.date(2022, 1, 13), 'questions': [{'questionId': 793, 'question': 'Please rate the following on a scale from 1 to 10: Drowsiness (feeling sleepy)', 'typeId': 2}, {'questionId': 794, 'question': 'Please rate the following on a scale from 1 to 10: Nausea', 'typeId': 2}, {'questionId': 795, 'question': 'Please rate the following on a scale from 1 to 10: Lack of appetite', 'typeId': 2}, {'questionId': 791, 'question': 'Please rate the following on a scale from 1 to 10: Pain', 'typeId': 2}, {'questionId': 796, 'question': 'Please rate the following on a scale from 1 to 10: Shortness of breath', 'typeId': 2}, {'questionId': 792, 'question': 'Please rate the following on a scale from 1 to 10: Tiredness (lack of energy)', 'typeId': 2}, {'questionId': 799, 'question': 'Please rate the following on a scale from 1 to 10: Wellbeing (how you feel overall)', 'typeId': 2}, {'questionId': 797, 'question': 'Please rate the following on a scale from 1 to 10: Depression (feeling sad)', 'typeId': 2}, {'questionId': 798, 'question': 'Please rate the following on a scale from 1 to 10: Anxiety (feeling nervous)', 'typeId': 2}], 'description': '<p><span style=\'font-size: 14px;float: none;\'>Patients sometimes report that they have the following symptoms or problems. Please indicate the extent to which you have experienced these symptoms or problems during the past week.</span><!--EndFragment--><br/><br/></p>'}
-    with connections['QuestionnaireDB'].cursor() as c:
-        c.execute(
-            f'SELECT ID, getDisplayName(title, {2}) `name` FROM questionnaire WHERE ID = {qid}'
+def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, WPS213
+    """Get details for desired questionnaire (questions, patients, dates).
+
+    Args:
+        qid: questionnaire id.
+        lang_id: requesting user's language preference.
+
+    Returns:
+        dictionary list for the query.
+    """
+    with connections['questionnaire'].cursor() as conn:
+        conn.execute(
+            'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID = %s', [lang_id, qid],
         )
-        questionnaire = dictfetchall(c)
+        questionnaire = dictfetchall(conn)
 
-        c.execute(
-            'DROP TABLE IF EXISTS`tempB`'
-        )
+        conn.execute('DROP TABLE IF EXISTS`tempB`')
+        if settings.DEBUG:
+            conn.execute(  # noqa: WPS462
+                """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                where AQ.questionnaireId = %s and AQ.`status` = 2
+                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
+                and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid],
+            )
+        else:
+            conn.execute(  # noqa: WPS462
+                """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                where AQ.questionnaireId = %s and AQ.patientId not in %s and AQ.`status` = 2
+                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
+                and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid, test_accounts],
+            )
 
-        c.execute(
-            f"""create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-            date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-            getDisplayName(Q.question, {2}) `question`, A.typeId, A.ID AnswerID
-            from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-            where AQ.questionnaireId = {qid} and AQ.patientId not in {test_accounts} and AQ.`status` = 2
-            and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
-            and A.answered = 1 and A.questionId = Q.ID) """
-        )
+        conn.execute('SELECT DISTINCT patientId FROM tempB')
+        patient_ids = [row[0] for row in conn.fetchall()]
+        patient_ids.sort()
 
-        c.execute(f'SELECT DISTINCT patientId FROM tempB ')
-        patientIDs = [row[0] for row in c.fetchall()]
-        patientIDs.sort()
+        conn.execute('SELECT MIN(lastUpdated) FROM tempB')
+        mindate = conn.fetchone()
 
-        c.execute(f'SELECT MIN(lastUpdated) FROM tempB ')
-        mindate = c.fetchone()
+        conn.execute('SELECT MAX(lastUpdated) FROM tempB')
+        maxdate = conn.fetchone()
 
-        c.execute(f'SELECT MAX(lastUpdated) FROM tempB ')
-        maxdate = c.fetchone()
+        conn.execute('SELECT DISTINCT questionId, question, typeId FROM tempB')
+        questions = dictfetchall(conn)
 
-        c.execute('SELECT DISTINCT questionId, question, typeId FROM tempB')
-        questions = dictfetchall(c)
-
-    description = _getdescription(qid, 2)
+    description = _getdescription(qid, lang_id)
     description = html.unescape(description)
 
     return {
         'questionnaire': questionnaire[0],
-        'patientIDs': patientIDs,
+        'patientIDs': patient_ids,
         'mindate': mindate[0],
         'maxdate': maxdate[0],
         'questions': questions,
@@ -104,7 +147,7 @@ def get_questionnaire_detail(qid: int) -> Any:
     }
 
 
-def make_tempC(report_params: QueryDict) -> bool:
+def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
     """
     Query the QuestionnaireDB with the user's specific options for a questionnaire and store the results
     in the table tempC in QuestionnaireDB.
@@ -120,54 +163,67 @@ def make_tempC(report_params: QueryDict) -> bool:
     # to avoid trailing comma for tuples with 1 item
     sql_pids = ', '.join(map(str, pids))
     sql_qids = ', '.join(map(str, qids))
-    if qid and sql_pids and sql_qids and startdate and enddate:
-        # TODO: testing only
-        return True
-        with connections['QuestionnaireDB'].cursor() as c:
-            c.execute(
-                'DROP TABLE IF EXISTS`temp`'
+
+    if all([qid, pids, qids, startdate, enddate]):
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(
+                'DROP TABLE IF EXISTS`temp`',
             )
-            c.execute(
-                'DROP TABLE IF EXISTS`tempA`'
+            conn.execute(
+                'DROP TABLE IF EXISTS`tempA`',
             )
-            c.execute(
-                'DROP TABLE IF EXISTS`tempB`'
+            conn.execute(
+                'DROP TABLE IF EXISTS`tempB`',
             )
-            c.execute(
-                'DROP TABLE IF EXISTS`tempC`'
+            conn.execute(
+                'DROP TABLE IF EXISTS`tempC`',
             )
 
-            c.execute(
-                f"""create table tempA(SELECT Q.ID Questionnaire_ID, getDisplayName(Q.title, {2})
+            conn.execute(  # noqa: WPS462
+                """create table tempA(SELECT Q.ID Questionnaire_ID, getDisplayName(Q.title, %s)
                 Questionnaire_Title, S.ID Section_ID, qs.questionId, qs.`order`,
-                getDisplayName(qq.question, {2}) Question_Title
+                getDisplayName(qq.question, %s) Question_Title
                 From questionnaire Q, section S, questionSection qs, question qq
-                where Q.ID = {qid} and S.questionnaireId = Q.ID and qq.ID in ({sql_qids}) and qs.sectionId = S.ID
+                where Q.ID = %s and S.questionnaireId = Q.ID and qq.ID in (%s) and qs.sectionId = S.ID
                 and qq.ID = qs.questionId)
-                """
+                """, [lang_id, lang_id, qid, sql_qids],
             )
-            c.execute(
-                f"""create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                QuestionnaireDB.getDisplayName(Q.question, {2}) `question`, A.typeId, A.ID AnswerID
-                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                where AQ.questionnaireId = {qid} and AQ.patientId not in {test_accounts} and AQ.patientId in ({sql_pids})
-                and AQ.lastUpdated and AQ.`status` = 2
-                and cast(AQ.lastUpdated as date) BETWEEN '{startdate}' and '{enddate}'
-                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
-                and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
-                """
-            )
-            c.execute(
+            if settings.DEBUG:
+                conn.execute(  # noqa: WPS462
+                    """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                    date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                    QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                    from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                    where AQ.questionnaireId = %s and AQ.patientId in (%s)
+                    and AQ.lastUpdated and AQ.`status` = 2
+                    and cast(AQ.lastUpdated as date) BETWEEN %s and %s
+                    and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
+                    and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
+                    """, [lang_id, qid, sql_pids, startdate, enddate],
+                )
+            else:
+                conn.execute(  # noqa: WPS462
+                    """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                    date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                    QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                    from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                    where AQ.questionnaireId = %s and AQ.patientId not in %s and AQ.patientId in (%s)
+                    and AQ.lastUpdated and AQ.`status` = 2
+                    and cast(AQ.lastUpdated as date) BETWEEN %s and %s
+                    and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
+                    and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
+                    """, [lang_id, qid, test_accounts, sql_pids, startdate, enddate],
+                )
+            conn.execute(  # noqa: WPS462
                 """create table temp(SELECT A.Questionnaire_ID, A.Questionnaire_Title, A.Section_ID, A.order, B.*
                 from tempA A, tempB B
                 where A.questionId = B.questionId)
-                """
+                """,
             )
-            c.execute('create index idx_A on temp (AnswerID)')
-            c.execute('create index idx_B on temp (typeId)')
-            c.execute(
-                f"""create table tempC(SELECT A.*, answerTextBox.VALUE AS Answer
+            conn.execute('create index idx_A on temp (AnswerID)')
+            conn.execute('create index idx_B on temp (typeId)')
+            conn.execute(  # noqa: WPS462
+                """create table tempC(SELECT A.*, answerTextBox.VALUE AS Answer
                 FROM temp A, QuestionnaireDB.answerTextBox
                 WHERE answerTextBox.answerId = A.AnswerID and A.typeId = 3
                 UNION
@@ -183,36 +239,33 @@ def make_tempC(report_params: QueryDict) -> bool:
                 FROM temp A, QuestionnaireDB.answerTime
                 WHERE answerTime.answerId = A.AnswerID and A.typeId = 6
                 UNION
-                SELECT A.*, QuestionnaireDB.getDisplayName(rbOpt.description, {2}) AS Answer
+                SELECT A.*, QuestionnaireDB.getDisplayName(rbOpt.description, %s) AS Answer
                 FROM temp A, QuestionnaireDB.answerRadioButton aRB, QuestionnaireDB.radioButtonOption rbOpt
                 WHERE aRB.answerId = A.AnswerID AND rbOpt.ID = aRB.`value` and A.typeId = 4
                 UNION
-                Select A.*, QuestionnaireDB.getDisplayName(cOpt.description, {2}) AS Answer
+                Select A.*, QuestionnaireDB.getDisplayName(cOpt.description, %s) AS Answer
                 from temp A, QuestionnaireDB.answerCheckbox aC, QuestionnaireDB.checkboxOption cOpt
                 where aC.answerId = A.AnswerID AND cOpt.ID = aC.`value` and A.typeId = 1
                 UNION
-                Select A.*, QuestionnaireDB.getDisplayName(lOpt.description, {2}) AS Answer
+                Select A.*, QuestionnaireDB.getDisplayName(lOpt.description, %s) AS Answer
                 from temp A, QuestionnaireDB.answerLabel aL, QuestionnaireDB.labelOption lOpt
                 where aL.answerId = A.AnswerID AND lOpt.ID = aL.`value` and A.typeId = 5)
-                """
+                """, [lang_id, lang_id, lang_id],
             )
     else:
         return False
     return True
 
 
-def get_tempC() -> list[dict]:
-    """
-    The query with the user's specific options for a questionnaire in make_tempC is stored in the table tempC
-    in the QuestionnaireDB. This is a function to retrieve data from tempC that will be used for the reports.
+def get_tempC() -> list[dict]:  # noqa: N802
+    """Retrieve the previously generated report in tempC.
 
-    :return: list of all rows of the query as dictionaries
+    Returns:
+        List of all rows of the query as dictionaries.
     """
-    # TODO: remove testing only
-    return [{'patient_id': 16, 'question_id': 859, 'question': 'Please enter any comments you have about the Opal app.  These can be comments about what you like, or suggestions about what could be added or improved.', 'answer': 'J aime bcp l App , j ai hâte de voir d autre fonctions qui seront disponible, diagnostic, notes du médecin etc..', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}, {'patient_id': 17, 'question_id': 853, 'question': 'How useful is the Opal app?', 'answer': '4', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}]
-    with connections['QuestionnaireDB'].cursor() as c:
-        c.execute(
-            f'SELECT patientId, questionId, question, Answer, creationDate,	lastUpdated FROM tempC ORDER BY lastUpdated ASC'
+    with connections['questionnaire'].cursor() as conn:
+        conn.execute(
+            'SELECT patientId as patient_id, questionId as question_id, question, Answer as answer, creationDate as creation_date,	lastUpdated as last_updated FROM tempC ORDER BY last_updated ASC',  # noqa: E501
         )
-        q_dict = dictfetchall(c)
+        q_dict = dictfetchall(conn)
     return q_dict

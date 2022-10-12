@@ -145,6 +145,15 @@ DATABASES = {
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'EST5EDT',
     },
+    'questionnaire': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('LEGACY_QUESTIONNAIRE_NAME'),
+        'USER': env('LEGACY_DATABASE_USER'),
+        'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
+        'HOST': env('LEGACY_DATABASE_HOST'),
+        'PORT': env('LEGACY_DATABASE_PORT'),
+        'TIME_ZONE': 'EST5EDT',
+    },
 }
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
@@ -379,7 +388,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
-
 
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------
