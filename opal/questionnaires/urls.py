@@ -14,13 +14,13 @@ urlpatterns = [
     path('', views.IndexTemplateView.as_view(), name='index'),
     # Export Reports
     path(
-        'exportreports/',
-        views.ExportReportTemplateView.as_view(),
-        name='exportreports',
+        'exportreports-list/',
+        views.ExportReportListTemplateView.as_view(),
+        name='exportreports-list',
     ),
     path(
-        'exportreports/launch/',
-        views.ExportReportLaunch.as_view(),
-        name='exportreports-launch',
+        'exportreports-query/',
+        views.ExportReportQueryTemplateView.as_view(),
+        name='exportreports-query',
     ),
 ]

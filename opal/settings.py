@@ -382,3 +382,14 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
+
+
+######################################################################
+# Settings for export reports module
+######################################################################
+
+# List of accounts to be discluded from questionnaires list when not in debug
+if DEBUG:
+    TEST_ACCOUNTS = []
+else:
+    TEST_ACCOUNTS = [981, 601, 18, 1281, 1282, 68, 79, 21, 23, 24, 27, 28, 144, 146, 602, 3, 600, 596, 9]  # noqa: WPS221, E501

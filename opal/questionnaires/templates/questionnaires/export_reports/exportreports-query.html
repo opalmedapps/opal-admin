@@ -1,0 +1,115 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+
+  {% block content %}
+    {% if perms.questionnaires.export_report %}
+
+    <div class="row justify-content-md-center">
+      <div class="col-sm-10">
+          <h2>Questionnaire: {{ questionnaire.ID }} - {{ questionnaire.name }}</h2>
+          {% comment %} <input type="checkbox" id="following" name="following"
+                 data-href="{% url 'profiles:profiles-api:QFollowingAPIToggle' %}"
+                 value='{{ questionnaire.ID }}' data-qname="{{ questionnaire.name }}" {% if following %}checked{% endif %}>
+          <label for="following"> Follow in my dashboard </label><br> {% endcomment %}
+          <br>
+          <h3>Description</h3>
+          {{ description|safe }}
+          <hr>
+          <h2>Select options for the report</h2>
+          <br>
+      </div>
+  </div>
+   <form action="" method="POST" id="form">  {% comment %}"{% url 'report:export_query' %}" method="POST" id="form"> {% endcomment %}
+      {% csrf_token %}
+      <div class="row justify-content-md-center">
+          <div class="col-sm-3">
+
+              <div style="border-style: solid; border-width: 1px; border-radius: 10px; padding: 10px;">
+                  <h4>Date range</h4>
+                  <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="start">Start</label>
+                      <div class="col-sm-10">
+                          <input name="start" type="date" class="form-control" required placeholder="yyyy-mm-dd" value="{{ mindate|date:'Y-m-d' }}" min="{{ mindate|date:'Y-m-d' }}"/>
+                          <small class="form-text text-muted">The start date for the query.</small>
+                      </div>
+                  </div>
+
+                  <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="start">End</label>
+                      <div class="col-sm-10">
+                          <input name="end" type="date" class="form-control" required placeholder="yyyy-mm-dd" value="{{ maxdate|date:'Y-m-d' }}" max="{{ maxdate|date:'Y-m-d'  }}" />
+                          <small class="form-text text-muted">The end date for the query.</small>
+                      </div>
+                  </div>
+              </div>
+              <br>
+              <div style="border-style: solid; border-width: 1px; border-radius: 10px;padding: 10px;">
+                  <h4>Patients</h4>
+                  <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="patientIDs">IDs</label>
+                      <div class="col-sm-10">
+                          <select name="patientIDs" class="form-control" id="patientIDs" multiple required >
+                              {% for pid in patientIDs %}
+                                  <option class='optionP' value="{{ pid }}" selected>{{ pid }}</option>
+                              {% endfor %}
+                          </select>
+                          <small>
+                              <div class="checkbox">
+                                  <label><input type="checkbox" id="checkallP" checked> Select All</label>
+                              </div>
+                          </small>
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+
+          <div class="col-sm-1">
+          </div>
+
+          <div class="col-sm-6">
+              <div style="border-style: solid; border-width: 1px; border-radius: 10px;padding: 10px;">
+                  <h4>Questions</h4>
+                  <div class="form-check">
+                      <div class="checkbox">
+                          <label><input type="checkbox" id="checkallQ" checked> Select All</label>
+                      </div>
+                      <ul style="list-style-type:none">
+                      {% for q in questions %}
+                          <li>
+                              <div class="checkbox">
+                                  <label><input type="checkbox" class='checkboxesQ' name="questionIDs" value="{{ q.questionId }}" checked> {{ q.question|safe }}</label>
+                              </div>
+                          </li>
+                      {% endfor %}
+                      </ul>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+
+      <div class="row justify-content-md-center">
+          <div class="col-sm-10">
+
+              <input type="hidden" name="questionnaireid" value="{{ questionnaire.ID  }}"/>
+              <br>
+              <div class="form-group row">
+                  <div class="">
+                      <button class="btn btn-opal" type="submit" name="btnDraft" value="Draft" >View Report</button>
+                      <div class="overlay"></div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+
+  </form>
+
+
+    {% endif %}
+  {% endblock %}
