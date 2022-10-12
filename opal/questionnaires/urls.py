@@ -14,7 +14,12 @@ urlpatterns = [
     path('', views.IndexTemplateView.as_view(), name='index'),
     # Export Reports
     path(
-        'reports/',
+        'reports/dashboard/',
+        views.QuestionnaireReportDashboardTemplateView.as_view(),
+        name='reports-dashboard',
+    ),
+    path(
+        'reports/list/',
         views.QuestionnaireReportListTemplateView.as_view(),
         name='reports-list',
     ),
@@ -37,5 +42,20 @@ urlpatterns = [
         'reports/download-xlsx/',
         views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
         name='reports-download-xlsx',
+    ),
+    path(
+        'reports/detail/',
+        views.QuestionnaireReportDetailTemplateView.as_view(),
+        name='reports-detail',
+    ),
+    path(
+        'reports/downloadcsv/',
+        views.QuestionnaireReportDownloadCSVTemplateView.as_view(),
+        name='reports-downloadcsv',
+    ),
+    path(
+        'reports/downloadxlsx/',
+        views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
+        name='reports-downloadxlsx',
     ),
 ]

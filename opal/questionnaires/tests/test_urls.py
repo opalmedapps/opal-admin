@@ -5,11 +5,16 @@ import pytest
 pytestmark = pytest.mark.django_db
 
 
+def test_reports_dashboard() -> None:
+    """Ensure exportreports list is defined."""
+    assert reverse('questionnaires:reports-dashboard') == '/questionnaires/reports/'
+    assert resolve('/questionnaires/reports/dashboard/').view_name == 'questionnaires:reports-dashboard'
+
+
 def test_reports_list() -> None:
-    """Ensure export URL is defined."""
-    path = '/questionnaires/reports/'
-    assert reverse('questionnaires:reports-list') == path
-    assert resolve(path).view_name == 'questionnaires:reports-list'
+    """Ensure exportreports list is defined."""
+    assert reverse('questionnaires:reports-list') == '/questionnaires/reports/list/'
+    assert resolve('/questionnaires/reports/list/').view_name == 'questionnaires:reports-list'
 
 
 def test_reports_filter() -> None:

@@ -28,11 +28,28 @@ msgid "Export Report"
 msgstr "Exportation du rapport"
 
 #: opal/questionnaires/models.py
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
+
+#: opal/questionnaires/models.py
+msgid "UUID"
+msgstr ""
+
+#: opal/questionnaires/models.py
+msgid "User"
+msgstr ""
+
+#: opal/questionnaires/models.py
+msgid "Questionnaire Profile"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/models.py
+msgid "Questionnaire Profiles"
+msgstr "Questionnaires"
 
 #: opal/questionnaires/tables.py
 msgid "Patient ID"
@@ -61,6 +78,30 @@ msgstr "Date de mise à jour"
 #: opal/questionnaires/tables.py
 msgid "No responses found."
 msgstr "Aucune réponse trouvée."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "My questionnaires"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Questionnaire ID"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Title"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Last viewed"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "You are not following any questionnaires"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "View all questionnaires"
+msgstr "Sélectionnez le questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 msgid "Report:"
@@ -105,6 +146,10 @@ msgstr "Annuler"
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Questionnaire"
 msgstr "Questionnaire"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Follow in my dashboard"
+msgstr ""
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Description"

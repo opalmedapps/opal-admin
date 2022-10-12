@@ -7,11 +7,13 @@
 
   {% block content %}
     {% if perms.questionnaires.export_report %}
-
+    <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="filters-form">
+      {% csrf_token %}
     <div class="row justify-content-md-center">
       <div class="col-sm-10">
           <h3>{% translate "Questionnaire" %} {{ questionnaire.ID }} - {{ questionnaire.name }}</h3>
-          <br>
+            <input type="checkbox" id="following" name="following" {% if following %}checked{% endif %}>
+            <label for="following"> {% translate "Follow in my dashboard" %}</label>
           <h4>{% translate "Description" %}</h4>
           {{ description|safe }}
           <hr>
@@ -19,8 +21,6 @@
           <br>
       </div>
     </div>
-   <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="form2">
-      {% csrf_token %}
       <input type="hidden" name="questionnairename" value="{{ questionnaire.name  }}"/>
       <div class="row justify-content-md-center">
           <div class="col-sm-3">

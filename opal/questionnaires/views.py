@@ -1,6 +1,6 @@
 """This module provides views for questionnaire settings."""
-import datetime
 import logging
+from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO, StringIO
 from typing import Any
@@ -14,7 +14,7 @@ import pandas as pd
 from ..core.audit import update_request_event_query_string
 from ..users.models import User
 from .backend import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
-from .models import ExportReportPermission
+from .models import ExportReportPermission, QuestionnaireProfile
 from .tables import ReportTable
 
 language_map = {'fr': 1, 'en': 2}  # All queries assume the integer representation of opal languages
@@ -25,6 +25,35 @@ class IndexTemplateView(TemplateView):
     """This `TemplateView` provides an index page for the questionnaires app."""
 
     template_name = 'questionnaires/index.html'
+
+
+# EXPORT REPORTS USER DASHBOARD
+class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, TemplateView):
+    """This `TemplateView` provides a basic rendering for viewing a user's saved questionnaires dashboard."""
+
+    model = ExportReportPermission
+    permission_required = ('questionnaires.export_report')
+    template_name = 'questionnaires/export_reports/reports-dashboard.html'
+
+    def get_context_data(self, **kwargs: Any) -> Any:
+        """Override class method and append user's followed questionnaires.
+
+        Args:
+            kwargs: any number of key word arguments.
+
+        Returns:
+            dict containing questionnaire list.
+        """
+        context = super().get_context_data(**kwargs)
+        requestor: User = self.request.user  # type: ignore[assignment]
+        # Update context with this user's questionnaire profile, create new one if not found
+        questionnaires_following, _ = QuestionnaireProfile.objects.get_or_create(
+            user=requestor,
+        )
+
+        if questionnaires_following:
+            context['questionnaires_following'] = questionnaires_following.questionnaires
+        return context
 
 
 # EXPORT REPORTS LIST QUESTIONNAIRES
@@ -65,21 +94,21 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
-            request: post request data.
+            request: post request data. (Specified Anytype because get_questionnaire_detail explicitly expects an int)
 
         Returns:
             template rendered with updated context or HttpError
         """
         context = self.get_context_data()
-        requestor: User = request.user  # type: ignore[assignment]
+        requestor: User = request.user
 
         if 'questionnaireid' in request.POST.keys():
             try:
-                qid = int(request.POST['questionnaireid'])
+                qid = request.POST['questionnaireid']
             except ValueError:
                 self.logger.error('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-            questionnaire_detail = get_questionnaire_detail(int(qid), language_map[requestor.language])
+            questionnaire_detail = get_questionnaire_detail(qid, language_map[requestor.language])
             context.update(questionnaire_detail)
 
             # Also update auditing service with request details
@@ -89,6 +118,14 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
                     'questionnaireid',
                 ],
             )
+
+            # Finally check if this questionnaire is currently being followed
+            questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)
+            if qid in questionnaires_following.questionnaires:
+                context.update({'following': True})
+            else:
+                context.update({'following': False})
+
             return self.render_to_response(context)
         self.logger.error('Missing post key: questionnaireid')
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
@@ -115,8 +152,19 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
 
         """
         context = self.get_context_data()
-
         requestor: User = request.user  # type: ignore[assignment]
+
+        # Update questionnaire following list if user selected option
+        toggle = False
+        if ('following' in request.POST.keys()):
+            toggle = True
+
+        self._update_questionnaires_following(
+            request.POST['questionnaireid'],
+            request.POST['questionnairename'],
+            requestor,
+            toggle,
+        )
 
         #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
         #  the function returns a boolean indicating if the table could be succesfully created given the query params
@@ -153,6 +201,29 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
 
         return self.render_to_response(context)
 
+    def _update_questionnaires_following(self, qid: str, qname: str, user: User, toggle: bool) -> None:
+        """Update the questionnaires following list for specific user.
+
+        Args:
+            qid: questionnaire id number
+            qname: questionnaire title
+            user: requesting user object
+            toggle: add or remove qid from list
+        """
+        questionnaires_following, _ = QuestionnaireProfile.objects.get_or_create(
+            user=user,
+        )
+
+        if (toggle):
+            questionnaires_following.questionnaires[qid] = {
+                'title': qname,
+                'lastviewed': datetime.datetime.now().strftime('%Y-%m-%d'),
+            }
+            questionnaires_following.save()
+        elif qid in questionnaires_following.questionnaires:
+            questionnaires_following.questionnaires.pop(qid)
+            questionnaires_following.save()
+
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)
 class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, TemplateView):
@@ -179,7 +250,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
 
         """
         qid = request.POST.get('questionnaireid')
-        datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
+        datesuffix = datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
@@ -219,7 +290,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         """
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
-        datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
+        datesuffix = datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)

@@ -40,24 +40,23 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
+def test_list_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that links exist in the reports dashboard page pointing to the filter & list pages."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:reports-dashboard'))
+    soup = BeautifulSoup(response.content, 'html.parser')
+    forms = soup.find_all('form')
+    links = soup.find_all('a')
+
+    assert response.status_code == HTTPStatus.OK
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
+    assertURLEqual(links[0].get('href'), reverse('questionnaires:reports-list'))
+
+
 def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports list page pointing to the filter page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-
-    assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
-
-
-def test_detail_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a form exists in the reports filter page pointing to the detail page."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
-        path=reverse('questionnaires:reports-filter'),
-        data={'questionnaireid': ['11']},
-    )
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
 
@@ -104,6 +103,20 @@ def test_detail_report_invalid_params(user_client: Client, admin_user: AbstractU
         data={},
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_detail_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that a form exists in the reports filter page pointing to the detail page."""
+    user_client.force_login(admin_user)
+    response = user_client.post(
+        path=reverse('questionnaires:reports-filter'),
+        data={'questionnaireid': ['11']},
+    )
+    soup = BeautifulSoup(response.content, 'html.parser')
+    forms = soup.find_all('form')
+
+    assert response.status_code == HTTPStatus.OK
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-detail'))
 
 
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
@@ -166,7 +179,7 @@ def test_reportlist_visible_authenticated(user_client: Client, admin_user: Abstr
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list'))
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
 def test_report_filter_invalid_key_format(user_client: Client, admin_user: AbstractUser) -> None:
