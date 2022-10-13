@@ -1,0 +1,15 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+<script src="{% static 'js/query.js' %}"></script>
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+
+  {% block content %}
+    {% if perms.questionnaires.export_report %}
+
+
+
+    {% endif %}
+  {% endblock content %}

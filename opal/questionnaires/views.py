@@ -3,6 +3,8 @@ from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import Http404
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
 from django.views.generic.base import TemplateView
 
 from .backend import get_all_questionnaire, get_questionnaire_detail
@@ -20,6 +22,10 @@ class IndexTemplateView(TemplateView):
 class ExportReportListTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the list of available questionnaires."""
 
+    model = ExportReportPermission
+    permission_required = ('questionnaires.export_report')
+    template_name = 'questionnaires/export_reports/exportreports-list.html'
+
     def get_context_data(self, **kwargs: Any) -> Any:
         """Override class method and append questionnaire list to context.
 
@@ -33,10 +39,6 @@ class ExportReportListTemplateView(PermissionRequiredMixin, TemplateView):
         context['questionnaire_list'] = get_all_questionnaire()
         return context
 
-    model = ExportReportPermission
-    permission_required = ('questionnaires.export_report')
-    template_name = 'questionnaires/export_reports/exportreports-list.html'
-
 
 # EXPORT REPORTS QUERY SELECTED QUESTIONNAIRE
 class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
@@ -46,8 +48,9 @@ class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
 
+    @method_decorator(require_http_methods(['POST']))
     def post(self, request: Any) -> Any:
-        """Override class method and fetch details for the requested questionnaire.
+        """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
             request: post request data.
@@ -61,16 +64,35 @@ class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
 
         """
         context = self.get_context_data()
-        if request.method == 'POST':
-            print(request.POST)
-            context.update({'title': 'questionnaire detail'})
+        context.update({'title': 'questionnaire detail'})
 
-            qid = request.POST['questionnaireid']
-            if qid is not None:
-                questionnaire_detail = get_questionnaire_detail(qid)
-                context.update(questionnaire_detail)
-                print(context)
-            else:
-                raise Http404('Questionnaire does not exist')
-            print(context)
-            return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
+        qid = request.POST['questionnaireid']
+        if qid is not None:
+            questionnaire_detail = get_questionnaire_detail(qid)
+            context.update(questionnaire_detail)
+        else:
+            raise Http404('Questionnaire does not exist')
+        return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
+
+
+# EXPORT REPORTS VIEW REPORT
+class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
+    """This `TemplateView` provides a basic rendering for viewing the selected report."""
+
+    template_name = 'questionnaires/export_reports/exportreports-viewreport.html'
+    model = ExportReportPermission
+    permission_required = ('questionnaires.export_report')
+
+    @method_decorator(require_http_methods(['POST']))
+    def post(self, request: Any) -> Any:
+        """Override class method and fetch report for the requested questionnaire.
+
+        Args:
+            request: post request data.
+
+        Returns:
+                    template rendered with updated context.
+
+        """
+        context = self.get_context_data()
+        return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613

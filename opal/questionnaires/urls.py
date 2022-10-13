@@ -23,4 +23,9 @@ urlpatterns = [
         views.ExportReportQueryTemplateView.as_view(),
         name='exportreports-query',
     ),
+    path(
+        'exportreports-viewreport/',
+        views.ExportReportViewReportTemplateView.as_view(),
+        name='exportreports-viewreport',
+    ),
 ]

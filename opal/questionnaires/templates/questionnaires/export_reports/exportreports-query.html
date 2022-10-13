@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+<script src="{% static 'js/query.js' %}"></script>
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
@@ -10,47 +11,43 @@
 
     <div class="row justify-content-md-center">
       <div class="col-sm-10">
-          <h2>Questionnaire: {{ questionnaire.ID }} - {{ questionnaire.name }}</h2>
-          {% comment %} <input type="checkbox" id="following" name="following"
-                 data-href="{% url 'profiles:profiles-api:QFollowingAPIToggle' %}"
-                 value='{{ questionnaire.ID }}' data-qname="{{ questionnaire.name }}" {% if following %}checked{% endif %}>
-          <label for="following"> Follow in my dashboard </label><br> {% endcomment %}
+          <h3>{% translate "Questionnaire" %} {{ questionnaire.ID }} - {{ questionnaire.name }}</h3>
           <br>
-          <h3>Description</h3>
+          <h4>{% translate "Description" %}</h4>
           {{ description|safe }}
           <hr>
-          <h2>Select options for the report</h2>
+          <h4>{% translate "Select options for the report" %}</h4>
           <br>
       </div>
-  </div>
-   <form action="" method="POST" id="form">  {% comment %}"{% url 'report:export_query' %}" method="POST" id="form"> {% endcomment %}
+    </div>
+   <form action="{% url 'questionnaires:exportreports-viewreport' %}" method="post" id="form2">
       {% csrf_token %}
       <div class="row justify-content-md-center">
           <div class="col-sm-3">
 
               <div style="border-style: solid; border-width: 1px; border-radius: 10px; padding: 10px;">
-                  <h4>Date range</h4>
+                  <h5>{% translate "Date range" %}</h5>
                   <div class="form-group row">
-                      <label class="col-sm-2 col-form-label" for="start">Start</label>
+                      <label class="col-sm-2 col-form-label" for="start">{% translate "Start" %}</label>
                       <div class="col-sm-10">
                           <input name="start" type="date" class="form-control" required placeholder="yyyy-mm-dd" value="{{ mindate|date:'Y-m-d' }}" min="{{ mindate|date:'Y-m-d' }}"/>
-                          <small class="form-text text-muted">The start date for the query.</small>
+                          <small class="form-text text-muted">{% translate "The start date for the query." %}</small>
                       </div>
                   </div>
 
                   <div class="form-group row">
-                      <label class="col-sm-2 col-form-label" for="start">End</label>
+                      <label class="col-sm-2 col-form-label" for="start">{% translate "End" %}</label>
                       <div class="col-sm-10">
                           <input name="end" type="date" class="form-control" required placeholder="yyyy-mm-dd" value="{{ maxdate|date:'Y-m-d' }}" max="{{ maxdate|date:'Y-m-d'  }}" />
-                          <small class="form-text text-muted">The end date for the query.</small>
+                          <small class="form-text text-muted">{% translate "The end date for the query." %}</small>
                       </div>
                   </div>
               </div>
               <br>
               <div style="border-style: solid; border-width: 1px; border-radius: 10px;padding: 10px;">
-                  <h4>Patients</h4>
+                  <h5>{% translate "Patients" %}</h5>
                   <div class="form-group row">
-                      <label class="col-sm-2 col-form-label" for="patientIDs">IDs</label>
+                      <label class="col-sm-2 col-form-label" for="patientIDs">{% translate "IDs" %}</label>
                       <div class="col-sm-10">
                           <select name="patientIDs" class="form-control" id="patientIDs" multiple required >
                               {% for pid in patientIDs %}
@@ -59,7 +56,7 @@
                           </select>
                           <small>
                               <div class="checkbox">
-                                  <label><input type="checkbox" id="checkallP" checked> Select All</label>
+                                  <label><input type="checkbox" id="checkallP" checked>{% translate "Select All" %}</label>
                               </div>
                           </small>
                       </div>
@@ -73,10 +70,10 @@
 
           <div class="col-sm-6">
               <div style="border-style: solid; border-width: 1px; border-radius: 10px;padding: 10px;">
-                  <h4>Questions</h4>
+                  <h5>{% translate "Questions" %}</h5>
                   <div class="form-check">
                       <div class="checkbox">
-                          <label><input type="checkbox" id="checkallQ" checked> Select All</label>
+                          <label><input type="checkbox" id="checkallQ" checked>{% translate "Select All" %}</label>
                       </div>
                       <ul style="list-style-type:none">
                       {% for q in questions %}
@@ -95,13 +92,10 @@
 
       <div class="row justify-content-md-center">
           <div class="col-sm-10">
-
-              <input type="hidden" name="questionnaireid" value="{{ questionnaire.ID  }}"/>
               <br>
               <div class="form-group row">
-                  <div class="">
-                      <button class="btn btn-opal" type="submit" name="btnDraft" value="Draft" >View Report</button>
-                      <div class="overlay"></div>
+                  <div class="btn-toolbar mb-4">
+                      <button type="submit" class="btn btn-primary mr-2">{% translate "View Report" %}</button>
                   </div>
               </div>
 
@@ -112,4 +106,4 @@
 
 
     {% endif %}
-  {% endblock %}
+  {% endblock content %}

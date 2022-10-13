@@ -7,8 +7,6 @@
 
   {% block content %}
     {% if perms.questionnaires.export_report %} <!-- Restrict access to authorized persons (See models ==> ExportReportPermission)  -->
-
-      <section class="content">
         <div class="container-fluid">
           <div class="row justify-content-md-center">
             <div class="col-sm-4">
@@ -34,15 +32,13 @@
                     </div>
                     <div class="form-group row">
                         <div class="btn-toolbar mb-4">
-                            <button type="submit" class="btn btn-primary mr-2" id="btnFetch" >{% translate "Select" %}</button>
+                            <button type="submit" class="btn btn-primary mr-2">{% translate "Select" %}</button>
                         </div>
                     </div>
                 </form>
             </div>
           </div>
         </div>
-      </section>
-
 
     {% endif %}
   {% endblock %}
