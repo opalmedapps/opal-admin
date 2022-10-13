@@ -26,9 +26,18 @@
       <div class="card-body">
         <form action="" method="post">
           {% csrf_token %}
+          {% if table %}
+            {% render_table table %}
+          {% endif %}
+          {% if error_message %}
+            <div class="alert alert-danger d-flex align-items-center">
+              <i class="fa fa-exclamation-circle"></i> {{ error_message }}
+            </div>
+          {% else %}
             {{ wizard.management_form }}
             {% crispy wizard.form %}
-          </form>
+          {% endif %}
+        </form>
       </div>
     </div>
   </div>

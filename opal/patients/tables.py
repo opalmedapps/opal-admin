@@ -1,9 +1,11 @@
 """Table definitions for models of the patient app."""
+from datetime import date, datetime
+
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
 
-from .models import RelationshipType
+from .models import Patient, RelationshipType
 
 
 class RelationshipTypeTable(tables.Table):
@@ -33,3 +35,33 @@ class RelationshipTypeTable(tables.Table):
                 'class': 'thead-light',
             },
         }
+
+
+class PatientTable(tables.Table):
+    """A table for patient types."""
+
+    date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
+
+    class Meta:
+        model = Patient
+        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
+        empty_text = _('No patient could be found.')
+        orderable = False
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+    def render_date_of_birth(self, value: str) -> date:
+        """
+        Return a datetime format of the date of birth.
+
+        Args:
+            value: a string of date of birth
+
+        Returns:
+            a datetime format of the date of birth
+        """
+        return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').date()
