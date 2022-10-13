@@ -1,4 +1,6 @@
-from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
+from django.db.utils import DataError, IntegrityError
+from django.utils.crypto import get_random_string
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -26,11 +28,33 @@ def test_institution_factory_multiple() -> None:
 
 
 def test_institution_code_unique() -> None:
-    """The institution name needs to be unique."""
+    """The institution code needs to be unique."""
     factories.Institution(code='MUHC')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'MUHC'"):  # type: ignore[arg-type]
         factories.Institution(name='Another', code='MUHC')
+
+
+def test_institution_email_required() -> None:
+    """Make sure the institution email is required."""
+    with assertRaisesMessage(IntegrityError, "Column 'support_email' cannot be null"):  # type: ignore[arg-type]
+        factories.Institution(support_email=None)
+
+
+def test_institution_email_format() -> None:
+    """Make sure the institution email format is correct."""
+    institution = factories.Institution(support_email='MUHC')
+
+    with assertRaisesMessage(ValidationError, 'Enter a valid email address.'):  # type: ignore[arg-type]
+        institution.full_clean()
+
+
+def test_institution_email_max_length() -> None:
+    """Make sure the institution email length is less than 254 chars."""
+    email = '{0}@opal.com'.format(get_random_string(length=254))
+    assert len(email) > 254
+    with assertRaisesMessage(DataError, "Data too long for column 'support_email' at row 1"):  # type: ignore[arg-type]
+        factories.Institution(support_email=email)
 
 
 def test_institution_string_method() -> None:

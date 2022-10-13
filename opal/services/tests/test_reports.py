@@ -265,7 +265,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     headers = {'Content-Type': 'application/json'}
     payload = json.dumps({
         'patient_id': PATIENT_SER_NUM,
-        'logo_base64': Base64Util().encode_image_to_base64(LOGO_PATH),
+        'logo_base64': Base64Util().encode_to_base64(LOGO_PATH),
         'language': 'en',
     })
     mock_post.assert_called_once_with(

@@ -1,8 +1,10 @@
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 from rest_framework import viewsets
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from ..models import Institution, Site
-from .serializers import InstitutionSerializer, SiteSerializer
+from .serializers import InstitutionSerializer, SiteSerializer, TermsOfUseSerializer
 
 
 class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -15,6 +17,19 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Institution.objects.all()
     serializer_class = InstitutionSerializer
     filterset_fields = ['code']
+
+    def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:
+        """REST API method for handling HTTP requests to retrieve `Institution's` terms of use PDF file in base64 format.
+
+        Args:
+            request: HTTP GET request
+            pk: primary key of an `Institution`
+
+        Returns:
+            Response: HTTP response containing JSON object with `Institution's` terms of use PDF file in base64 format.
+        """
+        serializer = TermsOfUseSerializer(self.get_object(), many=False, context={'request': request})
+        return Response(serializer.data)
 
 
 class SiteViewSet(viewsets.ReadOnlyModelViewSet):

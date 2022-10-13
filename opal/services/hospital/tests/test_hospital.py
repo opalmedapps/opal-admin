@@ -8,7 +8,7 @@ import requests
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
-from opal.services.hospital.hospital import OIEReportExportData, OIEService
+from opal.services.hospital.hospital import OIEMRNData, OIEPatientData, OIEReportExportData, OIEService
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
 from opal.services.hospital.hospital_error import OIEErrorHandler
 from opal.services.hospital.hospital_validation import OIEValidator
@@ -16,11 +16,30 @@ from opal.services.hospital.hospital_validation import OIEValidator
 ENCODING = 'utf-8'
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 DOCUMENT_NUMBER = 'FMU-8624'
+RAMQ_VALID = 'ABCD12345678'
+RAMQ_INVALID = 'ABC123456789'
 MRN = '9999996'
 SITE_CODE = 'MUHC'
 OIE_CREDENTIALS_USER = 'questionnaire'
 OIE_CREDENTIALS = '12345Opal!!'
 OIE_HOST = 'https://localhost'
+
+OIE_PATIENT_DATA = dict({
+    'dateOfBirth': '1953-01-01 00:00:00',
+    'firstName': 'SANDRA',
+    'lastName': 'TESTMUSEMGHPROD',
+    'sex': 'F',
+    'alias': '',
+    'ramq': 'TESS53510111',
+    'ramqExpiration': '2018-01-31 23:59:59',
+    'mrns': [
+        {
+            'site': 'MGH',
+            'mrn': '9999993',
+            'active': True,
+        },
+    ],
+})
 
 oie_service = OIEService()
 
@@ -36,22 +55,22 @@ def _create_report_export_response_data() -> dict[str, str]:
 
 def _mock_requests_post(
     mocker: MockerFixture,
-    generated_report_export_response_data: dict[str, str],
+    response_data: dict[str, Any],
 ) -> MagicMock:
     """Mock actual HTTP POST web API call to the OIE.
 
     Args:
         mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        generated_report_export_response_data (dict[str, str]): generated mock response data
+        response_data (dict[str, str]): generated mock response data
 
     Returns:
-        MagicMock: object that mocks HTTP post request to the OIE for exporting reports
+        MagicMock: object that mocks HTTP post request to the OIE requests
     """
     mock_post = mocker.patch('requests.post')
     response = requests.Response()
     response.status_code = HTTPStatus.OK
 
-    response._content = json.dumps(generated_report_export_response_data).encode(ENCODING)
+    response._content = json.dumps(response_data).encode(ENCODING)
     mock_post.return_value = response
 
     return mock_post
@@ -310,3 +329,139 @@ def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
     assert report_data['status'] == 'error'
     assert report_data['data']['message'] == 'Provided request data are invalid.'
+
+
+def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_mrn return the expected OIE data structure."""
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
+    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+    assert response['status'] == 'success'
+    assert response['data'] == OIEPatientData(
+        date_of_birth=datetime.strptime(
+            str(OIE_PATIENT_DATA['dateOfBirth']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        first_name=str(OIE_PATIENT_DATA['firstName']),
+        last_name=str(OIE_PATIENT_DATA['lastName']),
+        sex=str(OIE_PATIENT_DATA['sex']),
+        alias=str(OIE_PATIENT_DATA['alias']),
+        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq_expiration=datetime.strptime(
+            str(OIE_PATIENT_DATA['ramqExpiration']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+
+
+def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_mrn return None."""
+    # mock find_patient_by_mrn and pretend it was failed
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'data': None,
+        },
+    )
+
+    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+    assert response['status'] == 'error'
+    assert response['data'] == {
+        'message': ['reponse data is invalid'],
+        'responseData': {'data': None, 'status': 'error'},
+    }
+
+
+def test_find_patient_by_mrn_invalid_mrn(mocker: MockerFixture) -> None:
+    """Ensure find_patient_by_mrn request with invalid MRN is handled and does not result in an error."""
+    response = oie_service.find_patient_by_mrn('', SITE_CODE)
+    assert response['status'] == 'error'
+    assert response['data']['message'] == 'Provided MRN or site is invalid.'
+
+
+def test_find_patient_by_mrn_invalid_site(mocker: MockerFixture) -> None:
+    """Ensure find_patient_by_mrn request with invalid site is handled and does not result in an error."""
+    response = oie_service.find_patient_by_mrn(MRN, '')
+    assert response['status'] == 'error'
+    assert response['data']['message'] == 'Provided MRN or site is invalid.'
+
+
+def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_ramq return the expected OIE data structure."""
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
+    response = oie_service.find_patient_by_ramq(RAMQ_VALID)
+    assert response['status'] == 'success'
+    assert response['data'] == OIEPatientData(
+        date_of_birth=datetime.strptime(
+            str(OIE_PATIENT_DATA['dateOfBirth']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        first_name=str(OIE_PATIENT_DATA['firstName']),
+        last_name=str(OIE_PATIENT_DATA['lastName']),
+        sex=str(OIE_PATIENT_DATA['sex']),
+        alias=str(OIE_PATIENT_DATA['alias']),
+        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq_expiration=datetime.strptime(
+            str(OIE_PATIENT_DATA['ramqExpiration']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+
+
+def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_ramq return None."""
+    # mock find_patient_by_mrn and pretend it was failed
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'data': None,
+        },
+    )
+
+    response = oie_service.find_patient_by_ramq(RAMQ_VALID)
+    assert response['status'] == 'error'
+    assert response['data'] == {
+        'message': ['reponse data is invalid'],
+        'responseData': {'data': None, 'status': 'error'},
+    }
+
+
+def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
+    """Ensure find_patient_by_ramq request with invalid ramq is handled and does not result in an error."""
+    # mock find_patient_by_mrn and pretend it was failed
+    _mock_requests_post(mocker, {'status': 'success'})
+
+    response = oie_service.find_patient_by_ramq(RAMQ_INVALID)
+    assert response['status'] == 'error'
+    assert response['data']['message'] == 'Provided RAMQ is invalid.'
