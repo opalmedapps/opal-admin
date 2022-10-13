@@ -1,15 +1,14 @@
 # flake8: noqa
 
+import datetime
 import html
 import logging
+from typing import Any
 
 from django.conf import settings
 from django.db import connections
 from django.db.utils import DatabaseError
-
-import datetime
-
-from typing import Any
+from django.http.request import QueryDict
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ def _getdescription(qid: int, langId: int) -> Any:
     return description
 
 
-def dictfetchall(cursor: Any) -> Any:
+def dictfetchall(cursor: Any) -> list[dict]:
     """Return all rows from a cursor as a dict"""
     columns = [col[0] for col in cursor.description]
     return [
@@ -103,3 +102,118 @@ def get_questionnaire_detail(qid: int) -> Any:
         'questions': questions,
         'description': description
     }
+
+
+def make_tempC(report_params: QueryDict) -> bool:
+    """
+    Query the QuestionnaireDB with the user's specific options for a questionnaire and store the results
+    in the table tempC in QuestionnaireDB.
+
+    :return: Boolean: successful query or not
+    """
+    qid = report_params.get('questionnaireid')
+    pids = tuple(report_params.getlist('patientIDs'))
+    qids = tuple(report_params.getlist('questionIDs'))
+    startdate = report_params.get('start')
+    enddate = report_params.get('end')
+
+    # to avoid trailing comma for tuples with 1 item
+    sql_pids = ', '.join(map(str, pids))
+    sql_qids = ', '.join(map(str, qids))
+    if qid and sql_pids and sql_qids and startdate and enddate:
+        # TODO: testing only
+        return True
+        with connections['QuestionnaireDB'].cursor() as c:
+            c.execute(
+                'DROP TABLE IF EXISTS`temp`'
+            )
+            c.execute(
+                'DROP TABLE IF EXISTS`tempA`'
+            )
+            c.execute(
+                'DROP TABLE IF EXISTS`tempB`'
+            )
+            c.execute(
+                'DROP TABLE IF EXISTS`tempC`'
+            )
+
+            c.execute(
+                f"""create table tempA(SELECT Q.ID Questionnaire_ID, getDisplayName(Q.title, {2})
+                Questionnaire_Title, S.ID Section_ID, qs.questionId, qs.`order`,
+                getDisplayName(qq.question, {2}) Question_Title
+                From questionnaire Q, section S, questionSection qs, question qq
+                where Q.ID = {qid} and S.questionnaireId = Q.ID and qq.ID in ({sql_qids}) and qs.sectionId = S.ID
+                and qq.ID = qs.questionId)
+                """
+            )
+            c.execute(
+                f"""create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                QuestionnaireDB.getDisplayName(Q.question, {2}) `question`, A.typeId, A.ID AnswerID
+                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                where AQ.questionnaireId = {qid} and AQ.patientId not in {test_accounts} and AQ.patientId in ({sql_pids})
+                and AQ.lastUpdated and AQ.`status` = 2
+                and cast(AQ.lastUpdated as date) BETWEEN '{startdate}' and '{enddate}'
+                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
+                and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
+                """
+            )
+            c.execute(
+                """create table temp(SELECT A.Questionnaire_ID, A.Questionnaire_Title, A.Section_ID, A.order, B.*
+                from tempA A, tempB B
+                where A.questionId = B.questionId)
+                """
+            )
+            c.execute('create index idx_A on temp (AnswerID)')
+            c.execute('create index idx_B on temp (typeId)')
+            c.execute(
+                f"""create table tempC(SELECT A.*, answerTextBox.VALUE AS Answer
+                FROM temp A, QuestionnaireDB.answerTextBox
+                WHERE answerTextBox.answerId = A.AnswerID and A.typeId = 3
+                UNION
+                SELECT A.*, answerSlider.VALUE AS Answer
+                FROM temp A, QuestionnaireDB.answerSlider
+                WHERE answerSlider.answerId = A.AnswerID and A.typeId = 2
+                UNION
+                SELECT A.*, answerDate.VALUE AS Answer
+                FROM temp A, QuestionnaireDB.answerDate
+                WHERE answerDate.answerId = A.AnswerID and A.typeId = 7
+                UNION
+                SELECT A.*, answerTime.VALUE AS Answer
+                FROM temp A, QuestionnaireDB.answerTime
+                WHERE answerTime.answerId = A.AnswerID and A.typeId = 6
+                UNION
+                SELECT A.*, QuestionnaireDB.getDisplayName(rbOpt.description, {2}) AS Answer
+                FROM temp A, QuestionnaireDB.answerRadioButton aRB, QuestionnaireDB.radioButtonOption rbOpt
+                WHERE aRB.answerId = A.AnswerID AND rbOpt.ID = aRB.`value` and A.typeId = 4
+                UNION
+                Select A.*, QuestionnaireDB.getDisplayName(cOpt.description, {2}) AS Answer
+                from temp A, QuestionnaireDB.answerCheckbox aC, QuestionnaireDB.checkboxOption cOpt
+                where aC.answerId = A.AnswerID AND cOpt.ID = aC.`value` and A.typeId = 1
+                UNION
+                Select A.*, QuestionnaireDB.getDisplayName(lOpt.description, {2}) AS Answer
+                from temp A, QuestionnaireDB.answerLabel aL, QuestionnaireDB.labelOption lOpt
+                where aL.answerId = A.AnswerID AND lOpt.ID = aL.`value` and A.typeId = 5)
+                """
+            )
+    else:
+        return False
+    return True
+
+
+def get_tempC() -> list[dict]:
+    """
+    The query with the user's specific options for a questionnaire in make_tempC is stored in the table tempC
+    in the QuestionnaireDB. This is a function to retrieve data from tempC that will be used for the reports.
+
+    :return: list of all rows of the query as dictionaries
+    """
+    # TODO: remove testing only
+    return [{'patientId': 16, 'questionId': 859, 'question': 'Please enter any comments you have about the Opal app.  These can be comments about what you like, or suggestions about what could be added or improved.', 'Answer': 'J aime bcp l App , j ai hâte de voir d autre fonctions qui seront disponible, diagnostic, notes du médecin etc..', 'creationDate': datetime.date(2018, 11, 25), 'lastUpdated': datetime.date(2018, 11, 25)}, {'patientId': 16, 'questionId': 853, 'question': 'How useful is the Opal app?', 'Answer': '4', 'creationDate': datetime.date(2018, 11, 25), 'lastUpdated': datetime.date(2018, 11, 25)}, {'patientId': 16, 'questionId': 854, 'question': 'How easy is it to navigate through the Opal app to find the information that you want?', 'Answer': '4', 'creationDate': datetime.date(2018, 11, 25), 'lastUpdated': datetime.date(2018, 11, 25)}, {'patientId': 25, 'questionId': 859, 'question':'Please enter any comments you have about the Opal app.  These can be comments about what you like,or suggestions about what could be added or improved.', 'Answer': 'Application EXTRAORDINAIRE.\n\nUn très très gros merci à mes deux fantastiques docteurs, dr Hijal et Asselah qui m’ont permis dès le début de mes traitements de participer à l’intégration de cette application.\nJe tiens aussi à souligner le support inconditionnel de l’équipe du service de l’informatique, responsable de cette application.\n\nToutes les informations inscrites dans mon dossier m’ont faciliter grandement toutes les étapes du traitement de chimiothérapie. Que ce soit pour la confirmation très rapide de tous mes rendez-vous ou pour les résultats de prises sanguines, ou pour la facilité des enregistrements sur place, cette application est un must pour tous.\nJ’ai moi-même publisciser votre application à d’autres services de l’hopital et à d’autres patients et tous y voyaient une grande avancée pour nous faciliter l’accès à toutes ses informations si primordiales dans notre traitement.\n\nVous savez, avoir le cancer n’est pas chose facile mais quand on nous donne des outils qui nous permettent de suivre et d’avoir un meilleur contrôle avec nos résultats et nos médecins traitants,  et bien cette étape ajoute une petite douceur extrêmement agréable.\nEn espérant que vous pourrez continuer à developper à son maximum cette application et que vous aurez tout le support administratif et monétaire en ce sens.\n\nMerci de m’avoir inclus dans votre vision et n’hésitez jamais à ma demander du feed back, vous m’avez offert une grande opportunité.\nManon Laliberté \nChampagne_41@hotmail.com\n514.608.1540', 'creationDate': datetime.date(2018, 11, 28), 'lastUpdated': datetime.date(2018, 11, 28)}, {'patientId': 25, 'questionId': 853, 'question': 'How useful is the Opal app?', 'Answer': '5', 'creationDate': datetime.date(2018, 11, 28), 'lastUpdated': datetime.date(2018, 11, 28)}, {'patientId': 25, 'questionId': 854, 'question': 'How easy is it to navigate through the Opal app to find the information that you want?', 'Answer': '5', 'creationDate': datetime.date(2018, 11, 28), 'lastUpdated': datetime.date(2018, 11, 28)}]
+
+    with connections['QuestionnaireDB'].cursor() as c:
+        c.execute(
+            f'SELECT patientId, questionId, question, Answer, creationDate,	lastUpdated FROM tempC ORDER BY lastUpdated ASC'
+        )
+        q_dict = dictfetchall(c)
+    return q_dict
