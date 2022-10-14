@@ -9,7 +9,7 @@
   {% if perms.questionnaires.export_report %}
       <div class="row justify-content-md-center">
         <div class="col col-md-10">
-            <h3>Report</h3>
+            <h3>{% translate "Report" %}</h3>
             <div class="table-responsive">
               {% render_table reporttable %}
           </div>
@@ -17,9 +17,9 @@
             <form action="{% url 'questionnaires:exportreports-downloadcsv' %}" method="post" id="form">
                 {% csrf_token %}
                 <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
-                <button class="btn btn-opal" type="button" onclick="history.back()"><< Back</button>
+                <button class="btn btn-opal" type="button" onclick="history.back()">{% translate "Back" %}</button>
                 <input type="submit" class="btn btn-opal" value="Download CSV" />
-                <button class="btn btn-opal" type="button" id="btnXLSX" onclick="openXlsx()">Download Excel</button>
+                <button class="btn btn-opal" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
             </form>
 
             <div id="xlsx_options_div" style="display: none;">
@@ -27,13 +27,13 @@
                 <form action="{% url 'questionnaires:exportreports-downloadxlsx' %}" method="post" id="form">
                     {% csrf_token %}
                     <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
-                    <h4>Please select how to organize the tabs:</h4>
+                    <h4>{% translate "Please select how to organize the tabs:" %}</h4>
                     <input type="radio" id="patients" name="tabs" value="patients">
-                    <label for="patients">by patients</label><br>
+                    <label for="patients">{% translate "By patients" %}</label><br>
                     <input type="radio" id="questions" name="tabs" value="questions">
-                    <label for="questions">by questions</label><br>
+                    <label for="questions">{% translate "By questions" %}</label><br>
                     <input type="radio" id="none" name="tabs" value="none">
-                    <label for="none">none (single tab)</label>
+                    <label for="none">{% translate "None (single tab)" %}</label>
                     <br>
                     <button type="button" id="cancel-button" class="btn btn-opal" onclick="cancel()" >Cancel</button>
                     <input type="submit" class="btn btn-opal" value="GO" />
@@ -41,18 +41,7 @@
             </div>
         </div>
       </div>
-
-    <script>
-      function openXlsx(){
-        let xlsx_options_div = document.getElementById("xlsx_options_div");
-        xlsx_options_div.style.display = "";
-      }
-
-      function cancel(){
-        let xlsx_options_div = document.getElementById("xlsx_options_div");
-        xlsx_options_div.style.display = "none";
-      }
-    </script>
+    <script src="{% static 'js/reports.js' %}"></script>
 
     {% endif %}
   {% endblock content %}
