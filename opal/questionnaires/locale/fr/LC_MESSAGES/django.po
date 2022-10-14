@@ -40,7 +40,7 @@ msgstr "Exportation de Rapports"
 #, fuzzy
 #| msgid "Questionnaires"
 msgid "Select questionnaire"
-msgstr "Questionnaires"
+msgstr "Sélectionnez le questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
 msgid "Use the dropdown menu on the right to select the questionnaire you want to query, then press select."
@@ -57,7 +57,7 @@ msgstr "Sélectionner"
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
 #, fuzzy
 #| msgid "Questionnaires"
-msgid "Questionnaire"
+msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
@@ -104,7 +104,7 @@ msgstr "Tout sélectionner"
 #, fuzzy
 #| msgid "Questionnaires"
 msgid "Questions"
-msgstr "Questionnaires"
+msgstr "Des questions"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
 msgid "View Report"
@@ -136,7 +136,7 @@ msgstr "Par les patients"
 #, fuzzy
 #| msgid "Questionnaires"
 msgid "By questions"
-msgstr "Questionnaires"
+msgstr "Par questions"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
 msgid "None (single tab)"
