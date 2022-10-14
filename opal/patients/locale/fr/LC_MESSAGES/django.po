@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 18:02+0000\n"
+"POT-Creation-Date: 2022-10-14 18:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,6 +51,10 @@ msgid "Correct?"
 msgstr "Correct?"
 
 #: opal/patients/forms.py
+msgid "Caregiver relationship type"
+msgstr "Type de relation avec le proche aidant"
+
+#: opal/patients/forms.py
 msgid "Generate QR Code"
 msgstr "Générer un code QR"
 
@@ -86,7 +90,7 @@ msgstr "Formulaire obligatoire"
 msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
-#: opal/patients/models.py opal/patients/forms.py
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
