@@ -1,12 +1,38 @@
 {% extends "layouts/base.html" %}
 {% load static %}
-<script src="{% static 'js/query.js' %}"></script>
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
   {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
 
   {% block content %}
+  <script>
+    $("#checkallQ").click(function (){
+      if ($("#checkallQ").is(':checked')){
+          $(".checkboxesQ").each(function (){
+              $(this).prop("checked", true);
+          });
+      }else{
+          $(".checkboxesQ").each(function (){
+              $(this).prop("checked", false);
+          });
+      }
+    });
+
+    $("#checkallP").click(function (e){
+        e.preventDefault()
+        if ($("#checkallP").is(':checked')){
+            $(".optionP").each(function (){
+                $(this).prop("selected", true);
+            });
+        }else{
+            $(".optionP").each(function (){
+                $(this).prop("selected", false);
+            });
+        }
+     });
+
+  </script>
     {% if perms.questionnaires.export_report %}
 
     <div class="row justify-content-md-center">
@@ -104,7 +130,6 @@
       </div>
 
   </form>
-
 
     {% endif %}
   {% endblock content %}

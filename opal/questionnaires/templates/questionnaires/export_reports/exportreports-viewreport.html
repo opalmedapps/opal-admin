@@ -1,13 +1,12 @@
 {% extends "layouts/base.html" %}
 {% load static %}
-<script src="{% static 'js/query.js' %}"></script>
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
   {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
 
   {% block content %}
-    {% if perms.questionnaires.export_report %}
+  {% if perms.questionnaires.export_report %}
       <div class="row justify-content-md-center">
         <div class="col col-md-10">
             <h3>Report</h3>
@@ -21,12 +20,12 @@
                 <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                 <button class="btn btn-opal" type="button" onclick="history.back()"><< Back</button>
                 <input type="submit" class="btn btn-opal" value="Download CSV" />
-                <button class="btn btn-opal" type="button" id="btnXLSX">Download Excel</button>
+                <button class="btn btn-opal" type="button" id="btnXLSX" onclick="openXlsx()">Download Excel</button>
             </form>
 
             <div id="xlsx_options_div" style="display: none;">
                 <br>
-                <form action="" method="post" id="form">
+                <form action="{% url 'questionnaires:exportreports-downloadxlsx' %}" method="post" id="form">
                     {% csrf_token %}
                     <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                     <h4>Please select how to organize the tabs:</h4>
@@ -37,13 +36,28 @@
                     <input type="radio" id="none" name="tabs" value="none">
                     <label for="none">none (single tab)</label>
                     <br>
-                    <button type="button" id="cancel-button" class="btn btn-opal" >Cancel</button>
+                    <button type="button" id="cancel-button" class="btn btn-opal" onclick="cancel()" >Cancel</button>
                     <input type="submit" class="btn btn-opal" value="GO" />
                 </form>
             </div>
         </div>
       </div>
 
+    <script>
+      function openXlsx(){
+        let xlsx_options_div = document.getElementById("xlsx_options_div");
+        xlsx_options_div.style.display = "";
+      }
+
+      function cancel(){
+        let xlsx_options_div = document.getElementById("xlsx_options_div");
+        xlsx_options_div.style.display = "none";
+      }
+    </script>
 
     {% endif %}
   {% endblock content %}
+
+  {% block js %}
+
+  {% endblock js %}
