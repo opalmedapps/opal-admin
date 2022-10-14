@@ -7,8 +7,7 @@ from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
-from pytest_django.asserts import assertRedirects, assertURLEqual
-from pytest_django.fixtures import SettingsWrapper
+from pytest_django.asserts import assertTemplateUsed, assertURLEqual
 
 from opal.users.models import User
 
@@ -18,7 +17,8 @@ pytestmark = pytest.mark.django_db
 # All questionnaires templates and their associated url
 test_url_template_data: list[Tuple] = [
     (reverse('questionnaires:index'), 'questionnaires/index.html'),
-    (reverse('questionnaires:exportreports'), 'questionnaires/export_reports/exportreports.html'),
+    (reverse('questionnaires:exportreports-list'), 'questionnaires/export_reports/exportreports-list.html'),
+    (reverse('questionnaires:exportreports-query'), 'questionnaires/export_reports/exportreports-query.html'),
 ]
 
 
@@ -31,28 +31,35 @@ def test_questionnaire_urls_exist(user_client: Client, admin_user: AbstractUser,
     assert response.status_code == HTTPStatus.OK
 
 
-def test_export_report_launch_redirects(user_client: Client, admin_user: AbstractUser, settings: SettingsWrapper) -> None:  # noqa: E501
-    """Ensure that after clicking the ePRO button, the page redirects to the reporting tool."""
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page uses appropriate templates."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-launch'))
+    response = user_client.get(url)
 
-    assertRedirects(
-        response,
-        expected_url=settings.EPRO_DATA_EXTRACTIONS_URL,
-        target_status_code=HTTPStatus.FOUND,
-        fetch_redirect_response=False,
-    )
+    assertTemplateUsed(response, template)
 
 
-def test_export_report_launch_url_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a button exists in the reports page and it contains the correct URL."""
+def test_list_select_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that a form exists in the reports page and it contains the correct URL."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports'))
+    response = user_client.get(reverse('questionnaires:exportreports-list'))
     soup = BeautifulSoup(response.content, 'html.parser')
-    links = soup.find_all('a', attrs={'class': 'btn btn-primary mr-2'})
+    forms = soup.find_all('form')
 
     assert response.status_code == HTTPStatus.OK
-    assertURLEqual(links[0].get('href'), reverse('questionnaires:exportreports-launch'))
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:exportreports-query'))
+
+
+def test_query_viewreport_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that a form exists in the reports page and it contains the correct URL."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports-query'))
+    soup = BeautifulSoup(response.content, 'html.parser')
+    forms = soup.find_all('form')
+
+    assert response.status_code == HTTPStatus.OK
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:exportreports-viewreport'))
 
 
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
