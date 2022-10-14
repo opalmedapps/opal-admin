@@ -12,6 +12,7 @@ from django.utils.encoding import smart_str
 from django.views.decorators.http import require_http_methods
 from django.views.generic.base import TemplateView
 
+import django_tables2 as tables
 import pandas as pd
 
 from .backend import get_all_questionnaire, get_questionnaire_detail, get_tempC, make_tempC
@@ -79,6 +80,18 @@ class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
         return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
 
 
+# REPORT TABLE (DjangoTables2)
+class ReportTable(tables.Table):
+    """Enable rendering of report data with django table2."""
+
+    patientId = tables.Column()
+    questionId = tables.Column()
+    question = tables.Column()
+    Answer = tables.Column()
+    creationDate = tables.Column()
+    lastUpdated = tables.Column()
+
+
 # EXPORT REPORTS VIEW REPORT
 class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the selected report."""
@@ -109,14 +122,9 @@ class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
 
         report = get_tempC()  # after verifying parameters were complete, retrieve the prepared data
 
-        report_df = pd.DataFrame(report)  # use pandas to convert raw data to html format
-        report_df = report_df.to_html(index=False)
-        report_df = report_df.replace('<table border="1" class="dataframe">', '<table class="table" id="data_table">')
-        report_df = report_df.replace('text-align: right', 'text-align: left')
-
-        context.update({'reporthtml': report_df})  # update context with report results
+        report_table = ReportTable(report, orderable=False)  # orderable set false for now to avoid queryset errors
         context.update({'questionnaireID': request.POST.get('questionnaireid')})
-
+        context.update({'reporttable': report_table})
         return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
 
 

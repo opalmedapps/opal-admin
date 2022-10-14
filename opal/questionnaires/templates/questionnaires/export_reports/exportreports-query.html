@@ -6,33 +6,6 @@
   {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
 
   {% block content %}
-  <script>
-    $("#checkallQ").click(function (){
-      if ($("#checkallQ").is(':checked')){
-          $(".checkboxesQ").each(function (){
-              $(this).prop("checked", true);
-          });
-      }else{
-          $(".checkboxesQ").each(function (){
-              $(this).prop("checked", false);
-          });
-      }
-    });
-
-    $("#checkallP").click(function (e){
-        e.preventDefault()
-        if ($("#checkallP").is(':checked')){
-            $(".optionP").each(function (){
-                $(this).prop("selected", true);
-            });
-        }else{
-            $(".optionP").each(function (){
-                $(this).prop("selected", false);
-            });
-        }
-     });
-
-  </script>
     {% if perms.questionnaires.export_report %}
 
     <div class="row justify-content-md-center">
@@ -77,7 +50,7 @@
                       <div class="col-sm-10">
                           <select name="patientIDs" class="form-control" id="patientIDs" multiple required >
                               {% for pid in patientIDs %}
-                                  <option class='optionP' value="{{ pid }}" selected>{{ pid }}</option>
+                                  <option class='optionP' value="{{ pid }}" name="patIds" selected>{{ pid }}</option>
                               {% endfor %}
                           </select>
                           <small>
@@ -104,8 +77,8 @@
                       <ul style="list-style-type:none">
                       {% for q in questions %}
                           <li>
-                              <div class="checkbox">
-                                  <label><input type="checkbox" class='checkboxesQ' name="questionIDs" value="{{ q.questionId }}" checked> {{ q.question|safe }}</label>
+                              <div class="checkbox" >
+                                  <label><input type="checkbox"  class='checkboxesQ' name="questionIDs" value="{{ q.questionId }}" checked > {{ q.question|safe }}</label>
                               </div>
                           </li>
                       {% endfor %}
@@ -130,6 +103,43 @@
       </div>
 
   </form>
+
+  <script>
+   const patientCBox = document.getElementById('checkallP');
+   const questionCBox = document.getElementById('checkallQ');
+
+   patientCBox.addEventListener('change', e => {
+    if(e.target.checked === true) {
+      var ele=document.getElementsByName('patIds');
+      for(var i=0; i<ele.length; i++){
+        ele[i].selected=true;
+      }
+    }else{
+      var ele=document.getElementsByName('patIds');
+      for(var i=0; i<ele.length; i++){
+        ele[i].selected=false;
+      }
+    }
+   });
+
+   questionCBox.addEventListener('change', e => {
+    if(e.target.checked === true) {
+      var ele=document.getElementsByName('questionIDs');
+      for(var i=0; i<ele.length; i++){
+          if(ele[i].type=='checkbox'){
+            ele[i].checked=true;
+          }
+      }
+    }else{
+      var ele=document.getElementsByName('questionIDs');
+      for(var i=0; i<ele.length; i++){
+          if(ele[i].type=='checkbox'){
+            ele[i].checked=false;
+          }
+      }
+    }
+   });
+  </script>
 
     {% endif %}
   {% endblock content %}

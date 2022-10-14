@@ -11,9 +11,8 @@
         <div class="col col-md-10">
             <h3>Report</h3>
             <div class="table-responsive">
-                {{ reporthtml|safe }}
-            </div>
-
+              {% render_table reporttable %}
+          </div>
 
             <form action="{% url 'questionnaires:exportreports-downloadcsv' %}" method="post" id="form">
                 {% csrf_token %}
@@ -57,7 +56,3 @@
 
     {% endif %}
   {% endblock content %}
-
-  {% block js %}
-
-  {% endblock js %}
