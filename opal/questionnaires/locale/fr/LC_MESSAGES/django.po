@@ -55,12 +55,6 @@ msgid "Select"
 msgstr "Sélectionner"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-#, fuzzy
-#| msgid "Questionnaires"
-msgid "Questionnaires"
-msgstr "Questionnaires"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
 msgid "Description"
 msgstr "La description"
 
