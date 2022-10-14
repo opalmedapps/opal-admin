@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
-from opal.patients.managers import HospitalPatientManager, RelationshipManager
+from opal.patients.managers import HospitalPatientManager, RelationshipManager, RelationshipTypeManager
 
 from . import constants
 
@@ -46,6 +46,7 @@ class RelationshipType(models.Model):
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )
+    objects = RelationshipTypeManager()
 
     class Meta:
         ordering = ['name']

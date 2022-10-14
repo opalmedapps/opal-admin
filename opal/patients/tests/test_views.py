@@ -8,7 +8,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertQuerysetEqual
 
 from opal.hospital_settings.models import Site
 
@@ -134,9 +134,9 @@ def test_initial_call(
 
     assert response.status_code == HTTPStatus.OK
     assert wizard['steps'].current == 'site'
-    assert wizard['steps'].last == 'confirm'
+    assert wizard['steps'].last == 'relationship'
     assert wizard['steps'].next == 'search'
-    assert wizard['steps'].count == 3
+    assert wizard['steps'].count == 4
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -269,6 +269,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
         ('site', {'sites': site.pk}),
         ('search', {'medical_card': 'ramq', 'medical_number': 'RAMQ99996666'}),
         ('confirm', {'is_correct': True}),
+        ('relationship', {'types': [factories.RelationshipType(), factories.RelationshipType(name='Second')]}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -288,7 +289,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
         elif 'search' in step:
             assert response.context['wizard']['steps'].current == 'confirm'
         elif 'confirm' in step:
-            assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
+            assert response.context['wizard']['steps'].current == 'relationship'
 
 
 class TestAccessRequestView(views.AccessRequestView):
