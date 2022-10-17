@@ -17,9 +17,11 @@
             <form action="{% url 'questionnaires:exportreports-downloadcsv' %}" method="post" id="form">
                 {% csrf_token %}
                 <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
-                <button class="btn btn-opal" type="button" onclick="history.back()">{% translate "Back" %}</button>
-                <input type="submit" class="btn btn-opal" value="Download CSV" />
-                <button class="btn btn-opal" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
+                <div class="btn-toolbar mb-4">
+                  <button class="btn btn-warning mr-2" type="button" onclick="history.back()">{% translate "Back" %}</button>
+                  <input  class="btn btn-primary mr-2" type="submit" value="Download CSV" />
+                  <button class="btn btn-primary" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
+                </div>
             </form>
 
             <div id="xlsx_options_div" style="display: none;">
@@ -35,8 +37,10 @@
                     <input type="radio" id="none" name="tabs" value="none">
                     <label for="none">{% translate "None (single tab)" %}</label>
                     <br>
-                    <button type="button" id="cancel-button" class="btn btn-opal" onclick="cancel()" >Cancel</button>
-                    <input type="submit" class="btn btn-opal" value="GO" />
+                    <div class="btn-toolbar mb-4">
+                      <button class="btn btn-warning mr-2" type="button" id="cancel-button"  onclick="cancel()" >{% translate "Cancel" %}</button>
+                      <input class="btn btn-primary mr-2" type="submit" value="GO" />
+                    </div>
                 </form>
             </div>
         </div>
