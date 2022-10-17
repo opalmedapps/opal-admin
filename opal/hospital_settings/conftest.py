@@ -66,7 +66,14 @@ def institution_form(institution_form_files: dict) -> InstitutionForm:
         InstitutionForm object
     """
     instit = factories.Institution.build()
-    form_data = model_to_dict(instit, exclude=['id', 'logo', 'logo_en', 'logo_fr'])
+    form_data = model_to_dict(instit, exclude=[
+        'id',
+        'logo',
+        'logo_en',
+        'logo_fr',
+        'terms_of_use_en',
+        'terms_of_use_fr',
+    ])
 
     return InstitutionForm(
         data=form_data,
@@ -86,7 +93,15 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
         incomplete InstitutionForm object
     """
     instit = factories.Institution.build()
-    form_data = model_to_dict(instit, exclude=['id', 'logo', 'logo_en', 'logo_fr', 'code'])
+    form_data = model_to_dict(instit, exclude=[
+        'id',
+        'logo',
+        'logo_en',
+        'logo_fr',
+        'code',
+        'terms_of_use_en',
+        'terms_of_use_fr',
+    ])
 
     return InstitutionForm(
         data=form_data,
