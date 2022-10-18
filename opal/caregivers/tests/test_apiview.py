@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core import mail
 from django.urls import reverse
 
+from pytest_django.fixtures import SettingsWrapper
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 
@@ -13,8 +14,6 @@ from opal.caregivers import factories as caregiver_factory
 from opal.caregivers import models as caregiver_model
 from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
-
-from pytest_django.fixtures import SettingsWrapper
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
