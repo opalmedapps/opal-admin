@@ -1,9 +1,9 @@
 """Test module for registration api endpoints."""
-
 from hashlib import sha512
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
+from django.core import mail
 from django.urls import reverse
 
 from rest_framework.exceptions import ErrorDetail
@@ -13,6 +13,8 @@ from opal.caregivers import factories as caregiver_factory
 from opal.caregivers import models as caregiver_model
 from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
+
+from pytest_django.fixtures import SettingsWrapper
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
@@ -78,13 +80,19 @@ def test_regitration_encryption_with_invalid_hash(api_client: APIClient, admin_u
 class TestApiEmailVerification:
     """A class to test model EmailVerification apis."""
 
-    def test_verify_code_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_verify_code_success(
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
+        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         response = api_client.put(
             reverse(
                 'api:verify-email-code',
@@ -96,6 +104,8 @@ class TestApiEmailVerification:
         email_verification.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert email_verification.is_verified
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test save verify email success."""
