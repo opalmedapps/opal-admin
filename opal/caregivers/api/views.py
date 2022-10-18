@@ -3,10 +3,12 @@
 import random
 
 from django.db.models.functions import SHA512
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import serializers as drf_serializers, status
+from rest_framework import serializers as drf_serializers
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -66,35 +68,58 @@ class ApiEmailVerificationView(APIView):
     """Class to save and verify the user's email and email verification code."""
 
     permission_classes = [IsAuthenticated]
+    min_number = 100000
+    max_number = 999999
 
-    def get(self, request: Request, code: str) -> Response:
+    def get_queryset(self) -> QuerySet[RegistrationCode]:
+        """
+        Override get_queryset to filter RegistrationCode by registration code.
+
+        Returns:
+            The queryset of RegistrationCode
+        """
+        code = self.kwargs['code']
+        return RegistrationCode.objects.select_related(
+            'relationship__caregiver',
+        ).prefetch_related(
+            'relationship__caregiver__email_verifications',
+        ).filter(code=code, status=RegistrationCodeStatus.NEW)
+
+    def put(self, request: Request, code: str) -> Response:
         """
         Handle GET requests from `registration/<str:code>/verify-email-code/`.
 
         Args:
             request: Http request made by the listener needed to retrive `Appuserid`.
-            code (str): registration code.
+            code: registration code.
+
+        Raises:
+            ValidationError: The object not found.
 
         Returns:
             Http response with the verification result of the email code.
         """
         registration_code = None
         try:
-            registration_code = RegistrationCode.objects.select_related(
-                'relationship__caregiver',
-            ).prefetch_related(
-                'relationship__patient__hospital_patients',
-            ).filter(code=code, status=RegistrationCodeStatus.NEW).get()
+            registration_code = self.get_queryset().get()
         except RegistrationCode.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid')})
+            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid.')})
 
-        verification_code = request.data['code']
+        input_serializer = EmailVerificationSerializer(data=request.data, fields=('code',), partial=True)
+        input_serializer.is_valid(raise_exception=True)
+
+        verification_code = input_serializer.validated_data['code']
         try:
-            registration_code.relationship.caregiver.email_verifications.get(code=verification_code)
+            email_verification = registration_code.relationship.caregiver.email_verifications.get(
+                code=verification_code,
+            )
         except EmailVerification.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Verification code is invalid')})
+            raise drf_serializers.ValidationError({'detail': _('Verification code is invalid.')})
+        else:
+            email_verification.is_verified = True
+            email_verification.save()
 
-        return Response({'detail': 'Email is verified'})
+        return Response()
 
     def post(self, request: Request, code: str) -> Response:
         """
@@ -102,31 +127,37 @@ class ApiEmailVerificationView(APIView):
 
         Args:
             request: Http request made by the listener needed to retrive `Appuserid`.
-            code (str): registration code.
+            code: registration code.
+
+        Raises:
+            ValidationError: The object not found.
 
         Returns:
             Http response with the result message of the api.
         """
         registration_code = None
         try:
-            registration_code = RegistrationCode.objects.select_related(
-                'relationship__caregiver',
-            ).prefetch_related(
-                'relationship__patient__hospital_patients',
-            ).filter(code=code, status=RegistrationCodeStatus.NEW).get()
+            registration_code = self.get_queryset().get()
         except RegistrationCode.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid')})
+            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid.')})
 
         input_serializer = EmailVerificationSerializer(data=request.data, fields=('email',), partial=True)
         input_serializer.is_valid(raise_exception=True)
 
-        email = input_serializer.data['email']
-        verification_code = random.randint(100000, 999999)
-        EmailVerification.objects.create(
-            caregiver=registration_code.relationship.caregiver,
-            code=verification_code,
-            email=email,
-            sent_at=timezone.now(),
-        )
+        email = input_serializer.validated_data['email']
+        verification_code = random.randint(self.min_number, self.max_number)  # noqa: S311
+        try:
+            email_verification = registration_code.relationship.caregiver.email_verifications.get(
+                email=email,
+            )
+        except EmailVerification.DoesNotExist:
+            EmailVerification.objects.create(
+                caregiver=registration_code.relationship.caregiver,
+                code=verification_code,
+                email=email,
+                sent_at=timezone.now(),
+            )
+        else:
+            input_serializer.update(email_verification, {'code': verification_code})
 
         return Response()
