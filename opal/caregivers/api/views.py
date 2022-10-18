@@ -2,6 +2,7 @@
 
 import random
 
+from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
 from django.utils import timezone
@@ -118,6 +119,8 @@ class ApiEmailVerificationView(APIView):
         else:
             email_verification.is_verified = True
             email_verification.save()
+
+        # send_mail("hello paul", "comment tu vas?", "gameaaa@163.com", ['Limin.Liu@muhc.mcgill.ca'])
 
         return Response()
 
