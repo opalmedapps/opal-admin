@@ -83,7 +83,6 @@ class TestApiEmailVerification:
         self,
         api_client: APIClient,
         admin_user: AbstractUser,
-        settings: SettingsWrapper,
     ) -> None:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
@@ -91,7 +90,6 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
-        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         response = api_client.put(
             reverse(
                 'api:verify-email-code',
@@ -103,16 +101,20 @@ class TestApiEmailVerification:
         email_verification.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert email_verification.is_verified
-        assert len(mail.outbox) == 1
-        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
 
-    def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_save_verify_email_success(
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
         """Test save verify email success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email = 'test@muhc.mcgill.ca'
+        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         response = api_client.post(
             reverse(
                 'api:verify-email',
@@ -124,6 +126,8 @@ class TestApiEmailVerification:
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
         assert email_verification
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test verify verification code success."""

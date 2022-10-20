@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -72,6 +73,7 @@ class ApiEmailVerificationView(APIView):
     permission_classes = [IsAuthenticated]
     min_number = 100000
     max_number = 999999
+    email_subject = 'Opal Verification Code '
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -121,13 +123,6 @@ class ApiEmailVerificationView(APIView):
             email_verification.is_verified = True
             email_verification.save()
 
-        send_mail(
-            'hello paul',
-            'comment tu vas?',
-            settings.EMAIL_HOST_USER,
-            ['Limin.Liu@muhc.mcgill.ca'],
-        )
-
         return Response()
 
     def post(self, request: Request, code: str) -> Response:
@@ -155,18 +150,44 @@ class ApiEmailVerificationView(APIView):
 
         email = input_serializer.validated_data['email']
         verification_code = random.randint(self.min_number, self.max_number)  # noqa: S311
+        caregiver = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
             EmailVerification.objects.create(
-                caregiver=registration_code.relationship.caregiver,
+                caregiver=caregiver,
                 code=verification_code,
                 email=email,
                 sent_at=timezone.now(),
             )
         else:
             input_serializer.update(email_verification, {'code': verification_code})
+
+        msg_plain = render_to_string(
+            'email/verification_code.txt',
+            {
+                'code': verification_code,
+                'first_name': caregiver.user.first_name,
+                'last_name': caregiver.user.last_name,
+            },
+        )
+        msg_html = render_to_string(
+            'email/verification_code.html',
+            {
+                'code': verification_code,
+                'first_name': caregiver.user.first_name,
+                'last_name': caregiver.user.last_name,
+            },
+        )
+
+        send_mail(
+            self.email_subject,
+            msg_plain,
+            settings.EMAIL_HOST_USER,
+            ['Limin.Liu@muhc.mcgill.ca'],
+            html_message=msg_html,
+        )
 
         return Response()
