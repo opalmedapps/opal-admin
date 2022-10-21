@@ -1,6 +1,5 @@
 """This module provides views for patient settings."""
 import io
-import json
 from collections import Counter
 from typing import Any, Dict, List, Tuple
 
@@ -17,8 +16,9 @@ from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
-from opal.patients.forms import ConfirmPatientForm, SearchForm, SelectSiteForm
+from opal.patients.forms import ConfirmPatientForm, RequestorDetailsForm, SearchForm, SelectSiteForm
 from opal.patients.tables import PatientTable
+from opal.services.hospital.hospital_data import OIEPatientData
 
 from .models import RelationshipType, Site
 from .tables import RelationshipTypeTable
@@ -68,7 +68,7 @@ class RelationshipTypeDeleteView(generic.edit.DeleteView):
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class AccessRequestView(SessionWizardView):
+class AccessRequestView(SessionWizardView):  # noqa: WPS214
     """
     Form wizard view providing the steps for a caregiver's patient access request.
 
@@ -81,11 +81,13 @@ class AccessRequestView(SessionWizardView):
         ('site', SelectSiteForm),
         ('search', SearchForm),
         ('confirm', ConfirmPatientForm),
+        ('relationship', RequestorDetailsForm),
     ]
     template_list = {
         'site': 'patients/access_request/access_request.html',
         'search': 'patients/access_request/access_request.html',
         'confirm': 'patients/access_request/access_request.html',
+        'relationship': 'patients/access_request/access_request.html',
     }
 
     def get_template_names(self) -> List[str]:
@@ -132,6 +134,8 @@ class AccessRequestView(SessionWizardView):
         elif self.steps.current == 'confirm':
             context.update({'header_title': _('Patient Details')})
             context = self._update_patient_confirmation_context(context)
+        elif self.steps.current == 'relationship':
+            context.update({'header_title': _('Requestor Details')})
         return context
 
     def get_form_initial(self, step: str) -> dict[str, str]:
@@ -161,6 +165,22 @@ class AccessRequestView(SessionWizardView):
                 })
         return initial
 
+    def get_form_kwargs(self, step: str) -> dict[str, str]:
+        """
+        Return the keyword arguments for instantiating the form on the given step.
+
+        Args:
+            step: a form step
+
+        Returns:
+            a dictionary or an empty dictionary for a step
+        """
+        kwargs = {}
+        if step == 'relationship':
+            patient_record = self.get_cleaned_data_for_step('search')['patient_record']
+            kwargs['date_of_birth'] = patient_record.date_of_birth
+        return kwargs
+
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
         """
         Redirect to a test qr code page.
@@ -183,7 +203,7 @@ class AccessRequestView(SessionWizardView):
             'header_title': _('QR Code Generation'),
         })
 
-    def _has_multiple_mrns_with_same_site_code(self, patient_record: dict) -> bool:
+    def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
         """
         Check if the number of MRN records with the same site code is greater than 1.
 
@@ -193,8 +213,8 @@ class AccessRequestView(SessionWizardView):
         Returns:
             True if the number of MRN records with the same site code is greater than 1
         """
-        mrns = patient_record['mrns']
-        key_counts = Counter(mrn_dict['site'] for mrn_dict in mrns)
+        mrns = patient_record.mrns
+        key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
         return any(count > 1 for (site, count) in key_counts.items())
 
     def _update_patient_confirmation_context(
@@ -211,7 +231,6 @@ class AccessRequestView(SessionWizardView):
             the template context for step 'confirm'
         """
         patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
-        patient_record = json.loads(patient_record)
         if self._has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),

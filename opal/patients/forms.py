@@ -1,6 +1,6 @@
 """This module provides forms for Patients."""
-import json
-from typing import Any
+from datetime import date, datetime
+from typing import Any, Dict, Optional, Set, Union
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -10,9 +10,10 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from . import constants
-from .models import Site
+from .models import Patient, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -45,39 +46,39 @@ class SelectSiteForm(forms.Form):
         )
 
 
-def _patient_data() -> Any:
+def _patient_data() -> OIEPatientData:
     """
     Return the fake patient data pretended to get from OIE calling.
 
     Returns:
-        patient data in JSON format
+        patient data structure in 'OIEPatientData'
     """
-    return {
-        'dateOfBirth': '1953-01-01 09:20:30',
-        'firstName': 'SANDRA',
-        'lastName': 'TESTMUSEMGHPROD',
-        'sex': 'F',
-        'alias': '',
-        'ramq': 'TESS53510111',
-        'ramqExpiration': '2018-01-31 23:59:59',
-        'mrns': [
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
-            {
-                'site': 'MCH',
-                'mrn': '9999994',
-                'active': True,
-            },
-            {
-                'site': 'RVH',
-                'mrn': '9999993',
-                'active': True,
-            },
+    return OIEPatientData(
+        date_of_birth=datetime.strptime('2007-01-01 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        first_name='SANDRA',
+        last_name='TESTMUSEMGHPROD',
+        sex='F',
+        alias='',
+        ramq='TESS53510111',
+        ramq_expiration=datetime.strptime('2018-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
         ],
-    }
+    )
 
 
 def _find_patient_by_mrn_fail(mrn: str, site: str) -> Any:
@@ -113,13 +114,7 @@ def _find_patient_by_mrn_success(mrn: str, site: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': {
-            'first_name': _patient_data()['firstName'],
-            'last_name': _patient_data()['lastName'],
-            'date_of_birth': _patient_data()['dateOfBirth'],
-            'ramq': _patient_data()['ramq'],
-            'mrns': _patient_data()['mrns'],
-        },
+        'data': _patient_data(),
     }
 
 
@@ -135,13 +130,7 @@ def _find_patient_by_ramq(ramq: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': {
-            'first_name': _patient_data()['firstName'],
-            'last_name': _patient_data()['lastName'],
-            'date_of_birth': _patient_data()['dateOfBirth'],
-            'ramq': _patient_data()['ramq'],
-            'mrns': _patient_data()['mrns'],
-        },
+        'data': _patient_data(),
     }
 
 
@@ -174,7 +163,7 @@ class SearchForm(forms.Form):
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            args: additional argumentssle
+            args: additional arguments
             kwargs: additional keyword arguments
         """
         super().__init__(*args, **kwargs)
@@ -218,7 +207,7 @@ class SearchForm(forms.Form):
             self.add_error('medical_number', response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
-            self.cleaned_data['patient_record'] = json.dumps(response['data'])  # type: ignore[index]
+            self.cleaned_data['patient_record'] = response['data']  # type: ignore[index]
 
 
 class ConfirmPatientForm(forms.Form):
@@ -242,6 +231,114 @@ class ConfirmPatientForm(forms.Form):
         self.helper.layout = Layout(
             'is_correct',
             ButtonHolder(
+                Submit('wizard_goto_step', _('Next')),
+            ),
+        )
+
+
+class AvailableRadioSelect(forms.RadioSelect):
+    """
+    Subclass of Django's select widget that allows disabling options.
+
+    Taken inspiration from:
+        * https://stackoverflow.com/questions/673199/disabled-option-for-choicefield-django/50109362#50109362
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the '_available_choices'.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        self._available_choices: list[int] = []
+        super().__init__(*args, **kwargs)
+
+    @property
+    def available_choices(self) -> list[int]:
+        """
+        Get _available_choices.
+
+        Returns:
+            the list for _available_choices.
+        """
+        return self._available_choices
+
+    @available_choices.setter
+    def available_choices(self, other: list[int]) -> None:
+        """
+        Set _available_choices.
+
+        Args:
+            other: the new value _available_choices
+        """
+        self._available_choices = other
+
+    def create_option(  # noqa: WPS211
+        self,
+        name: str,
+        value: Any,
+        label: Union[int, str],
+        selected: Union[Set[str], bool],
+        index: int,
+        subindex: Optional[int] = None,
+        attrs: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Initialize the '_available_choices'.
+
+        Args:
+            name: option name
+            value: option value
+            label: option label
+            selected: selected option
+            index: option index
+            subindex: option subindex
+            attrs: option attributes
+
+        Returns:
+            the dict for _available_choices.
+        """
+        option_dict = super().create_option(
+            name, value, label, selected, index, subindex=subindex, attrs=attrs,
+        )
+        if value not in self.available_choices:
+            option_dict['attrs']['disabled'] = 'disabled'
+        return option_dict
+
+
+class RequestorDetailsForm(forms.Form):
+    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
+
+    relationship_type = forms.ModelChoiceField(
+        queryset=RelationshipType.objects.all(),
+        widget=AvailableRadioSelect,
+        label=_('Caregiver relationship type'),
+    )
+
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for card type select box and card number input box.
+
+        Args:
+            date_of_birth: patient's date of birth
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('relationship_type', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row',
+            ),
+            ButtonHolder(
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )
+        self.age = Patient.calculate_age(date_of_birth=date_of_birth)
+        available_choices = RelationshipType.objects.filter_by_patient_age(
+            patient_age=self.age,
+        ).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = available_choices

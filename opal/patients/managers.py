@@ -1,5 +1,8 @@
 """Collection of managers for the caregiver app."""
 from django.db import models
+from django.db.models.functions import Coalesce
+
+from . import constants
 
 
 class RelationshipManager(models.Manager):
@@ -50,3 +53,20 @@ class HospitalPatientManager(models.Manager):
             site__code=site,
             mrn=mrn,
         )
+
+
+class RelationshipTypeManager(models.Manager):
+    """Manager class for the `RelationshipType` model."""
+
+    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet:
+        """Return a new QuerySet filtered by the patient age between start_age and end_age.
+
+        Args:
+            patient_age: patient's ages.
+
+        Returns:
+            a queryset of the relationship type.
+        """
+        return self.annotate(  # type: ignore[no-any-return]
+            end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
+        ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)

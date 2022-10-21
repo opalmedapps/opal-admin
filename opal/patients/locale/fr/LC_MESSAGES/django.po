@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-12 14:18+0000\n"
+"POT-Creation-Date: 2022-10-14 18:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,6 +49,10 @@ msgstr "Veuillez remplir le numéro de la carte"
 #: opal/patients/forms.py
 msgid "Correct?"
 msgstr "Correct?"
+
+#: opal/patients/forms.py
+msgid "Caregiver relationship type"
+msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/forms.py
 msgid "Generate QR Code"
@@ -293,6 +297,10 @@ msgstr "Patient de l'hôpital"
 #: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
+
+#: opal/patients/views.py
+msgid "Requestor Details"
+msgstr "Détails du demandeur"
 
 #: opal/patients/views.py
 msgid "QR Code Generation"
