@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-16 08:26-0400\n"
+"POT-Creation-Date: 2022-10-14 01:25-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -147,13 +147,29 @@ msgid "Attempts"
 msgstr ""
 
 #: opal/caregivers/models.py
-msgid "Email Verification Code"
-msgstr ""
-
-#: opal/caregivers/models.py
 msgid "Registration Code"
 msgstr ""
 
 #: opal/caregivers/models.py
 msgid "Registration Codes"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Verification Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Email"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Verified"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Email Verification"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Email Verifications"
 msgstr ""
