@@ -37,6 +37,12 @@ class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
     patientsernum = models.AutoField(db_column='PatientSerNum', primary_key=True)
+    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    ssn = models.CharField(db_column='SSN', max_length=6)
+    firstname = models.CharField(db_column='FirstName', max_length=50)
+    lastname = models.CharField(db_column='LastName', max_length=50)
+    sex = models.CharField(db_column='Sex', max_length=50)
+    telnum = models.CharField(db_column='TelNum', max_length=22)
 
     class Meta:
         managed = False
@@ -218,3 +224,34 @@ class LegacySecurityAnswer(models.Model):
         managed = False
         db_table = 'SecurityAnswer'
         unique_together = (('securityquestionsernum', 'patientsernum'),)
+
+
+class LegacyHospitalIdentifierType(models.Model):
+    """Hospital_Identifier_Type model from the legacy database OpalDB."""
+
+    hospitalidentifiertypeid = models.AutoField(db_column='Hospital_Identifier_Type_Id', primary_key=True)
+    code = models.CharField(db_column='Code', max_length=20, unique=True)
+
+    class Meta:
+        managed = False
+        db_table = 'Hospital_Identifier_Type'
+
+
+class LegacyPatientHospitalIdentifier(models.Model):
+    """Patient_Hospital_Identifier model from the legacy database OpalDB."""
+
+    patienthospitalidentifierid = models.AutoField(db_column='Patient_Hospital_Identifier_Id', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    hospitalidentifiertypecode = models.ForeignKey(
+        'LegacyHospitalIdentifierType',
+        models.DO_NOTHING,
+        db_column='Hospital_Identifier_Type_Code',
+        to_field='code',
+    )
+    mrn = models.CharField(db_column='MRN', max_length=20)
+    isactive = models.BooleanField(db_column='is_Active')
+
+    class Meta:
+        managed = False
+        db_table = 'Patient_Hospital_Identifier'
+        unique_together = (('patientsernum', 'hospitalidentifiertypecode', 'mrn'),)
