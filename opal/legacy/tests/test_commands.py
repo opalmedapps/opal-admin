@@ -10,6 +10,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
+from opal.patients.models import RelationshipStatus
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -290,3 +291,83 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
         assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999997\n' in message
         assert 'Number of imported patients is: 0\n' in message
+
+
+class TestUsersCaregiversMigration(TestBasicClass):
+    """Test class for users and caregivers migrations from legacy DB."""
+
+    def test_import_user_caregiver_no_legacy_users(self) -> None:
+        """Test import fails no legacy users exist."""
+        message, error = self._call_command('migrate_users')
+        assert 'Number of imported patients is: 0' in message
+
+    def test_import_user_caregiver_no_patient_exist(self) -> None:
+        """Test import fails, a corresponding patient in new backend does not exist."""
+        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        message, error = self._call_command('migrate_users')
+        assert 'Patient with sernum: 99, does not exist,skipping.\n' in error
+
+    def test_import_user_caregiver_already_exist(self) -> None:
+        """Test import fails, caregiver profile has already been migrated."""
+        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        patient_factories.Patient(legacy_id=99)
+        patient_factories.RelationshipType(name='self')
+        patient_factories.CaregiverProfile(legacy_id=99)
+        message, error = self._call_command('migrate_users')
+        assert 'Nothing to be done for , sernum: 99,skipping.\n' in message
+        assert 'Number of imported patients is: 0\n' in message
+
+    def test_import_user_caregiver_exists_relation(self) -> None:
+        """Test import relation fails, relation already exists."""
+        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        patient = patient_factories.Patient(legacy_id=99)
+        relationshiptype = patient_factories.RelationshipType(name='self')
+        caregiver = patient_factories.CaregiverProfile(legacy_id=99)
+        patient_factories.Relationship(
+            patient=patient,
+            caregiver=caregiver,
+            type=relationshiptype,
+            status=RelationshipStatus.CONFIRMED,
+        )
+        message, error = self._call_command('migrate_users')
+        assert 'Nothing to be done for , sernum: 99,skipping.\n' in message
+        assert 'Number of imported patients is: 0\n' in message
+        assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
+
+    def test_import_user_caregiver_no_relation(self) -> None:
+        """Test import pass for relationship for already migrated caregiver."""
+        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        patient_factories.Patient(legacy_id=99)
+        patient_factories.RelationshipType(name='self')
+        patient_factories.CaregiverProfile(legacy_id=99)
+        message, error = self._call_command('migrate_users')
+        assert 'Nothing to be done for , sernum: 99,skipping.\n' in message
+        assert 'Number of imported patients is: 0\n' in message
+        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+
+    def test_import_new_user_caregiver_no_relation(self) -> None:
+        """Test import pass for caregiver profile and relationship."""
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        patient_factories.Patient(legacy_id=99)
+        patient_factories.RelationshipType(name='self')
+        message, error = self._call_command('migrate_users')
+        assert 'legacy user with usertypesernum: 99 has been migrated\n' in message
+        assert 'Number of imported patients is: 1\n' in message
+        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+
+    def test_import_new_user_caregiver_with_relation(self) -> None:
+        """Test import pass for multiple caregiver profiles and their relations."""
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        legacy_factories.LegacyUserFactory(usertypesernum=99, usertype='Patient', username='test1')
+        legacy_factories.LegacyUserFactory(usertypesernum=100, usertype='Patient', username='test2')
+        patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
+        patient_factories.Patient(legacy_id=100, first_name='Test_2')
+        patient_factories.RelationshipType(name='self')
+        message, error = self._call_command('migrate_users')
+        assert 'legacy user with usertypesernum: 99 has been migrated\n' in message
+        assert 'legacy user with usertypesernum: 100 has been migrated\n' in message
+        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+        assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
+        assert 'Number of imported patients is: 2\n' in message
