@@ -77,8 +77,6 @@ class Command(BaseCommand):
             patient: instance of Patinet model.
             caregiver_profile: instance of CaregiverProfile model.
 
-        Returns: None.
-
         """
         relationship = Relationship.objects.filter(
             patient=patient,
