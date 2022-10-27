@@ -121,64 +121,64 @@ msgstr "Appareils"
 
 #: opal/caregivers/models.py:183
 msgid "New"
-msgstr ""
+msgstr "Nouveau"
 
 #: opal/caregivers/models.py:184
 msgid "Registered"
-msgstr ""
+msgstr "Inscrit"
 
 #: opal/caregivers/models.py:185
 msgid "Expired"
-msgstr ""
+msgstr "Expiré"
 
 #: opal/caregivers/models.py:186
 msgid "Blocked"
-msgstr ""
+msgstr "Bloqué"
 
 #: opal/caregivers/models.py:195
 msgid "Relationship"
-msgstr ""
+msgstr "Relation"
 
 #: opal/caregivers/models.py:201
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 #: opal/caregivers/models.py:208
 msgid "Status"
-msgstr ""
+msgstr "Statut"
 
 #: opal/caregivers/models.py:215
 msgid "Creation Date"
-msgstr ""
+msgstr "Date de création"
 
 #: opal/caregivers/models.py:220
 msgid "Attempts"
-msgstr ""
+msgstr "Tentatives"
 
 #: opal/caregivers/models.py:225
 msgid "Registration Code"
-msgstr ""
+msgstr "Code d'enregistrement"
 
 #: opal/caregivers/models.py:226
 msgid "Registration Codes"
-msgstr ""
+msgstr "Codes d'enregistrement"
 
 #: opal/caregivers/models.py:259
 msgid "Verification Code"
-msgstr ""
+msgstr "Le code de vérification"
 
 #: opal/caregivers/models.py:265
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: opal/caregivers/models.py:269
 msgid "Verified"
-msgstr ""
+msgstr "Vérifié"
 
 #: opal/caregivers/models.py:278
 msgid "Email Verification"
-msgstr ""
+msgstr "Vérifications par e-mail"
 
 #: opal/caregivers/models.py:279
 msgid "Email Verifications"
-msgstr ""
+msgstr "Vérification par e-mail"
