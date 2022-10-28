@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 01:25-0400\n"
+"POT-Creation-Date: 2022-10-27 15:08-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,7 +28,7 @@ msgstr "Proches aidants"
 
 #: opal/caregivers/models.py
 msgid "UUID"
-msgstr ""
+msgstr "UUID"
 
 #: opal/caregivers/models.py
 msgid "User"
@@ -103,6 +103,14 @@ msgid "Trusted Device"
 msgstr "Appareil de confiance"
 
 #: opal/caregivers/models.py
+msgid "Push Token"
+msgstr "Jeton de notification directe"
+
+#: opal/caregivers/models.py
+msgid "Last Modified"
+msgstr "Dernière modification"
+
+#: opal/caregivers/models.py
 msgid "Device"
 msgstr "Appareil"
 
@@ -112,64 +120,64 @@ msgstr "Appareils"
 
 #: opal/caregivers/models.py
 msgid "New"
-msgstr ""
+msgstr "Nouveau"
 
 #: opal/caregivers/models.py
 msgid "Registered"
-msgstr ""
+msgstr "Inscrit"
 
 #: opal/caregivers/models.py
 msgid "Expired"
-msgstr ""
+msgstr "Expiré"
 
 #: opal/caregivers/models.py
 msgid "Blocked"
-msgstr ""
+msgstr "Bloqué"
 
 #: opal/caregivers/models.py
 msgid "Relationship"
-msgstr ""
+msgstr "Relation"
 
 #: opal/caregivers/models.py
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 #: opal/caregivers/models.py
 msgid "Status"
-msgstr ""
+msgstr "Statut"
 
 #: opal/caregivers/models.py
 msgid "Creation Date"
-msgstr ""
+msgstr "Date de création"
 
 #: opal/caregivers/models.py
 msgid "Attempts"
-msgstr ""
+msgstr "Tentatives"
 
 #: opal/caregivers/models.py
 msgid "Registration Code"
-msgstr ""
+msgstr "Code d'enregistrement"
 
 #: opal/caregivers/models.py
 msgid "Registration Codes"
-msgstr ""
+msgstr "Codes d'enregistrement"
 
 #: opal/caregivers/models.py
 msgid "Verification Code"
-msgstr ""
+msgstr "Le code de vérification"
 
 #: opal/caregivers/models.py
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: opal/caregivers/models.py
 msgid "Verified"
-msgstr ""
+msgstr "Vérifié"
 
 #: opal/caregivers/models.py
 msgid "Email Verification"
-msgstr ""
+msgstr "Vérification par e-mail"
 
 #: opal/caregivers/models.py
 msgid "Email Verifications"
-msgstr ""
+msgstr "Vérifications par e-mail"
