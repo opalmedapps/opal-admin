@@ -107,10 +107,8 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Patient"
-msgstr "Patients"
+msgstr "Patient"
 
 #: opal/patients/models.py
 msgid "Pending"
