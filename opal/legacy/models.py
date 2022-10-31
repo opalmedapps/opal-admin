@@ -45,7 +45,7 @@ class LegacyPatient(models.Model):
     telnum = models.CharField(db_column='TelNum', max_length=22)
     dateofbirth = models.DateTimeField(db_column='DateOfBirth')
     ssn = models.CharField(db_column='SSN', max_length=6)
-    sex = models.CharField(db_column='Sex', max_length=50)
+    sex = models.CharField(db_column='Sex', max_length=25)
 
     class Meta:
         managed = False
