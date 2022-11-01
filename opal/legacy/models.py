@@ -42,9 +42,9 @@ class LegacyPatient(models.Model):
     email = models.CharField(db_column='Email', max_length=50)
     registrationdate = models.DateTimeField(db_column='RegistrationDate')
     language = models.CharField(db_column='Language', max_length=2)
-    telnum = models.CharField(db_column='TelNum', max_length=22)
+    telnum = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
     dateofbirth = models.DateTimeField(db_column='DateOfBirth')
-    ssn = models.CharField(db_column='SSN', max_length=6)
+    ssn = models.CharField(db_column='SSN', max_length=16)
     sex = models.CharField(db_column='Sex', max_length=25)
 
     class Meta:
