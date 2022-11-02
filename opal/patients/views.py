@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+from django.db.models.query import QuerySet
 from django.urls import reverse_lazy
 from django.views.generic.edit import DeleteView
 
@@ -6,8 +7,8 @@ from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
-from .models import RelationshipType
-from .tables import RelationshipTypeTable
+from .models import Relationship, RelationshipStatus, RelationshipType
+from .tables import RelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -52,3 +53,22 @@ class RelationshipTypeDeleteView(DeleteView):
     model = RelationshipType
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
+
+
+class RelationshipListView(SingleTableView):
+    """This view provides a page that displays a list of `RelationshipType` objects."""
+
+    model = Relationship
+    table_class = RelationshipTable
+    ordering = ['pk']
+    template_name = 'patients/relationship/list.html'
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Provide a queryset for relationship to get and only display pending relations.
+
+        Returns:
+            QuerySet of all pending relationships.
+
+        """
+        return Relationship.objects.filter(status=RelationshipStatus.PENDING)

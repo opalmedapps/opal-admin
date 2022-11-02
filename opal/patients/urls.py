@@ -12,6 +12,11 @@ app_name = 'patients'
 urlpatterns = [
     # Relationship Types Pages
     path(
+        'relationships/',
+        views.RelationshipListView.as_view(),
+        name='relationship-list',
+    ),
+    path(
         'relationship-types/',
         views.RelationshipTypeListView.as_view(),
         name='relationshiptype-list',
