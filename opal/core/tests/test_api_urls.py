@@ -137,11 +137,11 @@ def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
 
 
 def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
-    """Ensure `patients/legacy/<int:legacy_patient_id>/caregivers/` is defined."""
+    """Ensure `patients/legacy/<int:legacy_id>/caregivers/` is defined."""
     patient_id = 52
-    url_path = '/{api_root}/patients/legacy/{legacy_patient_id}/caregivers/'.format(
+    url_path = '/{api_root}/patients/legacy/{legacy_id}/caregivers/'.format(
         api_root=settings.API_ROOT,
-        legacy_patient_id=patient_id,
+        legacy_id=patient_id,
     )
-    assert reverse('api:caregivers-list', kwargs={'legacy_patient_id': patient_id}) == url_path
+    assert reverse('api:caregivers-list', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:caregivers-list'
