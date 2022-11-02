@@ -152,6 +152,9 @@ DATABASES = {
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
+        'TEST': {
+            'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_NAME')),
+        },
         'TIME_ZONE': 'EST5EDT',
     },
 }
