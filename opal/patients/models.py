@@ -72,7 +72,7 @@ class SexType(models.TextChoices):
     FEMALE = 'F', _('Female')
     MALE = 'M', _('Male')
     OTHER = 'O', _('Other')
-    UNKNOWN = 'U', _('Unknown')
+    UNKNOWN = 'U', _('Unknown')     
 
 
 class Patient(models.Model):
