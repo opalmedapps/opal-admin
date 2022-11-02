@@ -90,7 +90,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session')
-def _django_db_setup(django_db_blocker: Any) -> None:
+def django_db_setup(django_db_blocker: Any) -> None:  # noqa: PT004
     """Add test_QuestionnaireDB setup by executing code in tests/sql.
 
     Args:
