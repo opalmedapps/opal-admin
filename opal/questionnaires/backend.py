@@ -101,7 +101,7 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
 
         conn.execute('DROP TABLE IF EXISTS`tempB`')
         if settings.DEBUG:
-            conn.execute(  # noqa: WPS462
+            conn.execute(
                 """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                 date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
                 getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
@@ -111,7 +111,7 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
                 and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid],
             )
         else:
-            conn.execute(  # noqa: WPS462
+            conn.execute(
                 """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                 date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
                 getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
@@ -143,16 +143,19 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
         'mindate': mindate[0],
         'maxdate': maxdate[0],
         'questions': questions,
-        'description': description
+        'description': description,
     }
 
 
-def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
-    """
-    Query the QuestionnaireDB with the user's specific options for a questionnaire and store the results
-    in the table tempC in QuestionnaireDB.
+def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: WPS210, WPS213
+    """Query the QuestionnaireDB with the user's specific options & generate tables.
 
-    :return: Boolean: successful query or not
+    Args:
+        report_params: user options
+        lang_id: int for english or french
+
+    Returns:
+        successful query or not
     """
     qid = report_params.get('questionnaireid')
     pids = tuple(report_params.getlist('patientIDs'))
@@ -179,7 +182,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
                 'DROP TABLE IF EXISTS`tempC`',
             )
 
-            conn.execute(  # noqa: WPS462
+            conn.execute(
                 """create table tempA(SELECT Q.ID Questionnaire_ID, getDisplayName(Q.title, %s)
                 Questionnaire_Title, S.ID Section_ID, qs.questionId, qs.`order`,
                 getDisplayName(qq.question, %s) Question_Title
@@ -189,7 +192,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
                 """, [lang_id, lang_id, qid, sql_qids],
             )
             if settings.DEBUG:
-                conn.execute(  # noqa: WPS462
+                conn.execute(
                     """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                     date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
                     QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
@@ -202,7 +205,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
                     """, [lang_id, qid, sql_pids, startdate, enddate],
                 )
             else:
-                conn.execute(  # noqa: WPS462
+                conn.execute(
                     """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                     date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
                     QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
@@ -214,7 +217,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
                     and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
                     """, [lang_id, qid, test_accounts, sql_pids, startdate, enddate],
                 )
-            conn.execute(  # noqa: WPS462
+            conn.execute(
                 """create table temp(SELECT A.Questionnaire_ID, A.Questionnaire_Title, A.Section_ID, A.order, B.*
                 from tempA A, tempB B
                 where A.questionId = B.questionId)
@@ -222,7 +225,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
             )
             conn.execute('create index idx_A on temp (AnswerID)')
             conn.execute('create index idx_B on temp (typeId)')
-            conn.execute(  # noqa: WPS462
+            conn.execute(
                 """create table tempC(SELECT A.*, answerTextBox.VALUE AS Answer
                 FROM temp A, QuestionnaireDB.answerTextBox
                 WHERE answerTextBox.answerId = A.AnswerID and A.typeId = 3
@@ -257,7 +260,7 @@ def make_tempC(report_params: QueryDict, lang_id: int) -> bool:
     return True
 
 
-def get_tempC() -> list[dict]:  # noqa: N802
+def get_temp_table() -> list[dict]:
     """Retrieve the previously generated report in tempC.
 
     Returns:
@@ -265,7 +268,13 @@ def get_tempC() -> list[dict]:  # noqa: N802
     """
     with connections['questionnaire'].cursor() as conn:
         conn.execute(
-            'SELECT patientId as patient_id, questionId as question_id, question, Answer as answer, creationDate as creation_date,	lastUpdated as last_updated FROM tempC ORDER BY last_updated ASC',  # noqa: E501
+            """
+            SELECT patientId as patient_id, questionId as question_id,
+            question, Answer as answer, creationDate as creation_date,
+            lastUpdated as last_updated
+            FROM tempC
+            ORDER BY last_updated ASC
+            """,
         )
         q_dict = dictfetchall(conn)
     return q_dict

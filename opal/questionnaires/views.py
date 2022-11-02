@@ -13,7 +13,7 @@ import pandas as pd
 from easyaudit.models import RequestEvent
 
 from ..users.models import User
-from .backend import get_all_questionnaire, get_questionnaire_detail, get_tempC, make_tempC
+from .backend import get_all_questionnaire, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .models import ExportReportPermission
 from .tables import ReportTable
 
@@ -101,7 +101,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:
+    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
         """Override class method and fetch report for the requested questionnaire.
 
         Args:
@@ -116,15 +116,15 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
 
         requestor = User.objects.get(username=request.user)
 
-        #  make_tempC() creates a temporary table in the QuestionnaireDB containing the desired data report
+        #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
         #  the function returns a boolean indicating if the table could be succesfully created given the query params
-        complete_params_check = make_tempC(request.POST, language_map[requestor.language])
+        complete_params_check = make_temp_tables(request.POST, language_map[requestor.language])
 
         if not complete_params_check:  # fail with 400 error if query parameters are incomplete
             self.logger.error('Server received incomplete query parameters.')
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
-        report = get_tempC()  # after verifying parameters were complete, retrieve the prepared data
+        report = get_temp_table()  # after verifying parameters were complete, retrieve the prepared data
 
         report_table = ReportTable(report)
         context.update(
@@ -142,11 +142,11 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             url=request.path,
         ).order_by('-datetime').first()
         request_event.query_string = {
-            f"questionnaireid: {request.POST.get('questionnaireid')}",
-            f"startdate: {request.POST.get('start')}",
-            f"enddate: {request.POST.get('end')}",
-            f"patientIdFilter: {request.POST.getlist('patientIDs')}",
-            f"questionIdFilter: {request.POST.getlist('questionIDs')}",
+            'questionnaireid: {0}'.format(request.POST.get('questionnaireid')),
+            'startdate: {0}'.format(request.POST.get('start')),
+            'enddate: {0}'.format(request.POST.get('end')),
+            'patientIdFilter: {0}'.format(request.POST.getlist('patientIDs')),
+            'questionIdFilter: {0}'.format(request.POST.getlist('questionIDs')),
         }
         request_event.save()
 
@@ -180,7 +180,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         qid = request.POST.get('questionnaireid')
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        report_dict = get_tempC()
+        report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
 
         with tempfile.NamedTemporaryFile() as temp_file:
@@ -220,7 +220,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         tabs = request.POST.get('tabs')
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
-        report_dict = get_tempC()
+        report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
 
         with tempfile.NamedTemporaryFile(suffix='.xlsx') as temp_file:
