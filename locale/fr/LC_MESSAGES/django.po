@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-16 10:17-0400\n"
+"POT-Creation-Date: 2022-11-03 01:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,6 +64,10 @@ msgid "Relationship Types"
 msgstr "Types de Relations"
 
 #: opal/templates/layouts/base.html
+msgid "Pending Requests"
+msgstr ""
+
+#: opal/templates/layouts/base.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
@@ -114,3 +118,8 @@ msgstr "Administration d'Opal"
 #: opal/urls.py
 msgid "Opal Backend Admin"
 msgstr "Administrateur principal d'Opal"
+
+#: site/translation/index.html
+#, python-format
+msgid "Second translation string with %(param)s."
+msgstr ""
