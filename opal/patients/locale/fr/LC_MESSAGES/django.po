@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -204,8 +203,6 @@ msgid "No relationship types defined."
 msgstr ""
 
 #: opal/patients/tables.py
-#, fuzzy
-#| msgid "Pending"
 msgid "Pending Since"
 msgstr "En attendant"
 
