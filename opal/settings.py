@@ -333,9 +333,6 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
 
-# ePRO Data Extractions tool URL
-EPRO_DATA_EXTRACTIONS_URL = env.url('EPRO_URL').geturl()
-
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
@@ -382,3 +379,9 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
+
+
+# QUESTIONNAIRES/EXPORT REPORTS
+# ------------------------------------------------------------------------------
+# List of accounts to be excluded from the questionnaires list when not in debug mode
+TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS')
