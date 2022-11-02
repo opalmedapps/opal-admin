@@ -89,14 +89,13 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session')
 def django_db_setup(django_db_blocker: Any) -> None:  # noqa: PT004
     """Add test_QuestionnaireDB setup by executing code in tests/sql.
 
     Args:
         django_db_blocker (Any): pytest fixture to allow database access here only
     """
-    print('**************************** DEBUG _django_db_setup **********************************')
     # load test questionnaire db sql
     with open('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1') as handle:
         sql_content = handle.read()

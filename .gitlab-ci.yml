@@ -36,7 +36,7 @@ before_script:
   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
   # set up QuestionnaireDB connection as well
-  - sed -i "s/^LEGACY_QUESTIONNAIRE_NAME=.*/LEGACY_QUESTIONNAIRE_NAME=QuestionnaireDB/" .env
+  - sed -i "s/^LEGACY_QUESTIONNAIRE_NAME=.*/LEGACY_QUESTIONNAIRE_NAME=test_QuestionnaireDB/" .env
   # generate secret key
   - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
   - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
@@ -102,7 +102,6 @@ test:
     - apt update && apt-get install -y default-mysql-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
   needs:
