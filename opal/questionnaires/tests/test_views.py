@@ -112,19 +112,6 @@ def test_detail_report_invalid_params(user_client: Client, admin_user: AbstractU
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_download_csv_valid_content(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a post call to download csv returns correct content."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
-        path=reverse('questionnaires:reports-download-csv'),
-        data={
-            'questionnaireid': ['11'],
-        },
-    )
-    assert response.status_code == HTTPStatus.OK
-    assert response['content-type'] == 'text/csv'
-
-
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
     """Ensure that an unauthenticated (not admin) user can't view the Export Reports page."""
     user = django_user_model.objects.create(username='test_export_user')
@@ -186,3 +173,25 @@ def test_reportlist_visible_authenticated(user_client: Client, admin_user: Abstr
     response = user_client.get(reverse('questionnaires:reports-list', kwargs={'username': admin_user.username}))
 
     assert response.status_code == HTTPStatus.OK
+
+
+def test_report_filter_invalid_key_format(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure bad request error if bad key format."""
+    user_client.force_login(admin_user)
+    response = user_client.post(
+        path=reverse('questionnaires:reports-filter'),
+        data={'questionnaireid': ['fish']},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_report_filter_missing_key(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure bad request error if missing key."""
+    user_client.force_login(admin_user)
+    response = user_client.post(
+        path=reverse('questionnaires:reports-filter'),
+        data={'badkey': ['11']},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
