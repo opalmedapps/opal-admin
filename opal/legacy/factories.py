@@ -34,6 +34,9 @@ class LegacyPatientFactory(DjangoModelFactory):
     dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
     ssn = '123456'
+    registrationdate = timezone.make_aware(datetime(2018, 1, 1))
+    language = 'EN'
+    email = 'test@test.com'
 
 
 class LegacyNotificationFactory(DjangoModelFactory):
