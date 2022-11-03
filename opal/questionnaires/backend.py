@@ -11,7 +11,7 @@ from django.http.request import QueryDict
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
 
-test_accounts = settings.TEST_PATIENTS
+test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
 
 
 def _getdescription(qid: int, lang_id: int) -> Any:
@@ -116,7 +116,7 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
                 date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
                 getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
                 from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                where AQ.questionnaireId = %s and AQ.patientId not in %s and AQ.`status` = 2
+                where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.`status` = 2
                 and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
                 and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid, test_accounts],
             )
@@ -195,7 +195,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                 conn.execute(
                     """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                     date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                    QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                    getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
                     from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
                     where AQ.questionnaireId = %s and AQ.patientId in (%s)
                     and AQ.lastUpdated and AQ.`status` = 2
@@ -208,9 +208,9 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                 conn.execute(
                     """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
                     date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                    QuestionnaireDB.getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                    getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
                     from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                    where AQ.questionnaireId = %s and AQ.patientId not in %s and AQ.patientId in (%s)
+                    where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.patientId in (%s)
                     and AQ.lastUpdated and AQ.`status` = 2
                     and cast(AQ.lastUpdated as date) BETWEEN %s and %s
                     and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
@@ -227,31 +227,31 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
             conn.execute('create index idx_B on temp (typeId)')
             conn.execute(
                 """create table tempC(SELECT A.*, answerTextBox.VALUE AS Answer
-                FROM temp A, QuestionnaireDB.answerTextBox
+                FROM temp A, answerTextBox
                 WHERE answerTextBox.answerId = A.AnswerID and A.typeId = 3
                 UNION
                 SELECT A.*, answerSlider.VALUE AS Answer
-                FROM temp A, QuestionnaireDB.answerSlider
+                FROM temp A, answerSlider
                 WHERE answerSlider.answerId = A.AnswerID and A.typeId = 2
                 UNION
                 SELECT A.*, answerDate.VALUE AS Answer
-                FROM temp A, QuestionnaireDB.answerDate
+                FROM temp A, answerDate
                 WHERE answerDate.answerId = A.AnswerID and A.typeId = 7
                 UNION
                 SELECT A.*, answerTime.VALUE AS Answer
-                FROM temp A, QuestionnaireDB.answerTime
+                FROM temp A, answerTime
                 WHERE answerTime.answerId = A.AnswerID and A.typeId = 6
                 UNION
-                SELECT A.*, QuestionnaireDB.getDisplayName(rbOpt.description, %s) AS Answer
-                FROM temp A, QuestionnaireDB.answerRadioButton aRB, QuestionnaireDB.radioButtonOption rbOpt
+                SELECT A.*, getDisplayName(rbOpt.description, %s) AS Answer
+                FROM temp A, answerRadioButton aRB, radioButtonOption rbOpt
                 WHERE aRB.answerId = A.AnswerID AND rbOpt.ID = aRB.`value` and A.typeId = 4
                 UNION
-                Select A.*, QuestionnaireDB.getDisplayName(cOpt.description, %s) AS Answer
-                from temp A, QuestionnaireDB.answerCheckbox aC, QuestionnaireDB.checkboxOption cOpt
+                Select A.*, getDisplayName(cOpt.description, %s) AS Answer
+                from temp A, answerCheckbox aC, checkboxOption cOpt
                 where aC.answerId = A.AnswerID AND cOpt.ID = aC.`value` and A.typeId = 1
                 UNION
-                Select A.*, QuestionnaireDB.getDisplayName(lOpt.description, %s) AS Answer
-                from temp A, QuestionnaireDB.answerLabel aL, QuestionnaireDB.labelOption lOpt
+                Select A.*, getDisplayName(lOpt.description, %s) AS Answer
+                from temp A, answerLabel aL, labelOption lOpt
                 where aL.answerId = A.AnswerID AND lOpt.ID = aL.`value` and A.typeId = 5)
                 """, [lang_id, lang_id, lang_id],
             )
