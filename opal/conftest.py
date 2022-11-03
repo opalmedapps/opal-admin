@@ -102,7 +102,7 @@ def _django_db_setup(django_db_setup: Any, django_db_blocker: Any) -> None:
     # db_name = f"test_{settings.DATABASES['questionnaire']['NAME']}"
     # settings.DATABASES['questionnaire']['NAME'] =
     # load test questionnaire db sql
-    with open('opal/tests/sql/test_QuestionnaireDB_.sql', encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1').open() as handle:
         sql_content = handle.read()
         handle.close()
 
