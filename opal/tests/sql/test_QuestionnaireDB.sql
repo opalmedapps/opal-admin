@@ -14,8 +14,8 @@
 
 
 -- Dumping database structure for test_QuestionnaireDB
-DROP DATABASE IF EXISTS `test_QuestionnaireDB`;
-CREATE DATABASE IF NOT EXISTS `test_QuestionnaireDB` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+-- DROP DATABASE IF EXISTS `test_QuestionnaireDB`;
+-- CREATE DATABASE IF NOT EXISTS `test_QuestionnaireDB` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 USE `test_QuestionnaireDB`;
 
 -- Dumping structure for table test_QuestionnaireDB.answer
