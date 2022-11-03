@@ -90,7 +90,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def _django_db_setup(django_db_setup: Any, django_db_blocker: Any) -> None:
+def _django_db_setup(django_db_blocker: Any) -> None:
     """Add test_QuestionnaireDB setup by executing code in tests/sql.
 
     Args:
@@ -99,8 +99,6 @@ def _django_db_setup(django_db_setup: Any, django_db_blocker: Any) -> None:
     from django.conf import settings  # noqa: WPS433
     print(settings.DATABASES['questionnaire'])
     print(connections['questionnaire'])
-    # db_name = f"test_{settings.DATABASES['questionnaire']['NAME']}"
-    # settings.DATABASES['questionnaire']['NAME'] =
     # load test questionnaire db sql
     with Path('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1').open() as handle:
         sql_content = handle.read()
