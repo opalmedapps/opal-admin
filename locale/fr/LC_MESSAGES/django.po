@@ -65,7 +65,7 @@ msgstr "Types de Relations"
 
 #: opal/templates/layouts/base.html
 msgid "Pending Requests"
-msgstr ""
+msgstr "Requête en attente"
 
 #: opal/templates/layouts/base.html
 msgid "Questionnaires"
