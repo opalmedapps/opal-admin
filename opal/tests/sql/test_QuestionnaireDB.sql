@@ -335,6 +335,32 @@ CREATE TABLE IF NOT EXISTS `answerCheckbox` (
   CONSTRAINT `fk_answerCheckbox_value_checkboxOption_ID` FOREIGN KEY (`value`) REFERENCES `checkboxOption` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=2567 DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `answerDate`;
+CREATE TABLE `answerDate` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `answerId` bigint(20) NOT NULL,
+  `value` datetime NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `fk_answerDate_answerId_answer_ID` (`answerId`),
+  CONSTRAINT `fk_answerDate_answerId_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+DROP TABLE IF EXISTS `answerLabel`;
+CREATE TABLE `answerLabel` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `answerId` bigint(20) NOT NULL,
+  `selected` tinyint(4) NOT NULL DEFAULT 1,
+  `posX` int(11) NOT NULL,
+  `posY` int(11) NOT NULL,
+  `intensity` int(11) NOT NULL,
+  `value` bigint(20) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `fk_answerLabel_answer_ID` (`answerId`),
+  KEY `fk_answerLabel_labelOption_ID` (`value`),
+  CONSTRAINT `fk_answerLabel_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_answerLabel_labelOption_ID` FOREIGN KEY (`value`) REFERENCES `labelOption` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
 -- Dumping structure for table test_QuestionnaireDB.answerQuestionnaire
 DROP TABLE IF EXISTS `answerQuestionnaire`;
 CREATE TABLE IF NOT EXISTS `answerQuestionnaire` (
@@ -3138,6 +3164,16 @@ INSERT INTO `answerTextBox` (`ID`, `answerId`, `value`) VALUES
 	(5230, 46276, 'test');
 /*!40000 ALTER TABLE `answerTextBox` ENABLE KEYS */;
 
+DROP TABLE IF EXISTS `answerTime`;
+CREATE TABLE `answerTime` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `answerId` bigint(20) NOT NULL,
+  `value` time NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `fk_answerTime_answerId_answer_ID` (`answerId`),
+  CONSTRAINT `fk_answerTime_answerId_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
 -- Dumping structure for table test_QuestionnaireDB.checkbox
 DROP TABLE IF EXISTS `checkbox`;
 CREATE TABLE IF NOT EXISTS `checkbox` (
@@ -4256,6 +4292,35 @@ BEGIN
 
 	Return wsReturn;
 END;
+
+DROP TABLE IF EXISTS `label`;
+CREATE TABLE `label` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `questionId` bigint(20) NOT NULL,
+  `displayIntensity` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0 = patient cannot select intensity, 1 = patient can select intensity',
+  `pathImage` varchar(512) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `fk_label_questionId_question_ID` (`questionId`),
+  CONSTRAINT `fk_label_questionId_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+DROP TABLE IF EXISTS `labelOption`;
+CREATE TABLE `labelOption` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `parentTableId` bigint(20) NOT NULL,
+  `description` bigint(20) NOT NULL,
+  `posInitX` int(11) NOT NULL DEFAULT 0,
+  `posInitY` int(11) NOT NULL DEFAULT 0,
+  `posFinalX` int(11) NOT NULL DEFAULT 0,
+  `posFinalY` int(11) NOT NULL DEFAULT 0,
+  `intensity` int(11) NOT NULL DEFAULT 0,
+  `order` int(11) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`ID`),
+  KEY `fk_labelOption_parentTableId_label_ID` (`parentTableId`),
+  KEY `fk_labelOption_description_dictionary_contentId` (`description`),
+  CONSTRAINT `fk_labelOption_description_dictionary_contentId` FOREIGN KEY (`description`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_labelOption_parentTableId_label_ID` FOREIGN KEY (`parentTableId`) REFERENCES `label` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping structure for table test_QuestionnaireDB.language
 DROP TABLE IF EXISTS `language`;
