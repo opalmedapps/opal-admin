@@ -57,7 +57,6 @@ class Relationship(DjangoModelFactory):
     patient = SubFactory(Patient)
     caregiver = SubFactory(CaregiverProfile)
     type = SubFactory(RelationshipType)  # noqa: A003
-    status = models.RelationshipStatus.PENDING
     request_date = datetime.date.today()
     start_date = datetime.date(2020, 1, 1)
     end_date = datetime.date(2020, 5, 1)

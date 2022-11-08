@@ -10,12 +10,13 @@ from . import views
 app_name = 'patients'
 
 urlpatterns = [
-    # Relationship Types Pages
+    # Manage Caregiver Access Pages
     path(
-        'relationships/',
-        views.RelationshipListView.as_view(),
-        name='relationship-list',
+        'relationships/pending/',
+        views.PendingRelationshipListView.as_view(),
+        name='relationships-pending-list',
     ),
+    # Relationship Types Pages
     path(
         'relationship-types/',
         views.RelationshipTypeListView.as_view(),

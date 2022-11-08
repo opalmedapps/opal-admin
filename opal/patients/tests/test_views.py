@@ -30,8 +30,7 @@ def test_relationshiptypes_list(user_client: Client) -> None:
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
 
     response = user_client.get(reverse('patients:relationshiptype-list'))
-    content = response.content.decode('utf-8')
-    print(content)
+    response.content.decode('utf-8')
 
     assertQuerysetEqual(response.context['relationshiptype_list'], types)
 
@@ -111,21 +110,21 @@ def test_relationshiptype_delete(user_client: Client) -> None:
 
 def test_relationships_list_table(user_client: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationship-list'))
+    response = user_client.get(reverse('patients:relationships-pending-list'))
 
-    assert response.context['table'].__class__ == tables.RelationshipTable
+    assert response.context['table'].__class__ == tables.PendingRelationshipListTable
 
 
 def test_relationships_list_empty(user_client: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = user_client.get(reverse('patients:relationship-list'))
+    response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert response.status_code == HTTPStatus.OK
 
     assertContains(response, 'No caregiver pending access requests.')
 
 
-def test_relationships_list(user_client: Client) -> None:
+def test_relationships_pending_list(user_client: Client) -> None:
     """Ensures Relationships with pending status are listed."""
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
     caregivertype3 = factories.RelationshipType(name='caregiver_3')
@@ -134,7 +133,7 @@ def test_relationships_list(user_client: Client) -> None:
         factories.Relationship(type=caregivertype3),
     ]
 
-    response = user_client.get(reverse('patients:relationship-list'))
+    response = user_client.get(reverse('patients:relationships-pending-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(response.context['relationship_list']), relationships)
@@ -152,6 +151,6 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = user_client.get(reverse('patients:relationship-list'))
+    response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
