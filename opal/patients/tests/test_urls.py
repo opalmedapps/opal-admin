@@ -27,3 +27,10 @@ def test_relationshiptype_delete() -> None:
     url = '/patients/relationship-type/1234/delete/'
     assert reverse('patients:relationshiptype-delete', kwargs={'pk': 1234}) == url
     assert resolve(url).view_name == 'patients:relationshiptype-delete'
+
+
+def test_relationships_pending_list() -> None:
+    """Ensures a url for relationships exists."""
+    url = '/patients/relationships/pending/'
+    assert reverse('patients:relationships-pending-list') == url
+    assert resolve(url).view_name == 'patients:relationships-pending-list'
