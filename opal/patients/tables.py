@@ -35,7 +35,7 @@ class RelationshipTypeTable(tables.Table):
         }
 
 
-class PendingRelationshipListTable(tables.Table):
+class PendingRelationshipTable(tables.Table):
     """
     A table for relationships.
 

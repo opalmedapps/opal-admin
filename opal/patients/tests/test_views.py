@@ -112,7 +112,7 @@ def test_relationships_list_table(user_client: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
-    assert response.context['table'].__class__ == tables.PendingRelationshipListTable
+    assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
 def test_relationships_list_empty(user_client: Client) -> None:

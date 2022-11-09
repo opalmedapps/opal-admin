@@ -7,7 +7,7 @@ from django_tables2 import SingleTableView
 from opal.core.views import CreateUpdateView
 
 from .models import Relationship, RelationshipStatus, RelationshipType
-from .tables import PendingRelationshipListTable, RelationshipTypeTable
+from .tables import PendingRelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -58,7 +58,7 @@ class PendingRelationshipListView(SingleTableView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = Relationship
-    table_class = PendingRelationshipListTable
+    table_class = PendingRelationshipTable
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
