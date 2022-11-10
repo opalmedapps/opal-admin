@@ -9,7 +9,7 @@ from django.urls.conf import include
 
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView
+from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView, UpdateDeviceView
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
@@ -80,6 +80,11 @@ urlpatterns = [
         'institutions/<int:pk>/terms-of-use/',
         settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
         name='institutions-terms-of-use',
+    ),
+    path(
+        'caregivers/devices/<str:device_id>/',
+        UpdateDeviceView.as_view(),
+        name='devices-update-or-create',
     ),
     path('', include(router.urls)),
 ]
