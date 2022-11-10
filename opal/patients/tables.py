@@ -5,7 +5,7 @@ import django_tables2 as tables
 
 from opal.users.models import User
 
-from .models import Patient, RelationshipType
+from .models import Patient, Relationship, RelationshipType
 
 
 class RelationshipTypeTable(tables.Table):
@@ -63,6 +63,30 @@ class ExistingUserTable(tables.Table):
         fields = ['first_name', 'last_name', 'email', 'phone_number']
         empty_text = _('No existing user could be found.')
         orderable = False
+
+
+class PendingRelationshipTable(tables.Table):
+    """
+    A table for relationships.
+
+    Defines an additional action column for action buttons.
+    """
+
+    actions = tables.Column(
+        verbose_name=_('Actions'),
+        orderable=False,
+    )
+    type = tables.Column(  # noqa: A003
+        verbose_name=_('Relationship'),
+    )
+    request_date = tables.Column(
+        verbose_name=_('Pending Since'),
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['caregiver', 'type', 'patient', 'request_date', 'form_required', 'actions']
+        empty_text = _('No caregiver pending access requests.')
         attrs = {
             'class': 'table table-bordered table-hover',
             'thead': {

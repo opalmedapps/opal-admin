@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-31 16:59+0000\n"
+"POT-Creation-Date: 2022-11-09 14:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -195,7 +195,7 @@ msgstr "Identifiant existant"
 
 #: opal/patients/models.py
 msgid "Patient"
-msgstr "Patients"
+msgstr "Patient"
 
 #: opal/patients/models.py
 msgid "Pending"
@@ -246,7 +246,7 @@ msgstr "Date de début de la relation"
 msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
-#: opal/patients/models.py
+#: opal/patients/models.py opal/patients/tables.py
 msgid "Relationship"
 msgstr "Relation"
 
@@ -301,6 +301,14 @@ msgstr "Aucun utilisateur existant n'a pu être trouvé."
 #: opal/patients/templates/patients/access_request/access_request.html
 msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
+
+#: opal/patients/tables.py
+msgid "Pending Since"
+msgstr "En attendant"
+
+#: opal/patients/tables.py
+msgid "No caregiver pending access requests."
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -366,3 +374,7 @@ msgid "Please note multiple MRNs need to be merged by medical records."
 msgstr ""
 "Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
 "médicaux."
+
+#: opal/patients/templates/patients/relationships/pending/list.html
+msgid "Pending Caregiver Access Requests"
+msgstr ""

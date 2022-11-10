@@ -77,6 +77,10 @@ msgid "Access Request"
 msgstr "Demande d'accès"
 
 #: opal/templates/layouts/base.html
+msgid "Pending Requests"
+msgstr "Requête en attente"
+
+#: opal/templates/layouts/base.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 

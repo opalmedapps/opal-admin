@@ -19,8 +19,8 @@ from opal.core.views import CreateUpdateView
 from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
 
-from .models import RelationshipType, Site
-from .tables import ExistingUserTable, PatientTable, RelationshipTypeTable
+from .models import Relationship, RelationshipStatus, RelationshipType, Site
+from .tables import ExistingUserTable, PatientTable, PendingRelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -254,3 +254,13 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         context.update({'table': PatientTable([patient_record])})
         return context
+
+
+class PendingRelationshipListView(SingleTableView):
+    """This view provides a page that displays a list of `RelationshipType` objects."""
+
+    model = Relationship
+    table_class = PendingRelationshipTable
+    ordering = ['request_date']
+    template_name = 'patients/relationships/pending/list.html'
+    queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)

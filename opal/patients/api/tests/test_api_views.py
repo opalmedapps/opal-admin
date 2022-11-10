@@ -24,12 +24,11 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
     caregiver2 = CaregiverProfile()
     relationship1 = Relationship(patient=patient, caregiver=caregiver1)
     relationship2 = Relationship(patient=patient, caregiver=caregiver2, status='CON')
-
+    api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
     response = api_client.get(reverse(
         'api:caregivers-list',
-        kwargs={'legacy_patient_id': patient.legacy_id},
+        kwargs={'legacy_id': patient.legacy_id},
     ))
-
     assert response.status_code == HTTPStatus.OK
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,
@@ -53,12 +52,14 @@ def test_my_caregiver_list_failure(api_client: APIClient, admin_user: AbstractUs
     caregiver2 = CaregiverProfile()
     Relationship(patient=patient, caregiver=caregiver1)
     Relationship(patient=patient, caregiver=caregiver2)
+    api_client.credentials(HTTP_APPUSERID=caregiver1.user.username)
+
     response = api_client.get(reverse(
         'api:caregivers-list',
-        kwargs={'legacy_patient_id': 1654161},
+        kwargs={'legacy_id': 1654161},
     ))
-
-    assert not response.data
+    assert response.data['detail'] == 'Caregiver does not have a relationship with the patient.'
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> None:
