@@ -200,7 +200,7 @@ def test_device_same_caregiver_diff_devices() -> None:
 def test_device_push_token_length() -> None:
     """Ensure a device push token can't be greater than 256 characters long."""
     caregiver = factories.CaregiverProfile(id=1)
-    device = factories.Device(caregiver=caregiver, device_id='1a2b3c')
+    device = factories.Device(caregiver=caregiver)
     device.push_token = ''.join('a' for _ in range(260))
     with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):  # type: ignore[arg-type]
         device.save()

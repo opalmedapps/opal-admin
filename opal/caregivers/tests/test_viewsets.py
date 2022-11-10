@@ -1,4 +1,5 @@
 """Test module for security question api endpoints."""
+import json
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
@@ -6,7 +7,8 @@ from django.urls import reverse
 
 from rest_framework.test import APIClient
 
-from opal.caregivers.factories import CaregiverProfile, SecurityAnswer, SecurityQuestion
+from opal.caregivers.factories import CaregiverProfile, Device, SecurityAnswer, SecurityQuestion
+from opal.caregivers.models import DeviceType
 
 
 def test_get_all_active_security_questions(api_client: APIClient, admin_user: AbstractUser) -> None:
@@ -137,3 +139,193 @@ def test_verify_answer_failure(api_client: APIClient, admin_user: AbstractUser) 
         format='json',
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_create_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test creating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver)
+
+    data = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data),
+        content_type='application/json',
+    )
+    device.full_clean()
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_create_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test failure for creating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver)
+
+    data = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': 'bad_caregiver_pk',
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data),
+        content_type='application/json',
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_update_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    data_one = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response_one = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_one),
+        content_type='application/json',
+    )
+    # Change device data for full update action
+    data_two = {
+        'device_id': device.device_id,
+        'type': DeviceType.ANDROID,
+        'caregiver': caregiver.id,
+        'is_trusted': True,
+        'push_token': 'bbbb2222',
+    }
+    response_two = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_two),
+        content_type='application/json',
+    )
+    assert response_one.status_code == HTTPStatus.OK
+    assert response_two.status_code == HTTPStatus.OK
+
+
+def test_update_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test failure for updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    data_one = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response_one = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_one),
+        content_type='application/json',
+    )
+    # Input invalid data
+    data_two = {
+        'device_id': device.device_id,
+        'type': DeviceType.ANDROID,
+        'caregiver': caregiver.id,
+        'is_trusted': 'fish',
+        'push_token': 'bbbb2222',
+    }
+    response_two = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_two),
+        content_type='application/json',
+    )
+    assert response_one.status_code == HTTPStatus.OK
+    assert response_two.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_partial_update_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test partial updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver)
+    data_one = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response_one = api_client.patch(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_one),
+        content_type='application/json',
+    )
+    assert response_one.status_code == HTTPStatus.OK
+
+
+def test_partial_update_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test failure for partial updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = CaregiverProfile(id=1)
+    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    data_one = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+    response_one = api_client.patch(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_one),
+        content_type='application/json',
+    )
+    # Input invalid data
+    data_two = {
+        'device_id': device.device_id,
+        'caregiver': caregiver.id,
+        'is_trusted': 'fish',
+    }
+    response_two = api_client.patch(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data_two),
+        content_type='application/json',
+    )
+    assert response_one.status_code == HTTPStatus.OK
+    assert response_two.status_code == HTTPStatus.BAD_REQUEST
