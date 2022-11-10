@@ -16,12 +16,11 @@ from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
-from opal.patients.forms import ConfirmPatientForm, RequestorDetailsForm, SearchForm, SelectSiteForm
-from opal.patients.tables import PatientTable
+from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
 
 from .models import RelationshipType, Site
-from .tables import RelationshipTypeTable
+from .tables import ExistingUserTable, PatientTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -78,16 +77,31 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
     model = Site
     form_list = [
-        ('site', SelectSiteForm),
-        ('search', SearchForm),
-        ('confirm', ConfirmPatientForm),
-        ('relationship', RequestorDetailsForm),
+        ('site', forms.SelectSiteForm),
+        ('search', forms.SearchForm),
+        ('confirm', forms.ConfirmPatientForm),
+        ('relationship', forms.RequestorDetailsForm),
+        ('account', forms.RequestorAccountForm),
+        ('existing', forms.ExistingUserForm),
+        ('finished', forms.ConfirmExistingUserForm),
     ]
+    form_title_list = {
+        'site': _('Hospital Information'),
+        'search': _('Patient Details'),
+        'confirm': _('Patient Details'),
+        'relationship': _('Requestor Details'),
+        'account': _('Requestor Details'),
+        'existing': _('Requestor Details'),
+        'finished': _('Requestor Details'),
+    }
     template_list = {
         'site': 'patients/access_request/access_request.html',
         'search': 'patients/access_request/access_request.html',
         'confirm': 'patients/access_request/access_request.html',
         'relationship': 'patients/access_request/access_request.html',
+        'account': 'patients/access_request/access_request.html',
+        'existing': 'patients/access_request/access_request.html',
+        'finished': 'patients/access_request/access_request.html',
     }
 
     def get_template_names(self) -> List[str]:
@@ -127,15 +141,12 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             the template context for a step
         """
         context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
-        if self.steps.current == 'site':
-            context.update({'header_title': _('Hospital Information')})
-        elif self.steps.current == 'search':
-            context.update({'header_title': _('Patient Details')})
-        elif self.steps.current == 'confirm':
-            context.update({'header_title': _('Patient Details')})
+        if self.steps.current == 'confirm':
             context = self._update_patient_confirmation_context(context)
-        elif self.steps.current == 'relationship':
-            context.update({'header_title': _('Requestor Details')})
+        if self.steps.current == 'finished':
+            user_record = self.get_cleaned_data_for_step(self.steps.prev)['user_record']
+            context.update({'table': ExistingUserTable([user_record])})
+        context.update({'header_title': self.form_title_list[self.steps.current]})
         return context
 
     def get_form_initial(self, step: str) -> dict[str, str]:
@@ -179,6 +190,11 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
             kwargs['date_of_birth'] = patient_record.date_of_birth
+        elif step == 'existing':
+            relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
+            kwargs['relationship_type'] = relationship_type
+            patient_record = self.get_cleaned_data_for_step('search')['patient_record']
+            kwargs['patient_record'] = patient_record
         return kwargs
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:

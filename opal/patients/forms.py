@@ -8,12 +8,14 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
+from dateutil.relativedelta import relativedelta
 
 from opal.core import validators
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.users.models import Caregiver
 
 from . import constants
-from .models import Patient, RelationshipType, Site
+from .models import CaregiverProfile, Patient, Relationship, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -33,7 +35,7 @@ class SelectSiteForm(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)   # noqa: WPS204
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
@@ -54,13 +56,13 @@ def _patient_data() -> OIEPatientData:
         patient data structure in 'OIEPatientData'
     """
     return OIEPatientData(
-        date_of_birth=datetime.strptime('2007-01-01 09:20:30', '%Y-%m-%d %H:%M:%S'),
-        first_name='SANDRA',
-        last_name='TESTMUSEMGHPROD',
+        date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        first_name='Marge',
+        last_name='Simpson',
         sex='F',
         alias='',
-        ramq='TESS53510111',
-        ramq_expiration=datetime.strptime('2018-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+        ramq='MARG99991313',
+        ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -314,7 +316,7 @@ class RequestorDetailsForm(forms.Form):
     relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all(),
         widget=AvailableRadioSelect,
-        label=_('Caregiver relationship type'),
+        label=_('Relationship types'),
     )
 
     requestor_form = forms.BooleanField(
@@ -345,7 +347,7 @@ class RequestorDetailsForm(forms.Form):
                 css_class='form-row',
             ),
             ButtonHolder(
-                Submit('wizard_goto_step', _('Generate QR Code')),
+                Submit('wizard_goto_step', _('Next')),
             ),
         )
         self.age = Patient.calculate_age(date_of_birth=date_of_birth)
@@ -363,3 +365,221 @@ class RequestorDetailsForm(forms.Form):
         user_select_type = RelationshipType.objects.get(name=type_field)
         if user_select_type.form_required and not requestor_form_field:
             self.add_error('requestor_form', _('Form request is required.'))
+
+
+class RequestorAccountForm(forms.Form):
+    """This `RequestorAccountForm` provides a select box to select existed user or new user."""
+
+    user_type = forms.ChoiceField(
+        choices=constants.TYPE_USERS,
+        widget=forms.RadioSelect,
+        label=_('New User or Existing User?'),
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for user type select box.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('user_type', css_class='form-group col-md-3 mb-0'),
+                css_class='form-row',
+            ),
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Next')),
+            ),
+        )
+
+
+class ExistingUserForm(forms.Form):
+    """This `ExistingUserForm` provides a layout to find existing users."""
+
+    user_email = forms.CharField(
+        widget=forms.TextInput(),
+        label=_('Email Address'),
+    )
+
+    user_phone = forms.CharField(
+        widget=forms.TextInput(),
+        label=_('Phone Number'),
+    )
+
+    user_record = forms.JSONField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
+    def __init__(
+        self,
+        relationship_type: RelationshipType,
+        patient_record: OIEPatientData,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialize the layout for existing user form.
+
+        Args:
+            relationship_type: caregiver relationship type
+            patient_record: patient record retrieved from OIE service
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('user_email', css_class='form-group col-md-3 mb-0'),
+                Column('user_phone', css_class='form-group col-md-3 mb-0'),
+                css_class='form-row',
+            ),
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Find Account')),
+            ),
+        )
+        self.relationship_type = relationship_type
+        self.patient_record = patient_record
+
+    def clean(self) -> None:
+        """Validate the user selection."""
+        super().clean()
+        user_email_field = self.cleaned_data.get('user_email')
+        user_phone_field = self.cleaned_data.get('user_phone')
+        error_message = _(
+            'Opal user was not found in your database. '
+            + 'This may be an out-of-hospital account. '
+            + 'Please proceed to generate a new QR code. '
+            + 'Inform the user they must register at the Registration website.',
+        )
+        # phone and email validation
+        is_email_valid = True
+        is_phone_valid = True
+        try:
+            forms.EmailField().clean(user_email_field)
+        except ValidationError as email_error_msg:
+            self.add_error('user_email', email_error_msg)
+            is_email_valid = False
+        try:
+            validators.validate_phone_number(user_phone_field)
+        except ValidationError as phone_error_msg:
+            self.add_error('user_phone', phone_error_msg)
+            is_phone_valid = False
+
+        if is_email_valid and is_phone_valid:
+            self._set_requestor_relationship(
+                user_email_field,
+                user_phone_field,
+                error_message,
+            )
+
+    def _set_requestor_relationship(
+        self,
+        user_email_field: Any,
+        user_phone_field: Any,
+        error_message: str,
+    ) -> None:
+        """
+        Check if there is no 'Self' relationship related to this requestor himself/herself.
+
+        If no, create the relationship record with the value 'Self'.
+        If yes, show user details.
+
+        Args:
+            user_email_field: cleaned data for user email
+            user_phone_field: cleaned data for phone number
+            error_message: error message if the caregiver does not exist
+
+        Raises:
+            ValidationError: If the caregiver cannot be found.
+        """
+        # Search user info by both email and phone number in our django User model
+        try:
+            user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
+        except Caregiver.DoesNotExist:
+            raise ValidationError(error_message)
+
+        # Check if there is no 'Self' relationship related to this requestor himself/herself
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
+        relationships = Relationship.objects.get_relationship_by_patient_caregiver(
+            'Self',
+            user.first_name,
+            user.last_name,
+            user.id,
+            self.patient_record.ramq,
+        )
+        # If no, create the relationship record with the value 'Self'
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
+        # TODO: I'll refactor this part based on new mockup to make it happens after generating access request
+        # TODO: I'll check patient and caregiver record and create them if not exist and then create relationship
+        if not relationships and str(self.relationship_type) == 'Self':
+            Relationship.objects.create(
+                patient=Patient.objects.get(ramq=self.patient_record.ramq),
+                caregiver=CaregiverProfile.objects.get(user_id=user.id),
+                type=self.relationship_type,
+                reason=_('Create self relationship for patient'),
+                request_date=date.today(),
+                start_date=self._set_relationship_start_date(),
+            )
+        # If yes, show user details
+        elif relationships:
+            self.cleaned_data['user_record'] = {  # type: ignore[index]
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone_number': user.phone_number,
+            }
+
+    def _set_relationship_start_date(self) -> date:
+        """
+        Calculate the start date for the relationship record.
+
+        Returns:
+            the start date
+        """
+        # Get the date 2 years ago from now
+        reference_date = date.today() - relativedelta(years=2)
+        # Calculate patient age based on reference date
+        age = Patient.calculate_age(
+            date_of_birth=self.patient_record.date_of_birth,
+            reference_date=reference_date,
+        )
+        # Get the user choice for the relationship type in the previous step
+        user_select_type = RelationshipType.objects.get(name=self.relationship_type)
+        # Return reference date if patient age is larger or otherwise return start date based on patient's age
+        if age < user_select_type.start_age:
+            reference_date = self.patient_record.date_of_birth + relativedelta(years=user_select_type.start_age)
+        return reference_date
+
+
+class ConfirmExistingUserForm(forms.Form):
+    """This `ConfirmExistingUserForm` provides a layout to confirm the user information."""
+
+    is_correct = forms.BooleanField(required=True, label=_('Correct?'))
+    is_id_checked = forms.BooleanField(required=True, label=_('ID Checked?'))
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for the checkboxes.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('is_correct', css_class='form-group col-md-2 mb-0'),
+                Column('is_id_checked', css_class='form-group col-md-2 mb-0'),
+                css_class='form-row',
+            ),
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Generate Access Request')),
+            ),
+        )
