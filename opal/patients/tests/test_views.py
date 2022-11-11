@@ -317,7 +317,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
 
 
-class TestAccessRequestView(views.AccessRequestView):
+class _TestAccessRequestView(views.AccessRequestView):
     """
     This view is to test AccessRequestView.
 
@@ -326,7 +326,7 @@ class TestAccessRequestView(views.AccessRequestView):
     It requires since the WizardView needs to be fully set up.
     """
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, 'TestAccessRequestView']:
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, '_TestAccessRequestView']:
         """
         Process the request.
 
@@ -362,7 +362,7 @@ def test_unexpected_step() -> None:
     """Test unexpected step 'search'."""
     request = _init_session()
 
-    test_view = TestAccessRequestView.as_view()
+    test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
@@ -374,7 +374,7 @@ def test_expected_step_without_session_storage() -> None:
     """Test expected step 'site' without session storage of saving user selection."""
     request = _init_session()
 
-    test_view = TestAccessRequestView.as_view()
+    test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
@@ -390,7 +390,7 @@ def test_expected_step_with_valid_id_in_session() -> None:
     factories.Site(pk=1)
     factories.Site(pk=2)
 
-    test_view = TestAccessRequestView.as_view()
+    test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
@@ -408,7 +408,7 @@ def test_expected_step_with_invalid_id_in_session() -> None:
     factories.Site(pk=1)
     factories.Site(pk=2)
 
-    test_view = TestAccessRequestView.as_view()
+    test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
@@ -420,7 +420,7 @@ def test_process_step_select_site_form() -> None:
     """Test expected form 'SelectSiteForm'."""
     request = _init_session()
 
-    test_view = TestAccessRequestView.as_view()
+    test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     site = factories.Site()
