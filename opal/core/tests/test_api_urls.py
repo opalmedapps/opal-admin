@@ -147,6 +147,28 @@ def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:caregivers-list'
 
 
+def test_verify_email(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/verify-email/` is defined."""
+    registration_code = 'CODE12345678'
+    url_path = '/{api_root}/registration/{code}/verify-email/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:verify-email', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:verify-email'
+
+
+def test_verify_email_code(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/verify-email-code/` is defined."""
+    registration_code = 'CODE12345678'
+    url_path = '/{api_root}/registration/{code}/verify-email-code/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:verify-email-code', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:verify-email-code'
+
+
 def test_retrieve_device_update(settings: SettingsWrapper) -> None:
     """Ensure `caregivers/devices/<str:device_id>/` endpoint is defined."""
     device_id = 'TJLNf6yqHdfc3yR3C2bW6546ZPl1'
