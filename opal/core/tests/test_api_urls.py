@@ -145,3 +145,11 @@ def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:caregivers-list', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:caregivers-list'
+
+
+def test_retrieve_device_update(settings: SettingsWrapper) -> None:
+    """Ensure `caregivers/devices/<str:device_id>/` endpoint is defined."""
+    device_id = 'TJLNf6yqHdfc3yR3C2bW6546ZPl1'
+    url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
+    assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
+    assert resolve(url_path).view_name == 'api:devices-update-or-create'
