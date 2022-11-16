@@ -13,6 +13,13 @@ from opal.patients.managers import HospitalPatientManager, RelationshipManager
 from . import constants
 
 
+class RoleType(models.TextChoices):
+    """Choices for role type within the [opal.caregivers.models.RelationshipType][] model."""
+
+    SELF = 'SELF', _('Self')  # noqa: WPS117
+    CAREGIVER = 'CAREGIVER', _('Caregiver')
+
+
 class RelationshipType(models.Model):
     """A type of relationship between a user (aka caregiver) and patient."""
 
@@ -45,6 +52,13 @@ class RelationshipType(models.Model):
         verbose_name=_('Form required'),
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
+    )
+    role_type = models.CharField(
+        verbose_name=_('Relationship Role Type'),
+        choices=RoleType.choices,
+        default=RoleType.CAREGIVER,
+        max_length=9,
+        help_text=_('A "Self" role type indicates a patient who owns the data that is being accessed.'),
     )
 
     class Meta:
