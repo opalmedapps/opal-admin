@@ -1,8 +1,11 @@
 """Module providing models for the patients app."""
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
@@ -259,6 +262,39 @@ class Relationship(models.Model):
         if not self.reason:
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
+
+
+@receiver(pre_save, sender=Relationship)
+def relationship_model_pre_save(sender: Relationship, instance: Relationship, **kwargs: Any) -> None:
+    """Validate the uniqueness of a relationship's relationshiptype.role_type=SELF attribute for a given Patient.
+
+    There can only be a single relationshiptype with role_type=='Self' for each Patient (logically), therefore we must
+    check this condition on each edit/creation of a new Relationship. This pre_save signal is a quick way to do that.
+
+    --> Django signals are pieces of code to be executed when a particular event occurs. Read more
+        here: https://docs.djangoproject.com/en/1.8/ref/signals/#pre-save
+
+    Args:
+        sender: The model base type (required by Django signals in the function args)
+        instance: The model instance itself
+        kwargs: Signal key word arguments
+
+    Raises:
+        ValidationError: If a new relationship is being created/edited to have role_type self and one already exists.
+    """
+    instance_type_roletype = instance.type.role_type
+    patient = instance.patient
+    if (instance_type_roletype == RoleType.SELF):
+        # User is trying to save a new Self role type for this patient
+        # Check the patient's existing Relationships for other 'Self' roletypes
+        existing_relationships_for_this_patient = sender.objects.filter(patient=patient)
+        for relationship in existing_relationships_for_this_patient:
+            if (relationship.type.role_type == RoleType.SELF and instance != relationship):
+                # In other words, there are two distinct relationships in this patient's list
+                # with role_type == 'Self', so we throw ValidationError to inform user.
+                raise ValidationError(
+                    message=_('Each patient can have only one Relationship with a type.role_type="Self" attribute.'),
+                )
 
 
 class HospitalPatient(models.Model):
