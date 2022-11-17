@@ -4,10 +4,12 @@ from typing import Type
 
 from django.apps import apps
 from django.conf import LazySettings
+from django.db import connections
 from django.db.models import Model
 from django.test import Client
 
 import pytest
+from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 from rest_framework.test import APIClient
 
 from opal.users.models import User
@@ -86,3 +88,22 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
         settings (LazySettings): All the configurations of the `opalAdmin backend` service
     """
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
+
+
+@pytest.fixture(scope='session', autouse=True)
+def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) -> None:  # noqa: PT004, WPS442
+    """Add test_QuestionnaireDB setup by executing code in tests/sql.
+
+    Args:
+        django_db_setup: pytest django's original DB setup fixture
+        django_db_blocker: pytest fixture to allow database access here only
+    """
+    # load test questionnaire db sql
+    with Path('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1').open() as handle:
+        sql_content = handle.read()
+        handle.close()
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(sql_content)
+            conn.close()

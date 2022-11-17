@@ -144,6 +144,18 @@ DATABASES = {
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'EST5EDT',
+        'TEST': {
+            'NAME': 'test_{0}'.format(env('LEGACY_DATABASE_NAME')),
+        },
+    },
+    'questionnaire': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('LEGACY_QUESTIONNAIRE_NAME'),
+        'USER': env('LEGACY_DATABASE_USER'),
+        'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
+        'HOST': env('LEGACY_DATABASE_HOST'),
+        'PORT': env('LEGACY_DATABASE_PORT'),
+        'TIME_ZONE': 'EST5EDT',
     },
 }
 
@@ -379,7 +391,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
-
 
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------

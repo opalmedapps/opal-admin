@@ -24,7 +24,6 @@
       <input type="hidden" name="questionnairename" value="{{ questionnaire.name  }}"/>
       <div class="row justify-content-md-center">
           <div class="col-sm-3">
-
               <div style="border-style: solid; border-width: 1px; border-radius: 10px; padding: 10px;">
                   <h5>{% translate "Date range" %}</h5>
                   <div class="form-group row">
@@ -34,7 +33,6 @@
                           <small class="form-text text-muted">{% translate "The start date for the query." %}</small>
                       </div>
                   </div>
-
                   <div class="form-group row">
                       <label class="col-sm-2 col-form-label" for="start">{% translate "End" %}</label>
                       <div class="col-sm-10">
@@ -62,12 +60,8 @@
                       </div>
                   </div>
               </div>
-
           </div>
-
-          <div class="col-sm-1">
-          </div>
-
+          <div class="col-sm-1"></div>
           <div class="col-sm-6">
               <div style="border-style: solid; border-width: 1px; border-radius: 10px;padding: 10px;">
                   <h5>{% translate "Questions" %}</h5>
@@ -86,10 +80,8 @@
                       </ul>
                   </div>
               </div>
-
           </div>
       </div>
-
       <div class="row justify-content-md-center">
           <div class="col-sm-10">
               <input type="hidden" name="questionnaireid" value="{{ questionnaire.ID  }}"/>
@@ -99,12 +91,9 @@
                       <button type="submit" class="btn btn-primary mr-2">{% translate "View Report" %}</button>
                   </div>
               </div>
-
           </div>
       </div>
-
   </form>
   <script src="{% static 'js/query.js' %}"></script>
-
   {% endif %}
   {% endblock content %}
