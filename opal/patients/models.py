@@ -4,7 +4,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
@@ -17,7 +17,7 @@ from . import constants
 
 
 class RoleType(models.TextChoices):
-    """Choices for role type within the [opal.caregivers.models.RelationshipType][] model."""
+    """Choices for role type within the [opal.patients.models.RelationshipType][] model."""
 
     SELF = 'SELF', _('Self')  # noqa: WPS117
     CAREGIVER = 'CAREGIVER', _('Caregiver')
@@ -76,6 +76,24 @@ class RelationshipType(models.Model):
             the name of the user patient relationship type
         """
         return self.name
+
+
+@receiver(pre_delete, sender=RelationshipType)
+def relationshiptype_pre_delete(sender: RelationshipType, instance: RelationshipType, **kwargs: Any) -> None:
+    """Validate the model being deleted is not of type 'self'.
+
+    Args:
+        sender: The model base type (required by Django signals in the function args)
+        instance: The model instance itself
+        kwargs: Signal key word arguments
+
+    Raises:
+        ValidationError: If a new relationship is being created/edited to have role_type self and one already exists.
+    """
+    if (instance.role_type == RoleType.SELF):
+        raise ValidationError(
+            {'self_deletion': _('Operator can not delete relationship type with Self roletype')},
+        )
 
 
 class SexType(models.TextChoices):
@@ -293,7 +311,7 @@ def relationship_model_pre_save(sender: Relationship, instance: Relationship, **
                 # In other words, there are two distinct relationships in this patient's list
                 # with role_type == 'Self', so we throw ValidationError to inform user.
                 raise ValidationError(
-                    message=_('Each patient can have only one Relationship with a type.role_type="Self" attribute.'),
+                    {'self_uniqueness': _('Each patient can have only one Relationship with a type.role_type="Self".')},
                 )
 
 

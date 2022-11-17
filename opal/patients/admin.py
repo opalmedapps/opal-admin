@@ -9,7 +9,7 @@ from . import models
 class RelationshipTypeAdmin(TranslationAdmin):
     """This class provides admin options for `RelationshipType`."""
 
-    pass  # noqa: WPS420, WPS604
+    exclude = ('role_type')
 
 
 admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
