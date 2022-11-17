@@ -6,6 +6,7 @@ from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
+from .forms import RelationshipPendingAccessForm
 from .models import Relationship, RelationshipStatus, RelationshipType
 from .tables import PendingRelationshipTable, RelationshipTypeTable
 
@@ -62,3 +63,30 @@ class PendingRelationshipListView(SingleTableView):
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+
+
+class PendingRelationshipCreateUpdateView(CreateUpdateView):
+    """
+    This `CreateView` displays a form for creating a `Relationship` object.
+
+    It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
+    """
+
+    model = Relationship
+    template_name = 'patients/relationships/pending/form.html'
+    form_class = RelationshipPendingAccessForm
+    success_url = reverse_lazy('patients:relationships-pending-list')
+
+
+class PendingRelationshipDeleteView(DeleteView):
+    """
+    A view that displays a confirmation page and deletes an existing `Relationship` object.
+
+    The given relationship object will only be deleted if the request method is **POST**.
+
+    If this view is fetched via **GET**, it will display a confirmation page with a form that POSTs to the same URL.
+    """
+
+    model = Relationship
+    template_name = 'patients/relationships/pending/confirm_delete.html'
+    success_url = reverse_lazy('patients:relationships-pending-list')

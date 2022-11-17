@@ -154,3 +154,14 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
+
+
+def test_relationships_pending_no_update(user_client: Client) -> None:
+    """Ensures Relationships access request disable editing for some fields."""
+    factories.Relationship(pk=10)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 10}))
+    response.content.decode('utf-8')
+    assertContains(response, 'name="caregiver" class="form-group col-md-12 mb-0 select custom-select" disabled="True"')  # noqa: E501
+    assertContains(response, 'name="patient_identification_number" readonly="True"')
+    assertContains(response, 'name="patient" class="form-group col-md-12 mb-0 select custom-select" disabled="True"')
+    assertContains(response, 'name="date_of_birth" value="1999-01-01" readonly="True"')
