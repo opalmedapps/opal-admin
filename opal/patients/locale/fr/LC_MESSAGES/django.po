@@ -63,7 +63,6 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
-
 msgid "Relationship Role Type"
 msgstr "Type de relation avec le proche aidant"
 
