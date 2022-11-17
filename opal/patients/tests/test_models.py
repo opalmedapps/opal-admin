@@ -10,7 +10,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType, RoleType
+from ..models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -398,3 +398,38 @@ def test_relationship_saved_reason_valid_revoked() -> None:
 
     relationship.clean()
     assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_duplicate_self_role() -> None:
+    """Ensure validation error when creating a second self role type for a patient."""
+    patient = factories.Patient()  # need the same patient for each relationship
+    caregiver_profile_one = factories.CaregiverProfile()
+    caregiver_profile_two = factories.CaregiverProfile()
+    rtype = RelationshipType.objects.create(
+        name='test',
+        description='test',
+        start_age=20,
+        end_age=21,
+        form_required=True,
+        role_type=RoleType.SELF,
+    )
+    relationship_one = Relationship.objects.create(
+        patient=patient,
+        caregiver=caregiver_profile_one,
+        type=rtype,
+        reason='because',
+        request_date=datetime.datetime.today(),
+        start_date=datetime.datetime.today(),
+    )
+    relationship_one.save()
+    message = "{'self_uniqueness': ['Operator can not create two relationships with Self roletype']}"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_two = Relationship.objects.create(
+            patient=patient,
+            caregiver=caregiver_profile_two,
+            type=rtype,
+            reason='because',
+            request_date=datetime.datetime.today(),
+            start_date=datetime.datetime.today(),
+        )
+        relationship_two.save()

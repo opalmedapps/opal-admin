@@ -311,7 +311,7 @@ def relationship_model_pre_save(sender: Relationship, instance: Relationship, **
                 # In other words, there are two distinct relationships in this patient's list
                 # with role_type == 'Self', so we throw ValidationError to inform user.
                 raise ValidationError(
-                    {'self_uniqueness': _('Each patient can have only one Relationship with a type.role_type="Self".')},
+                    {'self_uniqueness': _('Operator can not create two relationships with Self roletype')},
                 )
 
 

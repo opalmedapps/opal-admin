@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-09 14:27+0300\n"
+"POT-Creation-Date: 2022-11-17 14:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,14 @@ msgstr ""
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
 msgstr "Patients"
+
+#: opal/patients/models.py
+msgid "Self"
+msgstr ""
+
+#: opal/patients/models.py
+msgid "Caregiver"
+msgstr "Proche aidant"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -55,12 +63,27 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
+
+msgid "Relationship Role Type"
+msgstr "Type de relation avec le proche aidant"
+
+#: opal/patients/models.py
+msgid ""
+"A \"Self\" role type indicates a patient who owns the data that is being "
+"accessed."
+msgstr ""
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
 msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
+
+#: opal/patients/models.py
+msgid "Operator can not delete relationship type with Self roletype"
+msgstr ""
 
 #: opal/patients/models.py
 msgid "Female"
@@ -131,10 +154,6 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
-msgid "Caregiver"
-msgstr "Proche aidant"
-
-#: opal/patients/models.py
 #: opal/patients/templates/patients/relationship_type/form.html
 msgid "Relationship Type"
 msgstr "Type de relation avec le proche aidant"
@@ -174,6 +193,10 @@ msgstr "Date de début doit être antérieure à la date de fin."
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
 msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
+
+#: opal/patients/models.py
+msgid "Operator can not create two relationships with Self roletype"
+msgstr ""
 
 #: opal/patients/models.py
 msgid "Site"
