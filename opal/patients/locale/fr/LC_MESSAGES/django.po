@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-09 14:27+0300\n"
+"POT-Creation-Date: 2022-11-17 18:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -222,27 +222,34 @@ msgid ""
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 msgid "Yes"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 msgid "Delete"
 msgstr "Supprimer"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationship_type/form.html
+#: opal/patients/templates/patients/relationships/pending/confirm_delete.html
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Cancel"
 msgstr "Annuler"
 
 #: opal/patients/templates/patients/relationship_type/form.html
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Update"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/form.html
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Create"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/form.html
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Save"
 msgstr ""
 
@@ -253,6 +260,25 @@ msgstr ""
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
 msgstr ""
+
+#: opal/patients/templates/patients/relationships/pending/confirm_delete.html
+#, fuzzy
+#| msgid "Relationship Request Date"
+msgid "Delete Relationship Pending Request"
+msgstr "Date de la demande de relation"
+
+#: opal/patients/templates/patients/relationships/pending/confirm_delete.html
+#, python-format
+msgid ""
+"Are you sure you want to delete the following pending relationship request: "
+"%(object)s?"
+msgstr ""
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+#, fuzzy
+#| msgid "Relationship Request Date"
+msgid "Pending Relationships Access Request"
+msgstr "Date de la demande de relation"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
