@@ -209,7 +209,7 @@ msgstr "En attendant"
 
 #: opal/patients/tables.py
 msgid "No caregiver pending access requests."
-msgstr ""
+msgstr "Aucun soignant en attente de demandes d'accès."
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -272,7 +272,7 @@ msgstr "Date de la demande de relation"
 msgid ""
 "Are you sure you want to delete the following pending relationship request: "
 "%(object)s?"
-msgstr ""
+msgstr "Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
 #, fuzzy
@@ -282,4 +282,4 @@ msgstr "Date de la demande de relation"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
-msgstr ""
+msgstr "Demandes d'accès d'aidant en attente"

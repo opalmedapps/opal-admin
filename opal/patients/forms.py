@@ -57,7 +57,6 @@ class RelationshipPendingAccessForm(forms.ModelForm):
         kwargs['initial']['caregiver'] = kwargs['instance'].caregiver
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-
         self.helper.layout = Layout(
             Field('patient', disabled=True, css_class='form-group col-md-12 mb-0'),
             Field('caregiver', disabled=True, css_class='form-group col-md-12 mb-0'),
