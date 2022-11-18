@@ -217,8 +217,7 @@ msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #, python-format
-msgid ""
-"Are you sure you want to delete the following relationship type: %(object)s?"
+msgid "Are you sure you want to delete the following relationship type: %(object)s?"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
@@ -269,7 +268,7 @@ msgstr "Supprimer la demande de lien en attente"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 #, python-format
-msgid "Are you sure you want to delete the following pending relationship request:"
+msgid "Are you sure you want to delete the following pending relationship request: %(object)s?"
 msgstr "Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
