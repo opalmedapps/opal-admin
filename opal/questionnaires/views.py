@@ -100,11 +100,11 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             template rendered with updated context or HttpError
         """
         context = self.get_context_data()
-        requestor: User = request.user
+        requestor: User = request.user  # type: ignore[assignment]
 
         if 'questionnaireid' in request.POST.keys():
             try:
-                qid = request.POST['questionnaireid']
+                qid = int(request.POST['questionnaireid'])
             except ValueError:
                 self.logger.error('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
@@ -121,7 +121,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
 
             # Finally check if this questionnaire is currently being followed
             questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)
-            if qid in questionnaires_following.questionnaires:
+            if str(qid) in questionnaires_following.questionnaires:
                 context.update({'following': True})
             else:
                 context.update({'following': False})
@@ -154,6 +154,14 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
+        #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
+        #  the function returns a boolean indicating if the table could be succesfully created given the query params
+        complete_params_check = make_temp_tables(request.POST, language_map[requestor.language])
+
+        if not complete_params_check:  # fail with 400 error if query parameters are incomplete
+            self.logger.error('Server received incomplete query parameters.')
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
+
         # Update questionnaire following list if user selected option
         toggle = False
         if ('following' in request.POST.keys()):
@@ -166,15 +174,8 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             toggle,
         )
 
-        #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
-        #  the function returns a boolean indicating if the table could be succesfully created given the query params
-        complete_params_check = make_temp_tables(request.POST, language_map[requestor.language])
-
-        if not complete_params_check:  # fail with 400 error if query parameters are incomplete
-            self.logger.error('Server received incomplete query parameters.')
-            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-
-        report = get_temp_table()  # after verifying parameters were complete, retrieve the prepared data
+        # After verifying parameters were complete, retrieve the prepared data
+        report = get_temp_table()
 
         report_table = ReportTable(report)
         context.update(
@@ -217,7 +218,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         if (toggle):
             questionnaires_following.questionnaires[qid] = {
                 'title': qname,
-                'lastviewed': datetime.datetime.now().strftime('%Y-%m-%d'),
+                'lastviewed': datetime.now().strftime('%Y-%m-%d'),
             }
             questionnaires_following.save()
         elif qid in questionnaires_following.questionnaires:

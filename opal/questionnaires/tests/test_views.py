@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from http import HTTPStatus
 from typing import Tuple
@@ -11,6 +12,8 @@ from bs4 import BeautifulSoup
 from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertTemplateUsed, assertURLEqual
 
+from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
+from opal.questionnaires.models import QuestionnaireProfile
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
@@ -40,13 +43,17 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
-def test_list_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that links exist in the reports dashboard page pointing to the filter & list pages."""
-    user_client.force_login(admin_user)
+def test_dashboard_forms_exist(user_client: Client) -> None:
+    """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
+    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
+    test_questionnaire_profile.user.save()
+    user_client.force_login(test_questionnaire_profile.user)
+
     response = user_client.get(reverse('questionnaires:reports-dashboard'))
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
-    links = soup.find_all('a')
+    links = soup.find_all('a', href=re.compile('^/questionnaires/reports/list/'))
 
     assert response.status_code == HTTPStatus.OK
     assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
@@ -61,12 +68,30 @@ def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser
     forms = soup.find_all('form')
 
     assert response.status_code == HTTPStatus.OK
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
+
+
+def test_detail_report_form_exists(user_client: Client) -> None:
+    """Ensure that a form exists in the reports filter page pointing to the detail page."""
+    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
+    test_questionnaire_profile.user.save()
+    user_client.force_login(test_questionnaire_profile.user)
+
+    response = user_client.post(
+        path=reverse('questionnaires:reports-filter'),
+        data={'questionnaireid': ['11']},
+    )
+    soup = BeautifulSoup(response.content, 'html.parser')
+    forms = soup.find_all('form')
+    assert response.status_code == HTTPStatus.OK
     assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-detail'))
 
 
 def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that forms exists in the reports detail page and they point to the two download options."""
     user_client.force_login(admin_user)
+
     response = user_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
@@ -75,6 +100,8 @@ def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> 
             'patientIDs': ['3'],
             'questionIDs': ['823', '824', '811', '830', '832'],
             'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
+            'following': [True],
         },
     )
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -89,7 +116,7 @@ def test_filter_report_invalid_params(user_client: Client, admin_user: AbstractU
     """Ensure that a post call to filter reports returns error given invalid/missing params."""
     user_client.force_login(admin_user)
     response = user_client.post(
-        path=reverse('questionnaires:reports-detail'),
+        path=reverse('questionnaires:reports-filter'),
         data={},
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -103,20 +130,6 @@ def test_detail_report_invalid_params(user_client: Client, admin_user: AbstractU
         data={},
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
-
-
-def test_detail_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a form exists in the reports filter page pointing to the detail page."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
-        path=reverse('questionnaires:reports-filter'),
-        data={'questionnaireid': ['11']},
-    )
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-
-    assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-detail'))
 
 
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
@@ -142,7 +155,7 @@ def test_export_report_visible_authenticated(user_client: Client, admin_user: Ab
     assert 'Export Reports' in {pagename.text for pagename in pages_available}
 
 
-def test_get_exportreports_query_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_reports_filter_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-filter'))
@@ -150,7 +163,7 @@ def test_get_exportreports_query_unauthorized(user_client: Client, admin_user: A
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_get_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_detail_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-detail'))
@@ -179,7 +192,7 @@ def test_reportlist_visible_authenticated(user_client: Client, admin_user: Abstr
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list'))
 
-    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_report_filter_invalid_key_format(user_client: Client, admin_user: AbstractUser) -> None:
@@ -204,9 +217,13 @@ def test_report_filter_missing_key(user_client: Client, admin_user: AbstractUser
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_update_request_event_filter_template(user_client: Client, admin_user: AbstractUser) -> None:
+def test_update_request_event_filter_template(user_client: Client) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
-    user_client.force_login(admin_user)
+    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
+    test_questionnaire_profile.user.save()
+    user_client.force_login(test_questionnaire_profile.user)
+
     response = user_client.post(
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['11']},
@@ -233,6 +250,7 @@ def test_update_request_event_detail_template(user_client: Client, admin_user: A
             'patientIDs': ['3'],
             'questionIDs': ['823', '824', '811', '830', '832'],
             'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
         },
     )
     q_string = "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27', 'patientIDs': '3', 'questionIDs': '832'}"  # noqa: E501
@@ -258,6 +276,7 @@ def test_detail_template_download_csv(user_client: Client, admin_user: AbstractU
             'patientIDs': ['3'],
             'questionIDs': ['823', '824', '811', '830', '832'],
             'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
         },
     )
     assert response.status_code == HTTPStatus.OK
@@ -287,6 +306,7 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
             'patientIDs': ['3'],
             'questionIDs': ['823', '824', '811', '830', '832'],
             'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
         },
     )
     assert response.status_code == HTTPStatus.OK
@@ -318,3 +338,12 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
         filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'  # noqa: WPS237
         assert header.get('Content-Disposition') == filename
         assert int(header.get('Content-Length', 0)) > 0
+
+
+def test_dashboard_questionnaires_following(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that the questionnaires following functionality works as expected in dashboard."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:reports-dashboard'))
+    q_prof = QuestionnaireProfile.objects.all()
+    print(response)
+    print(q_prof)

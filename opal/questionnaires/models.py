@@ -47,4 +47,4 @@ class QuestionnaireProfile(models.Model):
         Returns:
             username
         """
-        return self.user.username
+        return f'{self.user.username}__follows__{self.questionnaires}'  # noqa: WPS237

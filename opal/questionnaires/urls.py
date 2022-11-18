@@ -43,19 +43,4 @@ urlpatterns = [
         views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
         name='reports-download-xlsx',
     ),
-    path(
-        'reports/detail/',
-        views.QuestionnaireReportDetailTemplateView.as_view(),
-        name='reports-detail',
-    ),
-    path(
-        'reports/downloadcsv/',
-        views.QuestionnaireReportDownloadCSVTemplateView.as_view(),
-        name='reports-downloadcsv',
-    ),
-    path(
-        'reports/downloadxlsx/',
-        views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
-        name='reports-downloadxlsx',
-    ),
 ]

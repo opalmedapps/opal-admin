@@ -7,7 +7,7 @@ pytestmark = pytest.mark.django_db
 
 def test_reports_dashboard() -> None:
     """Ensure exportreports list is defined."""
-    assert reverse('questionnaires:reports-dashboard') == '/questionnaires/reports/'
+    assert reverse('questionnaires:reports-dashboard') == '/questionnaires/reports/dashboard/'
     assert resolve('/questionnaires/reports/dashboard/').view_name == 'questionnaires:reports-dashboard'
 
 
