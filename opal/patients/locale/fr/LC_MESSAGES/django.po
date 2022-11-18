@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-18 19:39+0300\n"
+"POT-Creation-Date: 2022-11-18 20:16+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -197,11 +197,11 @@ msgstr "Patients de l'hôpital"
 
 #: opal/patients/tables.py
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: opal/patients/tables.py
 msgid "No relationship types defined."
-msgstr ""
+msgstr "Aucun type de relation défini."
 
 #: opal/patients/tables.py
 msgid "Pending Since"
@@ -213,18 +213,18 @@ msgstr "Aucun soignant en attente de demandes d'accès."
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
-msgstr ""
+msgstr "Supprimer le type de relation"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #, python-format
 msgid ""
 "Are you sure you want to delete the following relationship type: %(object)s?"
-msgstr ""
+msgstr "Êtes-vous sûr de vouloir supprimer le type de relation suivant: %(object)s?"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 msgid "Yes"
-msgstr ""
+msgstr "Oui"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
@@ -241,25 +241,25 @@ msgstr "Annuler"
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Update"
-msgstr ""
+msgstr "Mise à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Create"
-msgstr ""
+msgstr "Créer"
 
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "Relationship Types"
-msgstr ""
+msgstr "Types de relations"
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
-msgstr ""
+msgstr "Nouveau type de relation"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 #, fuzzy
@@ -273,7 +273,7 @@ msgid ""
 "Are you sure you want to delete the following pending relationship request: "
 "%(object)s?"
 msgstr ""
-"Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
+"Voulez-vous vraiment supprimer la demande de relation en attente suivante: %(object)s?"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
 #, fuzzy
