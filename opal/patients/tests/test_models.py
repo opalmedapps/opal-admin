@@ -10,7 +10,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -110,7 +110,16 @@ def test_relationshiptype_self_role_delete_error() -> None:
     """Ensure operator can not delete a self role type."""
     relationship_type = factories.RelationshipType()
     relationship_type.role_type = RoleType.SELF
-    message = "{'self_deletion': ['Operator can not delete relationship type with Self roletype']}"
+    message = "{'deletion': ['Operator can not delete relationship type with restricted roletype']}"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.delete()
+
+
+def test_relationshiptype_parent_role_delete_error() -> None:  # noqa: WPS118
+    """Ensure operator can not delete a parent/guardian role type."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.role_type = RoleType.PARENTGUARDIAN
+    message = "{'deletion': ['Operator can not delete relationship type with restricted roletype']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         relationship_type.delete()
 
@@ -400,36 +409,29 @@ def test_relationship_saved_reason_valid_revoked() -> None:
     assert relationship.reason == 'Reason 1'
 
 
-def test_relationship_duplicate_self_role() -> None:
-    """Ensure validation error when creating a second self role type for a patient."""
-    patient = factories.Patient()  # need the same patient for each relationship
-    caregiver_profile_one = factories.CaregiverProfile()
-    caregiver_profile_two = factories.CaregiverProfile()
-    rtype = RelationshipType.objects.create(
-        name='test',
-        description='test',
-        start_age=20,
-        end_age=21,
-        form_required=True,
-        role_type=RoleType.SELF,
-    )
-    relationship_one = Relationship.objects.create(
-        patient=patient,
-        caregiver=caregiver_profile_one,
-        type=rtype,
-        reason='because',
-        request_date=datetime.datetime.today(),
-        start_date=datetime.datetime.today(),
-    )
-    relationship_one.save()
-    message = "{'self_uniqueness': ['Operator can not create two relationships with Self roletype']}"
+def test_relationshiptype_duplicate_self_role() -> None:
+    """Ensure validation error when creating a second self role type."""
+    rtype_self = factories.RelationshipType()
+    rtype_self.role_type = RoleType.SELF
+    rtype_self.save()
+
+    rtype_self_copy = factories.RelationshipType()
+    rtype_self_copy.role_type = RoleType.SELF
+
+    message = "{'uniqueness': ['Operator can not create multiple copies of restricted relationshiptypes']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        relationship_two = Relationship.objects.create(
-            patient=patient,
-            caregiver=caregiver_profile_two,
-            type=rtype,
-            reason='because',
-            request_date=datetime.datetime.today(),
-            start_date=datetime.datetime.today(),
-        )
-        relationship_two.save()
+        rtype_self_copy.save()
+
+
+def test_relationshiptype_duplicate_parent_role() -> None:
+    """Ensure validation error when creating a second parent/guardian role type."""
+    rtype_parent = factories.RelationshipType()
+    rtype_parent.role_type = RoleType.PARENTGUARDIAN
+    rtype_parent.save()
+
+    rtype_parent_copy = factories.RelationshipType()
+    rtype_parent_copy.role_type = RoleType.PARENTGUARDIAN
+
+    message = "{'uniqueness': ['Operator can not create multiple copies of restricted relationshiptypes']}"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        rtype_parent_copy.save()

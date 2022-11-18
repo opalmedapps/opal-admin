@@ -21,6 +21,7 @@ class RoleType(models.TextChoices):
 
     SELF = 'SELF', _('Self')  # noqa: WPS117
     CAREGIVER = 'CAREGIVER', _('Caregiver')
+    PARENTGUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
 
 
 class RelationshipType(models.Model):
@@ -60,7 +61,7 @@ class RelationshipType(models.Model):
         verbose_name=_('Relationship Role Type'),
         choices=RoleType.choices,
         default=RoleType.CAREGIVER,
-        max_length=9,
+        max_length=14,
         help_text=_('A "Self" role type indicates a patient who owns the data that is being accessed.'),
     )
 
@@ -80,7 +81,7 @@ class RelationshipType(models.Model):
 
 @receiver(pre_delete, sender=RelationshipType)
 def relationshiptype_pre_delete(sender: RelationshipType, instance: RelationshipType, **kwargs: Any) -> None:
-    """Validate the model being deleted is not of type 'self'.
+    """Validate the model being deleted is not of type 'self' or 'parentguardian'.
 
     Args:
         sender: The model base type (required by Django signals in the function args)
@@ -88,12 +89,45 @@ def relationshiptype_pre_delete(sender: RelationshipType, instance: Relationship
         kwargs: Signal key word arguments
 
     Raises:
-        ValidationError: If a new relationship is being created/edited to have role_type self and one already exists.
+        ValidationError: If an operator attempts to delete self or parent guardian - roled relationshiptype.
     """
-    if (instance.role_type == RoleType.SELF):
+    if (instance.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
         raise ValidationError(
-            {'self_deletion': _('Operator can not delete relationship type with Self roletype')},
+            {'deletion': _('Operator can not delete relationship type with restricted roletype')},
         )
+
+
+@receiver(pre_save, sender=RelationshipType)
+def relationshiptype_pre_save(sender: RelationshipType, instance: RelationshipType, **kwargs: Any) -> None:
+    """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
+
+    Args:
+        sender: The model base type (required by Django signals in the function args)
+        instance: The model instance itself
+        kwargs: Signal key word arguments
+
+    Raises:
+        ValidationError: If a new relationshiptype is being created/edited to have role_type self/parentguardian.
+    """
+    if (instance.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+        existing_restricted_relationshiptypes = RelationshipType.objects.filter(
+            role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
+        )
+
+        # Iterate over existing restricted types and check if instance is allowed to be saved.
+        for relationshiptype in existing_restricted_relationshiptypes:
+            if (
+                all(
+                    [
+                        relationshiptype.role_type == restrict_type,
+                        instance != relationshiptype,
+                        instance.role_type == restrict_type,
+                    ] for restrict_type in (RoleType.SELF, RoleType.PARENTGUARDIAN)
+                )
+            ):
+                raise ValidationError(
+                    {'uniqueness': _('Operator can not create multiple copies of restricted relationshiptypes')},
+                )
 
 
 class SexType(models.TextChoices):
@@ -280,39 +314,6 @@ class Relationship(models.Model):
         if not self.reason:
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
-
-
-@receiver(pre_save, sender=Relationship)
-def relationship_model_pre_save(sender: Relationship, instance: Relationship, **kwargs: Any) -> None:
-    """Validate the uniqueness of a relationship's relationshiptype.role_type=SELF attribute for a given Patient.
-
-    There can only be a single relationshiptype with role_type=='Self' for each Patient (logically), therefore we must
-    check this condition on each edit/creation of a new Relationship. This pre_save signal is a quick way to do that.
-
-    --> Django signals are pieces of code to be executed when a particular event occurs. Read more
-        here: https://docs.djangoproject.com/en/1.8/ref/signals/#pre-save
-
-    Args:
-        sender: The model base type (required by Django signals in the function args)
-        instance: The model instance itself
-        kwargs: Signal key word arguments
-
-    Raises:
-        ValidationError: If a new relationship is being created/edited to have role_type self and one already exists.
-    """
-    instance_type_roletype = instance.type.role_type
-    patient = instance.patient
-    if (instance_type_roletype == RoleType.SELF):
-        # User is trying to save a new Self role type for this patient
-        # Check the patient's existing Relationships for other 'Self' roletypes
-        existing_relationships_for_this_patient = sender.objects.filter(patient=patient)
-        for relationship in existing_relationships_for_this_patient:
-            if (relationship.type.role_type == RoleType.SELF and instance != relationship):
-                # In other words, there are two distinct relationships in this patient's list
-                # with role_type == 'Self', so we throw ValidationError to inform user.
-                raise ValidationError(
-                    {'self_uniqueness': _('Operator can not create two relationships with Self roletype')},
-                )
 
 
 class HospitalPatient(models.Model):
