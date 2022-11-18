@@ -263,8 +263,6 @@ msgid "New Relationship Type"
 msgstr "Nouveau type de relation"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
-#, fuzzy
-#| msgid "Relationship Request Date"
 msgid "Delete Relationship Pending Request"
 msgstr "Supprimer la demande de lien en attente"
 
@@ -278,8 +276,6 @@ msgstr ""
 "%(object)s?"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
-#, fuzzy
-#| msgid "Relationship Request Date"
 msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de lien relationnel"
 
