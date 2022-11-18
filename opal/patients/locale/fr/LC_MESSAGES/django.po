@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 18:31+0300\n"
+"POT-Creation-Date: 2022-11-18 19:39+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -217,7 +217,8 @@ msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #, python-format
-msgid "Are you sure you want to delete the following relationship type: %(object)s?"
+msgid ""
+"Are you sure you want to delete the following relationship type: %(object)s?"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
@@ -268,8 +269,11 @@ msgstr "Supprimer la demande de lien en attente"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 #, python-format
-msgid "Are you sure you want to delete the following pending relationship request: %(object)s?"
-msgstr "Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
+msgid ""
+"Are you sure you want to delete the following pending relationship request: "
+"%(object)s?"
+msgstr ""
+"Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
 #, fuzzy
