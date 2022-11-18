@@ -269,9 +269,7 @@ msgstr "Supprimer la demande de lien en attente"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 #, python-format
-msgid ""
-"Are you sure you want to delete the following pending relationship request: "
-"%(object)s?"
+msgid "Are you sure you want to delete the following pending relationship request:"
 msgstr "Voulez-vous vraiment supprimer la demande de relation en attente suivante:"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
