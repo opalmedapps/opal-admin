@@ -152,7 +152,6 @@ class LegacySecurityQuestionFactory(DjangoModelFactory):
     questiontext_fr = 'Quel est le nom de votre premier animal de compagnie?'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     lastupdated = timezone.make_aware(datetime(2022, 9, 27))
-
     active = 1
 
 
