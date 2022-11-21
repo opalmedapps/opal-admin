@@ -4,7 +4,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Add `can_answer_questionnaires` field to RelationshipType model."""
+    """Add `can_answer_questionnaire` field to RelationshipType model."""
 
     dependencies = [
         ('patients', '0007_patient_hin_to_ramq'),
