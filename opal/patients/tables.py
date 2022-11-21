@@ -63,6 +63,12 @@ class ExistingUserTable(tables.Table):
         fields = ['first_name', 'last_name', 'email', 'phone_number']
         empty_text = _('No existing user could be found.')
         orderable = False
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
 
 
 class PendingRelationshipTable(tables.Table):
