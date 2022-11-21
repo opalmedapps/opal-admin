@@ -583,3 +583,35 @@ class ConfirmExistingUserForm(forms.Form):
                 Submit('wizard_goto_step', _('Generate Access Request')),
             ),
         )
+
+
+class NewUserForm(forms.Form):
+    """This `NewUserForm` provides a layout to new users."""
+
+    first_name = forms.CharField(
+        widget=forms.TextInput(),
+        label=_('First Name'),
+    )
+
+    last_name = forms.CharField(
+        widget=forms.TextInput(),
+        label=_('Last Name'),
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for new user form.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('first_name', css_class='form-group col-md-6 mb-0'),
+                Column('last_name', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row',
+            ),
+        )

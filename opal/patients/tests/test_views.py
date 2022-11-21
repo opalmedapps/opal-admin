@@ -285,7 +285,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': '1'}),
-        ('existing', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
+        ('requestor', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
         ('finished', {'is_correct': True, 'is_id_checked': True}),
     ]
     response = user_client.get(url)
@@ -310,8 +310,8 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         elif 'relationship' in step:
             assert response.context['wizard']['steps'].current == 'account'
         elif 'account' in step:
-            assert response.context['wizard']['steps'].current == 'existing'
-        elif 'existing' in step:
+            assert response.context['wizard']['steps'].current == 'requestor'
+        elif 'requestor' in step:
             assert response.context['wizard']['steps'].current == 'finished'
         elif 'finished' in step:
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
@@ -341,6 +341,18 @@ class _TestAccessRequestView(views.AccessRequestView):
         response = super().dispatch(request, *args, **kwargs)
         return response, self
 
+    def dummy_get_response(self, request: HttpRequest) -> None:  # noqa: WPS324
+        """
+        Pass `None` for the middleware get_response argument.
+
+        Args:
+            request: a `HttpRequest` instance
+
+        Returns:
+            None
+        """
+        return None  # noqa: WPS324
+
 
 def _init_session() -> HttpRequest:
     """
@@ -351,7 +363,7 @@ def _init_session() -> HttpRequest:
     """
     request = RequestFactory().get('/')
     # adding session
-    middleware = SessionMiddleware()
+    middleware = SessionMiddleware(_TestAccessRequestView.dummy_get_response)  # type: ignore[arg-type]
     middleware.process_request(request)
     request.session.save()
     return request
