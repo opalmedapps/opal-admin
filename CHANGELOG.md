@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add hospital service for communication with the OIE (!173)
 * Add REST API endpoint for the questionnaire report generation
 * Add REST API endpoint for the patient's caregiver(s) relationship(s) (!222)
+* feat: Add can_answer_questionnaire field to RelationshipType model (!689)
 
 ### Documentation
 

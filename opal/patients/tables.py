@@ -25,7 +25,15 @@ class RelationshipTypeTable(tables.Table):
 
     class Meta:
         model = RelationshipType
-        fields = ['name', 'description', 'start_age', 'end_age', 'form_required', 'actions']
+        fields = [
+            'name',
+            'description',
+            'start_age',
+            'end_age',
+            'form_required',
+            'actions',
+            'can_answer_questionnaire',
+        ]
         empty_text = _('No relationship types defined.')
         attrs = {
             'class': 'table table-bordered table-hover',
