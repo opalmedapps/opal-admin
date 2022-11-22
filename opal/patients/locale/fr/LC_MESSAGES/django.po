@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-18 13:25-0500\n"
+"POT-Creation-Date: 2022-11-22 11:20-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -278,6 +278,28 @@ msgstr ""
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de lien relationnel"
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+#, fuzzy
+#| msgid "Patient"
+msgid "Patient: "
+msgstr "Patient"
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+#, fuzzy
+#| msgid "Caregiver"
+msgid "Caregiver: "
+msgstr "Proche aidant"
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+msgid "Patient Identification Number: "
+msgstr ""
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+#, fuzzy
+#| msgid "Date of Birth"
+msgid "Date of Birth: "
+msgstr "Date de naissance"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"

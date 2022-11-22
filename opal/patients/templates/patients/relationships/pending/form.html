@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
+{% load l10n %}
 {% load i18n %}
-
 {% load crispy_forms_tags %}
 
 {% block content-header-page-name %}
@@ -14,10 +14,20 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+              <p><span class="font-weight-bold">{% translate "Patient: " %}</span>{{relationship.patient}}</p>
+                        <p><span class="font-weight-bold">{% translate "Caregiver: " %}</span>{{relationship.caregiver}}</p>
+                  <p><span class="font-weight-bold">{% translate "Patient Identification Number: " %}</span>{{relationship.patient.ramq}}</p>
+                  <p><span class="font-weight-bold">{% translate "Date of Birth: " %}</span>{{relationship.patient.date_of_birth | localize}}</p>
+                  </div>
+                    {% comment %} /.card-body {% endcomment %}
+                </div>
                 <div class="card">
                     <div class="card-body">
                       <form method="post">
                         {% csrf_token %}
+
                         {% crispy form %}
                         <a class="btn btn-secondary mr-2" href="{% url 'patients:relationships-pending-list' %}">
                           {% translate "Cancel" %}

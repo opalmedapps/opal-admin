@@ -48,7 +48,6 @@ class PendingRelationshipTable(tables.Table):
         orderable=False,
         extra_context={
             'urlname_update': 'patients:relationships-pending-update',
-            'urlname_delete': 'patients:relationships-pending-delete',
         },
     )
     type = tables.Column(  # noqa: A003
