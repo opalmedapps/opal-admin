@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-22 11:49-0400\n"
+"POT-Creation-Date: 2022-11-21 19:43-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,19 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/questionnaires/apps.py
+#: .\opal\questionnaires\apps.py:11
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
-#: opal/questionnaires/models.py
+#: .\opal\questionnaires\models.py:17
 msgid "Export Report"
 msgstr "Exportation de Rapport"
 
-#: opal/questionnaires/models.py
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports.html
+#: .\opal\questionnaires\models.py:18
+#: .\opal\questionnaires\templates\questionnaires\export_reports\exportreports.html:6
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports.html
+#: .\opal\questionnaires\templates\questionnaires\export_reports\exportreports.html:14
 msgid "ePRO Data Extractions"
 msgstr "Extractions de Données ePRO"

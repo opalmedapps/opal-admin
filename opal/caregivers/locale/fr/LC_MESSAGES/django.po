@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-27 15:08-0400\n"
+"POT-Creation-Date: 2022-11-21 19:43-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,166 +18,167 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/caregivers/api/viewsets.py
+#: .\opal\caregivers\api\viewsets.py:111
 msgid "The provided answer is not correct"
 msgstr "La réponse fournie n'est pas correcte"
 
-#: opal/caregivers/apps.py
+#: .\opal\caregivers\apps.py:11
 msgid "Caregivers"
 msgstr "Proches aidants"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:15
 msgid "UUID"
 msgstr "UUID"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:22
 msgid "User"
 msgstr "Utilisateur"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:28
 msgid "Legacy ID"
 msgstr "Identifiant existant"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:35 .\opal\caregivers\models.py:84
+#: .\opal\caregivers\models.py:120 .\opal\caregivers\models.py:253
 msgid "Caregiver Profile"
 msgstr "Profil de proche aidant"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:36
 msgid "Caregiver Profiles"
 msgstr "Profils de proche aidants"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:52
 msgid "Title"
 msgstr "Titre"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:57
 msgid "Active"
 msgstr "Actif"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:62
 msgid "Security Question"
 msgstr "Question de sécurité"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:63
 msgid "Security Questions"
 msgstr "Questions de sécurité"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:78
 msgid "Question"
 msgstr "Question"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:90
 msgid "Answer"
 msgstr "Réponse"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:95
 msgid "Security Answer"
 msgstr "Réponse de sécurité"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:96
 msgid "Security Answers"
 msgstr "Réponses de sécurité"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:110
 msgid "Browser"
 msgstr "Navigateur"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:111
 msgid "iOS"
 msgstr "iOS"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:112
 msgid "Android"
 msgstr "Android"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:126
 msgid "Device Type"
 msgstr "Type d'appareil"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:132
 msgid "Device ID"
 msgstr "Identifiant de l'appareil"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:137
 msgid "Trusted Device"
 msgstr "Appareil de confiance"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:142
 msgid "Push Token"
 msgstr "Jeton de notification directe"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:148
 msgid "Last Modified"
 msgstr "Dernière modification"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:153
 msgid "Device"
 msgstr "Appareil"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:154
 msgid "Devices"
 msgstr "Appareils"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:183
 msgid "New"
 msgstr "Nouveau"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:184
 msgid "Registered"
 msgstr "Inscrit"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:185
 msgid "Expired"
 msgstr "Expiré"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:186
 msgid "Blocked"
 msgstr "Bloqué"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:195
 msgid "Relationship"
 msgstr "Relation"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:201
 msgid "Code"
 msgstr "Code"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:208
 msgid "Status"
 msgstr "Statut"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:215
 msgid "Creation Date"
 msgstr "Date de création"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:220
 msgid "Attempts"
 msgstr "Tentatives"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:225
 msgid "Registration Code"
 msgstr "Code d'enregistrement"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:226
 msgid "Registration Codes"
 msgstr "Codes d'enregistrement"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:259
 msgid "Verification Code"
 msgstr "Le code de vérification"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:265
 msgid "Email"
 msgstr "Email"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:269
 msgid "Verified"
 msgstr "Vérifié"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:278
 msgid "Email Verification"
 msgstr "Vérification par e-mail"
 
-#: opal/caregivers/models.py
+#: .\opal\caregivers\models.py:279
 msgid "Email Verifications"
 msgstr "Vérifications par e-mail"
