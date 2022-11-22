@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-22 11:20-0500\n"
+"POT-Creation-Date: 2022-11-22 19:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,6 +87,7 @@ msgid "Last Name"
 msgstr "Nom de famille"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -107,6 +108,7 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -131,6 +133,7 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -280,27 +283,24 @@ msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de lien relationnel"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
-#, fuzzy
-#| msgid "Patient"
-msgid "Patient: "
-msgstr "Patient"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-#, fuzzy
-#| msgid "Caregiver"
-msgid "Caregiver: "
-msgstr "Proche aidant"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Patient Identification Number: "
+msgid "Patient Identification Number"
 msgstr ""
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-#, fuzzy
-#| msgid "Date of Birth"
-msgid "Date of Birth: "
-msgstr "Date de naissance"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
 msgstr "Demandes d'accès d'aidant en attente"
+
+#, fuzzy
+#~| msgid "Patient"
+#~ msgid "Patient: "
+#~ msgstr "Patient: "
+
+#, fuzzy
+#~| msgid "Caregiver"
+#~ msgid "Caregiver: "
+#~ msgstr "Proche aidant"
+
+#, fuzzy
+#~| msgid "Date of Birth"
+#~ msgid "Date of Birth: "
+#~ msgstr "Date de naissance"
