@@ -33,8 +33,6 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
-        kwargs['initial']['start_date'] = str(kwargs['instance'].start_date)
-        kwargs['initial']['end_date'] = str(kwargs['instance'].end_date)
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
