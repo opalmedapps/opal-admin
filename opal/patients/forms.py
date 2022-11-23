@@ -598,6 +598,8 @@ class NewUserForm(forms.Form):
         label=_('Last Name'),
     )
 
+    is_id_checked = forms.BooleanField(required=True, label=_('ID Checked?'))
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for new user form.
@@ -613,5 +615,9 @@ class NewUserForm(forms.Form):
                 Column('first_name', css_class='form-group col-md-6 mb-0'),
                 Column('last_name', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row',
+            ),
+            'is_id_checked',
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )

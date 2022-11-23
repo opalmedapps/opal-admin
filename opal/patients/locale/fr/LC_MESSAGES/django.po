@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-11 18:25+0000\n"
+"POT-Creation-Date: 2022-11-21 16:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -116,6 +116,10 @@ msgstr "Prénom"
 #: opal/patients/forms.py opal/patients/models.py
 msgid "Last Name"
 msgstr "Nom de famille"
+
+#: opal/patients/forms.py
+msgid "Generate QR Code"
+msgstr "Générer un code QR"
 
 #: opal/patients/models.py
 msgid "Name"
