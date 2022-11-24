@@ -1,0 +1,20 @@
+{
+  "name": "markdownlint-cli2-formatter-gitlab",
+  "version": "0.0.1",
+  "description": "An output formatter for markdownlint-cli2 that writes results to a JSON file with GitLab code quality syntax",
+  "author": {
+    "name": "Matthias Schoettle",
+    "url": "https://mattsch.com/"
+  },
+  "license": "MIT",
+  "main": "markdownlint-cli2-formatter-gitlab.js",
+  "files": [
+    "markdownlint-cli2-formatter-gitlab.js"
+  ],
+  "peerDependencies": {
+    "markdownlint-cli2": ">=0.0.4"
+  },
+  "keywords": [
+    "markdownlint-cli2-formatter"
+  ]
+}
