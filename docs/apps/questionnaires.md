@@ -1,14 +1,8 @@
 # Questionnaires
 
-
-
-
 The `questionnaires` app provides functionalities for interacting with questionnaire data.
 
 ## Export Reports
-
-
-
 
 Currently, the only functionality provided in this app is to expose a launching point for the external [ePRO Questionnaires reporting tool][questionnaire-reporting-repo] originally developed by Luc Galarneau.
 
@@ -46,8 +40,6 @@ To grant the `export_report` permission:
 6. Filter results by any combination of data range, patient ids, and questions.
 7. Click `View Report`
 8. View results and optionally export as CSV or Excel
-
-
 
 <!-- Link identifiers -->
 [django-modelless-perms-github]: https://github.com/surfer190/fixes/blob/master/docs/django/django-permissions-without-a-model.md

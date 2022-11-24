@@ -1,42 +1,46 @@
 exclude: '^(\.vscode/launch\.json|manage\.py)'
 
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
-    hooks:
-    -   id: check-added-large-files
-    -   id: check-merge-conflict
-    -   id: check-shebang-scripts-are-executable
-    -   id: check-json
-    -   id: check-yaml
-    -   id: name-tests-test
-        args: ['--django']
-    -   id: double-quote-string-fixer
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
--   repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
-    hooks:
-    -   id: isort
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.1.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-merge-conflict
+  - id: check-shebang-scripts-are-executable
+  - id: check-json
+  - id: check-yaml
+  - id: name-tests-test
+    args: ['--django']
+  - id: double-quote-string-fixer
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+- repo: https://github.com/PyCQA/isort
+  rev: 5.10.1
+  hooks:
+  - id: isort
+- repo: https://github.com/DavidAnson/markdownlint-cli2
+  rev: v0.5.1
+  hooks:
+  - id: markdownlint-cli2
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
--   repo: local
-    hooks:
-    -   id: no-auto-migrations
-        name: no auto-named migrations
-        entry: please provide a descriptive name for migrations
-        language: fail
-        files: .*/migrations/.*_auto_.*\.py$
-    -   id: flake8
-        name: flake8
-        description: wemake-python-styleguide++ enforcement
-        entry: flake8
-        args: ["--config=setup.cfg"]
-        language: python
-        types: [python]
-    -   id: mypy
-        name: mypy
-        description: static type checking
-        entry: mypy
-        args: ["--config-file=setup.cfg"]
-        language: python
-        types: [python]
+- repo: local
+  hooks:
+  - id: no-auto-migrations
+    name: no auto-named migrations
+    entry: please provide a descriptive name for migrations
+    language: fail
+    files: .*/migrations/.*_auto_.*\.py$
+  - id: flake8
+    name: flake8
+    description: wemake-python-styleguide++ enforcement
+    entry: flake8
+    args: ["--config=setup.cfg"]
+    language: python
+    types: [python]
+  - id: mypy
+    name: mypy
+    description: static type checking
+    entry: mypy
+    args: ["--config-file=setup.cfg"]
+    language: python
+    types: [python]
