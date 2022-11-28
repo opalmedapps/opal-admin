@@ -1,5 +1,6 @@
 """This module provides views for hospital-specific settings."""
 from django.urls import reverse_lazy
+from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView
 
 from django_tables2 import SingleTableView
@@ -62,3 +63,10 @@ class PendingRelationshipListView(SingleTableView):
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+
+
+class PatientAccessView(TemplateView):
+    """This view provides a page that lists all caregivers for a specific patient."""
+
+    template_name = 'patients/patient_access/list.html'
+    http_method_names = ['get']

@@ -37,4 +37,9 @@ urlpatterns = [
         views.RelationshipTypeDeleteView.as_view(),
         name='relationshiptype-delete',
     ),
+    path(
+        'patient-access/',
+        views.PatientAccessView.as_view(),
+        name='patient-access',
+    ),
 ]
