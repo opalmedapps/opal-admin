@@ -76,17 +76,3 @@ class PendingRelationshipCreateUpdateView(CreateUpdateView):
     template_name = 'patients/relationships/pending/form.html'
     form_class = RelationshipPendingAccessForm
     success_url = reverse_lazy('patients:relationships-pending-list')
-
-
-class PendingRelationshipDeleteView(DeleteView):
-    """
-    A view that displays a confirmation page and deletes an existing `Relationship` object.
-
-    The given relationship object will only be deleted if the request method is **POST**.
-
-    If this view is fetched via **GET**, it will display a confirmation page with a form that POSTs to the same URL.
-    """
-
-    model = Relationship
-    template_name = 'patients/relationships/pending/confirm_delete.html'
-    success_url = reverse_lazy('patients:relationships-pending-list')

@@ -289,12 +289,3 @@ msgstr ""
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
 msgstr "Demandes d'accès d'aidant en attente"
-
-msgid "Patient: "
-msgstr "Patient: "
-
-msgid "Caregiver: "
-msgstr "Proche aidant: "
-
-msgid "Date of Birth: "
-msgstr "Date de naissance: "

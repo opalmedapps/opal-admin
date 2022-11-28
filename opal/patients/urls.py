@@ -21,11 +21,6 @@ urlpatterns = [
         views.PendingRelationshipCreateUpdateView.as_view(),
         name='relationships-pending-update',
     ),
-    path(
-        'relationships/pending/<int:pk>/delete/',
-        views.PendingRelationshipDeleteView.as_view(),
-        name='relationships-pending-delete',
-    ),
     # Relationship Types Pages
     path(
         'relationship-types/',
