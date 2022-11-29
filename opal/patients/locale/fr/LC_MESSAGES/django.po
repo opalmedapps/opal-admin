@@ -286,13 +286,3 @@ msgstr "Date de naissance: "
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
 msgstr "Demandes d'accès d'aidant en attente"
-
-#~ msgid "Delete Relationship Pending Request"
-#~ msgstr "Supprimer la demande de lien en attente"
-
-#~ msgid ""
-#~ "Are you sure you want to delete the following pending relationship "
-#~ "request: %(object)s?"
-#~ msgstr ""
-#~ "Voulez-vous vraiment supprimer la demande de relation en attente "
-#~ "suivante: %(object)s?"
