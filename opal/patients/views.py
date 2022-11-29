@@ -1,4 +1,6 @@
 """This module provides views for hospital-specific settings."""
+from typing import Any
+
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
@@ -8,8 +10,8 @@ from django_tables2 import SingleTableView
 from opal.core.views import CreateUpdateView
 
 from .forms import ManageCaregiverAccessForm
-from .models import Relationship, RelationshipStatus, RelationshipType
-from .tables import PendingRelationshipTable, RelationshipTypeTable
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType
+from .tables import CaregiverAccessTable, PendingRelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -72,3 +74,18 @@ class CaregiverAccessView(FormView):
     template_name = 'patients/caregiver_access/form.html'
     form_class = ManageCaregiverAccessForm
     success_url = '.'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """Override class method and append patient data and caregivers table to context.
+
+        Args:
+            kwargs: any number of key word arguments.
+
+        Returns:
+            dict containing patient data and caregivers table.
+        """
+        context = super().get_context_data(**kwargs)
+        caregivers_table = CaregiverAccessTable(Relationship.objects.all())
+        context['patient'] = Patient.objects.first()
+        context['caregivers_table'] = caregivers_table
+        return context

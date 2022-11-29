@@ -63,3 +63,49 @@ class PendingRelationshipTable(tables.Table):
                 'class': 'thead-light',
             },
         }
+
+
+class CaregiverAccessTable(tables.Table):
+    """A table for listing caregivers on the `Manage Caregiver Access` page."""
+
+    first_name = tables.Column(
+        verbose_name=_('First Name'),
+        accessor='caregiver.user.first_name',
+    )
+
+    last_name = tables.Column(
+        verbose_name=_('Last Name'),
+        accessor='caregiver.user.last_name',
+    )
+
+    type = tables.Column(  # noqa: A003
+        verbose_name=_('Relationship'),
+    )
+
+    start_date = tables.Column(  # noqa: A003
+        verbose_name=_('Start Date'),
+    )
+
+    end_date = tables.Column(  # noqa: A003
+        verbose_name=_('End Date'),
+    )
+
+    status = tables.Column(
+        verbose_name=_('Status'),
+    )
+
+    actions = tables.Column(
+        verbose_name=_('Actions'),
+        orderable=False,
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['first_name', 'last_name', 'type', 'start_date', 'end_date', 'status', 'actions']
+        empty_text = _('No caregivers.')
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
