@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-09 14:27+0300\n"
+"POT-Creation-Date: 2022-11-29 17:36-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,30 @@ msgstr ""
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
 msgstr "Patients"
+
+#: opal/patients/constants.py
+msgid "Medical Record Number (MRN)"
+msgstr "Numéro de dossier médical (NDM)"
+
+#: opal/patients/constants.py
+msgid "Medicare Card Number (RAMQ)"
+msgstr "Régie de l'assurance maladie du Québec (RAMQ)"
+
+#: opal/patients/forms.py
+msgid "Card Type"
+msgstr "Type de Carte"
+
+#: opal/patients/forms.py
+msgid "Site code"
+msgstr "Code du Site"
+
+#: opal/patients/forms.py
+msgid "Card Number"
+msgstr "Numéro de Carte"
+
+#: opal/patients/forms.py
+msgid "Search"
+msgstr "Chercher"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -78,11 +102,11 @@ msgstr "Autre"
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: opal/patients/models.py
+#: opal/patients/models.py opal/patients/tables.py
 msgid "First Name"
 msgstr "Prénom"
 
-#: opal/patients/models.py
+#: opal/patients/models.py opal/patients/tables.py
 msgid "Last Name"
 msgstr "Nom de famille"
 
@@ -210,6 +234,38 @@ msgstr "En attendant"
 #: opal/patients/tables.py
 msgid "No caregiver pending access requests."
 msgstr ""
+
+#: opal/patients/tables.py
+msgid "Start Date"
+msgstr "Date de Début"
+
+#: opal/patients/tables.py
+msgid "End Date"
+msgstr "Date de Fin"
+
+#: opal/patients/tables.py
+msgid "Status"
+msgstr "Statut"
+
+#: opal/patients/tables.py
+msgid "No caregivers."
+msgstr "Pas des aidants."
+
+#: opal/patients/templates/patients/caregiver_access/form.html
+msgid "Search Patient Acceess"
+msgstr "Rechercher l'accès des patients"
+
+#: opal/patients/templates/patients/caregiver_access/form.html
+msgid "Search for a specific patient to see all caregivers."
+msgstr "Search for a specific patient to see all caregivers."
+
+#: opal/patients/templates/patients/caregiver_access/form.html
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/templates/patients/caregiver_access/form.html
+msgid "Caregiver Details"
+msgstr "Détails de l'aidant"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
