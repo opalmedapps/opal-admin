@@ -1,12 +1,13 @@
 """This module provides views for hospital-specific settings."""
 from django.urls import reverse_lazy
-from django.views.generic.base import TemplateView
+from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
 
 from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
+from .forms import ManageCaregiverAccessForm
 from .models import Relationship, RelationshipStatus, RelationshipType
 from .tables import PendingRelationshipTable, RelationshipTypeTable
 
@@ -65,8 +66,9 @@ class PendingRelationshipListView(SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PatientAccessView(TemplateView):
+class CaregiverAccessView(FormView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
-    template_name = 'patients/patient_access/list.html'
-    http_method_names = ['get']
+    template_name = 'patients/caregiver_access/form.html'
+    form_class = ManageCaregiverAccessForm
+    success_url = '.'
