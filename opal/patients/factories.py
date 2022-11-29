@@ -9,6 +9,8 @@ reference from:
 
 import datetime
 
+from django.utils import timezone
+
 from factory import RelatedFactory, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
@@ -43,6 +45,7 @@ class Patient(DjangoModelFactory):
     first_name = 'Patient First Name'
     last_name = 'Patient Last Name'
     date_of_birth = datetime.date(1999, 1, 1)
+    date_of_death = datetime.datetime(2100, 1, 1, tzinfo=timezone.utc)
     sex = models.Patient.SexType.MALE
     ramq = ''
     legacy_id = Sequence(lambda number: number + 1)

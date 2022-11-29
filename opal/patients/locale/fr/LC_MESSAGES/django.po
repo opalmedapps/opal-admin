@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-09 14:27+0300\n"
+"POT-Creation-Date: 2022-11-29 13:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,6 +91,10 @@ msgid "Date of Birth"
 msgstr "Date de naissance"
 
 #: opal/patients/models.py
+msgid "Date and Time of Death"
+msgstr "Date et moment du décès"
+
+#: opal/patients/models.py
 msgid "Sex"
 msgstr "Sexe"
 
@@ -109,6 +113,12 @@ msgstr "Identifiant existant"
 #: opal/patients/models.py
 msgid "Patient"
 msgstr "Patient"
+
+#: opal/patients/models.py
+#, fuzzy
+#| msgid "Start date should be earlier than end date."
+msgid "Date of death should be later than date of birth."
+msgstr "Date de début doit être antérieure à la date de fin."
 
 #: opal/patients/models.py
 msgid "Pending"

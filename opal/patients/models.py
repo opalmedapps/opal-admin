@@ -94,6 +94,11 @@ class Patient(models.Model):
     date_of_birth = models.DateField(
         verbose_name=_('Date of Birth'),
     )
+    date_of_death = models.DateTimeField(
+        verbose_name=_('Date and Time of Death'),
+        null=True,
+        blank=True,
+    )
     sex = models.CharField(
         verbose_name=_('Sex'),
         max_length=1,
@@ -142,6 +147,15 @@ class Patient(models.Model):
             the name of the associated patient
         """
         return '{first} {last}'.format(first=self.first_name, last=self.last_name)
+
+    def clean(self) -> None:
+        """Validate date fields.
+
+        Raises:
+            ValidationError: the error shows when enteries do not comply with the validation rules.
+        """
+        if self.date_of_death is not None and self.date_of_birth >= self.date_of_death.date():
+            raise ValidationError({'date_of_death': _('Date of death should be later than date of birth.')})
 
 
 class RelationshipStatus(models.TextChoices):
