@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-29 21:55+0300\n"
+"POT-Creation-Date: 2022-11-30 18:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,6 +87,7 @@ msgid "Last Name"
 msgstr "Nom de famille"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -107,6 +108,7 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -131,6 +133,7 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -160,6 +163,7 @@ msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
 #: opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Relationship"
 msgstr "Relation"
 
@@ -264,24 +268,8 @@ msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de lien relationnel"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Patient: "
-msgstr "Patient: "
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Caregiver: "
-msgstr "Proche aidant: "
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Relationship Type Name: "
-msgstr "Type de relation avec le proche aidant: "
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Patient Identification Number: "
+msgid "Patient Identification Number"
 msgstr ""
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Date of Birth: "
-msgstr "Date de naissance: "
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
