@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load l10n %}
 {% load i18n %}
 
 {% load crispy_forms_tags %}
@@ -29,18 +30,10 @@
                 <h3 class="card-title">{% translate "Patient Details" %}</h3>
               </div>
               <div class="card-body">
-                <div class="row">
-                  {{ patient.first_name }}
-                </div>
-                <div class="row">
-                  {{ patient.last_name }}
-                </div>
-                <div class="row">
-                  {{ patient.date_of_birth }}
-                </div>
-                <div class="row">
-                  {{ patient.ramq }}
-                </div>
+                <p><span class="font-weight-bold">{% translate "First Name" %}</span>:&nbsp;{{ patient.first_name }}</p>
+                <p><span class="font-weight-bold">{% translate "Last Name" %}</span>:&nbsp;{{ patient.last_name }}</p>
+                <p><span class="font-weight-bold">{% translate "Date of Birth" %}</span>:&nbsp;{{ patient.date_of_birth | localize }}</p>
+                <p><span class="font-weight-bold">{% translate "Patient Identification Number" %}</span>:&nbsp;{{ patient.ramq }}</p>
               </div>
             </div>
             <div class="card">
