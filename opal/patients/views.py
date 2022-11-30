@@ -68,12 +68,14 @@ class PendingRelationshipListView(SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class CaregiverAccessView(FormView):
+class CaregiverAccessView(SingleTableView, FormView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
+    model = Relationship
+    table_class = CaregiverAccessTable
     template_name = 'patients/caregiver_access/form.html'
     form_class = ManageCaregiverAccessForm
-    success_url = '.'
+    success_url = reverse_lazy('patients:caregiver-access')
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Override class method and append patient data and caregivers table to context.
@@ -85,7 +87,5 @@ class CaregiverAccessView(FormView):
             dict containing patient data and caregivers table.
         """
         context = super().get_context_data(**kwargs)
-        caregivers_table = CaregiverAccessTable(Relationship.objects.all())
         context['patient'] = Patient.objects.first()
-        context['caregivers_table'] = caregivers_table
         return context
