@@ -123,6 +123,7 @@ class Patient(models.Model):
     legacy_id = models.PositiveIntegerField(
         verbose_name=_('Legacy ID'),
         validators=[MinValueValidator(1)],
+        unique=True,
         null=True,
         blank=True,
     )
