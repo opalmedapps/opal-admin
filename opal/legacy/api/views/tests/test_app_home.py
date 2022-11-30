@@ -28,8 +28,13 @@ class TestHomeAppView:
         assert 'unread_notification_count' in response.data
         assert 'daily_appointments' in response.data
 
-    def test_get_home_data_return_value(self, api_client: APIClient, admin_user: User) -> None:
+    def test_get_home_data_return_value(self, api_client: APIClient, admin_user: User, mocker: MockerFixture) -> None:
         """Test the return value of get home data."""
+        # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
+        now = timezone.make_aware(datetime(2022, 11, 29, 11, 2, 3))
+        mock_timezone = mocker.patch('django.utils.timezone.now')
+        mock_timezone.return_value = now
+
         user = factories.LegacyUserFactory()
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
