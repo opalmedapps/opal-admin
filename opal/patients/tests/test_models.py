@@ -10,7 +10,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType
+from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -98,6 +98,12 @@ def test_relationshiptype_max_age_upperbound() -> None:
 
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE
     relationship_type.full_clean()
+
+
+def test_relationshiptype_default_role() -> None:
+    """Ensure a new relationshiptype (factory) role defaults to caregiver."""
+    relationship_type = factories.RelationshipType()
+    assert relationship_type.role_type == RoleType.CAREGIVER
 
 
 def test_patient_str() -> None:
@@ -464,3 +470,21 @@ def test_relationship_same_relation_diff_type() -> None:
 
     factories.Relationship(patient=patient, caregiver=profile, type=type1)
     factories.Relationship(patient=patient, caregiver=profile, type=type2)
+
+
+def test_relationshiptype_self_role_delete_error() -> None:
+    """Ensure operator can not delete a self role type."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.role_type = RoleType.SELF
+    message = "['The relationship type with this role type cannot be deleted']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.delete()
+
+
+def test_relationshiptype_par_role_delete_error() -> None:
+    """Ensure operator can not delete a parent/guardian role type."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.role_type = RoleType.PARENTGUARDIAN
+    message = "['The relationship type with this role type cannot be deleted']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.delete()
