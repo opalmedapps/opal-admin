@@ -1,17 +1,15 @@
 """This module provides views for hospital-specific settings."""
-from typing import Any
-
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
 
-from django_tables2 import SingleTableMixin, SingleTableView
+from django_tables2 import MultiTableMixin, SingleTableView
 
 from opal.core.views import CreateUpdateView
 
 from .forms import ManageCaregiverAccessForm
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType
-from .tables import CaregiverAccessTable, PendingRelationshipTable, RelationshipTypeTable
+from .models import Relationship, RelationshipStatus, RelationshipType
+from .tables import CaregiverAccessTable, PatientInfoTable, PendingRelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -68,27 +66,19 @@ class PendingRelationshipListView(SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class CaregiverAccessView(SingleTableMixin, FormView):
+class CaregiverAccessView(MultiTableMixin, FormView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
-    model = Relationship
-    table_class = CaregiverAccessTable
-    # TODO: use Relationship.objects.none(), currently it returns data for testing purposes
-    table_data = Relationship.objects.all()
+    tables = [
+        PatientInfoTable,
+        CaregiverAccessTable,
+    ]
+    # TODO: remove Relationship.objects.all(), currently it returns data for testing purposes
+    # TODO: use Relationship.objects.none()
+    tables_data = [
+        Relationship.objects.all(),
+        Relationship.objects.all(),
+    ]
     template_name = 'patients/caregiver_access/form.html'
     form_class = ManageCaregiverAccessForm
     success_url = reverse_lazy('patients:caregiver-access')
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Override class method and append patient data and caregivers table to context.
-
-        Args:
-            kwargs: any number of key word arguments.
-
-        Returns:
-            dict containing patient data and caregivers table.
-        """
-        context = super().get_context_data(**kwargs)
-        # TODO: return patient data only after the search request, currently it returns data for testing purposes
-        context['patient'] = Patient.objects.first()
-        return context

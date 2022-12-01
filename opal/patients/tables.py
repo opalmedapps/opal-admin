@@ -65,6 +65,39 @@ class PendingRelationshipTable(tables.Table):
         }
 
 
+class PatientInfoTable(tables.Table):
+    """A table for displaying patient info on the `Manage Caregiver Access` page."""
+
+    first_name = tables.Column(
+        verbose_name=_('First Name'),
+        accessor='patient__first_name',
+    )
+
+    last_name = tables.Column(
+        verbose_name=_('Last Name'),
+        accessor='patient__last_name',
+    )
+
+    date_of_birth = tables.DateColumn(
+        verbose_name=_('Date of Birth'),
+    )
+
+    ramq = tables.Column(
+        verbose_name=_('RAMQ'),
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
+        empty_text = _('No data.')
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+
 class CaregiverAccessTable(tables.Table):
     """A table for listing caregivers on the `Manage Caregiver Access` page."""
 

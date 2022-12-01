@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-01 09:53-0500\n"
+"POT-Creation-Date: 2022-12-01 11:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -103,17 +103,14 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/caregiver_access/form.html
 msgid "First Name"
 msgstr "Prénom"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/caregiver_access/form.html
 msgid "Last Name"
 msgstr "Nom de famille"
 
-#: opal/patients/models.py
-#: opal/patients/templates/patients/caregiver_access/form.html
+#: opal/patients/models.py opal/patients/tables.py
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -239,6 +236,14 @@ msgid "No caregiver pending access requests."
 msgstr ""
 
 #: opal/patients/tables.py
+msgid "RAMQ"
+msgstr "RAMQ"
+
+#: opal/patients/tables.py
+msgid "No data."
+msgstr ""
+
+#: opal/patients/tables.py
 msgid "Start Date"
 msgstr "Date de Début"
 
@@ -265,10 +270,6 @@ msgstr "Search for a specific patient to see all caregivers."
 #: opal/patients/templates/patients/caregiver_access/form.html
 msgid "Patient Details"
 msgstr "Détails du patient"
-
-#: opal/patients/templates/patients/caregiver_access/form.html
-msgid "RAMQ"
-msgstr "RAMQ"
 
 #: opal/patients/templates/patients/caregiver_access/form.html
 msgid "Caregiver Details"
