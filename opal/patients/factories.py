@@ -31,6 +31,7 @@ class RelationshipType(DjangoModelFactory):
     description_fr = lazy_attribute(lambda type: f'{type.description} FR')
     start_age = 14
     form_required = False
+    can_answer_questionnaire = False
 
 
 class Patient(DjangoModelFactory):

@@ -46,6 +46,11 @@ class RelationshipType(models.Model):
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )
+    can_answer_questionnaire = models.BooleanField(
+        verbose_name=_('Right to answer questionnaire'),
+        default=False,
+        help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
+    )
 
     class Meta:
         ordering = ['name']
