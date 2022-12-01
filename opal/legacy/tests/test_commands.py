@@ -10,7 +10,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import RelationshipStatus
+from opal.patients.models import RelationshipStatus, RoleType
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -321,7 +321,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationshiptype = patient_factories.RelationshipType(name='self')
+        relationshiptype = patient_factories.RelationshipType(role_type=RoleType.SELF)
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
@@ -338,7 +338,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         """Test import pass for relationship for already migrated caregiver."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(name='self')
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=55)
         message, error = self._call_command('migrate_users')
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
@@ -350,7 +350,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(name='self')
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Number of imported users is: 1\n' in message
@@ -364,7 +364,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
-        patient_factories.RelationshipType(name='self')
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Legacy user with sernum: 56 has been migrated\n' in message

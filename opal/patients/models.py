@@ -1,4 +1,5 @@
 """Module providing models for the patients app."""
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
@@ -11,6 +12,15 @@ from opal.hospital_settings.models import Site
 from opal.patients.managers import HospitalPatientManager, RelationshipManager
 
 from . import constants
+
+
+class RoleType(models.TextChoices):
+    """Choices for role type within the [opal.patients.models.RelationshipType][] model."""
+
+    # 'self' is a reserved keyword in Python requiring a noqa here.
+    SELF = 'SELF', _('Self')  # noqa: WPS117
+    CAREGIVER = 'CAREGIVER', _('Caregiver')
+    PARENTGUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
 
 
 class RelationshipType(models.Model):
@@ -51,6 +61,16 @@ class RelationshipType(models.Model):
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
+    role_type = models.CharField(
+        verbose_name=_('Relationship Role Type'),
+        choices=RoleType.choices,
+        default=RoleType.CAREGIVER,
+        max_length=14,
+        help_text=_(
+            'Role types track the category of relationship between a caregiver and patient.'
+            + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
+        ),
+    )
 
     class Meta:
         ordering = ['name']
@@ -64,6 +84,49 @@ class RelationshipType(models.Model):
             the name of the user patient relationship type
         """
         return self.name
+
+    def clean(self) -> None:
+        """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
+
+        If additional restricted role types are added in the future, add them to the RoleType lists here.
+
+        Raises:
+            ValidationError: If the changes result in a missing or extra restricted roletype.
+        """
+        existing_restricted_relationshiptypes = RelationshipType.objects.filter(
+            role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
+        )
+
+        existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
+
+        # Verify we cannot add an additional self or parent role type
+        if (self.role_type == RoleType.SELF and RoleType.SELF in existing_restricted_roletypes):
+            raise ValidationError(
+                _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
+            )
+        if (self.role_type == RoleType.PARENTGUARDIAN and RoleType.PARENTGUARDIAN in existing_restricted_roletypes):
+            raise ValidationError(
+                _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
+            )
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        """Validate the model being deleted is not of type 'self'.
+
+        Args:
+            args: Any number of arguments.
+            kwargs: Any number of key word arguments.
+
+        Raises:
+            ValidationError: If a new relationship is being created/edited with role_type self and one already exists.
+
+        Returns:
+            Number of models deleted and dict of models deleted.
+        """
+        if (self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+            raise ValidationError(
+                _('The relationship type with this role type cannot be deleted'),
+            )
+        return super().delete(*args, **kwargs)
 
 
 class SexType(models.TextChoices):
