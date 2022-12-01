@@ -62,6 +62,16 @@ class RelationshipType(models.Model):
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
+    role_type = models.CharField(
+        verbose_name=_('Relationship Role Type'),
+        choices=RoleType.choices,
+        default=RoleType.CAREGIVER,
+        max_length=14,
+        help_text=_(
+            'Role types track the category of relationship between a caregiver and patient.'
+            + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
+        ),
+    )
 
     role_type = models.CharField(
         verbose_name=_('Relationship Role Type'),
