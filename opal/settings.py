@@ -315,6 +315,19 @@ LOGGING = {
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
 
+# Set email SMTP server
+# See https://docs.djangoproject.com/en/dev/topics/email/
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:  # pragma: no cover
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
+EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
 # Legacy OpalAdmin related settings
 #
 # base URL to old OpalAdmin (no trailing slash)

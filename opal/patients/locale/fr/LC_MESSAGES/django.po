@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-30 18:00+0300\n"
+"POT-Creation-Date: 2022-12-01 12:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,6 +55,14 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
+msgid "Right to answer questionnaire"
+msgstr "Le droit de répondre au questionnaire"
+
+#: opal/patients/models.py
+msgid "The caregiver can answer questionnaires on behalf of the patient."
+msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
@@ -87,9 +95,12 @@ msgid "Last Name"
 msgstr "Nom de famille"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
+
+#: opal/patients/models.py
+msgid "Date and Time of Death"
+msgstr "Date et heure du décès"
 
 #: opal/patients/models.py
 msgid "Sex"
@@ -108,9 +119,12 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Patient"
 msgstr "Patient"
+
+#: opal/patients/models.py
+msgid "Date of death cannot be earlier than date of birth."
+msgstr "Date de décès ne peut pas précéder la date de naissance."
 
 #: opal/patients/models.py
 msgid "Pending"
@@ -133,7 +147,6 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -163,7 +176,6 @@ msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Relationship"
 msgstr "Relation"
 
@@ -201,11 +213,11 @@ msgstr "Patients de l'hôpital"
 
 #: opal/patients/tables.py
 msgid "Actions"
-msgstr "Actions"
+msgstr ""
 
 #: opal/patients/tables.py
 msgid "No relationship types defined."
-msgstr "Aucun type de relation défini."
+msgstr ""
 
 #: opal/patients/tables.py
 msgid "Pending Since"
@@ -213,22 +225,21 @@ msgstr "En attendant"
 
 #: opal/patients/tables.py
 msgid "No caregiver pending access requests."
-msgstr "Aucun soignant en attente de demandes d'accès."
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
-msgstr "Supprimer le type de relation"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #, python-format
 msgid ""
 "Are you sure you want to delete the following relationship type: %(object)s?"
 msgstr ""
-"Êtes-vous sûr de vouloir supprimer le type de relation suivant: %(object)s?"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Yes"
-msgstr "Oui"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete"
@@ -236,41 +247,29 @@ msgstr "Supprimer"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Cancel"
 msgstr "Annuler"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Update"
-msgstr "Mise à jour"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Create"
-msgstr "Créer"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Save"
-msgstr "Enregistrer"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "Relationship Types"
-msgstr "Types de relations"
+msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
-msgstr "Nouveau type de relation"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Pending Relationships Access Request"
-msgstr "Date de la demande de lien relationnel"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Patient Identification Number"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
-msgstr "Demandes d'accès d'aidant en attente"
+msgstr ""

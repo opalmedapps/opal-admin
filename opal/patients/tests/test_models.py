@@ -2,6 +2,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -333,6 +334,12 @@ def test_hospitalpatient_many_patients_one_site() -> None:
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
 
 
+def test_can_answer_questionnaire_default() -> None:
+    """Ensure default can_answer_questionnaire field is false."""
+    relationtype = factories.RelationshipType()
+    assert not relationtype.can_answer_questionnaire
+
+
 # tests for reason field constraints and validations
 def test_relationship_no_reason_invalid_revoked() -> None:
     """Ensure that error is thrown when reason is empty and status is revoked."""
@@ -464,3 +471,32 @@ def test_relationship_same_relation_diff_type() -> None:
 
     factories.Relationship(patient=patient, caregiver=profile, type=type1)
     factories.Relationship(patient=patient, caregiver=profile, type=type2)
+
+
+def test_invalid_date_of_death() -> None:
+    """Ensure that the date of death is invalid if date of birth is later."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 11, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 10, 20))
+
+    expected_message = 'Date of death cannot be earlier than date of birth.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean()
+
+
+def test_valid_date_of_death() -> None:
+    """Ensure that the date of death is entered and valid."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 10, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 11, 20))
+
+    patient.clean()
+
+
+def test_same_birth_and_death_date() -> None:
+    """Ensure that the date of death is valid if same as date of birth."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 1, 23)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 1, 23))
+
+    patient.clean()
