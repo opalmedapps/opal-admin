@@ -65,7 +65,6 @@ class PendingRelationshipListView(SingleTableView):
     table_class = PendingRelationshipTable
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
-    # TODO: use Relationship.objects.none(), currently it returns data for testing purposes
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
@@ -74,6 +73,8 @@ class CaregiverAccessView(SingleTableMixin, FormView):
 
     model = Relationship
     table_class = CaregiverAccessTable
+    # TODO: use Relationship.objects.none(), currently it returns data for testing purposes
+    table_data = Relationship.objects.all()
     template_name = 'patients/caregiver_access/form.html'
     form_class = ManageCaregiverAccessForm
     success_url = reverse_lazy('patients:caregiver-access')
