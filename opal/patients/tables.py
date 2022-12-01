@@ -82,11 +82,11 @@ class CaregiverAccessTable(tables.Table):
         verbose_name=_('Relationship'),
     )
 
-    start_date = tables.Column(
+    start_date = tables.DateColumn(
         verbose_name=_('Start Date'),
     )
 
-    end_date = tables.Column(
+    end_date = tables.DateColumn(
         verbose_name=_('End Date'),
     )
 
