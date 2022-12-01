@@ -3,9 +3,11 @@ from hashlib import sha512
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
+from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
 
+from pytest_django.fixtures import SettingsWrapper
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 
@@ -108,8 +110,13 @@ class TestApiEmailVerification:
         assert caregiver_profile.user.email == 'opal@muhc.mcgill.ca'
         assert caregiver_model.EmailVerification.objects.all().count() == 0
 
-    def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test save verify email success."""
+    def test_save_verify_email_en_success(  # noqa: WPS218
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test save verify email with English template success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -122,11 +129,45 @@ class TestApiEmailVerification:
             ),
             data={'email': email},
             format='json',
+            HTTP_ACCEPT_LANGUAGE='en',
         )
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
         assert email_verification
         assert not email_verification.is_verified
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
+        assert email_verification.code in mail.outbox[0].body
+        assert 'Dear' in mail.outbox[0].body
+        assert mail.outbox[0].subject == 'Opal Verification Code'
+
+    def test_save_verify_email_fr_success(  # noqa: WPS218
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test save verify email withe French template success."""
+        api_client.force_login(user=admin_user)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
+        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
+        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
+        email = 'test@muhc.mcgill.ca'
+        response = api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email},
+            format='json',
+            HTTP_ACCEPT_LANGUAGE='fr',
+        )
+        email_verification = caregiver_model.EmailVerification.objects.get(email=email)
+        assert response.status_code == HTTPStatus.OK
+        assert email_verification
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
+        assert email_verification.code in mail.outbox[0].body
 
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test resend verify email within 10 sec."""
