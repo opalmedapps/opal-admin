@@ -1,4 +1,7 @@
 """This module provides views for hospital-specific settings."""
+from typing import Any
+
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
@@ -69,16 +72,36 @@ class PendingRelationshipListView(SingleTableView):
 class CaregiverAccessView(MultiTableMixin, FormView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
+    queryset = Relationship.objects.select_related(
+        'caregiver',
+        'caregiver__user',
+        'patient',
+    )
+
     tables = [
-        PatientInfoTable,
-        CaregiverAccessTable,
+        PatientInfoTable(Relationship.objects.none()),
+        CaregiverAccessTable(Relationship.objects.none()),
     ]
-    # TODO: remove Relationship.objects.all(), currently it returns data for testing purposes
-    # TODO: use Relationship.objects.none()
-    tables_data = [
-        Relationship.objects.all(),
-        Relationship.objects.all(),
-    ]
+
     template_name = 'patients/caregiver_access/form.html'
     form_class = ManageCaregiverAccessForm
     success_url = reverse_lazy('patients:caregiver-access')
+
+    def form_valid(self, form: ManageCaregiverAccessForm, **kwargs: Any) -> HttpResponse:
+        """Update the tables based on the `ManageCaregiverAccessForm` parameters.
+
+        This method is called when valid form data has been POSTed.
+
+        Args:
+            form: POSTed valid form
+            kwargs: varied amount of keyworded arguments
+
+        Returns:
+            `HttpResponse` containing filtered tables based on the received form data.
+        """
+        context = self.get_context_data(**kwargs)
+        filtered_queryset = self.queryset.filter(patient__ramq=form.cleaned_data['medical_number'])
+        context['tables'][0] = PatientInfoTable(filtered_queryset)
+        context['tables'][1] = CaregiverAccessTable(filtered_queryset)
+        context['form'] = form
+        return self.render_to_response(context)
