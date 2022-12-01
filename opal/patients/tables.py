@@ -80,10 +80,12 @@ class PatientInfoTable(tables.Table):
 
     date_of_birth = tables.DateColumn(
         verbose_name=_('Date of Birth'),
+        accessor='patient__date_of_birth',
     )
 
     ramq = tables.Column(
         verbose_name=_('RAMQ'),
+        accessor='patient__ramq',
     )
 
     class Meta:
