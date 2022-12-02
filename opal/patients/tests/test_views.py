@@ -165,8 +165,23 @@ def test_relationships_pending_list_table(user_client: Client) -> None:
 
 def test_relationships_pending_form(user_client: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
-    caregivertype = factories.RelationshipType(name='caregiver')
-    factories.Relationship(pk=1, type=caregivertype)
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    factories.Relationship(pk=1, type=relationshiptype)
     response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
+
+
+def test_relationships_pending_form_content(user_client: Client) -> None:
+    """Ensures that pending relationships shown info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    patient = factories.Patient()
+    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['relationship'].caregiver == caregiver
+    assert response.context['relationship'].patient == patient
+    assert response.context['relationship'].patient.date_of_birth == patient.date_of_birth
+    assert response.context['relationship'].patient.ramq == patient.ramq
+    assert response.context['relationship'].type == relationshiptype
