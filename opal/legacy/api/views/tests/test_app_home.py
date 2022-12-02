@@ -1,3 +1,4 @@
+import datetime as dt
 from datetime import datetime
 
 from django.urls import reverse
@@ -77,7 +78,7 @@ class TestHomeAppView:
         )
 
         # mock the current timezone to simulate the UTC time already on the next day
-        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=timezone.utc)
+        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
         mocker.patch.object(timezone, 'now', return_value=current_time)
         daily_appointments = models.LegacyAppointment.objects.get_daily_appointments(patient.patientsernum)
 
