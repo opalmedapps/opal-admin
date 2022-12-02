@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from pytest_django.asserts import assertContains, assertQuerysetEqual
 
-from .. import factories, models, tables
+from .. import factories, forms, models, tables
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
@@ -154,3 +154,19 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
+
+
+def test_relationships_pending_list_table(user_client: Client) -> None:
+    """Ensures that pending relationships list uses the corresponding table."""
+    response = user_client.get(reverse('patients:relationships-pending-list'))
+
+    assert response.context['table'].__class__ == tables.PendingRelationshipTable
+
+
+def test_relationships_pending_form(user_client: Client) -> None:
+    """Ensures that pending relationships edit uses the right form."""
+    caregivertype = factories.RelationshipType(name='caregiver')
+    factories.Relationship(pk=1, type=caregivertype)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
