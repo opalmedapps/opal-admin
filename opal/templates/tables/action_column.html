@@ -4,7 +4,7 @@
   <i class="fas fa-pencil-alt"></i> {% translate "Edit" %}
 </a>
 {% if urlname_delete %}
-<a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
-  <i class="fas fa-trash"></i> {% translate "Delete" %}
-</a>
+  <a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
+    <i class="fas fa-trash"></i> {% translate "Delete" %}
+  </a>
 {% endif %}

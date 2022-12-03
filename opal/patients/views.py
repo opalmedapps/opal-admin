@@ -68,7 +68,7 @@ class PendingRelationshipListView(SingleTableView):
 
 class PendingRelationshipCreateUpdateView(CreateUpdateView):
     """
-    This `CreateView` displays a form for creating a `Relationship` object.
+    This `UpdatesView` displays a form for updating a `Relationship` object.
 
     It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
     """

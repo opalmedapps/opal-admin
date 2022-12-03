@@ -173,15 +173,24 @@ def test_relationships_pending_form(user_client: Client) -> None:
 
 
 def test_relationships_pending_form_content(user_client: Client) -> None:
-    """Ensures that pending relationships shown info is correct."""
+    """Ensures that pending relationships passed info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['relationship'] == relationship
+
+
+def test_relationships_pending_form_response(user_client: Client) -> None:
+    """Ensures that pending relationships displayed info is correct."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     patient = factories.Patient()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
     response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response.content.decode('utf-8')
 
-    assert response.context['relationship'].caregiver == caregiver
-    assert response.context['relationship'].patient == patient
-    assert response.context['relationship'].patient.date_of_birth == patient.date_of_birth
-    assert response.context['relationship'].patient.ramq == patient.ramq
-    assert response.context['relationship'].type == relationshiptype
+    assertContains(response, patient)
+    assertContains(response, caregiver)
+    assertContains(response, relationship.patient.ramq)

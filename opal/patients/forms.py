@@ -13,8 +13,14 @@ from .models import Relationship
 class RelationshipPendingAccessForm(forms.ModelForm):
     """Form for updating an `Pending Relationship Access` object."""
 
-    start_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
-    end_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    start_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=Relationship._meta.get_field('start_date').verbose_name,  # noqa: WPS437
+    )
+    end_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
+    )
 
     class Meta:
         model = Relationship
