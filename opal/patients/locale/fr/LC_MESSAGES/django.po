@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-02 17:39+0300\n"
+"POT-Creation-Date: 2022-12-03 05:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -283,7 +283,7 @@ msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de relation"
 
 #: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Patient Identification Number"
+msgid "RAMQ"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/pending/list.html
