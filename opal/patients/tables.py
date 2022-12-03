@@ -71,3 +71,84 @@ class PendingRelationshipTable(tables.Table):
                 'class': 'thead-light',
             },
         }
+
+
+class RelationshipPatientTable(tables.Table):
+    """A table for displaying patients' personal information."""
+
+    first_name = tables.Column(
+        verbose_name=_('First Name'),
+        accessor='patient__first_name',
+    )
+
+    last_name = tables.Column(
+        verbose_name=_('Last Name'),
+        accessor='patient__last_name',
+    )
+
+    date_of_birth = tables.DateColumn(
+        verbose_name=_('Date of Birth'),
+        accessor='patient__date_of_birth',
+    )
+
+    ramq = tables.Column(
+        verbose_name=_('RAMQ'),
+        accessor='patient__ramq',
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
+        empty_text = _('No patient found.')
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+
+class RelationshipCaregiverTable(tables.Table):
+    """A table for displaying caregivers' personal information."""
+
+    first_name = tables.Column(
+        verbose_name=_('First Name'),
+        accessor='caregiver__user__first_name',
+    )
+
+    last_name = tables.Column(
+        verbose_name=_('Last Name'),
+        accessor='caregiver__user__last_name',
+    )
+
+    relationship_type = tables.Column(
+        verbose_name=_('Relationship'),
+    )
+
+    start_date = tables.DateColumn(
+        verbose_name=_('Start Date'),
+    )
+
+    end_date = tables.DateColumn(
+        verbose_name=_('End Date'),
+    )
+
+    status = tables.Column(
+        verbose_name=_('Status'),
+    )
+
+    actions = tables.Column(
+        verbose_name=_('Actions'),
+        orderable=False,
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['first_name', 'last_name', 'relationship_type', 'start_date', 'end_date', 'status', 'actions']
+        empty_text = _('No caregivers.')
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }

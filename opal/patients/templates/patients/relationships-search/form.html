@@ -1,0 +1,48 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+
+{% load render_table from django_tables2 %}
+
+{% block content-header-page-name %}{% translate "Search Patient Acceess" %}{% endblock %}
+
+{% block content-header-page-description %}{% translate "Search for a specific patient to see all their caregivers." %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <form method="post">
+                  {% csrf_token %}
+                  {% crispy form %}
+                </form>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{% translate "Patient Details" %}</h3>
+              </div>
+              <div class="table-responsive">
+                {% render_table tables.0 %}
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{% translate "Caregiver Details" %}</h3>
+              </div>
+                <div class="table-responsive">
+                  {% render_table tables.1 %}
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
