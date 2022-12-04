@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView
@@ -20,10 +21,11 @@ class IndexTemplateView(TemplateView):
 
 
 # INSTITUTIONS
-class InstitutionListView(SingleTableView):
+class InstitutionListView(PermissionRequiredMixin, SingleTableView):
     """This table view provides a page that displays a list of institution objects."""
 
     model = Institution
+    permission_required = ('hospital_settings.can_manage_institutions',)
     table_class = tables.InstitutionTable
     template_name = 'hospital_settings/institution/institution_list.html'
 
