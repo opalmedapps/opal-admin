@@ -36,6 +36,17 @@ def test_relationships_pending_list() -> None:
     assert resolve(url).view_name == 'patients:relationships-pending-list'
 
 
+def test_caregiver_access_list() -> None:
+    """
+    Ensure that 'patients:caregiver-access' URL name resolves to the appropriate URL.
+
+    It also checks that the URL is served with the correct view.
+    """
+    url = '/patients/relationships/search'
+    assert reverse('patients:relationships-search') == url
+    assert resolve(url).view_name == 'patients:relationships-search'
+
+
 def test_relationships_pending_update() -> None:
     """Ensures a url for relationships pending access update view exists."""
     url = '/patients/relationships/pending/12/update/'
