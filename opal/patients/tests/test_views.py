@@ -8,7 +8,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertQuerysetEqual
 
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -135,9 +135,9 @@ def test_initial_call(
 
     assert response.status_code == HTTPStatus.OK
     assert wizard['steps'].current == 'site'
-    assert wizard['steps'].last == 'finished'
+    assert wizard['steps'].last == 'password'
     assert wizard['steps'].next == 'search'
-    assert wizard['steps'].count == 7
+    assert wizard['steps'].count == 8
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -286,7 +286,8 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': '1'}),
         ('requestor', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
-        ('finished', {'is_correct': True, 'is_id_checked': True}),
+        ('existing', {'is_correct': True, 'is_id_checked': True}),
+        ('password', {'confirm_password': '123456789'}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -312,9 +313,9 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         elif 'account' in step:
             assert response.context['wizard']['steps'].current == 'requestor'
         elif 'requestor' in step:
-            assert response.context['wizard']['steps'].current == 'finished'
-        elif 'finished' in step:
-            assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
+            assert response.context['wizard']['steps'].current == 'existing'
+        elif 'existing' in step:
+            assert response.context['wizard']['steps'].current == 'password'
 
 
 class _TestAccessRequestView(views.AccessRequestView):

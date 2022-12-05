@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Any, Dict, Optional, Set, Union
 
 from django import forms
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -11,7 +12,7 @@ from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.models import Caregiver
+from opal.users.models import Caregiver, User
 
 from . import constants
 from .models import Patient, RelationshipType, Site
@@ -565,3 +566,42 @@ class NewUserForm(forms.Form):
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )
+
+
+class ConfirmPasswordForm(forms.Form):
+    """This `ConfirmPasswordForm` provides a layout to confirm user password."""
+
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(),
+        label=_('Please confirm access to patient data by entering your password.'),
+    )
+
+    def __init__(self, authorized_user: User, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for new user form.
+
+        Args:
+            authorized_user: an authorized user
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('confirm_password', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row',
+            ),
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Confirm')),
+            ),
+        )
+        self.authorized_user = authorized_user
+
+    def clean(self) -> None:
+        """Validate the user password."""
+        super().clean()
+        confirm_password = self.cleaned_data.get('confirm_password')
+
+        if not check_password(confirm_password, self.authorized_user.password):
+            self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
