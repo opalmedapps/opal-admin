@@ -1,4 +1,4 @@
-"""This module provides views for patient settings."""
+"""This module provides views for hospital-specific settings."""
 import io
 import uuid
 from collections import Counter
@@ -14,7 +14,7 @@ from django.views import generic
 
 import qrcode
 from dateutil.relativedelta import relativedelta
-from django_tables2 import SingleTableView
+from django_tables2 import MultiTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
@@ -24,8 +24,16 @@ from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
+from .forms import ManageCaregiverAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
-from .tables import ExistingUserTable, PatientTable, PendingRelationshipTable, RelationshipTypeTable
+from .tables import (
+    ExistingUserTable,
+    PatientTable,
+    PendingRelationshipTable,
+    RelationshipCaregiverTable,
+    RelationshipPatientTable,
+    RelationshipTypeTable,
+)
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -54,6 +62,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
         'start_age',
         'end_age',
         'form_required',
+        'can_answer_questionnaire',
     ]
     success_url = reverse_lazy('patients:relationshiptype-list')
 
@@ -462,3 +471,21 @@ class PendingRelationshipListView(SingleTableView):
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+
+
+class CaregiverAccessView(MultiTableMixin, generic.FormView):
+    """This view provides a page that lists all caregivers for a specific patient."""
+
+    tables = [
+        RelationshipPatientTable,
+        RelationshipCaregiverTable,
+    ]
+    # TODO: remove Relationship.objects.all(), currently it returns data for testing purposes
+    # TODO: use Relationship.objects.none()
+    tables_data = [
+        Relationship.objects.all(),
+        Relationship.objects.all(),
+    ]
+    template_name = 'patients/relationships-search/form.html'
+    form_class = ManageCaregiverAccessForm
+    success_url = reverse_lazy('patients:caregiver-access')

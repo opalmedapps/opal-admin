@@ -37,6 +37,11 @@ urlpatterns = [
         views.RelationshipTypeDeleteView.as_view(),
         name='relationshiptype-delete',
     ),
+    path(
+        'relationships/search',
+        views.CaregiverAccessView.as_view(),
+        name='relationships-search',
+    ),
     # Patients pages
     path(
         'access-request/',

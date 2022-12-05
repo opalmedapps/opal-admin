@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-30 20:46+0000\n"
+"POT-Creation-Date: 2022-12-02 11:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,11 +24,11 @@ msgstr "Patients"
 
 #: opal/patients/constants.py
 msgid "Medical Record Number (MRN)"
-msgstr "Numéro de dossier médical"
+msgstr "Numéro de dossier médical (NDM)"
 
 #: opal/patients/constants.py
 msgid "Medicare Card Number (RAMQ)"
-msgstr "Numéro d'assurance maladie (RAMQ)"
+msgstr "Régie de l'assurance maladie du Québec (RAMQ)"
 
 #: opal/patients/constants.py
 msgid "New Opal User"
@@ -131,6 +131,22 @@ msgstr "Confirmer"
 msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
 
+#: opal/patients/forms.py
+msgid "Card Type"
+msgstr "Type de Carte"
+
+#: opal/patients/forms.py
+msgid "Site code"
+msgstr "Code du Site"
+
+#: opal/patients/forms.py
+msgid "Card Number"
+msgstr "Numéro de Carte"
+
+#: opal/patients/forms.py
+msgid "Search"
+msgstr "Chercher"
+
 #: opal/patients/models.py
 msgid "Name"
 msgstr "Nom"
@@ -164,6 +180,14 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
+msgid "Right to answer questionnaire"
+msgstr "Le droit de répondre au questionnaire"
+
+#: opal/patients/models.py
+msgid "The caregiver can answer questionnaires on behalf of the patient."
+msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
@@ -188,8 +212,20 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #: opal/patients/models.py opal/patients/tables.py
+msgid "First Name"
+msgstr "Prénom"
+
+#: opal/patients/models.py opal/patients/tables.py
+msgid "Last Name"
+msgstr "Nom de famille"
+
+#: opal/patients/models.py opal/patients/tables.py
 msgid "Date of Birth"
 msgstr "Date de naissance"
+
+#: opal/patients/models.py
+msgid "Date and Time of Death"
+msgstr "Date et heure du décès"
 
 #: opal/patients/models.py
 msgid "Sex"
@@ -210,6 +246,10 @@ msgstr "Identifiant existant"
 #: opal/patients/models.py
 msgid "Patient"
 msgstr "Patient"
+
+#: opal/patients/models.py
+msgid "Date of death cannot be earlier than date of birth."
+msgstr "Date de décès ne peut pas précéder la date de naissance."
 
 #: opal/patients/models.py
 msgid "Pending"
@@ -320,6 +360,30 @@ msgstr "En attendant"
 msgid "No caregiver pending access requests."
 msgstr ""
 
+#: opal/patients/tables.py
+msgid "RAMQ"
+msgstr "RAMQ"
+
+#: opal/patients/tables.py
+msgid "No patient found."
+msgstr "Aucun patient trouvé."
+
+#: opal/patients/tables.py
+msgid "Start Date"
+msgstr "Date de Début"
+
+#: opal/patients/tables.py
+msgid "End Date"
+msgstr "Date de Fin"
+
+#: opal/patients/tables.py
+msgid "Status"
+msgstr "Statut"
+
+#: opal/patients/tables.py
+msgid "No caregivers."
+msgstr "Pas des aidants."
+
 #: opal/patients/templates/patients/access_request/access_request.html
 msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
@@ -366,6 +430,22 @@ msgstr ""
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
 msgstr ""
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Search Patient Acceess"
+msgstr "Rechercher l'accès des patients"
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Search for a specific patient to see all their caregivers."
+msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Caregiver Details"
+msgstr "Détails de l'aidant"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"

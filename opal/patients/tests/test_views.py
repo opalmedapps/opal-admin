@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import Any, Tuple
 
+from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
@@ -8,13 +9,36 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
 
 from .. import factories, forms, models, tables, views
+
+# Add any future GET-requestable patients app pages here for faster test writing
+test_url_template_data: list[Tuple] = [
+    (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
+]
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_patients_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page exists at each URL address."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page uses appropriate templates."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assertTemplateUsed(response, template)
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
