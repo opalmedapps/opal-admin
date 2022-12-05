@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-02 11:13-0500\n"
+"POT-Creation-Date: 2022-12-05 17:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -105,11 +105,11 @@ msgstr "Identité vérifiée?"
 msgid "Generate Access Request"
 msgstr "Générer une demande d'accès"
 
-#: opal/patients/forms.py opal/patients/models.py
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 msgid "First Name"
 msgstr "Prénom"
 
-#: opal/patients/forms.py opal/patients/models.py
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 msgid "Last Name"
 msgstr "Nom de famille"
 
@@ -210,14 +210,6 @@ msgstr "Autre"
 #: opal/patients/models.py
 msgid "Unknown"
 msgstr "Inconnu"
-
-#: opal/patients/models.py opal/patients/tables.py
-msgid "First Name"
-msgstr "Prénom"
-
-#: opal/patients/models.py opal/patients/tables.py
-msgid "Last Name"
-msgstr "Nom de famille"
 
 #: opal/patients/models.py opal/patients/tables.py
 msgid "Date of Birth"
@@ -440,6 +432,7 @@ msgid "Search for a specific patient to see all their caregivers."
 msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
 
 #: opal/patients/templates/patients/relationships-search/form.html
+#: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
 
@@ -454,10 +447,6 @@ msgstr ""
 #: opal/patients/views.py
 msgid "Hospital Information"
 msgstr "Patient de l'hôpital"
-
-#: opal/patients/views.py
-msgid "Patient Details"
-msgstr "Détails du patient"
 
 #: opal/patients/views.py
 msgid "Requestor Details"
