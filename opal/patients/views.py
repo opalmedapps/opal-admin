@@ -5,9 +5,9 @@ from django.views.generic.edit import DeleteView
 
 from django_tables2 import MultiTableMixin, SingleTableView
 
-from opal.core.views import CreateUpdateView
+from opal.core.views import CreateUpdateView, UpdateView
 
-from .forms import ManageCaregiverAccessForm
+from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm
 from .models import Relationship, RelationshipStatus, RelationshipType
 from .tables import (
     PendingRelationshipTable,
@@ -70,6 +70,19 @@ class PendingRelationshipListView(SingleTableView):
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+
+
+class PendingRelationshipUpdateView(UpdateView):
+    """
+    This `UpdatesView` displays a form for updating a `Relationship` object.
+
+    It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
+    """
+
+    model = Relationship
+    template_name = 'patients/relationships/pending/form.html'
+    form_class = RelationshipPendingAccessForm
+    success_url = reverse_lazy('patients:relationships-pending-list')
 
 
 class CaregiverAccessView(MultiTableMixin, FormView):
