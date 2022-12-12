@@ -16,6 +16,11 @@ urlpatterns = [
         views.PendingRelationshipListView.as_view(),
         name='relationships-pending-list',
     ),
+    path(
+        'relationships/pending/<int:pk>/update/',
+        views.PendingRelationshipUpdateView.as_view(),
+        name='relationships-pending-update',
+    ),
     # Relationship Types Pages
     path(
         'relationship-types/',

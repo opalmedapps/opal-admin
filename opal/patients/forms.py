@@ -18,7 +18,7 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
 from . import constants
-from .models import Patient, RelationshipType, Site
+from .models import Patient, Relationship, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -653,4 +653,43 @@ class ManageCaregiverAccessForm(forms.Form):
                 Submit('search', _('Search'), css_class='form-group col-md-3 mb-4 mt-4 btn btn-primary'),
                 css_class='form-row',
             ),
+        )
+
+
+class RelationshipPendingAccessForm(forms.ModelForm):
+    """Form for updating an `Pending Relationship Access` object."""
+
+    start_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=Relationship._meta.get_field('start_date').verbose_name,  # noqa: WPS437
+    )
+    end_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
+    )
+
+    class Meta:
+        model = Relationship
+        fields = (
+            'start_date',
+            'end_date',
+            'status',
+            'reason',
+        )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Set the layout.
+
+        Args:
+            args: varied amount of non-keyworded arguments
+            kwargs: varied amount of keyworded arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.layout = Layout(
+            'start_date',
+            'end_date',
+            'status',
+            'reason',
         )

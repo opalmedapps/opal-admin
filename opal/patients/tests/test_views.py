@@ -615,3 +615,43 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
+
+
+def test_relationships_pending_list_table(user_client: Client) -> None:
+    """Ensures that pending relationships list uses the corresponding table."""
+    response = user_client.get(reverse('patients:relationships-pending-list'))
+
+    assert response.context['table'].__class__ == tables.PendingRelationshipTable
+
+
+def test_relationships_pending_form(user_client: Client) -> None:
+    """Ensures that pending relationships edit uses the right form."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    factories.Relationship(pk=1, type=relationshiptype)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
+
+
+def test_relationships_pending_form_content(user_client: Client) -> None:
+    """Ensures that pending relationships passed info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['relationship'] == relationship
+
+
+def test_relationships_pending_form_response(user_client: Client) -> None:
+    """Ensures that pending relationships displayed info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    patient = factories.Patient()
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response.content.decode('utf-8')
+
+    assertContains(response, patient)
+    assertContains(response, caregiver)
+    assertContains(response, relationship.patient.ramq)

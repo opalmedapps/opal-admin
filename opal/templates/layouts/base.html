@@ -69,12 +69,14 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <li>
-                <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
-                  <i class="nav-icon fas fa-building"></i>
-                  <p class="text">{% translate "Institutions" %}</p>
-                </a>
-              </li>
+              {% if perms.hospital_settings.can_manage_institutions %}
+                <li>
+                  <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
+                    <i class="nav-icon fas fa-building"></i>
+                    <p class="text">{% translate "Institutions" %}</p>
+                  </a>
+                </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="{% url 'hospital-settings:site-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-sitemap"></i>

@@ -20,13 +20,13 @@ from qrcode.image import svg
 
 from opal.caregivers.models import RegistrationCode
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
-from opal.core.views import CreateUpdateView
+from opal.core.views import CreateUpdateView, UpdateView
 from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
-from .forms import ManageCaregiverAccessForm
+from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
 from .tables import (
     ExistingUserTable,
@@ -508,6 +508,19 @@ class PendingRelationshipListView(SingleTableView):
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+
+
+class PendingRelationshipUpdateView(UpdateView):
+    """
+    This `UpdatesView` displays a form for updating a `Relationship` object.
+
+    It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
+    """
+
+    model = Relationship
+    template_name = 'patients/relationships/pending/form.html'
+    form_class = RelationshipPendingAccessForm
+    success_url = reverse_lazy('patients:relationships-pending-list')
 
 
 class CaregiverAccessView(MultiTableMixin, generic.FormView):
