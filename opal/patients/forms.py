@@ -5,12 +5,15 @@ from typing import Any, Dict, Optional, Set, Union
 from django import forms
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
+from opal.core.form_layouts import CancelButton
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
@@ -592,8 +595,9 @@ class ConfirmPasswordForm(forms.Form):
                 Column('confirm_password', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row',
             ),
-            ButtonHolder(
+            FormActions(
                 Submit('wizard_goto_step', _('Confirm')),
+                CancelButton(reverse_lazy('patients:access-request')),
             ),
         )
         self.authorized_user = authorized_user

@@ -1,4 +1,5 @@
 """App core util functions."""
+import random
 import secrets
 import string
 import uuid
@@ -26,3 +27,18 @@ def generate_random_uuid(length: int) -> str:
         return a random uuid hexadecimal string
     """
     return uuid.uuid4().hex[:length]
+
+
+def generate_random_registration_code(length: int) -> str:
+    """Generate a random alphanumeric string with a given length.
+
+    Args:
+        length: length of a random alphanumeric string.
+
+    Returns:
+        return a random alphanumeric string
+    """
+    # getting systemRandom instance out of random class to prevent flake8 S311 vioaltion
+    # and generate cryptographically secure random.
+    system_random = random.SystemRandom()
+    return ''.join(system_random.choices(string.ascii_letters + string.digits, k=length))
