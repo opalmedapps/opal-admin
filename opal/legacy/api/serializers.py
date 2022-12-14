@@ -15,7 +15,7 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LegacyAppointment
-        fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible']
+        fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible', 'patientsernum']
 
 
 class QuestionnaireReportRequestSerializer(serializers.Serializer):
