@@ -42,7 +42,6 @@ class OIEHTTPCommunicationManager:
         """
         # Try to send an HTTP POST request and get a response
         try:
-            # TODO: OIE server should support SSL certificates. This will allow to use `verify=True` that fixes S501
             # https://requests.readthedocs.io/en/latest/api/#requests.post
             # https://www.w3schools.com/python/ref_requests_post.asp
             return requests.post(
@@ -51,7 +50,6 @@ class OIEHTTPCommunicationManager:
                 headers=metadata,
                 json=json.dumps(payload),
                 timeout=5,
-                verify=False,  # noqa: S501
             ).json()
         except requests.exceptions.RequestException as req_exp:
             return self.error_handler.generate_error({'message': str(req_exp)})
@@ -75,7 +73,6 @@ class OIEHTTPCommunicationManager:
         """
         # Try to send an HTTP GET request and get a response
         try:
-            # TODO: OIE server should support SSL certificates. This will allow to use `verify=True` that fixes S501
             # https://requests.readthedocs.io/en/latest/api/#requests.get
             # https://www.w3schools.com/python/ref_requests_get.asp
             return requests.get(
@@ -84,7 +81,6 @@ class OIEHTTPCommunicationManager:
                 headers=metadata,
                 params=params,
                 timeout=5,
-                verify=False,  # noqa: S501
             ).json()
         except requests.exceptions.RequestException as req_exp:
             return self.error_handler.generate_error({'message': str(req_exp)})
