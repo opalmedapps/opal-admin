@@ -29,7 +29,7 @@ class TestBasicClass:
             kwargs: keywords input parameter
 
         Returns:
-            A tupe of stdour and stderr values.
+            tuple of stdout and stderr values
         """
         out = StringIO()
         err = StringIO()
