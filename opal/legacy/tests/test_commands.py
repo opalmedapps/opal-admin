@@ -371,3 +371,12 @@ class TestUsersCaregiversMigration(TestBasicClass):
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
         assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
         assert 'Number of imported users is: 2\n' in message
+
+
+class TestPatientsDeviationsCommand(TestBasicClass):
+    """Test class for the custom command that detects `Patient` model/tables deviations."""
+
+    def test_deviations_no_patients(self) -> None:
+        """Ensure the command does not fail if there are no patient records."""
+        message, error = self._call_command('find_patients_deviations')
+        assert 'No deviations has been found in the "Patient" tables/models.' in message
