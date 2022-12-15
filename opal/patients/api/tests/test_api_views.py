@@ -120,6 +120,7 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
             'first_name': patient.first_name,
             'last_name': patient.last_name,
             'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
+            'date_of_death': None,
             'sex': patient.sex,
             'ramq': patient.ramq,
         },
