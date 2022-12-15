@@ -219,10 +219,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                     'sites': site_user_selection,
                 })
         elif step == 'search' and 'site_selection' in self.request.session:
-            site_code = Site.objects.get(pk=self.request.session['site_selection']).code
-            if site_code:
+            site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
+            if site_user_selection:
                 initial.update({
-                    'site_code': site_code,
+                    'site_code': site_user_selection.code,
                 })
         return initial
 
@@ -311,9 +311,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             reference_date=reference_date,
         )
         # Get the user choice for the relationship type in the previous step
-        user_select_type = RelationshipType.objects.get(name=relationship_type)
+        user_select_type = RelationshipType.objects.filter(name=relationship_type).first()
         # Return reference date if patient age is larger or otherwise return start date based on patient's age
-        if age < user_select_type.start_age:
+        if user_select_type and age < user_select_type.start_age:
             reference_date = date_of_birth + relativedelta(years=user_select_type.start_age)
         return reference_date
 
@@ -328,12 +328,13 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             caregiver user and caregiver profile instance dictionary
         """
+        caregiver_dict = {}
         if form_data['user_type'] == str(constants.EXISTING_USER):
             # Get the Caregiver user if it exists
-            caregiver_user = Caregiver.objects.get(
+            caregiver_user = Caregiver.objects.filter(
                 email=form_data['user_email'],
                 phone_number=form_data['user_phone'],
-            )
+            ).first()
         else:
             # Create a new Caregiver user
             caregiver_user = Caregiver.objects.create(
@@ -343,14 +344,15 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             )
 
         # Check if the caregiver record exists. If not, create a new record.
-        caregiver, created = CaregiverProfile.objects.get_or_create(
-            user_id=caregiver_user.id,
-            defaults={'user': caregiver_user},
-        )
-        return {
-            'caregiver_user': caregiver_user,
-            'caregiver': caregiver,
-        }
+        if caregiver_user:
+            caregiver, created = CaregiverProfile.objects.get_or_create(
+                user_id=caregiver_user.id,
+                defaults={'user': caregiver_user},
+            )
+            caregiver_dict['caregiver_user'] = caregiver_user
+            caregiver_dict['caregiver'] = caregiver
+
+        return caregiver_dict
 
     def _create_patient(self, form_data: dict) -> Patient:
         """

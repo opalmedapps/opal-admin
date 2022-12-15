@@ -1,4 +1,5 @@
 import io
+from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
 
@@ -10,13 +11,15 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
+from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
 
-from .. import factories, forms, models, tables, views
+from .. import constants, factories, forms, models, tables, views
 
 # Add any future GET-requestable patients app pages here for faster test writing
 test_url_template_data: list[Tuple] = [
@@ -426,6 +429,22 @@ def test_search_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
+def test_search_step_with_invalid_id_in_session() -> None:
+    """Test expected step 'search' with an invalid session storage of saving user selection."""
+    request = _init_session()
+    request.session['site_selection'] = 3
+    # adding Site records
+    factories.Site(pk=1)
+    factories.Site(pk=2)
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('search') == {}  # noqa: WPS520
+
+
+@pytest.mark.django_db()
 def test_expected_step_without_session_storage() -> None:
     """Test expected step 'site' without session storage of saving user selection."""
     request = _init_session()
@@ -456,8 +475,8 @@ def test_site_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_expected_step_with_invalid_id_in_session() -> None:
-    """Test expected step 'site' with session storage of saving user selection."""
+def test_site_step_with_invalid_id_in_session() -> None:
+    """Test expected step 'site' with an invalid session storage of saving user selection."""
     request = _init_session()
     request.session['site_selection'] = 3
     # adding Site records
@@ -490,6 +509,278 @@ def test_process_step_select_site_form() -> None:
     assert response.status_code == HTTPStatus.OK
     assert instance.process_step(form) == form_data
     assert request.session['site_selection'] == site.pk
+
+
+@pytest.mark.django_db()
+def test_relationship_start_date_adult_patient() -> None:
+    """Test relationsip start date for adult patient."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    date_of_birth = date(2004, 1, 1)
+    relationship_type = factories.RelationshipType(name='Parent or Guardian', start_age=1)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._set_relationship_start_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+
+
+@pytest.mark.django_db()
+def test_relationship_start_date_younger_patient() -> None:
+    """Test relationsip start date for younger patient."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    date_of_birth = date(2010, 1, 1)
+    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._set_relationship_start_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == date_of_birth + relativedelta(years=relationship_type.start_age)
+
+
+@pytest.mark.django_db()
+def test_create_caregiver_profile_existing_user() -> None:
+    """Test create caregiver profile for the existing user."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'user_type': '1',
+        'user_email': 'marge.simpson@gmail.com',
+        'user_phone': '+15141111111',
+    }
+
+    caregiver_user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
+    caregiver = factories.CaregiverProfile(user_id=caregiver_user.id)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._create_caregiver_profile(
+        form_data=form_data,
+        random_username_length=constants.USERNAME_LENGTH,
+    ) == {'caregiver_user': caregiver_user, 'caregiver': caregiver}
+
+
+@pytest.mark.django_db()
+def test_create_caregiver_profile_failed() -> None:
+    """Test create caregiver profile failed for the existing user."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'user_type': '1',
+        'user_email': 'test.simpson@gmail.com',
+        'user_phone': '+15141111111',
+    }
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._create_caregiver_profile(
+        form_data=form_data,
+        random_username_length=constants.USERNAME_LENGTH,
+    ) == {}     # noqa: WPS520
+
+
+@pytest.mark.django_db()
+def test_create_caregiver_profile_new_user() -> None:
+    """Test create caregiver profile for the new user."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'user_type': '0',
+        'first_name': 'Marge',
+        'last_name': 'Simpson',
+    }
+
+    caregiver_dict = instance._create_caregiver_profile(
+        form_data=form_data,
+        random_username_length=constants.USERNAME_LENGTH,
+    )
+    caregiver = CaregiverProfile(user=caregiver_dict['caregiver_user'])
+
+    assert response.status_code == HTTPStatus.OK
+    assert str(caregiver) == '{0} {1}'.format(
+        form_data['first_name'],
+        form_data['last_name'],
+    )
+
+
+@pytest.mark.django_db()
+def test_create_patient() -> None:
+    """Test create patient instance."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'patient_record': forms._patient_data(),
+    }
+    patient = instance._create_patient(form_data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assert patient.ramq == forms._patient_data().ramq
+    assert patient.sex == forms._patient_data().sex
+    assert patient.date_of_birth == forms._patient_data().date_of_birth
+    assert str(patient) == '{0} {1}'.format(
+        forms._patient_data().first_name,
+        forms._patient_data().last_name,
+    )
+
+
+@pytest.mark.django_db()
+def test_get_current_relationship() -> None:
+    """Test get an existing relationship instance."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'user_type': '1',
+        'user_email': 'marge.simpson@gmail.com',
+        'user_phone': '+15141111111',
+        'patient_record': forms._patient_data(),
+        'relationship_type': factories.RelationshipType(name='self'),
+    }
+
+    caregiver_user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
+    factories.CaregiverProfile(user_id=caregiver_user.id)
+
+    caregiver_dict = instance._create_caregiver_profile(
+        form_data=form_data,
+        random_username_length=constants.USERNAME_LENGTH,
+    )
+
+    patient = instance._create_patient(form_data=form_data)
+
+    relationship = instance._create_relationship(
+        form_data=form_data,
+        caregiver_dict=caregiver_dict,
+        patient=patient,
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert str(relationship) == '{0} <--> {1} [{2}]'.format(
+        str(patient),
+        str(caregiver_dict['caregiver']),
+        str(form_data['relationship_type']),
+    )
+
+
+@pytest.mark.django_db()
+def test_create_new_relationship() -> None:
+    """Test create a new relationship instance."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    patient_record = OIEPatientData(
+        date_of_birth=datetime.strptime('2014-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        first_name='Lisa',
+        last_name='Simpson',
+        sex='F',
+        alias='',
+        ramq='LISA99991313',
+        ramq_expiration=datetime.strptime('2044-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+    form_data = {
+        'user_type': '0',
+        'first_name': 'Marge',
+        'last_name': 'Simpson',
+        'patient_record': patient_record,
+        'relationship_type': factories.RelationshipType(name='Parent or Guardian'),
+    }
+
+    caregiver_dict = instance._create_caregiver_profile(
+        form_data=form_data,
+        random_username_length=constants.USERNAME_LENGTH,
+    )
+
+    patient = instance._create_patient(form_data=form_data)
+
+    relationship = instance._create_relationship(
+        form_data=form_data,
+        caregiver_dict=caregiver_dict,
+        patient=patient,
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert str(relationship) == '{0} <--> {1} [{2}]'.format(
+        str(patient),
+        str(caregiver_dict['caregiver']),
+        str(form_data['relationship_type']),
+    )
+
+
+@pytest.mark.django_db()
+def test_process_form_data() -> None:
+    """Test process the list form data and then return a dictionay form data."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = [
+        {
+            'medical_card': 'mrn',
+            'medical_number': '4356789',
+            'site_code': 'MGH',
+        },
+        {
+            'user_email': 'marge.simpson@gmail.com',
+            'user_phone': '+15141111111',
+        },
+        {
+            'relationship_type': factories.RelationshipType(name='self'),
+            'requestor_form': False,
+        },
+    ]
+
+    processed_form_data = {
+        'medical_card': 'mrn',
+        'medical_number': '4356789',
+        'site_code': 'MGH',
+        'user_email': 'marge.simpson@gmail.com',
+        'user_phone': '+15141111111',
+        'relationship_type': factories.RelationshipType(name='self'),
+        'requestor_form': False,
+    }
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._process_form_data(form_data) == processed_form_data
 
 
 @pytest.mark.django_db()
