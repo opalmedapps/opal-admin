@@ -177,7 +177,7 @@ class Command(BaseCommand):
                     ELSE "UNDEFINED"
                 END
                 ) AS Sex,
-                TelNum AS Phone,
+                CONVERT(TelNum, CHAR) AS Phone,
                 LOWER(Email) AS Email,
                 LOWER(Language) AS Language
             FROM Patient;
@@ -233,6 +233,6 @@ class Command(BaseCommand):
                 PHP.mrn AS MRN,
                 PHP.is_active AS IsActive
             FROM patients_hospitalpatient PHP
-            LEFT JOIN patients_patient PP ON PHP.id = PP.id
+            LEFT JOIN patients_patient PP ON PHP.patient_id = PP.id
             LEFT JOIN hospital_settings_site HSS ON PHP.site_id = HSS.id;
         """  # noqa: WPS462
