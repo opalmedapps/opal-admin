@@ -1,11 +1,25 @@
 import datetime
-from typing import Tuple
+from typing import Tuple, Type
+
+from django.contrib.auth import get_user_model
 
 import pytest
 
-from .. import factories
-from ..forms import ConfirmPatientForm, RequestorDetailsForm, SearchForm, SelectSiteForm
+from opal.users.models import User
 
+from .. import factories
+from ..forms import (
+    ConfirmExistingUserForm,
+    ConfirmPasswordForm,
+    ConfirmPatientForm,
+    ExistingUserForm,
+    RequestorAccountForm,
+    RequestorDetailsForm,
+    SearchForm,
+    SelectSiteForm,
+)
+
+UserModel: Type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
 
 
@@ -124,3 +138,115 @@ def test_disabled_option_exists() -> None:
     assert list(form.fields['relationship_type'].widget.available_choices) == [
         types[0].pk,
     ]
+
+
+def test_requestor_account_form_valid() -> None:
+    """Ensure that the requestor account form is valid."""
+    form_data = {
+        'user_type': 1,
+    }
+    form = RequestorAccountForm(data=form_data)
+    assert form.is_valid()
+
+
+def test_requestor_account_form_invalid() -> None:
+    """Ensure that the requestor account form is not valid."""
+    form_data = {
+        'user_type': '',
+    }
+
+    form = SelectSiteForm(data=form_data)
+
+    assert not form.is_valid()
+
+
+def test_existing_user_form_phone_field_error() -> None:
+    """Ensure that the existing user form phone field has error."""
+    form_data = {
+        'user_email': 'marge.simpson@gmail.com',
+        'user_phone': '5141111111',
+    }
+
+    form = ExistingUserForm(data=form_data)
+
+    assert not form.is_valid()
+    assert form.errors['user_phone'] == [
+        'Enter a valid phone number having the format: '
+        + '+<countryCode><phoneNumber> (for example +15141234567) '
+        + 'with an optional extension "x123"',
+    ]
+
+
+def test_existing_user_form_email_field_error() -> None:
+    """Ensure that the existing user form email field has error."""
+    form_data = {
+        'user_email': 'marge.simpson',
+        'user_phone': '5141111111',
+    }
+
+    form = ExistingUserForm(data=form_data)
+
+    assert not form.is_valid()
+    assert form.errors['user_email'] == ['Enter a valid email address.']
+
+
+def test_both_checkbox_checked() -> None:
+    """Ensure that the `Correct?` and `ID Checked?` checkboxes are checked."""
+    form_data = {
+        'is_correct': True,
+        'is_id_checked': True,
+    }
+
+    form = ConfirmExistingUserForm(data=form_data)
+    assert form.is_valid()
+
+
+def test_correct_is_not_checked() -> None:
+    """Ensure that the `Correct?` is not checked."""
+    form_data = {
+        'is_correct': False,
+        'is_id_checked': True,
+    }
+
+    form = ConfirmExistingUserForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['is_correct'] == ['This field is required.']
+
+
+def test_id_checked_is_not_checked() -> None:
+    """Ensure that the `ID Checked?` is not checked."""
+    form_data = {
+        'is_correct': True,
+        'is_id_checked': False,
+    }
+
+    form = ConfirmExistingUserForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['is_id_checked'] == ['This field is required.']
+
+
+def test_confirm_password_form_valid() -> None:
+    """Ensure that the confirm user password form is valid."""
+    form_data = {
+        'confirm_password': 'test-password',
+    }
+    user = UserModel.objects.create()
+    user.set_password(form_data['confirm_password'])
+
+    form = ConfirmPasswordForm(data=form_data, authorized_user=user)
+
+    assert form.is_valid()
+
+
+def test_confirm_password_form_password_invalid() -> None:
+    """Ensure that user password is not valid."""
+    form_data = {
+        'confirm_password': 'test-password',
+    }
+    user = UserModel.objects.create()
+    user.set_password('password')
+
+    form = ConfirmPasswordForm(data=form_data, authorized_user=user)
+
+    assert form.errors['confirm_password'] == ['The password you entered is incorrect. Please try again.']
+    assert not form.is_valid()

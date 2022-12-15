@@ -1,3 +1,4 @@
+import io
 from http import HTTPStatus
 from typing import Any, Tuple
 
@@ -396,14 +397,32 @@ def _init_session() -> HttpRequest:
 
 @pytest.mark.django_db()
 def test_unexpected_step() -> None:
-    """Test unexpected step 'search'."""
+    """Test unexpected step 'confirm'."""
     request = _init_session()
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
-    assert instance.get_form_initial('search') == {}  # noqa: WPS520
+    assert instance.get_form_initial('confirm') == {}  # noqa: WPS520
+
+
+@pytest.mark.django_db()
+def test_search_step_with_valid_id_in_session() -> None:
+    """Test expected step 'search' with session storage of saving user selection."""
+    request = _init_session()
+    request.session['site_selection'] = 2
+    # adding Site records
+    factories.Site(pk=1)
+    factories.Site(pk=2)
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('search') == {
+        'site_code': Site.objects.get(pk=2).code,
+    }
 
 
 @pytest.mark.django_db()
@@ -419,7 +438,7 @@ def test_expected_step_without_session_storage() -> None:
 
 
 @pytest.mark.django_db()
-def test_expected_step_with_valid_id_in_session() -> None:
+def test_site_step_with_valid_id_in_session() -> None:
     """Test expected step 'site' with session storage of saving user selection."""
     request = _init_session()
     request.session['site_selection'] = 2
@@ -471,6 +490,18 @@ def test_process_step_select_site_form() -> None:
     assert response.status_code == HTTPStatus.OK
     assert instance.process_step(form) == form_data
     assert request.session['site_selection'] == site.pk
+
+
+@pytest.mark.django_db()
+def test_qr_code_class_type() -> None:
+    """Test QR-code image stream class type."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert isinstance(instance._generate_qr_code('Wcyxh2Ucwu'), io.BytesIO)
 
 
 def test_some_mrns_have_same_site_code() -> None:
