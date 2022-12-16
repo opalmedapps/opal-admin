@@ -318,8 +318,7 @@ LOGGING = {
 # Set email SMTP server
 # See https://docs.djangoproject.com/en/dev/topics/email/
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    EMAIL_FILE_PATH = str(APPS_DIR / 'tests')
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:  # pragma: no cover
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
