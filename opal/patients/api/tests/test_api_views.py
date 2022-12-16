@@ -104,11 +104,6 @@ class TestApiRetrieveRegistrationDetails:
         relationship = Relationship(patient=patient)
         registration_code = RegistrationCode(relationship=relationship)
 
-        # Build relationships: hospital_patient -> site -> institution
-        institution = Institution()
-        site = Site(institution=institution)
-        hospital_patient = HospitalPatient(patient=patient, site=site)
-
         response = api_client.get(reverse(
             'api:registration-code',
             kwargs={'code': registration_code.code},
