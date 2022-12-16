@@ -1,0 +1,2 @@
+# Run the cronjob daily at 2am.
+0 2 * * * /app/scripts/check-databases-deviations.sh >> /var/log/cron.log 2>>/var/log/cron_errors.log

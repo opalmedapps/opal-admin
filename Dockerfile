@@ -41,6 +41,6 @@ WORKDIR /app
 ADD . /app
 
 # Set up the cron jobs
-COPY ./configs/cron-jobs/check-databases-deviations-cron /etc/cron.d/check-databases-deviations-cron
+COPY ./scripts/cronjobs/check-databases-deviations-cron /etc/cron.d/check-databases-deviations-cron
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
