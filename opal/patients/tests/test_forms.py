@@ -5,19 +5,10 @@ from django.contrib.auth import get_user_model
 
 import pytest
 
+from opal.users.factories import Caregiver
 from opal.users.models import User
 
-from .. import factories
-from ..forms import (
-    ConfirmExistingUserForm,
-    ConfirmPasswordForm,
-    ConfirmPatientForm,
-    ExistingUserForm,
-    RequestorAccountForm,
-    RequestorDetailsForm,
-    SearchForm,
-    SelectSiteForm,
-)
+from .. import factories, forms
 
 UserModel: Type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
@@ -30,7 +21,7 @@ def test_site_selection_exist() -> None:
         'sites': site,
     }
 
-    form = SelectSiteForm(data=form_data)
+    form = forms.SelectSiteForm(data=form_data)
 
     assert form.is_valid()
 
@@ -41,7 +32,7 @@ def test_site_selection_not_exist() -> None:
         'sites': '',
     }
 
-    form = SelectSiteForm(data=form_data)
+    form = forms.SelectSiteForm(data=form_data)
 
     assert not form.is_valid()
 
@@ -65,7 +56,7 @@ def test_search_form_valid(
         'medical_card': card_type,
         'medical_number': card_number,
     }
-    form = SearchForm(data=form_data)
+    form = forms.SearchForm(data=form_data)
     assert form.is_valid()
 
 
@@ -85,7 +76,7 @@ def test_search_form_invalid_ramq_field(
         'medical_card': card_type,
         'medical_number': card_number,
     }
-    form = SearchForm(data=form_data)
+    form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
 
@@ -96,7 +87,7 @@ def test_is_correct_checked() -> None:
         'is_correct': True,
     }
 
-    form = ConfirmPatientForm(data=form_data)
+    form = forms.ConfirmPatientForm(data=form_data)
 
     assert form.is_valid()
 
@@ -107,9 +98,24 @@ def test_is_correct_not_checked() -> None:
         'is_correct': False,
     }
 
-    form = ConfirmPatientForm(data=form_data)
+    form = forms.ConfirmPatientForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['is_correct'] == ['This field is required.']
+
+
+def test_requestor_form_not_check_if_required() -> None:
+    """Ensure that the 'requestor_form' checkbox is not checked."""
+    form_data = {
+        'relationship_type': factories.RelationshipType(name='Self', start_age=1, form_required=True),
+        'requestor_form': False,
+    }
+
+    form = forms.RequestorDetailsForm(
+        data=form_data,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
+    assert not form.is_valid()
+    assert form.errors['requestor_form'] == ['Form request is required.']
 
 
 def test_disabled_option_exists() -> None:
@@ -123,7 +129,7 @@ def test_disabled_option_exists() -> None:
     form_data = {
         'relationship_type': types,
     }
-    form = RequestorDetailsForm(
+    form = forms.RequestorDetailsForm(
         data=form_data,
         date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
     )
@@ -145,7 +151,7 @@ def test_requestor_account_form_valid() -> None:
     form_data = {
         'user_type': 1,
     }
-    form = RequestorAccountForm(data=form_data)
+    form = forms.RequestorAccountForm(data=form_data)
     assert form.is_valid()
 
 
@@ -155,7 +161,7 @@ def test_requestor_account_form_invalid() -> None:
         'user_type': '',
     }
 
-    form = SelectSiteForm(data=form_data)
+    form = forms.SelectSiteForm(data=form_data)
 
     assert not form.is_valid()
 
@@ -167,7 +173,7 @@ def test_existing_user_form_phone_field_error() -> None:
         'user_phone': '5141111111',
     }
 
-    form = ExistingUserForm(data=form_data)
+    form = forms.ExistingUserForm(data=form_data)
 
     assert not form.is_valid()
     assert form.errors['user_phone'] == [
@@ -184,10 +190,30 @@ def test_existing_user_form_email_field_error() -> None:
         'user_phone': '5141111111',
     }
 
-    form = ExistingUserForm(data=form_data)
+    form = forms.ExistingUserForm(data=form_data)
 
     assert not form.is_valid()
     assert form.errors['user_email'] == ['Enter a valid email address.']
+
+
+def test_existing_user_form_user_not_found() -> None:
+    """Ensure that the existing user is not found."""
+    form_data = {
+        'user_email': 'marge.simpson@gmail.com',
+        'user_phone': '+15142222222',
+    }
+    Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
+
+    form = forms.ExistingUserForm(data=form_data)
+    error_message = (
+        'Opal user was not found in your database. '
+        + 'This may be an out-of-hospital account. '
+        + 'Please proceed to generate a new QR code. '
+        + 'Inform the user they must register at the Registration website.'
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == error_message
 
 
 def test_both_checkbox_checked() -> None:
@@ -197,7 +223,7 @@ def test_both_checkbox_checked() -> None:
         'is_id_checked': True,
     }
 
-    form = ConfirmExistingUserForm(data=form_data)
+    form = forms.ConfirmExistingUserForm(data=form_data)
     assert form.is_valid()
 
 
@@ -208,7 +234,7 @@ def test_correct_is_not_checked() -> None:
         'is_id_checked': True,
     }
 
-    form = ConfirmExistingUserForm(data=form_data)
+    form = forms.ConfirmExistingUserForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['is_correct'] == ['This field is required.']
 
@@ -220,9 +246,33 @@ def test_id_checked_is_not_checked() -> None:
         'is_id_checked': False,
     }
 
-    form = ConfirmExistingUserForm(data=form_data)
+    form = forms.ConfirmExistingUserForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['is_id_checked'] == ['This field is required.']
+
+
+def test_new_user_form_valid() -> None:
+    """Ensure that the `NewUserForm` is valid."""
+    form_data = {
+        'first_name': 'Marge',
+        'last_name': 'Simpson',
+        'is_id_checked': True,
+    }
+
+    form = forms.NewUserForm(data=form_data)
+    assert form.is_valid()
+
+
+def test_new_user_form_not_valid() -> None:
+    """Ensure that the `NewUserForm` is not valid."""
+    form_data = {
+        'first_name': 'Marge',
+        'last_name': 'Simpson',
+        'is_id_checked': False,
+    }
+
+    form = forms.NewUserForm(data=form_data)
+    assert not form.is_valid()
 
 
 def test_confirm_password_form_valid() -> None:
@@ -233,7 +283,7 @@ def test_confirm_password_form_valid() -> None:
     user = UserModel.objects.create()
     user.set_password(form_data['confirm_password'])
 
-    form = ConfirmPasswordForm(data=form_data, authorized_user=user)
+    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 
     assert form.is_valid()
 
@@ -246,7 +296,7 @@ def test_confirm_password_form_password_invalid() -> None:
     user = UserModel.objects.create()
     user.set_password('password')
 
-    form = ConfirmPasswordForm(data=form_data, authorized_user=user)
+    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 
     assert form.errors['confirm_password'] == ['The password you entered is incorrect. Please try again.']
     assert not form.is_valid()
