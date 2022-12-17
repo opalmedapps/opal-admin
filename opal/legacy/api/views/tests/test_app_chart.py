@@ -4,6 +4,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
+from opal.patients import factories as patient_factories
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -30,7 +31,9 @@ class TestChartAppView:
 
     def test_get_unread_appointment_count(self) -> None:
         """Test if function returns number of unread appointments."""
-        patient = factories.LegacyPatientFactory()
+        relationship = patient_factories.Relationship(status='CON')
+        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        user = relationship.caregiver.user
         alias = factories.LegacyAliasFactory()
         alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
 
@@ -45,33 +48,47 @@ class TestChartAppView:
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            readstatus=1,
+            readby=user.username,
         )
 
-        appointments = models.LegacyAppointment.objects.get_unread_queryset(patient.patientsernum).count()
+        appointments = models.LegacyAppointment.objects.get_unread_queryset(
+            patient.patientsernum,
+            user.username,
+        ).count()
         assert appointments == 2
 
     def test_get_unread_txteammessage_count(self) -> None:
         """Test if function returns number of unread txteammessages."""
-        patient = factories.LegacyPatientFactory()
+        relationship = patient_factories.Relationship(status='CON')
+        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        user = relationship.caregiver.user
         factories.LegacyTxTeamMessageFactory(patientsernum=patient)
         factories.LegacyTxTeamMessageFactory(patientsernum=patient)
-        factories.LegacyTxTeamMessageFactory(patientsernum=patient, readstatus=1)
-        txteammessages = models.LegacyTxTeamMessage.objects.get_unread_queryset(patient.patientsernum).count()
+        factories.LegacyTxTeamMessageFactory(patientsernum=patient, readby=user.username)
+        txteammessages = models.LegacyTxTeamMessage.objects.get_unread_queryset(
+            patient.patientsernum,
+            user.username,
+        ).count()
         assert txteammessages == 2
 
     def test_get_unread_edumaterial_count(self) -> None:
         """Test if function returns number of unread educational materials."""
-        patient = factories.LegacyPatientFactory()
+        relationship = patient_factories.Relationship(status='CON')
+        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        user = relationship.caregiver.user
         factories.LegacyEducationalMaterialFactory(patientsernum=patient)
         factories.LegacyEducationalMaterialFactory(patientsernum=patient)
-        factories.LegacyEducationalMaterialFactory(patientsernum=patient, readstatus=1)
-        edumaterials = models.LegacyEducationalMaterial.objects.get_unread_queryset(patient.patientsernum).count()
+        factories.LegacyEducationalMaterialFactory(patientsernum=patient, readby=user.username)
+        edumaterials = models.LegacyEducationalMaterial.objects.get_unread_queryset(
+            patient.patientsernum,
+            user.username,
+        ).count()
         assert edumaterials == 2
 
     def test_get_unread_questionnaire_count(self) -> None:
         """Test if function returns number of unread questionnaires."""
-        patient = factories.LegacyPatientFactory()
+        relationship = patient_factories.Relationship(status='CON')
+        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyQuestionnaireFactory(patientsernum=patient)
         factories.LegacyQuestionnaireFactory(patientsernum=patient)
         factories.LegacyQuestionnaireFactory(patientsernum=patient, completedflag=1)

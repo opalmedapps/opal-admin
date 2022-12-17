@@ -238,7 +238,6 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         headers=None,
         json=payload,
         timeout=5,
-        verify=False,
     )
 
 
