@@ -27,7 +27,7 @@ LEGACY_PATIENT_QUERY = """
         LOWER(Email) AS Email,
         LOWER(Language) AS Language
     FROM Patient;
-"""  # noqa: WPS323, WPS462
+"""  # noqa: WPS323
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -36,7 +36,7 @@ LEGACY_HOSPITAL_PATIENT_QUERY = """
         MRN AS MRN,
         Is_Active AS IsActive
     FROM Patient_Hospital_Identifier;
-"""  # noqa: WPS462
+"""
 
 DJANGO_PATIENT_QUERY = """
     SELECT
@@ -52,7 +52,7 @@ DJANGO_PATIENT_QUERY = """
     FROM patients_patient PP
     LEFT JOIN caregivers_caregiverprofile CC ON PP.legacy_id = CC.legacy_id
     LEFT JOIN users_user UU ON CC.user_id = UU.id;
-"""  # noqa: WPS323, WPS462
+"""  # noqa: WPS323
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -63,7 +63,7 @@ DJANGO_HOSPITAL_PATIENT_QUERY = """
     FROM patients_hospitalpatient PHP
     LEFT JOIN patients_patient PP ON PHP.patient_id = PP.id
     LEFT JOIN hospital_settings_site HSS ON PHP.site_id = HSS.id;
-"""  # noqa: WPS462
+"""
 
 
 class Command(BaseCommand):
@@ -203,6 +203,6 @@ class Command(BaseCommand):
             err_str += '\n'.join(str(patient) for patient in (unmatched_hospital_patients))
             err_str += '\n{0}'.format(SPLIT_LENGTH * '-')
 
-        err_str += '\n\n{0}\n{0}'.format(SPLIT_LENGTH * '=')
+        err_str += '{0}\n\n\n'.format(err_str)
 
         return err_str
