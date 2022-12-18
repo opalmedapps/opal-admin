@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView
@@ -20,15 +21,16 @@ class IndexTemplateView(TemplateView):
 
 
 # INSTITUTIONS
-class InstitutionListView(SingleTableView):
+class InstitutionListView(PermissionRequiredMixin, SingleTableView):
     """This table view provides a page that displays a list of institution objects."""
 
     model = Institution
+    permission_required = ('hospital_settings.can_manage_institutions',)
     table_class = tables.InstitutionTable
     template_name = 'hospital_settings/institution/institution_list.html'
 
 
-class InstitutionCreateUpdateView(CreateUpdateView):
+class InstitutionCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     """
     This `CreateUpdateView` displays a form for creating and updating an institution object.
 
@@ -36,12 +38,13 @@ class InstitutionCreateUpdateView(CreateUpdateView):
     """
 
     model = Institution
+    permission_required = ('hospital_settings.can_manage_institutions',)
     template_name = 'hospital_settings/institution/institution_form.html'
     form_class = InstitutionForm
     success_url = reverse_lazy('hospital-settings:institution-list')
 
 
-class InstitutionDeleteView(DeleteView):
+class InstitutionDeleteView(PermissionRequiredMixin, DeleteView):
     """
     A view that displays a confirmation page and deletes an existing institution object.
 
@@ -51,6 +54,7 @@ class InstitutionDeleteView(DeleteView):
     """
 
     model = Institution
+    permission_required = ('hospital_settings.can_manage_institutions',)
     template_name = 'hospital_settings/institution/institution_confirm_delete.html'
     success_url = reverse_lazy('hospital-settings:institution-list')
 
