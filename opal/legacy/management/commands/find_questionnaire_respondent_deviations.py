@@ -9,8 +9,8 @@ SPLIT_LENGTH = 120
 
 LEGACY_RESPONDENT_QUERY = """
     SELECT
-        respondentUsername AS Username,
-        respondentDisplayName AS CaregiverName
+        aq.respondentUsername AS Username,
+        aq.respondentDisplayName AS CaregiverName
     FROM answerQuestionnaire aq
     WHERE aq.status = 2 OR aq.status = 3
     GROUP BY aq.respondentUsername, aq.respondentDisplayName;
@@ -18,7 +18,7 @@ LEGACY_RESPONDENT_QUERY = """
 
 DJANGO_RESPONDENT_QUERY = """
     SELECT
-        username AS Username,
+        UU.username AS Username,
         CONCAT_WS(' ', UU.first_name, UU.last_name) AS CaregiverName
     FROM users_user UU
     WHERE UU.username IN %s;
@@ -55,6 +55,9 @@ class Command(BaseCommand):
 
         with connections['default'].cursor() as django_db:
             users = [respondent[0] for respondent in legacy_respondents]
+            # users list is empty, set it with impossible while so the SQL query does not break
+            if not users:
+                users = ['___impossible_username___']
             django_db.execute(DJANGO_RESPONDENT_QUERY, [users])
             django_respondents = django_db.fetchall()
 

@@ -3,9 +3,11 @@ from io import StringIO
 from typing import Any
 
 from django.core.management import call_command
+from django.db import connections
 from django.utils import timezone
 
 import pytest
+from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
@@ -15,7 +17,7 @@ from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus
 from opal.users import factories as user_factories
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
 class TestBasicClass:
@@ -518,3 +520,138 @@ class TestPatientsDeviationsCommand(TestBasicClass):
 
         message, error = self._call_command('find_patients_deviations')
         assert 'No deviations has been found in the "Patient" tables/models.' in message
+
+
+class TestQuestionnaireRespondentsDeviationsCommand(TestBasicClass):
+    """Test class for the custom command that detects `Questionnaire respondents` sync deviations."""
+
+    def test_deviations_no_respondents(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command does not fail if there are no questionnaires with respondents."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
+                conn.close()
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
+
+    def test_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                query = """
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_1',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                    WHERE ID = 184;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_2',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                    WHERE ID = 189;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
+                    WHERE ID = 190;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = '',
+                        `respondentDisplayName` = ''
+                    WHERE ID = 184;
+                """
+                conn.execute(query)
+                conn.close()
+
+        user_factories.User(
+            id=1,
+            first_name='TEST NAME',
+            last_name='RESPONDENT',
+            username='firebase hashed user UID',
+        )
+
+        # this user should not be included to the error list
+        user_factories.User(
+            id=2,
+            first_name='TEST NAME',
+            last_name='RESPONDENT test1',
+            username='firebase hashed user UID_1',
+        )
+
+        user_factories.User(
+            id=3,
+            first_name='TEST NAME',
+            last_name='RESPONDENT test2_2',
+            username='firebase hashed user UID_2',
+        )
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'found deviations in the questionnaire respondents!!!' in error
+        assert "('', '')" in error
+        assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2_2')" in error
+        assert "('firebase hashed user UID', 'TEST NAME RESPONDENT test3')" in error
+        assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2')" in error
+
+    def test_no_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command does not return an error if no sync deviations for respondents' names."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                query = """
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_1',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                    WHERE ID = 184;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_2',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                    WHERE ID = 189;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT'
+                    WHERE ID = 190;
+                """
+                conn.execute(query)
+                conn.close()
+
+        user_factories.User(
+            id=1,
+            first_name='TEST NAME',
+            last_name='RESPONDENT',
+            username='firebase hashed user UID',
+        )
+
+        user_factories.User(
+            id=2,
+            first_name='TEST NAME',
+            last_name='RESPONDENT test1',
+            username='firebase hashed user UID_1',
+        )
+
+        user_factories.User(
+            id=3,
+            first_name='TEST NAME',
+            last_name='RESPONDENT test2',
+            username='firebase hashed user UID_2',
+        )
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
