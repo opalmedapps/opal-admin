@@ -573,7 +573,6 @@ class TestQuestionnaireRespondentsDeviationsCommand(TestBasicClass):
                 conn.close()
 
         user_factories.User(
-            id=1,
             first_name='TEST NAME',
             last_name='RESPONDENT',
             username='firebase hashed user UID',
@@ -581,14 +580,12 @@ class TestQuestionnaireRespondentsDeviationsCommand(TestBasicClass):
 
         # this user should not be included to the error list
         user_factories.User(
-            id=2,
             first_name='TEST NAME',
             last_name='RESPONDENT test1',
             username='firebase hashed user UID_1',
         )
 
         user_factories.User(
-            id=3,
             first_name='TEST NAME',
             last_name='RESPONDENT test2_2',
             username='firebase hashed user UID_2',
@@ -633,21 +630,18 @@ class TestQuestionnaireRespondentsDeviationsCommand(TestBasicClass):
                 conn.close()
 
         user_factories.User(
-            id=1,
             first_name='TEST NAME',
             last_name='RESPONDENT',
             username='firebase hashed user UID',
         )
 
         user_factories.User(
-            id=2,
             first_name='TEST NAME',
             last_name='RESPONDENT test1',
             username='firebase hashed user UID_1',
         )
 
         user_factories.User(
-            id=3,
             first_name='TEST NAME',
             last_name='RESPONDENT test2',
             username='firebase hashed user UID_2',
