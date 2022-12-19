@@ -655,11 +655,11 @@ def test_get_current_relationship() -> None:
         'user_email': 'marge.simpson@gmail.com',
         'user_phone': '+15141111111',
         'patient_record': forms._patient_data(),
-        'relationship_type': factories.RelationshipType(name='self'),
+        'relationship_type': factories.RelationshipType(name='Self'),
     }
 
-    caregiver_user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
-    factories.CaregiverProfile(user_id=caregiver_user.id)
+    caregiver_user = Caregiver(email=form_data['user_email'], phone_number=form_data['user_phone'])
+    caregiver = factories.CaregiverProfile(user_id=caregiver_user.id)
 
     caregiver_dict = instance._create_caregiver_profile(
         form_data=form_data,
@@ -667,6 +667,8 @@ def test_get_current_relationship() -> None:
     )
 
     patient = instance._create_patient(form_data=form_data)
+
+    factories.Relationship(type=form_data['relationship_type'], caregiver=caregiver, patient=patient)
 
     relationship = instance._create_relationship(
         form_data=form_data,
@@ -724,12 +726,17 @@ def test_create_new_relationship() -> None:
         'relationship_type': factories.RelationshipType(name='Parent or Guardian'),
     }
 
+    caregiver_user = Caregiver(first_name=form_data['first_name'], last_name=form_data['last_name'])
+    caregiver = factories.CaregiverProfile(user_id=caregiver_user.id)
+
     caregiver_dict = instance._create_caregiver_profile(
         form_data=form_data,
         random_username_length=constants.USERNAME_LENGTH,
     )
 
     patient = instance._create_patient(form_data=form_data)
+
+    factories.Relationship(type=form_data['relationship_type'], caregiver=caregiver, patient=patient)
 
     relationship = instance._create_relationship(
         form_data=form_data,
@@ -889,6 +896,41 @@ def test_no_mrns_have_same_site_code() -> None:
         ],
     )
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False
+
+
+def test_error_message_mrn_with_same_site_code() -> None:
+    """Test error message shows up once some MRN records having the same site code."""
+    patient_data = forms._patient_data()
+    patient_mrn_records = OIEPatientData(
+        date_of_birth=patient_data.date_of_birth,
+        first_name=patient_data.first_name,
+        last_name=patient_data.last_name,
+        sex=patient_data.sex,
+        alias=patient_data.alias,
+        ramq=patient_data.ramq,
+        ramq_expiration=patient_data.ramq_expiration,
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+    assert views.AccessRequestView()._update_patient_confirmation_context(
+        {},
+        patient_mrn_records,
+    )['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
 
 
 def test_relationships_list_table(user_client: Client) -> None:

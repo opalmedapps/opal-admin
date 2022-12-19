@@ -161,7 +161,8 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
-            context = self._update_patient_confirmation_context(context)
+            patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
+            context = self._update_patient_confirmation_context(context, patient_record)
         if self.steps.current == 'existing':
             user_record = self.get_cleaned_data_for_step(self.steps.prev)['user_record']
             context.update({'table': ExistingUserTable([user_record])})
@@ -400,17 +401,13 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         caregiver = caregiver_dict['caregiver']
         patient_record = form_data['patient_record']
         relationship_type = form_data['relationship_type']
-
         # Check if there is no relationship between requestor and patient
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
         relationships = Relationship.objects.get_relationship_by_patient_caregiver(
             str(relationship_type),
-            caregiver_user.first_name,
-            caregiver_user.last_name,
             caregiver_user.id,
             patient_record.ramq,
         ).first()
-
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # For `Self` relationship, the status is CONFIRMED
         status = RelationshipStatus.CONFIRMED if str(relationship_type) == 'Self' else RelationshipStatus.PENDING
@@ -427,6 +424,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                     relationship_type,
                 ),
             )
+            print(relationships)
 
         return relationships
 
@@ -482,17 +480,18 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
     def _update_patient_confirmation_context(
         self,
         context: Dict[str, Any],
+        patient_record: OIEPatientData,
     ) -> Dict[str, Any]:
         """
         Update the context for patient confirmation form.
 
         Args:
             context: the template context for step 'confirm'
+            patient_record: patient record search by RAMQ or MRN
 
         Returns:
             the template context for step 'confirm'
         """
-        patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
         if self._has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
