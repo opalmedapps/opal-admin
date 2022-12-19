@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-06 18:15+0300\n"
+"POT-Creation-Date: 2022-12-14 00:07+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -202,6 +202,10 @@ msgstr "Date de début de la relation"
 msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
+#: opal/patients/models.py
+msgid "Can manage relationships"
+msgstr "Types de relations avec le proche aidant"
+
 #: opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Relationship"
@@ -307,17 +311,17 @@ msgstr "Annuler"
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Update"
-msgstr ""
+msgstr "Mettre à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Create"
-msgstr ""
+msgstr "Créer"
 
 #: opal/patients/templates/patients/relationship_type/form.html
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "Relationship Types"
