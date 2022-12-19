@@ -61,7 +61,7 @@ def test_migration_relationshiptype_prepopulate_existing_types(migrator: Migrato
     assert RelationshipType.objects.filter(role_type=models.RoleType.PARENTGUARDIAN).count() == 1
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0010_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 2
 
@@ -102,7 +102,7 @@ def test_migration_relationshiptype_prepopulate_existing_role_types(migrator: Mi
     assert RelationshipType.objects.filter(role_type=models.RoleType.CAREGIVER).count() == 0
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0010_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 2
 
