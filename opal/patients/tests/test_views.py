@@ -1,3 +1,4 @@
+import re
 from http import HTTPStatus
 from typing import Tuple
 
@@ -8,6 +9,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
+from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 
 from ...users.models import User
@@ -183,6 +185,38 @@ def test_relationships_pending_list_table(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
+
+
+def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
+    """Ensure the delete and update buttons do not appear in the special rendering for restricted role types."""
+    response = user_client.get(reverse('patients:relationshiptype-list'))
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    delete_button_data = soup.find_all('a', href=re.compile('delete'))
+    update_button_data = soup.find_all('a', href=re.compile('update'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert not delete_button_data
+    assert not update_button_data
+
+
+def test_relationshiptype_list_delete_available(user_client: Client) -> None:
+    """Ensure the delete and update buttons do appear for regular relationship types."""
+    new_relationship_type = factories.RelationshipType()
+    user_client.post(
+        reverse('patients:relationshiptype-create'),
+        data=model_to_dict(new_relationship_type, exclude=['id', 'end_age']),
+    )
+
+    response = user_client.get(reverse('patients:relationshiptype-list'))
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    delete_button_data = soup.find_all('a', href=re.compile('delete'))
+    update_button_data = soup.find_all('a', href=re.compile('update'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert delete_button_data
+    assert update_button_data
 
 
 def test_relationships_pending_form(user_client: Client) -> None:

@@ -1,9 +1,30 @@
 """Table definitions for models of the patient app."""
+from typing import Any
+
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
 
-from .models import Relationship, RelationshipType
+from .models import Relationship, RelationshipType, RoleType
+
+
+class RelationshipTypeTemplateColumn(tables.TemplateColumn):
+    """A customized template column overriding the default behaviour."""
+
+    def render(self, record: RelationshipType, *args: Any, **kwargs: Any) -> tables.TemplateColumn:
+        """Override the rendering method to remove delete option in restricted role types.
+
+        Args:
+            record: The RelationshipType instance
+            args: Any number of function arguments
+            kwargs: Any number of key-word arguements
+
+        Returns:
+            TemplateColumn: the renderable content for the column
+        """
+        if record.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}:
+            return ''
+        return super().render(record, *args, **kwargs)
 
 
 class RelationshipTypeTable(tables.Table):
@@ -13,7 +34,7 @@ class RelationshipTypeTable(tables.Table):
     Defines an additional action column for action buttons.
     """
 
-    actions = tables.TemplateColumn(
+    actions = RelationshipTypeTemplateColumn(
         verbose_name=_('Actions'),
         template_name='tables/action_column.html',
         orderable=False,
