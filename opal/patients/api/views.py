@@ -24,7 +24,10 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             'relationship__patient',
         ).prefetch_related(
             'relationship__patient__hospital_patients',
-        ).filter(status=RegistrationCodeStatus.NEW)
+        ).filter(
+            status=RegistrationCodeStatus.NEW,
+            relationship__patient__date_of_death=None,
+        )
     )
 
     lookup_url_kwarg = 'code'
