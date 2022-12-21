@@ -96,15 +96,25 @@ class RelationshipType(models.Model):
         existing_restricted_relationshiptypes = RelationshipType.objects.filter(
             role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
         )
-
         existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
 
         # Verify we cannot add an additional self or parent role type
-        if (self.role_type == RoleType.SELF and RoleType.SELF in existing_restricted_roletypes):
+        # AND that the current instance being checked isnt already in the existing restricted list
+        # (which would mean this is an 'update' operation, and should not raise an exception)
+        if (
+            self.role_type == RoleType.SELF
+            and RoleType.SELF in existing_restricted_roletypes
+            and self not in existing_restricted_relationshiptypes
+        ):
             raise ValidationError(
                 _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
             )
-        if (self.role_type == RoleType.PARENTGUARDIAN and RoleType.PARENTGUARDIAN in existing_restricted_roletypes):
+
+        if (
+            self.role_type == RoleType.PARENTGUARDIAN
+            and RoleType.PARENTGUARDIAN in existing_restricted_roletypes
+            and self not in existing_restricted_relationshiptypes
+        ):
             raise ValidationError(
                 _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
             )

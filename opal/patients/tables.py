@@ -1,9 +1,11 @@
 """Table definitions for models of the patient app."""
 from typing import Any
 
+from django.template import Context
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
+from django_tables2.columns import BoundColumn
 
 from .models import Relationship, RelationshipType, RoleType
 
@@ -11,20 +13,46 @@ from .models import Relationship, RelationshipType, RoleType
 class RelationshipTypeTemplateColumn(tables.TemplateColumn):
     """A customized template column overriding the default behaviour."""
 
-    def render(self, record: RelationshipType, *args: Any, **kwargs: Any) -> tables.TemplateColumn:
+    def render(  # noqa: WPS211
+        self,
+        record: RelationshipType,
+        table: Any,
+        value: None,
+        bound_column: BoundColumn,
+        **kwargs: Any,
+    ) -> tables.TemplateColumn:
         """Override the rendering method to remove delete option in restricted role types.
 
         Args:
             record: The RelationshipType instance
-            args: Any number of function arguments
+            table: The RelationshipTypeTable instance
+            value: value from `record` that corresponds to the current column
+            bound_column: The column being rendered
             kwargs: Any number of key-word arguements
 
         Returns:
             TemplateColumn: the renderable content for the column
         """
+        context = getattr(table, 'context', Context())
+        additional_context = {
+            'default': bound_column.default,
+            'column': bound_column,
+            'record': record,
+            'value': value,
+            'row_counter': kwargs['bound_row'].row_counter,
+        }
+
+        # Remove the deletion button for restricted types
         if record.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}:
-            return ''
-        return super().render(record, *args, **kwargs)
+            self.extra_context = {'urlname_update': 'patients:relationshiptype-update'}
+        else:
+            self.extra_context = {
+                'urlname_update': 'patients:relationshiptype-update',
+                'urlname_delete': 'patients:relationshiptype-delete',
+            }
+        additional_context.update(self.extra_context)
+        with context.update(self.extra_context):
+            return super().render(record, table, value, bound_column, **kwargs)
 
 
 class RelationshipTypeTable(tables.Table):
@@ -38,10 +66,6 @@ class RelationshipTypeTable(tables.Table):
         verbose_name=_('Actions'),
         template_name='tables/action_column.html',
         orderable=False,
-        extra_context={
-            'urlname_update': 'patients:relationshiptype-update',
-            'urlname_delete': 'patients:relationshiptype-delete',
-        },
     )
 
     class Meta:

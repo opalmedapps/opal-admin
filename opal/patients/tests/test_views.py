@@ -188,7 +188,7 @@ def test_relationships_pending_list_table(user_client: Client) -> None:
 
 
 def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
-    """Ensure the delete and update buttons do not appear in the special rendering for restricted role types."""
+    """Ensure the delete button does not appear, but update does, in the special rendering for restricted role types."""
     response = user_client.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -197,7 +197,7 @@ def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
 
     assert response.status_code == HTTPStatus.OK
     assert not delete_button_data
-    assert not update_button_data
+    assert update_button_data
 
 
 def test_relationshiptype_list_delete_available(user_client: Client) -> None:
