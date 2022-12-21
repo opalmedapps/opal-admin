@@ -315,7 +315,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         ('account', {'user_type': '1'}),
         ('requestor', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
         ('existing', {'is_correct': True, 'is_id_checked': True}),
-        ('password', {'confirm_password': '123456789'}),
+        ('password', {'confirm_password': 'testpassword'}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -344,6 +344,8 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
             assert response.context['wizard']['steps'].current == 'existing'
         elif 'existing' in step:
             assert response.context['wizard']['steps'].current == 'password'
+        elif 'password' in step:
+            assertTemplateUsed(response, 'patients/access_request/qr_code.html')
 
 
 class _TestAccessRequestView(views.AccessRequestView):

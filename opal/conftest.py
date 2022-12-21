@@ -37,6 +37,8 @@ def user_client(client: Client, django_user_model: User) -> Client:
         an instance of `Client` with a logged in user
     """
     user = django_user_model.objects.create(username='testuser')
+    user.set_password('testpassword')
+    user.save()
     client.force_login(user)
 
     return client

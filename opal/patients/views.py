@@ -268,7 +268,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         # generate QR code for Opal registration system
         stream = self._generate_qr_code(registration_code)
 
-        return render(self.request, 'patients/access_request/test_qr_code.html', {
+        return render(self.request, 'patients/access_request/qr_code.html', {
             'svg': stream.getvalue().decode(),
             'header_title': _('QR Code Generation'),
         })
