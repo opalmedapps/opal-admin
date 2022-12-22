@@ -10,7 +10,7 @@ from . import models
 class RelationshipTypeAdmin(TranslationAdmin):
     """This class provides admin options for `RelationshipType`."""
 
-    readonly_fields = ['role_type']
+    readonly_fields = ['role_type', 'name']
 
     def has_delete_permission(self, request: HttpRequest, obj: models.RelationshipType = None) -> bool:
         """Override default default permission behaviour for restricted role types.

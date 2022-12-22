@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Layout, Row, Submit
 
 from . import constants
-from .models import Relationship, Site
+from .models import Relationship, RelationshipType, Site
 
 
 class ManageCaregiverAccessForm(forms.Form):
@@ -92,4 +92,33 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             'end_date',
             'status',
             'reason',
+        )
+
+
+class RelationshipTypeUpdateForm(forms.ModelForm):
+    """Form for updating a `RelationshipType` object."""
+
+    class Meta:
+        model = RelationshipType
+        exclude = ('name', 'name_en', 'name_fr')
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Set the layout.
+
+        Args:
+            args: varied amount of non-keyworded arguments
+            kwargs: varied amount of keyworded arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.layout = Layout(
+            'name_en',
+            'name_fr',
+            'description_en',
+            'description_fr',
+            'start_age',
+            'end_age',
+            'form_required',
+            'can_answer_questionnaire',
         )

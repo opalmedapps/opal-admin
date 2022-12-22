@@ -8,7 +8,7 @@ from django_tables2 import MultiTableMixin, SingleTableView
 
 from opal.core.views import CreateUpdateView, UpdateView
 
-from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm
+from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm, RelationshipTypeUpdateForm
 from .models import Relationship, RelationshipStatus, RelationshipType
 from .tables import (
     PendingRelationshipTable,
@@ -36,16 +36,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
 
     model = RelationshipType
     template_name = 'patients/relationship_type/form.html'
-    fields = [
-        'name_en',
-        'name_fr',
-        'description_en',
-        'description_fr',
-        'start_age',
-        'end_age',
-        'form_required',
-        'can_answer_questionnaire',
-    ]
+    form_class = RelationshipTypeUpdateForm
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 

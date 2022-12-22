@@ -10,6 +10,8 @@ from django_tables2.columns import BoundColumn
 from .models import Relationship, RelationshipType, RoleType
 
 
+# Adjusting context depending on record content:
+# https://stackoverflow.com/questions/53582717/django-tables2-adding-template-column-which-content-depends-on-condition
 class RelationshipTypeTemplateColumn(tables.TemplateColumn):
     """A customized template column overriding the default behaviour."""
 
