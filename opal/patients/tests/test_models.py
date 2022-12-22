@@ -538,7 +538,7 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles']"
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         roletype_self_copy.full_clean()
 
@@ -548,6 +548,6 @@ def test_relationshiptype_duplicate_parent_role() -> None:
     roletype_parent_copy = factories.RelationshipType()
     roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles']"
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         roletype_parent_copy.full_clean()
