@@ -100,19 +100,7 @@ class RelationshipTypeUpdateForm(forms.ModelForm):
 
     class Meta:
         model = RelationshipType
-        exclude = ('name', 'name_en', 'name_fr')
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Set the layout.
-
-        Args:
-            args: varied amount of non-keyworded arguments
-            kwargs: varied amount of keyworded arguments
-        """
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.layout = Layout(
+        fields = [
             'name_en',
             'name_fr',
             'description_en',
@@ -121,4 +109,6 @@ class RelationshipTypeUpdateForm(forms.ModelForm):
             'end_age',
             'form_required',
             'can_answer_questionnaire',
-        )
+        ]
+    name_en = forms.CharField(disabled=True)
+    name_fr = forms.CharField(disabled=True)

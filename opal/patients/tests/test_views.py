@@ -72,13 +72,12 @@ def test_relationshiptype_create_get(user_client: Client) -> None:
 
 def test_relationshiptype_create(user_client: Client) -> None:
     """A new relationship type can be created."""
-    relationship_type = factories.RelationshipType.build(name='Testname')
+    relationship_type = factories.RelationshipType(name='Testname')
 
     user_client.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
     assert models.RelationshipType.objects.count() == 3
     assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
@@ -86,12 +85,10 @@ def test_relationshiptype_create(user_client: Client) -> None:
 def test_relationshiptype_update_get(user_client: Client) -> None:
     """An existing relationship type can be edited."""
     relationship_type = factories.RelationshipType()
-
     response = user_client.get(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
     assertContains(response, 'Update Relationship Type')
     assertContains(response, 'value="Caregiver"')
 
