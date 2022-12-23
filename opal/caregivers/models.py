@@ -97,10 +97,10 @@ class SecurityAnswer(models.Model):
         verbose_name_plural = _('Security Answers')
 
     def __str__(self) -> str:
-        """Return the caregiver and the question.
+        """Return the question.
 
         Returns:
-            the caregiver and the question.
+            the question.
         """
         return self.question
 
