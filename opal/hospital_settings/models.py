@@ -72,6 +72,7 @@ class Site(Location):
     )
 
     class Meta:
+        permissions = (('can_manage_sites', _('Can manage sites')),)
         ordering = ['name']
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
