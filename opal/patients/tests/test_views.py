@@ -1,12 +1,41 @@
 from http import HTTPStatus
+from typing import Tuple
 
+from django.contrib.auth.models import AbstractUser, Permission
+from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.urls import reverse
 
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+import pytest
+from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 
-from .. import factories, models, tables
+from ...users.models import User
+from .. import factories, forms, models, tables
+# Add any future GET-requestable patients app pages here for faster test writing
+from ..views import PendingRelationshipListView
+
+test_url_template_data: list[Tuple] = [
+    (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
+]
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_patients_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page exists at each URL address."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page uses appropriate templates."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assertTemplateUsed(response, template)
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
@@ -154,3 +183,102 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
+
+
+def test_relationships_pending_list_table(user_client: Client) -> None:
+    """Ensures that pending relationships list uses the corresponding table."""
+    response = user_client.get(reverse('patients:relationships-pending-list'))
+
+    assert response.context['table'].__class__ == tables.PendingRelationshipTable
+
+
+def test_relationships_pending_form(user_client: Client) -> None:
+    """Ensures that pending relationships edit uses the right form."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    factories.Relationship(pk=1, type=relationshiptype)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
+
+
+def test_relationships_pending_form_content(user_client: Client) -> None:
+    """Ensures that pending relationships passed info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    assert response.context['relationship'] == relationship
+
+
+def test_relationships_pending_form_response(user_client: Client) -> None:
+    """Ensures that pending relationships displayed info is correct."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    patient = factories.Patient()
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
+    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response.content.decode('utf-8')
+
+    assertContains(response, patient)
+    assertContains(response, caregiver)
+    assertContains(response, relationship.patient.ramq)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-pending-update', args=(1,)),
+    ],
+)
+def test_relationship_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `Relationship` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    factories.Relationship(pk=1)
+    user_client.force_login(user)
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        PendingRelationshipListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-pending-update', args=(1,)),
+    ],
+)
+def test_relationship_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `Relationship` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_relationships')
+    user.user_permissions.add(permission)
+    factories.Relationship(pk=1)
+
+    response = user_client.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_relationships_response_contains_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationships is displayed for users with permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_relationships')
+    user.user_permissions.add(permission)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertContains(response, 'Pending Requests')
+
+
+def test_relationships_pending_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationships is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Pending Requests')

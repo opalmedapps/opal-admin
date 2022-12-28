@@ -1,8 +1,11 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
 from typing import Any
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -24,6 +27,7 @@ from opal.caregivers.models import Device, EmailVerification, RegistrationCode, 
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
+from opal.users.models import User
 
 from .. import constants
 
@@ -131,6 +135,7 @@ class RetrieveRegistrationCodeMixin(APIView):
         code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
         return RegistrationCode.objects.select_related(
             'relationship__caregiver',
+            'relationship__caregiver__user',
         ).prefetch_related(
             'relationship__caregiver__email_verifications',
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
@@ -179,6 +184,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                 email=email,
                 sent_at=timezone.now(),
             )
+            self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -191,12 +197,52 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
+                self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
                 )
 
         return Response()
+
+    def _send_email(  # noqa: WPS210
+        self,
+        email_verification: EmailVerification,
+        user: User,
+        language: str,
+    ) -> None:
+        """
+        Send verification email to the user with an template according to the user language.
+
+        Args:
+            email_verification: object EmailVerification.
+            user: object User.
+            language: language code from the request data.
+        """
+        email_subject = _('Opal Verification Code')
+
+        template_plain = 'email/verification_code.txt'
+        parameters = {
+            'code': email_verification.code,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+        msg_plain = render_to_string(
+            template_plain,
+            parameters,
+        )
+        template_html = 'email/verification_code.html'
+        msg_html = render_to_string(
+            template_html,
+            parameters,
+        )
+        send_mail(
+            email_subject,
+            msg_plain,
+            settings.EMAIL_HOST_USER,
+            [email_verification.email],
+            html_message=msg_html,
+        )
 
 
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):

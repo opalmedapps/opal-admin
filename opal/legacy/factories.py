@@ -46,6 +46,7 @@ class LegacyNotificationFactory(DjangoModelFactory):
         model = models.LegacyNotification
 
     readstatus = 0
+    readby = '[]'
     patientsernum = SubFactory(LegacyPatientFactory)
 
 
@@ -79,6 +80,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     status = 'Open'
     state = 'active'
     readstatus = 0
+    readby = '[]'
     aliasexpressionsernum = SubFactory(LegacyAliasexpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
 
@@ -90,6 +92,7 @@ class LegacyDocumentFactory(DjangoModelFactory):
         model = models.LegacyDocument
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    readby = '[]'
     readstatus = 0
 
 
@@ -100,6 +103,7 @@ class LegacyTxTeamMessageFactory(DjangoModelFactory):
         model = models.LegacyTxTeamMessage
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    readby = '[]'
     readstatus = 0
 
 
@@ -110,6 +114,7 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
         model = models.LegacyEducationalMaterial
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    readby = '[]'
     readstatus = 0
 
 

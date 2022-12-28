@@ -13,9 +13,13 @@ class PatientSerializer(DynamicFieldsSerializer):
     is used to get patient information according to the 'fields' arguments.
     """
 
+    # legacy_id default is null, to verify it with serializer properly,
+    # add a special field here for it.
+    legacy_id = serializers.IntegerField(min_value=1)  # noqa: WPS432
+
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
+        fields = ['legacy_id', 'first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):

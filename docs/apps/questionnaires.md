@@ -4,7 +4,7 @@ The `questionnaires` app provides functionalities for interacting with questionn
 
 ## Export Reports
 
-Currently, the only functionality provided in this app is to expose a launching point for the external [ePRO Questionnaires reporting tool][questionnaire-reporting-repo] originally developed by Luc Galarneau.
+The ePRO Questionnaires Reporting tool was originally developed by Luc Galarneau as a standalone utility: [ePRO Questionnaires reporting tool][questionnaire-reporting-repo].
 
 Due to the sensitivity of this data, the `Export Reports` page is only viewable by administrative users and any additional users who have been granted the custom permission `export_report` from the admin portal. This custom permission is defined in the `ExportReportPermission` model. Technically, it is an implementation of a 'model-less permission' as described in [How can I use Django permissions without defining a content type or model?][django-modelless-perms-stackoverflow] & [Django Permissions without a Model][django-modelless-perms-github]
 
@@ -29,17 +29,15 @@ To grant the `export_report` permission:
 
 ### Launching the reporting tool & exporting reports
 
-*[2022-09-28] Note that currently, the reporting tool must be running in a separate django instance and connected to a production QuestionnaireDB (due to filtering out of test patient responses which are not pertinent to research).*
-*Additionally, there must already be an account created for the researcher in the reporting tool app itself, either using django's `createsuperuser` functionality, or through it's own admin portal.*
-
 1. Login to OpalAdmin as a user with `export_report` permissions.
-2. Select `Export Reports` > `ePRO Data Extractions` this will automatically launch a new window connecting to the reporting tool.
-3. Login to the reporting tool with the dedicated researcher/user account existing in the reporting tool's database.
-4. Click `View all questionnaires` to display the list of available ePRO questionnaires for which there exists production data.
-5. Select desired questionnaire, optionally tick "Follow in my dashboard" for easier future access
-6. Filter results by any combination of data range, patient ids, and questions.
+2. Navigate to `Export Reports`.
+3. A new user will have no Questionnaire Profile information. Proceed to the `View all questionnaires` page.
+4. Select the desired questionnaire from the drop down menu. Only questionnaires present in QuestionnaireDB connected to this instance of the Backend are viewable.
+5. Hit `Select`. In the filter page, toggle the `Follow in my dashboard` checkbox if you want fast access to this questionnaire in the future.
+6. Adjust the date, questions, and patients filters to your specifications.
 7. Click `View Report`
 8. View results and optionally export as CSV or Excel
+9. Return to the first `Export Reports` page and verify your questionnaire profile now displays the saved questionnaire.
 
 <!-- Link identifiers -->
 [django-modelless-perms-github]: https://github.com/surfer190/fixes/blob/master/docs/django/django-permissions-without-a-model.md

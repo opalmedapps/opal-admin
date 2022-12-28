@@ -136,6 +136,17 @@ def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:registration-code'
 
 
+def test_retrieve_registration_register(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/register/` endpoint is defined."""
+    registration_code = 'ABCD12345678'
+    url_path = '/{api_root}/registration/{code}/register/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:registration-register', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:registration-register'
+
+
 def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/caregivers/` is defined."""
     patient_id = 52

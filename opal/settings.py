@@ -144,6 +144,21 @@ DATABASES = {
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'EST5EDT',
+        'TEST': {
+            'NAME': 'test_{0}'.format(env('LEGACY_DATABASE_NAME')),
+        },
+    },
+    'questionnaire': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('LEGACY_QUESTIONNAIRE_DATABASE_NAME'),
+        'USER': env('LEGACY_DATABASE_USER'),
+        'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
+        'HOST': env('LEGACY_DATABASE_HOST'),
+        'PORT': env('LEGACY_DATABASE_PORT'),
+        'TIME_ZONE': 'EST5EDT',
+        'TEST': {
+            'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')),
+        },
     },
 }
 
@@ -315,6 +330,19 @@ LOGGING = {
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
 
+# Set email SMTP server
+# See https://docs.djangoproject.com/en/dev/topics/email/
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:  # pragma: no cover
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
+EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
 # Legacy OpalAdmin related settings
 #
 # base URL to old OpalAdmin (no trailing slash)
@@ -332,9 +360,6 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 # OIE Credentials
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
-
-# ePRO Data Extractions tool URL
-EPRO_DATA_EXTRACTIONS_URL = env.url('EPRO_URL').geturl()
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
@@ -382,3 +407,8 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
+
+# QUESTIONNAIRES/EXPORT REPORTS
+# ------------------------------------------------------------------------------
+# List of accounts to be excluded from the questionnaires list when not in debug mode
+TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
