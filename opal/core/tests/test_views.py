@@ -93,7 +93,7 @@ def test_loginview_error(client: Client, settings: SettingsWrapper, mocker: Mock
 def test_logout_redirects(user_client: Client, settings: SettingsWrapper) -> None:
     """Ensure that a logged in user can log out and that it redirects to the main OpalAdmin URL."""
     settings.LOGOUT_REDIRECT_URL = 'http://foobar.com'
-    response = user_client.get(reverse('logout'))
+    response = user_client.post(reverse('logout'))
 
     assertRedirects(
         response,
