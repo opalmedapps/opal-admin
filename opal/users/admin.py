@@ -1,5 +1,5 @@
 """Module providing admin functionality for the users app."""
-from typing import Optional, Type
+from typing import Type
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
@@ -11,12 +11,12 @@ from .models import Caregiver, ClinicalStaff, User
 class UserAdmin(DjangoUserAdmin):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
-    def __init__(self, model: Type[User], admin_site: Optional[admin.AdminSite]) -> None:
+    def __init__(self, model: Type[User], admin_site: admin.AdminSite) -> None:
         """Create admin and add extra fieldsets and list_displays."""  # noqa: DAR101
         super().__init__(model, admin_site)
 
         # add our additional custom fields to the default fieldset
-        new_fieldsets = list(self.fieldsets)
+        new_fieldsets = list(self.fieldsets) if self.fieldsets else []
         new_fieldsets.append((_('Extra'), {'fields': ('type', 'language', 'phone_number')}))
 
         self.fieldsets = tuple(new_fieldsets)
