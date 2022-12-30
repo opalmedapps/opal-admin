@@ -1,10 +1,11 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
-from typing import Any
+from typing import Any, Union
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
+from django.template.base import Node
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -219,29 +220,30 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             user: object User.
             language: language code from the request data.
         """
-        email_subject = _('Opal Verification Code')
-
-        template_plain = 'email/verification_code.txt'
-        parameters = {
+        # need to type specifically: https://stackoverflow.com/a/72841649
+        # see also: https://github.com/typeddjango/django-stubs/pull/1298#issuecomment-1367606124
+        context: dict[Union[int, str, Node], Any] = {
             'code': email_verification.code,
             'first_name': user.first_name,
             'last_name': user.last_name,
         }
-        msg_plain = render_to_string(
-            template_plain,
-            parameters,
+
+        email_plain = render_to_string(
+            'email/verification_code.txt',
+            context,
         )
-        template_html = 'email/verification_code.html'
-        msg_html = render_to_string(
-            template_html,
-            parameters,
+        email_html = render_to_string(
+            'email/verification_code.html',
+            context,
         )
+
         send_mail(
-            email_subject,
-            msg_plain,
+            _('Opal Verification Code'),
+            email_plain,
+            # TODO: change to a proper from email
             settings.EMAIL_HOST_USER,
             [email_verification.email],
-            html_message=msg_html,
+            html_message=email_html,
         )
 
 
