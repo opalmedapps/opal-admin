@@ -221,7 +221,8 @@ def test_institution_with_no_logos_create(
 ) -> None:
     """Ensure that new incomplete institution (with missing logo images) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
+
     form_data.pop('logo_fr')
     form_data.pop('logo_en')
 
@@ -240,7 +241,7 @@ def test_institution_with_no_terms_of_use_create(
 ) -> None:
     """Ensure that new incomplete institution (with missing terms of use file) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data.pop('terms_of_use_fr')
     form_data.pop('terms_of_use_en')
 
@@ -268,7 +269,7 @@ def test_institution_updated(user_client: Client, institution_form: InstitutionF
 
     institution_form.save()
 
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
 
@@ -288,7 +289,7 @@ def test_incomplete_institution_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('code')
@@ -313,7 +314,7 @@ def test_institution_with_no_logos_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('logo_fr')
@@ -338,7 +339,7 @@ def test_institution_with_no_terms_of_use_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('terms_of_use_fr')
@@ -360,7 +361,7 @@ def test_institution_successful_update_redirects(user_client: Client, institutio
     institution_form.save()
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
 
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
 
