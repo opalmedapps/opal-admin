@@ -247,7 +247,7 @@ def test_institution_with_no_terms_of_use_create(
 
     response = user_client.post(
         url,
-        data=institution_form.data,
+        data=form_data,
     )
 
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
