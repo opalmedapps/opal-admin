@@ -64,7 +64,8 @@ class TestSecurityQuestionsMigration(TestBasicClass):
         message, error = self._call_command('migrate_securityquestions')
         question = SecurityQuestion.objects.all()
         assert len(question) == 1
-        assert question[0].title_en == 'What is the name of your first pet?'
+        assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]  # noqa: E501
+        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]  # noqa: E501
         assert message == (
             'Imported security question, sernum: 1, title: What is the name of your first pet?\n'
         )
