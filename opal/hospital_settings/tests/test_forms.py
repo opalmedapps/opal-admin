@@ -23,7 +23,7 @@ def test_institution_form_with_missing_code(incomplete_institution_form: Institu
 def test_institution_update(institution_form: InstitutionForm) -> None:
     """Ensure that a valid institution form can be saved."""
     institution_form.save()
-    assert Institution.objects.all()[0].name_en == institution_form.data['name_en']
+    assert Institution.objects.all()[0].name == institution_form.data['name_en']
 
 
 def test_institution_update_with_missing_field(incomplete_institution_form: InstitutionForm) -> None:

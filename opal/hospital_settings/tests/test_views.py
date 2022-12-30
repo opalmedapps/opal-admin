@@ -276,8 +276,8 @@ def test_institution_updated(user_client: Client, institution_form: InstitutionF
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
     user_client.post(path=url, data=form_data, files=institution_form.files)
 
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_incomplete_institution_update(
@@ -301,8 +301,8 @@ def test_incomplete_institution_update(
     )
 
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
-    assert Institution.objects.all()[0].name_en != 'updated name_en'
-    assert Institution.objects.all()[0].name_fr != 'updated name_fr'
+    assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_with_no_logos_update(
@@ -326,8 +326,8 @@ def test_institution_with_no_logos_update(
     )
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_with_no_terms_of_use_update(
@@ -351,8 +351,8 @@ def test_institution_with_no_terms_of_use_update(
     )
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
