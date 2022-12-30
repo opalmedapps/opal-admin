@@ -13,7 +13,7 @@ from opal.patients.managers import HospitalPatientManager, RelationshipManager
 from . import constants
 
 
-class RelationshipType(models.Model):
+class RelationshipType(models.Model):  # type: ignore[django-manager-missing]
     """A type of relationship between a user (aka caregiver) and patient."""
 
     name = models.CharField(

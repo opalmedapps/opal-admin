@@ -46,7 +46,7 @@ class CaregiverProfile(models.Model):
         return '{first} {last}'.format(first=self.user.first_name, last=self.user.last_name)
 
 
-class SecurityQuestion(models.Model):
+class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]
     """Security question model."""
 
     title = models.CharField(
