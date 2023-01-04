@@ -1,11 +1,10 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
-from typing import Any, Union
+from typing import Any
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
-from django.template.base import Node
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -185,7 +184,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+            self._send_email(email_verification, caregiver.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -198,7 +197,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+                self._send_email(email_verification, caregiver.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
@@ -210,7 +209,6 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         self,
         email_verification: EmailVerification,
         user: User,
-        language: str,
     ) -> None:
         """
         Send verification email to the user with an template according to the user language.
@@ -220,9 +218,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             user: object User.
             language: language code from the request data.
         """
-        # need to type specifically: https://stackoverflow.com/a/72841649
-        # see also: https://github.com/typeddjango/django-stubs/pull/1298#issuecomment-1367606124
-        context: dict[Union[int, str, Node], Any] = {
+        context = {
             'code': email_verification.code,
             'first_name': user.first_name,
             'last_name': user.last_name,
