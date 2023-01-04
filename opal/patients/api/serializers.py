@@ -4,7 +4,8 @@ from typing import Any, Dict, List
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.hospital_settings.models import Site
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -73,12 +74,11 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer):
 class PatientDemographicHospitalPatientSerializer(serializers.ModelSerializer):
     """Serializer for converting and validating `MRNs` received from the `patient demographic update` endpoint."""
 
-    id = serializers.IntegerField(required=False)
     site_code = serializers.CharField(source='site.code')
 
     class Meta:
         model = HospitalPatient
-        fields = ['id', 'site_code', 'mrn', 'is_active']
+        fields = ['site_code', 'mrn', 'is_active']
 
     def validate_site_code(self, value: str) -> str:
         """Check that `site_code` exists in the database (e.g., MGH).
@@ -102,7 +102,7 @@ class PatientDemographicHospitalPatientSerializer(serializers.ModelSerializer):
 class PatientDemographicSerializer(DynamicFieldsSerializer):
     """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
 
-    mrns = PatientDemographicHospitalPatientSerializer(many=True, required=True, source='hospital_patients')
+    mrns = PatientDemographicHospitalPatientSerializer(many=True, required=True)
 
     class Meta:
         model = Patient
@@ -126,7 +126,9 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
     ) -> List[Dict[str, Any]]:
         """Check that `MRNs` list is not empty and there are no duplications for the `Sites`.
 
-        At least one MRN-site pair should exist in the database.
+        At least one MRN/site code pair should exist in the database.
+
+        If MRN/site code pair is new, it should contain `is_active` key.
 
         Args:
             value: list of the `HospitalPatients`
@@ -140,24 +142,86 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         if not value:
             raise serializers.ValidationError('Provided `MRNs` list is empty.')
 
-        # Get list of site codes
-        sites = [hospital_patient['site']['code'] for hospital_patient in value]
+        self._check_site_codes_uniqueness(value)
 
-        # Compare length for unique elements
+        # Check if at least one MRN/Site pair exists. If a pair does not exist it should contain `is_active` field
+        self._check_mrn_site_pair_exists(value)
+
+        return value
+
+    def update(
+        self,
+        instance: Patient,
+        validated_data,
+    ):
+        hospital_patients = validated_data.get('mrns')
+
+        # Update the `HospitalPatient` records with the new demographic information
+        for item in hospital_patients:
+            site_code = item.get('site').get('code')
+            hospital_patient = HospitalPatient.objects.filter(
+                mrn=item.get('mrn'),
+                site__code=site_code,
+                patient=instance,
+            ).first()
+
+            if hospital_patient:
+                hospital_patient.is_active = item.get('is_active', hospital_patient.is_active)
+                hospital_patient.save()
+            else:
+                site = Site.objects.get(code=site_code)
+                HospitalPatient.objects.create(
+                    patient=instance,
+                    site=site,
+                    mrn=item.get('mrn'),
+                    is_active=item.get('is_active'),
+                )
+
+        # Update the `User` model with the new demographic information
+        # TODO: use constant to find `Self` relationship
+        relationship_type = RelationshipType.objects.filter(name='Self').first()
+        # Look up the `Relationships` to that patient with a `Self` relationship
+        relationship = Relationship.objects.filter(
+            patient=instance,
+            type=relationship_type,
+        ).first()
+
+        if relationship:
+            relationship.caregiver.user.first_name = validated_data.get(
+                'first_name',
+                relationship.caregiver.user.first_name,
+            )
+            relationship.caregiver.user.last_name = validated_data.get(
+                'last_name',
+                relationship.caregiver.user.last_name,
+            )
+            relationship.caregiver.user.save()
+
+        # Runs the original parent update()
+        return super().update(instance, validated_data)
+
+    def _check_site_codes_uniqueness(
+        self,
+        hospital_patients: List[Dict[str, Any]],
+    ) -> None:
+        # Get list of site codes
+        sites = [hospital_patient['site']['code'] for hospital_patient in hospital_patients]
+
+        # Compare length for unique site code elements
+        # A patient should not have more than one record (e.g., MRN) at the same site
         if len(set(sites)) != len(sites):
             raise serializers.ValidationError(
                 'Provided `MRNs` list contains duplicated "site" codes. Site codes should be unique.',
             )
 
+    def _check_mrn_site_pair_exists(
+        self,
+        validated_hospital_patients: List[Dict[str, Any]],
+    ) -> None:
         # Check if at least one MRN/Site pair exists. If a pair does not exist it should contain `is_active` field
         hospital_patients = HospitalPatient.objects.all()
-        patient_exists = False
-        for patient in value:
-            if not hospital_patients.filter(site__code=patient['site']['code']).exists():
-                raise serializers.ValidationError(
-                    '{0}{1}{2}'.format('Provided "', patient['site']['code'], '" site code does not exist.'),
-                )
 
+        for patient in validated_hospital_patients:
             hospital_patient = hospital_patients.filter(
                 mrn=patient['mrn'],
                 site__code=patient['site']['code'],
@@ -174,32 +238,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
                         'pair does not exist. The dictionary should contain `is_active` key',
                     ),
                 )
+            else:
+                hospital_patient_record = hospital_patient
 
-            if not patient_exists and hospital_patient:
-                patient_exists = True
-
-        if not patient_exists:
+        if not hospital_patient_record:
             raise serializers.ValidationError('The provided "MRNs" list should contain "MRN/site" pair that exists in the database')
-
-        return value
-
-    def update(self, instance, validated_data):
-
-        # TODO: update `HospitalPatient` and `User` records
-        # hospital_patients = validated_data.get('hospital_patients')
-
-        # for item in hospital_patients:
-        #     hospital_patient_id = item.get('id', None)
-        #     if hospital_patient_id:
-        #         hospital_patient = HospitalPatient.objects.get(id=hospital_patient_id, patient=instance)
-        #         # hospital_patient.site.code = item.get('site.code', hospital_patient.site.code)
-        #         hospital_patient.mrn = item.get('mrn', hospital_patient.mrn)
-        #         hospital_patient.is_active = item.get('is_active', hospital_patient.is_active)
-        #     else:
-        #         site = Site.objects.get(code=item['site']['code'])
-        #         item.pop('site')
-        #         HospitalPatient.objects.create(patient=instance, site=site, **item)
-
-        validated_data.pop('hospital_patients')
-        # Runs the original parent update(), since the nested fields were 'popped' out of the data
-        return super().update(instance, validated_data)
