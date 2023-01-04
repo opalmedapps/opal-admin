@@ -168,3 +168,19 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied(
                 "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
             )
+
+
+class CustomPatientDemographicPermissions(permissions.DjangoModelPermissions):
+    """
+    Custom DRF `DjangoModelPermissions` permission for changing/updating `Patient`.
+
+    Restricts PUT and PATCH operations to require the `view` permission on the `Patient` model.
+
+    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
+    """
+
+    # taken from DjangoModelPermissions and added the permission for PUT and PATCH
+    perms_map = {
+        'PUT': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
+    }
