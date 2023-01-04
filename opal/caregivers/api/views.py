@@ -214,9 +214,8 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         Send verification email to the user with an template according to the user language.
 
         Args:
-            email_verification: object EmailVerification.
-            user: object User.
-            language: language code from the request data.
+            email_verification: object EmailVerification
+            user: object User
         """
         context = {
             'code': email_verification.code,
