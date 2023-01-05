@@ -10,9 +10,7 @@
       <div class="row justify-content-md-center">
         <div class="col col-md-10">
             <h4>{% translate "Report:" %} {{ questionnaireName }} {% translate "between" %} {{ start }} {% translate "and" %} {{ end }}</h4>
-            <div class="table-responsive">
-              {% render_table reporttable %}
-          </div>
+            {% render_table reporttable %}
 
             <form action="{% url 'questionnaires:reports-download-csv' %}" method="post" id="form">
                 {% csrf_token %}

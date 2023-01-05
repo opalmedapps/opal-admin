@@ -29,17 +29,13 @@
               <div class="card-header">
                 <h3 class="card-title">{% translate "Patient Details" %}</h3>
               </div>
-              <div class="table-responsive">
-                {% render_table tables.0 %}
-              </div>
+              {% render_table tables.0 %}
             </div>
             <div class="card">
               <div class="card-header">
                 <h3 class="card-title">{% translate "Caregiver Details" %}</h3>
               </div>
-                <div class="table-responsive">
-                  {% render_table tables.1 %}
-                </div>
+              {% render_table tables.1 %}
             </div>
           </div>
         </div>
