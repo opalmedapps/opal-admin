@@ -148,12 +148,16 @@ test:
 coverage:
   stage: Test
   script:
-    - coverage xml
+    # allow XML creation to fail to be able to parse coverage out of text report
+    - coverage xml || true
     - coverage report
   needs:
     - job: test
     - job: setup
   coverage: '/^TOTAL.+?(\d+\%)$/'
+  # min coverage is set to 100, allow job to fail in order to signal that the coverage dropped
+  # it does not mean it always has to be fixed
+  allow_failure: true
   artifacts:
     when: always
     reports:

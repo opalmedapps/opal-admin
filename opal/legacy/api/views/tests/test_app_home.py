@@ -1,3 +1,4 @@
+import datetime as dt
 from datetime import datetime
 
 from django.urls import reverse
@@ -29,8 +30,13 @@ class TestHomeAppView:
         assert 'unread_notification_count' in response.data
         assert 'daily_appointments' in response.data
 
-    def test_get_home_data_return_value(self, api_client: APIClient, admin_user: User) -> None:
+    def test_get_home_data_return_value(self, api_client: APIClient, admin_user: User, mocker: MockerFixture) -> None:
         """Test the return value of get home data."""
+        # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
+        now = timezone.make_aware(datetime(2022, 11, 29, 11, 2, 3))
+        mock_timezone = mocker.patch('django.utils.timezone.now')
+        mock_timezone.return_value = now
+
         relationship = patient_factories.Relationship(status='CON')
         user_name = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
@@ -43,6 +49,7 @@ class TestHomeAppView:
         factories.LegacyAppointmentFactory(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
 
         response = api_client.get(reverse('api:app-home'))
+
         assert response.data['unread_notification_count'] == 2
         assert len(response.data['daily_appointments']) == 1
 
@@ -79,7 +86,7 @@ class TestHomeAppView:
         )
 
         # mock the current timezone to simulate the UTC time already on the next day
-        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=timezone.utc)
+        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
         mocker.patch.object(timezone, 'now', return_value=current_time)
         daily_appointments = models.LegacyAppointment.objects.get_daily_appointments(
             relationship.caregiver.user.username,
