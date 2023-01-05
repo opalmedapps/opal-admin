@@ -1,4 +1,6 @@
 """Test module for registration api endpoints."""
+import datetime as dt
+from datetime import datetime
 from hashlib import sha512
 from http import HTTPStatus
 
@@ -8,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from pytest_django.fixtures import SettingsWrapper
+from pytest_mock import MockerFixture
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 
@@ -15,6 +18,12 @@ from opal.caregivers import factories as caregiver_factory
 from opal.caregivers import models as caregiver_model
 from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
+
+
+def test_get_caregiver_patient_list_missing_user_id_header(user_client: APIClient) -> None:
+    """Test patient list endpoint to return a bad request if the `Appuserid` header is missing."""
+    response = user_client.get(reverse('api:caregivers-patient-list'))
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
@@ -110,18 +119,23 @@ class TestApiEmailVerification:
         assert caregiver_profile.user.email == 'opal@muhc.mcgill.ca'
         assert caregiver_model.EmailVerification.objects.all().count() == 0
 
-    def test_save_verify_email_en_success(  # noqa: WPS218
+    def test_save_verify_verification_created(  # noqa: WPS218
         self,
         api_client: APIClient,
         admin_user: AbstractUser,
-        settings: SettingsWrapper,
+        mocker: MockerFixture,
     ) -> None:
-        """Test save verify email with English template success."""
+        """Test that the EmailVerification instance is created with the correct properties."""
+        # mock the current timezone to simulate the UTC time already on the next day
+        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+        mocker.patch.object(timezone, 'now', return_value=current_time)
+
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email = 'test@muhc.mcgill.ca'
+
         response = api_client.post(
             reverse(
                 'api:verify-email',
@@ -129,45 +143,48 @@ class TestApiEmailVerification:
             ),
             data={'email': email},
             format='json',
-            HTTP_ACCEPT_LANGUAGE='en',
         )
-        email_verification = caregiver_model.EmailVerification.objects.get(email=email)
+
         assert response.status_code == HTTPStatus.OK
-        assert email_verification
+
+        email_verification = caregiver_model.EmailVerification.objects.get(email=email)
+
         assert not email_verification.is_verified
+        assert email_verification.email == email
+        assert email_verification.code
+        assert email_verification.caregiver == caregiver_profile
+        assert email_verification.sent_at == current_time
+
+    def test_save_verify_email_sent(  # noqa: WPS218
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test that the email is sent when verifying an email address."""
+        api_client.force_login(user=admin_user)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
+        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
+        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
+        email = 'test@muhc.mcgill.ca'
+
+        api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email},
+            format='json',
+        )
+
+        email_verification = caregiver_model.EmailVerification.objects.get(email=email)
+
         assert len(mail.outbox) == 1
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
+        assert mail.outbox[0].to == [email]
         assert email_verification.code in mail.outbox[0].body
         assert 'Dear' in mail.outbox[0].body
         assert mail.outbox[0].subject == 'Opal Verification Code'
-
-    def test_save_verify_email_fr_success(  # noqa: WPS218
-        self,
-        api_client: APIClient,
-        admin_user: AbstractUser,
-        settings: SettingsWrapper,
-    ) -> None:
-        """Test save verify email withe French template success."""
-        api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factory.CaregiverProfile()
-        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
-        email = 'test@muhc.mcgill.ca'
-        response = api_client.post(
-            reverse(
-                'api:verify-email',
-                kwargs={'code': registration_code.code},
-            ),
-            data={'email': email},
-            format='json',
-            HTTP_ACCEPT_LANGUAGE='fr',
-        )
-        email_verification = caregiver_model.EmailVerification.objects.get(email=email)
-        assert response.status_code == HTTPStatus.OK
-        assert email_verification
-        assert len(mail.outbox) == 1
-        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
-        assert email_verification.code in mail.outbox[0].body
 
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test resend verify email within 10 sec."""
