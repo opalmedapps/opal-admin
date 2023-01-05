@@ -18,16 +18,17 @@ from .tables import (
 )
 
 
-class RelationshipTypeListView(SingleTableView):
+class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     table_class = RelationshipTypeTable
     ordering = ['pk']
     template_name = 'patients/relationship_type/list.html'
 
 
-class RelationshipTypeCreateUpdateView(CreateUpdateView):
+class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     """
     This `CreateView` displays a form for creating an `RelationshipType` object.
 
@@ -35,6 +36,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
     """
 
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/form.html'
     fields = [
         'name_en',
@@ -49,7 +51,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class RelationshipTypeDeleteView(DeleteView):
+class RelationshipTypeDeleteView(PermissionRequiredMixin, DeleteView):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
 
@@ -59,6 +61,7 @@ class RelationshipTypeDeleteView(DeleteView):
     """
 
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
 
