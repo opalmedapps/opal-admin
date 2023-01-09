@@ -364,6 +364,8 @@ CREATE TABLE IF NOT EXISTS `answerQuestionnaire` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionnaireId` bigint(20) NOT NULL,
   `patientId` bigint(20) NOT NULL,
+  `respondentUsername` varchar(255) NOT NULL DEFAULT '',
+  `respondentDisplayName` varchar(255) NOT NULL DEFAULT '',
   `status` int(11) NOT NULL DEFAULT 0 COMMENT '0 = New, 1 = In Progress, 2 = Completed',
   `deleted` tinyint(4) NOT NULL DEFAULT 0,
   `deletedBy` varchar(255) NOT NULL,
