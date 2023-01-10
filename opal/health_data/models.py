@@ -15,6 +15,7 @@ from enum import Enum
 from typing import Any, Type
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -40,6 +41,12 @@ class HealthDataStore(models.Model):
     class Meta:
         verbose_name = _('Health Data Store')
         verbose_name_plural = _('Health Data Stores')
+        constraints = [
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_patient',
+                fields=['patient'],
+            ),
+        ]
 
     def __str__(self) -> str:
         """
@@ -87,7 +94,7 @@ class AbstractSample(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_source_valid',
-                check=models.Q(type__in=SampleSourceType.values),
+                check=models.Q(source__in=SampleSourceType.values),
             ),
         ]
 
@@ -121,7 +128,7 @@ class QuantitySampleType(models.TextChoices):
     BODY_MASS = 'BM', _('Body Mass (kg)')
     BODY_TEMPERATURE = 'TMP', _('Body Temperature (°C)')
     HEART_RATE = 'HR', _('Heart Rate (bpm)')
-    HEART_RATE_VARIABILITY = 'HRV', _('Heart Rate Variability (ms))')
+    HEART_RATE_VARIABILITY = 'HRV', _('Heart Rate Variability (ms)')
     OXYGEN_SATURATION = 'SPO2', _('Oxygen Saturation (%)')
 
 
@@ -153,6 +160,7 @@ class QuantitySample(AbstractSample):
         _('Value'),
         max_digits=7,
         decimal_places=2,
+        validators=[MinValueValidator(0)],
     )
     type = models.CharField(  # noqa: A003
         _('Type'),
@@ -179,11 +187,14 @@ class QuantitySample(AbstractSample):
         Returns:
             the textual representation of this instance
         """
-        sample_type = QuantitySampleType(self.type)
-        unit_text = sample_type.label.split('(')[1][:-1]
-        unit = Unit(unit_text)
+        if self.type:
+            sample_type = QuantitySampleType(self.type)
+            unit_text = sample_type.label.split('(')[1][:-1]
+            unit = Unit(unit_text)
 
-        return f'{self.value} {unit.value}'
+            return f'{self.value} {unit.value}'
+
+        return super().__str__()
 
 
 @receiver(post_save, sender=Patient)

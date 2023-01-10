@@ -434,7 +434,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
-        assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
+        assert "(1, '', 'Bart', 'Simpson', '1999-01-01', 'M', None, None, None)" in error
         assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
         assert '{0}\n\n\n'.format(120 * '-')
 
