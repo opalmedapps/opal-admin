@@ -36,7 +36,7 @@ msgstr "Clinicien"
 
 #: opal/health_data/models.py
 msgid "Start Date"
-msgstr ""Date de début"
+msgstr "Date de début"
 
 #: opal/health_data/models.py
 msgid "Device"
