@@ -69,6 +69,10 @@ class AbstractSample(models.Model):
     """An abstract sample for all measurements of health data.
 
     This model should be inherited from by all concrete sample models.
+
+    **Important:** In order for subclasses to inherit all options defined by the `Meta` inner class,
+    ensure that the `Meta` inner class of the subclass inherits the one from this abstract class.
+    See: https://docs.djangoproject.com/en/dev/topics/db/models/#meta-inheritance)
     """
 
     start_date = models.DateTimeField(_('Start Date'))
@@ -168,10 +172,12 @@ class QuantitySample(AbstractSample):
         max_length=4,
     )
 
-    class Meta:
+    # inherit Meta from super class to retain the existing constraints
+    # see: https://docs.djangoproject.com/en/dev/topics/db/models/#meta-inheritance
+    class Meta(AbstractSample.Meta):
         verbose_name = _('Quantity Sample')
         verbose_name_plural = _('Quantity Samples')
-        constraints = [
+        constraints = AbstractSample.Meta.constraints + [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=QuantitySampleType.values),

@@ -44,7 +44,13 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Quantity Sample',
                 'verbose_name_plural': 'Quantity Samples',
+                'ordering': ('-start_date',),
+                'abstract': False,
             },
+        ),
+        migrations.AddConstraint(
+            model_name='quantitysample',
+            constraint=models.CheckConstraint(check=models.Q(('source__in', ['P', 'C'])), name='health_data_quantitysample_source_valid'),
         ),
         migrations.AddConstraint(
             model_name='quantitysample',
