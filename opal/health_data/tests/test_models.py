@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 import pytest
@@ -92,4 +93,20 @@ def test_quantitysample_source_constraint() -> None:
 
     constraint_name = 'health_data_quantitysample_source_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+        sample.save()
+
+
+def test_quantitysample_new_can_save() -> None:
+    """Ensure a new instance can be saved."""
+    data_store = factories.HealthDataStore()
+    sample = factories.QuantitySample.build(data_store=data_store)
+
+    sample.save()
+
+
+def test_quantitysample_existing_cannot_save() -> None:
+    """Ensure an existing instance cannot be saved."""
+    sample = factories.QuantitySample()
+
+    with pytest.raises(ValidationError, match='Cannot change an existing instance of Quantity Sample'):
         sample.save()
