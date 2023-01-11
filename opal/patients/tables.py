@@ -3,7 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
 
-from .models import Relationship, RelationshipType
+from opal.users.models import User
+
+from .models import Patient, Relationship, RelationshipType
 
 
 class RelationshipTypeTable(tables.Table):
@@ -35,6 +37,40 @@ class RelationshipTypeTable(tables.Table):
             'actions',
         ]
         empty_text = _('No relationship types defined.')
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+
+class PatientTable(tables.Table):
+    """A table for patient types."""
+
+    date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
+
+    class Meta:
+        model = Patient
+        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
+        empty_text = _('No patient could be found.')
+        orderable = False
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+
+class ExistingUserTable(tables.Table):
+    """A table for existing user information."""
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+        empty_text = _('No existing user could be found.')
+        orderable = False
         attrs = {
             'class': 'table table-bordered table-hover',
             'thead': {

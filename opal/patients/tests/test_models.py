@@ -107,6 +107,12 @@ def test_patient_str() -> None:
     assert str(patient) == 'First Name Last Name'
 
 
+def test_patient_age_calculation() -> None:
+    """Ensure the `calculate_age` method calculate correctly for the `Patient` model."""
+    date_of_birth = datetime.datetime(2004, 1, 1, 9, 20, 30)
+    assert Patient.calculate_age(date_of_birth=date_of_birth) == 19
+
+
 def test_patient_factory() -> None:
     """Ensure the Patient factory is building properly."""
     patient = factories.Patient()
