@@ -247,7 +247,7 @@ def test_disabled_option_exists() -> None:
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
     for index, option in enumerate(options):
-        if index == 3:
+        if index == 4:
             assert 'disabled' not in option['attrs']
         else:
             assert option['attrs']['disabled'] == 'disabled'

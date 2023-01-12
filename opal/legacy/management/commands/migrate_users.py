@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from opal.caregivers.models import CaregiverProfile
 from opal.legacy.models import LegacyPatient, LegacyUsers
-from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType
+from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 from opal.users.models import Caregiver
 
 
@@ -26,8 +26,7 @@ class Command(BaseCommand):
             kwargs: input arguments.
         """
         legacy_users = LegacyUsers.objects.filter(usertype='Patient')
-        # TODO: change using name in retrieve the relationship type, to be done after QSCCD-645.
-        relationshiptype = RelationshipType.objects.filter(name='self').first()
+        relationshiptype = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
 
         # force failure if the relationship type does not exist
         if relationshiptype is None:
