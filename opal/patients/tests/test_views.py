@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
@@ -12,6 +13,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
+from bs4 import BeautifulSoup
 from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
@@ -83,15 +85,6 @@ def test_relationshiptypes_list_table(user_client: Client) -> None:
     assert response.context['table'].__class__ == tables.RelationshipTypeTable
 
 
-def test_relationshiptypes_list_empty(user_client: Client) -> None:
-    """Relationship types list shows message when no types are defined."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
-
-    assert response.status_code == HTTPStatus.OK
-
-    assertContains(response, 'No relationship types defined.')
-
-
 def test_relationshiptypes_list(user_client: Client) -> None:
     """Relationship types are listed."""
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
@@ -99,7 +92,10 @@ def test_relationshiptypes_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationshiptype-list'))
     response.content.decode('utf-8')
 
-    assertQuerysetEqual(response.context['relationshiptype_list'], types)
+    assertQuerysetEqual(
+        response.context['relationshiptype_list'].order_by('name'),
+        models.RelationshipType.objects.all(),
+    )
 
     for relationship_type in types:
         assertContains(response, f'<td >{relationship_type.name}</td>')
@@ -114,28 +110,25 @@ def test_relationshiptype_create_get(user_client: Client) -> None:
 
 def test_relationshiptype_create(user_client: Client) -> None:
     """A new relationship type can be created."""
-    relationship_type = factories.RelationshipType.build(name='Testname')
+    relationship_type = factories.RelationshipType(name='Testname')
 
     user_client.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
-    assert models.RelationshipType.objects.count() == 1
-    assert models.RelationshipType.objects.get().name == relationship_type.name
+    assert models.RelationshipType.objects.count() == 3
+    assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
 
 def test_relationshiptype_update_get(user_client: Client) -> None:
     """An existing relationship type can be edited."""
     relationship_type = factories.RelationshipType()
-
     response = user_client.get(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
     assertContains(response, 'Update Relationship Type')
-    assertContains(response, 'value="Self"')
+    assertContains(response, 'value="Caregiver"')
 
 
 def test_relationshiptype_update_post(user_client: Client) -> None:
@@ -149,7 +142,7 @@ def test_relationshiptype_update_post(user_client: Client) -> None:
         data=model_to_dict(relationship_type, exclude=['id']),
     )
 
-    assert models.RelationshipType.objects.get().end_age == 100
+    assert models.RelationshipType.objects.get(pk=relationship_type.pk).end_age == 100
 
 
 def test_relationshiptype_delete_get(user_client: Client) -> None:
@@ -160,8 +153,7 @@ def test_relationshiptype_delete_get(user_client: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
-    assertContains(response, 'Are you sure you want to delete the following relationship type: Self?')
+    assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
 
 
 def test_relationshiptype_delete(user_client: Client) -> None:
@@ -172,7 +164,7 @@ def test_relationshiptype_delete(user_client: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
     )
 
-    assert models.RelationshipType.objects.count() == 0
+    assert models.RelationshipType.objects.count() == 2
 
 
 # tuple with patients wizard form templates and corresponding url names
@@ -1210,6 +1202,38 @@ def test_relationships_pending_list_table(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
+
+
+def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
+    """Ensure the delete button does not appear, but update does, in the special rendering for restricted role types."""
+    response = user_client.get(reverse('patients:relationshiptype-list'))
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    delete_button_data = soup.find_all('a', href=re.compile('delete'))
+    update_button_data = soup.find_all('a', href=re.compile('update'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert not delete_button_data
+    assert update_button_data
+
+
+def test_relationshiptype_list_delete_available(user_client: Client) -> None:
+    """Ensure the delete and update buttons do appear for regular relationship types."""
+    new_relationship_type = factories.RelationshipType()
+    user_client.post(
+        reverse('patients:relationshiptype-create'),
+        data=model_to_dict(new_relationship_type, exclude=['id', 'end_age']),
+    )
+
+    response = user_client.get(reverse('patients:relationshiptype-list'))
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    delete_button_data = soup.find_all('a', href=re.compile('delete'))
+    update_button_data = soup.find_all('a', href=re.compile('update'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert delete_button_data
+    assert update_button_data
 
 
 def test_relationships_pending_form(user_client: Client) -> None:
