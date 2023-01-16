@@ -3,7 +3,7 @@
 # Testing
 #
 mypy==0.942  # https://github.com/python/mypy
-pytest==7.2.0  # https://github.com/pytest-dev/pytest
+pytest==7.2.1  # https://github.com/pytest-dev/pytest
 pytest-mock==3.10.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.5.1  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
