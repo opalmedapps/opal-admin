@@ -2,6 +2,7 @@
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from django.db import IntegrityError
 
 from opal.hospital_settings.models import Site
 from opal.legacy.models import LegacyPatient, LegacyPatientHospitalIdentifier
@@ -93,23 +94,51 @@ class Command(BaseCommand):
                         ),
                     )
                 else:
-                    HospitalPatient.objects.create(
-                        patient=migrated_patient,
-                        site=Site.objects.get(
-                            code=legacy_patient_identifier.hospitalidentifiertypecode.code,
-                        ),
-                        mrn=legacy_patient_identifier.mrn,
-                        is_active=legacy_patient_identifier.isactive,
-                    )
-                    self.stdout.write(
-                        'Imported patient_identifier, legacy_id: {patientsernum}, mrn: {mrn}'.format(
-                            patientsernum=legacy_patient.patientsernum,
-                            mrn=legacy_patient_identifier.mrn,
-                        ),
-                    )
+                    self._create_patient_identifier(migrated_patient, legacy_patient, legacy_patient_identifier)
         else:
             self.stdout.write(
                 'No hospital patient identifiers for patient with legacy_id: {patientsernum} exist, skipping'.format(
                     patientsernum=legacy_patient.patientsernum,
+                ),
+            )
+
+    def _create_patient_identifier(
+        self,
+        migrated_patient: Patient,
+        legacy_patient: LegacyPatient,
+        legacy_patient_identifier: LegacyPatientHospitalIdentifier,
+    ) -> None:
+        """
+        Create the given legacy patient identifier for the migrated patient.
+
+        Args:
+            migrated_patient: the migrated `Patient` instance
+            legacy_patient: the legacy patient
+            legacy_patient_identifier: the legacy patient identifier to migrate
+        """
+        try:
+            HospitalPatient.objects.create(
+                patient=migrated_patient,
+                site=Site.objects.get(
+                    code=legacy_patient_identifier.hospitalidentifiertypecode.code,
+                ),
+                mrn=legacy_patient_identifier.mrn,
+                is_active=legacy_patient_identifier.isactive,
+            )
+        except IntegrityError:
+            self.stderr.write(
+                (
+                    'Cannot import patient hospital identifier for patient (ID: {patient_id}, MRN: {mrn}),'
+                    + ' already has an MRN at the same site ({site})'
+                ).format(
+                    patient_id=legacy_patient.patientsernum,
+                    mrn=legacy_patient_identifier.mrn,
+                    site=legacy_patient_identifier.hospitalidentifiertypecode.code,
+                ))
+        else:
+            self.stdout.write(
+                'Imported patient_identifier, legacy_id: {patientsernum}, mrn: {mrn}'.format(
+                    patientsernum=legacy_patient.patientsernum,
+                    mrn=legacy_patient_identifier.mrn,
                 ),
             )
