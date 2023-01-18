@@ -62,7 +62,6 @@ class RelationshipType(models.Model):
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
-
     role_type = models.CharField(
         verbose_name=_('Relationship Role Type'),
         choices=RoleType.choices,
