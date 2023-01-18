@@ -40,7 +40,7 @@ def test_relationshiptype_duplicate_names() -> None:
     """Ensure that the relationship type name is unique."""
     factories.RelationshipType(name='Self')
 
-    with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):
         relationship_type = factories.RelationshipType.build(name='Self')
         relationship_type.save()
 
@@ -52,7 +52,7 @@ def test_relationshiptype_min_age_lowerbound() -> None:
 
     message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE)
 
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
 
     relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE
@@ -66,7 +66,7 @@ def test_relationshiptype_min_age_upperbound() -> None:
 
     message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE - 1)
 
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
 
     relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE - 1
@@ -80,7 +80,7 @@ def test_relationshiptype_max_age_lowerbound() -> None:
 
     message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE + 1)
 
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
 
     relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE + 1
@@ -94,7 +94,7 @@ def test_relationshiptype_max_age_upperbound() -> None:
 
     message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE)
 
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
 
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE
@@ -136,7 +136,7 @@ def test_patient_factory_multiple() -> None:
 def test_patient_invalid_sex() -> None:
     """Ensure that a patient cannot be saved with an invalid sex type."""
     message = 'CONSTRAINT `patients_patient_sex_valid` failed'
-    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, message):
         factories.Patient(sex='I')
 
 
@@ -147,7 +147,7 @@ def test_patient_ramq_unique() -> None:
 
     message = "Duplicate entry 'TEST12345678' for key 'ramq'"
 
-    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, message):
         patient.ramq = 'TEST12345678'
         patient.save()
 
@@ -160,7 +160,7 @@ def test_patient_ramq_max() -> None:
         "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
         "'Ensure this value has at most 12 characters (it has 14).']",
     )
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
 
 
@@ -170,7 +170,7 @@ def test_patient_ramq_min() -> None:
     expected_message = '{0}'.format(
         "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
     )
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
 
 
@@ -180,7 +180,7 @@ def test_patient_ramq_format() -> None:
     expected_message = '{0}'.format(
         "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
     )
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
 
 
@@ -199,7 +199,7 @@ def test_patient_legacy_id_unique() -> None:
     factories.Patient(ramq=None, legacy_id=1)
     message = "Duplicate entry '1' for key"
 
-    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, message):
         factories.Patient(ramq='somevalue', legacy_id=1)
 
 
@@ -268,7 +268,7 @@ def test_relationship_clean_invalid_dates() -> None:
     relationship.end_date = datetime.date(2022, 5, 4)
 
     expected_message = 'Start date should be earlier than end date.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
 
@@ -279,7 +279,7 @@ def test_relationship_invalid_dates_constraint() -> None:
     relationship.end_date = datetime.date(2022, 5, 4)
 
     constraint_name = 'patients_relationship_date_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         relationship.save()
 
 
@@ -289,7 +289,7 @@ def test_relationship_status_constraint() -> None:
     relationship.status = 'INV'
 
     constraint_name = 'patients_relationship_status_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         relationship.save()
 
 
@@ -328,7 +328,7 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 
     assert HospitalPatient.objects.count() == 2
 
-    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
 
 
@@ -343,7 +343,7 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
     HospitalPatient.objects.create(patient=patient1, site=site, mrn='9999996')
 
-    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
 
 
@@ -373,7 +373,7 @@ def test_relationship_no_reason_invalid_revoked() -> None:
     relationship.status = RelationshipStatus.REVOKED
 
     expected_message = 'Reason is mandatory when status is denied or revoked.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
 
@@ -384,7 +384,7 @@ def test_relationship_no_reason_invalid_denied() -> None:
     relationship.status = RelationshipStatus.DENIED
 
     expected_message = 'Reason is mandatory when status is denied or revoked.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
 
@@ -418,7 +418,7 @@ def test_relationship_same_combination() -> None:
     caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
     profile = factories.CaregiverProfile(user=caregiver)
     factories.Relationship(patient=patient, caregiver=profile)
-    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
         factories.Relationship(patient=patient, caregiver=profile)
 
 
@@ -483,7 +483,7 @@ def test_invalid_date_of_death() -> None:
     patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 10, 20))
 
     expected_message = 'Date of death cannot be earlier than date of birth.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         patient.clean()
 
 
@@ -517,7 +517,7 @@ def test_relationshiptype_self_role_delete_error() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.role_type = RoleType.SELF
     message = "['The relationship type with this role type cannot be deleted']"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.delete()
 
 
@@ -526,7 +526,7 @@ def test_relationshiptype_par_role_delete_error() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.role_type = RoleType.PARENTGUARDIAN
     message = "['The relationship type with this role type cannot be deleted']"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         relationship_type.delete()
 
 
@@ -536,7 +536,7 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self_copy.role_type = RoleType.SELF
 
     message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         roletype_self_copy.full_clean()
 
 
@@ -546,5 +546,5 @@ def test_relationshiptype_duplicate_parent_role() -> None:
     roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
 
     message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         roletype_parent_copy.full_clean()
