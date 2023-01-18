@@ -27,7 +27,7 @@ from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
-from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm
+from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
 from .tables import (
     ExistingUserTable,
@@ -57,16 +57,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
 
     model = RelationshipType
     template_name = 'patients/relationship_type/form.html'
-    fields = [
-        'name_en',
-        'name_fr',
-        'description_en',
-        'description_fr',
-        'start_age',
-        'end_age',
-        'form_required',
-        'can_answer_questionnaire',
-    ]
+    form_class = RelationshipTypeUpdateForm
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 

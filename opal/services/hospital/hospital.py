@@ -52,7 +52,7 @@ class OIEService:
         }
 
         response_data = self.communication_manager.submit(
-            endpoint=':6682/reports/post',
+            endpoint='/report/post',
             payload=payload,
         )
 
@@ -88,7 +88,7 @@ class OIEService:
             'visitInfo': False,
         }
         response_data = self.communication_manager.submit(
-            endpoint=':6682/Patient/get',
+            endpoint='/Patient/get',
             payload=payload,
         )
 
@@ -150,7 +150,7 @@ class OIEService:
             'visitInfo': False,
         }
         response_data = self.communication_manager.submit(
-            endpoint=':6682/Patient/get',
+            endpoint='/Patient/get',
             payload=payload,
         )
 

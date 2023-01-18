@@ -28,7 +28,7 @@ class OIEValidator:
         """
         # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
         # TODO: Confirm the regex pattern for the document number
-        reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
+        reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)|(^MU-[a-zA-Z0-9]+$)')
         return (  # check if MRN is not empty
             bool(report_data.mrn.strip())
             # check if site is not empty
