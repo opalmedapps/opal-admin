@@ -53,6 +53,8 @@ class InstitutionDeleteView(PermissionRequiredMixin, DeleteView):
     If this view is fetched via **GET**, it will display a confirmation page with a form that POSTs to the same URL.
     """
 
+    # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
+    object: Institution  # noqa: A003
     model = Institution
     permission_required = ('hospital_settings.can_manage_institutions',)
     template_name = 'hospital_settings/institution/institution_confirm_delete.html'

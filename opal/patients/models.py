@@ -72,7 +72,8 @@ class RelationshipType(models.Model):
             + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
         ),
     )
-    objects = RelationshipTypeManager()
+
+    objects = RelationshipTypeManager()  # type: ignore[django-manager-missing]
 
     class Meta:
         ordering = ['name']

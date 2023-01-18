@@ -29,7 +29,7 @@ def test_user_type_constraint() -> None:
 
     constraint_name = 'users_user_type_valid'
     # see: https://github.com/pytest-dev/pytest-django/issues/1009
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         user.save()
 
 
@@ -40,7 +40,7 @@ def test_user_language_constraint() -> None:
 
     constraint_name = 'users_user_language_valid'
     # see: https://github.com/pytest-dev/pytest-django/issues/1009
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         user.save()
 
 
@@ -109,7 +109,7 @@ def test_user_phone_number_regex_invalid(phone_number: str) -> None:
 
     user.phone_number = phone_number
 
-    with assertRaisesMessage(ValidationError, 'phone_number'):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, 'phone_number'):
         user.full_clean()
 
 
@@ -145,7 +145,7 @@ def test_user_phone_number_ext_regex_invalid(phone_number: str) -> None:
 
     user.phone_number = phone_number
 
-    with assertRaisesMessage(ValidationError, 'phone_number'):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, 'phone_number'):
         user.full_clean()
 
 

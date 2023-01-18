@@ -94,25 +94,21 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
 
-class ClinicalStaffManager(UserManager):
+class ClinicalStaffManager(UserManager[User]):
     """
     UserManager for `ClinicalStaff` users.
 
     Provides a queryset limited to users of type `UserType.ClinicalStaff`.
     """
 
-    def get_queryset(self, *args: Any, **kwargs: Any) -> models.QuerySet[User]:
+    def get_queryset(self) -> models.QuerySet[User]:
         """
         Return a new QuerySet filtered by users of type `UserType.ClinicalStaff`.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
 
         Returns:
             a QuerySet of users
         """
-        queryset = super().get_queryset(*args, **kwargs)
+        queryset = super().get_queryset()
         return queryset.filter(type=UserType.CLINICAL_STAFF)
 
 
@@ -129,25 +125,21 @@ class ClinicalStaff(User):
         verbose_name_plural = _('Clinical Staff')
 
 
-class CaregiverManager(UserManager):
+class CaregiverManager(UserManager[User]):
     """
     UserManager for `Caregiver` users.
 
     Provides a queryset limited to users of type `UserType.CAREGIVER`.
     """
 
-    def get_queryset(self, *args: Any, **kwargs: Any) -> models.QuerySet[User]:
+    def get_queryset(self) -> models.QuerySet[User]:
         """
         Return a new QuerySet filtered by users of type `UserType.ClinicalStaff`.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
 
         Returns:
             a QuerySet of users
         """
-        queryset = super().get_queryset(*args, **kwargs)
+        queryset = super().get_queryset()
         return queryset.filter(type=UserType.CAREGIVER)
 
 
