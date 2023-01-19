@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
 from django.http import HttpRequest
 
-from .models import AbstractSample, HealthDataStore, QuantitySample
+from .models import AbstractSample, QuantitySample
 
 
 class AbstractSampleAdminMixin(BaseModelAdmin):
@@ -52,13 +52,10 @@ class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin):
 
     list_display = [
         '__str__',
-        'data_store',
+        'patient',
         'type',
         'start_date',
         'source',
         'device',
         'added_at',
     ]
-
-
-admin.site.register(HealthDataStore, admin.ModelAdmin)
