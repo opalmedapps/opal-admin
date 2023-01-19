@@ -32,7 +32,7 @@ class RelationshipTypeTemplateColumn(tables.TemplateColumn):
             table: The RelationshipTypeTable instance
             value: value from `record` that corresponds to the current column
             bound_column: The column being rendered
-            kwargs: Any number of key-word arguements
+            kwargs: Any number of key-word arguments
 
         Returns:
             TemplateColumn: the renderable content for the column
@@ -55,7 +55,7 @@ class RelationshipTypeTemplateColumn(tables.TemplateColumn):
                 'urlname_delete': 'patients:relationshiptype-delete',
             }
         additional_context.update(self.extra_context)
-        with context.update(self.extra_context):
+        with context.update(self.extra_context):  # type: ignore[arg-type]
             return super().render(record, table, value, bound_column, **kwargs)
 
 

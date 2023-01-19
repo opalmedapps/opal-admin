@@ -10,6 +10,7 @@ def test_useradmin_extra_fieldsets() -> None:
     """The custom user model fields are added to the UserAdmin's fieldsets."""
     admin = UserAdmin(User, site)
 
+    assert admin.fieldsets is not None
     last_fieldset = admin.fieldsets[-1]
 
     expected_fields = ('type', 'language', 'phone_number')

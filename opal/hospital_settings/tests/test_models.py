@@ -31,13 +31,13 @@ def test_institution_code_unique() -> None:
     """The institution code needs to be unique."""
     factories.Institution(code='MUHC')
 
-    with assertRaisesMessage(IntegrityError, "Duplicate entry 'MUHC'"):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'MUHC'"):
         factories.Institution(name='Another', code='MUHC')
 
 
 def test_institution_email_required() -> None:
     """Make sure the institution email is required."""
-    with assertRaisesMessage(IntegrityError, "Column 'support_email' cannot be null"):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, "Column 'support_email' cannot be null"):
         factories.Institution(support_email=None)
 
 
@@ -45,7 +45,7 @@ def test_institution_email_format() -> None:
     """Make sure the institution email format is correct."""
     institution = factories.Institution(support_email='MUHC')
 
-    with assertRaisesMessage(ValidationError, 'Enter a valid email address.'):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, 'Enter a valid email address.'):
         institution.full_clean()
 
 
@@ -53,7 +53,7 @@ def test_institution_email_max_length() -> None:
     """Make sure the institution email length is less than 254 chars."""
     email = '{0}@opal.com'.format(get_random_string(length=254))
     assert len(email) > 254
-    with assertRaisesMessage(DataError, "Data too long for column 'support_email' at row 1"):  # type: ignore[arg-type]
+    with assertRaisesMessage(DataError, "Data too long for column 'support_email' at row 1"):
         factories.Institution(support_email=email)
 
 
@@ -94,7 +94,7 @@ def test_site_code_unique() -> None:
     """The institution name needs to be unique."""
     factories.Site(code='MVP')
 
-    with assertRaisesMessage(IntegrityError, "Duplicate entry 'MVP'"):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'MVP'"):
         factories.Site(code='MVP')
 
 

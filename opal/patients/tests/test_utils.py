@@ -38,7 +38,7 @@ def test_update_patient_legacy_id_invalid() -> None:
     legacy_id = 0
     expected_message = "'legacy_id': ['Ensure this value is greater than or equal to 1.']"
     with assertRaisesMessage(
-        ValidationError,  # type: ignore[arg-type]
+        ValidationError,
         expected_message,
     ):
         update_patient_legacy_id(patient, legacy_id)
@@ -78,7 +78,7 @@ def test_update_caregiver_failure() -> None:
     }
     expected_message = "{'phone_number': ['Enter a valid value.']}"
     with assertRaisesMessage(
-        ValidationError,  # type: ignore[arg-type]
+        ValidationError,
         expected_message,
     ):
         update_caregiver(user, info)
@@ -117,7 +117,7 @@ def test_insert_security_answers_failure() -> None:
     ]
     expected_message = "Column 'question' cannot be null"
     with assertRaisesMessage(
-        IntegrityError,  # type: ignore[arg-type]
+        IntegrityError,
         expected_message,
     ):
         insert_security_answers(caregiver, security_answers)
