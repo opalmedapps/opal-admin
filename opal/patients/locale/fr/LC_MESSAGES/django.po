@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-19 09:34-0500\n"
+"POT-Creation-Date: 2023-01-20 03:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -213,6 +213,10 @@ msgstr ""
 "Les types de rôle permettent de suivre la catégorie de relation entre un "
 "proche aidantet et un patient. Un rôle de type “Self” indique que le patient "
 "est le propriétaire des données demandées."
+
+#: opal/patients/models.py
+msgid "Can manage relationship types"
+msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
 msgid "Caregiver Relationship Type"
