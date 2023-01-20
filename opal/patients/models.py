@@ -76,6 +76,7 @@ class RelationshipType(models.Model):
     objects = RelationshipTypeManager()  # type: ignore[django-manager-missing]
 
     class Meta:
+        permissions = (('can_manage_relationshiptypes', _('Can manage relationship types')),)
         ordering = ['name']
         verbose_name = _('Caregiver Relationship Type')
         verbose_name_plural = _('Caregiver Relationship Types')

@@ -78,18 +78,18 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
-def test_relationshiptypes_list_table(user_client: Client) -> None:
+def test_relationshiptypes_list_table(relationshiptype_user: Client) -> None:
     """Relationship types list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     assert response.context['table'].__class__ == tables.RelationshipTypeTable
 
 
-def test_relationshiptypes_list(user_client: Client) -> None:
+def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
     """Relationship types are listed."""
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
 
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(
@@ -101,9 +101,9 @@ def test_relationshiptypes_list(user_client: Client) -> None:
         assertContains(response, f'<td >{relationship_type.name}</td>')
 
 
-def test_relationshiptype_create_get(user_client: Client) -> None:
+def test_relationshiptype_create_get(relationshiptype_user: Client) -> None:
     """A new relationship type can be created in a form."""
-    response = user_client.get(reverse('patients:relationshiptype-create'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-create'))
 
     assertContains(response, 'Create Relationship Type')
 
@@ -120,10 +120,10 @@ def test_relationshiptype_create(user_client: Client) -> None:
     assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
 
-def test_relationshiptype_update_get(user_client: Client) -> None:
+def test_relationshiptype_update_get(relationshiptype_user: Client) -> None:
     """An existing relationship type can be edited."""
     relationship_type = factories.RelationshipType()
-    response = user_client.get(
+    response = relationshiptype_user.get(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
@@ -131,13 +131,13 @@ def test_relationshiptype_update_get(user_client: Client) -> None:
     assertContains(response, 'value="Caregiver"')
 
 
-def test_relationshiptype_update_post(user_client: Client) -> None:
+def test_relationshiptype_update_post(relationshiptype_user: Client) -> None:
     """An existing relationship type can be updated."""
     relationship_type = factories.RelationshipType()
 
     relationship_type.end_age = 100
 
-    user_client.post(
+    relationshiptype_user.post(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id']),
     )
@@ -145,22 +145,22 @@ def test_relationshiptype_update_post(user_client: Client) -> None:
     assert models.RelationshipType.objects.get(pk=relationship_type.pk).end_age == 100
 
 
-def test_relationshiptype_delete_get(user_client: Client) -> None:
+def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
     """Deleting a relationship type needs to be confirmed."""
     relationship_type = factories.RelationshipType()
 
-    response = user_client.get(
+    response = relationshiptype_user.get(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
     assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
 
 
-def test_relationshiptype_delete(user_client: Client) -> None:
+def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
     """An existing relationship type can be deleted."""
     relationship_type = factories.RelationshipType()
 
-    user_client.delete(
+    relationshiptype_user.delete(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
     )
 
@@ -1204,9 +1204,9 @@ def test_relationships_pending_list_table(user_client: Client) -> None:
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
-def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
+def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client) -> None:
     """Ensure the delete button does not appear, but update does, in the special rendering for restricted role types."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
     delete_button_data = soup.find_all('a', href=re.compile('delete'))
@@ -1217,15 +1217,15 @@ def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
     assert update_button_data
 
 
-def test_relationshiptype_list_delete_available(user_client: Client) -> None:
+def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -> None:
     """Ensure the delete and update buttons do appear for regular relationship types."""
     new_relationship_type = factories.RelationshipType()
-    user_client.post(
+    relationshiptype_user.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(new_relationship_type, exclude=['id', 'end_age']),
     )
 
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
     delete_button_data = soup.find_all('a', href=re.compile('delete'))
@@ -1326,3 +1326,66 @@ def test_relationships_pending_response_no_menu(user_client: Client, django_user
     response = user_client.get('/hospital-settings/')
 
     assertNotContains(response, 'Pending Requests')
+
+
+# can manage relationshiptype permissions
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationshiptype-list'),
+        reverse('patients:relationshiptype-create'),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
+    ],
+)
+def test_relationshiptype_perm_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `RelationshipType` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_relationshiptype_user')
+    factories.RelationshipType(pk=11)
+    user_client.force_login(user)
+
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        PendingRelationshipListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationshiptype-list'),
+        reverse('patients:relationshiptype-create'),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
+    ],
+)
+def test_relationshiptype_perm_required_success(
+    relationshiptype_user: Client,
+    django_user_model: User,
+    url_name: str,
+) -> None:
+    """Ensure that `RelationshipType` can be accessed with the required permission."""
+    factories.RelationshipType(pk=11)
+
+    response = relationshiptype_user.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
+    """Ensures that pending relationshiptypes is displayed for users with permission."""
+    response = relationshiptype_user.get('/hospital-settings/')
+
+    assertContains(response, 'Relationship Types')
+
+
+def test_relationshiptype_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationshiptypes is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_relationshiptype_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Relationship Types')
