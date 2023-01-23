@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import QuerySet
 from django.forms import Form
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -15,6 +16,7 @@ from django.views import generic
 
 import qrcode
 from dateutil.relativedelta import relativedelta
+from django_filters.views import FilterView
 from django_tables2 import MultiTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
@@ -27,14 +29,14 @@ from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
-from .forms import ManageCaregiverAccessForm, RelationshipPendingAccessForm, RelationshipTypeUpdateForm
-from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
+from .filters import ManageCaregiverAccessFilter
+from .forms import RelationshipPendingAccessForm, RelationshipTypeUpdateForm
+from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .tables import (
     ExistingUserTable,
     PatientTable,
     PendingRelationshipTable,
     RelationshipCaregiverTable,
-    RelationshipPatientTable,
     RelationshipTypeTable,
 )
 
@@ -399,15 +401,17 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         patient_record = form_data['patient_record']
         relationship_type = form_data['relationship_type']
         # Check if there is no relationship between requestor and patient
-        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
         relationship: Optional[Relationship] = Relationship.objects.get_relationship_by_patient_caregiver(
             str(relationship_type),
             caregiver_user.id,
             patient_record.ramq,
         ).first()
-        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # For `Self` relationship, the status is CONFIRMED
-        status = RelationshipStatus.CONFIRMED if str(relationship_type) == 'Self' else RelationshipStatus.PENDING
+        if relationship_type.role_type == RoleType.SELF:
+            status = RelationshipStatus.CONFIRMED
+        else:
+            status = RelationshipStatus.PENDING
+
         if not relationship:
             relationship = Relationship(
                 patient=patient,
@@ -524,19 +528,40 @@ class PendingRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
     success_url = reverse_lazy('patients:relationships-pending-list')
 
 
-class CaregiverAccessView(MultiTableMixin, generic.FormView):
+# The order of `MultiTableMixin` and `FilterView` classes is important!
+# Otherwise the tables and filter won't be accessible form the context (e.g., in the template)
+class CaregiverAccessView(MultiTableMixin, FilterView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
-    tables = [
-        RelationshipPatientTable,
-        RelationshipCaregiverTable,
-    ]
-    # TODO: remove Relationship.objects.all(), currently it returns data for testing purposes
-    # TODO: use Relationship.objects.none()
-    tables_data = [
-        Relationship.objects.all(),
-        Relationship.objects.all(),
-    ]
-    template_name = 'patients/relationships-search/form.html'
-    form_class = ManageCaregiverAccessForm
+    queryset = Patient.objects.prefetch_related(
+        'hospital_patients__site',
+        'relationships__caregiver__user',
+    )
+    filterset_class = ManageCaregiverAccessFilter
+    tables = [PatientTable, RelationshipCaregiverTable]
     success_url = reverse_lazy('patients:caregiver-access')
+    template_name = 'patients/relationships-search/relationship_filter.html'
+
+    def get_tables_data(self) -> List[QuerySet[Any]]:
+        """
+        Get tables data based on the given filter values.
+
+        No data returned if it is initial request.
+
+        Returns:
+            Filtered list of `table_data` that should be used to populate each table
+        """
+        if self.filterset.is_valid():
+            # Get patient's relationships
+            patient = self.filterset.qs.first()
+            relationships = patient.relationships.all() if patient else Relationship.objects.none()
+            # Provide data for the PatientTable and RelationshipCaregiverTable tables respectively
+            return [
+                self.filterset.qs,
+                relationships,
+            ]
+
+        return [
+            Patient.objects.none(),
+            Relationship.objects.none(),
+        ]
