@@ -377,6 +377,33 @@ class Relationship(models.Model):
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
+    @classmethod
+    def valid_statuses(cls, current: RelationshipStatus) -> list[RelationshipStatus]:
+        """
+        Return the list of statuses the provided status can be transitioned to.
+
+        Args:
+            current: the selected value of the status
+
+        Returns:
+            list of valid statuses
+        """
+        statuses = [current]
+        if current == RelationshipStatus.PENDING:
+            statuses += [RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
+        elif current == RelationshipStatus.CONFIRMED:
+            statuses += [
+                RelationshipStatus.PENDING,
+                RelationshipStatus.DENIED,
+                RelationshipStatus.REVOKED,
+            ]
+        elif current == RelationshipStatus.DENIED:
+            statuses += [RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
+        elif current == RelationshipStatus.REVOKED:
+            statuses += [RelationshipStatus.CONFIRMED]
+
+        return statuses
+
 
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
