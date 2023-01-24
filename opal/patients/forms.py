@@ -1,4 +1,4 @@
-"""This module provides forms for Patients."""
+"""This module provides forms for the `patients` app."""
 from datetime import date
 from typing import Any, Dict, Optional, Union
 
@@ -13,13 +13,12 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
-from opal.core import validators
-from opal.core.form_layouts import CancelButton
-from opal.services.hospital.hospital import OIEService
-from opal.users.models import Caregiver, User
-
+from ..core import validators
+from ..core.form_layouts import CancelButton
+from ..services.hospital.hospital import OIEService
+from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -537,6 +536,11 @@ class RelationshipPendingAccessForm(forms.ModelForm):
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
         label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
     )
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': '2'}),
+        label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
+        required=False,
+    )
 
     class Meta:
         model = Relationship
@@ -556,12 +560,21 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [  # type: ignore[attr-defined]
+            (choice.value, choice.label) for choice in Relationship.valid_statuses(
+                RelationshipStatus(self.instance.status),
+            )
+        ]
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
             'end_date',
             'status',
             'reason',
+            FormActions(
+                Submit('submit', _('Save'), css_class='btn btn-primary'),
+                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+            ),
         )
 
 

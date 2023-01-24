@@ -1167,23 +1167,23 @@ def test_error_message_mrn_with_same_site_code() -> None:
     )['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
 
 
-def test_relationships_list_table(user_client: Client) -> None:
+def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
-def test_relationships_list_empty(user_client: Client) -> None:
+def test_relationships_list_empty(relationship_user: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.status_code == HTTPStatus.OK
 
     assertContains(response, 'No caregiver pending access requests.')
 
 
-def test_relationships_pending_list(user_client: Client) -> None:
+def test_relationships_pending_list(relationship_user: Client) -> None:
     """Ensures Relationships with pending status are listed."""
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
     caregivertype3 = factories.RelationshipType(name='caregiver_3')
@@ -1192,7 +1192,7 @@ def test_relationships_pending_list(user_client: Client) -> None:
         factories.Relationship(type=caregivertype3),
     ]
 
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(response.context['relationship_list']), relationships)
@@ -1201,7 +1201,7 @@ def test_relationships_pending_list(user_client: Client) -> None:
         assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
 
 
-def test_relationships_not_pending_not_list(user_client: Client) -> None:
+def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     """Ensures that only Relationships with pending status are listed."""
     caregivertype1 = factories.RelationshipType(name='caregiver_1')
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
@@ -1210,14 +1210,14 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
 
 
-def test_relationships_pending_list_table(user_client: Client) -> None:
+def test_relationships_pending_list_table(relationship_user: Client) -> None:
     """Ensures that pending relationships list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
@@ -1254,32 +1254,32 @@ def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -
     assert update_button_data
 
 
-def test_relationships_pending_form(user_client: Client) -> None:
+def test_relationships_pending_form(relationship_user: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
 
 
-def test_relationships_pending_form_content(user_client: Client) -> None:
+def test_relationships_pending_form_content(relationship_user: Client) -> None:
     """Ensures that pending relationships passed info is correct."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
 
-def test_relationships_pending_form_response(user_client: Client) -> None:
+def test_relationships_pending_form_response(relationship_user: Client) -> None:
     """Ensures that pending relationships displayed info is correct."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     patient = factories.Patient()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
     response.content.decode('utf-8')
 
     assertContains(response, patient)
