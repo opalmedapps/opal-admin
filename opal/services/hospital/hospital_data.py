@@ -44,6 +44,8 @@ class OIEPatientData(NamedTuple):
         last_name (str): patient last name
         sex (str): patient sex
         alias (str): alias name
+        deceased (bool): patient death indicator
+        death_date_time (datetime): patient death date and time in YYYY-MM-DD HH:II:SS
         ramq (str): health insurance number
         ramq_expiration (datetime): the datetime in YYYY-MM-DD HH:II:SS
         mrns (OIEMRN): list of MRNs
@@ -54,6 +56,8 @@ class OIEPatientData(NamedTuple):
     last_name: str
     sex: str
     alias: str
+    deceased: bool
+    death_date_time: datetime
     ramq: str
     ramq_expiration: datetime
     mrns: List[OIEMRNData]
