@@ -56,7 +56,7 @@ class RelationshipTypeTemplateColumn(tables.TemplateColumn):
                 'urlname_delete': 'patients:relationshiptype-delete',
             }
         additional_context.update(self.extra_context)
-        with context.update(self.extra_context):  # type: ignore[arg-type]
+        with context.update(self.extra_context):
             return super().render(record, table, value, bound_column, **kwargs)
 
 
