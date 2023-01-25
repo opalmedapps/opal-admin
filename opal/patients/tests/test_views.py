@@ -38,7 +38,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     last_name='Simpson',
     sex='F',
     alias='',
-    deceased=True,
+    deceased=False,
     death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
     ramq='MARG99991313',
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
@@ -359,7 +359,7 @@ def test_form_error_in_template(
                 last_name='Simpson',
                 sex='F',
                 alias='',
-                deceased=True,
+                deceased=False,
                 death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
                 ramq='MARG99991313',
                 ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
@@ -1165,6 +1165,48 @@ def test_error_message_mrn_with_same_site_code() -> None:
         {},
         patient_mrn_records,
     )['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
+
+
+def test_error_message_searched_patient_deceased() -> None:
+    """Test error message shows up once searched patient is deceased."""
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
+    patient_mrn_records = OIEPatientData(
+        date_of_birth=patient_data.date_of_birth,
+        first_name=patient_data.first_name,
+        last_name=patient_data.last_name,
+        sex=patient_data.sex,
+        alias=patient_data.alias,
+        deceased=True,
+        death_date_time=patient_data.death_date_time,
+        ramq=patient_data.ramq,
+        ramq_expiration=patient_data.ramq_expiration,
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+
+    error_message = (
+        'Unable to complete action with this patient. '
+        + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.'
+    )
+    assert AccessRequestView()._update_patient_confirmation_context(
+        {},
+        patient_mrn_records,
+    )['error_message'] == error_message
 
 
 def test_relationships_list_table(relationship_user: Client) -> None:

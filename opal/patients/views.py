@@ -479,6 +479,18 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
         return any(count > 1 for (site, count) in key_counts.items())
 
+    def _is_searched_patient_deceased(self, patient_record: OIEPatientData) -> bool:
+        """
+        Check if the searched patient is deceased.
+
+        Args:
+            patient_record: patient record search by RAMQ or MRN
+
+        Returns:
+            True if the searched patient is deceased
+        """
+        return patient_record.deceased
+
     def _update_patient_confirmation_context(
         self,
         context: Dict[str, Any],
@@ -494,12 +506,22 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             the template context for step 'confirm'
         """
-        if self._has_multiple_mrns_with_same_site_code(patient_record):
+        if self._is_searched_patient_deceased(patient_record):
+            context.update({
+                'error_message': _(
+                    'Unable to complete action with this patient. '
+                    + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.',
+                ),
+            })
+
+        elif self._has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
             })
 
-        context.update({'table': PatientTable([patient_record])})
+        context.update({
+            'table': PatientTable([patient_record]),
+        })
         return context
 
 
