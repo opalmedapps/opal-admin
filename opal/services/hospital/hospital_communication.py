@@ -1,7 +1,7 @@
 """Module providing business logic for the hospital's internal communication (e.g., Opal Integration Engine)."""
 
 import json
-from typing import Any
+from typing import Any, Optional
 
 from django.conf import settings
 
@@ -28,7 +28,7 @@ class OIEHTTPCommunicationManager:
         self,
         endpoint: str,
         payload: dict[str, Any],
-        metadata: dict[str, Any] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Any:
         """Send data to the OIE by making HTTP POST request.
 
@@ -58,8 +58,8 @@ class OIEHTTPCommunicationManager:
     def fetch(
         self,
         endpoint: str,
-        params: dict[str, Any] = None,
-        metadata: dict[str, Any] = None,
+        params: Optional[dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> Any:
         """Retrieve data from the OIE by making HTTP GET request.
 
