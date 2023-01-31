@@ -155,8 +155,9 @@ def test_find_patient_by_mrn_invalid_mrn() -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
+
     assert 'This field is required.' in form.errors['medical_number']
-    assert 'Provided MRN or site is invalid.' in form.errors['medical_number']
+    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
 
 
 def test_find_patient_by_mrn_invalid_site_code() -> None:
@@ -169,7 +170,7 @@ def test_find_patient_by_mrn_invalid_site_code() -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['Provided MRN or site is invalid.']
+    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
 
 
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
@@ -183,7 +184,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'reponse data is invalid',
+                'message': 'Could not establish a connection to the hospital interface.',
             },
         },
     )
@@ -196,7 +197,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['reponse data is invalid']
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
 def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
@@ -246,7 +247,7 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'reponse data is invalid',
+                'message': 'Could not establish a connection to the hospital interface.',
             },
         },
     )
@@ -258,7 +259,7 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['reponse data is invalid']
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
