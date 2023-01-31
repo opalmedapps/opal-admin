@@ -186,3 +186,10 @@ def test_retrieve_device_update(settings: SettingsWrapper) -> None:
     url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
     assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
     assert resolve(url_path).view_name == 'api:devices-update-or-create'
+
+
+def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth endpoint for the ORMS is defined."""
+    auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:orms-login') == auth_login_path
+    assert resolve(auth_login_path).view_name == 'api:orms-login'
