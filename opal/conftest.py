@@ -28,6 +28,24 @@ def api_client() -> APIClient:
 
 
 @pytest.fixture()
+def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:  # noqa: WPS442
+    """
+    Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in user.
+
+    Args:
+        api_client: the API client instance
+        django_user_model: the `User` model type used in this project
+
+    Returns:
+        an instance of `APIClient` with a logged in user
+    """
+    user = django_user_model.objects.create(username='test_api_user')
+    api_client.force_login(user=user)
+
+    return api_client
+
+
+@pytest.fixture()
 def user_client(client: Client, django_user_model: User) -> Client:
     """
     Fixture providing an instance of [Client][django.test.Client] with a logged in user.
