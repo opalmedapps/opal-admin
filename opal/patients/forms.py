@@ -121,9 +121,17 @@ class SearchForm(forms.Form):
         else:
             response = self.oie_service.find_patient_by_mrn(medical_number_field, str(site_code_field))
 
-        # add error message to the tempate
+        self._handle_response(response)
+
+    def _handle_response(self, response: Any) -> None:
+        """Handle the response from OIE service.
+
+        Args:
+            response: OIE service response
+        """
+        # add error message to the template
         if response and response['status'] == 'error':
-            self.add_error('medical_number', response['data']['message'])
+            self.add_error(None, response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
             self.cleaned_data['patient_record'] = response['data']
