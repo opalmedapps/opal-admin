@@ -1,10 +1,12 @@
+from datetime import date
+from unittest.mock import patch
+
 import pytest
 from pytest_mock.plugin import MockerFixture
-from datetime import date
-from opal.utils.tests.test_commands import CommandTestMixin
+
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, Relationship, RelationshipStatus
-from unittest.mock import patch
+from opal.utils.tests.test_commands import CommandTestMixin
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -43,7 +45,7 @@ class TestExpireRelationshipsCommand(CommandTestMixin):
         message, error = self._call_command('expire_relationships')
         print(message)
         res = relationship.refresh_from_db()
-        print("RESULT", res)
+        print('RESULT', res)
         assert relationship.status is RelationshipStatus.EXPIRED.value
 
 
