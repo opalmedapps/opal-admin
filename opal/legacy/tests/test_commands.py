@@ -1,8 +1,5 @@
 from datetime import datetime
-from io import StringIO
-from typing import Any
 
-from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import connections
 from django.utils import timezone
@@ -18,35 +15,9 @@ from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RoleType
 from opal.users import factories as user_factories
+from opal.utils.tests.test_commands import CommandTestMixin
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
-
-
-class CommandTestMixin:
-    """Mixin to facilitate testing of management commands."""
-
-    def _call_command(self, command_name: str, *args: Any, **kwargs: Any) -> tuple[str, str]:
-        """
-        Test command.
-
-        Args:
-            command_name: specify the command name to run
-            args: non-keyword input parameter
-            kwargs: keywords input parameter
-
-        Returns:
-            tuple of stdout and stderr values
-        """
-        out = StringIO()
-        err = StringIO()
-        call_command(
-            command_name,
-            *args,
-            stdout=out,
-            stderr=err,
-            **kwargs,
-        )
-        return out.getvalue(), err.getvalue()
 
 
 class TestSecurityQuestionsMigration(CommandTestMixin):
