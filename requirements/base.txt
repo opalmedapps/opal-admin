@@ -29,3 +29,7 @@ requests==2.28.2  # https://github.com/psf/requests
 #
 pandas==1.5.3  # https://pypi.org/project/pandas/
 openpyxl==3.1.0  # https://pypi.org/project/openpyxl/
+
+# Interactive data visualization
+#
+plotly==5.13.0  # https://pypi.org/project/plotly/
