@@ -24,6 +24,9 @@ class Command(BaseCommand):
         )
 
         for relationship in relationships_to_check:
+            if relationship.patient.date_of_birth is None:
+                continue
+
             patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
             self.stdout.write(
                 f'Evaluating relationship: id={relationship.id}'
