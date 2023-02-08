@@ -133,6 +133,17 @@ def test_patient_factory_multiple() -> None:
     assert patient == patient2
 
 
+def test_patient_uuid_unique() -> None:
+    """Ensure that the field uuid of carigaver is unique."""
+    patient = factories.Patient()
+    patients2 = factories.Patient(ramq='SIMM87531908')
+    patient.uuid = patients2.uuid
+
+    message = 'Patient with this UUID already exists.'
+    with assertRaisesMessage(ValidationError, message):
+        patient.full_clean()
+
+
 def test_patient_invalid_sex() -> None:
     """Ensure that a patient cannot be saved with an invalid sex type."""
     message = 'CONSTRAINT `patients_patient_sex_valid` failed'
