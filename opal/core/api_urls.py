@@ -18,6 +18,7 @@ from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
+from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 
@@ -112,5 +113,6 @@ urlpatterns = [
         caregivers_views.UpdateDeviceView.as_view(),
         name='devices-update-or-create',
     ),
+    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
     path('', include(router.urls)),
 ]
