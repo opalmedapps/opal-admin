@@ -195,3 +195,10 @@ def test_quantitysample_create(settings: SettingsWrapper) -> None:
 
     assert reverse('api:patients-data-quantity-create', kwargs={'patient_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:patients-data-quantity-create'
+
+
+def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth endpoint for the ORMS is defined."""
+    auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:orms-login') == auth_login_path
+    assert resolve(auth_login_path).view_name == 'api:orms-login'

@@ -417,3 +417,9 @@ DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
 # ------------------------------------------------------------------------------
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
+
+# ORMS settings
+# ------------------------------------------------------------------------------
+# Name of the group for the ORMS users
+# Please see: https://docs.djangoproject.com/en/3.2/topics/auth/default/#groups
+ORMS_USER_GROUP = 'orms'
