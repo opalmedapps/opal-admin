@@ -1,3 +1,7 @@
+from typing import Type
+
+from django.db.models import Model
+
 from django_test_migrations.migrator import Migrator
 
 from .. import models
@@ -146,3 +150,43 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
     migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 3
+
+
+def _create_patient(model: Type[Model], ramq: str = '') -> Model:
+    return model.objects.create(
+        first_name='Marge',
+        last_name='Simpson',
+        date_of_birth='1987-03-19',
+        sex=models.Patient.SexType.FEMALE,
+    )
+
+
+def test_migration_patient_uuid(migrator: Migrator) -> None:
+    """Ensure the uuid field can be added for multiple model instances."""
+    old_state = migrator.apply_initial_migration(('patients', '0016_add_manage_relationshiptype_permission'))
+    Patient = old_state.apps.get_model('patients', 'Patient')
+
+    _create_patient(Patient)
+    _create_patient(Patient, ramq='SIMM87531908')
+
+    # ensure that the migration can be applied without problems
+    new_state = migrator.apply_tested_migration(('patients', '0017_add_patient_uuid'))
+
+    Patient = new_state.apps.get_model('patients', 'Patient')
+
+    patient1 = Patient.objects.all()[0]
+    patient2 = Patient.objects.all()[1]
+
+    assert patient1.uuid != patient2.uuid
+
+
+def test_migration_patient_uuid_reverse(migrator: Migrator) -> None:
+    """Ensure the uuid migration can be reversed."""
+    old_state = migrator.apply_initial_migration(('patients', '0017_add_patient_uuid'))
+    Patient = old_state.apps.get_model('patients', 'Patient')
+
+    _create_patient(Patient)
+    _create_patient(Patient, ramq='SIMM87531908')
+
+    # ensure that the migration can be reversed without problems
+    migrator.apply_tested_migration(('patients', '0016_add_manage_relationshiptype_permission'))
