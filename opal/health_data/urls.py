@@ -11,7 +11,7 @@ app_name = 'health_data'
 
 urlpatterns = [
     path(
-        '<int:id>/quantity-samples/',
+        '<uuid:uuid>/quantity-samples/',
         views.HealthDataView.as_view(),
         name='health-data-ui',
     ),
