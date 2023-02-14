@@ -1,8 +1,13 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
+from typing import Any, Dict, Optional
+
+from django.db import transaction
+
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType
+from opal.hospital_settings.models import Site
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -19,25 +24,50 @@ class PatientSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = Patient
-        fields = ['legacy_id', 'first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
+        fields = [
+            'legacy_id',
+            'first_name',
+            'last_name',
+            'date_of_birth',
+            'date_of_death',
+            'sex',
+            'ramq',
+        ]
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
-    Hospital patient serializer.
+    Serializer for converting and validating `HospitalPatient` objects/data.
 
-    The serializer inherits from core.api.serializers.DynamicFieldsSerializer,
-    and also provides HospitalPatient info and the site code according to the 'fields' argumens.
+    The serializer inherits from `core.api.serializers.DynamicFieldsSerializer`,
+    and also provides `HospitalPatient` info and the site code according to the 'fields' arguments.
     """
 
-    site_code = serializers.CharField(
-        source='site.code',
-        read_only=True,
-    )
+    site_code = serializers.CharField(source='site.code')
+    # make the is_active field required
+    is_active = serializers.BooleanField(required=True)
 
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
+
+    def validate_site_code(self, value: str) -> str:
+        """Check that `site_code` exists in the database (e.g., RVH).
+
+        Args:
+            value: site code to be validated
+
+        Returns:
+            validated site code value
+
+        Raises:
+            ValidationError: if provided site code does not exist in the database
+        """
+        if not Site.objects.filter(code=value).exists():
+            raise serializers.ValidationError(
+                '{0}{1}{2}'.format('Provided "', value, '" site code does not exist.'),
+            )
+        return value
 
 
 class RelationshipTypeSerializer(DynamicFieldsSerializer):
@@ -85,3 +115,79 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Relationship
         fields = ['caregiver_id', 'first_name', 'last_name', 'status']
+
+
+class PatientDemographicSerializer(DynamicFieldsSerializer):
+    """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
+
+    mrns = HospitalPatientSerializer(many=True, allow_empty=False, required=True)
+
+    class Meta:
+        model = Patient
+        fields = [
+            'ramq',
+            'first_name',
+            'last_name',
+            'date_of_birth',
+            'date_of_death',
+            'sex',
+            'mrns',
+        ]
+
+    @transaction.atomic
+    def update(
+        self,
+        instance: Patient,
+        validated_data: Dict[str, Any],
+    ) -> Optional[Patient]:
+        """Update `Patient` instance during patient demographic update call.
+
+        It updates `User` fields as well.
+
+        Args:
+            instance: `Patient` record to be updated
+            validated_data: dictionary containing validated request data
+
+        Returns:
+            Optional[Patient]: updated `Patient` record
+        """
+        # Update the fields of the `Patient` instance
+        super().update(instance, validated_data)
+
+        # Update the `HospitalPatient` records with the new demographic information
+        for hospital_patient in validated_data.get('mrns', []):
+            # Update or create hospital patient instances based on a patient & MRN & site lookup
+            # Update the is_active field
+            # See details on update_or_create:
+            # https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.update_or_create
+            HospitalPatient.objects.update_or_create(
+                mrn=hospital_patient['mrn'],
+                site=Site.objects.filter(code=hospital_patient['site']['code']).first(),
+                patient=instance,
+                defaults={
+                    'is_active': hospital_patient['is_active'],
+                },
+            )
+
+        # Update the `User` model with the new demographic information.
+        # If a patient does not have a self relationship it means there is no user for this patient.
+        # In that case the user-related fields would not be updated.
+
+        # Look up the `Relationships` to the updating patient with a `SELF` role type
+        relationship = instance.relationships.filter(
+            type__role_type=RoleType.SELF,
+        ).first()
+
+        if relationship:
+            user = relationship.caregiver.user
+            user.first_name = validated_data.get(
+                'first_name',
+                relationship.caregiver.user.first_name,
+            )
+            user.last_name = validated_data.get(
+                'last_name',
+                relationship.caregiver.user.last_name,
+            )
+            user.save()
+
+        return instance

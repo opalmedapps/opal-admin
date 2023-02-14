@@ -1,5 +1,4 @@
-"""
-This module provides custom permissions for the Django REST framework.
+"""This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
@@ -28,13 +27,13 @@ class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
 
     # taken from DjangoModelPermissions and added the permission for GET
     perms_map = {
-        'GET': ['%(app_label)s.view_%(model_name)s'],  # noqa: WPS323
+        'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['%(app_label)s.add_%(model_name)s'],  # noqa: WPS323
-        'PUT': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
-        'PATCH': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
-        'DELETE': ['%(app_label)s.delete_%(model_name)s'],  # noqa: WPS323
+        'POST': ['%(app_label)s.add_%(model_name)s'],
+        'PUT': ['%(app_label)s.change_%(model_name)s'],
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],
+        'DELETE': ['%(app_label)s.delete_%(model_name)s'],
     }
 
 
@@ -168,6 +167,22 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied(
                 "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
             )
+
+
+class UpdateModelPermissions(permissions.DjangoModelPermissions):
+    """
+    Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
+
+    Restricts PUT and PATCH operations to require the `view` permission on the model.
+
+    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
+    """
+
+    # taken from DjangoModelPermissions and added the permission for PUT and PATCH
+    perms_map = {
+        'PUT': ['%(app_label)s.change_%(model_name)s'],
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],
+    }
 
 
 class CaregiverSelfPermissions(CaregiverPatientPermissions):

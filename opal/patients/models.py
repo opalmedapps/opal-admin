@@ -11,7 +11,13 @@ from django.utils.translation import gettext_lazy as _
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
-from opal.patients.managers import HospitalPatientManager, RelationshipManager, RelationshipTypeManager
+from opal.patients.managers import (
+    HospitalPatientManager,
+    PatientManager,
+    PatientQueryset,
+    RelationshipManager,
+    RelationshipTypeManager,
+)
 
 from . import constants
 
@@ -218,6 +224,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
     )
+    objects = PatientManager.from_queryset(PatientQueryset)()
 
     class Meta:
         verbose_name = _('Patient')
