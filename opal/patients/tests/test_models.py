@@ -325,7 +325,7 @@ def test_hospitalpatient_str() -> None:
     site = factories.Site(name="Montreal Children's Hospital")
     hospital_patient = factories.HospitalPatient(site=site)
 
-    assert str(hospital_patient) == 'Bart Simpson (MON: 9999996)'
+    assert str(hospital_patient) == 'Bart Simpson (MONT: 9999996)'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:

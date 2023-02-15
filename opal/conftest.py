@@ -10,10 +10,45 @@ from django.db.models import Model
 from django.test import Client
 
 import pytest
-from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
+from _pytest.config import Config
+from _pytest.main import Session
+from _pytest.python import Function, Module
+from pytest_django.plugin import _DatabaseBlocker
 from rest_framework.test import APIClient
 
 from opal.users.models import User
+
+
+def pytest_collection_modifyitems(session: Session, config: Config, items: list[Function]) -> None:
+    """
+    Change the execution order of tests.
+
+    Ensure that migration tests run last.
+    This is to avoid the migrator from `django-test-migrations` to cause data migrations to be flushed.
+    The exact cause of this is unknown: https://github.com/wemake-services/django-test-migrations/issues/330
+
+    Docs: https://docs.pytest.org/en/latest/reference/reference.html#pytest.hookspec.pytest_collection_modifyitems
+
+    Args:
+        session: the pytest session
+        config: the pytest configuration
+        items: the items to test (test functions and test classes)
+
+    """
+    migration_tests = []
+    original_items_order = []
+
+    for item in items:
+        # some test functions are wrapped within a class
+        module = item.getparent(Module)
+
+        if module and module.name == 'test_migrations.py':
+            migration_tests.append(item)
+        else:
+            original_items_order.append(item)
+
+    # modify items in place with migration tests moved to the end
+    items[:] = original_items_order + migration_tests  # noqa: WPS362
 
 
 @pytest.fixture()
