@@ -32,3 +32,9 @@ questionCBox.addEventListener('change', e => {
         }
     }
 });
+
+function updateEndDate() {
+    var start_date = document.getElementById("start").value;
+    document.getElementById("end").value = document.getElementById("end").max;
+    document.getElementById("end").setAttribute("min",start_date);
+}
