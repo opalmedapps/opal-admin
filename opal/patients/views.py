@@ -292,7 +292,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         img.save(stream)
         return stream
 
-    def _set_relationship_start_date(self, date_of_birth: date, relationship_type: str) -> date:
+    def _set_relationship_start_date(self, date_of_birth: date, relationship_type: RelationshipType) -> date:
         """
         Calculate the start date for the relationship record.
 
@@ -310,11 +310,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             date_of_birth=date_of_birth,
             reference_date=reference_date,
         )
-        # Get the user choice for the relationship type in the previous step
-        user_select_type = RelationshipType.objects.filter(name=relationship_type).first()
         # Return reference date if patient age is larger or otherwise return start date based on patient's age
-        if user_select_type and age < user_select_type.start_age:
-            reference_date = date_of_birth + relativedelta(years=user_select_type.start_age)
+        if age < relationship_type.start_age:
+            reference_date = date_of_birth + relativedelta(years=relationship_type.start_age)
         return reference_date
 
     def _create_caregiver_profile(self, form_data: dict, random_username_length: int) -> dict[str, Any]:

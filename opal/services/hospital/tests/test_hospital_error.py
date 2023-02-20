@@ -24,7 +24,7 @@ def test_generate_error_empty() -> None:
 def test_generate_error_none() -> None:
     """Ensure non-dictionary type does not cause an error."""
     try:
-        error = oie_error.generate_error(123)  # type: ignore
+        error = oie_error.generate_error(123)  # type: ignore[arg-type]
     except Exception:
         assert error['data'] == 123
 

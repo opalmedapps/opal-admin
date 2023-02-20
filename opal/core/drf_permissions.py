@@ -87,7 +87,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         caregiver_username = request.headers.get('Appuserid')
         if not caregiver_username or not isinstance(caregiver_username, str):
             raise exceptions.ParseError(
-                "Requests to APIs using CaregiverPatientPermissions must provide a string 'Appuserid' header representing the current user.",  # noqa: E501
+                'Requests to APIs using CaregiverPatientPermissions must provide a string'
+                + " 'Appuserid' header representing the current user.",
             )
         return caregiver_username
 
@@ -107,7 +108,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         patient_legacy_id = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
-                "Requests to APIs using CaregiverPatientPermissions must provide an integer 'legacy_id' URL argument representing the target patient.",  # noqa: E501
+                'Requests to APIs using CaregiverPatientPermissions must provide an integer'
+                + " 'legacy_id' URL argument representing the target patient.",
             )
         return patient_legacy_id
 
@@ -129,7 +131,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied('Caregiver not found.')
         return caregiver_profile
 
-    def _check_has_relationship_with_target(self, caregiver_profile: CaregiverProfile, patient_legacy_id: int) -> QuerySet[Relationship]:  # noqa: E501
+    def _check_has_relationship_with_target(
+        self,
+        caregiver_profile: CaregiverProfile,
+        patient_legacy_id: int,
+    ) -> QuerySet[Relationship]:
         """
         Validate the existence of one or more Relationships between a caregiver and a patient, and return them if found.
 
@@ -145,7 +151,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         relationships_with_target = caregiver_profile.relationships.filter(
             patient__legacy_id=patient_legacy_id,
-        ) if caregiver_profile else Relationship.objects.none()
+        )
         if not relationships_with_target:
             raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
         return relationships_with_target

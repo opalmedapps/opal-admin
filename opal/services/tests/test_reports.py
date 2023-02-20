@@ -22,14 +22,14 @@ TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 reports_service = ReportService()
 
 
-def _create_generated_report_data(status: str) -> dict[str, dict[str, str]]:
+def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str]]:
     """Create mock `dict` response on the `report` HTTP POST request.
 
     Args:
-        status (str): response status code
+        status: response status code
 
     Returns:
-        dict[str, dict[str, str]]: mock data response
+        mock data response
     """
     return {
         'data': {
@@ -112,7 +112,7 @@ def test_is_questionnaire_report_invalid_language() -> None:
 
 def test_request_base64_report(mocker: MockerFixture) -> None:
     """Ensure successful report request returns base64 encoded pdf report."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     response_base64_report = reports_service._request_base64_report(
@@ -135,7 +135,7 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
 def test_request_base64_report_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual web API call to raise a request error
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.side_effect = RequestException('request failed')
 
@@ -154,7 +154,7 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
 def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     """Ensure request failure (bad request response) is handled and does not result in an error."""
     # mock actual web API call to raise a request error
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.BAD_REQUEST))
+    generated_report_data = _create_generated_report_data(HTTPStatus.BAD_REQUEST)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
@@ -172,7 +172,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
 
 def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     """Ensure response json key failure is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = json.dumps({}).encode(ENCODING)
 
@@ -190,7 +190,7 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
 
 def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure response json decode failure is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
@@ -208,7 +208,7 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
 
 def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     """Ensure returned base64EncodedReport value is a string."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service._request_base64_report(
@@ -225,10 +225,10 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
 
 def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     """Ensure returned base64EncodedReport non-string value is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
-    data = _create_generated_report_data(str(HTTPStatus.OK))
-    data['data']['base64EncodedReport'] = NON_STRING_VALUE  # type: ignore
+    data = _create_generated_report_data(HTTPStatus.OK)
+    data['data']['base64EncodedReport'] = NON_STRING_VALUE  # type: ignore[assignment]
     mock_post.return_value._content = json.dumps(data).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
@@ -248,7 +248,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     settings.LEGACY_QUESTIONNAIRES_REPORT_URL = TEST_LEGACY_QUESTIONNAIRES_REPORT_URL
 
     # mock actual web API call
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.OK
 
@@ -279,7 +279,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 
 def test_questionnaire_report(mocker: MockerFixture) -> None:
     """Ensure the returned value is base64 encoded pdf report."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
@@ -297,7 +297,7 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     """Ensure function failure is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.BAD_REQUEST))
+    generated_report_data = _create_generated_report_data(HTTPStatus.BAD_REQUEST)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
@@ -315,7 +315,7 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     """Ensure invalid patient id is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
@@ -332,7 +332,7 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     """Ensure invalid logo path is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
@@ -349,7 +349,7 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
 
 def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     """Ensure invalid language is handled and does not result in an error."""
-    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
