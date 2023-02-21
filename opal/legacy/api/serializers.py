@@ -2,8 +2,25 @@
 
 from rest_framework import serializers
 
-from opal.legacy.models import LegacyAppointment
+from opal.core.api.serializers import DynamicFieldsSerializer
+from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyPatient
 from opal.patients.models import HospitalPatient
+
+
+class LegacyAliasSerializer(DynamicFieldsSerializer):
+    """Serializer for the `LegacyAlias` model."""
+
+    class Meta:
+        model = LegacyAlias
+        fields = ['aliassernum', 'aliastype', 'aliasname_en', 'aliasname_fr']
+
+
+class LegacyPatientSerializer(DynamicFieldsSerializer):
+    """Serializer for the `LegacyPatient` model."""
+
+    class Meta:
+        model = LegacyPatient
+        fields = ['patientsernum', 'firstname', 'lastname', 'email', 'ssn']
 
 
 class LegacyAppointmentSerializer(serializers.ModelSerializer):
@@ -16,6 +33,42 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = LegacyAppointment
         fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible', 'patientsernum']
+
+
+class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
+    """Serializer for the `LegacyAppointment` model to get more appointment details."""
+
+    checkinpossible = serializers.IntegerField(
+        source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkinpossible',
+    )
+
+    patient = LegacyPatientSerializer(
+        source='patientsernum',
+        fields=('patientsernum', 'firstname', 'lastname'),
+        many=False,
+        read_only=True,
+    )
+
+    alias = LegacyAliasSerializer(
+        source='aliasexpressionsernum.aliassernum',
+        fields=('aliastype', 'aliasname_en', 'aliasname_fr'),
+        many=False,
+        read_only=True,
+    )
+
+    class Meta:
+        model = LegacyAppointment
+        fields = [
+            'appointmentsernum',
+            'state',
+            'scheduledstarttime',
+            'checkin',
+            'checkinpossible',
+            'roomlocation_en',
+            'roomlocation_fr',
+            'patient',
+            'alias',
+        ]
 
 
 class QuestionnaireReportRequestSerializer(serializers.Serializer):
