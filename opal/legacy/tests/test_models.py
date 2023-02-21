@@ -37,6 +37,12 @@ def test_legacy_appointment_factory() -> None:
     test_appointment.full_clean()
 
 
+def test_legacy_alias_factory() -> None:
+    """Test whether the factory creates a valid legacy alias model instance."""
+    test_alias = factories.LegacyAliasFactory()
+    test_alias.full_clean()
+
+
 def test_legacy_document_factory() -> None:
     """Test whether the factory creates a valid legacy document model instance."""
     test_document = factories.LegacyDocumentFactory()

@@ -63,6 +63,15 @@ def test_api_app_chart_defined(settings: SettingsWrapper) -> None:
     assert resolve(app_chart_path).view_name == 'api:app-chart'
 
 
+def test_api_app_appointments_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API app appointments endpoints are defined."""
+    app_apointments_path = '/{api_root}/app/appointments/'.format(
+        api_root=settings.API_ROOT,
+    )
+    assert reverse('api:app-appointments') == app_apointments_path
+    assert resolve(app_apointments_path).view_name == 'api:app-appointments'
+
+
 def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API check_permissions endpoint is defined."""
     check_permissions_path = '/{api_root}/patients/legacy/{legacy_id}/check_permissions/'.format(
