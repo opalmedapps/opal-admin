@@ -27,8 +27,8 @@ from django.views.generic.base import RedirectView
 
 from .core.views import LoginView
 
-# This approach for serving static files is only for develpoment!
-# Please see: https://docs.djangoproject.com/en/3.2/howto/static-files/deployment/
+# This approach for serving static files is only for development!
+# Please see: https://docs.djangoproject.com/en/dev/howto/static-files/deployment/
 # TODO: Serving static files in production
 urlpatterns = [
     # REST API
@@ -38,7 +38,7 @@ urlpatterns = [
     path('hospital-settings/', include('opal.hospital_settings.urls')),
     path('patients/', include('opal.patients.urls')),
     path('questionnaires/', include('opal.questionnaires.urls')),
-    path('health_data/', include('opal.health_data.urls')),
+    path('health-data/', include('opal.health_data.urls')),
 
     # global config
     path('admin/', admin.site.urls),

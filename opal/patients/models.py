@@ -1,6 +1,7 @@
 """Module providing models for the patients app."""
 from datetime import date
 from typing import Any, Optional
+from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
@@ -10,7 +11,13 @@ from django.utils.translation import gettext_lazy as _
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
-from opal.patients.managers import HospitalPatientManager, RelationshipManager, RelationshipTypeManager
+from opal.patients.managers import (
+    HospitalPatientManager,
+    PatientManager,
+    PatientQueryset,
+    RelationshipManager,
+    RelationshipTypeManager,
+)
 
 from . import constants
 
@@ -165,6 +172,13 @@ class Patient(models.Model):
     # see: https://stackoverflow.com/q/71522816
     SexType = SexType
 
+    uuid = models.UUIDField(
+        verbose_name=_('UUID'),
+        unique=True,
+        default=uuid4,
+        editable=False,
+    )
+
     first_name = models.CharField(
         verbose_name=_('First Name'),
         max_length=150,
@@ -210,6 +224,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
     )
+    objects = PatientManager.from_queryset(PatientQueryset)()
 
     class Meta:
         verbose_name = _('Patient')

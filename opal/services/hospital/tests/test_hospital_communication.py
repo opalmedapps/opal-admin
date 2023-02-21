@@ -125,7 +125,7 @@ def test_submit_invalid_payload(mocker: MockerFixture) -> None:
 
     response_data = communication_manager.submit(
         endpoint='/test/endpoint',
-        payload=123,  # type: ignore
+        payload=123,  # type: ignore[arg-type]
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -160,7 +160,7 @@ def test_submit_invalid_metadata(mocker: MockerFixture) -> None:
     response_data = communication_manager.submit(
         endpoint='/test/endpoint',
         payload={},
-        metadata=123,  # type: ignore
+        metadata=123,  # type: ignore[arg-type]
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -173,7 +173,7 @@ def test_submit_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = 'invalid json'
-    mock_post = _mock_requests_post(mocker, error_response)  # type: ignore
+    mock_post = _mock_requests_post(mocker, error_response)  # type: ignore[arg-type]
     mock_post.side_effect = requests.exceptions.JSONDecodeError(
         'request failed',
         error_response,
@@ -243,7 +243,7 @@ def test_fetch_invalid_parameters(mocker: MockerFixture) -> None:
 
     response_data = communication_manager.fetch(
         endpoint='/test/endpoint',
-        params='invalid params',  # type: ignore
+        params='invalid params',  # type: ignore[arg-type]
     )
 
     assert mock_get.return_value.status_code == HTTPStatus.OK
@@ -276,7 +276,7 @@ def test_fetch_invalid_metadata(mocker: MockerFixture) -> None:
 
     response_data = communication_manager.fetch(
         endpoint='/test/endpoint',
-        metadata=123,  # type: ignore
+        metadata=123,  # type: ignore[arg-type]
     )
 
     assert mock_get.return_value.status_code == HTTPStatus.OK
@@ -289,7 +289,7 @@ def test_fetch_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = 'invalid json response'
-    mock_get = _mock_requests_get(mocker, error_response)  # type: ignore
+    mock_get = _mock_requests_get(mocker, error_response)  # type: ignore[arg-type]
     mock_get.side_effect = requests.exceptions.JSONDecodeError(
         'request failed',
         error_response,

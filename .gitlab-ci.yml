@@ -1,4 +1,4 @@
-image: python:3.10.9-slim-bullseye
+image: python:3.10.10-slim-bullseye
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -126,7 +126,7 @@ test:
   stage: Test
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.6.11-focal
+    - mariadb:10.6.12-focal
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apt update && apt-get install -y default-mysql-client

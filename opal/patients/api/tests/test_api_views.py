@@ -1,14 +1,18 @@
 """Test module for the `patients` app REST API endpoints."""
 
 import copy
+import json
 from datetime import datetime
 from http import HTTPStatus
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
+from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
+from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
@@ -18,7 +22,7 @@ from opal.patients.factories import HospitalPatient, Patient, Relationship
 from opal.patients.models import RelationshipType, RoleType
 from opal.users.factories import User
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(databases=['default'])
 
 
 def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> None:
@@ -311,3 +315,393 @@ class TestApiRegistrationCompletion:
         assert response.json() == {
             'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
         }
+
+
+class TestPatientDemographicView:
+    """Class wrapper for patient demographic endpoint tests."""
+
+    def get_valid_input_data(self) -> dict:
+        """Generate valid JSON data for the patient demographic update.
+
+        Returns:
+            dict: valid JSON data
+        """
+        return {
+            'mrns': [
+                {'site_code': 'RVH', 'mrn': '9999996', 'is_active': True},
+                {'site_code': 'MGH', 'mrn': '9999997', 'is_active': True},
+            ],
+            'ramq': 'TEST01161972',
+            'first_name': 'Lisa',
+            'last_name': 'Phillips',
+            'date_of_birth': '1973-01-16',
+            'date_of_death': None,
+            'sex': 'F',
+        }
+
+    def get_client_with_permissions(self, api_client: APIClient) -> APIClient:
+        """
+        Add permissions to a user and authorize it.
+
+        Returns:
+            Authorized API client.
+        """
+        user = User(username='lisaphillips')
+        permission = Permission.objects.get(name='Can change Patient')
+        user.user_permissions.add(permission)
+        api_client.force_login(user=user)
+        return api_client
+
+    def test_demographic_update_unauthorized(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        # Make a `PUT` request without proper permissions.
+        response = api_client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='Authentication credentials were not provided.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+        # Make a `PATCH` request without proper permissions.
+        response = api_client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='Authentication credentials were not provided.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_demographic_update_wiht_empty_mrns(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if the MRNs list is empty."""
+        client = self.get_client_with_permissions(api_client)
+        data = self.get_valid_input_data()
+        data['mrns'] = []
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=data,
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='This list may not be empty.',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+        response = api_client.patch(
+            reverse('api:patient-demographic-update'),
+            data=data,
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='This list may not be empty.',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_demographic_update_invalid_mrns(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if the MRNs list dictionaries are invalid."""
+        client = self.get_client_with_permissions(api_client)
+        data = self.get_valid_input_data()
+        data['mrns'] = [
+            {'site': 'RVH', 'mrn_error': '9999996', 'is_active_erorr': True},
+        ]
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=data,
+            format='json',
+        )
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=[{
+                'mrn': ['This field is required.'],
+                'is_active': ['This field is required.'],
+                'site_code': ['This field is required.'],
+            }],
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        data['mrns'] = [
+            {'mrn': '9999996', 'is_active': True},
+        ]
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=data,
+            format='json',
+        )
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=[{
+                'site_code': ['This field is required.'],
+            }],
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_demographic_update_with_invalid_sites(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if provided sites do not exist."""
+        client = self.get_client_with_permissions(api_client)
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=[
+                {
+                    'site_code': ['Provided "RVH" site code does not exist.'],
+                },
+                {
+                    'site_code': ['Provided "MGH" site code does not exist.'],
+                },
+            ],
+        )
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=[
+                {
+                    'site_code': ['Provided "RVH" site code does not exist.'],
+                },
+                {
+                    'site_code': ['Provided "MGH" site code does not exist.'],
+                },
+            ],
+        )
+
+    def test_demographic_update_mrn_site_pairs_do_not_exist(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint raises a NotFound exception if provided MRN/site pairs do not exist."""
+        Site(code='RVH')
+        Site(code='MGH')
+
+        client = self.get_client_with_permissions(api_client)
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertRaisesMessage(
+            expected_exception=NotFound,
+            expected_message='{0} {1}'.format(
+                'Cannot find patient record with the provided MRNs and sites.',
+                'Make sure that MRN/site pairs refer to the same patient.',
+            ),
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertRaisesMessage(
+            expected_exception=NotFound,
+            expected_message='{0} {1}'.format(
+                'Cannot find patient record with the provided MRNs and sites.',
+                'Make sure that MRN/site pairs refer to the same patient.',
+            ),
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_demographic_update_different_patients_error(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint raises a NotFound exception if MRNs referring to different patients."""
+        rvh_site = Site(code='RVH')
+        mgh_site = Site(code='MGH')
+        patient_one = Patient()
+        patient_two = Patient(ramq='TEST01161972')
+
+        HospitalPatient(
+            patient=patient_one,
+            mrn='9999996',
+            site=rvh_site,
+        )
+        HospitalPatient(
+            patient=patient_two,
+            mrn='9999997',
+            site=mgh_site,
+        )
+
+        client = self.get_client_with_permissions(api_client)
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertRaisesMessage(
+            expected_exception=NotFound,
+            expected_message='{0} {1}'.format(
+                'Cannot find patient record with the provided MRNs and sites.',
+                'Make sure that MRN/site pairs refer to the same patient.',
+            ),
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assertRaisesMessage(
+            expected_exception=NotFound,
+            expected_message='{0} {1}'.format(
+                'Cannot find patient record with the provided MRNs and sites.',
+                'Make sure that MRN/site pairs refer to the same patient.',
+            ),
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_demographic_update_success(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint can update patient info with no errors."""
+        rvh_site = Site(code='RVH')
+        mgh_site = Site(code='MGH')
+        patient = Patient(ramq='TEST01161972')
+
+        Relationship(
+            patient=patient,
+            type=RelationshipType.objects.filter(role_type=RoleType.SELF).get(),
+        )
+
+        HospitalPatient(
+            patient=patient,
+            mrn='9999996',
+            site=rvh_site,
+        )
+        HospitalPatient(
+            patient=patient,
+            mrn='9999997',
+            site=mgh_site,
+        )
+
+        client = self.get_client_with_permissions(api_client)
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=self.get_valid_input_data(),
+        )
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=self.get_valid_input_data(),
+        )
+
+    def test_demographic_update_no_relationship(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint can update patient info when the patient does not have a self relationship (no user)."""
+        rvh_site = Site(code='RVH')
+        mgh_site = Site(code='MGH')
+        patient = Patient(ramq='TEST01161972')
+
+        HospitalPatient(
+            patient=patient,
+            mrn='9999996',
+            site=rvh_site,
+        )
+        HospitalPatient(
+            patient=patient,
+            mrn='9999997',
+            site=mgh_site,
+        )
+
+        client = self.get_client_with_permissions(api_client)
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=self.get_valid_input_data(),
+        )
+
+        response = client.patch(
+            reverse('api:patient-demographic-update'),
+            data=self.get_valid_input_data(),
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=self.get_valid_input_data(),
+        )

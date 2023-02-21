@@ -263,7 +263,10 @@ def test_update_request_event_detail_template(user_client: Client, admin_user: A
             'questionnairename': ['Test Qst'],
         },
     )
-    q_string = "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27', 'patientIDs': '3', 'questionIDs': '832'}"  # noqa: E501
+    q_string = (
+        "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27',"
+        + " 'patientIDs': '3', 'questionIDs': '832'}"
+    )
     method = 'POST'
     request_event = RequestEvent.objects.filter(
         url='/questionnaires/reports/detail/',
