@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-29 17:36-0500\n"
+"POT-Creation-Date: 2023-02-21 17:03-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -161,8 +161,8 @@ msgid "All rights reserved."
 msgstr "Tous droits réservés."
 
 #: opal/templates/layouts/base.html
-msgid "2022 Opal Health Informatics Group."
-msgstr "2022 Le Groupe Informatique Opal Santé."
+msgid "Opal Health Informatics Group"
+msgstr "Le Groupe Informatique Opal Santé"
 
 #: opal/templates/layouts/base.html
 msgid "Privacy"
