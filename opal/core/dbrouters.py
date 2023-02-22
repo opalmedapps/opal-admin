@@ -17,7 +17,7 @@ class LegacyDbRouter(object):
 
     legacy_app_label = 'legacy'
     legacy_db_name = 'legacy'
-    legacy_questionnaire_app_label = 'legacy_questionnaire'
+    legacy_questionnaire_app_label = 'legacy_questionnaires'
     legacy_questionnaire_db_name = 'questionnaire'
 
     def db_for_read(self, model: Type[Model], **hints: Any) -> Optional[str]:
