@@ -12,7 +12,7 @@
             <h4>{% translate "Report:" %} {{ questionnaireName }} {% translate "between" %} {{ start }} {% translate "and" %} {{ end }}</h4>
             {% render_table reporttable %}
 
-            <form action="{% url 'questionnaires:reports-download-csv' %}" method="post" id="form">
+            <form action="{% url 'questionnaires:reports-download-csv' %}" method="post" id="form" novalidate>
                 {% csrf_token %}
                 <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                 <div class="btn-toolbar mb-4">
@@ -24,7 +24,7 @@
 
             <div id="xlsx_options_div" style="display: none;">
                 <br>
-                <form action="{% url 'questionnaires:reports-download-xlsx' %}" method="post" id="form">
+                <form action="{% url 'questionnaires:reports-download-xlsx' %}" method="post" id="form" novalidate>
                     {% csrf_token %}
                     <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                     <h4>{% translate "Please select how to organize the tabs:" %}</h4>
