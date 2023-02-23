@@ -14,7 +14,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                      <form method="post">
+                      <form method="post" novalidate>
                         {% csrf_token %}
                         {{ form|crispy }}
                         <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:site-list' %}">
