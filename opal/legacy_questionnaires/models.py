@@ -50,14 +50,21 @@ class LegacyDictionary(models.Model):
     """Dictionary model from the legacy database QuestionnaireDB."""
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    content = models.CharField(db_column='content')
+    content = models.CharField(db_column='content', max_length=255)  # noqa: WPS432
     contentid = models.IntegerField(db_column='contentId')
+    languageid = models.IntegerField(db_column='languageId')
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creationdate = models.DateTimeField(db_column='creationDate')
 
     class Meta:
         managed = False
         db_table = 'dictionary'
+        constraints = [
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                fields=['contentid', 'languageid'],
+            ),
+        ]
 
 
 class LegacyPurpose(models.Model):
@@ -69,8 +76,15 @@ class LegacyPurpose(models.Model):
         models.DO_NOTHING,
         db_column='description',
         to_field='contentid',
+        related_name='+',
     )
-    title = models.ForeignKey('LegacyDictionary', models.DO_NOTHING, db_column='title', to_field='contentid')
+    title = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='title',
+        to_field='contentid',
+        related_name='+',
+    )
 
     class Meta:
         managed = False

@@ -2,7 +2,7 @@ import pytest
 
 from .. import factories
 
-pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def test_legacy_dictionary_factory() -> None:
