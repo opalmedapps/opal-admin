@@ -45,7 +45,7 @@ class TestHomeAppView:
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient, readby=user_name)
-        appointment_time = timezone.now() + timezone.timedelta(hours=2)
+        appointment_time = timezone.now() + dt.timedelta(hours=2)
         factories.LegacyAppointmentFactory(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
 
         response = api_client.get(reverse('api:app-home'))
