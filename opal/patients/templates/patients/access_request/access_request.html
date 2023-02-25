@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load i18n %}
 
 {% load crispy_forms_tags %}
@@ -24,7 +24,7 @@
         </div>
       </div>
       <div class="card-body">
-        <form action="" method="post">
+        <form action="" method="post" novalidate>
           {% csrf_token %}
           {% if table %}
             {% render_table table %}
