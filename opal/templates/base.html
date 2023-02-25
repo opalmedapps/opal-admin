@@ -32,113 +32,81 @@
         <p>
           <a href="" class="text-secondary">Go back to Legacy OpalAdmin</a>
         </p>
-        {% with app=request.resolver_match.app_name url=request.resolver_match.view_name %}
+
         <ul class="list-unstyled ps-0 mb-auto">
-          <li class="mb-1">
-            <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">Home</button>
-            <div class="collapse" id="home-collapse">
-              <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                <li>
-                  <a href="/" class="link-dark d-inline-flex text-decoration-none rounded">Home Page</a>
-                </li>
-              </ul>
-            </div>
-          </li>
+          {% #menu_group group_id="home" title=_("Home") request=request %}
+            {% #menu_item url_name="start" request=request %}
+              {% translate "Home Page" %}
+            {% /menu_item %}
+          {% /menu_group %}
+
+          {% comment %}Hospital Settings{% endcomment %}
           {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
-            <li class="mb-1">
-              <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="{% if app == 'hospital-settings' %}true{% else %}false{% endif %}">
-                {% translate "Hospital Settings" %}
-              </button>
-              <div class="collapse{% if app == 'hospital-settings' %} show{% endif %}" id="dashboard-collapse">
-                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                  {% if perms.hospital_settings.can_manage_institutions %}
-                    <li>
-                      <a href="{% url 'hospital-settings:institution-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'hospital-settings:institution-' in url %} active{% endif %}">
-                        {% translate "Institutions" %}
-                      </a>
-                    </li>
-                  {% endif %}
-                  {% if perms.hospital_settings.can_manage_sites %}
-                    <li>
-                      <a href="{% url 'hospital-settings:site-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'hospital-settings:site-' in url %} active{% endif %}">
-                        {% translate "Sites" %}
-                      </a>
-                    </li>
-                  {% endif %}
-                </ul>
-              </div>
-            </li>
+            {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
+              {% if perms.hospital_settings.can_manage_institutions %}
+                {% #menu_item url_name="hospital-settings:institution-list" request=request %}
+                  {% translate "Institutions" %}
+                {% /menu_item %}
+              {% endif %}
+              {% if perms.hospital_settings.can_manage_sites %}
+                {% #menu_item url_name="hospital-settings:site-list" request=request %}
+                  {% translate "Sites" %}
+                {% /menu_item %}
+              {% endif %}
+            {% /menu_group %}
+          {% endif %}
+
+          {% comment %}Patients{% endcomment %}
+          {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
+            {% if perms.patients.can_manage_relationshiptypes %}
+              {% #menu_item url_name="patients:relationshiptype-list" request=request %}
+                {% translate "Relationship Types" %}
+              {% /menu_item %}
             {% endif %}
-            <li class="mb-1">
-              <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="{% if app == 'patients' %}true{% else %}false{% endif %}">
-                {% translate "Patients" %}
-              </button>
-              <div class="collapse{% if app == 'patients' %} show{% endif %}" id="orders-collapse">
-                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                  {% if perms.patients.can_manage_relationshiptypes %}
-                  <li>
-                    <a href="{% url 'patients:relationshiptype-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'patients:relationshiptype-' in url %} active{% endif %}">
-                      {% translate "Relationship Types" %}
-                    </a>
-                  </li>
-                  {% endif %}
-                  <li>
-                    <a href="{% url 'patients:access-request' %}" class="link-dark d-inline-flex text-decoration-none rounded">
-                      {% translate "Access Request" %}
-                    </a>
-                  </li>
-                  {% if perms.patients.can_manage_relationships %}
-                  <li>
-                    <a href="{% url 'patients:relationships-pending-list' %}" class="link-dark d-inline-flex text-decoration-none rounded">
-                      {% translate "Pending Access Requests" %}
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'patients:relationships-search' %}" class="link-dark d-inline-flex text-decoration-none rounded">
-                      {% translate "Manage Caregiver Access" %}
-                    </a>
-                  </li>
-                  {% endif %}
-                </ul>
-              </div>
-            </li>
-            {% if perms.questionnaires.export_report %}
-            <li class="mb-1">
-              <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
-                {% translate "Questionnaires" %}
-              </button>
-              <div class="collapse" id="account-collapse">
-                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                  <li>
-                    <a href="{% url 'questionnaires:reports' %}" class="link-dark d-inline-flex text-decoration-none rounded">
-                      {% translate "Export Reports" %}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
+            {% if perms.hospital_settings.can_manage_sites %}
+              {% #menu_item url_name="patients:access-request" request=request %}
+                {% translate "New Access Request" %}
+              {% /menu_item %}
             {% endif %}
-          </ul>
-          {% endwith %}
-          <div class="dropdown pt-3 border-top">
-            <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              <svg class="bi pe-none me-2" width="32" height="32">
-              <use xlink:href="#people-circle" />
-            </svg>
-            <strong>{{ request.user.username }}</strong>
-          </a>
-          <ul class="dropdown-menu text-small shadow">
-            <li>
-              <a class="dropdown-item" href="#">Profile</a>
-            </li>
-            <li>
-              <hr class="dropdown-divider" />
-            </li>
-            <li>
-              <a class="dropdown-item" href="{% url 'logout' %}">{% translate "Log Out" %}</a>
-            </li>
-          </ul>
-        </div>
+            {% if perms.patients.can_manage_relationships %}
+              {% #menu_item url_name="patients:relationships-pending-list" request=request %}
+                {% translate "Pending Access Requests" %}
+              {% /menu_item %}
+            {% endif %}
+            {% #menu_item url_name="patients:relationships-search" request=request %}
+              {% translate "Manage Caregiver Access" %}
+            {% /menu_item %}
+          {% /menu_group %}
+
+          {% comment %}Questionnaires{% endcomment %}
+          {% if perms.questionnaires.export_report %}
+            {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
+              {% #menu_item url_name="questionnaires:reports" request=request %}
+                {% translate "Export Reports" %}
+              {% /menu_item %}
+            {% /menu_group %}
+          {% endif %}
+        </ul>
+
+        <div class="dropdown pt-3 border-top">
+          <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg class="bi pe-none me-2" width="32" height="32">
+            <use xlink:href="#people-circle" />
+          </svg>
+          <strong>{{ request.user.username }}</strong>
+        </a>
+        <ul class="dropdown-menu text-small shadow">
+          <li>
+            <a class="dropdown-item" href="#">Profile</a>
+          </li>
+          <li>
+            <hr class="dropdown-divider" />
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'logout' %}">{% translate "Log Out" %}</a>
+          </li>
+        </ul>
+      </div>
       </nav>
 
       <main class="container-fluid d-flex flex-column mx-2 pt-4">
