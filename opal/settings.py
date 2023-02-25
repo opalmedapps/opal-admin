@@ -48,7 +48,7 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'crispy_bootstrap4',
+    'crispy_bootstrap5',
 ]
 THIRD_PARTY_APPS = [
     'django_extensions',
@@ -410,13 +410,20 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 
 # Crispy forms
 #
-# Use Twitter Bootstrap (version 4) as a default template for the project
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+# Override allowed template packs for bootstrap5
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Django Tables2
 #
 # Set a default template to use
-DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
+DJANGO_TABLES2_TEMPLATE = 'tables/bootstrap5-responsive.html'
+DJANGO_TABLES2_TABLE_ATTRS = {
+    'class': 'table table-hover',
+    'thead': {
+        'class': 'table-light',
+    },
+}
 
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------

@@ -80,18 +80,12 @@ class RelationshipTypeTable(tables.Table):
             'description',
             'start_age',
             'end_age',
-            'role_type',
+            # 'role_type',
             'form_required',
             'can_answer_questionnaire',
             'actions',
         ]
         empty_text = _('No relationship types defined.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
 
 
 class PatientTable(tables.Table):
@@ -109,12 +103,6 @@ class PatientTable(tables.Table):
         fields = ['first_name', 'last_name', 'date_of_birth', 'mrn', 'ramq']
         empty_text = _('No patient could be found.')
         orderable = False
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
 
     def render_mrn(self, value: QuerySet[HospitalPatient]) -> str:
         """Render MRN column.
@@ -146,12 +134,6 @@ class ExistingUserTable(tables.Table):
         fields = ['first_name', 'last_name', 'email', 'phone_number']
         empty_text = _('No existing user could be found.')
         orderable = False
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
 
 
 class PendingRelationshipTable(tables.Table):
@@ -180,12 +162,6 @@ class PendingRelationshipTable(tables.Table):
         model = Relationship
         fields = ['caregiver', 'type', 'patient', 'request_date', 'actions']
         empty_text = _('No caregiver pending access requests.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
 
 
 class RelationshipCaregiverTable(tables.Table):
@@ -248,9 +224,3 @@ class RelationshipCaregiverTable(tables.Table):
             'actions',
         ]
         empty_text = _('No caregiver could be found.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
