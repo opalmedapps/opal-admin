@@ -3,7 +3,13 @@
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block title %}
+  {% translate "Questionnaires" %}
+{% endblock %}
+
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
   {% block content %}
     {% if perms.questionnaires.export_report %}

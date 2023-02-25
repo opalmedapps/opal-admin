@@ -2,7 +2,13 @@
 {% load static %}
 {% load i18n %}
 
-{% block page-title %}{% translate "Delete Site" %}{% endblock %}
+{% block title %}
+  {% translate "Sites" %}
+{% endblock %}
+
+{% block heading %}
+  {% translate "Delete Site" %}
+{% endblock %}
 
 {% block content %}
   <div class="callout callout-danger">

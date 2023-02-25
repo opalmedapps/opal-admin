@@ -3,7 +3,11 @@
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-{% block page-title %}
+{% block title %}
+  {% translate "Patients" %}
+{% endblock %}
+
+{% block heading %}
   {% translate "Relationship Types" %}
 {% endblock %}
 

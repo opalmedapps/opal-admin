@@ -3,7 +3,11 @@
 
 {% load crispy_forms_tags %}
 
-{% block page-title %}
+{% block title %}
+  {% translate "Patients" %}
+{% endblock %}
+
+{% block heading %}
   {% if object %}
     {% translate "Update" %}
     {% else %}

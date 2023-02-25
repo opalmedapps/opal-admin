@@ -2,7 +2,13 @@
 {% load static %}
 {% load i18n %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block title %}
+  {% translate "Questionnaires" %}
+{% endblock %}
+
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
   {% block content %}
     {% if perms.questionnaires.export_report %} <!-- Restrict access to authorized persons (See models ==> ExportReportPermission)  -->

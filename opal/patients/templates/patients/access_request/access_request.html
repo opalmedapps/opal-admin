@@ -4,7 +4,11 @@
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
-{% block content-header-page-name %}
+{% block title %}
+  {% translate "Patients" %}
+{% endblock %}
+
+{% block heading %}
   {% translate "New Patient Data Access Request" %}
 {% endblock %}
 
