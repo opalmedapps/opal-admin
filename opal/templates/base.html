@@ -1,0 +1,170 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>&lt;page_title&gt; · OpalAdmin 2.0</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous" />
+    <link href="{% static 'css/sidebars.css' %}" rel="stylesheet" />
+    {% block stylesheets %}{% endblock %}
+  </head>
+  <body>
+    <!-- TODO: use Bootstrap Icons properly; or FontAwesome 6 -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="people-circle" viewBox="0 0 16 16">
+        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+        <path fill-rule="evenodd"
+          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+      </symbol>
+    </svg>
+
+    <div class="d-flex flex-nowrap">
+      <nav class="d-flex flex-column flex-shrink-0 p-3 border-end" style="width: 300px;">
+          <a href="" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
+            <img src="{% static 'images/opal_purple.png' %}" alt="opal ADMIN logo" class="bi pe-none me-2 align-middle" width="32" height="32" style="opacity: .8" />
+            <span class="fs-4 fw-semibold text-body">OpalAdmin 2.0</span>
+            &nbsp;<span class="badge rounded-pill text-bg-primary">new</span>
+          </a>
+          <p>
+            <a href="" class="text-secondary">Go back to Legacy OpalAdmin</a>
+          </p>
+          {% with app=request.resolver_match.app_name url=request.resolver_match.view_name %}
+          <ul class="list-unstyled ps-0 mb-auto">
+            <li class="mb-1">
+              <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">Home</button>
+              <div class="collapse" id="home-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                  <li>
+                    <a href="/" class="link-dark d-inline-flex text-decoration-none rounded">Home Page</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
+              <li class="mb-1">
+                <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="{% if app == 'hospital-settings' %}true{% else %}false{% endif %}">
+                  {% translate "Hospital Settings" %}
+                </button>
+                <div class="collapse{% if app == 'hospital-settings' %} show{% endif %}" id="dashboard-collapse">
+                  <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    {% if perms.hospital_settings.can_manage_institutions %}
+                      <li>
+                        <a href="{% url 'hospital-settings:institution-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'hospital-settings:institution-' in url %} active{% endif %}">
+                          {% translate "Institutions" %}
+                        </a>
+                      </li>
+                    {% endif %}
+                    {% if perms.hospital_settings.can_manage_sites %}
+                      <li>
+                        <a href="{% url 'hospital-settings:site-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'hospital-settings:site-' in url %} active{% endif %}">
+                          {% translate "Sites" %}
+                        </a>
+                      </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </li>
+              {% endif %}
+              <li class="mb-1">
+                <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="{% if app == 'patients' %}true{% else %}false{% endif %}">
+                  {% translate "Patients" %}
+                </button>
+                <div class="collapse{% if app == 'patients' %} show{% endif %}" id="orders-collapse">
+                  <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    {% if perms.patients.can_manage_relationshiptypes %}
+                    <li>
+                      <a href="{% url 'patients:relationshiptype-list' %}" class="link-dark d-inline-flex text-decoration-none rounded{% if 'patients:relationshiptype-' in url %} active{% endif %}">
+                        {% translate "Relationship Types" %}
+                      </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                      <a href="{% url 'patients:access-request' %}" class="link-dark d-inline-flex text-decoration-none rounded">
+                        {% translate "Access Request" %}
+                      </a>
+                    </li>
+                    {% if perms.patients.can_manage_relationships %}
+                    <li>
+                      <a href="{% url 'patients:relationships-pending-list' %}" class="link-dark d-inline-flex text-decoration-none rounded">
+                        {% translate "Pending Access Requests" %}
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'patients:relationships-search' %}" class="link-dark d-inline-flex text-decoration-none rounded">
+                        {% translate "Manage Caregiver Access" %}
+                      </a>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </li>
+              {% if perms.questionnaires.export_report %}
+              <li class="mb-1">
+                <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
+                  {% translate "Questionnaires" %}
+                </button>
+                <div class="collapse" id="account-collapse">
+                  <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <li>
+                      <a href="{% url 'questionnaires:reports' %}" class="link-dark d-inline-flex text-decoration-none rounded">
+                        {% translate "Export Reports" %}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+              {% endif %}
+            </ul>
+            {% endwith %}
+            <div class="dropdown pt-3 border-top">
+              <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <svg class="bi pe-none me-2" width="32" height="32">
+                <use xlink:href="#people-circle" />
+              </svg>
+              <strong>{{ request.user.username }}</strong>
+            </a>
+            <ul class="dropdown-menu text-small shadow">
+              <li>
+                <a class="dropdown-item" href="#">Profile</a>
+              </li>
+              <li>
+                <hr class="dropdown-divider" />
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'logout' %}">{% translate "Log Out" %}</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <main class="container-fluid d-flex flex-column mx-2 pt-4">
+          <div class="mb-auto">
+            <nav aria-label="breadcrumb" class="bg-white">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">Hospital Settings (<code class="text-small">&lt;app.verbose_name&gt;</code>)</li>
+                <li class="breadcrumb-item active" aria-current="page">Institutions (<code class="text-small">&lt;page_title&gt;</code>)</li>
+              </ol>
+            </nav>
+            <h1 class="mb-3">{% block page-title %}empty block <code>page-title</code>{% endblock %}</h1>
+            {% comment %} <div class="card"> {% endcomment %}
+              {% comment %} <div class="card-body"> {% endcomment %}
+                {% comment %} <h4 class="card-title">{% block page-title %}block <code>page-title</code>{% endblock %}</h4> {% endcomment %}
+                {% block content %}empty block <code>content</code>{% endblock %}
+              {% comment %} </div> {% endcomment %}
+            {% comment %} </div> {% endcomment %}
+          </div>
+          <footer class="py-2 pt-3 mt-4 border-top">
+            <p class="text-center text-muted"><small>&copy; Opal Health Informatics Group</small></p>
+          </footer>
+        </main>
+
+    </div>
+    <!-- Javascript: Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    {% block javascript %}{% endblock %}
+  </body>
+</html>
