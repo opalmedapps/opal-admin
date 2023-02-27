@@ -114,7 +114,7 @@ def is_legacy_model(model: Type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label == 'legacy' and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed  # noqa: WPS437
 
 
 @pytest.fixture(scope='session', autouse=True)

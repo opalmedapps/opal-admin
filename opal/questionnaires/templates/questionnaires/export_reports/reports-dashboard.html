@@ -12,7 +12,7 @@
               {% if questionnaires_following %}
                 <h4> {% translate "My questionnaires" %}</h4>
                 <div class="table-responsive">
-                    <form action="{% url 'questionnaires:reports-filter' %}" method="POST" id="form">
+                    <form action="{% url 'questionnaires:reports-filter' %}" method="POST" id="form" novalidate>
                         {% csrf_token %}
                     <table class="table" id="data_table">
                         <thead>

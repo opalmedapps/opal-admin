@@ -6,3 +6,6 @@
 
 # Run the Questionnaire respondents sync check daily at 2am.
 0 2 * * * /usr/local/bin/python /app/manage.py find_questionnaire_respondent_deviations > /dev/null
+
+# Run process to mark relationships as expired daily at midnight + 1 min (shortly after people's age changes).
+1 0 * * * /usr/local/bin/python /app/manage.py expire_relationships > /dev/null
