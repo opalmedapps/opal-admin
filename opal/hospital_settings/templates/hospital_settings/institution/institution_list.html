@@ -8,11 +8,13 @@
 {% block content %}
     <section class="content">
         <div class="container-fluid">
-          <div class="btn-toolbar mb-4">
-            <a class="btn btn-primary mr-2" href="{% url 'hospital-settings:institution-create' %}">
-              <i class="fas fa-plus"></i> {% translate "New Institution" %}
-            </a>
-          </div>
+          {% if can_create %}
+            <div class="btn-toolbar mb-4">
+              <a class="btn btn-primary mr-2" href="{% url 'hospital-settings:institution-create' %}">
+                <i class="fas fa-plus"></i> {% translate "New Institution" %}
+              </a>
+            </div>
+          {% endif %}
           {% render_table table %}
         </div>
     </section>
