@@ -143,6 +143,12 @@ class LegacyQuestionnaire(models.Model):
         to_field='contentid',
         related_name='+',
     )
+    logo = models.CharField(max_length=512)
+    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    creationdate = models.DateTimeField(db_column='creationDate')
+    createdby = models.CharField(db_column='createdBy', max_length=255)
+    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+    legacyname = models.CharField(db_column='legacyName', max_length=255)
 
     class Meta:
         managed = False

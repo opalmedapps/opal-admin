@@ -63,6 +63,12 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     nickname = SubFactory(LegacyDictionaryFactory)
     description = SubFactory(LegacyDictionaryFactory)
     instruction = SubFactory(LegacyDictionaryFactory)
+    logo = ''
+    deletedby = 'Test User'
+    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    createdby = 'Test User'
+    updatedb = 'Test User'
+    legacyname = 'Test Questionnaire'
 
 
 class LegacyPatientFactory(DjangoModelFactory):
