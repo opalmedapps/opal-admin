@@ -63,7 +63,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     nickname = SubFactory(LegacyDictionaryFactory)
     description = SubFactory(LegacyDictionaryFactory)
     instruction = SubFactory(LegacyDictionaryFactory)
-    logo = ''
+    logo = 'pathtologo'
     deletedby = 'Test User'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     createdby = 'Test User'
@@ -94,3 +94,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     questionnaireid = SubFactory(LegacyQuestionnaireFactory)
     patientid = SubFactory(LegacyPatientFactory)
     status = 0
+    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    deletedby = 'Test User'
+    createdby = 'Test User'
+    updatedby = 'Test User'

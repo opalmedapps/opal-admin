@@ -196,6 +196,10 @@ class LegacyAnswerQuestionnaire(models.Model):
         to_field='id',
     )
     status = models.IntegerField(db_column='status')
+    creationdate = models.DateTimeField(db_column='creationDate')
+    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    createdby = models.CharField(db_column='createdBy', max_length=255)
+    updatedby = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False
