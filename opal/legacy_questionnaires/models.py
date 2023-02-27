@@ -162,9 +162,13 @@ class LegacyPatient(models.Model):
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
+    hospitalid = models.IntegerField(db_column='hospitalId')
     externalid = models.IntegerField(db_column='externalId')
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creationdate = models.DateTimeField(db_column='creationDate')
+    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    createdby = models.CharField(db_column='createdBy', max_length=255)
+    updatedby = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False

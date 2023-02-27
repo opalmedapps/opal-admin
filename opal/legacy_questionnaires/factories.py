@@ -67,7 +67,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     deletedby = 'Test User'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     createdby = 'Test User'
-    updatedb = 'Test User'
+    updatedby = 'Test User'
     legacyname = 'Test Questionnaire'
 
 
@@ -78,7 +78,11 @@ class LegacyPatientFactory(DjangoModelFactory):
         model = models.LegacyPatient
 
     externalid = 51
+    hospitalid = -1
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    deletedby = 'Test User'
+    createdby = 'Test User'
+    updatedby = 'Test User'
 
 
 class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
