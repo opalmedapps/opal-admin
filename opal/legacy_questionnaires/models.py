@@ -19,39 +19,30 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 from django.db import models
 
 
-class LegacyAnswerQuestionnaire(models.Model):
-    """Answer Questionnaire model from the legacy database QuestionnaireDB.
-
-    This table records instances of a patient receiving a questionnaire
-    and keeps track of the patient's progress on that questionnaire.
-    """
+class LegacyDefinitionTable(models.Model):
+    """DefinitionTable model from the legacy database QuestionnaireDB."""
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    questionnaireid = models.ForeignKey(
-        'LegacyQuestionnaire',
-        models.DO_NOTHING,
-        db_column='questionnaireId',
-        to_field='id',
-    )
-    patientid = models.ForeignKey(
-        'LegacyPatient',
-        models.DO_NOTHING,
-        db_column='patientId',
-        to_field='id',
-    )
-    status = models.IntegerField(db_column='status')
+    name = models.CharField(max_length=255)
 
     class Meta:
         managed = False
-        db_table = 'answerQuestionnaire'
+        db_table = 'definitionTable'
 
 
 class LegacyDictionary(models.Model):
     """Dictionary model from the legacy database QuestionnaireDB."""
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    content = models.CharField(db_column='content', max_length=255)  # noqa: WPS432
+    content = models.CharField(db_column='content', max_length=255)
     contentid = models.IntegerField(db_column='contentId', unique=True)
+    tableid = models.ForeignKey(
+        'LegacyDefinitionTable',
+        models.DO_NOTHING,
+        db_column='tableId',
+        to_field='id',
+        related_name='+',
+    )
     languageid = models.IntegerField(db_column='languageId')
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creationdate = models.DateTimeField(db_column='creationDate')
@@ -91,6 +82,30 @@ class LegacyPurpose(models.Model):
         db_table = 'purpose'
 
 
+class LegacyRespondent(models.Model):
+    """Questionnaire model from the legacy database QuestionnaireDB."""
+
+    id = models.AutoField(db_column='ID', primary_key=True)
+    title = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='title',
+        to_field='contentid',
+        related_name='+',
+    )
+    description = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='description',
+        to_field='contentid',
+        related_name='+',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'respondent'
+
+
 class LegacyQuestionnaire(models.Model):
     """Questionnaire model from the legacy database QuestionnaireDB.
 
@@ -99,6 +114,35 @@ class LegacyQuestionnaire(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     purposeid = models.ForeignKey('LegacyPurpose', models.DO_NOTHING, db_column='purposeId', to_field='id')
+    respondentid = models.ForeignKey('LegacyRespondent', models.DO_NOTHING, db_column='respondentId', to_field='id')
+    title = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='title',
+        to_field='contentid',
+        related_name='+',
+    )
+    nickname = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='nickname',
+        to_field='contentid',
+        related_name='+',
+    )
+    description = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='description',
+        to_field='contentid',
+        related_name='+',
+    )
+    instruction = models.ForeignKey(
+        'LegacyDictionary',
+        models.DO_NOTHING,
+        db_column='instruction',
+        to_field='contentid',
+        related_name='+',
+    )
 
     class Meta:
         managed = False
@@ -119,3 +163,30 @@ class LegacyPatient(models.Model):
     class Meta:
         managed = False
         db_table = 'patient'
+
+
+class LegacyAnswerQuestionnaire(models.Model):
+    """Answer Questionnaire model from the legacy database QuestionnaireDB.
+
+    This table records instances of a patient receiving a questionnaire
+    and keeps track of the patient's progress on that questionnaire.
+    """
+
+    id = models.AutoField(db_column='ID', primary_key=True)
+    questionnaireid = models.ForeignKey(
+        'LegacyQuestionnaire',
+        models.DO_NOTHING,
+        db_column='questionnaireId',
+        to_field='id',
+    )
+    patientid = models.ForeignKey(
+        'LegacyPatient',
+        models.DO_NOTHING,
+        db_column='patientId',
+        to_field='id',
+    )
+    status = models.IntegerField(db_column='status')
+
+    class Meta:
+        managed = False
+        db_table = 'answerQuestionnaire'
