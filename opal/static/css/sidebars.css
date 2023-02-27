@@ -75,6 +75,6 @@ nav {
   /* background-color: var(--bs-gray-100); */
 }
 
-.table-hover > tbody > tr:hover {
+.table-hover > tbody > tr:hover > * {
   background-color: var(--opal-table-hover-bg);
 }
