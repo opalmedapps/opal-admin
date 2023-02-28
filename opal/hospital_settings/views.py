@@ -1,4 +1,6 @@
 """This module provides views for hospital-specific settings."""
+from typing import Any
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
@@ -28,6 +30,24 @@ class InstitutionListView(PermissionRequiredMixin, SingleTableView):
     permission_required = ('hospital_settings.can_manage_institutions',)
     table_class = tables.InstitutionTable
     template_name = 'hospital_settings/institution/institution_list.html'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """Update the context with whether a new institution can be created.
+
+        Args:
+            kwargs: the context data
+
+        Returns:
+            the context dictionary
+        """
+        context = super().get_context_data(**kwargs)
+
+        context['can_create'] = context['object_list'].count() == 0
+
+        # django-tables2 overrides the definition of get_context_data
+        # which loses the type hints from django-stubs
+        # issue report: https://github.com/jieter/django-tables2/issues/894
+        return context  # type: ignore[no-any-return]
 
 
 class InstitutionCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
