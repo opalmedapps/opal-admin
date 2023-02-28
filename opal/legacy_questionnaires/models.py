@@ -31,19 +31,24 @@ class LegacyDefinitionTable(models.Model):
 
 
 class LegacyDictionary(models.Model):
-    """Dictionary model from the legacy database QuestionnaireDB."""
+    """Dictionary model from the legacy database QuestionnaireDB.
+
+    Note that contentId is NOT actually a unique field in QuestionnaireDB.
+    Django forces us to add this constraint because contentId is referenced by many tables
+    as a ForeignKey, and we cannot create a UniqueConstraint on this unmanaged model.
+    This is okay as long as we only need to perform read operations on this table.
+    """
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    content = models.CharField(db_column='content', max_length=255)
-    contentid = models.IntegerField(db_column='contentId', unique=True)
     tableid = models.ForeignKey(
-        'LegacyDefinitionTable',
+        LegacyDefinitionTable,
         models.DO_NOTHING,
         db_column='tableId',
         to_field='id',
-        related_name='+',
     )
     languageid = models.IntegerField(db_column='languageId')
+    contentid = models.IntegerField(db_column='contentId', unique=True)
+    content = models.CharField(db_column='content', max_length=255)
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creationdate = models.DateTimeField(db_column='creationDate')
 
@@ -63,14 +68,14 @@ class LegacyPurpose(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     description = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='description',
         to_field='contentid',
         related_name='+',
     )
     title = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='title',
         to_field='contentid',
@@ -87,14 +92,14 @@ class LegacyRespondent(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     title = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='title',
         to_field='contentid',
         related_name='+',
     )
     description = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='description',
         to_field='contentid',
@@ -116,28 +121,28 @@ class LegacyQuestionnaire(models.Model):
     purposeid = models.ForeignKey('LegacyPurpose', models.DO_NOTHING, db_column='purposeId', to_field='id')
     respondentid = models.ForeignKey('LegacyRespondent', models.DO_NOTHING, db_column='respondentId', to_field='id')
     title = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='title',
         to_field='contentid',
         related_name='+',
     )
     nickname = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='nickname',
         to_field='contentid',
         related_name='+',
     )
     description = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='description',
         to_field='contentid',
         related_name='+',
     )
     instruction = models.ForeignKey(
-        'LegacyDictionary',
+        LegacyDictionary,
         models.DO_NOTHING,
         db_column='instruction',
         to_field='contentid',
@@ -184,13 +189,13 @@ class LegacyAnswerQuestionnaire(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     questionnaireid = models.ForeignKey(
-        'LegacyQuestionnaire',
+        LegacyQuestionnaire,
         models.DO_NOTHING,
         db_column='questionnaireId',
         to_field='id',
     )
     patientid = models.ForeignKey(
-        'LegacyPatient',
+        LegacyPatient,
         models.DO_NOTHING,
         db_column='patientId',
         to_field='id',
