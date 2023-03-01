@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-28 16:16-0500\n"
+"POT-Creation-Date: 2023-03-01 16:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,13 +149,21 @@ msgid "Self"
 msgstr "Soi"
 
 #: opal/patients/models.py
+msgid "Parent/Guardian"
+msgstr "Parent/Tuteur"
+
+#: opal/patients/models.py
+msgid "Guardian/Caregiver"
+msgstr ""
+
+#: opal/patients/models.py
+msgid "Mandatary"
+msgstr ""
+
+#: opal/patients/models.py
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Caregiver"
 msgstr "Proche aidant"
-
-#: opal/patients/models.py
-msgid "Parent/Guardian"
-msgstr "Parent/Tuteur"
 
 #: opal/patients/models.py
 msgid "Name"
