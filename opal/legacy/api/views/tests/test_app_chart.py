@@ -4,10 +4,12 @@ import pytest
 from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
+from opal.legacy_questionnaires import factories as questionnaires_factories
+from opal.legacy_questionnaires import models as questionnaires_models
 from opal.patients import factories as patient_factories
 from opal.users.models import User
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
 class TestChartAppView:
@@ -85,12 +87,40 @@ class TestChartAppView:
         ).count()
         assert edumaterials == 2
 
-    def test_get_unread_questionnaire_count(self) -> None:
-        """Test if function returns number of unread questionnaires."""
-        relationship = patient_factories.Relationship(status='CON')
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        factories.LegacyQuestionnaireFactory(patientsernum=patient)
-        factories.LegacyQuestionnaireFactory(patientsernum=patient)
-        factories.LegacyQuestionnaireFactory(patientsernum=patient, completedflag=1)
-        questionnaires = models.LegacyQuestionnaire.objects.get_unread_queryset(patient.patientsernum).count()
-        assert questionnaires == 2
+    @pytest.mark.parametrize(
+        'clear_questionnairedb',
+        [['answerQuestionnaire', 'questionnaire', 'purpose']],
+        indirect=True,
+    )
+    def test_get_unread_questionnaire_count(self, clear_questionnairedb: None) -> None:
+        """Test if function returns number of new clinical questionnaires."""
+        clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
+        research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
+        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
+        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
+        patient_one = questionnaires_factories.LegacyPatientFactory()
+        patient_two = questionnaires_factories.LegacyPatientFactory(externalid=52)
+
+        # status=0 by default for new questionnaires
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+            questionnaireid=clinical_questionnaire,
+            patientid=patient_one,
+        )
+        # status=1 indicates in progress
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+            questionnaireid=clinical_questionnaire,
+            patientid=patient_one,
+            status=1,
+        )
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+            questionnaireid=research_questionnaire,
+            patientid=patient_one,
+        )
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+            questionnaireid=clinical_questionnaire,
+            patientid=patient_two,
+        )
+        new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
+            patient_sernum=51,
+        ).count()
+        assert new_questionnaires == 1
