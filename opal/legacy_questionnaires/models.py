@@ -18,6 +18,8 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 
 from django.db import models
 
+from . import managers
+
 
 class LegacyDefinitionTable(models.Model):
     """DefinitionTable model from the legacy database QuestionnaireDB."""
@@ -154,6 +156,7 @@ class LegacyQuestionnaire(models.Model):
     createdby = models.CharField(db_column='createdBy', max_length=255)
     updatedby = models.CharField(db_column='updatedBy', max_length=255)
     legacyname = models.CharField(db_column='legacyName', max_length=255)
+    objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
     class Meta:
         managed = False
