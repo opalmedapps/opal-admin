@@ -58,17 +58,17 @@ class Site(Location):  # type: ignore[django-manager-missing]
         related_name='sites',
         verbose_name=_('Institution'),
     )
-    longitude = models.DecimalField(
-        max_digits=22,
-        decimal_places=16,
-        default=None,
-        verbose_name=_('Longitude'),
-    )
     latitude = models.DecimalField(
         max_digits=22,
         decimal_places=16,
         default=None,
         verbose_name=_('Latitude'),
+    )
+    longitude = models.DecimalField(
+        max_digits=22,
+        decimal_places=16,
+        default=None,
+        verbose_name=_('Longitude'),
     )
 
     class Meta:
