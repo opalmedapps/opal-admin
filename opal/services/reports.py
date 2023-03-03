@@ -17,12 +17,18 @@ class QuestionnaireReportRequestData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
-        patient_id (int): the ID of an Opal patient (e.g., patient serial number)
-        logo_path (Path): file path of the logo image
-        language (str): report's language (English or French)
+        patient_id: the ID of an Opal patient (e.g., patient serial number)
+        patient_name: patient's first name and last name
+        patient_site: patient's site code (e.g., RVH)
+        patient_mrn: patient's medical record number (e.g., 9999996) within the site
+        logo_path: file path of the logo image
+        language: report's language (English or French)
     """
 
     patient_id: int
+    patient_name: str
+    patient_site: str
+    patient_mrn: str
     logo_path: Path
     language: str
 
@@ -66,6 +72,9 @@ class ReportService():
         """
         payload = json.dumps({
             'patient_id': report_data.patient_id,
+            'patient_name': report_data.patient_name,
+            'patient_site': report_data.patient_site,
+            'patient_mrn': report_data.patient_mrn,
             'logo_base64': Base64Util().encode_to_base64(report_data.logo_path),
             'language': report_data.language,
         })
