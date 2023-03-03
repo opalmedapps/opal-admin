@@ -33,10 +33,11 @@ class TestGeneralAppView:
     def test_get_unread_announcement_count(self) -> None:
         """Test if function returns number of unread announcement."""
         patient = factories.LegacyPatientFactory()
+        user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient)
         factories.LegacyAnnouncementFactory(patientsernum=patient)
-        factories.LegacyAnnouncementFactory(patientsernum=patient, readstatus=1)
-        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient.patientsernum])
+        factories.LegacyAnnouncementFactory(patientsernum=patient, readby=[user.username])
+        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient.patientsernum], user.username)
         assert announcements == 2
 
     def test_get_unread_announcement_multiple_patient(self) -> None:
@@ -44,12 +45,12 @@ class TestGeneralAppView:
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
         post_control = factories.LegacyPostcontrolFactory()
-
+        user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient1)
-        factories.LegacyAnnouncementFactory(patientsernum=patient1, readstatus=1)
-        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient1.patientsernum])
+        factories.LegacyAnnouncementFactory(patientsernum=patient1, readby=[user.username])
+        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient1.patientsernum], user.username)
         assert announcements == 2
 
     def test_get_unread_announcement_nothing(self) -> None:
@@ -57,10 +58,10 @@ class TestGeneralAppView:
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
         post_control = factories.LegacyPostcontrolFactory()
-
+        user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient1)
-        factories.LegacyAnnouncementFactory(patientsernum=patient1, readstatus=1)
-        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([125])
+        factories.LegacyAnnouncementFactory(patientsernum=patient1, readby=[user.username])
+        announcements = models.LegacyAnnouncement.objects.get_unread_queryset([125], user.username)
         assert announcements == 0
