@@ -19,7 +19,7 @@ django-stubs==1.15.0  # https://github.com/typeddjango/django-stubs
 # djangorestframework-stubs==1.8.0  # https://github.com/typeddjango/djangorestframework-stubs
 git+https://github.com/typeddjango/djangorestframework-stubs.git@728da9c1ba7fa2a6eb3442eb599d0b38e6529492
 types-requests==2.28.11.15
-types-python-dateutil==2.8.19.9
+types-python-dateutil==2.8.19.10
 
 # Code quality
 #
