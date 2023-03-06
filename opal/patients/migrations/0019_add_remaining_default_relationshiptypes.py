@@ -5,22 +5,6 @@ from opal.patients.models import RoleType
 from opal.patients import constants
 
 
-def set_can_answer_questionnaire(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
-    """Set correct defaults for `form_required` and `can_answer_questionnaire` fields to existing role types."""
-    RelationshipType = apps.get_model('patients', 'RelationshipType')
-
-    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
-    self_type.can_answer_questionnaire = True
-    self_type.form_required = False
-    self_type.full_clean()
-    self_type.save()
-
-    guardian_type = RelationshipType.objects.get(role_type=RoleType.PARENT_GUARDIAN)
-    guardian_type.can_answer_questionnaire = True
-    guardian_type.full_clean()
-    guardian_type.save()
-
-
 def add_relationship_types(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """Generate the restricted role type objects and save to database."""
     RelationshipType = apps.get_model('patients', 'RelationshipType')
@@ -74,15 +58,10 @@ class Migration(migrations.Migration):
     """Populate the remaining missing relationship types, guardian-caregiver and mandatary."""
 
     dependencies = [
-        ('patients', '0017_add_patient_uuid'),
+        ('patients', '0018_update_existing_relationshiptypes'),
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='relationshiptype',
-            name='can_answer_questionnaire',
-            field=models.BooleanField(default=False, help_text='The caregiver can answer questionnaires on behalf of the patient.', verbose_name='Can answer patient questionnaire'),
-        ),
         migrations.AlterField(
             model_name='relationshiptype',
             name='role_type',
@@ -100,6 +79,5 @@ class Migration(migrations.Migration):
                 verbose_name='Relationship Role Type',
             ),
         ),
-        migrations.RunPython(set_can_answer_questionnaire, reverse_code=migrations.RunPython.noop),
         migrations.RunPython(add_relationship_types, reverse_code=migrations.RunPython.noop),
     ]
