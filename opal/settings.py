@@ -185,6 +185,25 @@ LOGIN_URL = 'login'
 
 AUTH_EXEMPT_ROUTES = env.tuple('AUTH_EXEMPT_ROUTES')
 
+# https://docs.djangoproject.com/en/dev/topics/auth/passwords/#enabling-password-validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 12,
+        },
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
