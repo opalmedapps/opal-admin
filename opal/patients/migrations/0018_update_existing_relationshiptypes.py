@@ -9,6 +9,8 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Set correct defaults for `form_required` and `can_answer_questionnaire` fields to existing role types.
 
     Fix the name of the parent/guardian relationship type.
+
+    See migration 0014 for the initial data.
     """
     RelationshipType = apps.get_model('patients', 'RelationshipType')
 
