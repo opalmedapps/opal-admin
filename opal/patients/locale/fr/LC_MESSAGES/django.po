@@ -153,12 +153,12 @@ msgid "Parent/Guardian"
 msgstr "Parent/Tuteur"
 
 #: opal/patients/models.py
-msgid "Guardian/Caregiver"
-msgstr ""
+msgid "Guardian-Caregiver"
+msgstr "Gardien-Proche aidant"
 
 #: opal/patients/models.py
 msgid "Mandatary"
-msgstr ""
+msgstr "Mandataire"
 
 #: opal/patients/models.py
 #: opal/patients/templates/patients/relationships/pending/form.html
