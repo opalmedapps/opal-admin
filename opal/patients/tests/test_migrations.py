@@ -279,7 +279,7 @@ def test_migration_relationshiptype_update_existing_types(migrator: Migrator) ->
     # ensure that the migration can be reversed without any error
     migrator.apply_tested_migration(('patients', '0018_update_existing_relationshiptypes'))
 
-    assert RelationshipType.objects.count() == 2
+    assert RelationshipType.objects.count() == 4
 
 
 def test_migration_relationshiptype_existing_role_types_untouched(migrator: Migrator) -> None:
