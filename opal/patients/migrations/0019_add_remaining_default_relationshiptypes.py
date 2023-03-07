@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ('SELF', 'Self'),
                     ('PARENTGUARDIAN', 'Parent/Guardian'),
-                    ('GRDNCAREGIVER', 'Guardian/Caregiver'),
+                    ('GRDNCAREGIVER', 'Guardian-Caregiver'),
                     ('MANDATARY', 'Mandatary'),
                     ('CAREGIVER', 'Caregiver'),
                 ],

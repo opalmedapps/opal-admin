@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-01 16:14-0500\n"
+"POT-Creation-Date: 2023-03-07 16:23-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -232,7 +232,7 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "There must always be exactly one Self and one Parent/Guardian role"
+msgid "There already exists a relationship type with this role type"
 msgstr ""
 
 #: opal/patients/models.py
