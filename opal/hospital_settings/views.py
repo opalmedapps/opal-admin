@@ -2,6 +2,7 @@
 from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.forms.models import ModelForm
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView
@@ -50,7 +51,7 @@ class InstitutionListView(PermissionRequiredMixin, SingleTableView):
         return context  # type: ignore[no-any-return]
 
 
-class InstitutionCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
+class InstitutionCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[Institution]):
     """
     This `CreateUpdateView` displays a form for creating and updating an institution object.
 
@@ -64,7 +65,7 @@ class InstitutionCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     success_url = reverse_lazy('hospital-settings:institution-list')
 
 
-class InstitutionDeleteView(PermissionRequiredMixin, DeleteView):
+class InstitutionDeleteView(PermissionRequiredMixin, DeleteView[Institution, ModelForm[Institution]]):
     """
     A view that displays a confirmation page and deletes an existing institution object.
 
@@ -91,7 +92,7 @@ class SiteListView(PermissionRequiredMixin, SingleTableView):
     template_name = 'hospital_settings/site/site_list.html'
 
 
-class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
+class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[Site]):
     """
     This `CreateView` displays a form for creating and updating a site object.
 
@@ -116,7 +117,7 @@ class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     success_url = reverse_lazy('hospital-settings:site-list')
 
 
-class SiteDeleteView(PermissionRequiredMixin, DeleteView):
+class SiteDeleteView(PermissionRequiredMixin, DeleteView[Site, ModelForm[Site]]):
     """
     A view that displays a confirmation page and deletes an existing site object.
 

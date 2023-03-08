@@ -1,10 +1,13 @@
 """Module providing reusable views for the whole project."""
-from typing import Any, Optional
+from typing import Any, Generic, Optional, TypeVar
 
 from django.contrib.auth.views import LoginView as DjangoLoginView
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
+from django.forms.models import ModelForm
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import UpdateView
+
+_Model = TypeVar('_Model', bound=Model)
 
 
 class LoginView(DjangoLoginView):
@@ -22,14 +25,14 @@ class LoginView(DjangoLoginView):
     }
 
 
-class CreateUpdateView(UpdateView):
+class CreateUpdateView(Generic[_Model], UpdateView[_Model, ModelForm[_Model]]):
     """
     Generic view that can handle creation and updating of objects.
 
     See: https://stackoverflow.com/q/17192737
     """
 
-    def get_object(self, queryset: Optional[QuerySet] = None) -> Any:
+    def get_object(self, queryset: Optional[QuerySet[_Model]] = None) -> Any:
         """
         Return the object the view is displaying.
 

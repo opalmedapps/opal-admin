@@ -108,7 +108,7 @@ def test_logout_redirects(user_client: Client, settings: SettingsWrapper) -> Non
 def test_createupdateview_create(django_user_model: AbstractUser) -> None:
     """The `CreateUpdateView` can handle creation of a new object."""
     # simulate a create
-    view = views.CreateUpdateView(
+    view: views.CreateUpdateView[AbstractUser] = views.CreateUpdateView(
         queryset=django_user_model.objects.all(),
     )
 
@@ -120,7 +120,7 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
     user = django_user_model.objects.create(username='testuser')
 
     # simulate an update for a specific object
-    view = views.CreateUpdateView(
+    view: views.CreateUpdateView[AbstractUser] = views.CreateUpdateView(
         queryset=django_user_model.objects.all(),
         kwargs={'pk': user.pk},
     )
