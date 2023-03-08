@@ -1,4 +1,4 @@
-image: python:3.10.10-slim-bullseye
+image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -13,33 +13,33 @@ variables:
   MARIADB_PASSWORD: $DB_PASSWORD
 
 
-before_script:
-  - uname -a
-  - python --version
-  - which python
-  # install dependencies for mysqlclient
-  - apt update && apt-get install -y build-essential libmariadb-dev
-  # don't fail if venv is not set up yet (during setup)
-  - source .venv/bin/activate || true
-  # set up env file for DB service
-  # use sample env file
-  - cp .env.sample .env
-  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
-  - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
-  - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
-  - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
-  # set up legacy DB connection
-  # reuse the same database as for the other tests to make it easier
-  - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-  - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
-  - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-  - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
-  # set up QuestionnaireDB connection as well
-  - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
-  # generate secret key
-  - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-  - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+# before_script:
+#   - uname -a
+#   - python --version
+#   - which python
+#   # install dependencies for mysqlclient
+#   - apt update && apt-get install -y build-essential libmariadb-dev
+#   # don't fail if venv is not set up yet (during setup)
+#   - source .venv/bin/activate || true
+#   # set up env file for DB service
+#   # use sample env file
+#   - cp .env.sample .env
+#   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
+#   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
+#   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
+#   - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+#   # set up legacy DB connection
+#   # reuse the same database as for the other tests to make it easier
+#   - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+#   - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+#   - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
+#   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+#   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+#   # set up QuestionnaireDB connection as well
+#   - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
+#   # generate secret key
+#   - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+#   - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 stages:
   - Static Analysis
@@ -48,31 +48,22 @@ stages:
   - Build
   - Documentation
 
-setup:
+build image:
   stage: .pre
+  image: docker:20.10.23
+  services:
+    - docker:20.10.23-dind
+  variables:
+    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - apt update && apt-get install -y git
-    - python -m venv .venv
-    - source .venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements/development.txt
-  artifacts:
-    # pin artifacts to the branch
-    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
-    name: $CI_COMMIT_REF_SLUG
-    expire_in: 1 week
-    paths:
-      - .venv
-  # Pip's cache doesn't store the python packages
-  # https://pip.pypa.io/en/stable/reference/pip_install/#caching
-  #
-  # If you want to also cache the installed packages, you have to install
-  # them in a virtualenv and cache it as well.
-  cache:
-    # pin artifacts to the branch
-    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
-    paths:
-      - .cache/pip
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
 
 flake8:
   stage: Static Analysis
