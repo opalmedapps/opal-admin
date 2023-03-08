@@ -533,7 +533,7 @@ class ConfirmPasswordForm(forms.Form):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 
-class RelationshipPendingAccessForm(forms.ModelForm):
+class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
     """Form for updating an `Pending Relationship Access` object."""
 
     start_date = forms.DateField(
@@ -587,7 +587,7 @@ class RelationshipPendingAccessForm(forms.ModelForm):
 
 
 # TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
-class RelationshipTypeUpdateForm(forms.ModelForm):
+class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
     """Form for updating a `RelationshipType` object."""
 
     class Meta:
