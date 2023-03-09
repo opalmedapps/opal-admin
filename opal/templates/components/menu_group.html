@@ -1,0 +1,18 @@
+{% var current_app=request.resolver_match.app_name %}
+
+<li class="mb-1">
+  <button
+    class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
+    data-bs-toggle="collapse"
+    data-bs-target="#{{ group_id }}-collapse"
+    aria-expanded="{% if current_app == app_name %}true{% else %}false{% endif %}">
+      {{ title }}
+  </button>
+  <div
+    class="collapse{% if current_app == app_name %} show{% endif %}"
+    id="{{ group_id }}-collapse">
+    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+      {{ children }}
+    </ul>
+  </div>
+</li>

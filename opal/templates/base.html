@@ -1,0 +1,62 @@
+{% load static %}
+{% load i18n %}
+
+{% fragment as page_heading %}
+  {% block heading %}empty block <code>heading</code>{% endblock %}
+{% endfragment %}
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      {{ page_heading }} · OpalAdmin 2.0
+    </title>
+
+    <link href="{% static 'thirdparty/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/sidebars.css' %}" rel="stylesheet" type="text/css" />
+    {% block stylesheets %}{% endblock %}
+
+    {% comment %}
+      Prevent Flash of Unstyled Content (FUOC) in Firefox
+      See: https://stackoverflow.com/a/64158043
+      See: https://bugzilla.mozilla.org/show_bug.cgi?id=1404468
+    {% endcomment %}
+    <script>
+      /*to prevent Firefox FOUC, this must be here*/
+      let FF_FOUC_FIX;
+    </script>
+
+    {% comment %}
+      Make external scripts non-blocking
+      See: https://javascript.info/script-async-defer
+    {% endcomment %}
+    <script defer src="{% static 'thirdparty/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    {% block javascript %}{% endblock %}
+  </head>
+  <body>
+    <div class="d-flex flex-nowrap">
+      {% include "sidebar.html" %}
+
+      <main class="container-fluid d-flex flex-column px-5 pt-4">
+        <div class="mb-auto">
+          <nav aria-label="breadcrumb" class="bg-white">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">{{ app_verbose_name }}</li>
+              <li class="breadcrumb-item active" aria-current="page">{{ page_heading }} </li>
+            </ol>
+          </nav>
+          <h1 class="mb-3">{{ page_heading }}</h1>
+              {% block content %}empty block <code>content</code>{% endblock %}
+        </div>
+        <footer class="py-2 pt-3 mt-4 border-top">
+          <p class="text-center text-muted"><small>&copy; Opal Health Informatics Group</small></p>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

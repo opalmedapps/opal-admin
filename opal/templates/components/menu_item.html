@@ -1,0 +1,9 @@
+{% var view_name=request.resolver_match.view_name %}
+
+<li>
+  <a
+    href="{% url url_name %}"
+    class="link-dark d-inline-flex text-decoration-none rounded{% if url_name == view_name %} active{% endif %}">
+    {{ children }}
+  </a>
+</li>
