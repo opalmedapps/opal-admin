@@ -64,6 +64,8 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'formtools',
+    'slippers',
+    'fontawesomefree',
 ]
 
 LOCAL_APPS = [
@@ -120,6 +122,8 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'opal.core.context_processors.opal_global_settings',
             ],
+            # make slippers available in all templates
+            'builtins': ['slippers.templatetags.slippers'],
         },
     },
 ]
