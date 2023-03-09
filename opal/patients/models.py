@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 from collections import defaultdict
 from datetime import date
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -29,6 +29,11 @@ class RoleType(models.TextChoices):
 
 class RelationshipType(models.Model):
     """A type of relationship between a user (aka caregiver) and patient."""
+
+    # TextChoices need to be defined outside to use them in constraints
+    # define them as class attributes for easier access
+    # see: https://stackoverflow.com/q/71522816
+    RoleType: TypeAlias = RoleType
 
     name = models.CharField(
         verbose_name=_('Name'),
@@ -168,7 +173,7 @@ class Patient(models.Model):
     # TextChoices need to be defined outside to use them in constraints
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
-    SexType = SexType
+    SexType: TypeAlias = SexType
 
     uuid = models.UUIDField(
         verbose_name=_('UUID'),
