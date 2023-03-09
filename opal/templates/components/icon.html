@@ -1,0 +1,10 @@
+{% var extra_classes=extra_classes|default:"me-2" %}
+
+<i
+  class="fa-solid fa-{{ icon }}
+  {% if size|length > 0 %}
+  fa-{{ size }}
+  {% endif %}
+  {{ extra_classes }}"
+>
+</i>

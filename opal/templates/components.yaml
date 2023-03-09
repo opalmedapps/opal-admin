@@ -1,3 +1,4 @@
 components:
+  icon: "components/icon.html"
   menu_group: "components/menu_group.html"
   menu_item: "components/menu_item.html"
