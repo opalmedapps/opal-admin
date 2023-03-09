@@ -37,9 +37,8 @@ def test_site_type_for_questionnaire_report() -> None:
 
 def test_patient_mrn_type_invalid() -> None:
     """Ensure `mrn` for the questionnaire report request does not accept invalid types."""
-    hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': 0, 'site': hospital_patient.site.code},
+        data={'mrn': '123456789011', 'site': 'RVH'},
     )
     assert not serializer.is_valid()
 
@@ -47,7 +46,7 @@ def test_patient_mrn_type_invalid() -> None:
 def test_patient_site_type_invalid() -> None:
     """Ensure `site_name` for the questionnaire report request does not accept invalid types."""
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site': 0},
+        data={'mrn': '9999996', 'site': '123456789011'},
     )
     assert not serializer.is_valid()
 

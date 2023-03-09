@@ -14,7 +14,7 @@ from ..core.form_layouts import CancelButton, ImageFieldWithPreview
 from .models import Institution
 
 
-class InstitutionForm(forms.ModelForm):
+class InstitutionForm(forms.ModelForm[Institution]):
     """Form for creating/updating an `Institution` object."""
 
     class Meta:
