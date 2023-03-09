@@ -1,5 +1,5 @@
 """Module providing custom data structures (a.k.a., named tuples) for the OIE Service."""
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, NamedTuple, Optional
 
 
@@ -39,19 +39,19 @@ class OIEPatientData(NamedTuple):
     """Typed `NamedTuple` that describes `Patient` fields (a.k.a., Patient data structure) returned from the OIE.
 
     Attributes:
-        date_of_birth (datetime): the datetime in YYYY-MM-DD HH:II:SS
-        first_name (str): patient first name
-        last_name (str): patient last name
-        sex (str): patient sex
-        alias (str): alias name
-        deceased (bool): patient death indicator
-        death_date_time (datetime): patient death date and time in YYYY-MM-DD HH:II:SS
-        ramq (str): health insurance number
-        ramq_expiration (datetime): the datetime in YYYY-MM-DD HH:II:SS
-        mrns (OIEMRN): list of MRNs
+        date_of_birth: the date of birth
+        first_name: patient first name
+        last_name: patient last name
+        sex: patient sex
+        alias: alias name
+        deceased: True if the patient is deceased, False otherwise
+        death_date_time: patient death date and time
+        ramq: Quebec health insurance number
+        ramq_expiration: the expiration date of the health insurance number
+        mrns: list of MRNs the patient has
     """
 
-    date_of_birth: datetime
+    date_of_birth: date
     first_name: str
     last_name: str
     sex: str

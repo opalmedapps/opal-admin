@@ -33,7 +33,7 @@ from ..views import AccessRequestView, CaregiverAccessView, PendingRelationshipL
 pytestmark = pytest.mark.django_db
 
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
-    date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+    date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
     sex='F',
@@ -354,7 +354,7 @@ def test_form_error_in_template(
         return_value={
             'status': 'success',
             'data': OIEPatientData(
-                date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+                date_of_birth=date.fromisoformat('1984-05-09'),
                 first_name='Marge',
                 last_name='Simpson',
                 sex='F',
@@ -917,7 +917,7 @@ def test_create_new_relationship() -> None:
     response, instance = test_view(request)
 
     patient_record = OIEPatientData(
-        date_of_birth=datetime.strptime('2014-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        date_of_birth=date.fromisoformat('2014-05-09'),
         first_name='Lisa',
         last_name='Simpson',
         sex='F',

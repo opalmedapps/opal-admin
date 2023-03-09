@@ -380,6 +380,25 @@ class Relationship(models.Model):
             type=str(self.type),
         )
 
+    def validate_start_date(self) -> list[str]:
+        """Validate the `start_date` field.
+
+        The start date has to be greater equals the patient's date of birth.
+        The start date has to be earlier than the end date.
+
+        Returns:
+            a list of error messages
+        """
+        errors = []
+
+        if self.start_date < self.patient.date_of_birth:
+            errors.append(gettext("Start date cannot be earlier than patient's date of birth"))
+
+        if self.end_date is not None and self.start_date >= self.end_date:
+            errors.append(gettext('Start date should be earlier than end date.'))
+
+        return errors
+
     def clean(self) -> None:
         """Validate date and reason fields.
 
@@ -389,8 +408,11 @@ class Relationship(models.Model):
         # support adding multiple errors for the same field/non-fields
         errors: dict[str, list[str]] = defaultdict(list)
 
-        if self.end_date is not None and self.start_date >= self.end_date:
-            errors['start_date'].append(gettext('Start date should be earlier than end date.'))
+        start_date_errors = self.validate_start_date()
+
+        if start_date_errors:
+            errors['start_date'].extend(start_date_errors)
+
         # validate status is not empty if status is revoked or denied.
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
             errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))

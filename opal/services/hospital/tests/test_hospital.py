@@ -349,7 +349,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d %H:%M:%S',
-        ),
+        ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
@@ -393,7 +393,7 @@ def test_empty_value_in_response_by_mrn(mocker: MockerFixture) -> None:
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d %H:%M:%S',
-        ),
+        ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
@@ -469,7 +469,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d %H:%M:%S',
-        ),
+        ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
@@ -513,7 +513,7 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d %H:%M:%S',
-        ),
+        ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
