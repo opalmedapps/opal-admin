@@ -29,13 +29,12 @@ class Command(BaseCommand):
             'type',
         ).filter(
             status=RelationshipStatus.CONFIRMED,
-            type__end_age__isnull=False,
-        )
+        ).exclude(type__end_age=None)
 
         for relationship in relationships_to_check:
             patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
 
-            if patient_age >= relationship.type.end_age:
+            if relationship.type.end_age and patient_age >= relationship.type.end_age:
                 relationship.status = RelationshipStatus.EXPIRED
                 relationship.save()
                 number_of_updates += 1
