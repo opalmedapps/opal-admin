@@ -1,39 +1,27 @@
 import base64
 from pathlib import Path
 
-from django.core.files import File
-from django.db import models
 from django.db.models.fields.files import FieldFile
-from django.utils.translation import gettext_lazy as _
 
 from ..drf_fields import Base64FileField
 
 
-class TestBase64Model(models.Model):
-    """Class wrapper for Base64FileField tests."""
-
-    file_field = models.FileField()
-
-    class Meta:
-        verbose_name = _('TestBase64')
-        verbose_name_plural = _('TestsBase64')
-
-    def __str__(self) -> str:
-        """
-        Return the string representation of the location.
-
-        Returns:
-            test message
-        """
-        return 'test'
+# copied from: https://github.com/Hipo/drf-extra-fields/blob/master/tests/test_fields.py
+class _FieldFile:
+    def __init__(self, path: str):
+        self.path = path
 
 
-def test_to_representation_file() -> None:
-    """Test with a regular file path."""
-    with Path('opal/tests').joinpath('test.pdf').open('rb') as terms_file:
-        terms_file.write(b'test')
-        file = File(terms_file)
-        file_model = TestBase64Model(field_file=file)
+class _DownloadableBase64File:
+    def __init__(self, file_path: Path):
+        self.file = _FieldFile(path=str(file_path))
 
-    field_file = FieldFile(file_model, file_model.file_field, 'test')
+
+def test_base64filefield_to_representation(tmp_path: Path) -> None:
+    """The `Base64FileField` returns the base64 encoded content of the file."""
+    test_file = tmp_path.joinpath('test.txt')
+    with test_file.open('wb') as fd:
+        fd.write(b'test')
+
+    field_file: FieldFile = _DownloadableBase64File(test_file).file  # type: ignore[assignment]
     assert Base64FileField().to_representation(field_file) == base64.b64encode(b'test')
