@@ -18,8 +18,12 @@
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'css/sidebars.css' %}" rel="stylesheet" type="text/css" />
+
     {% block stylesheets %}{% endblock %}
+
+    {% comment %} Our own stylesheets {% endcomment %}
+    <link href="{% static 'css/global.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'css/sidebar.css' %}" rel="stylesheet" type="text/css" />
 
     {% comment %}
       Prevent Flash of Unstyled Content (FUOC) in Firefox
@@ -53,8 +57,8 @@
           <h1 class="mb-3">{{ page_heading }}</h1>
               {% block content %}empty block <code>content</code>{% endblock %}
         </div>
-        <footer class="py-2 pt-3 mt-4 border-top">
-          <p class="text-center text-muted"><small>&copy; Opal Health Informatics Group</small></p>
+        <footer class="py-2 pt-3 mt-2 border-top">
+          <p class="text-center text-muted mb-2"><small>&copy; Opal Health Informatics Group</small></p>
         </footer>
       </main>
     </div>
