@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+import base64
 import io
 from collections import Counter
 from datetime import date
@@ -271,7 +272,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         stream = self._generate_qr_code(registration_code)
 
         return render(self.request, 'patients/access_request/qr_code.html', {
-            'svg': stream.getvalue().decode(),
+            'qrcode': base64.b64encode(stream.getvalue()).decode(),
             'header_title': _('QR Code Generation'),
         })
 
