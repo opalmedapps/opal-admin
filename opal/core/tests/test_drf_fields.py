@@ -1,6 +1,7 @@
 import base64
 from pathlib import Path
 
+from django.core.files import File
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.utils.translation import gettext_lazy as _
@@ -27,15 +28,12 @@ class TestBase64Model(models.Model):
         return 'test'
 
 
-def test_to_representation_file(test_path: Path) -> None:
+def test_to_representation_file() -> None:
     """Test with a regular file path."""
-    test_path.joinpath('media').mkdir()
-    test_file = test_path.joinpath('media').joinpath('test.pdf')
-    with test_file.open('w') as fd:
-        fd.write('test')
+    with Path('opal/tests').joinpath('test.pdf').open('rb') as terms_file:
+        terms_file.write(b'test')
+        file = File(terms_file)
+        file_model = TestBase64Model(field_file=file)
 
-    test_model = TestBase64Model()
-    test_model.file_field.path = test_file
-    field_file = FieldFile(test_model, test_model.file_field, 'test.pdf')
-
+    field_file = FieldFile(file_model, file_model.file_field, 'test')
     assert Base64FileField().to_representation(field_file) == base64.b64encode(b'test')
