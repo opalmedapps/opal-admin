@@ -24,4 +24,4 @@ def test_base64filefield_to_representation(tmp_path: Path) -> None:
         fd.write(b'test')
 
     field_file: FieldFile = _DownloadableBase64File(test_file).file  # type: ignore[assignment]
-    assert Base64FileField().to_representation(field_file) == base64.b64encode(b'test')
+    assert Base64FileField().to_representation(field_file) == base64.b64encode(b'test').decode('utf-8')
