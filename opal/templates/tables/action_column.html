@@ -1,10 +1,13 @@
 {% load i18n %}
 
-<a class="btn btn-primary btn-sm mr-2" href="{% url urlname_update record.id %}">
-  <i class="fas fa-pencil-alt"></i> {% translate "Edit" %}
-</a>
+{% url urlname_update record.id as update_url %}
+{% #icon_button icon="pencil-alt" href=update_url %}
+  {% translate "Edit" %}
+{% /icon_button %}
+
 {% if urlname_delete %}
-  <a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
-    <i class="fas fa-trash"></i> {% translate "Delete" %}
-  </a>
+  {% url urlname_delete record.id as delete_url %}
+  {% #icon_button icon="trash" href=update_url type="danger" %}
+    {% translate "Delete" %}
+  {% /icon_button %}
 {% endif %}
