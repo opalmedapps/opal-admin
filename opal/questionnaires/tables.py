@@ -16,9 +16,3 @@ class ReportTable(tables.Table):
 
     class Meta:
         empty_text = _('No responses found.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }

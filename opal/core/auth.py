@@ -111,6 +111,7 @@ class FedAuthBackend(BaseBackend):
                     'uid': username,
                     'pwd': password,
                 },
+                timeout=10,
             )
         except RequestException as exc:
             # TODO: add logging
