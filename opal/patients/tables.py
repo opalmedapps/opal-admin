@@ -229,9 +229,8 @@ class RelationshipCaregiverTable(tables.Table):
         },
         orderable=False,
         extra_context={
-            # TODO: update urlname_delete and urlname_update values once the corresponding pages are implemented
-            'urlname_delete': '',
-            'urlname_update': '',
+            # TODO: update urlname_delete values once the corresponding pages are implemented
+            'urlname_update': 'patients:relationships-search-update',
         },
     )
 
