@@ -222,7 +222,7 @@ class RelationshipCaregiverTable(tables.Table):
 
     actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
-        # TODO: use action_column.html template once the update/delete pages are implemented
+        # TODO: use action_column.html template once the delete pages are implemented
         template_name='tables/edit_pencil_icon.html',
         attrs={
             'td': {'align': 'center'},
