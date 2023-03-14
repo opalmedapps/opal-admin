@@ -1234,7 +1234,7 @@ def test_relationships_pending_form(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype)
     response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
-    assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
+    assert response.context['form'].__class__ == forms.RelationshipAccessForm
 
 
 def test_relationships_pending_form_content(relationship_user: Client) -> None:
