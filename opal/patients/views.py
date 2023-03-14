@@ -31,7 +31,7 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import RelationshipPendingAccessForm, RelationshipTypeUpdateForm
+from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .tables import (
     ExistingUserTable,
@@ -549,8 +549,41 @@ class PendingRelationshipUpdateView(
     model = Relationship
     permission_required = ('patients.can_manage_relationships',)
     template_name = 'patients/relationships/pending/form.html'
-    form_class = RelationshipPendingAccessForm
+    form_class = RelationshipAccessForm
     success_url = reverse_lazy('patients:relationships-pending-list')
+
+
+class SearchRelationshipUpdateView(UpdateView[Relationship, ModelForm[Relationship]]):
+    """
+    This `UpdatesView` displays a form for updating a `Relationship` object of type other than pending.
+
+    It redisplays the search form along with updated search results on cancel.
+
+    It re-uses `validate_statuses` function in `Relationship` Model to apply change status business rules.
+    """
+
+    model = Relationship
+    template_name = 'patients/relationships-search/form.html'
+    # re-use same RelationshipAccessForm
+    form_class = RelationshipAccessForm
+    success_url = reverse_lazy('patients:relationships-search')
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Return the template context for `SearchRelationshipUpdateView` update view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the template context for `SearchRelationshipUpdateView`
+        """
+        context = super().get_context_data(**kwargs)
+        # to pass url to crispy form to be able to re-use the same form for different purposes
+        context['cancel_url'] = reverse_lazy('patients:relationships-search')
+        # provide previous link with parameters to update on clicking cancel button
+        context['prev_url'] = self.request.META.get('HTTP_REFERER')
+        return context
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
@@ -564,7 +597,7 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
     )
     filterset_class = ManageCaregiverAccessFilter
     tables = [PatientTable, RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:caregiver-access')
+    success_url = reverse_lazy('patients:relationships-search')
     template_name = 'patients/relationships-search/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:
