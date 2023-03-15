@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, TypeVar
 from django.db import models
 from django.utils import timezone
 
-from opal.patients.models import Relationship
+from opal.patients.models import Relationship, RelationshipStatus
 
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
@@ -100,7 +100,14 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         Returns:
             Appointments schedule for the current day.
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
+        relationships = Relationship.objects.get_patient_list_for_caregiver(user_name).filter(
+            status=RelationshipStatus.CONFIRMED,
+        )
+        patient_ids = [
+            legacy_id
+            for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
+            if legacy_id is not None
+        ]
         return self.select_related(
             'aliasexpressionsernum',
             'aliasexpressionsernum__aliassernum',
