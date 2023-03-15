@@ -110,10 +110,17 @@ class LegacyAliasexpression(models.Model):
 class LegacyAlias(models.Model):
     """Legacy alias model mapping Alias table from legacy database."""
 
-    aliassernum = models.AutoField(db_column='AliasSerNum', primary_key=True)  # Field name made lowercase.
+    aliassernum = models.AutoField(db_column='AliasSerNum', primary_key=True)
     aliastype = models.CharField(db_column='AliasType', max_length=25)
     aliasname_en = models.CharField(db_column='AliasName_EN', max_length=100)
     aliasname_fr = models.CharField(db_column='AliasName_FR', max_length=100)
+    hospitalmapsernum = models.ForeignKey(
+        'LegacyHospitalMap',
+        models.DO_NOTHING,
+        db_column='HospitalMapSerNum',
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         managed = False
@@ -281,3 +288,19 @@ class LegacyPatientHospitalIdentifier(models.Model):
         managed = False
         db_table = 'Patient_Hospital_Identifier'
         unique_together = (('patientsernum', 'hospitalidentifiertypecode', 'mrn'),)
+
+
+class LegacyHospitalMap(models.Model):
+    """Hospital_Map model from the legacy database OpalDB."""
+
+    hospitalmapsernum = models.AutoField(db_column='HospitalMapSerNum', primary_key=True)
+    mapname_en = models.CharField(db_column='MapName_EN', max_length=255, blank=True, null=True)
+    mapdescription_en = models.CharField(db_column='MapDescription_EN', max_length=255, blank=True, null=True)
+    mapname_fr = models.CharField(db_column='MapName_FR', max_length=255, blank=True, null=True)
+    mapdescription_fr = models.CharField(db_column='MapDescription_FR', max_length=255, blank=True, null=True)
+    dateadded = models.DateTimeField(db_column='DateAdded')
+    sessionid = models.CharField(db_column='SessionId', max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'HospitalMap'

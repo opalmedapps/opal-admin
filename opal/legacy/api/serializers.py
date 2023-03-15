@@ -3,7 +3,7 @@
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyPatient
+from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyPatient, LegacyHospitalMap
 
 
 class LegacyAliasSerializer(DynamicFieldsSerializer):
@@ -12,6 +12,14 @@ class LegacyAliasSerializer(DynamicFieldsSerializer):
     class Meta:
         model = LegacyAlias
         fields = ['aliassernum', 'aliastype', 'aliasname_en', 'aliasname_fr']
+
+
+class LegacyHospitalMapSerializer(DynamicFieldsSerializer):
+    """Serializer for the `LegacyHospitalMap` model."""
+
+    class Meta:
+        model = LegacyHospitalMap
+        fields = ['hospitalmapsernum', 'mapname_en', 'mapname_fr']
 
 
 class LegacyPatientSerializer(DynamicFieldsSerializer):
@@ -55,6 +63,13 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    hospitalmap = LegacyHospitalMapSerializer(
+        source='aliasexpressionsernum.aliassernum.hospitalmapsernum',
+        fields=('mapname_en', 'mapname_fr'),
+        many=False,
+        read_only=True,
+    )
+
     class Meta:
         model = LegacyAppointment
         fields = [
@@ -65,6 +80,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
             'checkinpossible',
             'roomlocation_en',
             'roomlocation_fr',
+            'hospitalmap',
             'patient',
             'alias',
         ]
