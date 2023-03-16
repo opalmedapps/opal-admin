@@ -264,12 +264,15 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         new_form_data = self._process_form_data(form_data)
         # generate access request for both of the case(new user or existing user)
         relationship = self._generate_access_request(new_form_data)
-        # get a random registration code
-        registration_code = generate_random_registration_code(constants.REGISTRATION_CODE_LENGTH)
-        # create the registration code instance for the relationship
-        RegistrationCode.objects.get_or_create(relationship=relationship, code=registration_code)
+        # create the registration code instance for the relationship and validate the registration code
+        registration_code = RegistrationCode(
+            relationship=relationship,
+            code=generate_random_registration_code(settings.INSTITUTION_CODE, constants.REGISTRATION_CODE_LENGTH),
+        )
+        registration_code.full_clean()
+        registration_code.save()
         # generate QR code for Opal registration system
-        stream = self._generate_qr_code(registration_code)
+        stream = self._generate_qr_code(registration_code.code)
 
         return render(self.request, 'patients/access_request/qr_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
