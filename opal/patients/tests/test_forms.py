@@ -9,7 +9,7 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
-from ..models import Relationship, RelationshipStatus
+from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -320,14 +320,11 @@ def test_requestor_form_not_check_if_required() -> None:
 
 def test_disabled_option_exists() -> None:
     """Ensure that a disabled option exists."""
-    types = [
-        factories.RelationshipType(name='Self', start_age=1),
-        factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18),
-        factories.RelationshipType(name='Parent or Guardian', start_age=1, end_age=14),
-        factories.RelationshipType(name='Mandatary', start_age=1, end_age=18),
-    ]
+    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+    mandatary_type = RelationshipType.objects.get(role_type=RoleType.MANDATARY)
+
     form_data = {
-        'relationship_type': types,
+        'relationship_type': RelationshipType.objects.all(),
     }
     form = forms.RequestorDetailsForm(
         data=form_data,
@@ -335,14 +332,15 @@ def test_disabled_option_exists() -> None:
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    for index, option in enumerate(options):
-        if index == 4:
+    for option in options:
+        if option['label'] in {'Self', 'Mandatary'}:
             assert 'disabled' not in option['attrs']
         else:
             assert option['attrs']['disabled'] == 'disabled'
 
     assert list(form.fields['relationship_type'].widget.available_choices) == [
-        types[0].pk,
+        mandatary_type.pk,
+        self_type.pk,
     ]
 
 
