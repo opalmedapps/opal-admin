@@ -114,15 +114,15 @@ def test_relationshiptype_create_get(relationshiptype_user: Client) -> None:
     assertContains(response, 'Create Relationship Type')
 
 
-def test_relationshiptype_create(user_client: Client) -> None:
+def test_relationshiptype_create(relationshiptype_user: Client) -> None:
     """A new relationship type can be created."""
-    relationship_type = factories.RelationshipType(name='Testname')
+    relationship_type = factories.RelationshipType.build(name='Testname')
 
-    user_client.post(
+    relationshiptype_user.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-    assert models.RelationshipType.objects.count() == 3
+    assert models.RelationshipType.objects.count() == 5
     assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
 
@@ -170,7 +170,7 @@ def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
     )
 
-    assert models.RelationshipType.objects.count() == 2
+    assert models.RelationshipType.objects.count() == 4
 
 
 # tuple with patients wizard form templates and corresponding url names
