@@ -68,7 +68,7 @@ class RelationshipType(models.Model):
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )
     can_answer_questionnaire = models.BooleanField(
-        verbose_name=_('Right to answer questionnaire'),
+        verbose_name=_('Can answer patient questionnaires'),
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
