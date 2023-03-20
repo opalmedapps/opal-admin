@@ -29,6 +29,8 @@ class UserType(models.TextChoices):
 
 
 # Use the list of languages from the project's settings
+# TODO: Switch to StrEnum using functional API when switching to Python 3.11
+# see: https://docs.python.org/3.11/howto/enum.html#strenum
 Language = settings.LANGUAGES
 
 
