@@ -597,7 +597,7 @@ def test_validstatuses_not_contain_wrong_status_confirmed() -> None:
     initial_status = RelationshipStatus.CONFIRMED
     validstatuses = Relationship.valid_statuses(initial_status)
 
-    assert RelationshipStatus.EXPIRED not in validstatuses
+    assert RelationshipStatus.DENIED not in validstatuses
 
 
 def test_validstatuses_not_contain_wrong_status_denied() -> None:
@@ -639,8 +639,8 @@ def test_validstatuses_not_contain_wrong_status_expired() -> None:
     (RelationshipStatus.CONFIRMED, [
         RelationshipStatus.CONFIRMED,
         RelationshipStatus.PENDING,
-        RelationshipStatus.DENIED,
         RelationshipStatus.REVOKED,
+        RelationshipStatus.EXPIRED,
     ]),
     (RelationshipStatus.DENIED, [
         RelationshipStatus.DENIED,
