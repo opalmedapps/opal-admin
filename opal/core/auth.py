@@ -1,4 +1,5 @@
 """Authentication backends specific to the opal project."""
+import logging
 from collections import namedtuple
 from http import HTTPStatus
 from typing import Optional, Type
@@ -114,8 +115,8 @@ class FedAuthBackend(BaseBackend):
                 timeout=10,
             )
         except RequestException as exc:
-            # TODO: add logging
-            print(exc)
+            logger = logging.getLogger(__name__)
+            logger.error(str(exc))
         else:
             return self._parse_response(response)
 
