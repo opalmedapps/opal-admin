@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
+from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
 
 from ..core import validators
 from ..core.form_layouts import CancelButton
@@ -533,8 +533,8 @@ class ConfirmPasswordForm(forms.Form):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 
-class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
-    """Form for updating an `Pending Relationship Access` object."""
+class RelationshipAccessForm(forms.ModelForm[Relationship]):
+    """Form for updating `Relationship Caregiver Access`  record."""
 
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -549,6 +549,10 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
         label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
         required=False,
     )
+    cancel_url = forms.CharField(
+        widget=forms.widgets.HiddenInput(),
+        required=False,
+    )
 
     class Meta:
         model = Relationship
@@ -557,6 +561,7 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
             'end_date',
             'status',
             'reason',
+            'cancel_url',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -573,15 +578,17 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
+
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
             'end_date',
             'status',
             'reason',
+            Hidden('cancel_url', '{{cancel_url}}'),
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
-                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+                CancelButton('{{cancel_url}}'),
             ),
         )
 

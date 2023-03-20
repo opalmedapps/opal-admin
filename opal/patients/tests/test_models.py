@@ -11,7 +11,15 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from ..models import (
+    PREDEFINED_ROLE_TYPES,
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipStatus,
+    RelationshipType,
+    RoleType,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -589,7 +597,7 @@ def test_validstatuses_not_contain_wrong_status_confirmed() -> None:
     initial_status = RelationshipStatus.CONFIRMED
     validstatuses = Relationship.valid_statuses(initial_status)
 
-    assert RelationshipStatus.EXPIRED not in validstatuses
+    assert RelationshipStatus.DENIED not in validstatuses
 
 
 def test_validstatuses_not_contain_wrong_status_denied() -> None:
@@ -631,8 +639,8 @@ def test_validstatuses_not_contain_wrong_status_expired() -> None:
     (RelationshipStatus.CONFIRMED, [
         RelationshipStatus.CONFIRMED,
         RelationshipStatus.PENDING,
-        RelationshipStatus.DENIED,
         RelationshipStatus.REVOKED,
+        RelationshipStatus.EXPIRED,
     ]),
     (RelationshipStatus.DENIED, [
         RelationshipStatus.DENIED,
@@ -658,44 +666,52 @@ def test_validstatuses_contain_correct_statuses(
 
 def test_relationshiptype_default() -> None:
     """Ensure there are two relationship types by default."""
-    assert RelationshipType.objects.count() == 2
-    assert RelationshipType.objects.filter(role_type=RoleType.SELF).count() == 1
-    assert RelationshipType.objects.filter(role_type=RoleType.PARENT_GUARDIAN).count() == 1
+    assert RelationshipType.objects.count() == 4
+
+    # ensure that there is one of each
+    RelationshipType.objects.get(role_type=RoleType.SELF)
+    RelationshipType.objects.get(role_type=RoleType.PARENT_GUARDIAN)
+    RelationshipType.objects.get(role_type=RoleType.GUARDIAN_CAREGIVER)
+    RelationshipType.objects.get(role_type=RoleType.MANDATARY)
 
 
-def test_relationshiptype_self_role_delete_error() -> None:
-    """Ensure operator can not delete a self role type."""
-    relationship_type = factories.RelationshipType()
-    relationship_type.role_type = RoleType.SELF
+@pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
+def test_relationshiptype_predefined_role_type_delete_error(role_type: RoleType) -> None:
+    """Ensure the user can not delete a self role type."""
+    relationship_type = RelationshipType.objects.get(role_type=role_type)
+
     message = "['The relationship type with this role type cannot be deleted']"
     with assertRaisesMessage(ValidationError, message):
         relationship_type.delete()
 
 
-def test_relationshiptype_par_role_delete_error() -> None:
-    """Ensure operator can not delete a parent/guardian role type."""
+@pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
+def test_relationshiptype_duplicate_predefined_role_type(role_type: RoleType) -> None:
+    """Ensure validation error when creating a second predefined role type."""
     relationship_type = factories.RelationshipType()
-    relationship_type.role_type = RoleType.PARENT_GUARDIAN
-    message = "['The relationship type with this role type cannot be deleted']"
+    relationship_type.role_type = role_type
+
+    message = "['There already exists a relationship type with this role type']"
     with assertRaisesMessage(ValidationError, message):
-        relationship_type.delete()
+        relationship_type.full_clean()
 
 
-def test_relationshiptype_duplicate_self_role() -> None:
-    """Ensure validation error when creating a second self role type."""
-    roletype_self_copy = factories.RelationshipType()
-    roletype_self_copy.role_type = RoleType.SELF
+@pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
+def test_relationshiptype_can_update_predefined_role_type(role_type: RoleType) -> None:
+    """Ensure validation error when creating a second predefined role type."""
+    relationship_type = RelationshipType.objects.get(role_type=role_type)
 
-    message = "['There must always be exactly one Self and one Parent/Guardian role']"
-    with assertRaisesMessage(ValidationError, message):
-        roletype_self_copy.full_clean()
+    relationship_type.name = 'Changed Name'
+    relationship_type.full_clean()
 
 
-def test_relationshiptype_duplicate_parent_role() -> None:
-    """Ensure validation error when creating a second parent/guardian role type."""
-    roletype_parent_copy = factories.RelationshipType()
-    roletype_parent_copy.role_type = RoleType.PARENT_GUARDIAN
+def test_relationshiptype_can_add_caregiver_type() -> None:
+    """Ensure a relationship type with a role type of `CAREGIVER` can be created."""
+    relationship_type = factories.RelationshipType(role_type=RoleType.CAREGIVER)
+    relationship_type.full_clean()
 
-    message = "['There must always be exactly one Self and one Parent/Guardian role']"
-    with assertRaisesMessage(ValidationError, message):
-        roletype_parent_copy.full_clean()
+
+def test_relationshiptype_can_delete_caregiver_type() -> None:
+    """Ensure a relationship type with a role type of `CAREGIVER` can be deleted."""
+    relationship_type = factories.RelationshipType(role_type=RoleType.CAREGIVER)
+    relationship_type.delete()

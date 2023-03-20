@@ -45,11 +45,11 @@ def test_relationships_pending_list() -> None:
 
 def test_caregiver_access_list() -> None:
     """
-    Ensure that 'patients:caregiver-access' URL name resolves to the appropriate URL.
+    Ensure that 'patients:relationships-search' URL name resolves to the appropriate URL.
 
     It also checks that the URL is served with the correct view.
     """
-    url = '/patients/relationships/search'
+    url = '/patients/relationships/search/'
     assert reverse('patients:relationships-search') == url
     assert resolve(url).view_name == 'patients:relationships-search'
 
@@ -59,3 +59,14 @@ def test_relationships_pending_update() -> None:
     url = '/patients/relationships/pending/12/update/'
     assert reverse('patients:relationships-pending-update', kwargs={'pk': 12}) == url
     assert resolve(url).view_name == 'patients:relationships-pending-update'
+
+
+def test_relationship_update_search_result() -> None:
+    """
+    Ensure that 'patients:relationship-search-update' URL name resolves to the appropriate URL.
+
+    It also checks that the URL is served with the correct view.
+    """
+    url = '/patients/relationships/search/12/update/'
+    assert reverse('patients:relationships-search-update', kwargs={'pk': 12}) == url
+    assert resolve(url).view_name == 'patients:relationships-search-update'
