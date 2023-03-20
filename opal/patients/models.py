@@ -455,8 +455,8 @@ class Relationship(models.Model):
         elif current == RelationshipStatus.CONFIRMED:
             statuses += [
                 RelationshipStatus.PENDING,
-                RelationshipStatus.DENIED,
                 RelationshipStatus.REVOKED,
+                RelationshipStatus.EXPIRED,
             ]
         elif current == RelationshipStatus.DENIED:
             statuses += [RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
