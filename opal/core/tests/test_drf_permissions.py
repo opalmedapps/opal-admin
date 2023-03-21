@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import RelationshipStatus, RelationshipType, RoleType
+from opal.patients.models import RelationshipStatus, RelationshipType
 
 from ..drf_permissions import CaregiverPatientPermissions, CaregiverSelfPermissions
 
@@ -156,7 +156,7 @@ class TestCaregiverSelfPermissions:
         """Test a permissions check where the caregiver has a self relationship with the patient."""
         relationship = patient_factories.Relationship(
             status=RelationshipStatus.CONFIRMED,
-            type=RelationshipType.objects.get(role_type=RoleType.SELF),
+            type=RelationshipType.objects.self_type(),
         )
         self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
 
