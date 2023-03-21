@@ -21,6 +21,6 @@ class CancelButton(HTML):
             url (str): link to a page that the user will be redirected to
         """
         cancel_text = _('Cancel')
-        html = f'<a class="btn btn-secondary mr-2" href="{url}">{cancel_text}</a>'
+        html = f'<a class="btn btn-secondary me-2" href="{url}">{cancel_text}</a>'
 
         super().__init__(html)
