@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.core.management.base import CommandError
 from django.db import connections
 from django.utils import timezone
 
@@ -12,7 +11,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import Patient, RelationshipStatus, RelationshipType, RoleType
+from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.tests.utils.test_commands import CommandTestMixin
 from opal.users import factories as user_factories
 
@@ -279,13 +278,6 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 class TestUsersCaregiversMigration(CommandTestMixin):
     """Test class for users and caregivers migrations from legacy DB."""
 
-    def test_import_user_no_self_relationshiptype(self) -> None:
-        """Test import fails if no self relationship type exists."""
-        RelationshipType.objects.filter(role_type=RoleType.SELF).delete()
-
-        with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
-            self._call_command('migrate_users')
-
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
         message, error = self._call_command('migrate_users')
@@ -315,7 +307,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationship_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+        relationship_type = RelationshipType.objects.self_type()
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,

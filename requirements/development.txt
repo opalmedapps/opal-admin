@@ -15,7 +15,7 @@ isort==5.12.0  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==1.15.0  # https://github.com/typeddjango/django-stubs
+django-stubs==1.16.0  # https://github.com/typeddjango/django-stubs
 # djangorestframework-stubs==1.8.0  # https://github.com/typeddjango/djangorestframework-stubs
 git+https://github.com/typeddjango/djangorestframework-stubs.git@728da9c1ba7fa2a6eb3442eb599d0b38e6529492
 types-requests==2.28.11.15
@@ -59,8 +59,8 @@ git+https://github.com/pytest-dev/pytest-django.git@42b7db2f4f5dbe785e57652d1d4e
 
 # Pre-commit
 #
-pre-commit==3.1.1  # https://github.com/pre-commit/pre-commit
+pre-commit==3.2.0  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
-beautifulsoup4==4.11.2  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+beautifulsoup4==4.12.0  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
