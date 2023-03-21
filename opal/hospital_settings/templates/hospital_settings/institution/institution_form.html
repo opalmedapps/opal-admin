@@ -13,8 +13,5 @@
 {% endblock %}
 
 {% block content %}
-  <form method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
-    {% crispy form %}
-  </form>
+  {% crispy form %}
 {% endblock %}

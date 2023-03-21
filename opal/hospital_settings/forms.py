@@ -3,7 +3,7 @@
 from typing import Any
 
 from django import forms
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
@@ -22,10 +22,10 @@ class InstitutionForm(forms.ModelForm[Institution]):
         fields = (
             'name_en',
             'name_fr',
-            'logo_en',
-            'logo_fr',
             'code',
             'support_email',
+            'logo_en',
+            'logo_fr',
             'terms_of_use_en',
             'terms_of_use_fr',
         )
@@ -39,19 +39,20 @@ class InstitutionForm(forms.ModelForm[Institution]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
+        self.helper = FormHelper()
+        self.helper.attrs = {'novalidate': ''}
 
         self.helper.layout = Layout(
             'name_en',
             'name_fr',
-            'logo_en',
-            'logo_fr',
             'code',
             'support_email',
+            'logo_en',
+            'logo_fr',
             'terms_of_use_en',
             'terms_of_use_fr',
             FormActions(
-                Submit('submit', _('Save'), css_class='btn btn-primary'),
-                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+                CancelButton(reverse('hospital-settings:institution-list')),
+                Submit('submit', _('Save')),
             ),
         )
