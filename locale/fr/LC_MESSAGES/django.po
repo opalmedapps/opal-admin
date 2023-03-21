@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-21 17:03-0500\n"
+"POT-Creation-Date: 2023-03-21 16:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,6 +47,10 @@ msgstr "Anglais"
 #: opal/settings.py
 msgid "French"
 msgstr "Français"
+
+#: opal/templates/base.html opal/templates/layouts/base.html
+msgid "Opal Health Informatics Group"
+msgstr "Le Groupe Informatique Opal Santé"
 
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
@@ -104,23 +108,23 @@ msgstr "L’Équipe Opal"
 msgid "opal ADMIN"
 msgstr "opal ADMIN"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Institutions"
 msgstr "Établissements"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Sites"
 msgstr "Sites"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Patients"
 msgstr "Patients"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Relationship Types"
 msgstr "Types de Relations"
 
@@ -136,11 +140,11 @@ msgstr "Requête en attente"
 msgid "Search Patient Access"
 msgstr "Rechercher l'accès des patients"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
-#: opal/templates/layouts/base.html
+#: opal/templates/layouts/base.html opal/templates/sidebar.html
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
@@ -161,16 +165,44 @@ msgid "All rights reserved."
 msgstr "Tous droits réservés."
 
 #: opal/templates/layouts/base.html
-msgid "Opal Health Informatics Group"
-msgstr "Le Groupe Informatique Opal Santé"
-
-#: opal/templates/layouts/base.html
 msgid "Privacy"
 msgstr "Politique de confidentialité"
 
 #: opal/templates/layouts/base.html
 msgid "Terms"
 msgstr "Conditions d'utilisation"
+
+#: opal/templates/sidebar.html
+msgid "new"
+msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "Go back to Legacy OpalAdmin"
+msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "Home"
+msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "Home Page"
+msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "New Access Request"
+msgstr "Nouveau demande d'accès"
+
+#: opal/templates/sidebar.html
+msgid "Pending Access Requests"
+msgstr "Requête d'accès en attente"
+
+#: opal/templates/sidebar.html
+msgid "Manage Caregiver Access"
+msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "Log Out"
+msgstr "Se déconnecter"
 
 #: opal/templates/tables/action_column.html
 msgid "Edit"
