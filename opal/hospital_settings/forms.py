@@ -40,7 +40,7 @@ class InstitutionForm(forms.ModelForm[Institution]):
         """
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.attrs = {'novalidate': ''}
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             'name_en',

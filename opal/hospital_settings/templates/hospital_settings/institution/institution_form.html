@@ -13,5 +13,7 @@
 {% endblock %}
 
 {% block content %}
-  {% crispy form %}
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% crispy form %}
+  </form>
 {% endblock %}
