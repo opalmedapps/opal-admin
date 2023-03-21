@@ -1,6 +1,10 @@
 {% load static %}
 {% load i18n %}
 
+{% comment %}
+  Fragment that is reusable across the page so that the page heading can be shown in various places.
+  See: https://mitchel.me/slippers/docs/using-components/#assigning-output-to-a-variable
+{% endcomment %}
 {% fragment as page_heading %}
   {% block heading %}empty block <code>heading</code>{% endblock %}
 {% endfragment %}
@@ -43,7 +47,7 @@
     {% block javascript %}{% endblock %}
   </head>
   <body>
-    <div class="d-flex flex-nowrap">
+    <div class="d-flex">
       {% include "sidebar.html" %}
 
       <main class="container-fluid d-flex flex-column px-5 pt-4">
@@ -58,7 +62,7 @@
               {% block content %}empty block <code>content</code>{% endblock %}
         </div>
         <footer class="py-2 pt-3 mt-2 border-top">
-          <p class="text-center text-muted mb-2"><small>&copy; Opal Health Informatics Group</small></p>
+          <p class="text-center text-muted mb-2"><small>&copy; {% translate "Opal Health Informatics Group" %}</small></p>
         </footer>
       </main>
     </div>

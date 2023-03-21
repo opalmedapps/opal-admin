@@ -5,10 +5,12 @@
   <a href="" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
     <img src="{% static 'images/opal_purple.png' %}" alt="opal ADMIN logo" class="bi pe-none me-2 align-middle" width="32" height="32" style="opacity: .8" />
     <span class="fs-4 fw-semibold text-body">OpalAdmin 2.0</span>
-    &nbsp;<span class="badge text-bg-primary">new</span>
+    &nbsp;<span class="badge text-bg-primary">{% translate "new" %}</span>
   </a>
   <p>
-    <a href="/" class="text-secondary">Go back to Legacy OpalAdmin</a>
+    <a href="{{ OPAL_ADMIN_URL }}/#!/Home" class="text-secondary">
+      {% translate "Go back to Legacy OpalAdmin" %}
+    </a>
   </p>
 
   <ul class="list-unstyled ps-0 mb-auto">
@@ -72,12 +74,12 @@
     <strong>{{ request.user.username }}</strong>
   </a>
   <ul class="dropdown-menu text-small shadow">
-    <li>
+    {% comment %} <li>
       <a class="dropdown-item" href="#">Profile</a>
     </li>
     <li>
       <hr class="dropdown-divider" />
-    </li>
+    </li> {% endcomment %}
     <li>
       <form id="logout-form" method="post" action="{% url 'admin:logout' %}" novalidate>
         {% csrf_token %}

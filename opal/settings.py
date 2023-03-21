@@ -450,10 +450,10 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # Django Tables2
 #
 # Set a default template to use
-DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap5-responsive.html'
 # Default CSS classes for tables
 DJANGO_TABLES2_TABLE_ATTRS = {
-    'class': 'table table-bordered table-hover',
+    'class': 'table table-hover',
     'thead': {
         'class': 'table-light',
     },
