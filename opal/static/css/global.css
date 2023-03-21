@@ -26,19 +26,24 @@
 
   Taken from the Bootstrap sidebar example: https://getbootstrap.com/docs/5.3/examples/sidebars/
 */
+html {
+  height: -webkit-fill-available;
+}
+
 body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
 }
 
-html {
-  height: -webkit-fill-available;
-}
-
-main {
+/* fill up the whole page wrapper */
+body > div {
   height: 100vh;
   height: -webkit-fill-available;
   max-height: 100vh;
+}
+
+/* make only the main content scroll so that the sidebar stays fixed */
+main {
   overflow-x: auto;
   overflow-y: auto;
 }
