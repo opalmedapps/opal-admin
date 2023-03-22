@@ -27,15 +27,13 @@ html {
 }
 
 body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  height: 100vh;
 }
 
 /* fill up the whole page wrapper */
 body > div {
-  height: 100vh;
-  height: -webkit-fill-available;
-  max-height: 100vh;
+  /* use min-height to avoid glitches when content is higher than 100vh: https://stackoverflow.com/a/65852722 */
+  min-height: 100%;
 }
 
 /* make only the main content scroll so that the sidebar stays fixed */
@@ -53,3 +51,9 @@ table thead a {
 .table-hover > tbody > tr:hover > * {
   background-color: var(--table-accent-bg-color);
 }
+
+/* .table-responsive {
+  position: relative;
+  overflow-y: auto;
+  height: 50vh;
+} */
