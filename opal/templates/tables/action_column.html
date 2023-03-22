@@ -1,9 +1,7 @@
 {% load i18n %}
 
 {% url urlname_update record.id as update_url %}
-{% #icon_button icon="pencil-alt" href=update_url %}
-  {% translate "Edit" %}
-{% /icon_button %}
+{% #icon_button icon="pencil-alt" href=update_url %}{% translate "Edit" %}{% /icon_button %}
 
 {% if urlname_delete %}
   {% url urlname_delete record.id as delete_url %}

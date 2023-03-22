@@ -5,10 +5,10 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.layout import HTML, Field
 
 
-class ImageFieldWithPreview(Field):
-    """Image input field with a preview block."""
+class FileField(Field):
+    """File field with an extra button to look at the current value."""
 
-    template = 'forms/image_input_preview.html'
+    template = 'forms/filefield.html'
 
 
 class CancelButton(HTML):

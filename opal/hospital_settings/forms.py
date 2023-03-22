@@ -10,7 +10,7 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 
-from ..core.form_layouts import CancelButton
+from ..core.form_layouts import CancelButton, FileField
 from .models import Institution
 
 
@@ -47,10 +47,10 @@ class InstitutionForm(forms.ModelForm[Institution]):
             'name_fr',
             'code',
             'support_email',
-            'logo_en',
-            'logo_fr',
-            'terms_of_use_en',
-            'terms_of_use_fr',
+            FileField('logo_en'),
+            FileField('logo_fr'),
+            FileField('terms_of_use_en'),
+            FileField('terms_of_use_fr'),
             FormActions(
                 CancelButton(reverse('hospital-settings:institution-list')),
                 Submit('submit', _('Save')),
