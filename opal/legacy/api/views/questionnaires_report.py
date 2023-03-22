@@ -94,7 +94,7 @@ class QuestionnairesReportView(views.APIView):
                 site=serializer.validated_data.get('site'),
                 base64_content=encoded_report,
                 document_number='MU-8624',  # TODO: clarify where to get the value (currently set as a test document)
-                document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
+                document_date=timezone.now(),  # TODO: get the exact time of the report creation
             ),
         )
 

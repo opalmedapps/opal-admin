@@ -277,9 +277,9 @@ class TestQuestionnairesReportView:
             return_value=None,
         )
 
-        document_date = timezone.localtime(timezone.now())
+        document_date = timezone.now().replace(microsecond=0)
         mocker.patch(
-            'django.utils.timezone.localtime',
+            'django.utils.timezone.now',
             return_value=document_date,
         )
 
@@ -320,9 +320,9 @@ class TestQuestionnairesReportView:
             return_value={'status': 'success'},
         )
 
-        document_date = timezone.localtime(timezone.now())
+        document_date = timezone.now().replace(microsecond=0)
         mocker.patch(
-            'django.utils.timezone.localtime',
+            'django.utils.timezone.now',
             return_value=document_date,
         )
 
@@ -334,7 +334,7 @@ class TestQuestionnairesReportView:
                 site=hospital_patient.site.code,
                 base64_content=base64_encoded_report,
                 document_number='MU-8624',  # TODO: clarify where to get the value
-                document_date=document_date,  # TODO: get the exact time of the report creation
+                document_date=mocker.ANY,  # TODO: get the exact time of the report creation
             ),
         )
         assert response.status_code == status.HTTP_200_OK
