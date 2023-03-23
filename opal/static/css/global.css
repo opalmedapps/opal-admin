@@ -28,16 +28,19 @@ html {
 
 body {
   height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
-/* fill up the whole page wrapper */
-body > div {
-  /* use min-height to avoid glitches when content is higher than 100vh: https://stackoverflow.com/a/65852722 */
-  min-height: 100%;
+/* if there is not enough space for the sidebar, scroll it individually */
+body > div > nav {
+  overflow-y: auto;
+  height: 100vh;
 }
-
 /* make only the main content scroll so that the sidebar stays fixed */
 main {
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-height: 100vh;
   overflow-x: auto;
   overflow-y: auto;
 }
@@ -51,9 +54,3 @@ table thead a {
 .table-hover > tbody > tr:hover > * {
   background-color: var(--table-accent-bg-color);
 }
-
-/* .table-responsive {
-  position: relative;
-  overflow-y: auto;
-  height: 50vh;
-} */
