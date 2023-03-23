@@ -697,6 +697,8 @@ def test_existing_user_form_by_user_choice(
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.ExistingUserForm
+    # to assert it contains the area code initialization in the phone number field
+    assertContains(response, 'name="requestor-user_phone" value="+1"')
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)

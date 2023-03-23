@@ -333,6 +333,7 @@ class ExistingUserForm(forms.Form):
     user_phone = forms.CharField(
         widget=forms.TextInput(),
         label=_('Phone Number'),
+        initial='+1',
     )
 
     user_record = forms.JSONField(
