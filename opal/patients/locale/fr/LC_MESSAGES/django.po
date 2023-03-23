@@ -106,6 +106,10 @@ msgstr ""
 "Web d'inscription."
 
 #: opal/patients/forms.py
+msgid "This opal user already has a self-relationship with the patient."
+msgstr "Cet utilisateur d'Opal a déjà une relation à soi avec le patient."
+
+#: opal/patients/forms.py
 msgid "ID Checked?"
 msgstr "Identité vérifiée?"
 

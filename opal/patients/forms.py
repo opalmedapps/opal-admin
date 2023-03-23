@@ -18,7 +18,7 @@ from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -340,11 +340,12 @@ class ExistingUserForm(forms.Form):
         required=False,
     )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, relationship_type: RelationshipType, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for existing user form.
 
         Args:
+            relationship_type: requestor's choice of relationship type
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -360,6 +361,7 @@ class ExistingUserForm(forms.Form):
                 Submit('wizard_goto_step', _('Find Account')),
             ),
         )
+        self.relationship_type = relationship_type
 
     def clean(self) -> None:
         """Validate the user selection."""
@@ -418,6 +420,15 @@ class ExistingUserForm(forms.Form):
             user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
+        # Verify we cannot add an additional self role for an existing user who already has a self-relationship
+        if (
+            self.relationship_type.role_type == RoleType.SELF
+            and Relationship.objects.filter(
+                caregiver__user=user,
+                type__role_type=RoleType.SELF,
+            ).exists()
+        ):
+            raise ValidationError(gettext('This opal user already has a self-relationship with the patient.'))
 
         self.cleaned_data['user_record'] = {
             'first_name': user.first_name,
