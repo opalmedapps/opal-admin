@@ -20,7 +20,7 @@
       {% /menu_item %}
     {% /menu_group %}
 
-    {% comment %}Hospital Settings{% endcomment %}
+    {# Hospital Settings #}
     {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
       {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
         {% if perms.hospital_settings.can_manage_institutions %}
@@ -36,7 +36,7 @@
       {% /menu_group %}
     {% endif %}
 
-    {% comment %}Patients{% endcomment %}
+    {# Patients #}
     {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
       {% if perms.patients.can_manage_relationshiptypes %}
         {% #menu_item url_name="patients:relationshiptype-list" request=request %}
@@ -58,7 +58,7 @@
       {% /menu_item %}
     {% /menu_group %}
 
-    {% comment %}Questionnaires{% endcomment %}
+    {# Questionnaires #}
     {% if perms.questionnaires.export_report %}
       {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
         {% #menu_item url_name="questionnaires:reports" request=request %}

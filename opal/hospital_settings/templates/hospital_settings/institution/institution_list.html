@@ -9,9 +9,9 @@
   {% if can_create %}
     <div class="btn-toolbar mb-4">
       {% url 'hospital-settings:institution-create' as create_url %}
-      {% #icon_button icon="plus" href=create_url %}
+      {% #button icon="plus" href=create_url %}
         {% translate "New Institution" %}
-      {% /icon_button %}
+      {% /button %}
     </div>
   {% endif %}
   {% render_table table %}

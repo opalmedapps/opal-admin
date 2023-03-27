@@ -1,5 +1,5 @@
 components:
+  button: "components/button.html"
   icon: "components/icon.html"
-  icon_button: "components/icon_button.html"
   menu_group: "components/menu_group.html"
   menu_item: "components/menu_item.html"
