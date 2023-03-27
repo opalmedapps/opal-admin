@@ -12,6 +12,7 @@
   font-weight: 600;
   color: rgba(0, 0, 0, .65);
   background-color: transparent;
+  font-size: 1.1rem;
 }
 .btn-toggle:hover,
 .btn-toggle:focus {
@@ -37,12 +38,17 @@
 .btn-toggle-nav a {
   padding: .1875rem .5rem;
   margin-top: .125rem;
-  margin-left: 1.25rem;
+  margin-left: 1.45rem;
 }
 .btn-toggle-nav a:hover,
 .btn-toggle-nav a:focus,
 .btn-toggle-nav a.active {
   background-color: var(--sidebar-accent-bg-color);
+}
+
+.btn-toggle-nav a.active {
+  background-color: var(--sidebar-active-bg-color);
+  color: #fff !important;
 }
 
 nav {
