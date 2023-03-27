@@ -39,8 +39,8 @@ body > div > nav {
 }
 /* make only the main content scroll so that the sidebar stays fixed */
 main {
-  height: 100vh;
   height: -webkit-fill-available;
+  height: 100vh;
   max-height: 100vh;
   overflow-x: auto;
   overflow-y: auto;
@@ -55,3 +55,9 @@ table thead a {
 .table-hover > tbody > tr:hover > * {
   background-color: var(--table-accent-bg-color);
 }
+
+/* .table-responsive {
+  position: relative;
+  overflow-y: auto;
+  height: 50vh;
+} */
