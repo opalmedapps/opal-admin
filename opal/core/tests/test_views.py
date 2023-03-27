@@ -26,12 +26,20 @@ def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) ->
     assertContains(response, text='href="{url}/#!/home"'.format(url=url))
 
 
-def test_logout_url_shown(user_client: Client, settings: SettingsWrapper) -> None:
+def test_logout_url_shown(user_client: Client) -> None:
     """Ensure that the logout URL is used in the template."""
     # follow any redirect to retrieve content
     response = user_client.get(reverse('start'), follow=True)
 
     assertContains(response, text='href="{url}"'.format(url=reverse('logout')))
+
+
+def test_home_url_shown(user_client: Client) -> None:
+    """Ensure that the template shows a link to the home page."""
+    # follow any redirect to retrieve content
+    response = user_client.get(reverse('start'), follow=True)
+
+    assertContains(response, text='href="{url}"'.format(url=reverse('start')))
 
 
 def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -> None:
