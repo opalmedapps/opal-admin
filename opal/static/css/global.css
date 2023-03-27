@@ -13,7 +13,7 @@
 :root {
   --opal-purple: #6f5499;
   --sidebar-bg-color: var(--bs-gray-100);
-  --sidebar-accent-bg-color: #ccc2e1;
+  --sidebar-accent-bg-color: #f0e9ff;
   --sidebar-active-bg-color: var(--opal-purple);
   --table-accent-bg-color: var(--bs-table-accent-bg);
 }
@@ -54,4 +54,14 @@ table thead a {
 /* Allow adjusting the background color when hovering over a table row */
 .table-hover > tbody > tr:hover > * {
   background-color: var(--table-accent-bg-color);
+}
+
+/* Inline form styles */
+/* Reset padding-right to non-invalid value to avoid increase of width */
+form.form-inline .form-select.is-invalid:not([multiple]):not([size]) {
+  padding-right: 2.25rem;
+}
+
+form.form-inline .form-control.is-invalid {
+  padding-right: 0.75rem;
 }
