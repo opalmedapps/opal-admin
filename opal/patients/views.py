@@ -19,7 +19,7 @@ from django.views import generic
 import qrcode
 from dateutil.relativedelta import relativedelta
 from django_filters.views import FilterView
-from django_tables2 import MultiTableMixin, SingleTableView
+from django_tables2 import MultiTableMixin, SingleTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
@@ -526,7 +526,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         return context
 
 
-class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
+class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = Relationship
@@ -534,7 +534,27 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
     table_class = tables.PendingRelationshipTable
     ordering = ['request_date']
     template_name = 'patients/relationships/pending_relationship_list.html'
-    queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+    queryset = Relationship.objects.select_related(
+        'patient', 'caregiver__user', 'type',
+    ).prefetch_related(
+        'patient__hospital_patients__site',
+    )
+    filterset_class = ManageCaregiverAccessFilter
+
+    def get_queryset(self) -> QuerySet[Relationship]:  # noqa: WPS615
+        queryset: QuerySet[Relationship] = super().get_queryset()
+
+        if not self.request.GET:
+            queryset = queryset.filter(status=RelationshipStatus.PENDING)
+
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Any:
+        context_data = super().get_context_data(**kwargs)
+        context_data['is_pending'] = not self.request.GET
+        context_data['is_search'] = bool(self.request.GET)
+
+        return context_data
 
 
 class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relationship]]):

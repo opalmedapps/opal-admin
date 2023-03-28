@@ -1,18 +1,29 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
-{% block content-header-page-name %}{% translate "Pending Caregiver Access Requests" %}{% endblock %}
+{% block heading %}
+  {% translate "Manage Caregiver Access" %}
+{% endblock %}
 
 {% block content %}
-  {% comment %} Main content {% endcomment %}
-  <section class="content">
-
-    {% comment %} Default box {% endcomment %}
-    <div class="container-fluid">
-      {% render_table table %}
+  <div class="btn-toolbar-no-group mb-4">
+    {% if filter %}
+      <h5>Patient</h5>
+      {% crispy filter.form %}
+    {% endif %}
+    <div class="row row-cols-md-auto align-items-center g-2">
+      <span class="fw-bold">Filter:</span>
+      {% var yesno_css_filter="btn btn-filter filter-active,btn btn-filter" %}
+      <a href="?submit=Search" class="{{ is_search|yesno:yesno_css_filter }} me-2">
+        {% translate "Specific Patient" %}
+      </a>
+      <a href="{{ request.path }}" class="{{ is_pending|yesno:yesno_css_filter }} me-2">
+        {% translate "All Pending Requests" %}
+      </a>
     </div>
-
-  </section>
+  </div>
+  {% render_table table %}
 {% endblock %}
