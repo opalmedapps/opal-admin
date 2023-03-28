@@ -2,6 +2,7 @@
 from typing import Any
 
 from django.db.models import QuerySet
+from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
@@ -10,7 +11,7 @@ import django_tables2 as tables
 from opal.services.hospital.hospital_data import OIEMRNData
 from opal.users.models import User
 
-from .models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 
 class RelationshipTypeTable(tables.Table):
@@ -137,14 +138,39 @@ class PendingRelationshipTable(tables.Table):
     type = tables.Column(  # noqa: A003
         verbose_name=_('Relationship'),
     )
-    request_date = tables.Column(
-        verbose_name=_('Pending Since'),
+    status = tables.Column(
+        verbose_name=Relationship._meta.get_field('status').verbose_name,  # noqa: WPS437
+        order_by='request_date',
     )
+
+    def render_status(self, value: str, record: Relationship) -> str:
+        """
+        Render the status of the relationship.
+
+        For a pending status, the number of days since the relationship was requested is appended.
+        For example: "Pending (123 days)"
+
+        Args:
+            value: the relationship status label
+            record: the relationship
+
+        Returns:
+            the status label, suffixed
+        """
+        status_value = value
+
+        if value == RelationshipStatus.PENDING.label:
+            today = timezone.now().date()
+            status_since = today - record.request_date
+            pending_since_text = _('{days} days'.format(days=status_since.days))
+            status_value = f'{value} ({pending_since_text})'
+
+        return status_value
 
     class Meta:
         model = Relationship
-        fields = ['caregiver', 'type', 'patient', 'request_date', 'actions']
-        empty_text = _('No caregiver pending access requests.')
+        fields = ['patient', 'type', 'caregiver', 'status', 'actions']
+        empty_text = _('No caregiver requests found.')
 
 
 class RelationshipCaregiverTable(tables.Table):
