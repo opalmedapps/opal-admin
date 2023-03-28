@@ -13,6 +13,8 @@ from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.patients import factories as patient_factories
 from opal.users.models import User
 
+from ...serializers import LegacyAppointmentDetailedSerializer
+
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
@@ -110,3 +112,37 @@ class TestAppAppointmentsView:
         )
 
         assert daily_appointments.count() == 0
+
+    def test_get_daily_appointments_details(self, mocker: MockerFixture) -> None:
+        """Test daily appointment details."""
+        relationship = patient_factories.Relationship(status='CON')
+        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        hospital_map = factories.LegacyHospitalMapFactory()
+        alias = factories.LegacyAliasFactory(hospitalmapsernum=hospital_map)
+        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        # create an appointment close to the end of the day
+        factories.LegacyAppointmentFactory(
+            patientsernum=patient,
+            aliasexpressionsernum=alias_expression,
+            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 1, 22, 0)),
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=patient,
+            aliasexpressionsernum=alias_expression,
+            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 2, 0, 1)),
+        )
+
+        # mock the current timezone to simulate the UTC time already on the next day
+        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+        mocker.patch.object(timezone, 'now', return_value=current_time)
+        daily_appointments = LegacyAppointmentDetailedSerializer(
+            models.LegacyAppointment.objects.get_daily_appointments(
+                relationship.caregiver.user.username,
+            ),
+            many=True,
+        ).data
+
+        assert len(daily_appointments) == 1
+        assert 'patient' in daily_appointments[0]
+        assert 'alias' in daily_appointments[0]
+        assert 'hospitalmap' in daily_appointments[0]
