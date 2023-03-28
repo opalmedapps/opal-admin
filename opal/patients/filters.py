@@ -1,16 +1,35 @@
 """This module provides filters for `patients` app."""
 from typing import Any
 
+from django import forms
+from django.db.models import QuerySet
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Layout, Row, Submit
+from crispy_forms.layout import Column, Layout
 
+from opal.core.form_layouts import InlineReset, InlineSubmit
 from opal.hospital_settings.models import Site
 
 from . import constants
-from .models import Patient
+from .models import Relationship
+
+
+class ManageCaregiverAccessForm(forms.Form):
+    required_error = forms.Field.default_error_messages['required']
+
+    def clean(self) -> dict[str, Any]:
+        super().clean()
+
+        card_type = self.cleaned_data.get('card_type')
+        site = self.cleaned_data.get('site')
+
+        if card_type == constants.MedicalCard.mrn.name and not site:
+            self.add_error('site', forms.ValidationError(self.required_error, 'required'))
+
+        return self.cleaned_data
 
 
 class ManageCaregiverAccessFilter(django_filters.FilterSet):
@@ -21,28 +40,31 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     """
 
     # This field does not perform queryset filtering but defines how the filter should work
-    # E.g., sets if the queryset should be filtered using MRN or RAMQ number
-    medical_card_type = django_filters.ChoiceFilter(
+    # E.g., defines if the queryset should be filtered by the patient's MRN or RAMQ number
+    card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
         required=True,
+        empty_label=_('Choose...'),
     )
 
     site = django_filters.ModelChoiceFilter(
-        field_name='hospital_patients__site',
+        field_name='patient__hospital_patients__site',
         queryset=Site.objects.all(),
-        label='Site',
+        label=_('Hospital'),
+        empty_label=_('Choose...'),
+        # help_text=_('Required when searching by MRN'),
     )
 
     medical_number = django_filters.CharFilter(
-        field_name='ramq',
-        label='Medical Number',
+        label=_('Identification Number'),
         required=True,
     )
 
     class Meta:
-        model = Patient
-        fields = ['site', 'medical_number']
+        model = Relationship
+        form = ManageCaregiverAccessForm
+        fields = ['card_type', 'site', 'medical_number']
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -56,25 +78,27 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         """
         super().__init__(*args, **kwargs)
 
-        self.form.helper = FormHelper(self.form)
+        self.form.helper = FormHelper()
+        self.form.helper.form_class = 'form-inline row row-cols-lg-auto g-3 align-items-baseline'
+        self.form.helper.attrs = {'novalidate': ''}
+        self.form.helper.form_method = 'GET'
+        self.form.helper.disable_csrf = True
         self.form.helper.layout = Layout(
-            Row(
-                Column('medical_card_type', css_class='form-group col-md-6 mb-0'),
-                Column('site', css_class='form-group col-md-6 mb-0'),
-                css_class='form-row',
-            ),
-            Row(
-                Column('medical_number', css_class='form-group col-md-6 mb-0'),
-                Submit('search', _('Search'), css_class='form-group col-md-6 mb-4 mt-4 btn btn-primary'),
-                css_class='form-row',
-            ),
+            Column('card_type'),
+            Column('site'),
+            Column('medical_number'),
+            Column(InlineSubmit(gettext('Search'))),
+            Column(InlineReset()),
         )
 
-    def filter_queryset(self, queryset: Patient) -> Any:
+        medical_number_field = self.form.fields['medical_number']
+        medical_number_field.widget.attrs['placeholder'] = medical_number_field.label
+
+    def filter_queryset(self, queryset: QuerySet[Relationship]) -> Any:
         """
         Perform custom queryset filtering based on the underlying form's `cleaned_data`.
 
-        The method removes 'medical_card_type' field since the field does not perform queryset filtering.
+        The method removes 'card_type' field since the field does not perform queryset filtering.
 
         Args:
             queryset: `Patient` queryset that is being filtered based on the given fields' values
@@ -83,10 +107,15 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Filtered `Patient` queryset
         """
         # Remove 'medical_card_type' field from the form since this field does not perform queryset filtering
-        card_type = self.form.cleaned_data.pop('medical_card_type')
+        card_type = self.form.cleaned_data.pop('card_type')
+
         # Set medical_number's 'field_name' by which the filtering will be performed
-        if card_type == constants.MedicalCard.mrn.name.lower():
-            self.filters['medical_number'].field_name = 'hospital_patients__mrn'
+        if card_type == constants.MedicalCard.mrn.name:
+            self.filters['medical_number'].field_name = 'patient__hospital_patients__mrn'
         else:
-            self.filters['medical_number'].field_name = 'ramq'
+            self.filters['medical_number'].field_name = 'patient__ramq'
+
+        for name, value in self.form.cleaned_data.items():
+            queryset = self.filters[name].filter(queryset, value)
+
         return super().filter_queryset(queryset)
