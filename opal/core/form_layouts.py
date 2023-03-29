@@ -5,10 +5,10 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.layout import HTML, Field
 
 
-class ImageFieldWithPreview(Field):
-    """Image input field with a preview block."""
+class FileField(Field):
+    """File field with an extra button to look at the current value."""
 
-    template = 'forms/image_input_preview.html'
+    template = 'forms/filefield.html'
 
 
 class CancelButton(HTML):
@@ -21,6 +21,6 @@ class CancelButton(HTML):
             url (str): link to a page that the user will be redirected to
         """
         cancel_text = _('Cancel')
-        html = f'<a class="btn btn-secondary mr-2" href="{url}">{cancel_text}</a>'
+        html = f'<a class="btn btn-secondary me-2" href="{url}">{cancel_text}</a>'
 
         super().__init__(html)

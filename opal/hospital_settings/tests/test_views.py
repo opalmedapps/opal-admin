@@ -524,7 +524,7 @@ def test_institution_response_contains_menu(user_client: Client, django_user_mod
     permission = Permission.objects.get(codename='can_manage_institutions')
     user.user_permissions.add(permission)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertContains(response, 'Institutions')
 
@@ -534,7 +534,7 @@ def test_institution_response_no_menu(user_client: Client, django_user_model: Us
     user = django_user_model.objects.create(username='test_institution_user')
     user_client.force_login(user)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertNotContains(response, 'Institutions')
 
@@ -588,7 +588,7 @@ def test_site_response_contains_menu(user_client: Client, django_user_model: Use
     permission = Permission.objects.get(codename='can_manage_sites')
     user.user_permissions.add(permission)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertContains(response, 'Sites')
 
@@ -598,7 +598,7 @@ def test_site_response_no_menu(user_client: Client, django_user_model: User) -> 
     user = django_user_model.objects.create(username='test_site_user')
     user_client.force_login(user)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertNotContains(response, 'Sites')
 
@@ -608,6 +608,13 @@ def test_institution_site_response_no_menu(user_client: Client, django_user_mode
     user = django_user_model.objects.create(username='test_site_user')
     user_client.force_login(user)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
-    assertNotContains(response, 'Hospital Settings')
+    soup = BeautifulSoup(response.content, 'html.parser')
+    menu_group = soup.find_all(
+        'button',
+        attrs={'class': 'btn-toggle'},
+        string=lambda value: 'Hospital Settings' in value,
+    )
+
+    assert not menu_group
