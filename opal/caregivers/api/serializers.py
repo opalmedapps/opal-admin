@@ -16,6 +16,7 @@ from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
 from opal.patients.models import Patient
+from opal.users.models import User
 
 
 class EmailVerificationSerializer(DynamicFieldsSerializer):
@@ -155,6 +156,19 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'language',
             'phone_number',
             'devices',
+        ]
+
+
+class UserSerializer(DynamicFieldsSerializer):
+    """Serializer for user."""
+
+    uuid = serializers.CharField(source='caregiverprofile.uuid')
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'uuid',
         ]
 
 

@@ -156,6 +156,17 @@ def test_retrieve_registration_register(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:registration-register'
 
 
+def test_retrieve_caregiver_profile(settings: SettingsWrapper) -> None:
+    """Ensure `caregiver/<str:username>/profile` endpoint is defined."""
+    username = 'ABCD12345678'
+    url_path = '/{api_root}/caregiver/{username}/profile/'.format(
+        api_root=settings.API_ROOT,
+        username=username,
+    )
+    assert reverse('api:caregiver-profile', kwargs={'username': username}) == url_path
+    assert resolve(url_path).view_name == 'api:caregiver-profile'
+
+
 def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/caregivers/` is defined."""
     patient_id = 52

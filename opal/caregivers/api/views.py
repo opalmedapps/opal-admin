@@ -20,6 +20,7 @@ from opal.caregivers.api.serializers import (
     DeviceSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
+    UserSerializer,
 )
 from opal.caregivers.models import Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.utils import generate_random_number
@@ -44,6 +45,15 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     serializer_class = RegistrationEncryptionInfoSerializer
     lookup_url_kwarg = 'hash'
     lookup_field = 'code_sha512'
+
+
+class CaregiverProfileView(RetrieveAPIView):
+    """Class handling gets requests for user profile."""
+
+    queryset = User.objects.select_related('caregiverprofile')
+    serializer_class = UserSerializer
+    lookup_url_kwarg = 'username'
+    lookup_field = 'username'
 
 
 class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):

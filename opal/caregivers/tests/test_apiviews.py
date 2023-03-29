@@ -89,6 +89,15 @@ def test_registration_encryption_invalid_hash(api_client: APIClient, admin_user:
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
+def test_caregiverr_profle(api_client: APIClient, admin_user: User) -> None:
+    """Return caregiver uuid by username."""
+    api_client.force_login(user=admin_user)
+    caregiverprofile = caregiver_factory.CaregiverProfile(user=admin_user)
+    response = api_client.get(reverse('api:caregiver-profile', kwargs={'username': admin_user.username}))
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['uuid'] == str(caregiverprofile.uuid)
+
+
 class TestApiEmailVerification:
     """A class to test model EmailVerification apis."""
 

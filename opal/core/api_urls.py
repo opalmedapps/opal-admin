@@ -51,6 +51,11 @@ urlpatterns = [
 
     # CAREGIVERS ENDPOINTS
     path(
+        'caregiver/<str:username>/profile/',
+        caregivers_views.CaregiverProfileView.as_view(),
+        name='caregiver-profile',
+    ),
+    path(
         'caregivers/patients/',
         caregivers_views.GetCaregiverPatientsList.as_view(),
         name='caregivers-patient-list',
