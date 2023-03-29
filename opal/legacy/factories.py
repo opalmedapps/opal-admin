@@ -199,3 +199,15 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
     mrn = '9999996'
     isactive = True
+
+
+class LegacyHospitalMapFactory(DjangoModelFactory):
+    """HospitalMap factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyHospitalMap
+
+    hospitalmapsernum = 1
+    mapname_en = 'R720'
+    mapname_fr = 'R720'
+    dateadded = timezone.make_aware(datetime(2023, 3, 15))
