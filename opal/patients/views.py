@@ -272,7 +272,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         return render(self.request, 'patients/access_request/qr_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
-            'header_title': _('QR Code Generation'),
+            'patient': relationship.patient,
+            'hospital': new_form_data['sites'],
+            'registration_code': registration_code,
+            'registration_url': str(settings.OPAL_USER_REGISTRATION_URL),
         })
 
     def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
