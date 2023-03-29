@@ -3,14 +3,14 @@
 from typing import Any
 
 from django import forms
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 
-from ..core.form_layouts import CancelButton, ImageFieldWithPreview
+from ..core.form_layouts import CancelButton, FileField
 from .models import Institution
 
 
@@ -22,10 +22,10 @@ class InstitutionForm(forms.ModelForm[Institution]):
         fields = (
             'name_en',
             'name_fr',
-            'logo_en',
-            'logo_fr',
             'code',
             'support_email',
+            'logo_en',
+            'logo_fr',
             'terms_of_use_en',
             'terms_of_use_fr',
         )
@@ -39,19 +39,20 @@ class InstitutionForm(forms.ModelForm[Institution]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             'name_en',
             'name_fr',
-            ImageFieldWithPreview('logo_en'),
-            ImageFieldWithPreview('logo_fr'),
             'code',
             'support_email',
-            'terms_of_use_en',
-            'terms_of_use_fr',
+            FileField('logo_en'),
+            FileField('logo_fr'),
+            FileField('terms_of_use_en'),
+            FileField('terms_of_use_fr'),
             FormActions(
-                Submit('submit', _('Save'), css_class='btn btn-primary'),
-                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+                CancelButton(reverse('hospital-settings:institution-list')),
+                Submit('submit', _('Save')),
             ),
         )

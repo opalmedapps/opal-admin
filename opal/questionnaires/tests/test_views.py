@@ -9,7 +9,7 @@ from django.urls.base import reverse
 import pytest
 from bs4 import BeautifulSoup
 from easyaudit.models import RequestEvent
-from pytest_django.asserts import assertContains, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
 from opal.questionnaires.models import QuestionnaireProfile
@@ -146,23 +146,38 @@ def test_export_report_hidden_unauthenticated(user_client: Client, django_user_m
     """Ensure that an unauthenticated (not admin) user can't view the Export Reports page."""
     user = django_user_model.objects.create(username='test_export_user')
     user_client.force_login(user)
-    response = user_client.get(reverse('hospital-settings:index'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    pages_available = soup.find_all('p', {'class': 'text'})
 
-    assert response.status_code == HTTPStatus.OK
-    assert 'Export Reports' not in {pagename.text for pagename in pages_available}
+    response = user_client.get(reverse('hospital-settings:index'))
+
+    export_url = reverse('questionnaires:reports')
+    assertNotContains(response, f'href="{export_url}"')
 
 
 def test_export_report_visible_authenticated(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that an authenticated user can view the Export Reports page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('hospital-settings:index'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    pages_available = soup.find_all('p', {'class': 'text'})
 
-    assert response.status_code == HTTPStatus.OK
-    assert 'Export Reports' in {pagename.text for pagename in pages_available}
+    response = user_client.get(reverse('hospital-settings:index'))
+
+    export_url = reverse('questionnaires:reports')
+    assertContains(response, f'href="{export_url}"')
+
+
+def test_questionnaires_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that the questionnaires menu is not displayed for users without necessary permissions."""
+    user = django_user_model.objects.create(username='test_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('hospital-settings:index'))
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    menu_group = soup.find_all(
+        'button',
+        attrs={'class': 'btn-toggle'},
+        string=lambda value: 'Questionnaires' in value,
+    )
+
+    assert not menu_group
 
 
 def test_get_reports_filter_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
