@@ -1,50 +1,43 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load l10n %}
 {% load i18n %}
 
 {% load crispy_forms_tags %}
-
 {% load render_table from django_tables2 %}
 
-{% block content-header-page-name %}{% translate "Search Patient Access" %}{% endblock %}
-
-{% block content-header-page-description %}{% translate "Search for a specific patient to see all their caregivers." %}{% endblock %}
+{% block heading %}
+  {% translate "Search Patient Access" %}
+{% endblock %}
 
 {% block content %}
-    {% comment %} Main content {% endcomment %}
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            {% if filter %}
-              <div class="card">
-                <div class="card-body">
-                  <form method="get" novalidate>
-                    {% csrf_token %}
-                    {% crispy filter.form %}
-                  </form>
-                </div>
-              </div>
-            {% endif %}
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">{% translate "Patient Details" %}</h3>
-              </div>
-
-              {% render_table tables.0 %}
-
-            </div>
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">{% translate "Caregiver Details" %}</h3>
-              </div>
-
-              {% render_table tables.1 %}
-
-            </div>
-          </div>
-        </div>
+  <p>
+    {% translate "Search for a specific patient to see all their caregivers." %}
+  </p>
+  {% if filter %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <form method="get" novalidate>
+          {% crispy filter.form %}
+        </form>
       </div>
-    </section>
+    </div>
+  {% endif %}
+  <div class="card mb-3">
+    <div class="card-header">
+      <h3 class="card-title">{% translate "Patient Details" %}</h3>
+    </div>
+    <div class="card-body">
+      {% render_table tables.0 %}
+    </div>
+
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">{% translate "Caregiver Details" %}</h3>
+    </div>
+    <div class="card-body">
+      {% render_table tables.1 %}
+    </div>
+  </div>
 {% endblock %}
