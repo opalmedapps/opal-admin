@@ -45,3 +45,18 @@ def startswith(text: str, prefix: str) -> bool:
         True, if the text starts with the expected prefix, False otherwise
     """
     return text.startswith(prefix)
+
+
+@register.filter('strip')
+@stringfilter
+def strip(text: str) -> str:
+    """
+    Strip whitespace around the given text.
+
+    Args:
+        text: the text
+
+    Returns:
+        the truncated text
+    """
+    return text.strip()

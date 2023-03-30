@@ -21,3 +21,14 @@ def test_startswith(text: str, prefix: str, expected: bool) -> None:
 def test_rsubstring(text: str, separator: str, expected: str) -> None:
     """Ensure the rsubstring filter returns the correct result."""
     assert filters.rsubstring(text, separator) == expected
+
+
+@pytest.mark.parametrize(('text', 'expected'), [
+    ('bar', 'bar'),
+    (' bar', 'bar'),
+    ('bar ', 'bar'),
+    ('      \nbar         \n         ', 'bar'),
+])
+def test_strip(text: str, expected: str) -> None:
+    """Ensure the strip filter returns the correct result."""
+    assert filters.strip(text) == expected
