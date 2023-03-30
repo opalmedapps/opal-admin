@@ -16,7 +16,7 @@
       {% csrf_token %}
       {% url 'patients:relationshiptype-list' as cancel_url %}
       {% form_cancel href=cancel_url %}
-      <input class="btn btn-danger" type="submit" value="{% translate "Yes" %}, {% translate "Delete"|lower %}">
+      {% form_submit type="delete" %}
     </form>
   </div>
 {% endblock %}

@@ -1,7 +1,7 @@
 components:
   button: "components/button.html"
   form_cancel: "components/form_cancel.html"
-  form_save: "components/form_save.html"
+  form_submit: "components/form_submit.html"
   icon: "components/icon.html"
   menu_group: "components/menu_group.html"
   menu_item: "components/menu_item.html"
