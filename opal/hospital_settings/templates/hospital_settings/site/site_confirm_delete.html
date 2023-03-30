@@ -14,7 +14,9 @@
 
     <form action="" method="POST" novalidate>
       {% csrf_token %}
-      <input class="btn btn-danger btn-sm" type="submit" value="{% translate "Yes" %}, {% translate "Delete"|lower %}">
+      {% url 'hospital-settings:site-list' as cancel_url %}
+      {% form_cancel href=cancel_url %}
+      {% form_submit type="delete" %}
     </form>
   </div>
 {% endblock %}
