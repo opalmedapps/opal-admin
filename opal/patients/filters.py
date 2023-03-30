@@ -57,6 +57,9 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         super().__init__(*args, **kwargs)
 
         self.form.helper = FormHelper(self.form)
+        self.form.helper.form_tag = False
+        self.form.helper.disable_csrf = True
+
         self.form.helper.layout = Layout(
             Row(
                 Column('medical_card_type', css_class='form-group col-md-6 mb-0'),
