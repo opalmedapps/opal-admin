@@ -1,10 +1,12 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
-  {% block content %}
+{% block content %}
     {% if perms.questionnaires.export_report %} <!-- Restrict access to authorized persons (See models ==> ExportReportPermission)  -->
         <div class="container-fluid">
           <div class="row justify-content-md-center">
@@ -48,4 +50,4 @@
           </div>
         </div>
     {% endif %}
-  {% endblock %}
+{% endblock %}

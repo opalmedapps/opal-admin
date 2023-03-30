@@ -1,12 +1,14 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
-  {% block content %}
-  {% if perms.questionnaires.export_report %}
+{% block content %}
+    {% if perms.questionnaires.export_report %}
       <div class="row justify-content-md-center">
         <div class="col col-md-10">
             <h4>{% translate "Report:" %} {{ questionnaireName }} {% translate "between" %} {{ start }} {% translate "and" %} {{ end }}</h4>
@@ -43,6 +45,6 @@
             </div>
         </div>
       </div>
-    <script src="{% static 'js/reports.js' %}"></script>
+      <script src="{% static 'js/reports.js' %}"></script>
     {% endif %}
-  {% endblock content %}
+{% endblock content %}
