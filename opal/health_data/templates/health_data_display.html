@@ -1,27 +1,19 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 
-  {% block content-header-page-name %}{% translate "Health Data" %}{% endblock %}
+{% block heading %}
+  {% translate "Health Data" %}
+{% endblock %}
 
-  {% block content %}
+{% block content %}
+  <h4> {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ: {{ patient.ramq | default:'' }})</h4>
 
-        <div class="container-fluid">
-          <div class="row justify-content-md-center">
-            <div class="col col-sm-10">
-                <h4> {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ: {{ patient.ramq | default:'' }})</h4>
-                <hr>
-
-                {% for label, plot_html in graphs.items %}
-                  {% if plot_html %}
-                    {{ plot_html | safe }}
-                  {% else %}
-                    <h5>{% translate "No data found for" %} {{ label }}</h5>
-                  {% endif %}
-                {% endfor %}
-
-              </div>
-          </div>
-        </div>
-
-  {% endblock %}
+  {% for label, plot_html in graphs.items %}
+    {% if plot_html %}
+      {{ plot_html | safe }}
+    {% else %}
+      <h5>{% translate "No data found for" %} {{ label }}</h5>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
