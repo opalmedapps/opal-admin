@@ -1,26 +1,28 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
-  {% block content %}
-    {% if perms.questionnaires.export_report %}
+{% block content %}
+  {% if perms.questionnaires.export_report %}
     <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="filters-form">
       {% csrf_token %}
-    <div class="row justify-content-md-center">
-      <div class="col-sm-10">
-          <h3>{% translate "Questionnaire" %} {{ questionnaire.ID }} - {{ questionnaire.name }}</h3>
-            <input type="checkbox" id="following" name="following" {% if following %}checked{% endif %}>
-            <label for="following"> {% translate "Follow in my dashboard" %}</label>
-          <h4>{% translate "Description" %}</h4>
-          {{ description|safe }}
-          <hr>
-          <h4>{% translate "Select options for the report" %}</h4>
-          <br>
+      <div class="row justify-content-md-center">
+        <div class="col-sm-10">
+            <h3>{% translate "Questionnaire" %} {{ questionnaire.ID }} - {{ questionnaire.name }}</h3>
+              <input type="checkbox" id="following" name="following" {% if following %}checked{% endif %}>
+              <label for="following"> {% translate "Follow in my dashboard" %}</label>
+            <h4>{% translate "Description" %}</h4>
+            {{ description|safe }}
+            <hr>
+            <h4>{% translate "Select options for the report" %}</h4>
+            <br>
+        </div>
       </div>
-    </div>
       <input type="hidden" name="questionnairename" value="{{ questionnaire.name  }}"/>
       <div class="row justify-content-md-center">
           <div class="col-sm-3">
@@ -49,7 +51,7 @@
                       <div class="col-sm-10">
                           <select name="patientIDs" class="form-control" id="patientIDs" multiple required >
                               {% for pid in patientIDs %}
-                                  <option class='optionP' value="{{ pid }}" name="patIds" selected>{{ pid }}</option>
+                                  <option class="optionP" value="{{ pid }}" name="patIds" selected>{{ pid }}</option>
                               {% endfor %}
                           </select>
                           <small>
@@ -73,7 +75,7 @@
                       {% for q in questions %}
                           <li>
                               <div class="checkbox" >
-                                  <label><input type="checkbox"  class='checkboxesQ' name="questionIDs" value="{{ q.questionId }}" checked > {{ q.question|safe }}</label>
+                                  <label><input type="checkbox"  class="checkboxesQ" name="questionIDs" value="{{ q.questionId }}" checked > {{ q.question|safe }}</label>
                               </div>
                           </li>
                       {% endfor %}
@@ -93,7 +95,7 @@
               </div>
           </div>
       </div>
-  </form>
-  <script src="{% static 'js/query.js' %}"></script>
+    </form>
+    <script src="{% static 'js/query.js' %}"></script>
   {% endif %}
-  {% endblock content %}
+{% endblock content %}
