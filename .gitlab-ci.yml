@@ -1,5 +1,3 @@
-image: python:3.10.10-slim-bullseye
-
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
@@ -12,70 +10,80 @@ variables:
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
 
+default:
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  before_script:
+    - uname -a
+    - python --version
+    # set up env file for DB service
+    # use sample env file
+    - cp .env.sample .env
+    - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
+    - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
+    - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
+    - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+    # set up legacy DB connection
+    # reuse the same database as for the other tests to make it easier
+    - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+    - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+    - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
+    - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+    - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+    # set up QuestionnaireDB connection as well
+    - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
+    # generate secret key
+    - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+    - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
-before_script:
-  - uname -a
-  - python --version
-  - which python
-  # install dependencies for mysqlclient
-  - apt update && apt-get install -y build-essential libmariadb-dev
-  # don't fail if venv is not set up yet (during setup)
-  - source .venv/bin/activate || true
-  # set up env file for DB service
-  # use sample env file
-  - cp .env.sample .env
-  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
-  - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
-  - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
-  - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
-  # set up legacy DB connection
-  # reuse the same database as for the other tests to make it easier
-  - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-  - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
-  - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-  - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
-  # set up QuestionnaireDB connection as well
-  - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
-  # generate secret key
-  - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-  - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 stages:
+  - Build
   - Static Analysis
   - Checks
   - Test
-  - Build
   - Documentation
 
-setup:
-  stage: .pre
+.default_needs:
+  needs:
+    - job: build image
+
+build image:
+  stage: Build
+  image: docker:20.10.23
+  services:
+    - docker:20.10.23-dind
+  variables:
+    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    # login to CI registry: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#option-1-run-docker-login
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
   script:
-    - apt update && apt-get install -y git
-    - python -m venv .venv
-    - source .venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements/development.txt
-  artifacts:
-    # pin artifacts to the branch
-    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
-    name: $CI_COMMIT_REF_SLUG
-    expire_in: 1 week
-    paths:
-      - .venv
-  # Pip's cache doesn't store the python packages
-  # https://pip.pypa.io/en/stable/reference/pip_install/#caching
-  #
-  # If you want to also cache the installed packages, you have to install
-  # them in a virtualenv and cache it as well.
-  cache:
-    # pin artifacts to the branch
-    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
-    paths:
-      - .cache/pip
+    - export IMAGE_REPOSITORY=$CI_REGISTRY_IMAGE
+    # create an image tagged with the branch or tag name
+    - export IMAGE_BRANCH=$IMAGE_REPOSITORY:$CI_COMMIT_REF_SLUG
+    # plus for the default branch create a latest and commit tag
+    # the commit tag allows us to get images of previous commits in case of problems
+    - export IMAGE_LATEST=$IMAGE_REPOSITORY:latest
+    - export IMAGE_COMMIT=$IMAGE_REPOSITORY:$CI_COMMIT_SHA
+    # make use of the Docker cache to speed up building
+    # see: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
+    - docker pull $IMAGE_LATEST || true
+    - docker pull $IMAGE_BRANCH || true
+    - docker build --cache-from $IMAGE_BRANCH --cache-from $IMAGE_LATEST --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
+    - docker push $IMAGE_BRANCH
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Running on default branch. Pushing latest and commit tags..."
+        docker push $IMAGE_LATEST
+        docker push $IMAGE_COMMIT
+      fi
 
 flake8:
   stage: Static Analysis
+  extends:
+    - .default_needs
   script:
     - flake8 --version
     # install plugin to produce code climate report
@@ -91,6 +99,8 @@ flake8:
 
 mypy:
   stage: Static Analysis
+  extends:
+    - .default_needs
   script:
     # install plugin to produce code climate report
     - pip install mypy-gitlab-code-quality
@@ -107,6 +117,8 @@ mypy:
 
 markdownlint:
   stage: Static Analysis
+  extends:
+    - .default_needs
   image:
     name: davidanson/markdownlint-cli2:v0.6.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
@@ -124,6 +136,8 @@ markdownlint:
 
 test:
   stage: Test
+  extends:
+    - .default_needs
   # set up DB service only for the test job since it is not used by others
   services:
     - mariadb:10.6.12-focal
@@ -134,8 +148,6 @@ test:
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
-  needs:
-    - job: setup
   artifacts:
     when: always
     reports:
@@ -151,7 +163,6 @@ coverage:
     - coverage report
   needs:
     - job: test
-    - job: setup
   coverage: '/^TOTAL.+?(\d+\%)$/'
   # min coverage is set to 100, allow job to fail in order to signal that the coverage dropped
   # it does not mean it always has to be fixed
@@ -165,27 +176,30 @@ coverage:
 
 django migrations:
   stage: Checks
+  extends:
+    - .default_needs
   script:
     # Missing migrations
     - echo "Checking that there are no model changes for which there is no migration..."
     - python manage.py makemigrations --dry-run --check
-  needs:
-    - job: setup
 
 django translations:
   stage: Checks
+  extends:
+    - .default_needs
   script:
     # install dependencies for makemessages and git diff
     - apt update && apt-get install -y gettext git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
+    # due to git LFS the LFS-tracked files show up in the diff, limit the diff to only .po files
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code *.po
-  needs:
-    - job: setup
 
 django translations fuzzy:
   stage: Checks
+  extends:
+    - .default_needs
   # this is not a Python script so we don't need to do all this extra stuff from the default before_script
   before_script:
     - python --version
@@ -202,6 +216,8 @@ django translations fuzzy:
 
 django translations commented:
   stage: Checks
+  extends:
+    - .default_needs
   # this is not a Python script so we don't need to do all this extra stuff from the default before_script
   before_script:
     - python --version
@@ -217,6 +233,8 @@ django translations commented:
 
 django auto-named migrations:
   stage: Checks
+  extends:
+    - .default_needs
   # this is not a Python script so we don't need to do all this extra stuff from the default before_script
   before_script:
     - python --version
@@ -230,25 +248,25 @@ django auto-named migrations:
 
 django checks:
   stage: Checks
+  extends:
+    - .default_needs
   script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
     - python manage.py check --fail-level WARNING
-  needs:
-    - job: setup
 
 django template validation:
   stage: Checks
+  extends:
+    - .default_needs
   script:
     # Check templates
     - echo "Validating templates ..."
     - python manage.py validate_templates
-  needs:
-    - job: setup
 
 # Try building the documentation site to ensure there are no issues
 build docs:
-  stage: Build
+  stage: Documentation
   script:
     - pip install -r requirements/docs.txt
     - mkdocs --version
@@ -257,7 +275,6 @@ build docs:
   # cannot restrict to only merge requests due to the following issue:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
-    - job: setup
     - job: markdownlint
 
 # Publish docs to GitLab Pages
@@ -274,3 +291,5 @@ pages:
   artifacts:
     paths:
       - public
+  needs:
+    - build docs
