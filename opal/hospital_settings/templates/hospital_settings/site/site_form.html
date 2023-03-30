@@ -16,9 +16,9 @@
   <form method="post" novalidate>
     {% csrf_token %}
     {{ form|crispy }}
-    <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:site-list' %}">
-      {% translate "Cancel" %}
-    </a>
-    <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
+
+    {% url 'hospital-settings:site-list' as cancel_url %}
+    {% form_cancel href=cancel_url %}
+    {% form_save %}
   </form>
 {% endblock %}
