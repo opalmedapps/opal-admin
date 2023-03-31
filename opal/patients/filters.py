@@ -110,6 +110,9 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         card_type = self.form.cleaned_data.pop('card_type')
 
         # Set medical_number's 'field_name' by which the filtering will be performed
+        # TODO: filtering separately by site and MRN can produce duplicates (e.g., RVH: 1234 and MGH: 1234) because the filters are applied one after the other
+        # need to find a way to combine site code and MRN into one filter
+        # see also: https://github.com/carltongibson/django-filter/pull/1167#issuecomment-1001984446
         if card_type == constants.MedicalCard.mrn.name:
             self.filters['medical_number'].field_name = 'patient__hospital_patients__mrn'
         else:

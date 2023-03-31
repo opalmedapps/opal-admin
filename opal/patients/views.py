@@ -567,6 +567,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
         context_data = super().get_context_data(**kwargs)
 
         filter_used = context_data['filter'].form.is_bound
+        # could also reverse in the template via a custom filter or this trick: https://stackoverflow.com/a/30075273
         context_data['is_pending'] = not filter_used
         context_data['is_search'] = filter_used
 
