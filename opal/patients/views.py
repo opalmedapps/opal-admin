@@ -545,7 +545,7 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     """
 
     model = Relationship
-    template_name = 'patients/relationships/edit_relationships.html'
+    template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
 
 
