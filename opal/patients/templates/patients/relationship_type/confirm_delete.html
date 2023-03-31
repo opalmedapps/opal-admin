@@ -7,15 +7,6 @@
 {% endblock %}
 
 {% block content %}
-  <div class="callout callout-danger">
-    <h5>
-      {% blocktranslate %}Are you sure you want to delete the following relationship type: {{ object }}?{% endblocktranslate %}
-    </h5>
-
-    <form action="" method="POST" novalidate>
-      {% csrf_token %}
-      {% url 'patients:relationshiptype-list' as cancel_url %}
-      {% form_actions cancel_url=cancel_url submit_type="delete" %}
-    </form>
-  </div>
+  {% url 'patients:relationshiptype-list' as cancel_url %}
+  {% confirm_delete cancel_url=cancel_url object=object %}
 {% endblock %}
