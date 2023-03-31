@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 13:57-0400\n"
+"POT-Creation-Date: 2023-03-31 16:13-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -445,10 +445,6 @@ msgstr "Nouvelle demande d'accès aux données patient"
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Opal Patient Registration Code"
 msgstr "Code d'enregistrement du patient Opal"
-
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Please follow the instructions below"
-msgstr "Veuillez suivre les instructions ci-dessous"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
