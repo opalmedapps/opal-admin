@@ -88,9 +88,9 @@
             <input type="hidden" name="questionnaireid" value="{{ questionnaire.ID  }}"/>
             <br>
             <div class="form-group row">
-                <div class="btn-toolbar mb-4">
+                {% #button_toolbar %}
                     <button type="submit" class="btn btn-primary mr-2">{% translate "View Report" %}</button>
-                </div>
+                {% /button_toolbar %}
             </div>
         </div>
     </div>

@@ -16,11 +16,11 @@
           <form action="{% url 'questionnaires:reports-download-csv' %}" method="post" id="form" novalidate>
               {% csrf_token %}
               <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
-              <div class="btn-toolbar mb-4">
+              {% #button_toolbar %}
                 <button class="btn btn-warning mr-2" type="button" onclick="history.back()">{% translate "Back" %}</button>
                 <input  class="btn btn-primary mr-2" type="submit" value="Download CSV" />
                 <button class="btn btn-primary" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
-              </div>
+              {% /button_toolbar %}
           </form>
 
           <div id="xlsx_options_div" style="display: none;">
@@ -36,10 +36,10 @@
                   <input type="radio" id="none" name="tabs" value="none">
                   <label for="none">{% translate "None (single tab)" %}</label>
                   <br>
-                  <div class="btn-toolbar mb-4">
+                  {% #button_toolbar %}
                     <button class="btn btn-warning mr-2" type="button" id="cancel-button"  onclick="cancel()" >{% translate "Cancel" %}</button>
                     <input class="btn btn-primary mr-2" type="submit" value="GO" />
-                  </div>
+                  {% /button_toolbar %}
               </form>
           </div>
       </div>
