@@ -18,7 +18,6 @@
     {{ form|crispy }}
 
     {% url 'hospital-settings:site-list' as cancel_url %}
-    {% form_cancel href=cancel_url %}
-    {% form_submit %}
+    {% form_actions cancel_url=cancel_url %}
   </form>
 {% endblock %}

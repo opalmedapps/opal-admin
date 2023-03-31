@@ -15,8 +15,7 @@
     <form action="" method="POST" novalidate>
       {% csrf_token %}
       {% url 'patients:relationshiptype-list' as cancel_url %}
-      {% form_cancel href=cancel_url %}
-      {% form_submit type="delete" %}
+      {% form_actions cancel_url=cancel_url submit_type="delete" %}
     </form>
   </div>
 {% endblock %}
