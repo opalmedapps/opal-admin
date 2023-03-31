@@ -160,7 +160,7 @@ def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-    assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
+    assertContains(response, 'Are you sure you want to delete "Caregiver"?')
 
 
 def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
