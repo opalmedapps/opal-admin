@@ -17,8 +17,8 @@
               {% csrf_token %}
               <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
               {% #button_toolbar %}
-                <button class="btn btn-warning mr-2" type="button" onclick="history.back()">{% translate "Back" %}</button>
-                <input  class="btn btn-primary mr-2" type="submit" value="Download CSV" />
+                <button class="btn btn-warning me-2" type="button" onclick="history.back()">{% translate "Back" %}</button>
+                <input  class="btn btn-primary me-2" type="submit" value="Download CSV" />
                 <button class="btn btn-primary" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
               {% /button_toolbar %}
           </form>
@@ -37,8 +37,8 @@
                   <label for="none">{% translate "None (single tab)" %}</label>
                   <br>
                   {% #button_toolbar %}
-                    <button class="btn btn-warning mr-2" type="button" id="cancel-button"  onclick="cancel()" >{% translate "Cancel" %}</button>
-                    <input class="btn btn-primary mr-2" type="submit" value="GO" />
+                    <button class="btn btn-warning me-2" type="button" id="cancel-button"  onclick="cancel()" >{% translate "Cancel" %}</button>
+                    <input class="btn btn-primary me-2" type="submit" value="GO" />
                   {% /button_toolbar %}
               </form>
           </div>
