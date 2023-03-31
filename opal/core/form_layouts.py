@@ -28,10 +28,7 @@ class CancelButton(HTML):
         Args:
             url: URL to the page that the button will be link to
         """
-        cancel_text = _('Cancel')
-        css_classes = 'btn btn-secondary me-2'
-
-        html = f'<a class="{css_classes}" href="{url}">{cancel_text}</a>'
+        html = f'{{% form_cancel href="{url}" %}}'
 
         super().__init__(html)
 
