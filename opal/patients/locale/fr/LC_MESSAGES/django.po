@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 16:13-0400\n"
+"POT-Creation-Date: 2023-03-31 16:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -164,7 +164,7 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -263,7 +263,7 @@ msgid "UUID"
 msgstr ""
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -288,7 +288,7 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -346,7 +346,7 @@ msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Relationship"
 msgstr "Relation"
 
@@ -524,7 +524,6 @@ msgid "Update"
 msgstr "Mettre à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Create"
 msgstr "Créer"
 
@@ -536,15 +535,11 @@ msgstr ""
 msgid "New Relationship Type"
 msgstr ""
 
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Manage"
-msgstr ""
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+msgid "Edit Caregiver Access Request"
+msgstr "Modifier une demande d'accès"
 
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Caregiver Access Requests"
-msgstr "Générer une demande d'accès"
-
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "RAMQ"
 msgstr "RAMQ"
 
