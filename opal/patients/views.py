@@ -541,18 +541,34 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
     )
     filterset_class = ManageCaregiverAccessFilter
 
-    def get_queryset(self) -> QuerySet[Relationship]:  # noqa: WPS615
-        queryset: QuerySet[Relationship] = super().get_queryset()
+    def get_filterset_kwargs(self, filterset_class):
+        # Only use filter query arguments for the filter to support sorting etc. with django-tables2
+        # see: https://github.com/carltongibson/django-filter/issues/1521
 
-        if not self.request.GET:
-            queryset = queryset.filter(status=RelationshipStatus.PENDING)
+        # Check if the query strings contain filter fields and
+        # create a data dictionary of filter fields and values
+        filter_fields = set(filterset_class.get_filters().keys())
+        query_strings = set(self.request.GET.keys())
+        data = {
+            filter_field: self.request.GET.get(filter_field)
+            for filter_field in filter_fields.intersection(query_strings)
+        }
 
-        return queryset
+        filterset_kwargs = super().get_filterset_kwargs(filterset_class)
+        filterset_kwargs['data'] = data or None
+
+        # if no filter fields are used in the query strings default to pending relationships only
+        if not data:
+            filterset_kwargs['queryset'] = self.queryset.filter(status=RelationshipStatus.PENDING)
+
+        return filterset_kwargs
 
     def get_context_data(self, **kwargs: Any) -> Any:
         context_data = super().get_context_data(**kwargs)
-        context_data['is_pending'] = not self.request.GET
-        context_data['is_search'] = bool(self.request.GET)
+
+        filter_used = context_data['filter'].form.is_bound
+        context_data['is_pending'] = not filter_used
+        context_data['is_search'] = filter_used
 
         return context_data
 

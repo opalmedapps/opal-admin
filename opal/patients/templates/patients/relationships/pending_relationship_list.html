@@ -16,13 +16,21 @@
     {% endif %}
     <div class="row row-cols-md-auto align-items-center g-2">
       <span class="fw-bold">Filter:</span>
-      {% var yesno_css_filter="btn btn-filter filter-active,btn btn-filter" %}
-      <a href="?submit=Search" class="{{ is_search|yesno:yesno_css_filter }} me-2">
-        {% translate "Specific Patient" %}
-      </a>
-      <a href="{{ request.path }}" class="{{ is_pending|yesno:yesno_css_filter }} me-2">
-        {% translate "All Pending Requests" %}
-      </a>
+      {% var yesno_css_filter="nav-link active,nav-link" %}
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          {% var is_search=filter.form.is_bound %}
+          {# trigger a search with missing data to detect switching to a search #}
+          <a href="?card_type=" class="{{ is_search|yesno:yesno_css_filter }} me-2"{% if is_search %} aria-current="page"{% endif %}>
+            {% translate "Specific Patient" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ request.path }}" class="{{ is_pending|yesno:yesno_css_filter }} me-2"{% if is_pending %} aria-current="page"{% endif %}>
+            {% translate "All Pending Requests" %}
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
   {% render_table table %}
