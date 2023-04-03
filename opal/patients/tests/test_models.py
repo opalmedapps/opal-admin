@@ -118,7 +118,7 @@ def test_relationshiptype_default_role() -> None:
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
     patient = Patient(first_name='First Name', last_name='Last Name')
-    assert str(patient) == 'First Name Last Name'
+    assert str(patient) == 'Last Name, First Name'
 
 
 def test_patient_age_calculation() -> None:

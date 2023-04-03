@@ -169,7 +169,7 @@ class PendingRelationshipTable(tables.Table):
 
     class Meta:
         model = Relationship
-        fields = ['patient', 'type', 'caregiver', 'status', 'actions']
+        fields = ['patient', 'caregiver', 'type', 'status', 'actions']
         empty_text = _('No caregiver requests found.')
 
 
