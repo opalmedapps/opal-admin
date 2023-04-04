@@ -27,12 +27,17 @@ def test_get_all_active_security_questions(api_client: APIClient, admin_user: Ab
 def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get answer list could return all answer records."""
     api_client.force_login(user=admin_user)
-    caregiver1 = factories.CaregiverProfile()
+    caregiver1 = factories.CaregiverProfile(user=admin_user)
     caregiver2 = factories.CaregiverProfile()
     security_answer1 = factories.SecurityAnswer(user=caregiver1)
     security_answer2 = factories.SecurityAnswer(user=caregiver1, answer='test')
     factories.SecurityAnswer(user=caregiver2)
-    response = api_client.get(reverse('api:caregivers-securityquestions-list', kwargs={'uuid': caregiver1.uuid}))
+    response = api_client.get(
+        reverse(
+            'api:caregivers-securityquestions-list',
+            kwargs={'username': admin_user.username},
+        ),
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 2
     assert response.data['results'][0]['question'] == security_answer1.question
@@ -42,11 +47,16 @@ def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> Non
 def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get random answer can return a correct record."""
     api_client.force_login(user=admin_user)
-    caregiver = factories.CaregiverProfile()
+    caregiver = factories.CaregiverProfile(user=admin_user)
     # create only one question to test the correct data
     # cannot test random because the random result might be equal
     security_answer = factories.SecurityAnswer(user=caregiver)
-    response = api_client.get(reverse('api:caregivers-securityquestions-random', kwargs={'uuid': caregiver.uuid}))
+    response = api_client.get(
+        reverse(
+            'api:caregivers-securityquestions-random',
+            kwargs={'username': admin_user.username},
+        ),
+    )
     assert response.status_code == HTTPStatus.OK
     assert security_answer.question == 'Apple'
     assert response.data['question'] == security_answer.question
@@ -55,13 +65,13 @@ def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> N
 def test_get_specific_security_answer_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get a specific security answer."""
     api_client.force_login(user=admin_user)
-    caregiver = factories.CaregiverProfile()
+    caregiver = factories.CaregiverProfile(user=admin_user)
     security_answer1 = factories.SecurityAnswer(user=caregiver)
     security_answer2 = factories.SecurityAnswer(user=caregiver, question='Ananas')
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
-            kwargs={'uuid': caregiver.uuid, 'pk': security_answer1.id},
+            kwargs={'username': admin_user.username, 'pk': security_answer1.id},
         ),
     )
     assert response.status_code == HTTPStatus.OK
@@ -72,13 +82,12 @@ def test_get_specific_security_answer_success(api_client: APIClient, admin_user:
 def test_get_specific_security_answer_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get a specific security answer with wrong caregiver."""
     api_client.force_login(user=admin_user)
-    caregiver1 = factories.CaregiverProfile()
-    caregiver2 = factories.CaregiverProfile()
-    security_answer = factories.SecurityAnswer(user=caregiver1)
+    caregiver = factories.CaregiverProfile(user=admin_user)
+    security_answer = factories.SecurityAnswer(user=caregiver)
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
-            kwargs={'uuid': caregiver2.uuid, 'pk': security_answer.id},
+            kwargs={'username': 'username2', 'pk': security_answer.id},
         ),
     )
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -87,7 +96,7 @@ def test_get_specific_security_answer_failure(api_client: APIClient, admin_user:
 def test_update_specific_security_answer(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test update a specific security answer."""
     api_client.force_login(user=admin_user)
-    caregiver = factories.CaregiverProfile()
+    caregiver = factories.CaregiverProfile(user=admin_user)
     security_answer = factories.SecurityAnswer(user=caregiver)
     old_answer = security_answer.answer
     new_question = {
@@ -95,7 +104,10 @@ def test_update_specific_security_answer(api_client: APIClient, admin_user: Abst
         'answer': 'Ananas',
     }
     response = api_client.put(
-        reverse('api:caregivers-securityquestions-detail', kwargs={'uuid': caregiver.uuid, 'pk': security_answer.id}),
+        reverse(
+            'api:caregivers-securityquestions-detail',
+            kwargs={'username': admin_user.username, 'pk': security_answer.id},
+        ),
         data=new_question,
         format='json',
     )
@@ -108,14 +120,14 @@ def test_update_specific_security_answer(api_client: APIClient, admin_user: Abst
 def test_verify_answer_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=admin_user)
-    caregiver = factories.CaregiverProfile()
+    caregiver = factories.CaregiverProfile(user=admin_user)
     security_answer = factories.SecurityAnswer(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': security_answer.answer}
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'uuid': caregiver.uuid, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': admin_user.username, 'pk': '{pk}'.format(pk=answer_id)},
         ),
         data=answer,
         format='json',
@@ -126,7 +138,7 @@ def test_verify_answer_success(api_client: APIClient, admin_user: AbstractUser) 
 def test_verify_answer_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=admin_user)
-    caregiver = factories.CaregiverProfile()
+    caregiver = factories.CaregiverProfile(user=admin_user)
     security_answer = factories.SecurityAnswer(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': 'wrong_answer'}
@@ -134,7 +146,7 @@ def test_verify_answer_failure(api_client: APIClient, admin_user: AbstractUser) 
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'uuid': caregiver.uuid, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': admin_user.username, 'pk': '{pk}'.format(pk=answer_id)},
         ),
         data=answer,
         format='json',
