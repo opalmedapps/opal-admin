@@ -8,5 +8,5 @@
 
 {% block content %}
   {% url 'patients:relationshiptype-list' as cancel_url %}
-  {% confirm_delete cancel_url=cancel_url object=object %}
+  {% confirm_delete cancel_url=cancel_url object=object csrf_token=csrf_token %}
 {% endblock %}
