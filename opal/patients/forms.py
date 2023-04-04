@@ -18,7 +18,8 @@ from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .utils import search_valid_relationship_types
 
 
 class SelectSiteForm(forms.Form):
@@ -275,10 +276,7 @@ class RequestorDetailsForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-        self.age = Patient.calculate_age(date_of_birth=date_of_birth)
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=self.age,
-        ).values_list('id', flat=True)
+        available_choices = search_valid_relationship_types(date_of_birth)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
     def clean(self) -> None:
