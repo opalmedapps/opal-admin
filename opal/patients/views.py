@@ -597,7 +597,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         """
         context = super().get_context_data(**kwargs)
         # to pass url to crispy form to be able to re-use the same form for different purposes
-        default_success_url = reverse_lazy('patients:relationships-search')
+        default_success_url = reverse_lazy('patients:relationships-search-list')
         # provide previous link with parameters to update on clicking cancel button
         if self.request.META.get('HTTP_REFERER'):
             context['cancel_url'] = self.request.META.get('HTTP_REFERER')
@@ -615,7 +615,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         if self.request.POST.get('cancel_url', False):
             return self.request.POST['cancel_url']
 
-        return reverse_lazy('patients:relationships-search')
+        return reverse_lazy('patients:relationships-search-list')
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
@@ -629,7 +629,7 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
     )
     filterset_class = ManageCaregiverAccessFilter
     tables = [tables.PatientTable, tables.RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:relationships-search')
+    success_url = reverse_lazy('patients:relationships-search-list')
     template_name = 'patients/relationships/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:
