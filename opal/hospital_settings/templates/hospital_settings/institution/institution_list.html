@@ -1,21 +1,18 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-{% block content-header-page-name %}{% translate "Institutions" %}{% endblock %}
+{% block heading %}{% translate "Institutions" %}{% endblock %}
 
 {% block content %}
-    <section class="content">
-        <div class="container-fluid">
-          {% if can_create %}
-            <div class="btn-toolbar mb-4">
-              <a class="btn btn-primary mr-2" href="{% url 'hospital-settings:institution-create' %}">
-                <i class="fas fa-plus"></i> {% translate "New Institution" %}
-              </a>
-            </div>
-          {% endif %}
-          {% render_table table %}
-        </div>
-    </section>
+  {% if can_create %}
+    <div class="btn-toolbar mb-4">
+      {% url 'hospital-settings:institution-create' as create_url %}
+      {% #button icon="plus" href=create_url %}
+        {% translate "New Institution" %}
+      {% /button %}
+    </div>
+  {% endif %}
+  {% render_table table %}
 {% endblock %}

@@ -32,7 +32,13 @@ class RelationshipTypeAdmin(TranslationAdmin):
         return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
 
 
+class PatientAdmin(admin.ModelAdmin):
+    """Admin options for the `Patient` model."""
+
+    readonly_fields = ['uuid']
+
+
 admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
 admin.site.register(models.Relationship, admin.ModelAdmin)
 admin.site.register(models.HospitalPatient, admin.ModelAdmin)
-admin.site.register(models.Patient, admin.ModelAdmin)
+admin.site.register(models.Patient, PatientAdmin)

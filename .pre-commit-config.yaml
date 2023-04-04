@@ -1,4 +1,11 @@
-exclude: '^(\.vscode/launch\.json|manage\.py)'
+exclude: |
+  (?x)(
+    ^(
+      \.vscode/launch\.json
+      |manage\.py
+      |opal/static/thirdparty/.*/.*
+    )
+  )
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks

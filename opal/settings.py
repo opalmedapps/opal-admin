@@ -51,10 +51,10 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'crispy_forms',
-    'crispy_bootstrap4',
 ]
 THIRD_PARTY_APPS = [
+    'crispy_forms',
+    'crispy_bootstrap5',
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
@@ -64,6 +64,8 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'formtools',
+    'slippers',
+    'fontawesomefree',
 ]
 
 LOCAL_APPS = [
@@ -119,7 +121,10 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.media',
                 'opal.core.context_processors.opal_global_settings',
+                'opal.core.context_processors.current_app',
             ],
+            # make slippers available in all templates
+            'builtins': ['slippers.templatetags.slippers'],
         },
     },
 ]
@@ -321,6 +326,8 @@ SESSION_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-httponly
 # Allow legacy OpalAdmin to read CSRF cookie to facilitate logout
 CSRF_COOKIE_HTTPONLY = False
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
@@ -430,17 +437,25 @@ DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 
 # Crispy forms
+# https://django-crispy-forms.readthedocs.io/en/latest/index.html
 #
-# Use Twitter Bootstrap (version 4) as a default template for the project
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+# Use Twitter Bootstrap (version 5) as a default template for the project
+# https://django-crispy-forms.readthedocs.io/en/latest/layouts.html#overriding-project-templates
+# Override allowed template packs for bootstrap5
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+# Make crispy fail loud in debug
+# https://django-crispy-forms.readthedocs.io/en/latest/crispy_tag_forms.html#make-crispy-forms-fail-loud
+CRISPY_FAIL_SILENTLY = not DEBUG
+
 
 # Django Tables2
 #
 # Set a default template to use
-DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap5-responsive.html'
 # Default CSS classes for tables
 DJANGO_TABLES2_TABLE_ATTRS = {
-    'class': 'table table-bordered table-hover',
+    'class': 'table table-hover',
     'thead': {
         'class': 'table-light',
     },
