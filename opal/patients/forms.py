@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Fieldset, Hidden, HTML, Layout, Row, Reset, Submit
+from crispy_forms.layout import HTML, ButtonHolder, Column, Fieldset, Hidden, Layout, Reset, Row, Submit
 
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 

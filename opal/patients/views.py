@@ -8,9 +8,9 @@ from datetime import date
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from django.conf import settings
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation
 from django.core.serializers.json import DjangoJSONEncoder
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Model, QuerySet
 from django.forms import Form
 from django.forms.models import ModelForm
