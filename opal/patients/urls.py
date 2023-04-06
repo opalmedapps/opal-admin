@@ -55,7 +55,7 @@ urlpatterns = [
     # Access request pages
     path(
         'access-request/',
-        views.AccessRequestView.as_view(views.AccessRequestView.form_list),
+        views.NewAccessRequestView.as_view(),
         name='access-request',
     ),
 ]

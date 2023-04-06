@@ -233,7 +233,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
     )
-    objects = PatientManager.from_queryset(PatientQueryset)()
+    objects: PatientManager = PatientManager.from_queryset(PatientQueryset)()
 
     class Meta:
         verbose_name = _('Patient')

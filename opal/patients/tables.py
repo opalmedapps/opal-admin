@@ -1,8 +1,9 @@
 """Table definitions for models of the patient app."""
+from datetime import date
 from typing import Any
 
 from django.db.models import QuerySet
-from django.utils.safestring import SafeString
+from django.utils.safestring import SafeString, mark_safe
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
@@ -76,18 +77,24 @@ class PatientTable(tables.Table):
 
     date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
 
-    mrn = tables.Column(
+    mrns = tables.Column(
         verbose_name=_('MRN'),
-        accessor='hospital_patients',
+        # accessor='hospital_patients',
     )
 
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'mrn', 'ramq']
+        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'ramq']
         empty_text = _('No patient could be found.')
         orderable = False
 
-    def render_mrn(self, value: QuerySet[HospitalPatient]) -> str:
+    def render_date_of_birth(self, value):
+        if isinstance(value, str):
+            return date.fromisoformat(value)
+
+        return value
+
+    def render_mrns(self, value: QuerySet[HospitalPatient]) -> str:
         """Render MRN column.
 
         Concat list of MRN/site pairs into one string.
@@ -103,10 +110,10 @@ class PatientTable(tables.Table):
         # For more details:
         # https://django-tables2.readthedocs.io/en/latest/pages/custom-data.html#table-render-foo-methods
         mrn_site_list = [
-            f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
+            f'{hospital_patient.get("site")}: {hospital_patient.get("mrn")}' for hospital_patient in value
         ]
 
-        return ', '.join(str(mnr_value) for mnr_value in mrn_site_list)
+        return mark_safe('<br>'.join(str(mnr_value) for mnr_value in mrn_site_list))
 
 
 class ExistingUserTable(tables.Table):
