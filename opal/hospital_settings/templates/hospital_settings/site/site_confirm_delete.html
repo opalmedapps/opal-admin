@@ -1,27 +1,12 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 
-{% block content-header-page-name %}{% translate "Delete Site" %}{% endblock %}
+{% block heading %}
+  {% translate "Delete Site" %}
+{% endblock %}
 
 {% block content %}
-  <section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                  <div class="callout callout-danger">
-                    <h5>
-                      {% blocktranslate %}Are you sure you want to delete the following site: {{ object }}?{% endblocktranslate %}
-                    </h5>
-
-                    <form action="" method="POST" novalidate>
-                      {% csrf_token %}
-                      <input class="btn btn-danger btn-sm" type="submit" value="{% translate "Yes" %}, {% translate "Delete"|lower %}.">
-                    </form>
-                  </div>
-            </div>
-        </div>
-    </div>
-  </section>
-
+  {% url 'hospital-settings:site-list' as cancel_url %}
+  {% confirm_delete cancel_url=cancel_url object=object csrf_token=csrf_token %}
 {% endblock %}

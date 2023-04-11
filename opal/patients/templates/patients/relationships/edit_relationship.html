@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block heading %}
+  {% translate "Edit Caregiver Access Request" %}
+{% endblock %}
+
+{% block content %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <p><span class="fw-bold">{% translate "Caregiver" %}</span>:&nbsp;{{relationship.caregiver}}</p>
+      <p><span class="fw-bold">{% translate "Patient" %}</span>:&nbsp;{{relationship.patient}}</p>
+      <p><span class="fw-bold">{% translate "RAMQ" %}</span>:&nbsp;{{relationship.patient.ramq}}</p>
+      <p><span class="fw-bold">{% translate "Date of Birth"%}</span>:&nbsp;{{relationship.patient.date_of_birth | localize}}</p>
+      <p><span class="fw-bold">{% translate "Relationship" %}</span>:&nbsp;{{relationship.type}}</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}

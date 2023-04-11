@@ -591,7 +591,9 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             )
         ]
 
-        self.helper = FormHelper(self)
+        self.helper = FormHelper()
+        self.helper.attrs = {'novalidate': ''}
+
         self.helper.layout = Layout(
             'start_date',
             'end_date',
@@ -599,8 +601,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'reason',
             Hidden('cancel_url', '{{cancel_url}}'),
             FormActions(
-                Submit('submit', _('Save'), css_class='btn btn-primary'),
                 CancelButton('{{cancel_url}}'),
+                Submit('submit', _('Save'), css_class='btn btn-primary'),
             ),
         )
 

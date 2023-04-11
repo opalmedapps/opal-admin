@@ -63,7 +63,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-search'), 'patients/relationships/relationship_filter.html'),
+    (reverse('patients:relationships-search-list'), 'patients/relationships/relationship_filter.html'),
 ]
 
 
@@ -160,7 +160,7 @@ def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-    assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
+    assertContains(response, 'Are you sure you want to delete "Caregiver"?')
 
 
 def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
@@ -1463,7 +1463,7 @@ def test_caregiver_access_tables(user_client: Client, django_user_model: User) -
     user = django_user_model.objects.create(username='test_caregiver_access_user')
     user_client.force_login(user)
 
-    response = user_client.get(reverse('patients:relationships-search'))
+    response = user_client.get(reverse('patients:relationships-search-list'))
 
     assert response.context['tables'][0].__class__ == tables.PatientTable
     assert response.context['tables'][1].__class__ == tables.RelationshipCaregiverTable
@@ -1474,7 +1474,7 @@ def test_caregiver_access_filter(user_client: Client, django_user_model: User) -
     user = django_user_model.objects.create(username='test_caregiver_access_user')
     user_client.force_login(user)
 
-    response = user_client.get(reverse('patients:relationships-search'))
+    response = user_client.get(reverse('patients:relationships-search-list'))
 
     assert response.context['filter'].__class__ == ManageCaregiverAccessFilter
 
@@ -1488,7 +1488,7 @@ def test_caregiver_access_empty_tables_displayed(user_client: Client, django_use
     factories.Relationship(type=models.RelationshipType.objects.parent_guardian())
     factories.Relationship(type=models.RelationshipType.objects.guardian_caregiver())
 
-    request = RequestFactory().get(reverse('patients:relationships-search'))
+    request = RequestFactory().get(reverse('patients:relationships-search-list'))
     request.user = user
 
     response = CaregiverAccessView.as_view()(request)
@@ -1533,7 +1533,7 @@ def test_caregiver_access_tables_displayed_by_mrn(user_client: Client, django_us
     }
     query_string = urllib.parse.urlencode(form_data)
     response = user_client.get(
-        path=reverse('patients:relationships-search'),
+        path=reverse('patients:relationships-search-list'),
         QUERY_STRING=query_string,
     )
 
@@ -1599,7 +1599,7 @@ def test_caregiver_access_tables_displayed_by_ramq(user_client: Client, django_u
     }
     query_string = urllib.parse.urlencode(form_data)
     response = user_client.get(
-        path=reverse('patients:relationships-search'),
+        path=reverse('patients:relationships-search-list'),
         QUERY_STRING=query_string,
     )
     response.content.decode('utf-8')
@@ -1702,10 +1702,10 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     response_get = relationship_user.get(reverse('patients:relationships-search-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-search',
+        'patients:relationships-search-list',
     )
     assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-search',
+        'patients:relationships-search-list',
     )
 
 
