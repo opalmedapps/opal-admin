@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-27 21:08-0400\n"
+"POT-Creation-Date: 2023-03-31 16:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#: opal/core/form_layouts.py
-msgid "Cancel"
-msgstr "Annuler"
 
 #: opal/core/form_layouts.py
 msgid "Reset"
@@ -55,6 +51,23 @@ msgstr "Français"
 #: opal/templates/base.html opal/templates/layouts/base.html
 msgid "Opal Health Informatics Group"
 msgstr "Le Groupe Informatique Opal Santé"
+
+#: opal/templates/components/confirm_delete.html
+#, python-format
+msgid "Are you sure you want to delete \"%(object)s\"?"
+msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
+
+#: opal/templates/components/form_cancel.html
+msgid "Cancel"
+msgstr "Annuler"
+
+#: opal/templates/components/form_submit.html
+msgid "Save"
+msgstr "Enregister"
+
+#: opal/templates/components/form_submit.html
+msgid "Yes, delete"
+msgstr "Oui, supprimer"
 
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt

@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load extra_filters %}
+
+{% var type=type|default:"save" %}
+
+{% fragment as button_text %}
+  {% if type == "save" %}
+    {% translate "Save" %}
+  {% elif type == "delete" %}
+    {% translate "Yes, delete" %}
+  {% endif %}
+{% endfragment %}
+
+<input type="submit" class="btn btn-{{ type|match:"save:primary,delete:danger" }}" value="{% translate button_text|strip %}">

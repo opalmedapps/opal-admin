@@ -1,51 +1,51 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
-  {% block content %}
-    {% if perms.questionnaires.export_report %} <!-- Restrict access to authorized persons (See models ==> ExportReportPermission)  -->
-        <div class="container-fluid">
-          <div class="row justify-content-md-center">
-            <div class="col col-sm-10">
-              {% if questionnaires_following %}
-                <h4> {% translate "My questionnaires" %}</h4>
-                <div class="table-responsive">
-                    <form action="{% url 'questionnaires:reports-filter' %}" method="POST" id="form" novalidate>
-                        {% csrf_token %}
-                    <table class="table" id="data_table">
-                        <thead>
-                        <tr>
-                            <th scope="col"> {% translate "Questionnaire ID" %}</th>
-                            <th scope="col"> {% translate "Title" %}</th>
-                            <th scope="col"> {% translate "Last viewed" %}</th>
-                            <th scope="col"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
+{% block content %}
+    <div class="container-fluid">
+      <div class="row justify-content-md-center">
+        <div class="col col-sm-10">
+          {% if questionnaires_following %}
+            <h4> {% translate "My questionnaires" %}</h4>
+            <div class="table-responsive">
+                <form action="{% url 'questionnaires:reports-filter' %}" method="POST" id="form" novalidate>
+                    {% csrf_token %}
+                <table class="table" id="data_table">
+                    <thead>
+                    <tr>
+                        <th scope="col"> {% translate "Questionnaire ID" %}</th>
+                        <th scope="col"> {% translate "Title" %}</th>
+                        <th scope="col"> {% translate "Last viewed" %}</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
 
-                            {% for key, value in questionnaires_following.items %}
-                                <tr>
-                                    <td>{{ key }}</td>
-                                    <td>{{ value.title }}</td>
-                                    <td>{{ value.lastviewed }}</td>
-                                    <td><button class="btn btn-primary mr-2" type="submit" name="questionnaireid" value="{{ key }}" >Go</button></td>
-                                </tr>
-                            {% endfor %}
+                        {% for key, value in questionnaires_following.items %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ value.title }}</td>
+                                <td>{{ value.lastviewed }}</td>
+                                <td><button class="btn btn-primary me-2" type="submit" name="questionnaireid" value="{{ key }}" >Go</button></td>
+                            </tr>
+                        {% endfor %}
 
-                        </tbody>
-                    </table>
-                    </form>
-                </div>
-
-            {% else %}
-                <h4> {% translate "You are not following any questionnaires" %}</h4>
-            {% endif %}
-            <br>
-            <a href="{% url 'questionnaires:reports-list' %}" class="nav-link"> {% translate "View all questionnaires" %}</a>
+                    </tbody>
+                </table>
+                </form>
             </div>
-          </div>
+
+        {% else %}
+            <h4> {% translate "You are not following any questionnaires" %}</h4>
+        {% endif %}
+        <br>
+        <a href="{% url 'questionnaires:reports-list' %}" class="nav-link"> {% translate "View all questionnaires" %}</a>
         </div>
-    {% endif %}
-  {% endblock %}
+      </div>
+    </div>
+{% endblock %}

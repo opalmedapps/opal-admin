@@ -1,18 +1,12 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-{% block content-header-page-name %}{% translate "Pending Caregiver Access Requests" %}{% endblock %}
+{% block heading %}
+  {% translate "Pending Caregiver Access Requests" %}
+{% endblock %}
 
 {% block content %}
-  {% comment %} Main content {% endcomment %}
-  <section class="content">
-
-    {% comment %} Default box {% endcomment %}
-    <div class="container-fluid">
-      {% render_table table %}
-    </div>
-
-  </section>
+  {% render_table table %}
 {% endblock %}
