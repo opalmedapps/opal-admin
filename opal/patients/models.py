@@ -425,13 +425,25 @@ class Relationship(models.Model):
 
         if (
             self.type.role_type == RoleType.SELF
-            and Relationship.objects.filter(patient=self.patient, type__role_type=RoleType.SELF).exists()
+            # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
+                pk=self.pk,
+            ).filter(
+                patient=self.patient,
+                type__role_type=RoleType.SELF,
+            ).exists()
         ):
             errors[NON_FIELD_ERRORS].append(gettext('The patient already has a self-relationship'))
 
         if (
             self.type.role_type == RoleType.SELF
-            and Relationship.objects.filter(caregiver=self.caregiver, type__role_type=RoleType.SELF).exists()
+            # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
+                pk=self.pk,
+            ).filter(
+                caregiver=self.caregiver,
+                type__role_type=RoleType.SELF,
+            ).exists()
         ):
             errors[NON_FIELD_ERRORS].append(gettext('The caregiver already has a self-relationship'))
 
