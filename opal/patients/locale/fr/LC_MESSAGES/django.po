@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-04 09:36-0400\n"
+"POT-Creation-Date: 2023-04-14 01:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -367,8 +367,36 @@ msgid "Start date cannot be earlier than patient's date of birth"
 msgstr ""
 
 #: opal/patients/models.py
+#, python-brace-format
+msgid "Start date cannot be earlier than {calculated_start_date}."
+msgstr ""
+"La date de début ne peut pas être antérieure à {calculated_start_date}."
+
+#: opal/patients/models.py
+#, python-brace-format
+msgid ""
+"Start date cannot be earlier than {relative_year} years before the request "
+"date of {request_date}."
+msgstr ""
+"La date de début ne peut pas être antérieure à {relative_year} ans avant la "
+"date de demande du {request_date}."
+
+#: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
+
+#: opal/patients/models.py
+#, python-brace-format
+msgid ""
+"End date for {relationship_type} relationship cannot be later than "
+"{end_date}."
+msgstr ""
+"La date de fin de la relation {relationship_type} ne peut pas être "
+"postérieure au {end_date}."
+
+#: opal/patients/models.py
+msgid "End date should be later than start date."
+msgstr "La date de fin doit être postérieure à la date de début."
 
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."

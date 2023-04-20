@@ -22,7 +22,7 @@ MEDICAL_CARDS: Final = frozenset((item.name, item.value) for item in MedicalCard
 # TODO: we might refactor this constant name for more clarity
 TYPE_USERS: Final = ((0, _('New Opal User')), (1, _('Existing Opal User')))
 #: The value to be replaced in the original datetime.
-RELATIVE_YEAR_VALUE: Final = 1
+RELATIVE_YEAR_VALUE: Final = 2
 #: New user for the requestor type.
 NEW_USER: Final = 0
 #: Existing user for the requestor type.
