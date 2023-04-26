@@ -303,6 +303,13 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
 
             context_data['patient_table'] = tables.PatientTable(patients)
 
+        relationship_form = context_data.get('relationship_form')
+
+        if relationship_form:
+            existing_user = relationship_form.existing_user
+            table_data = [existing_user] if existing_user else []
+            context_data['user_table'] = tables.ExistingUserTable(table_data)
+
         context_data['next_button_text'] = self.texts.get(next_step)
         context_data['next_button_disabled'] = disable_next
 

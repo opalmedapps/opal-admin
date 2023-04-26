@@ -496,6 +496,8 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         """
         super().__init__(*args, **kwargs)
 
+        self.existing_user: Optional[Caregiver] = None
+
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.disable_csrf = True
@@ -525,8 +527,9 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
                 Row(
                     Column('user_email', css_class='col-auto'),
                     Column('user_phone', css_class='col-auto'),
-                    Column(InlineSubmit('search_user', 'Find User')),
+                    Column(InlineSubmit('search_user', 'Find User', up_submit=True)),
                 ),
+                HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
             ))
         # handle current value being None
         else:
@@ -540,16 +543,38 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         available_choices = search_valid_relationship_types(date_of_birth)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
-    def clean(self) -> None:
+    def clean(self) -> Optional[dict[str, Any]]:
         """Validate if relationship type requested requires a form."""
         super().clean()
+        cleaned_data = self.cleaned_data
+
         print(f'{self.__class__.__name__}.clean')
-        relationship_type = self.cleaned_data.get('relationship_type')
-        form_filled = self.cleaned_data.get('form_filled')
+
+        relationship_type = cleaned_data.get('relationship_type')
+        form_filled = cleaned_data.get('form_filled')
 
         if relationship_type:
             if relationship_type.form_required and not form_filled:
                 self.add_error('form_filled', _('A request form is required for the selected relationship.'))
+
+        user_type = cleaned_data['user_type']
+
+        if user_type == '1':
+            # at first they are not even in the cleaned data
+            if 'user_email' in cleaned_data and 'user_phone' in cleaned_data:
+                user_email = cleaned_data['user_email']
+                user_phone = cleaned_data['user_phone']
+                if user_email and user_phone:
+                    self.existing_user = Caregiver.objects.filter(phone_number=user_phone, email=user_email).first()
+
+                    if not self.existing_user:
+                        self.add_error(
+                            NON_FIELD_ERRORS,
+                            'An existing user needs to be found to continue. Choose New User otherwise.',
+                        )
+
+
+        return cleaned_data
 
 
 class RequestorAccountForm(forms.Form):
