@@ -94,9 +94,11 @@ class OIEService:
 
         errors = self.validator.is_patient_response_valid(response_data)
 
-        patient_data = response_data['data']
         mrns = []
         if not errors:
+            # assign value to patient data only when no errors found in response data
+            patient_data = response_data['data']
+
             for mrn_dict in patient_data['mrns']:
                 mrns.append(OIEMRNData(
                     site=mrn_dict['site'],
@@ -163,9 +165,11 @@ class OIEService:
 
         errors = self.validator.is_patient_response_valid(response_data)
 
-        patient_data = response_data['data']
         mrns = []
         if not errors:
+            # assign value to patient data only when no errors found in response data
+            patient_data = response_data['data']
+
             for mrn_dict in patient_data['mrns']:
                 mrns.append(OIEMRNData(
                     site=mrn_dict['site'],

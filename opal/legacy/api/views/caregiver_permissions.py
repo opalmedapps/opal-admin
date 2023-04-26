@@ -21,7 +21,7 @@ class CaregiverPermissionsView(APIView):
 
     def get(self, request: Request, legacy_id: int) -> Response:
         """
-        Handle GET requests on `patients/legacy/<legacy_id>/check_permissions`.
+        Handle GET requests on `patients/legacy/<legacy_id>/check-permissions`.
 
         Args:
             request: Http request made by the listener.

@@ -1,20 +1,22 @@
 import datetime
+from types import MappingProxyType
 
 from django.forms import model_to_dict
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
-from .. import factories, forms
+from .. import constants, factories, forms
 from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = dict({
+OIE_PATIENT_DATA = MappingProxyType({
     'dateOfBirth': '1953-01-01 00:00:00',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
@@ -37,8 +39,15 @@ def test_relationshippending_form_is_valid() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
-
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
+        relationship_type=factories.RelationshipType(),
+        request_date=datetime.date.today(),
+    )
     assert relationshippending_form.is_valid()
 
 
@@ -50,7 +59,15 @@ def test_relationshippending_missing_startdate() -> None:
         'end_date',
     ])
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
+        relationship_type=factories.RelationshipType(),
+        request_date=datetime.date.today(),
+    )
     assert not relationshippending_form.is_valid()
 
 
@@ -59,7 +76,15 @@ def test_relationshippending_update() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
+        relationship_type=factories.RelationshipType(),
+        request_date=datetime.date.today(),
+    )
     relationshippending_form.save()
 
     assert Relationship.objects.all()[0].start_date == relationshippending_form.data['start_date']
@@ -74,7 +99,15 @@ def test_relationshippending_update_fail() -> None:
     ])
 
     message = 'This field is required.'
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
+        relationship_type=factories.RelationshipType(),
+        request_date=datetime.date.today(),
+    )
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -92,7 +125,15 @@ def test_relationshippending_form_date_validated() -> None:
     form_data = model_to_dict(relationship_info)
 
     message = 'Start date should be earlier than end date.'
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date(2013, 5, 9),
+        relationship_type=factories.RelationshipType(),
+        request_date=relationship_info.start_date + relativedelta(
+            years=constants.RELATIVE_YEAR_VALUE,
+        ),
+    )
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -113,7 +154,15 @@ def test_relationship_pending_status_reason() -> None:
     print(form_data)
 
     message = 'Reason is mandatory when status is denied or revoked.'
-    pending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    pending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.date(2013, 5, 9),
+        relationship_type=factories.RelationshipType(),
+        request_date=relationship_info.start_date + relativedelta(
+            years=constants.RELATIVE_YEAR_VALUE,
+        ),
+    )
 
     assert not pending_form.is_valid()
     print(pending_form.errors)
