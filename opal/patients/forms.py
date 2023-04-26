@@ -221,126 +221,6 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         return cleaned_data
 
 
-class TabRadioSelect(CrispyField):
-    template = 'patients/radioselect_tabs.html'
-
-
-class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
-    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
-
-    relationship_type = forms.ModelChoiceField(
-        queryset=RelationshipType.objects.all(),
-        widget=AvailableRadioSelect,
-        # widget=forms.RadioSelect,
-        label=_('Relationship to the patient'),
-    )
-
-    form_filled = forms.BooleanField(
-        label=_('The requestor filled out the request form'),
-        required=False,
-    )
-
-    id_checked = forms.BooleanField(label='Requestor ID checked')
-
-    user_type = forms.ChoiceField(
-        choices=constants.TYPE_USERS,
-        initial=0,
-        widget=forms.RadioSelect(attrs={'up-validate': ''}),
-    )
-
-    first_name = DynamicField(
-        forms.CharField,
-        label=_('First Name'),
-        required=lambda form: form['user_type'].value() == '0',
-    )
-    last_name = DynamicField(
-        forms.CharField,
-        label=_('Last Name'),
-        required=lambda form: form['user_type'].value() == '0',
-    )
-
-    user_email = DynamicField(
-        forms.CharField,
-        label=_('Email Address'),
-        required=lambda form: form['user_type'].value() == '1',
-    )
-    user_phone = DynamicField(
-        forms.CharField,
-        label=_('Phone Number'),
-        initial='+1',
-        required=lambda form: form['user_type'].value() == '1',
-    )
-
-    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the layout for card type select box and card number input box.
-
-        Args:
-            date_of_birth: patient's date of birth
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        super().__init__(*args, **kwargs)
-
-        self.helper = FormHelper()
-        self.helper.form_tag = False
-        self.helper.disable_csrf = True
-
-        self.helper.layout = Layout(
-            Row(
-                Column(
-                    'relationship_type',
-                ),
-                Column(
-                    Fieldset(
-                        'Validation',
-                        'form_filled',
-                        'id_checked',
-                    ),
-                ),
-            ),
-            TabRadioSelect('user_type'),
-            # empty div to be filled below depending on the chosen user type
-            Div(css_class='mb-4 p-3 border-start border-end border-bottom'),
-        )
-
-        user_type = self['user_type'].value()
-
-        if user_type == '1':
-            self.helper.layout[2].append(Layout(
-                Row(
-                    Column('user_email', css_class='col-auto'),
-                    Column('user_phone', css_class='col-auto'),
-                    Column(InlineSubmit('search_user', 'Find User')),
-                ),
-            ))
-        # handle current value being None
-        else:
-            self.helper.layout[2].extend(Layout(
-                Row(
-                    Column('first_name', css_class='col-auto'),
-                    Column('last_name', css_class='col-auto'),
-                ),
-            ))
-
-        age = Patient.calculate_age(date_of_birth=date_of_birth)
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=age,
-        ).values_list('id', flat=True)
-        self.fields['relationship_type'].widget.available_choices = available_choices
-
-    def clean(self) -> None:
-        """Validate if relationship type requested requires a form."""
-        super().clean()
-        print(f'{self.__class__.__name__}.clean')
-        relationship_type = self.cleaned_data.get('relationship_type')
-        form_filled = self.cleaned_data.get('form_filled')
-
-        if relationship_type:
-            if relationship_type.form_required and not form_filled:
-                self.add_error('form_filled', _('A request form is required for the selected relationship.'))
-
-
 class SelectSiteForm(forms.Form):
     """This `SelectSiteForm` provides a group of buttons to choose hospital site."""
 
@@ -553,6 +433,126 @@ class AvailableRadioSelect(forms.RadioSelect):
         if value not in self.available_choices:
             option_dict['attrs']['disabled'] = 'disabled'
         return option_dict
+
+
+class TabRadioSelect(CrispyField):
+    template = 'patients/radioselect_tabs.html'
+
+
+class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
+
+    relationship_type = forms.ModelChoiceField(
+        queryset=RelationshipType.objects.all(),
+        widget=AvailableRadioSelect,
+        # widget=forms.RadioSelect,
+        label=_('Relationship to the patient'),
+    )
+
+    form_filled = forms.BooleanField(
+        label=_('The requestor filled out the request form'),
+        required=False,
+    )
+
+    id_checked = forms.BooleanField(label='Requestor ID checked')
+
+    user_type = forms.ChoiceField(
+        choices=constants.TYPE_USERS,
+        initial=0,
+        widget=forms.RadioSelect(attrs={'up-validate': ''}),
+    )
+
+    first_name = DynamicField(
+        forms.CharField,
+        label=_('First Name'),
+        required=lambda form: form['user_type'].value() == '0',
+    )
+    last_name = DynamicField(
+        forms.CharField,
+        label=_('Last Name'),
+        required=lambda form: form['user_type'].value() == '0',
+    )
+
+    user_email = DynamicField(
+        forms.CharField,
+        label=_('Email Address'),
+        required=lambda form: form['user_type'].value() == '1',
+    )
+    user_phone = DynamicField(
+        forms.CharField,
+        label=_('Phone Number'),
+        initial='+1',
+        required=lambda form: form['user_type'].value() == '1',
+    )
+
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for card type select box and card number input box.
+
+        Args:
+            date_of_birth: patient's date of birth
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        self.helper.layout = Layout(
+            Row(
+                Column(
+                    'relationship_type',
+                ),
+                Column(
+                    Fieldset(
+                        'Validation',
+                        'form_filled',
+                        'id_checked',
+                    ),
+                ),
+            ),
+            TabRadioSelect('user_type'),
+            # empty div to be filled below depending on the chosen user type
+            Div(css_class='mb-4 p-3 border-start border-end border-bottom'),
+        )
+
+        user_type = self['user_type'].value()
+
+        if user_type == '1':
+            self.helper.layout[2].append(Layout(
+                Row(
+                    Column('user_email', css_class='col-auto'),
+                    Column('user_phone', css_class='col-auto'),
+                    Column(InlineSubmit('search_user', 'Find User')),
+                ),
+            ))
+        # handle current value being None
+        else:
+            self.helper.layout[2].extend(Layout(
+                Row(
+                    Column('first_name', css_class='col-auto'),
+                    Column('last_name', css_class='col-auto'),
+                ),
+            ))
+
+        age = Patient.calculate_age(date_of_birth=date_of_birth)
+        available_choices = RelationshipType.objects.filter_by_patient_age(
+            patient_age=age,
+        ).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = available_choices
+
+    def clean(self) -> None:
+        """Validate if relationship type requested requires a form."""
+        super().clean()
+        print(f'{self.__class__.__name__}.clean')
+        relationship_type = self.cleaned_data.get('relationship_type')
+        form_filled = self.cleaned_data.get('form_filled')
+
+        if relationship_type:
+            if relationship_type.form_required and not form_filled:
+                self.add_error('form_filled', _('A request form is required for the selected relationship.'))
 
 
 class RequestorAccountForm(forms.Form):
