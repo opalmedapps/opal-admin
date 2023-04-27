@@ -80,7 +80,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
 
     patient = PatientSerializer(
         source='relationship.patient',
-        fields=('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'),
+        fields=('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq', 'uuid'),
         many=False,
         read_only=True,
     )

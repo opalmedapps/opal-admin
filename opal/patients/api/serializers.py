@@ -34,6 +34,7 @@ class PatientSerializer(DynamicFieldsSerializer):
             'date_of_death',
             'sex',
             'ramq',
+            'uuid',
         ]
 
 
