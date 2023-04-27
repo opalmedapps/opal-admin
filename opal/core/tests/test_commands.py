@@ -55,11 +55,11 @@ class TestInsertTestData(CommandTestMixin):
         # old data was deleted
         assert not Relationship.objects.filter(pk=relationship.pk).exists()
         assert not HospitalPatient.objects.filter(pk=hospital_patient.pk).exists()
-        assert not Relationship.objects.filter(pk=institution.pk).exists()
-        assert not Relationship.objects.filter(pk=site.pk).exists()
-        assert not Relationship.objects.filter(pk=patient.pk).exists()
-        assert not Relationship.objects.filter(pk=caregiver_profile.pk).exists()
-        assert not Relationship.objects.filter(pk=caregiver.pk).exists()
+        assert not Institution.objects.filter(pk=institution.pk).exists()
+        assert not Site.objects.filter(pk=site.pk).exists()
+        assert not Patient.objects.filter(pk=patient.pk).exists()
+        assert not CaregiverProfile.objects.filter(pk=caregiver_profile.pk).exists()
+        assert not Caregiver.objects.filter(pk=caregiver.pk).exists()
 
         # new data was created
         assert Institution.objects.count() == 1
