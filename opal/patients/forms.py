@@ -38,10 +38,8 @@ class DisableFieldsMixin:
 
         self.has_existing_data = False
 
-    def disable_fields(self, existing_data: Optional[dict[str, Any]] = None):
-        if existing_data:
-            self.initial = existing_data
-        for _field_name, field in self.fields.items():
+    def disable_fields(self):
+        for field_name, field in self.fields.items():
             field.disabled = True
 
         self.has_existing_data = True
@@ -75,17 +73,10 @@ class NewAccessRequestForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         queryset=Site.objects.all(),
         # initial=Site.objects.first(),
         label=_('Hospital'),
-        # include=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
         required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
         disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name,
     )
-    # site = forms.ModelChoiceField(
-    #     queryset=Site.objects.all(),
-    #     label=_('Hospital'),
-    #     required=True,
-    # )
     medical_number = forms.CharField(
-        widget=forms.TextInput(attrs={'up-validate': '.content'}),
         label=_('Identification Number'),
     )
 
@@ -465,12 +456,12 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     first_name = DynamicField(
         forms.CharField,
         label=_('First Name'),
-        required=lambda form: form['user_type'].value() == '0',
+        required=lambda form: form['user_type'].value() != '1',
     )
     last_name = DynamicField(
         forms.CharField,
         label=_('Last Name'),
-        required=lambda form: form['user_type'].value() == '0',
+        required=lambda form: form['user_type'].value() != '1',
     )
 
     user_email = DynamicField(
@@ -482,6 +473,7 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         forms.CharField,
         label=_('Phone Number'),
         initial='+1',
+        validators=[validators.validate_phone_number],
         required=lambda form: form['user_type'].value() == '1',
     )
 
@@ -525,9 +517,9 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         if user_type == '1':
             self.helper.layout[2].append(Layout(
                 Row(
-                    Column('user_email', css_class='col-auto'),
-                    Column('user_phone', css_class='col-auto'),
-                    Column(InlineSubmit('search_user', 'Find User', up_submit=True)),
+                    Column('user_email', css_class='col-4'),
+                    Column('user_phone', css_class='col-4'),
+                    Column(InlineSubmit('search_user', 'Find User')),
                 ),
                 HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
             ))
@@ -535,8 +527,8 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         else:
             self.helper.layout[2].extend(Layout(
                 Row(
-                    Column('first_name', css_class='col-auto'),
-                    Column('last_name', css_class='col-auto'),
+                    Column('first_name', css_class='col-4'),
+                    Column('last_name', css_class='col-4'),
                 ),
             ))
 
@@ -795,12 +787,12 @@ class NewUserForm(forms.Form):
 class ConfirmPasswordForm(forms.Form):
     """This `ConfirmPasswordForm` provides a layout to confirm user password."""
 
-    confirm_password = forms.CharField(
+    password = forms.CharField(
         widget=forms.PasswordInput(),
         label=_('Please confirm access to patient data by entering your password.'),
     )
 
-    def __init__(self, authorized_user: User, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, username: str, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for new user form.
 
@@ -811,25 +803,26 @@ class ConfirmPasswordForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
         self.helper.layout = Layout(
             Row(
-                Column('confirm_password', css_class='form-group col-md-6 mb-0'),
+                Column('password', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row',
             ),
-            FormActions(
-                Submit('wizard_goto_step', _('Confirm')),
-                CancelButton(reverse_lazy('patients:access-request')),
-            ),
         )
-        self.authorized_user = authorized_user
+        self.username = username
 
-    def clean(self) -> None:
+    def clean(self) -> dict[str, Any]:
         """Validate the user password."""
         super().clean()
-        confirm_password = self.cleaned_data.get('confirm_password')
+        password = self.cleaned_data.get('password')
 
-        if not authenticate(username=self.authorized_user.username, password=confirm_password):
-            self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
+        if password and not authenticate(username=self.username, password=password):
+            self.add_error('password', _('The password you entered is incorrect. Please try again.'))
+
+        return self.cleaned_data
 
 
 class RelationshipAccessForm(forms.ModelForm[Relationship]):

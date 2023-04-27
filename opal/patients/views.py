@@ -185,6 +185,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             kwargs.update({
                 'date_of_birth': date.fromisoformat(patient['date_of_birth']),
             })
+        elif current_step == 'confirm':
+            kwargs.update({
+                'username': self.request.user.username,
+            })
 
         return kwargs
 
@@ -193,19 +197,18 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         for step, form_class in self.forms.items():
             data = self.request.POST if step == current_step else self.get_saved_form_data(step)
             # initial needs to be the data to make previous forms (with disabled fields) valid (validation then uses the initial data)
-            initial = data
+            # initial requires the field name without the prefix, strip it from the POST data
+            initial = {
+                key.replace(f'{current_step}-', ''): value
+                for key, value in data.items()
+            }
 
             # use initial instead of data to avoid validating a form when up-validate is used
-            # if step == current_step and 'X-Up-Validate' in self.request.headers:
-            #     data = None
-            #     initial = {
-            #         key.replace(f'{current_step}-', ''): value
-            #         for key, value in self.request.POST.items()
-
-            #     }
+            if step == current_step and 'X-Up-Validate' in self.request.headers:
+                data = {}
 
             disable_fields = step != current_step
-            form = form_class(data=data, initial=initial, **self.get_form_kwargs(step))
+            form = form_class(data=data or None, initial=initial, **self.get_form_kwargs(step))
 
             if disable_fields:
                 form.disable_fields()
@@ -248,7 +251,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
                 # store data for current step in session
                 current_form = current_forms[-1]
                 self.store_form_data(current_form, current_step)
-                current_form.disable_fields(current_form.cleaned_data)
+                current_form.disable_fields()
 
                 next_step = self.next_step(current_step)
 
