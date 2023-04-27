@@ -1,10 +1,10 @@
 {% load i18n %}
 
-{% var button_classes="btn-sm me-2 d-inline" %}
+{% var button_classes="btn-sm mb-sm-1 mb-md-1" %}
 {% url urlname_update record.id as update_url %}
 {# Defined in one line due to some weirdness with coverage that detects it as not covered otherwise. #}
 {# Temporary solution to have the same width as a "View" button with an eye icon. #}
-{% #button icon="pencil-alt" href=update_url add_class=button_classes %}{% translate "Edit" %}&nbsp;&nbsp;{% /button %}
+{% #button icon="pencil-alt" href=update_url add_class=button_classes %}{% translate "Edit" %}{% /button %}
 
 {% if urlname_delete %}
   {% url urlname_delete record.id as delete_url %}
