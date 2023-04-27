@@ -5,9 +5,9 @@ from unittest.mock import patch
 import pytest
 from pytest_mock.plugin import MockerFixture
 
+from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, Relationship, RelationshipStatus
-from opal.tests.utils.test_commands import CommandTestMixin
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

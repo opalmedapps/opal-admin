@@ -10,7 +10,7 @@ class CommandTestMixin:
 
     def _call_command(self, command_name: str, *args: Any, **kwargs: Any) -> tuple[str, str]:
         """
-        Test command.
+        Call a management command and return the command's standard and error output.
 
         Args:
             command_name: specify the command name to run
@@ -18,7 +18,7 @@ class CommandTestMixin:
             kwargs: keywords input parameter
 
         Returns:
-            tuple of stdout and stderr values
+            tuple of stdout and stderr output
         """
         out = StringIO()
         err = StringIO()
