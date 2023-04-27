@@ -5,7 +5,7 @@
     {% blocktranslate %}Are you sure you want to delete "{{ object }}"?{% endblocktranslate %}
   </h5>
 
-  <form action="" method="POST" novalidate>
+  <form method="POST" novalidate>
     {% csrf_token %}
     {% form_actions cancel_url=cancel_url submit_type="delete" %}
   </form>
