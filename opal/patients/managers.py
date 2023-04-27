@@ -1,7 +1,7 @@
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from django.db import models
 from django.db.models.functions import Coalesce
@@ -59,7 +59,7 @@ class RelationshipManager(models.Manager['Relationship']):
         self,
         relationship_type: str,
         user_id: int,
-        ramq: str,
+        ramq: Optional[str],
     ) -> models.QuerySet['Relationship']:
         """
         Query manager to get a `Relationship` record filtered by given parameters.

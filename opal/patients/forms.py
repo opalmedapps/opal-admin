@@ -1,5 +1,5 @@
 """This module provides forms for the `patients` app."""
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, Dict, Optional, Union
 
 from django import forms
@@ -599,23 +599,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             )
         ]
         self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
-            'min': Relationship.set_relationship_start_date(
-                request_date,
-                date_of_birth,
-                relationship_type,
-            ),
-            'max': Relationship.set_relationship_end_date(
+            'min': date_of_birth,
+            'max': Relationship.calculate_end_date(
                 date_of_birth,
                 relationship_type,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
-            'min': Relationship.set_relationship_start_date(
-                request_date,
-                date_of_birth,
-                relationship_type,
-            ),
-            'max': Relationship.set_relationship_end_date(
+            'min': date_of_birth + timedelta(days=1),
+            'max': Relationship.calculate_end_date(
                 date_of_birth,
                 relationship_type,
             ),
