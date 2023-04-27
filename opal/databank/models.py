@@ -35,7 +35,7 @@ class DatabankConsent(models.Model):
         verbose_name=_('Checked-In Appointments Consent'),
         default=True,
     )
-    has_diagnosis = models.BooleanField(
+    has_diagnoses = models.BooleanField(
         verbose_name=_('Diagnoses Consent'),
         default=True,
     )
@@ -61,6 +61,8 @@ class DatabankConsent(models.Model):
     )
     last_synchronized = models.DateTimeField(
         verbose_name=_('Last Synchronized'),
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -79,3 +81,59 @@ class DatabankConsent(models.Model):
         return "{patient}'s Databank Consent".format(
             patient=str(self.patient),
         )
+
+
+class DataModuleType(models.TextChoices):
+    """An enumeration of supported data modules for the databank."""
+
+    APPOINTMENTS = 'APPT', _('Appointments')
+    DIAGNOSES = 'DIAG', _('Diagnoses')
+    DEMOGRAPHICS = 'DEMO', _('Demographics')
+    LABS = 'LABS', _('Labs')
+    QUESTIONNAIRES = 'QSTN', _('Questionnaires')
+
+
+class SharedData(models.Model):
+    """A piece of data sent to the databank.
+
+    Each instance contains some identifiers for each piece of data sent to the databank.
+    """
+
+    databank_consent = models.ForeignKey(
+        verbose_name=_('Databank Consent'),
+        to=DatabankConsent,
+        on_delete=models.CASCADE,
+        related_name='shared_data',
+    )
+    sent_at = models.DateTimeField(
+        verbose_name=_('Sent At'),
+        auto_now=True,
+    )
+    data_id = models.IntegerField(verbose_name=_('Data ID'))
+    data_type = models.CharField(
+        verbose_name=_('Data Type'),
+        max_length=4,
+        choices=DataModuleType.choices,
+    )
+
+    class Meta:
+        verbose_name = _('Shared Datum')
+        verbose_name_plural = _('Shared Data')
+        ordering = ('-sent_at',)
+        constraints = [
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_data_type_valid',
+                check=models.Q(data_type__in=DataModuleType.values),
+            ),
+        ]
+        # TODO: After finalizing retrieval queries, add indexes to SharedData to reduce query time.
+        #       Indexing will depend on what we will be searching by (databank_consent+data_type?)
+
+    def __str__(self) -> str:
+        """
+        Return the type and sent date of this datum instance.
+
+        Returns:
+            the textual representation of this instance
+        """
+        return f'{self.get_data_type_display()} datum, sent at {self.sent_at}'
