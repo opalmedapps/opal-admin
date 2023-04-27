@@ -27,6 +27,7 @@ class RelationshipTypeTable(tables.Table):
         extra_context={
             'urlname_update': 'patients:relationshiptype-update',
         },
+        attrs={'th': {'style': 'width: 20%'}},
     )
 
     class Meta:
