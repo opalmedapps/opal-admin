@@ -1,0 +1,3 @@
+<div{% if formactions.attrs %} {{ formactions.flat_attrs }}{% endif %} class="mb-3{% if 'form-horizontal' in form_class %} row{% endif %} {{ formactions.css_class }}" {% if formactions.id %} id="{{ formactions.id }}"{% endif %}>
+    {{ fields_output|safe }}
+</div>
