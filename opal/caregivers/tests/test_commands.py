@@ -6,7 +6,7 @@ import pytest
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
-from opal.tests.utils.test_commands import CommandTestMixin
+from opal.core.test_utils import CommandTestMixin
 
 from ..constants import REGISTRATION_CODE_EXPIRY
 

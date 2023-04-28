@@ -10,7 +10,8 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 
-from ..core.form_layouts import CancelButton, FileField
+from opal.core.forms.layouts import CancelButton, FileField
+
 from .models import Institution
 
 

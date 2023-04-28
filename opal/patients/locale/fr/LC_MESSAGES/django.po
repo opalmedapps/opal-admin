@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 01:08+0000\n"
+"POT-Creation-Date: 2023-04-25 17:01-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -365,21 +365,6 @@ msgstr "Relations"
 #: opal/patients/models.py
 msgid "Start date cannot be earlier than patient's date of birth"
 msgstr ""
-
-#: opal/patients/models.py
-#, python-brace-format
-msgid "Start date cannot be earlier than {calculated_start_date}."
-msgstr ""
-"La date de début ne peut pas être antérieure à {calculated_start_date}."
-
-#: opal/patients/models.py
-#, python-brace-format
-msgid ""
-"Start date cannot be earlier than {relative_year} years before the request "
-"date of {request_date}."
-msgstr ""
-"La date de début ne peut pas être antérieure à {relative_year} ans avant la "
-"date de demande du {request_date}."
 
 #: opal/patients/models.py
 msgid "Start date should be earlier than end date."
