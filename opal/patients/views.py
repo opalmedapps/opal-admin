@@ -4,7 +4,7 @@ import io
 import json
 from collections import Counter, OrderedDict
 from datetime import date
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -37,6 +37,11 @@ from . import constants
 from .filters import ManageCaregiverAccessFilter
 from .forms import RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+
+_StorageValue = str | dict[str, Any]
+# TODO: would be good to have a type that has DisableFieldsMixin and Form for typing in the code below
+# (maybe an extra mixin: AccessRequestForm(DisableFieldsMixin, Form)) that all forms inherit from
+_AccessRequestForm = TypeVar('_AccessRequestForm', bound=forms.DisableFieldsMixin)
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
@@ -84,6 +89,7 @@ class RelationshipTypeDeleteView(
 
 class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
     template_name = 'patients/access_request/new_access_request.html'
+    template_name_confirm = 'patients/access_request/access_request_confirm.html'
     prefix = 'search'
 
     forms = OrderedDict({
@@ -96,7 +102,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         'search': 'Find Patient',
         'patient': 'Confirm Patient Data',
         'relationship': 'Continue',
-        'confirm': 'Confirm',
+        'confirm': 'Generate Registration Code',
     }
     _current_step_name = 'current_step'
     _session_key_name = 'access_request'
@@ -129,23 +135,18 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
 
         return None
 
-    def get_storage(self) -> dict[str, Union[str, dict[str, Any]]]:
-        storage: dict[str, dict[str, Any]] = self.request.session[self._session_key_name]
+    def get_storage(self) -> dict[str, _StorageValue]:
+        storage: dict[str, _StorageValue] = self.request.session[self._session_key_name]
 
-        return storage
+        return storage  # noqa: WPS331
 
     def get_saved_form_data(self, step: str) -> dict[str, Any]:
         storage = self.get_storage()
 
         print(f'getting stored form data for {step}')
 
-        data = storage[f'step_{step}']
-
-        # return {
-        #     f'{step}-{key}': value
-        #     for key, value in data.items()
-        # }
-        return data
+        # the data for a step is always a dict
+        return storage[f'step_{step}']  # type: ignore[return-value]
 
     def store_form_data(self, form: Form, step: str) -> None:
         storage = self.get_storage()
@@ -161,9 +162,11 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
 
         if step == 'search':
             patient = form.patient
+            # TODO: patient could also be an actual Patient instance, need to add support
             # convert it to a dictionary to be able to serialize it into JSON
-            data_dict = patient._asdict()
-            data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]
+            data_dict = patient._asdict()  # noqa: WPS437
+            data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
+            # use DjangoJSONEncoder which supports date/datetime
             storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
 
         self.request.session.modified = True
@@ -173,6 +176,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         storage = self.get_storage()
 
         if current_step == 'patient':
+            # TODO: should also support a Patient instance that way
+            # TODO: extract into a function so it can be reused below
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
             patient = json.loads(patient_data)
 
@@ -196,8 +201,11 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         form_list = []
         for step, form_class in self.forms.items():
             data = self.request.POST if step == current_step else self.get_saved_form_data(step)
-            # initial needs to be the data to make previous forms (with disabled fields) valid (validation then uses the initial data)
-            # initial requires the field name without the prefix, strip it from the POST data
+            # initial needs to be the data to make previous forms (with disabled fields) valid
+            # validation then uses the initial data
+            #
+            # initial requires the field name without the prefix,
+            # strip it from the POST data which contains keys with the prefix
             initial = {
                 key.replace(f'{current_step}-', ''): value
                 for key, value in data.items()
@@ -207,12 +215,19 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             if step == current_step and 'X-Up-Validate' in self.request.headers:
                 data = {}
 
-            disable_fields = step != current_step
-            form = form_class(data=data or None, initial=initial, **self.get_form_kwargs(step))
+            form = form_class(
+                # pass none instead of empty dict to not bind the form
+                data=data or None,
+                initial=initial,
+                **self.get_form_kwargs(step),
+            )
 
+            # disable fields for all forms except the current one
+            disable_fields = step != current_step
             if disable_fields:
                 form.disable_fields()
             form_list.append(form)
+
             if step == current_step:
                 break
 
@@ -229,7 +244,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         """Handle GET requests: instantiate a blank version of the form."""
         self.request.session[self._session_key_name] = {}
 
-        return self.render_to_response(self.get_context_data(search_form=forms.NewAccessRequestForm(prefix=self.prefix)))
+        return self.render_to_response(self.get_context_data(
+            search_form=forms.NewAccessRequestForm(prefix=self.prefix),
+        ))
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
@@ -246,16 +263,17 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             next_step = current_step
             # get all current forms and validate them
             current_forms = self.get_forms(current_step)
+            current_form = current_forms[-1]
 
-            if all(form.is_valid() for form in current_forms):
+            # only validate the current form since all others use stored data
+            # don't continue if the next button was not clicked (e.g., an unpoly event was triggered)
+            if current_form.is_valid() and 'next' in self.request.POST:
                 # store data for current step in session
-                current_form = current_forms[-1]
                 self.store_form_data(current_form, current_step)
-                current_form.disable_fields()
-
                 next_step = self.next_step(current_step)
 
                 if next_step:
+                    current_form.disable_fields()
                     next_form_class = self.forms[next_step]
                     current_forms.append(next_form_class(**self.get_form_kwargs(next_step)))
                 else:
@@ -265,7 +283,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
                         'header_title': _('New Access Request: Success'),
                     })
             else:
-                print('some forms are invalid')
+                print("some forms are invalid (or the next button wasn't clicked)")
                 for form in current_forms:
                     print(form.errors)
 
@@ -274,6 +292,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
                 current_step=current_step,
                 next_step=next_step,
             )
+
+            if next_step == 'confirm':
+                return render(self.request, self.template_name_confirm, context=context_data)
 
             return self.render_to_response(context_data)
 
@@ -288,6 +309,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         context_data['management_form'] = forms.AccessRequestManagementForm(initial={
             'current_step': next_step,
         })
+        context_data['next_button_text'] = self.texts.get(next_step)
 
         for current_form in current_forms:
             prefix = self.get_the_prefix(current_form.__class__)
@@ -313,7 +335,25 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             table_data = [existing_user] if existing_user else []
             context_data['user_table'] = tables.ExistingUserTable(table_data)
 
-        context_data['next_button_text'] = self.texts.get(next_step)
+        if current_step == 'confirm' or next_step == 'confirm':
+            # populate relationship type (in case it is just the ID)
+            relationship_form.full_clean()
+            print(relationship_form.cleaned_data)
+            context_data['relationship_type'] = relationship_form.cleaned_data['relationship_type']
+            # TODO: convert to correct user type to have the user-facing name for it (via constants.TYPE_USERS)
+            # might be helpful to use an enum like done with MedicalCard
+            user_type = relationship_form.cleaned_data['user_type']
+            context_data['user_type'] = user_type
+            is_existing_user = user_type == '1'
+            context_data['is_existing_user'] = is_existing_user
+
+            if is_existing_user:
+                context_data['next_button_text'] = 'Submit Access Request'
+            else:
+                context_data['first_name'] = relationship_form.cleaned_data['first_name']
+                context_data['last_name'] = relationship_form.cleaned_data['last_name']
+
+        # TODO: might not be needed anymore
         context_data['next_button_disabled'] = disable_next
 
         return context_data

@@ -136,12 +136,12 @@ class NewAccessRequestForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         card_type = self.cleaned_data.get('card_type')
         medical_number = self.cleaned_data.get('medical_number')
 
-        print('clean')
-        print(self.cleaned_data)
-
         if medical_number:
             print('get patient')
+            # TODO: look in the Patient model first, only if not found search via OIE
+            # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
             self.patient = self._fake_oie_response()
+            # TODO: handle connection errors here
 
         return cleaned_data
 
@@ -207,6 +207,9 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         if not self.patient:
             self.add_error(None, 'There is no patient to confirm')
 
+        # TODO: validate the patient record (if coming from the OIE)
+        #  - multiple MRNs at same site
+        #  - ...
         # self.add_error(None, 'test')
 
         return cleaned_data
@@ -354,6 +357,8 @@ class ConfirmPatientForm(forms.Form):
         )
 
 
+# radio select for a choice field that visualizes as bootstrap tabs
+# triggers validation via up-validate to ensure that form knows which fields are required and which are not
 class TabRadioSelect(CrispyField):
     template = 'patients/radioselect_tabs.html'
 
@@ -485,14 +490,15 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
                 user_email = cleaned_data['user_email']
                 user_phone = cleaned_data['user_phone']
                 if user_email and user_phone:
+                    # TODO: can change to User.objects but need to filter by Caregiver user type then
                     self.existing_user = Caregiver.objects.filter(phone_number=user_phone, email=user_email).first()
 
+                    # prevent continuing when no user was found
                     if not self.existing_user:
                         self.add_error(
                             NON_FIELD_ERRORS,
                             'An existing user needs to be found to continue. Choose New User otherwise.',
                         )
-
 
         return cleaned_data
 
