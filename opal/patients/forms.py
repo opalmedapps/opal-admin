@@ -10,7 +10,6 @@ from django.utils.safestring import SafeString
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Column, Div
 from crispy_forms.layout import Field as CrispyField
@@ -19,7 +18,7 @@ from crispy_forms.utils import TEMPLATE_PACK, render_field
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, InlineSubmit
+from opal.core.forms.layouts import CancelButton, InlineSubmit, FormActions
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
