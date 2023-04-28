@@ -200,7 +200,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
             # ),
         )
 
-    def clean(self) -> Dict[str, Any]:
+    def clean(self) -> dict[str, Any]:
         super().clean()
         cleaned_data = self.cleaned_data
 
