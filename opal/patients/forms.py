@@ -367,6 +367,9 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
 
     relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all(),
+        # TODO: provide a custom template that can show a tooltip
+        # when hovering over the relationship type with the details of the relationship type
+        # can be done as a completely separate MR at the end
         widget=AvailableRadioSelect,
         # widget=forms.RadioSelect,
         label=_('Relationship to the patient'),
