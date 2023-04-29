@@ -4,22 +4,149 @@
 {% load crispy_forms_tags %}
 
 {% block heading %}
-  {% translate "Edit Caregiver Access Request" %}
+  {% translate "Edit/View Caregiver Access" %}
 {% endblock %}
 
 {% block content %}
-  <div class="card mb-3">
+  <div class="card border-secondary mb-3">
     <div class="card-body">
-      <p><span class="fw-bold">{% translate "Caregiver" %}</span>:&nbsp;{{relationship.caregiver}}</p>
-      <p><span class="fw-bold">{% translate "Patient" %}</span>:&nbsp;{{relationship.patient}}</p>
-      <p><span class="fw-bold">{% translate "RAMQ" %}</span>:&nbsp;{{relationship.patient.ramq}}</p>
-      <p><span class="fw-bold">{% translate "Date of Birth"%}</span>:&nbsp;{{relationship.patient.date_of_birth | localize}}</p>
-      <p><span class="fw-bold">{% translate "Relationship" %}</span>:&nbsp;{{relationship.type}}</p>
+      <div class="row">
+
+        <h5 class="fw-bold mb-4">{% translate "Patient" %}</h5>
+
+        <div class="col">
+          <div class="row h-25 mb-1">
+            <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
+          </div>
+          <div class="row">
+            <p>{{ relationship.patient }}</p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="row h-25 mb-1">
+            <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
+          </div>
+          <div class="row">
+            <p>{{ relationship.patient.date_of_birth | localize }}</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="row h-25 mb-1">
+            <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
+          </div>
+          <div class="row">
+            <p>
+              {% for record in  relationship.patient.hospital_patients.reverse %}
+                {{ record.site.code }}-{{ record.mrn }} &nbsp;
+              {%  endfor %}
+            </p>
+          </div>
+        </div>
+        <div class="col">
+          <div class="row h-25 mb-1">
+            <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
+          </div>
+          <div class="row">
+            <p>{{ relationship.patient.ramq }}</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
-  <div class="card">
+  <div class="card border-secondary">
     <div class="card-body">
-      {% crispy form %}
+      <!-- if it is readonly -->
+      {% if relationship.status == "EXP" %}
+        <div class="row">
+
+          <h5 class="fw-bold mb-4">{% translate "Caregiver" %}</h5>
+
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "First Name" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.caregiver.user.first_name }}</p>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Last Name" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.caregiver.user.last_name }}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Relationship" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.type }}</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Access Start" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.start_date }}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Status" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.get_status_display }}</p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Access End" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{{ relationship.end_date }}</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="row h-25 mb-1">
+              <p><span class="fw-bold">{% translate "Explanation for Change(s)" %}</span>:</p>
+            </div>
+            <div class="row">
+              <p>{% if relationship.reason %}{{relationship.reason}}{% else %} {% translate "No explanation provided."%}{% endif %}</p>
+            </div>
+          </div>
+          <div class="col">
+
+          </div>
+
+        </div>
+        <a class="btn btn-secondary float-end" href="{{ cancel_url }}" role="button">{% translate "Back" %}</a>
+        <!-- if it is not readonly -->
+      {% else %}
+        <h5 class="fw-bold mb-4">{%  translate "Caregiver" %}</h5>
+        {% crispy form %}
+      {% endif %}
     </div>
   </div>
 {% endblock %}

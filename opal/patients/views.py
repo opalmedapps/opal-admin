@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import QuerySet
 from django.forms import Form
 from django.forms.models import ModelForm
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -18,7 +18,7 @@ from django.views import generic
 
 import qrcode
 from django_filters.views import FilterView
-from django_tables2 import MultiTableMixin, SingleTableView
+from django_tables2 import SingleTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
@@ -509,20 +509,76 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         return context
 
 
-class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
+class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = Relationship
     permission_required = ('patients.can_manage_relationships',)
     table_class = tables.PendingRelationshipTable
-    ordering = ['request_date']
     template_name = 'patients/relationships/pending_relationship_list.html'
-    queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
+    queryset = Relationship.objects.select_related(
+        'patient', 'caregiver__user', 'type',
+    ).prefetch_related(
+        'patient__hospital_patients__site',
+    )
+    filterset_class = ManageCaregiverAccessFilter
+    ordering = ['request_date']
+
+    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:  # noqa: WPS615
+        """
+        Apply the filter arguments on the set of data.
+
+        Args:
+            filterset_class: the filter arguments
+
+        Returns:
+            the filter keyword arguments
+        """
+        # Only use filter query arguments for the filter to support sorting etc. with django-tables2
+        # see: https://github.com/carltongibson/django-filter/issues/1521
+
+        # Check if the query strings contain filter fields and
+        # create a data dictionary of filter fields and values
+        filter_fields = set(filterset_class.get_filters().keys())
+        query_strings = set(self.request.GET.keys())
+        data = {
+            filter_field: self.request.GET.get(filter_field)
+            for filter_field in filter_fields.intersection(query_strings)
+        }
+        filterset_kwargs: dict[str, Any] = super().get_filterset_kwargs(filterset_class)
+        filterset_kwargs['data'] = data or None
+
+        # if no filter fields are used in the query strings default to pending relationships only
+        if not data:
+            filterset_kwargs['queryset'] = self.queryset.filter(
+                status=RelationshipStatus.PENDING,
+            ).order_by('request_date')
+
+        return filterset_kwargs
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: WPS615
+        """
+        Return the template context for `PendingRelationshipListView` update view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the template context for `PendingRelationshipListView`
+        """
+        context_data: dict[str, Any] = super().get_context_data(**kwargs)
+
+        filter_used = context_data['filter'].form.is_bound
+        # could also reverse in the template via a custom filter or this trick: https://stackoverflow.com/a/30075273
+        context_data['is_pending'] = not filter_used
+        context_data['is_search'] = filter_used
+
+        return context_data
 
 
 class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relationship]]):
     """
-    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManageSearchUpdateView`.
+    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManagePendingReadOnlyView`.
 
     It provides common features among the inherited views.
     """
@@ -569,93 +625,74 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
         Returns:
             the template context for `ManagePendingUpdateView`
         """
-        context = super().get_context_data(**kwargs)
-        # to pass url to crispy form to be able to use it as a url for cancel button.
-        context['cancel_url'] = reverse_lazy('patients:relationships-pending-list')
-
-        return context
-
-
-class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
-    """
-    This view inherits `ManageRelationshipUpdateMixin` used to update a record in search access requests results.
-
-    It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
-
-    It overrides `get_success_url()` to provide the correct `success_url` when saving an update.
-    """
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """
-        Return the template context for `ManageSearchUpdateView` update view.
-
-        Args:
-            kwargs: additional keyword arguments
-
-        Returns:
-            the template context for `ManageSearchUpdateView`
-        """
-        context = super().get_context_data(**kwargs)
-        # to pass url to crispy form to be able to re-use the same form for different purposes
-        default_success_url = reverse_lazy('patients:relationships-search-list')
-        referrer = self.request.META.get('HTTP_REFERER')
-        # to maintain the value of `cancel_url` when there is a validation error
-        if context['view'].request.method == 'POST':
-            context['cancel_url'] = context['form'].cleaned_data['cancel_url']
-        # provide previous link with parameters to update on clicking cancel button
-        elif referrer:
-            context['cancel_url'] = referrer
+        context_data = super().get_context_data(**kwargs)
+        default_success_url = reverse_lazy('patients:relationships-pending-list')
+        if self.request.method == 'POST':
+            context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
+        elif self.request.META.get('HTTP_REFERER'):
+            context_data['cancel_url'] = self.request.META.get('HTTP_REFERER')
         else:
-            context['cancel_url'] = default_success_url
-        return context
+            context_data['cancel_url'] = default_success_url
 
-    def get_success_url(self) -> Any:  # noqa: WPS615
+        return context_data
+
+    def get_success_url(self) -> str:  # noqa: WPS615
         """
         Provide the correct `success_url` that re-submits search query or default success_url.
 
         Returns:
             the success url link
         """
+        success_url: str = reverse_lazy('patients:relationships-pending-list')
         if self.request.POST.get('cancel_url', False):
-            return self.request.POST['cancel_url']
+            success_url = self.request.POST['cancel_url']
 
-        return reverse_lazy('patients:relationships-search-list')
+        return success_url
 
-
-# The order of `MultiTableMixin` and `FilterView` classes is important!
-# Otherwise the tables and filter won't be accessible form the context (e.g., in the template)
-class CaregiverAccessView(MultiTableMixin, FilterView):
-    """This view provides a page that lists all caregivers for a specific patient."""
-
-    queryset = Patient.objects.prefetch_related(
-        'hospital_patients__site',
-        'relationships__caregiver__user',
-    )
-    filterset_class = ManageCaregiverAccessFilter
-    tables = [tables.PatientTable, tables.RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:relationships-search-list')
-    template_name = 'patients/relationships/relationship_filter.html'
-
-    def get_tables_data(self) -> List[QuerySet[Any]]:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
-        Get tables data based on the given filter values.
+        Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
 
-        No data returned if it is initial request.
+        Args:
+            request: the http request
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
-            Filtered list of `table_data` that should be used to populate each table
+            regular response for continuing post functionality of the `ManagePendingUpdateView`
         """
-        if self.filterset.is_valid():
-            # Get patient's relationships
-            patient = self.filterset.qs.first()
-            relationships = patient.relationships.all() if patient else Relationship.objects.none()
-            # Provide data for the PatientTable and RelationshipCaregiverTable tables respectively
-            return [
-                self.filterset.qs,
-                relationships,
-            ]
+        relationship_record = Relationship.objects.get(pk=kwargs['pk'])
+        # to refuse any post request when status is EXPIRED even if front-end restrictions are bypassed
+        if relationship_record.status == RelationshipStatus.EXPIRED:
+            return HttpResponseNotAllowed(['GET'])
 
-        return [
-            Patient.objects.none(),
-            Relationship.objects.none(),
-        ]
+        user_record = relationship_record.caregiver.user
+        user_record.first_name = request.POST['first_name']
+        user_record.last_name = request.POST['last_name']
+        # TODO: run standard validations on the first/last field that are relevant to the user module.
+        user_record.save()
+
+        return super().post(request, kwargs['pk'])
+
+
+class ManagePendingReadOnlyView(ManagePendingUpdateView):
+    """
+    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
+
+    It is used for readonly requests and overrides `post()` to disable post functionality.
+    """
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseNotAllowed:
+        """
+        Disable post request for readonly pages to make sure it is not passed even if front end allows it.
+
+        Args:
+            request: the http request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            http not allowed response `HttpResponseNotAllowed`
+        """
+        post_return: HttpResponseNotAllowed = HttpResponseNotAllowed(['GET'])
+        return post_return  # noqa: WPS331
