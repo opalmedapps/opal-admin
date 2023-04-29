@@ -10,7 +10,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
+from crispy_forms.layout import ButtonHolder, Column, Field, Hidden, Layout, Row, Submit
 
 from opal.core import validators
 from opal.core.forms.layouts import CancelButton, FormActions
@@ -475,17 +475,30 @@ class ConfirmPasswordForm(forms.Form):
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
     """Form for updating `Relationship Caregiver Access`  record."""
 
+    first_name = forms.CharField(
+        label=_('First Name'),
+    )
+    last_name = forms.CharField(
+        label=_('Last Name'),
+    )
+    type = forms.ModelChoiceField(  # noqa: A003
+        queryset=RelationshipType.objects.all(),
+        label=_('Relationship'),
+    )
+    status = forms.ChoiceField(
+        label=_('Status'),
+    )
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=Relationship._meta.get_field('start_date').verbose_name,  # noqa: WPS437
+        label=_('Access Start'),
     )
     end_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
+        label=_('Access End'),
     )
     reason = forms.CharField(
         widget=forms.Textarea(attrs={'rows': '2'}),
-        label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
+        label=_('Explanation for Change(s)'),
         required=False,
     )
     cancel_url = forms.CharField(
@@ -496,6 +509,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     class Meta:
         model = Relationship
         fields = (
+            'type',
             'start_date',
             'end_date',
             'status',
@@ -542,18 +556,27 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             ),
         })
 
-        self.helper = FormHelper()
-        self.helper.attrs = {'novalidate': ''}
+        # setting the value of caregiver first and last names
+        self.fields['last_name'].initial = self.instance.caregiver.user.last_name
+        self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
+        self.helper = FormHelper(self)
         self.helper.layout = Layout(
-            'start_date',
-            'end_date',
-            'status',
-            'reason',
+            Row(
+                Field('first_name', wrapper_class='col-md-6'),
+                Field('last_name', wrapper_class='col-md-6'),
+                Field('type', wrapper_class='col-md-6'),
+                Field('start_date', wrapper_class='col-md-6'),
+                Field('status', wrapper_class='col-md-6'),
+                Field('end_date', wrapper_class='col-md-6'),
+                Field('reason', wrapper_class='col-md-12'),
+            ),
             Hidden('cancel_url', '{{cancel_url}}'),
-            FormActions(
-                CancelButton('{{cancel_url}}'),
-                Submit('submit', _('Save'), css_class='btn btn-primary'),
+            Row(
+                FormActions(
+                    CancelButton('{{cancel_url}}'),
+                    Submit('submit', _('Save'), css_class='btn btn-primary me-2'),
+                ),
             ),
         )
 
@@ -574,3 +597,26 @@ class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
             'form_required',
             'can_answer_questionnaire',
         ]
+
+
+class ManageCaregiverAccessForm(forms.Form):
+    """Custom form for the manage caregiver access filter to customize cleaning the form."""
+
+    required_error = forms.Field.default_error_messages['required']
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Make sure that all required data is there to pass it to the filter.
+
+        Returns:
+            cleaned_data
+        """
+        super().clean()
+
+        card_type = self.cleaned_data.get('card_type')
+        site = self.cleaned_data.get('site')
+
+        if card_type == constants.MedicalCard.mrn.name and not site:
+            self.add_error('site', forms.ValidationError(self.required_error, 'required'))
+
+        return self.cleaned_data

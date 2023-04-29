@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 16:52-0400\n"
+"POT-Creation-Date: 2023-04-28 19:33+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/core/forms/layouts.py
 msgid "Reset"
-msgstr "Réinitialiser"
+msgstr ""
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
@@ -158,12 +158,8 @@ msgid "Relationship Types"
 msgstr "Types de Relations"
 
 #: opal/templates/sidebar.html
-msgid "New Access Request"
-msgstr "Nouvelle demande d'accès"
-
-#: opal/templates/sidebar.html
-msgid "Pending Access Requests"
-msgstr "Requêtes d'accès en attente"
+msgid "Opal Registration"
+msgstr ""
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
@@ -180,6 +176,10 @@ msgstr "Exportation de Rapports"
 #: opal/templates/sidebar.html
 msgid "Log Out"
 msgstr "Se déconnecter"
+
+#: opal/templates/tables/action_column.html
+msgid "View"
+msgstr ""
 
 #: opal/templates/tables/action_column.html
 msgid "Edit"

@@ -1,8 +1,17 @@
 {% load i18n %}
 
-{% url urlname_update record.id as update_url %}
-{# Defined in one line due to some weirdness with coverage that detects it as not covered otherwise. #}
-{% #button icon="pencil-alt" href=update_url add_class="btn-sm" %}{% translate "Edit" %}{% /button %}
+{%  if urlname_view %}
+  {% url urlname_view record.id as view_url %}
+  {% #button icon="fas fa-eye" href=view_url add_class="btn-sm" %}
+    {% translate "View" %}
+  {% /button %}
+{% else %}
+  {% url urlname_update record.id as update_url %}
+  {# Defined in one line due to some weirdness with coverage that detects it as not covered otherwise. #}
+  {% #button icon="pencil-alt" href=update_url add_class="btn-sm" %}
+    {% translate "Edit" %}
+  {% /button %}
+{% endif %}
 
 {% if urlname_delete %}
   {% url urlname_delete record.id as delete_url %}

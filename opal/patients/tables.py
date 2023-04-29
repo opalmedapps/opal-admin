@@ -2,6 +2,7 @@
 from typing import Any
 
 from django.db.models import QuerySet
+from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
@@ -10,7 +11,7 @@ import django_tables2 as tables
 from opal.services.hospital.hospital_data import OIEMRNData
 from opal.users.models import User
 
-from .models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 
 class RelationshipTypeTable(tables.Table):
@@ -106,7 +107,7 @@ class PatientTable(tables.Table):
             f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
         ]
 
-        return ', '.join(str(mnr_value) for mnr_value in mrn_site_list)
+        return ', '.join(str(mrn_value) for mrn_value in mrn_site_list)
 
 
 class ExistingUserTable(tables.Table):
@@ -130,21 +131,77 @@ class PendingRelationshipTable(tables.Table):
         verbose_name=_('Actions'),
         template_name='tables/action_column.html',
         orderable=False,
-        extra_context={
-            'urlname_update': 'patients:relationships-pending-update',
-        },
     )
     type = tables.Column(  # noqa: A003
         verbose_name=_('Relationship'),
     )
-    request_date = tables.Column(
-        verbose_name=_('Pending Since'),
+    status = tables.Column(
+        verbose_name=Relationship._meta.get_field('status').verbose_name,  # noqa: WPS437
+        order_by='request_date',
     )
+
+    def render_status(self, value: str, record: Relationship) -> str:
+        """
+        Render the status of the relationship.
+
+        For a pending status, the number of days since the relationship was requested is appended.
+        For example: "Pending (123 days)"
+
+        Args:
+            value: the relationship status label
+            record: the relationship
+
+        Returns:
+            the status label, suffixed
+        """
+        status_value = value
+
+        if value == RelationshipStatus.PENDING.label:
+            today = timezone.now().date()
+            status_since = today - record.request_date
+            pending_since_text = _('{days} days'.format(days=status_since.days))
+            status_value = f'{value} ({pending_since_text})'
+
+        return status_value
+
+    def render_actions(
+        self,
+        record: Relationship,
+        column: tables.TemplateColumn,
+        *args: Any,
+        **kwargs: Any,
+    ) -> SafeString:
+        """
+        Render the actions column.
+
+        Change the edit URL name in the `extra_context` if the record status is expired to make it readonly.
+
+        Args:
+            record: the current relationship
+            column: the current column
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the rendered column HTML
+        """
+        if record.status == RelationshipStatus.EXPIRED:
+            column.extra_context.update({
+                'urlname_view': 'patients:relationships-pending-readonly',
+                'urlname_update': '',
+            })
+        else:
+            column.extra_context.update({
+                'urlname_view': '',
+                'urlname_update': 'patients:relationships-pending-update',
+            })
+
+        return column.render(record, *args, **kwargs)  # type: ignore[no-any-return]
 
     class Meta:
         model = Relationship
-        fields = ['caregiver', 'type', 'patient', 'request_date', 'actions']
-        empty_text = _('No caregiver pending access requests.')
+        fields = ['patient', 'caregiver', 'type', 'status', 'actions']
+        empty_text = _('No caregiver requests found.')
 
 
 class RelationshipCaregiverTable(tables.Table):
@@ -190,7 +247,7 @@ class RelationshipCaregiverTable(tables.Table):
         orderable=False,
         extra_context={
             # TODO: update urlname_delete values once the corresponding pages are implemented
-            'urlname_update': 'patients:relationships-search-update',
+            'urlname_update': 'patients:relationships-pending-update',
         },
     )
 

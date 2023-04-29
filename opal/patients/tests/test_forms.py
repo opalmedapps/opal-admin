@@ -12,6 +12,7 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import constants, factories, forms
+from ..filters import ManageCaregiverAccessFilter
 from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
@@ -38,6 +39,9 @@ def test_relationshippending_form_is_valid() -> None:
     """Ensure that the `RelationshipPendingAccess` form is valid."""
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
+    # add first_name and last_name as they are not part of the relationship form
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
 
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
@@ -75,6 +79,9 @@ def test_relationshippending_update() -> None:
     """Ensure that a valid `RelationshipPendingAccess` form can be saved."""
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
+    # add first_name and last_name as they are not part of the relationship form
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
 
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
@@ -601,3 +608,66 @@ def test_confirm_password_form_password_invalid(mocker: MockerFixture) -> None:
 
     assert form.errors['confirm_password'] == ['The password you entered is incorrect. Please try again.']
     assert not form.is_valid()
+
+
+# Tests for ManageCaregiverAccessFilter
+def test_filter_managecaregiver_missing_site() -> None:
+    """Ensure that `site` is required when filtering caregiver access by `mrn`."""
+    form_data = {
+        'card_type': 'mrn',
+        'site': '',
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['site'] == ['This field is required.']
+
+
+def test_filter_managecaregiver_missing_mrn() -> None:
+    """Ensure that `medical_number` is required when filtering caregiver access by `mrn`."""
+    hospital_patient = factories.HospitalPatient()
+
+    form_data = {
+        'card_type': 'mrn',
+        'site': hospital_patient.site.id,
+        'medical_number': '',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['medical_number'] == ['This field is required.']
+
+
+def test_filter_managecaregiver_missing_ramq() -> None:
+    """Ensure that `medical_number` is required when filtering caregiver access by `ramq`."""
+    form_data = {
+        'card_type': 'ramq',
+        'site': '',
+        'medical_number': '',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['medical_number'] == ['This field is required.']
+
+
+def test_filter_managecaregiver_missing_valid_mrn() -> None:
+    """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
+    hospital_patient = factories.HospitalPatient()
+
+    form_data = {
+        'card_type': 'mrn',
+        'site': hospital_patient.site.id,
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data)
+    assert form.is_valid()
+
+
+def test_filter_managecaregiver_valid_ramq() -> None:
+    """Ensure that filtering caregiver access by `ramq` does not require `site`."""
+    form_data = {
+        'card_type': 'ramq',
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data)
+    assert form.is_valid()
