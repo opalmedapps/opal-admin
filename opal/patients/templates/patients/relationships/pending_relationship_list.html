@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 {% load static %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
 {% block heading %}
-  {% translate "Pending Caregiver Access Requests" %}
+  {% translate "Manage Caregiver Access" %}
 {% endblock %}
 
 {% block content %}
+  <div class="btn-toolbar-no-group mb-2">
+  {% if filter %}
+    <h5 class="fw-bold">Patient</h5>
+    <div class="mt-2">
+      {% crispy filter.form %}
+    </div>
+  {% endif %}
+  {% if is_search %}
+    <h5 class="fw-bold">{% translate "Specific Patient" %}</h5>
+  {% else %}
+    <h5 class="fw-bold">{% translate "Pending Requests" %}</h5>
+  {% endif %}
   {% render_table table %}
 {% endblock %}

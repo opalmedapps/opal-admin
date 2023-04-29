@@ -1,24 +1,26 @@
 """This module provides forms for the `patients` app."""
-from datetime import date
-from typing import Any, Dict, Optional, Union
+from datetime import date, timedelta
+from typing import Any
 
 from django import forms
 from django.contrib.auth import authenticate
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.urls import reverse_lazy
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
+from crispy_forms.layout import ButtonHolder, Column, Field, Hidden, Layout, Row, Submit
 
-from ..core import validators
-from ..core.form_layouts import CancelButton
-from ..services.hospital.hospital import OIEService
-from ..users.models import Caregiver, User
+from opal.core import validators
+from opal.core.forms.layouts import CancelButton, FormActions
+from opal.core.forms.widgets import AvailableRadioSelect
+from opal.services.hospital.hospital import OIEService
+from opal.users.models import Caregiver, User
+
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .utils import search_valid_relationship_types
 
 
 class SelectSiteForm(forms.Form):
@@ -131,7 +133,7 @@ class SearchForm(forms.Form):
         """
         # add error message to the template
         if response and response['status'] == 'error':
-            self.add_error(None, response['data']['message'])
+            self.add_error(NON_FIELD_ERRORS, response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
             self.cleaned_data['patient_record'] = response['data']
@@ -161,78 +163,6 @@ class ConfirmPatientForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-
-
-class AvailableRadioSelect(forms.RadioSelect):
-    """
-    Subclass of Django's select widget that allows disabling options.
-
-    Taken inspiration from:
-        * https://stackoverflow.com/questions/673199/disabled-option-for-choicefield-django/50109362#50109362
-    """
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the '_available_choices'.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        self._available_choices: list[int] = []
-        super().__init__(*args, **kwargs)
-
-    @property
-    def available_choices(self) -> list[int]:
-        """
-        Get _available_choices.
-
-        Returns:
-            the list for _available_choices.
-        """
-        return self._available_choices
-
-    @available_choices.setter
-    def available_choices(self, other: list[int]) -> None:
-        """
-        Set _available_choices.
-
-        Args:
-            other: the new value _available_choices
-        """
-        self._available_choices = other
-
-    def create_option(  # noqa: WPS211
-        self,
-        name: str,
-        value: Any,
-        label: Union[int, str],
-        selected: bool,
-        index: int,
-        subindex: Optional[int] = None,
-        attrs: Optional[dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """
-        Initialize the '_available_choices'.
-
-        Args:
-            name: option name
-            value: option value
-            label: option label
-            selected: selected option
-            index: option index
-            subindex: option subindex
-            attrs: option attributes
-
-        Returns:
-            the dict for _available_choices.
-        """
-        option_dict = super().create_option(
-            name, value, label, selected, index, subindex=subindex, attrs=attrs,
-        )
-        if value not in self.available_choices:
-            option_dict['attrs']['disabled'] = 'disabled'
-        return option_dict
 
 
 class RequestorDetailsForm(forms.Form):
@@ -275,10 +205,7 @@ class RequestorDetailsForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-        self.age = Patient.calculate_age(date_of_birth=date_of_birth)
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=self.age,
-        ).values_list('id', flat=True)
+        available_choices = search_valid_relationship_types(date_of_birth)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
     def clean(self) -> None:
@@ -530,8 +457,8 @@ class ConfirmPasswordForm(forms.Form):
                 css_class='form-row',
             ),
             FormActions(
-                Submit('wizard_goto_step', _('Confirm')),
                 CancelButton(reverse_lazy('patients:access-request')),
+                Submit('wizard_goto_step', _('Confirm')),
             ),
         )
         self.authorized_user = authorized_user
@@ -548,17 +475,30 @@ class ConfirmPasswordForm(forms.Form):
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
     """Form for updating `Relationship Caregiver Access`  record."""
 
+    first_name = forms.CharField(
+        label=_('First Name'),
+    )
+    last_name = forms.CharField(
+        label=_('Last Name'),
+    )
+    type = forms.ModelChoiceField(  # noqa: A003
+        queryset=RelationshipType.objects.all(),
+        label=_('Relationship'),
+    )
+    status = forms.ChoiceField(
+        label=_('Status'),
+    )
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=Relationship._meta.get_field('start_date').verbose_name,  # noqa: WPS437
+        label=_('Access Start'),
     )
     end_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
+        label=_('Access End'),
     )
     reason = forms.CharField(
         widget=forms.Textarea(attrs={'rows': '2'}),
-        label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
+        label=_('Explanation for Change(s)'),
         required=False,
     )
     cancel_url = forms.CharField(
@@ -569,6 +509,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     class Meta:
         model = Relationship
         fields = (
+            'type',
             'start_date',
             'end_date',
             'status',
@@ -576,11 +517,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(   # noqa: WPS211
+        self,
+        date_of_birth: date,
+        relationship_type: RelationshipType,
+        request_date: date,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Set the layout.
 
         Args:
+            request_date: the date when the requestor submit the access request
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
@@ -590,19 +541,42 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
+        self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
+            'min': date_of_birth,
+            'max': Relationship.calculate_end_date(
+                date_of_birth,
+                relationship_type,
+            ),
+        })
+        self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
+            'min': date_of_birth + timedelta(days=1),
+            'max': Relationship.calculate_end_date(
+                date_of_birth,
+                relationship_type,
+            ),
+        })
 
-        self.helper = FormHelper()
-        self.helper.attrs = {'novalidate': ''}
+        # setting the value of caregiver first and last names
+        self.fields['last_name'].initial = self.instance.caregiver.user.last_name
+        self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
+        self.helper = FormHelper(self)
         self.helper.layout = Layout(
-            'start_date',
-            'end_date',
-            'status',
-            'reason',
+            Row(
+                Field('first_name', wrapper_class='col-md-6'),
+                Field('last_name', wrapper_class='col-md-6'),
+                Field('type', wrapper_class='col-md-6'),
+                Field('start_date', wrapper_class='col-md-6'),
+                Field('status', wrapper_class='col-md-6'),
+                Field('end_date', wrapper_class='col-md-6'),
+                Field('reason', wrapper_class='col-md-12'),
+            ),
             Hidden('cancel_url', '{{cancel_url}}'),
-            FormActions(
-                CancelButton('{{cancel_url}}'),
-                Submit('submit', _('Save'), css_class='btn btn-primary'),
+            Row(
+                FormActions(
+                    CancelButton('{{cancel_url}}'),
+                    Submit('submit', _('Save'), css_class='btn btn-primary me-2'),
+                ),
             ),
         )
 
@@ -623,3 +597,26 @@ class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
             'form_required',
             'can_answer_questionnaire',
         ]
+
+
+class ManageCaregiverAccessForm(forms.Form):
+    """Custom form for the manage caregiver access filter to customize cleaning the form."""
+
+    required_error = forms.Field.default_error_messages['required']
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Make sure that all required data is there to pass it to the filter.
+
+        Returns:
+            cleaned_data
+        """
+        super().clean()
+
+        card_type = self.cleaned_data.get('card_type')
+        site = self.cleaned_data.get('site')
+
+        if card_type == constants.MedicalCard.mrn.name and not site:
+            self.add_error('site', forms.ValidationError(self.required_error, 'required'))
+
+        return self.cleaned_data

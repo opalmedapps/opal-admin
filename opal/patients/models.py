@@ -10,6 +10,8 @@ from django.db import models
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
+
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
@@ -256,7 +258,7 @@ class Patient(models.Model):
         Returns:
             the name of the associated patient
         """
-        return '{first} {last}'.format(first=self.first_name, last=self.last_name)
+        return '{last}, {first}'.format(first=self.first_name, last=self.last_name)
 
     def clean(self) -> None:
         """Validate date fields.
@@ -405,7 +407,32 @@ class Relationship(models.Model):
 
         return errors
 
-    def clean(self) -> None:
+    def validate_end_date(self) -> list[str]:
+        """Validate the `end_date` field.
+
+        The end date has to be earlier than the date when the patient turns to older age period.
+
+        Returns:
+            a list of error messages
+        """
+        errors = []
+
+        # calculate the end date based on patient's birthday and relationship type
+        end_date = self.calculate_end_date(self.patient.date_of_birth, self.type)
+        if self.end_date is not None and end_date is not None and self.end_date > end_date:
+            errors.append(gettext(
+                'End date for {relationship_type} relationship cannot be later than {end_date}.',
+            ).format(
+                relationship_type=self.type,
+                end_date=end_date,
+            ))
+
+        if self.end_date is not None and self.end_date <= self.start_date:
+            errors.append(gettext('End date should be later than start date.'))
+
+        return errors
+
+    def clean(self) -> None:  # noqa: C901
         """Validate date and reason fields.
 
         Raises:
@@ -415,9 +442,13 @@ class Relationship(models.Model):
         errors: dict[str, list[str]] = defaultdict(list)
 
         start_date_errors = self.validate_start_date()
+        end_date_errors = self.validate_end_date()
 
         if start_date_errors:
             errors['start_date'].extend(start_date_errors)
+
+        if end_date_errors:
+            errors['end_date'].extend(end_date_errors)
 
         # validate status is not empty if status is revoked or denied.
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
@@ -425,13 +456,25 @@ class Relationship(models.Model):
 
         if (
             self.type.role_type == RoleType.SELF
-            and Relationship.objects.filter(patient=self.patient, type__role_type=RoleType.SELF).exists()
+            # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
+                pk=self.pk,
+            ).filter(
+                patient=self.patient,
+                type__role_type=RoleType.SELF,
+            ).exists()
         ):
             errors[NON_FIELD_ERRORS].append(gettext('The patient already has a self-relationship'))
 
         if (
             self.type.role_type == RoleType.SELF
-            and Relationship.objects.filter(caregiver=self.caregiver, type__role_type=RoleType.SELF).exists()
+            # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
+                pk=self.pk,
+            ).filter(
+                caregiver=self.caregiver,
+                type__role_type=RoleType.SELF,
+            ).exists()
         ):
             errors[NON_FIELD_ERRORS].append(gettext('The caregiver already has a self-relationship'))
 
@@ -464,6 +507,48 @@ class Relationship(models.Model):
             statuses += [RelationshipStatus.CONFIRMED]
 
         return statuses
+
+    @classmethod
+    def calculate_default_start_date(
+        cls,
+        request_date: date,
+        date_of_birth: date,
+        relationship_type: RelationshipType,
+    ) -> date:
+        """
+        Calculate the start date for the relationship between a patient and a caregiver.
+
+        Args:
+            request_date: the date when the requestor submit the access request
+            date_of_birth: patient's date of birth
+            relationship_type: the type of relationship between the caregiver and the patient
+
+        Returns:
+            the start date
+        """
+        return request_date if relationship_type.role_type == RoleType.MANDATARY else date_of_birth
+
+    @classmethod
+    def calculate_end_date(cls, date_of_birth: date, relationship_type: RelationshipType) -> date | None:
+        """
+        Calculate the end date for the relationship between a patient and a caregiver.
+
+        If the relationship type has an end age,
+        the end date is restricted to the date where the patient turns that age.
+
+        Args:
+            date_of_birth: patient's date of birth
+            relationship_type: the type of relationship between the caregiver and the patient
+
+        Returns:
+            the end date
+        """
+        reference_date = None
+
+        if relationship_type.end_age:
+            # Calculate the date at which the patient turns to the end age of relationship type
+            reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
+        return reference_date
 
 
 class HospitalPatient(models.Model):

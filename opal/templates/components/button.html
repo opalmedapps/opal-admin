@@ -1,4 +1,4 @@
-{% var add_class=add_class|default:"me-2" %}
+{% var add_class=add_class|default:"" %}
 {% var button_class=type|default:"primary" %}
 {% var icon=icon|default:None %}
 {% var icon_add_class=icon_add_class|default:"me-1" %}
@@ -7,11 +7,11 @@
   Define button classes as fragments to be able to concatenate variables.
   Reduced whitespace to avoid HTML output like 'class=" btn btn-primary "'
 {% endcomment %}
-{% fragment as button_classes %}btn btn-{{ button_class }} {{ add_class }}{% endfragment %}
+{% fragment as button_classes %}btn btn-{{ button_class }}{% if add_class %} {{ add_class }}{% endif %}{% endfragment %}
 
 <a {% attrs class=button_classes href %}>
   {% if icon %}
-    {% icon icon=icon add_class=add_class %}
+    {% icon icon=icon add_class=icon_add_class %}
   {% endif %}
   {{ children }}
 </a>
