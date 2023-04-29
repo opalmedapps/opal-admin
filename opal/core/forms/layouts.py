@@ -4,10 +4,12 @@ from typing import Any, Optional
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions as CrispyFormActions
-from crispy_forms.layout import HTML, Field, Layout, Submit
+from crispy_forms.layout import HTML
+from crispy_forms.layout import Field as CrispyFormField
+from crispy_forms.layout import Layout, Submit
 
 
-class FileField(Field):
+class FileField(CrispyFormField):
     """File field with an extra button to look at the current value."""
 
     template = 'forms/filefield.html'
@@ -118,6 +120,41 @@ class FormActions(CrispyFormActions):
             *fields,
             css_id=css_id,
             css_class=css_class,
+            template=template,
+            **kwargs,
+        )
+
+
+class Field(Layout):
+    """Default field look and feel."""
+
+    default_wrapper_class = 'fw-bold'
+    default_css_class = 'border-secondary bg-light'
+
+    def __init__(  # noqa: WPS211
+        self,
+        *fields: Any,
+        css_class: Optional[str] = None,
+        wrapper_class: Optional[str] = None,
+        template: Optional[str] = None,
+        **kwargs: Any,
+    ):
+        """
+        Initialize Fields with the default look and feel.
+
+        Args:
+            fields: the fields to contain within this action container (should only be HTML or BaseInput)
+            css_class: the extra CSS classes to add to the div.
+            wrapper_class: the wrapper class to add to wrapping div
+            template: the template to use, default to None.
+            kwargs: additional keyword arguments that are added to the div
+        """
+        wrapper_class = f'{wrapper_class} {self.default_wrapper_class}'
+        css_class = f'{css_class} {self.default_css_class}'
+        super().__init__(
+            *fields,
+            css_class=css_class,
+            wrapper_class=wrapper_class,
             template=template,
             **kwargs,
         )
