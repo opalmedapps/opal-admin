@@ -158,9 +158,12 @@ class PendingRelationshipTable(tables.Table):
 
         if value == RelationshipStatus.PENDING.label:
             today = timezone.now().date()
-            days = (today - record.request_date).days
-            text = 'days' if days > 1 else 'day'
-            pending_since_text = _('{days} {text}'.format(days=days, text=text))
+            number_of_days = (today - record.request_date).days
+            if number_of_days > 1:
+                pending_since_text = _('{days} days'.format(days=number_of_days))
+            else:
+                pending_since_text = _('{days} day'.format(days=number_of_days))
+
             status_value = f'{value} ({pending_since_text})'
 
         return status_value
