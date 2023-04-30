@@ -4,7 +4,7 @@ from typing import Any, Optional
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions as CrispyFormActions
-from crispy_forms.layout import HTML, Field, Layout, Submit
+from crispy_forms.layout import HTML, Field, Layout
 
 
 class FileField(Field):
@@ -46,17 +46,27 @@ class InlineSubmit(Layout):
     The label is present in the output but visually hidden.
     """
 
-    def __init__(self, name: str, label: str) -> None:
+    default_label = _('Submit')
+    default_css_class = 'btn btn-secondary d-table'
+
+    def __init__(self, name: str, label: str, active_condition: str) -> None:
         """
-        Initialize the submit button with the given label.
+        Initialize the inline submit button.
+
+        The submit button is an input of type submit
 
         Args:
-            name: the name of the submit button, empty string if you don't need to identify it
-            label: the label of the submit button
+            name: name of the submit button
+            label: label of the submit button, default to `Submit` otherwise
+            active_condition: pass active condition to the html, not used if empty
         """
+        # link to the same page without query parameters to erase existing form values
+
+        the_label = label if label else self.default_label
+        css_class = f'{self.default_css_class} {active_condition}' if active_condition else self.default_css_class
         fields = (
-            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{label}</label>'),
-            Submit(name, label, css_class='d-table'),
+            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
+            HTML(f'<input type="submit" name="{name}" value="{the_label}" class="{css_class}">'),
         )
         super().__init__(*fields)
 
@@ -72,19 +82,27 @@ class InlineReset(Layout):
     The reset button is not using an `<input type="reset">` because this only erases the form field values.
     """
 
-    label = _('Reset')
+    default_label = _('Reset')
+    default_css_class = 'btn btn-secondary d-table'
 
-    def __init__(self) -> None:
+    def __init__(self, label: str, active_condition: str) -> None:
         """
         Initialize the inline reset button.
 
         The reset button is a link styled as a button.
+
+        Args:
+            label: label of the reset button, default to `Reset` otherwise
+            active_condition: pass active condition to the html, not used if empty
         """
+        the_label = label if label else self.default_label
+
         # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
+        css_class = f'{self.default_css_class} {active_condition}' if active_condition else self.default_css_class
         fields = (
-            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{self.label}</label>'),
-            HTML(f'<a class="btn btn-secondary me-2 d-table" href="{url}">{self.label}</a>'),
+            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
+            HTML(f'<a class="{css_class}" href="{url}">{the_label}</a>'),
         )
         super().__init__(*fields)
 
