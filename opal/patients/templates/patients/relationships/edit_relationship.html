@@ -42,7 +42,7 @@
           <div class="row">
             <p>
               {% for record in  relationship.patient.hospital_patients.reverse %}
-                {{ record.site.code }}-{{ record.mrn }} &nbsp;
+                {{ record.site.code }}:&nbsp;{{ record.mrn }} &nbsp;
               {%  endfor %}
             </p>
           </div>
