@@ -3,13 +3,14 @@ import base64
 import io
 from collections import Counter
 from datetime import date
+from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.forms import Form
 from django.forms.models import ModelForm
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import HttpResponse
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -605,9 +606,9 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
         return kwargs
 
 
-class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
+class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
     """
-    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
+    This view inherits `ManageRelationshipUpdateMixin` used to update/view relationship requests.
 
     It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
     """
@@ -649,6 +650,33 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
 
         return success_url
 
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        """
+        Get the right template for view and update modes.
+
+        Args:
+            request: the http request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            regular response for continuing get functionlity for `ManageCaregiverAccessUpdateView`
+        """
+        relationship_record = Relationship.objects.get(pk=kwargs['pk'])
+        http_referer = self.request.META.get('HTTP_REFERER')
+        cancel_url = http_referer if http_referer else self.get_success_url()
+        if relationship_record.status == RelationshipStatus.EXPIRED:
+            return render(
+                request,
+                'patients/relationships/view_relationship.html',
+                {
+                    'relationship': relationship_record,
+                    'cancel_url': cancel_url,
+                },
+            )
+
+        return super().get(request, *args, **kwargs)
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
         Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
@@ -659,12 +687,20 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
             kwargs: additional keyword arguments
 
         Returns:
-            regular response for continuing post functionality of the `ManagePendingUpdateView`
+            regular response for continuing post functionality of the `ManageCaregiverAccessUpdateView`
         """
         relationship_record = Relationship.objects.get(pk=kwargs['pk'])
         # to refuse any post request when status is EXPIRED even if front-end restrictions are bypassed
         if relationship_record.status == RelationshipStatus.EXPIRED:
-            return HttpResponseNotAllowed(['GET'])
+            return render(
+                request,
+                'patients/relationships/view_relationship.html',
+                {
+                    'relationship': relationship_record,
+                    'cancel_url': self.get_success_url(),
+                },
+                status=HTTPStatus.METHOD_NOT_ALLOWED,
+            )
 
         user_record = relationship_record.caregiver.user
         user_record.first_name = request.POST['first_name']
@@ -673,26 +709,3 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
         user_record.save()
 
         return super().post(request, kwargs['pk'])
-
-
-class ManagePendingReadOnlyView(ManagePendingUpdateView):
-    """
-    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
-
-    It is used for readonly requests and overrides `post()` to disable post functionality.
-    """
-
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseNotAllowed:
-        """
-        Disable post request for readonly pages to make sure it is not passed even if front end allows it.
-
-        Args:
-            request: the http request
-            args: additional arguments
-            kwargs: additional keyword arguments
-
-        Returns:
-            http not allowed response `HttpResponseNotAllowed`
-        """
-        post_return: HttpResponseNotAllowed = HttpResponseNotAllowed(['GET'])
-        return post_return  # noqa: WPS331
