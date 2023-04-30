@@ -61,7 +61,7 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
     url_link = action_column.column.extra_context
     assert url_link['urlname_update'] == ''
-    assert url_link['urlname_view'] == 'patients:relationships-pending-readonly'
+    assert url_link['urlname_view'] == 'patients:relationships-view-update'
     assert 'fa-solid fa-fas fa-eye' in action_content
 
 
@@ -90,6 +90,6 @@ def test_relationships_table_update_url(relationship_user: Client) -> None:
     action_column = response.context['table'].columns['actions']
     action_content = action_column.current_value
     url_link = action_column.column.extra_context
-    assert url_link['urlname_update'] == 'patients:relationships-pending-update'
+    assert url_link['urlname_update'] == 'patients:relationships-view-update'
     assert url_link['urlname_view'] == ''
     assert 'fa-solid fa-pencil-alt' in action_content
