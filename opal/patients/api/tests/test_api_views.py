@@ -849,6 +849,7 @@ class TestPatientCaregiversView:
             'caregivers': [
                 {
                     'language': user1.language,
+                    'username': user1.username,
                     'devices': [
                         {
                             'type': device1.type,
@@ -858,6 +859,7 @@ class TestPatientCaregiversView:
                 },
                 {
                     'language': user2.language,
+                    'username': user2.username,
                     'devices': [
                         {
                             'type': device2.type,
