@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
@@ -159,10 +160,13 @@ class PendingRelationshipTable(tables.Table):
         if value == RelationshipStatus.PENDING.label:
             today = timezone.now().date()
             number_of_days = (today - record.request_date).days
-            if number_of_days > 1:
-                pending_since_text = _('{days} days'.format(days=number_of_days))
-            else:
-                pending_since_text = _('{days} day'.format(days=number_of_days))
+            pending_since_text = ngettext(
+                '%(number_of_days)d day',  # noqa: WPS323
+                '%(number_of_days)d days',  # noqa: WPS323
+                number_of_days,
+            ) % {
+                'number_of_days': number_of_days,
+            }
 
             status_value = f'{value} ({pending_since_text})'
 

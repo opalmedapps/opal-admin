@@ -35,7 +35,7 @@ def test_relationshiptable_pending_status_render_singular() -> None:
     relationship_table = tables.PendingRelationshipTable(relationships)
     status_format = relationship_table.render_status('Pending', relationship_record)
 
-    assert status_format == 'Pending (0 day)'
+    assert status_format == 'Pending (0 days)'
 
     # in case of `one` number of days
     today_date = datetime.date.today() - datetime.timedelta(days=1)

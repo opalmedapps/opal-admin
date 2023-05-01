@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-30 10:27+0300\n"
+"POT-Creation-Date: 2023-05-01 19:47+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -475,14 +475,11 @@ msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
 #: opal/patients/tables.py
-#, python-brace-format
-msgid "{days} days"
-msgstr ""
-
-#: opal/patients/tables.py
-#, python-brace-format
-msgid "{days} day"
-msgstr ""
+#, python-format
+msgid "%(number_of_days)d day"
+msgid_plural "%(number_of_days)d days"
+msgstr[0] ""
+msgstr[1] ""
 
 #: opal/patients/tables.py
 msgid "No caregiver requests found."
