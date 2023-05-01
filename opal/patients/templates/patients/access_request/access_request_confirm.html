@@ -1,35 +1,22 @@
-{% extends "base.html" %}
+{% extends "patients/access_request/new_access_request.html" %}
 {% load i18n %}
 
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
-{% block heading %}
-  {% translate "New Access Request" %}
-{% endblock %}
 
+{% block content_form %}
+  <h5>Patient</h5>
+  {% render_table patient_table %}
+  <h5>Requestor</h5>
+  <p><strong>Relationship:</strong> {{ relationship_type }}</p>
+  <p><strong>Requestor Type:</strong> {{ user_type }}</p>
+  {% if is_existing_user %}
+    {% render_table user_table %}
+  {% else %}
+    <p><strong>First Name:</strong> {{ first_name }}</p>
+    <p><strong>Last Name:</strong> {{ last_name }}</p>
+  {% endif %}
 
-{% block content %}
-  <form method="post" id="contentForm" up-submit up-target="#contentForm" novalidate>
-    {% csrf_token %}
-    {{ management_form }}
-
-    {{ data }}
-    <h5>Patient</h5>
-    {% render_table patient_table %}
-    <h5>Requestor</h5>
-    <p><strong>Relationship:</strong> {{ relationship_type }}</p>
-    <p><strong>Requestor Type:</strong> {{ user_type }}</p>
-    {% if is_existing_user %}
-      {% render_table user_table %}
-    {% else %}
-      <p><strong>First Name:</strong> {{ first_name }}</p>
-      <p><strong>Last Name:</strong> {{ last_name }}</p>
-    {% endif %}
-
-    {% crispy confirm_form %}
-
-    <a href="/{{ request.resolver_match.route }}" class="btn btn-secondary">Cancel</a>
-    <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}"{% if next_button_disabled %} disabled{% endif %} />
-  </form>
+  {% crispy confirm_form %}
 {% endblock %}

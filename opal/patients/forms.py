@@ -18,7 +18,7 @@ from crispy_forms.utils import TEMPLATE_PACK, render_field
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, InlineSubmit, FormActions
+from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -356,6 +356,7 @@ class ConfirmPatientForm(forms.Form):
         )
 
 
+# TODO: move to core form layouts?
 # radio select for a choice field that visualizes as bootstrap tabs
 # triggers validation via up-validate to ensure that form knows which fields are required and which are not
 class TabRadioSelect(CrispyField):
@@ -370,13 +371,13 @@ class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
         # TODO: provide a custom template that can show a tooltip
         # when hovering over the relationship type with the details of the relationship type
         # can be done as a completely separate MR at the end
-        widget=AvailableRadioSelect,
-        # widget=forms.RadioSelect,
+        widget=AvailableRadioSelect(),
         label=_('Relationship to the patient'),
     )
 
     form_filled = forms.BooleanField(
         label=_('The requestor filled out the request form'),
+        # TODO: change to dynamic field to switch required depending on form_required of selected relationship type
         required=False,
     )
 
