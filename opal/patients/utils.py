@@ -9,6 +9,42 @@ from opal.users.models import User
 
 from .models import Patient, RelationshipType
 
+#: The indicator of the female sex within the RAMQ number (added to the month)
+RAMQ_FEMALE_INDICATOR = 50
+
+
+def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
+    """
+    Build a RAMQ number based on the official format and with 99 as the last two digits (administrative code).
+
+    See: https://www.ramq.gouv.qc.ca/en/citizens/health-insurance/using-card
+
+    Args:
+        first_name: the person's first name
+        last_name: the person's last name
+        date_of_birth: the person's date of birth
+        sex: the person's sex
+
+    Returns:
+        the RAMQ number derived from the given arguments
+    """
+    month = (
+        date_of_birth.strftime('%m')
+        if sex == Patient.SexType.MALE
+        else date_of_birth.month + RAMQ_FEMALE_INDICATOR
+    )
+
+    data = [
+        last_name[:3].upper(),
+        first_name[0].upper(),
+        date_of_birth.strftime('%y'),
+        str(month),
+        date_of_birth.strftime('%d'),
+        '99',
+    ]
+
+    return ''.join(data)
+
 
 def update_registration_code_status(
     registration_code: caregiver_models.RegistrationCode,
