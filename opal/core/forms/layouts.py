@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions as CrispyFormActions
 from crispy_forms.layout import HTML, Field, Layout, Submit
+from crispy_forms.utils import flatatt
 
 
 class FileField(Field):
@@ -46,17 +47,18 @@ class InlineSubmit(Layout):
     The label is present in the output but visually hidden.
     """
 
-    def __init__(self, name: str, label: str) -> None:
+    def __init__(self, name: str, label: str, **kwargs: Any) -> None:
         """
         Initialize the submit button with the given label.
 
         Args:
             name: the name of the submit button, empty string if you don't need to identify it
             label: the label of the submit button
+            kwargs: additional keyword arguments that are passed to the submit button
         """
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{label}</label>'),
-            Submit(name, label, css_class='d-table'),
+            Submit(name, label, css_class='d-table', **kwargs),
         )
         super().__init__(*fields)
 
@@ -72,19 +74,26 @@ class InlineReset(Layout):
     The reset button is not using an `<input type="reset">` because this only erases the form field values.
     """
 
-    label = _('Reset')
+    default_label = _('Reset')
 
-    def __init__(self) -> None:
+    def __init__(self, label: Optional[str] = None, **kwargs: Any) -> None:
         """
         Initialize the inline reset button.
 
         The reset button is a link styled as a button.
+
+        Args:
+            label: a specific label to use for this button, None if the default should be used
+            kwargs: additional keyword arguments that are added to the reset button
         """
         # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
+        the_label = label if label else self.default_label
+        flat_attrs = flatatt(kwargs)
+
         fields = (
-            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{self.label}</label>'),
-            HTML(f'<a class="btn btn-secondary me-2 d-table" href="{url}">{self.label}</a>'),
+            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
+            HTML(f'<a class="btn btn-secondary me-2 d-table" href="{url}" {flat_attrs}>{the_label}</a>'),
         )
         super().__init__(*fields)
 
@@ -112,7 +121,7 @@ class FormActions(CrispyFormActions):
             template: the template to use. Defaults to None.
             kwargs: additional keyword arguments that are added to the div
         """
-        css_class = f'{css_class} {self.default_css_class}' if css_class else self.default_css_class
+        css_class = f'{self.default_css_class} {css_class}' if css_class else self.default_css_class
 
         super().__init__(
             *fields,
