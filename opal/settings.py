@@ -475,3 +475,8 @@ ORMS_USER_GROUP = 'orms'
 
 # Institution code for registration
 INSTITUTION_CODE = env.str('INSTITUTION_CODE')
+
+# Sending SMS message settings
+SMS_ACCOUNT_SID = env.str('SMS_ACCOUNT_SID')
+SMS_AUTH_TOKEN = env.str('SMS_AUTH_TOKEN')
+SMS_FROM = env.str('SMS_FROM')
