@@ -1191,7 +1191,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
 
     # test in case of EXPIRED status, readonly view
     assertContains(response, '<p>{0}</p>'.format(str(relationship_record.patient)))
-    assertContains(response, '{0}-{1}'.format(hospital_patient.site.code, hospital_patient.mrn))
+    assertContains(response, '{0}:&nbsp;{1}'.format(hospital_patient.site.code, hospital_patient.mrn))
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 
