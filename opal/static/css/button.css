@@ -1,0 +1,5 @@
+/* Customized active color for manage caregiver access page */
+.btn-active{
+  --bs-btn-active-bg: var(--opal-purple);
+  --bs-btn-active-border-color: var(--opal-purple);
+}
