@@ -73,13 +73,12 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column('site'),
             Column('medical_number'),
             Column(InlineSubmit(
-                name='submit_button',
                 label=gettext('Search Specific Patient'),
-                active_condition='{%if is_search %} active btn-active" aria-pressed=true {% endif %}',  # noqa: WPS323
+                conditional_css='btn-secondary {%if is_search %} active btn-active {% endif %}',  # noqa: WPS323
             )),
             Column(InlineReset(
                 label=gettext('Show Pending Requests'),
-                active_condition='{%if is_pending %} active btn-active" aria-pressed=true {% endif %}',  # noqa: WPS323
+                conditional_css='btn-secondary {%if is_pending %} active btn-active {% endif %}',  # noqa: WPS323
             )),
         )
 

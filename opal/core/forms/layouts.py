@@ -48,13 +48,13 @@ class InlineSubmit(Layout):
     """
 
     default_label = _('Submit')
-    default_css_class = 'btn btn-secondary d-table'
+    default_css_class = 'btn btn-primary d-table'
 
     def __init__(
         self,
-        name: str,
+        name: Optional[str] = None,
         label: Optional[str] = None,
-        active_condition: Optional[str] = None,
+        conditional_css: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -63,20 +63,19 @@ class InlineSubmit(Layout):
         The submit button is an input of type submit
 
         Args:
-            name: name of the submit button
-            label: label of the submit button, default to `Submit` otherwise
-            active_condition: pass active condition to the html, not used if empty
-            kwargs: additional keyword arguments that are added to the reset button
+            name: the name of the submit button, empty string if you don't need to identify it
+            label: label of the submit button, defaults to `Submit` otherwise
+            conditional_css: pass active css condition to the html, not used if empty
+            kwargs: additional keyword arguments that are added to the submit button
         """
         # link to the same page without query parameters to erase existing form values
 
         the_label = label if label else self.default_label
-        css_class = f'{self.default_css_class} {active_condition}' if active_condition else self.default_css_class
+        css_class = f'{self.default_css_class} {conditional_css}' if conditional_css else self.default_css_class
         flat_attrs = flatatt(kwargs)
-
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
-            HTML(f'<input type="submit" name="{name}" value="{the_label}" class="{css_class}" {flat_attrs}>'),  # noqa: WPS221, E501
+            HTML(f'<input type="submit" name={name} value="{the_label}" class="{css_class}" {flat_attrs}>'),  # noqa: WPS221, E501
         )
         super().__init__(*fields)
 
@@ -93,12 +92,12 @@ class InlineReset(Layout):
     """
 
     default_label = _('Reset')
-    default_css_class = 'btn btn-secondary d-table'
+    default_css_class = 'btn btn-primary d-table'
 
     def __init__(
         self,
         label: Optional[str] = None,
-        active_condition: Optional[str] = None,
+        conditional_css: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -108,7 +107,7 @@ class InlineReset(Layout):
 
         Args:
             label: label of the reset button, default to `Reset` otherwise
-            active_condition: pass active condition to the html, not used if empty
+            conditional_css: pass active condition to the html, not used if empty
             kwargs: additional keyword arguments that are added to the reset button
         """
         the_label = label if label else self.default_label
@@ -116,7 +115,7 @@ class InlineReset(Layout):
 
         # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
-        css_class = f'{self.default_css_class} {active_condition}' if active_condition else self.default_css_class
+        css_class = f'{self.default_css_class} {conditional_css}' if conditional_css else self.default_css_class
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
             HTML(f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>'),  # noqa: WPS221
