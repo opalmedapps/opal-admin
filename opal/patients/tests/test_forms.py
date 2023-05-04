@@ -671,3 +671,14 @@ def test_filter_managecaregiver_valid_ramq() -> None:
     }
     form = ManageCaregiverAccessFilter(data=form_data)
     assert form.is_valid()
+
+
+# Tests for ManageCaregiverAccessUpdateForm
+def test_caregiver_first_last_name_update() -> None:
+    """Ensure that `first_name` and `last_name` can be updated through the assigned form."""
+    form_data = {
+        'first_name': 'TEST_first',
+        'last_name': 'TEST_last',
+    }
+    form = forms.ManageCaregiverAccessUpdateForm(data=form_data)
+    assert form.is_valid()

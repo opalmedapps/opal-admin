@@ -620,3 +620,14 @@ class ManageCaregiverAccessForm(forms.Form):
             self.add_error('site', forms.ValidationError(self.required_error, 'required'))
 
         return self.cleaned_data
+
+
+class ManageCaregiverAccessUpdateForm(forms.ModelForm[User]):
+    """Form for updating a `Caregiver` object."""
+
+    class Meta:
+        model = Caregiver
+        fields = [
+            'first_name',
+            'last_name',
+        ]
