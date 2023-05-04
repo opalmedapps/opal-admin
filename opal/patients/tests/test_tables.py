@@ -52,7 +52,7 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
@@ -83,7 +83,7 @@ def test_relationships_table_update_url(relationship_user: Client) -> None:
 
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 

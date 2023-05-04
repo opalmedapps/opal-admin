@@ -49,7 +49,7 @@
         {% /menu_item %}
       {% endif %}
       {% if perms.patients.can_manage_relationships %}
-        {% #menu_item url_name="patients:relationships-pending-list" request=request %}
+        {% #menu_item url_name="patients:relationships-list" request=request %}
           {% translate "Manage Caregiver Access" %}
         {% /menu_item %}
       {% endif %}
