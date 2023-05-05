@@ -680,5 +680,19 @@ def test_caregiver_first_last_name_update() -> None:
         'first_name': 'TEST_first',
         'last_name': 'TEST_last',
     }
-    form = forms.ManageCaregiverAccessUpdateForm(data=form_data)
+    form = forms.ManageCaregiverAccessUserForm(data=form_data)
     assert form.is_valid()
+
+
+def test_caregiver_first_last_name_invalid() -> None:
+    """Ensure that name validations are in place."""
+    longname = ''.join('a' for letter in range(200))
+    error_message = 'Ensure this value has at most 150 characters (it has 200).'
+    form_data = {
+        'first_name': longname,
+        'last_name': longname,
+    }
+    form = forms.ManageCaregiverAccessUserForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['first_name'][0] == error_message
+    assert form.errors['last_name'][0] == error_message
