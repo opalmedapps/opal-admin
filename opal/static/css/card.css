@@ -1,0 +1,15 @@
+/*
+  Customise card appearance, borders, and colors.
+
+  All details related to card styling should be added here.
+
+*/
+
+.card{
+  --bs-card-border-color: black;
+}
+
+/* for all titles of type h5 */
+h5 {
+  font-weight: bold;
+}
