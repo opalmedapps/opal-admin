@@ -8,11 +8,11 @@
 {% endblock %}
 
 {% block content %}
-  <div class="card border-secondary mb-3">
+  <div class="card mb-3">
     <div class="card-body">
       <div class="row">
 
-        <h5 class="fw-bold mb-4">{% translate "Patient" %}</h5>
+        <h5 class="mb-4">{% translate "Patient" %}</h5>
 
         <div class="col">
           <div class="row h-25 mb-1">
@@ -42,7 +42,7 @@
           <div class="row">
             <p>
               {% for record in  relationship.patient.hospital_patients.reverse %}
-                {{ record.site.code }}:&nbsp;{{ record.mrn }} &nbsp;
+                {{ record }}&nbsp;
               {%  endfor %}
             </p>
           </div>
@@ -59,11 +59,12 @@
 
     </div>
   </div>
-  <div class="card border-secondary">
+  <h5 class="mb-4">{% translate "Caregiver" %}</h5>
+  <div class="card">
     <div class="card-body">
       <div class="row">
 
-        <h5 class="fw-bold mb-4">{% translate "Caregiver" %}</h5>
+        <h5 class="mb-4">{% translate "Caregiver" %}</h5>
 
         <div class="col">
           <div class="row h-25 mb-1">
