@@ -622,7 +622,7 @@ class ManageCaregiverAccessForm(forms.Form):
         return self.cleaned_data
 
 
-class ManageCaregiverAccessUpdateForm(forms.ModelForm[User]):
+class ManageCaregiverAccessUserForm(forms.ModelForm[User]):
     """Form for updating a `Caregiver` object."""
 
     class Meta:

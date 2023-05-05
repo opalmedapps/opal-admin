@@ -32,7 +32,7 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import ManageCaregiverAccessUpdateForm, RelationshipAccessForm, RelationshipTypeUpdateForm
+from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
@@ -702,11 +702,6 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 status=HTTPStatus.METHOD_NOT_ALLOWED,
             )
 
-        user_record = relationship_record.caregiver.user
-        user_form = ManageCaregiverAccessUpdateForm(request.POST or None, instance=user_record)
-        if user_form.is_valid():
-            user_form.save()
-
         return super().post(request, **kwargs)
 
     def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
@@ -720,7 +715,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             HttpResponse: form_valid if user form is valid, or form_invalid if it is invalid
         """
         user_record = self.get_object().caregiver.user
-        user_form = ManageCaregiverAccessUpdateForm(self.request.POST or None, instance=user_record)
+        user_form = ManageCaregiverAccessUserForm(self.request.POST or None, instance=user_record)
 
         if user_form.is_valid():
             user_form.save()
