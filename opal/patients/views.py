@@ -708,3 +708,27 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             user_form.save()
 
         return super().post(request, **kwargs)
+
+    def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
+        """
+        Save validates user form and return valid_form only if user details are validated.
+
+        Args:
+            form: an instance of `ManageCaregiverAccessUpdateForm`
+
+        Returns:
+            HttpResponse: form_valid if user form is valid, or form_invalid if it is invalid
+        """
+        user_record = self.get_object().caregiver.user
+        user_form = ManageCaregiverAccessUpdateForm(self.request.POST or None, instance=user_record)
+
+        if user_form.is_valid():
+            user_form.save()
+        else:
+            # to show errors and display messages on the field
+            for field, _value in user_form.errors.items():
+                form.add_error(field, user_form.errors.get(field))  # type: ignore[arg-type]
+
+            return super().form_invalid(form)  # noqa: WPS613
+
+        return super().form_valid(form)
