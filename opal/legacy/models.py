@@ -45,8 +45,11 @@ class LegacyPatient(models.Model):
     language = models.CharField(db_column='Language', max_length=2)
     telnum = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
     dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
     ssn = models.CharField(db_column='SSN', max_length=16)
     sex = models.CharField(db_column='Sex', max_length=25)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
 
     class Meta:
         managed = False
@@ -67,12 +70,24 @@ class LegacyNotification(models.Model):
         db_table = 'Notification'
 
 
+class LegacySourceDatabase(models.Model):
+    """SourceDatabase from the legacy database OpalDB."""
+
+    source_database = models.AutoField(db_column='SourceDatabaseSerNum', primary_key=True)
+    source_database_name = models.CharField(db_column='SourceDatabaseName', max_length=255)
+    enabled = models.SmallIntegerField(db_column='Enabled')
+
+    class Meta:
+        managed = False
+        db_table = 'SourceDatabase'
+
+
 class LegacyAppointment(models.Model):
     """Class to get appointement informations from the legacy database."""
 
     appointmentsernum = models.AutoField(db_column='AppointmentSerNum', primary_key=True)
     aliasexpressionsernum = models.ForeignKey(
-        'LegacyAliasexpression',
+        'LegacyAliasExpression',
         models.DO_NOTHING,
         db_column='AliasExpressionSerNum',
     )
@@ -89,6 +104,12 @@ class LegacyAppointment(models.Model):
     readby = models.JSONField(db_column='ReadBy', default=list)
     roomlocation_en = models.CharField(db_column='RoomLocation_EN', max_length=100)
     roomlocation_fr = models.CharField(db_column='RoomLocation_FR', max_length=100)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
+    appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+
     objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
     class Meta:
@@ -96,11 +117,19 @@ class LegacyAppointment(models.Model):
         db_table = 'Appointment'
 
 
-class LegacyAliasexpression(models.Model):
+class LegacyAliasExpression(models.Model):
     """Legcy alias expression model mapping AliasExpression table from legacy database."""
 
     aliasexpressionsernum = models.AutoField(db_column='AliasExpressionSerNum', primary_key=True)
     aliassernum = models.ForeignKey('LegacyAlias', models.DO_NOTHING, db_column='AliasSerNum')
+    expression_name = models.CharField(db_column='ExpressionName', max_length=250)
+    description = models.CharField(db_column='Description', max_length=250)
+    master_source_alias_id = models.ForeignKey(
+        'LegacyMasterSourceAlias',
+        models.DO_NOTHING,
+        db_column='masterSourceAliasId',
+        to_field='id',
+    )
 
     class Meta:
         managed = False
@@ -121,6 +150,8 @@ class LegacyAlias(models.Model):
         blank=True,
         null=True,
     )
+    alias_description_en = models.TextField(db_column='AliasDescription_EN')
+    alias_description_fr = models.TextField(db_column='AliasDescription_FR')
 
     class Meta:
         managed = False
@@ -233,7 +264,7 @@ class LegacySecurityQuestion(models.Model):
     questiontext_en = models.CharField(db_column='QuestionText_EN', max_length=2056)
     questiontext_fr = models.CharField(db_column='QuestionText_FR', max_length=2056)
     creationdate = models.DateTimeField(db_column='CreationDate')
-    lastupdated = models.DateTimeField(db_column='LastUpdated')
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     active = models.IntegerField(db_column='Active')
 
     class Meta:
@@ -253,7 +284,7 @@ class LegacySecurityAnswer(models.Model):
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     answertext = models.CharField(db_column='AnswerText', max_length=2056)
     creationdate = models.DateTimeField(db_column='CreationDate')
-    lastupdated = models.DateTimeField(db_column='LastUpdated')
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
     class Meta:
         managed = False
@@ -308,3 +339,117 @@ class LegacyHospitalMap(models.Model):
     class Meta:
         managed = False
         db_table = 'HospitalMap'
+
+
+class LegacyMasterSourceAlias(models.Model):
+    """MasterSourceAlias from the legacy database OpalDB."""
+
+    id = models.AutoField(primary_key=True, db_column='ID')  # noqa: A003
+    external_id = models.CharField(db_column='externalId', max_length=512)
+    code = models.CharField(db_column='code', max_length=128)
+    description = models.CharField(db_column='description', max_length=128)
+
+    class Meta:
+        managed = False
+        db_table = 'masterSourceAlias'
+
+
+class LegacyDiagnosis(models.Model):
+    """Diagnosis from the legacy database OpalDB."""
+
+    diagnosis_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisSerNum')
+    patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+    diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
+    diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=50)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
+    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
+    creation_date = models.DateTimeField(db_column='CreationDate')
+
+    class Meta:
+        managed = False
+        db_table = 'Diagnosis'
+
+
+class LegacyDiagnosisTranslation(models.Model):
+    """DiagnosisTranslation from the legacy database OpalDB."""
+
+    diagnosis_translation_ser_num = models.AutoField(db_column='DiagnosisTranslationSerNum', primary_key=True)
+    name_en = models.CharField(db_column='Name_EN', max_length=2056)
+    name_fr = models.CharField(db_column='Name_FR', max_length=2056)
+
+    class Meta:
+        managed = False
+        db_table = 'DiagnosisTranslation'
+
+
+class LegacyDiagnosisCode(models.Model):
+    """DiagnosisCode from the legacy database OpalDB."""
+
+    diagnosis_code_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisCodeSerNum')
+    diagnosis_translation_ser_num = models.ForeignKey(
+        'LegacyDiagnosisTranslation',
+        on_delete=models.DO_NOTHING,
+        db_column='DiagnosisTranslationSerNum',
+    )
+    description = models.CharField(db_column='Description', max_length=2056)
+    diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'DiagnosisCode'
+
+
+class LegacyTestResult(models.Model):
+    """TestResult from the legacy database OpalDB."""
+
+    test_result_ser_num = models.AutoField(db_column='TestResultSerNum', primary_key=True)
+    test_result_group_ser_num = models.IntegerField(db_column='TestResultGroupSerNum')
+    test_result_control_ser_num = models.IntegerField(db_column='TestResultControlSerNum')
+    test_result_expression_ser_num = models.IntegerField(db_column='TestResultExpressionSerNum')
+    patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+    test_result_aria_ser = models.CharField(db_column='TestResultAriaSer', max_length=100)
+    component_name = models.CharField(db_column='ComponentName', max_length=30)
+    fac_component_name = models.CharField(db_column='FacComponentName', max_length=30)
+    abnormal_flag = models.CharField(db_column='AbnormalFlag', max_length=5)
+    test_date = models.DateTimeField(db_column='TestDate')
+    max_norm = models.FloatField(db_column='MaxNorm')
+    min_norm = models.FloatField(db_column='MinNorm')
+    approved_flag = models.CharField(db_column='ApprovedFlag', max_length=5)
+    test_value = models.FloatField(db_column='TestValue')
+    test_value_string = models.CharField(db_column='TestValueString', max_length=400)
+    unit_description = models.CharField(db_column='UnitDescription', max_length=40)
+    valid_entry = models.CharField(db_column='ValidEntry', max_length=5)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    read_status = models.IntegerField(db_column='ReadStatus')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'TestResult'
+
+
+class LegacyTestResultControl(models.Model):
+    """LegacyTestResultControl from the legacy database OpalDB."""
+
+    test_result_control_ser_num = models.AutoField(primary_key=True, db_column='TestResultControlSerNum')
+    name_en = models.CharField(max_length=200, db_column='Name_EN')
+    name_fr = models.CharField(max_length=200, db_column='Name_FR')
+    description_en = models.TextField(db_column='Description_EN')
+    description_fr = models.TextField(db_column='Description_FR')
+    group_en = models.CharField(max_length=200, db_column='Group_EN')
+    group_fr = models.CharField(max_length=200, db_column='Group_FR')
+    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+    publish_flag = models.IntegerField(db_column='PublishFlag')
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_published = models.DateTimeField(default='2002-01-01 00:00:00', db_column='LastPublished')
+    last_updated_by = models.IntegerField(null=True, db_column='LastUpdatedBy')
+    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+    url_en = models.CharField(max_length=2000, db_column='URL_EN')
+    url_fr = models.CharField(max_length=2000, db_column='URL_FR')
+
+    class Meta:
+        managed = False
+        db_table = 'TestResultControl'

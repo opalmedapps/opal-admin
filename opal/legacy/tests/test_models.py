@@ -77,3 +77,39 @@ def test_legacy_post_control_factory() -> None:
     """Test whether the factory creates a valid legacy postControl model instance."""
     test_post_control = factories.LegacyPostcontrolFactory()
     test_post_control.full_clean()
+
+
+def test_legacy_source_database_factory() -> None:
+    """Test whether the factory creates a valid legacy SourceDatabase model instance."""
+    test_source_database = factories.LegacySourceDatabaseFactory()
+    test_source_database.full_clean()
+
+
+def test_legacy_diagnosis_factory() -> None:
+    """Test whether the factory creates a valid legacy Diagnosis model instance."""
+    test_diagnosis = factories.LegacyDiagnosisFactory()
+    test_diagnosis.full_clean()
+
+
+def test_legacy_diagnosis_translation_factory() -> None:
+    """Test whether the factory creates a valid legacy DiagnosisTranslation model instance."""
+    test_diagnosis_translation = factories.LegacyDiagnosisTranslationFactory()
+    test_diagnosis_translation.full_clean()
+
+
+def test_legacy_diagnosis_code_factory() -> None:
+    """Test whether the factory creates a valid legacy DiagnosisCode model instance."""
+    test_diagnosis_code = factories.LegacyDiagnosisCodeFactory()
+    test_diagnosis_code.full_clean()
+
+
+def test_legacy_test_result_factory() -> None:
+    """Test whether the factory creates a valid legacy TestResult model instance."""
+    test_test_result = factories.LegacyTestResultFactory()
+    test_test_result.full_clean()
+
+
+def test_legacy_test_result_control_factory() -> None:
+    """Test whether the factory creates a valid legacy TestResultControl model instance."""
+    test_test_result_control = factories.LegacyTestResultControlFactory()
+    test_test_result_control.full_clean()
