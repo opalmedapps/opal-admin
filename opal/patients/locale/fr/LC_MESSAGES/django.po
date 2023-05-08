@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 01:08+0000\n"
+"POT-Creation-Date: 2023-05-04 15:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -392,6 +392,10 @@ msgstr "Date de fin de relation"
 #: opal/patients/models.py
 msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
+
+#: opal/patients/models.py
+msgid "Can perform registration"
+msgstr "Peut effectuer l'enregistrement"
 
 #: opal/patients/models.py
 msgid "Relationships"
