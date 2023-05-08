@@ -4,7 +4,7 @@ from typing import Any, Optional
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions as CrispyFormActions
-from crispy_forms.layout import HTML, Field, Layout
+from crispy_forms.layout import HTML, Field, Layout, Submit
 from crispy_forms.utils import flatatt
 
 
@@ -48,13 +48,13 @@ class InlineSubmit(Layout):
     """
 
     default_label = _('Submit')
-    default_css_class = 'btn btn-primary d-table'
+    default_css_class = 'btn btn-secondary d-table'
 
     def __init__(
         self,
         name: Optional[str] = None,
         label: Optional[str] = None,
-        conditional_css: Optional[str] = None,
+        active_option: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -65,17 +65,18 @@ class InlineSubmit(Layout):
         Args:
             name: the name of the submit button, empty string if you don't need to identify it
             label: label of the submit button, defaults to `Submit` otherwise
-            conditional_css: pass active css condition to the html, not used if empty
+            active_option: pass boolean value to indicate button is active/inactive
             kwargs: additional keyword arguments that are added to the submit button
         """
         # link to the same page without query parameters to erase existing form values
-
         the_label = label if label else self.default_label
-        css_class = f'{self.default_css_class} {conditional_css}' if conditional_css else self.default_css_class
-        flat_attrs = flatatt(kwargs)
+
+        extra_css = 'btn-active active' if active_option else ''
+        css_class = f'{self.default_css_class} {extra_css}' if active_option else self.default_css_class
+
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
-            HTML(f'<input type="submit" name={name} value="{the_label}" class="{css_class}" {flat_attrs}>'),  # noqa: WPS221, E501
+            Submit(name, label, css_class=css_class, **kwargs),
         )
         super().__init__(*fields)
 
@@ -92,12 +93,12 @@ class InlineReset(Layout):
     """
 
     default_label = _('Reset')
-    default_css_class = 'btn btn-primary d-table'
+    default_css_class = 'btn btn-secondary d-table'
 
-    def __init__(
+    def __init__(  # noqa: WPS210
         self,
         label: Optional[str] = None,
-        conditional_css: Optional[str] = None,
+        active_option: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -107,7 +108,7 @@ class InlineReset(Layout):
 
         Args:
             label: label of the reset button, default to `Reset` otherwise
-            conditional_css: pass active condition to the html, not used if empty
+            active_option: pass boolean value to indicate button is active/inactive
             kwargs: additional keyword arguments that are added to the reset button
         """
         the_label = label if label else self.default_label
@@ -115,7 +116,9 @@ class InlineReset(Layout):
 
         # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
-        css_class = f'{self.default_css_class} {conditional_css}' if conditional_css else self.default_css_class
+
+        extra_css = 'btn-active active' if active_option else ''
+        css_class = f'{self.default_css_class} {extra_css}' if active_option else self.default_css_class
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
             HTML(f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>'),  # noqa: WPS221
