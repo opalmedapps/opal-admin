@@ -357,7 +357,10 @@ class Relationship(models.Model):
     objects: RelationshipManager = RelationshipManager()
 
     class Meta:
-        permissions = (('can_manage_relationships', _('Can manage relationships')),)
+        permissions = (
+            ('can_manage_relationships', _('Can manage relationships')),
+            ('can_perform_registration', _('Can perform registration')),
+        )
         verbose_name = _('Relationship')
         verbose_name_plural = _('Relationships')
 
