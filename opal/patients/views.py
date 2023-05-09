@@ -601,22 +601,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         'patient__hospital_patients__site',
     )
 
-    def get_form_kwargs(self) -> Dict[str, Any]:
-        """
-        Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
-
-        Returns:
-            keyword arguments for instantiating the `RelationshipAccessForm`
-        """
-        kwargs = super().get_form_kwargs()
-
-        relationship = self.object
-        patient = relationship.patient
-        kwargs['date_of_birth'] = patient.date_of_birth
-        kwargs['relationship_type'] = relationship.type
-        kwargs['request_date'] = relationship.request_date
-
-        return kwargs
+    permission_required = ('patients.can_manage_relationships',)
+    success_url = reverse_lazy('patients:relationships-pending-list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """
