@@ -145,7 +145,7 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
             self.request.session['site_selection'] = site_selection
         return form_step_data
 
-    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -156,7 +156,7 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         Returns:
             the template context for a step
         """
-        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
+        context: dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
             patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
             context = self._update_patient_confirmation_context(context, patient_record)
@@ -237,6 +237,9 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         kwargs = {}
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
+            kwargs['ramq'] = patient_record.ramq
+            kwargs['mrn'] = patient_record.mrns[0].mrn
+            kwargs['site'] = patient_record.mrns[0].site
             kwargs['date_of_birth'] = patient_record.date_of_birth
         elif step == 'requestor':
             relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
@@ -482,9 +485,9 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
 
     def _update_patient_confirmation_context(
         self,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         patient_record: OIEPatientData,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update the context for patient confirmation form.
 
