@@ -68,7 +68,7 @@ msgstr "Rechercher l'accès des patients"
 
 #: opal/patients/filters.py
 msgid "Show Pending Requests"
-msgstr "En attendant"
+msgstr "Afficher les demandes en attente"
 
 #: opal/patients/forms.py
 msgid "At which hospital is the patient?"
