@@ -72,11 +72,12 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column('medical_number'),
             Column(InlineSubmit(
                 label=gettext('Search Specific Patient'),
-                active_option=self.is_bound,
+                active=self.is_bound,
+                extra_css='btn-secondary',
             )),
             Column(InlineReset(
                 label=gettext('Show Pending Requests'),
-                active_option=not self.is_bound,
+                active=not self.is_bound,
             )),
         )
 

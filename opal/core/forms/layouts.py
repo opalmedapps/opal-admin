@@ -48,13 +48,15 @@ class InlineSubmit(Layout):
     """
 
     default_label = _('Submit')
-    default_css_class = 'btn btn-secondary d-table'
+    default_css_class = 'd-table'
+    default_css_active = ''
 
-    def __init__(
+    def __init__(  # noqa: WPS211
         self,
         name: Optional[str] = None,
         label: Optional[str] = None,
-        active_option: Optional[bool] = None,
+        active: bool = False,
+        extra_css: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -65,14 +67,15 @@ class InlineSubmit(Layout):
         Args:
             name: the name of the submit button, empty string if you don't need to identify it
             label: label of the submit button, defaults to `Submit` otherwise
-            active_option: pass boolean value to indicate button is active/inactive
+            active: True if it should look active, False otherwise
+            extra_css: optional additional css properties
             kwargs: additional keyword arguments that are added to the submit button
         """
-        # link to the same page without query parameters to erase existing form values
         the_label = label if label else self.default_label
 
-        extra_css = 'btn-active active' if active_option else ''
-        css_class = f'{self.default_css_class} {extra_css}' if active_option else self.default_css_class
+        css_active_class = 'btn-active active' if active else self.default_css_active
+
+        css_class = f'{self.default_css_class} {css_active_class} {extra_css}'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
@@ -94,11 +97,12 @@ class InlineReset(Layout):
 
     default_label = _('Reset')
     default_css_class = 'btn btn-secondary d-table'
+    default_css_active = ''
 
     def __init__(  # noqa: WPS210
         self,
         label: Optional[str] = None,
-        active_option: Optional[bool] = None,
+        active: bool = False,
         **kwargs: Any,
     ) -> None:
         """
@@ -108,17 +112,17 @@ class InlineReset(Layout):
 
         Args:
             label: label of the reset button, default to `Reset` otherwise
-            active_option: pass boolean value to indicate button is active/inactive
+            active: True if it should look active, False otherwise
             kwargs: additional keyword arguments that are added to the reset button
         """
         the_label = label if label else self.default_label
         flat_attrs = flatatt(kwargs)
 
-        # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
 
-        extra_css = 'btn-active active' if active_option else ''
-        css_class = f'{self.default_css_class} {extra_css}' if active_option else self.default_css_class
+        css_active_class = 'btn-active active' if active else self.default_css_active
+
+        css_class = f'{self.default_css_class} {css_active_class}'
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
             HTML(f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>'),  # noqa: WPS221
