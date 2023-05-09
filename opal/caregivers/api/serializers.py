@@ -130,6 +130,7 @@ class DeviceSerializer(DynamicFieldsSerializer):
         fields = ['id', 'caregiver', 'device_id', 'type', 'is_trusted', 'push_token', 'modified']
 
 
+# Security: this serializer includes security answer hashes, and should only be used in secure contexts
 class SecurityAnswerSerializer(DynamicFieldsSerializer):
     """Serializer for security answers with corresponding questions."""
 

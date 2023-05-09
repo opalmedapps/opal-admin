@@ -3,7 +3,7 @@ import base64
 import io
 from collections import Counter
 from datetime import date
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -78,7 +78,7 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class AccessRequestView(SessionWizardView):  # noqa: WPS214
+class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WPS214
     """
     Form wizard view providing the steps for a caregiver's patient access request.
 
@@ -87,6 +87,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
     """
 
     model = Site
+    permission_required = ('patients.can_perform_registration',)
     form_list = [
         ('site', forms.SelectSiteForm),
         ('search', forms.SearchForm),
@@ -143,7 +144,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             self.request.session['site_selection'] = site_selection
         return form_step_data
 
-    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -154,7 +155,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             the template context for a step
         """
-        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
+        context: dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
             patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
             context = self._update_patient_confirmation_context(context, patient_record)
@@ -235,6 +236,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         kwargs = {}
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
+            kwargs['ramq'] = patient_record.ramq
+            kwargs['mrn'] = patient_record.mrns[0].mrn
+            kwargs['site'] = patient_record.mrns[0].site
             kwargs['date_of_birth'] = patient_record.date_of_birth
         elif step == 'requestor':
             relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
@@ -480,9 +484,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
     def _update_patient_confirmation_context(
         self,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         patient_record: OIEPatientData,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update the context for patient confirmation form.
 
@@ -587,23 +591,6 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
 
-    def get_form_kwargs(self) -> Dict[str, Any]:
-        """
-        Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
-
-        Returns:
-            keyword arguments for instantiating the `RelationshipAccessForm`
-        """
-        kwargs = super().get_form_kwargs()
-
-        relationship = self.object
-        patient = relationship.patient
-        kwargs['date_of_birth'] = patient.date_of_birth
-        kwargs['relationship_type'] = relationship.type
-        kwargs['request_date'] = relationship.request_date
-
-        return kwargs
-
 
 class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
     """
@@ -615,7 +602,7 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
     permission_required = ('patients.can_manage_relationships',)
     success_url = reverse_lazy('patients:relationships-pending-list')
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `ManagePendingUpdateView` update view.
 
