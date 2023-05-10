@@ -92,20 +92,20 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Filtered `Relationship` queryset
         """
         # Remove 'medical_card_type' field from the form since this field does not perform queryset filtering
+        print(self.form.cleaned_data)
         card_type = self.form.cleaned_data.pop('card_type')
+        site_model = self.form.cleaned_data.pop('site')
+        medical_number = self.form.cleaned_data.pop('medical_number')
 
-        # Set medical_number's 'field_name' by which the filtering will be performed
-        # TODO: filtering separately by site and MRN can produce duplicates
-        #  (e.g., RVH: 1234 and MGH: 1234) because the filters are applied one after the other
-        # need to find a way to combine site code and MRN into one filter
-        # see also: https://github.com/carltongibson/django-filter/pull/1167#issuecomment-1001984446
         if card_type == constants.MedicalCard.mrn.name:
-            self.filters['medical_number'].field_name = 'patient__hospital_patients__mrn'
+            queryset = queryset.filter(
+                patient__hospital_patients__site__name=site_model.name,
+                patient__hospital_patients__mrn=medical_number,
+            )
         else:
-            self.filters['medical_number'].field_name = 'patient__ramq'
+            queryset = queryset.filter(
+                patient__hospital_patients__site__name=site_model.name,
+                patient__ramq=medical_number,
+            )
 
-        for name, value in self.form.cleaned_data.items():
-            queryset = self.filters[name].filter(queryset, value)
-
-        return_queryset: QuerySet[Relationship] = super().filter_queryset(queryset)
-        return return_queryset  # noqa: WPS331
+        return queryset
