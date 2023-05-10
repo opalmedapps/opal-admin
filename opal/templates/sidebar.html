@@ -43,7 +43,7 @@
           {% translate "Relationship Types" %}
         {% /menu_item %}
       {% endif %}
-      {% if perms.hospital_settings.can_manage_sites %}
+      {% if perms.patients.can_perform_registration %}
         {% #menu_item url_name="patients:access-request" request=request %}
           {% translate "Opal Registration" %}
         {% /menu_item %}

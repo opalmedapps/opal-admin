@@ -87,7 +87,7 @@ class RelationshipType(models.Model):
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
     role_type = models.CharField(
-        verbose_name=_('Relationship Role Type'),
+        verbose_name=_('Role Type'),
         choices=RoleType.choices,
         default=RoleType.CAREGIVER,
         max_length=14,
@@ -102,8 +102,8 @@ class RelationshipType(models.Model):
     class Meta:
         permissions = (('can_manage_relationshiptypes', _('Can manage relationship types')),)
         ordering = ['name']
-        verbose_name = _('Caregiver Relationship Type')
-        verbose_name_plural = _('Caregiver Relationship Types')
+        verbose_name = _('Relationship Type')
+        verbose_name_plural = _('Relationship Types')
 
     def __str__(self) -> str:
         """Return the string representation of the User Patient Relationship Type.
@@ -357,7 +357,10 @@ class Relationship(models.Model):
     objects: RelationshipManager = RelationshipManager()
 
     class Meta:
-        permissions = (('can_manage_relationships', _('Can manage relationships')),)
+        permissions = (
+            ('can_manage_relationships', _('Can manage relationships')),
+            ('can_perform_registration', _('Can perform registration')),
+        )
         verbose_name = _('Relationship')
         verbose_name_plural = _('Relationships')
 
@@ -581,13 +584,12 @@ class HospitalPatient(models.Model):
         unique_together = (('site', 'mrn'), ('patient', 'site'))
 
     def __str__(self) -> str:
-        """Return the Patient Hospital Identifier of the Patient.
+        """Return the textual representation of this instance.
 
         Returns:
-            the Patient Hospital Identifier of the Patient
+            the textual representation of this instance
         """
-        return '{patient} ({site_code}: {mrn})'.format(
-            patient=str(self.patient),
+        return '{site_code}: {mrn}'.format(
             site_code=str(self.site.code),
             mrn=str(self.mrn),
         )

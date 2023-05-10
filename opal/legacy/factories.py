@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from factory import SubFactory
+from factory import Faker, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from . import models
@@ -37,6 +37,8 @@ class LegacyPatientFactory(DjangoModelFactory):
     registrationdate = timezone.make_aware(datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
+    last_updated = timezone.now()
+    patient_aria_ser = Sequence(lambda number: number + 1)
 
 
 class LegacyNotificationFactory(DjangoModelFactory):
@@ -60,16 +62,42 @@ class LegacyAliasFactory(DjangoModelFactory):
     aliastype = 'Appointment'
     aliasname_en = 'Calcul de la Dose'
     aliasname_fr = 'Calcul de la Dose'
+    alias_description_en = 'Calcul de la Dose'
+    alias_description_fr = 'Calcul de la Dose'
 
 
-class LegacyAliasexpressionFactory(DjangoModelFactory):
+class LegacyMasterSourceAliasFactory(DjangoModelFactory):
+    """SourceDatabase factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyMasterSourceAlias
+
+    external_id = Faker('pystr', max_chars=512)
+    code = Faker('pystr', max_chars=128)
+    description = Faker('pystr', max_chars=128)
+
+
+class LegacySourceDatabaseFactory(DjangoModelFactory):
+    """SourceDatabase factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacySourceDatabase
+
+    source_database_name = Faker('word')
+    enabled = True
+
+
+class LegacyAliasExpressionFactory(DjangoModelFactory):
     """Legacy expression from legacy database."""
 
     class Meta:
-        model = models.LegacyAliasexpression
+        model = models.LegacyAliasExpression
 
-    aliasexpressionsernum = 7399
+    aliasexpressionsernum = Sequence(lambda number: number + 1)
     aliassernum = SubFactory(LegacyAliasFactory)
+    master_source_alias_id = SubFactory(LegacyMasterSourceAliasFactory)
+    description = Faker('sentence', nb_words=5)
+    expression_name = Faker('sentence', nb_words=5)
 
 
 class LegacyAppointmentFactory(DjangoModelFactory):
@@ -78,7 +106,8 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyAppointment
 
-    scheduledstarttime = timezone.now()
+    scheduledstarttime = timezone.make_aware(datetime(2018, 1, 1))
+    scheduled_end_time = timezone.make_aware(datetime(2018, 1, 2))
     checkin = 1
     status = 'Open'
     state = 'active'
@@ -86,8 +115,12 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     readby = '[]'
     roomlocation_en = 'CVIS Clinic Room 1'
     roomlocation_fr = 'SMVC Salle 1'
-    aliasexpressionsernum = SubFactory(LegacyAliasexpressionFactory)
+    aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    appointment_aria_ser = Sequence(lambda number: number + 1)
+    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    source_database = 1
 
 
 class LegacyDocumentFactory(DjangoModelFactory):
@@ -211,3 +244,90 @@ class LegacyHospitalMapFactory(DjangoModelFactory):
     mapname_en = 'R720'
     mapname_fr = 'R720'
     dateadded = timezone.make_aware(datetime(2023, 3, 15))
+
+
+class LegacyDiagnosisFactory(DjangoModelFactory):
+    """Diagnosis factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyDiagnosis
+
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    source_database = 1
+    diagnosis_aria_ser = '22234'
+    diagnosis_code = 'C71.1'
+    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    stage = 'IIIB'
+    stage_criteria = 'T2, pN1a, M0'
+    creation_date = timezone.make_aware(datetime(2018, 1, 1))
+
+
+class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
+    """DiagnosisTranslation factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyDiagnosisTranslation
+
+    name_en = Faker('sentence', nb_words=4)
+    name_fr = Faker('sentence', nb_words=4)
+    diagnosis_translation_ser_num = Sequence(lambda number: number + 1)
+
+
+class LegacyDiagnosisCodeFactory(DjangoModelFactory):
+    """Diagnosis factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyDiagnosisCode
+
+    description = Faker('sentence', nb_words=6)
+    diagnosis_code = Faker('word')
+    diagnosis_translation_ser_num = SubFactory(LegacyDiagnosisTranslationFactory)
+
+
+class LegacyTestResultFactory(DjangoModelFactory):
+    """TestResultControl factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyTestResult
+
+    test_result_group_ser_num = Sequence(lambda number: number + 1)
+    test_result_control_ser_num = Sequence(lambda number: number + 1)
+    test_result_expression_ser_num = Sequence(lambda number: number + 1)
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    source_database = 1
+    test_result_aria_ser = Faker('word')
+    component_name = Faker('word')
+    fac_component_name = Faker('word')
+    abnormal_flag = 'N'
+    test_date = timezone.make_aware(datetime(2018, 1, 1))
+    max_norm = Faker('pyfloat', positive=True)
+    min_norm = Faker('pyfloat', positive=True)
+    approved_flag = 'Y'
+    test_value = Faker('pyfloat', positive=True)
+    test_value_string = Faker('sentence')
+    unit_description = Faker('word')
+    valid_entry = 'Y'
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    read_status = Faker('random_int', min=0, max=1)
+
+
+class LegacyTestResultControlFactory(DjangoModelFactory):
+    """TestResultControl factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyTestResultControl
+
+    name_en = Faker('sentence', nb_words=5)
+    name_fr = Faker('sentence', nb_words=5)
+    description_en = Faker('paragraph', nb_sentences=3)
+    description_fr = Faker('paragraph', nb_sentences=3)
+    group_en = Faker('word')
+    group_fr = Faker('word')
+    source_database = 1
+    publish_flag = Sequence(lambda number: number)
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    last_published = timezone.make_aware(datetime(2018, 1, 1))
+    last_updated_by = Sequence(lambda number: number)
+    last_updated = datetime.now()
+    url_en = Faker('url')
+    url_fr = Faker('url')
