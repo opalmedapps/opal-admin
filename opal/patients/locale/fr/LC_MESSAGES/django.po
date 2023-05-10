@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-04 15:24+0000\n"
+"POT-Creation-Date: 2023-05-10 19:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -138,12 +138,12 @@ msgid "Generate Access Request"
 msgstr "Générer une demande d'accès"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "First Name"
 msgstr "Prénom"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Last Name"
 msgstr "Nom de famille"
 
