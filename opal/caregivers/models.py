@@ -167,15 +167,12 @@ class Device(models.Model):
 
     def __str__(self) -> str:
         """
-        Represent a Device as a string, showing its device_id and device type.
+        Represent a Device as a string, showing its device_id.
 
         Returns:
             The string representation of a Device.
         """
-        return '{device_id} ({type})'.format(
-            device_id=self.device_id,
-            type=self.type,
-        )
+        return self.device_id
 
 
 class RegistrationCodeStatus(models.TextChoices):
@@ -235,15 +232,12 @@ class RegistrationCode(models.Model):
 
     def __str__(self) -> str:
         """
-        Return the string registration code of the associated relationship.
+        Return the textual representation of the registration code.
 
         Returns:
-            the string registration code of the associated relationship
+            the string representation of the registration code
         """
-        return 'Code: {code} (Status: {status})'.format(
-            code=self.code,
-            status=self.status,
-        )
+        return self.code
 
 
 class EmailVerification(models.Model):
@@ -286,7 +280,4 @@ class EmailVerification(models.Model):
         Returns:
             the string email and its status
         """
-        return 'Email: {email} (Verified: {verified})'.format(
-            email=self.email,
-            verified=str(self.is_verified),
-        )
+        return self.code
