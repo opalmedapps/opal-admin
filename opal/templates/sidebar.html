@@ -37,23 +37,26 @@
     {% endif %}
 
     {# Patients #}
-    {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
-      {% if perms.patients.can_manage_relationshiptypes %}
-        {% #menu_item url_name="patients:relationshiptype-list" request=request %}
-          {% translate "Relationship Types" %}
-        {% /menu_item %}
-      {% endif %}
-      {% if perms.patients.can_perform_registration %}
-        {% #menu_item url_name="patients:access-request" request=request %}
-          {% translate "Opal Registration" %}
-        {% /menu_item %}
-      {% endif %}
-      {% if perms.patients.can_manage_relationships %}
-        {% #menu_item url_name="patients:relationships-list" request=request %}
-          {% translate "Manage Caregiver Access" %}
-        {% /menu_item %}
-      {% endif %}
-    {% /menu_group %}
+    {# TBD: can we switch this to "'patients' in perms"? #}
+    {% if perms.patients.can_manage_relationshiptypes or perms.patients.can_perform_registration or perms.patients.can_manage_relationships %}
+      {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
+        {% if perms.patients.can_manage_relationshiptypes %}
+          {% #menu_item url_name="patients:relationshiptype-list" request=request %}
+            {% translate "Relationship Types" %}
+          {% /menu_item %}
+        {% endif %}
+        {% if perms.patients.can_perform_registration %}
+          {% #menu_item url_name="patients:access-request" request=request %}
+            {% translate "Opal Registration" %}
+          {% /menu_item %}
+        {% endif %}
+        {% if perms.patients.can_manage_relationships %}
+          {% #menu_item url_name="patients:relationships-list" request=request %}
+            {% translate "Manage Caregiver Access" %}
+          {% /menu_item %}
+        {% endif %}
+      {% /menu_group %}
+    {% endif %}
 
     {# Questionnaires #}
     {% if perms.questionnaires.export_report %}
