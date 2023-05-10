@@ -38,49 +38,71 @@ class Command(BaseCommand):
         if Group.objects.all().exists():
             self.stderr.write(self.style.ERROR('There already exists data'))
 
-        _create_data()
+        self._create_data()
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
+    def _create_data(self) -> None:  # noqa: WPS210
+        """
+        Create all test data.
 
-def _create_data() -> None:
-    """
-    Create all test data.
+        Takes care of:
+            * groups and their permissions
+            * users
+        """
+        # groups
+        # TODO: if we need French names for groups as well we will create our own Group model
+        # maybe this can be done later
+        # TODO: TBD: are administrators and superusers the same?
+        # admins = Group.objects.create(name='Administrators')
+        medical_records = Group.objects.create(name='Medical Records')
+        Group.objects.create(name='Clinicians')
+        receptionists = Group.objects.create(name='Receptionists')
+        Group.objects.create(name=settings.ORMS_USER_GROUP)
 
-    Takes care of:
-        * groups and their permissions
-        * users
-    """
-    # groups
-    # TODO: if we need French names for groups as well we will create our own Group model
-    # maybe this can be done later
-    admins = Group.objects.create(name='Administrators')
-    medical_records = Group.objects.create(name='Medical Records')
-    clinicians = Group.objects.create(name='Clinicians')
-    receptionists = Group.objects.create(name='Receptionists')
-    orms = Group.objects.create(name=settings.ORMS_USER_GROUP)
+        # users
+        # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
+        listener = User.objects.create(username='Listener')
+        interface_engine = User.objects.create(username='Interface Engine')
 
-    # users
-    # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-    listener = User.objects.create(username='Listener')
-    interface_engine = User.objects.create(username='Interface Engine')
+        # permissions
+        #
+        # listener
+        view_institution = _find_permission('hospital_settings', 'view_institutions')
+        view_site = _find_permission('hospital_settings', 'view_sites')
+        view_caregiver_profile = _find_permission('caregivers', 'view_caregiverprofile')
+        view_registration_code = _find_permission('caregivers', 'view_registrationcode')
+        view_hospital_patient = _find_permission('patients', 'view_hospitalpatient')
+        view_patient = _find_permission('patients', 'view_patient')
+        view_relationship = _find_permission('patients', 'view_relationship')
 
-    # permissions
-    #
-    # listener
-    view_institution = _find_permission('hospital_settings', 'view_institutions')
-    view_site = _find_permission('hospital_settings', 'view_sites')
-    view_caregiver_profile = _find_permission('caregivers', 'view_caregiverprofile')
-    view_registration_code = _find_permission('caregivers', 'view_registrationcode')
-    view_hospital_patient = _find_permission('patients', 'view_hospitalpatient')
-    view_patient = _find_permission('patients', 'view_patient')
-    view_relationship = _find_permission('patients', 'view_relationship')
+        listener.user_permissions.set([
+            view_institution,
+            view_site,
+            view_caregiver_profile,
+            view_hospital_patient,
+            view_registration_code,
+            view_patient,
+            view_relationship,
+        ])
 
-    # OIE
-    # TODO: determine which permissions are specifically needed
+        # OIE
+        # TODO: determine which permissions are specifically needed
 
-    # create tokens for the API users
-    token_listener = Token.objects.create(user=listener)
-    token_interface_engine = Token.objects.create(user=interface_engine)
+        # Medical Records
+        medical_records.permissions.add(_find_permission('patients', 'can_manage_relationships'))
+
+        # Receptionists
+        receptionists.permissions.add(_find_permission('patients', 'can_perform_registration'))
+
+        # Clinicians
+        # TODO: determine which permissions are specifically needed
+
+        # create tokens for the API users
+        token_listener = Token.objects.create(user=listener)
+        token_interface_engine = Token.objects.create(user=interface_engine)
+
+        self.stdout.write(f'Listener token: {token_listener}')
+        self.stdout.write(f'Interface Engine token: {token_interface_engine}')
 
 
 def _find_permission(app_label: str, codename: str) -> Permission:
