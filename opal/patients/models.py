@@ -589,8 +589,7 @@ class HospitalPatient(models.Model):
         Returns:
             the Patient Hospital Identifier of the Patient
         """
-        return '{patient} ({site_code}: {mrn})'.format(
-            patient=str(self.patient),
+        return '{site_code}: {mrn}'.format(
             site_code=str(self.site.code),
             mrn=str(self.mrn),
         )
