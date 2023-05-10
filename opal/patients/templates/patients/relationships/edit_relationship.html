@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="card border-secondary mb-3">
+  <div class="card mb-3">
     <div class="card-body">
       <div class="row">
 
@@ -41,9 +41,7 @@
           </div>
           <div class="row">
             <p>
-              {% for record in  relationship.patient.hospital_patients.reverse %}
-                {{ record.site.code }}:&nbsp;{{ record.mrn }} &nbsp;
-              {%  endfor %}
+              {{ relationship.patient.hospital_patients.reverse |join:',' }}
             </p>
           </div>
         </div>
@@ -59,10 +57,10 @@
 
     </div>
   </div>
-  <div class="card border-secondary">
+  <div class="card">
     <div class="card-body">
-        <h5 class="fw-bold mb-4">{%  translate "Caregiver" %}</h5>
-        {% crispy form %}
+      <h5 class="fw-bold mb-4">{%  translate "Caregiver" %}</h5>
+      {% crispy form %}
     </div>
   </div>
 {% endblock %}

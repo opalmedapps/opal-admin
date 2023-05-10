@@ -41,9 +41,7 @@
           </div>
           <div class="row">
             <p>
-              {% for record in  relationship.patient.hospital_patients.reverse %}
-                {{ record }}&nbsp;
-              {%  endfor %}
+              {{ relationship.patient.hospital_patients.reverse |join:',' }}
             </p>
           </div>
         </div>
