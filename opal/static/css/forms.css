@@ -6,15 +6,20 @@
 
 .form-select{
   border-color: var(--field-border-color);
-  background: var(--field-background);
+  background-color: var(--field-background);
 }
 
 .form-control{
   border-color: var(--field-border-color);
-  background: var(--field-background);
+  background-color: var(--field-background);
 }
 
 .form-check-input{
   border-color: var(--field-border-color);
-  background: var(--field-background);
+  background-color: var(--field-background);
+}
+
+form {
+  form-select-bg: black;
+  form-select-border: black;
 }
