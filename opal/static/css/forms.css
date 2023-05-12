@@ -1,0 +1,20 @@
+/* */
+
+.form-label{
+  font-weight: bold;
+}
+
+.form-select{
+  border-color: var(--field-border-color);
+  background: var(--field-background);
+}
+
+.form-control{
+  border-color: var(--field-border-color);
+  background: var(--field-background);
+}
+
+.form-check-input{
+  border-color: var(--field-border-color);
+  background: var(--field-background);
+}
