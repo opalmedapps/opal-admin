@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-28 19:33+0300\n"
+"POT-Creation-Date: 2023-05-10 15:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,6 +56,10 @@ msgstr "Le Groupe Informatique Opal Santé"
 #, python-format
 msgid "Are you sure you want to delete \"%(object)s\"?"
 msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
+
+#: opal/templates/components/form_back.html
+msgid "Back"
+msgstr ""
 
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"
