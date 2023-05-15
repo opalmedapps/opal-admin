@@ -118,6 +118,29 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         'existing': 'patients/access_request/access_request.html',
         'password': 'patients/access_request/access_request.html',
     }
+    def get(self, request, *args, **kwargs):
+        """
+        This method handles GET requests.
+
+        If a GET request reaches this point, the wizard assumes that the user
+        just starts at the first step or wants to restart the process.
+        The data of the wizard will be resetted before rendering the first step
+        """
+        self.storage.reset()
+
+        # reset the current step to the first step.
+        sites = Site.objects.all()
+        if len(sites)==1:
+            self.request.session['site_selection'] = sites[0].pk
+            if self.form_list.get('site'):
+                self.form_list.__delitem__('site')
+        else:
+            self.form_list['site'] = forms.SelectSiteForm
+            self.form_list.move_to_end('site',last=False)
+
+        self.storage.current_step = self.steps.first
+        return self.render(self.get_form())
+
 
     def get_template_names(self) -> List[str]:
         """
@@ -140,8 +163,9 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         """
         form_step_data = self.get_form_step_data(form)
         if self.steps.current == 'site':
-            site_selection = form_step_data['site-sites']
-            self.request.session['site_selection'] = site_selection
+            if not self.request.session.get('site_selection'):
+                site_selection = form_step_data['site-sites']
+                self.request.session['site_selection'] = site_selection
         return form_step_data
 
     def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
@@ -454,6 +478,9 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         for form_data in forms_data:
             for key, value in form_data.items():
                 processed_form_date[key] = value
+
+        if not self.form_list.get('site'):
+            processed_form_date['sites'] = Site.objects.filter(pk=self.request.session['site_selection']).first()
         return processed_form_date
 
     def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
