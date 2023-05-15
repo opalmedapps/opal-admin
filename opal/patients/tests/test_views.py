@@ -285,6 +285,7 @@ def test_form_stepback(
     """Ensure that the form can go back to the previous step."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
+    factories.Site()
     response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
@@ -318,6 +319,7 @@ def test_form_finish(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
+    factories.Site()
     response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
@@ -379,6 +381,7 @@ def test_form_error_in_template(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
+    factories.Site()
     response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
@@ -411,6 +414,7 @@ def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
 
     url = reverse('patients:access-request')
     site = factories.Site()
+    factories.Site()
     relationship = factories.RelationshipType()
     user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
     factories.Patient(ramq='MARG99991313')
@@ -647,6 +651,7 @@ def test_new_user_form_by_user_choice(
 
     url = reverse(url_name)
     site = factories.Site()
+    factories.Site()
     relationship = factories.RelationshipType()
     form_data = [
         ('site', {'sites': site.pk}),
@@ -686,6 +691,7 @@ def test_existing_user_form_by_user_choice(
 
     url = reverse(url_name)
     site = factories.Site()
+    factories.Site()
     relationship = factories.RelationshipType()
     form_data = [
         ('site', {'sites': site.pk}),
@@ -727,6 +733,7 @@ def test_new_user_case_in_password_step(
 
     url = reverse(url_name)
     site = factories.Site()
+    factories.Site()
     relationship = factories.RelationshipType()
 
     form_data = [
