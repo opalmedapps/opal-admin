@@ -417,15 +417,16 @@ def test_form_stepback_single_site(
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
     response = registration_user.get(url)
+    # assert first step not site because there is a single site
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['header_title'] == 'Patient Details'
-
+    # assert second step
     response = registration_user.post(url, wizard_step_data[1])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
-
+    # assert previous step is search
     response = registration_user.post(url, {
         'wizard_goto_step': response.context['wizard']['steps'].prev,
     })
@@ -441,10 +442,15 @@ def test_form_view_contains_site_form(
 ) -> None:
     """Ensure that site form exists when there is more than one site."""
     url = reverse(url_name)
+    site = factories.Site()
+    _wizard_step_data(site)
     factories.Site()
-    factories.Site()
-    response = registration_user.get(url)
 
+    response = registration_user.get(url)
+    current_form = response.context['view'].form_list['site']
+    site_form = current_form(data={'site-sites': site.pk})
+    # assert that site data is maintained when there are more than one site
+    assert response.context['view'].process_step(site_form) == {'site-sites': site.pk}
     assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
     assert response.context['view'].form_list['site']
     assert len(response.context['view'].form_list) == 8
@@ -458,12 +464,16 @@ def test_form_view_not_site_form_single_site(
 ) -> None:
     """Ensure that site form does not exists when there is only one site."""
     url = reverse(url_name)
-    factories.Site()
+    site = factories.Site()
     response = registration_user.get(url)
-
-    assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
-    assert not response.context['view'].form_list.get('site')
-    assert len(response.context['view'].form_list) == 7
+    current_form = response.context['form']
+    view = response.context['view']
+    # assert that site data is maintained in the session without site form
+    assert not view.process_step(current_form)
+    assert view.request.session.get('site_selection') == site.pk
+    assert view.get(response.request).status_code == HTTPStatus.OK
+    assert not view.form_list.get('site')
+    assert len(view.form_list) == 7
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
