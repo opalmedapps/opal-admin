@@ -66,6 +66,10 @@ msgstr ""
 msgid "Search Specific Patient"
 msgstr "Rechercher l'accès des patients"
 
+#: opal/patients/filters.py
+msgid "Show Pending Requests"
+msgstr "Afficher les demandes en attente"
+
 #: opal/patients/forms.py
 msgid "At which hospital is the patient?"
 msgstr "Dans quel hôpital se trouve le patient?"
@@ -472,9 +476,11 @@ msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
 #: opal/patients/tables.py
-#, python-brace-format
-msgid "{days} days"
-msgstr ""
+#, python-format
+msgid "%(number_of_days)d day"
+msgid_plural "%(number_of_days)d days"
+msgstr[0] ""
+msgstr[1] ""
 
 #: opal/patients/tables.py
 msgid "No caregiver requests found."
