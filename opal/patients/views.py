@@ -486,15 +486,15 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         Returns:
             the processed form data dictionary
         """
-        processed_form_date = {}
+        processed_form_data = {}
         for form_data in forms_data:
             for key, value in form_data.items():
-                processed_form_date[key] = value
+                processed_form_data[key] = value
 
         if not OrderedDict(self.form_list).get('site'):
             site_id = self.request.session['site_selection']
-            processed_form_date['sites'] = Site.objects.filter(pk=site_id).first()
-        return processed_form_date
+            processed_form_data['sites'] = Site.objects.filter(pk=site_id).first()
+        return processed_form_data
 
     def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
         """

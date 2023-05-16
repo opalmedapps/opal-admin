@@ -444,6 +444,7 @@ def test_form_view_contains_site_form(
     factories.Site()
     factories.Site()
     response = registration_user.get(url)
+
     assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
     assert response.context['view'].form_list['site']
     assert len(response.context['view'].form_list) == 8
@@ -459,6 +460,7 @@ def test_form_view_not_site_form_single_site(
     url = reverse(url_name)
     factories.Site()
     response = registration_user.get(url)
+
     assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
     assert not response.context['view'].form_list.get('site')
     assert len(response.context['view'].form_list) == 7
@@ -531,6 +533,68 @@ def test_form_finish_single_site(
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'relationship'
     assert response.context['header_title'] == 'Requestor Details'
+
+
+def test_access_request_done_single_site(  # noqa: C901 WPS231
+    registration_user: Client,
+    mocker: MockerFixture,
+) -> None:
+    """Ensure that when the page is submitted it redirects to the final page."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': CUSTOMIZED_OIE_PATIENT_DATA,
+        },
+    )
+
+    # mock fed authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
+
+    url = reverse('patients:access-request')
+    site = factories.Site()
+    relationship = factories.RelationshipType()
+    user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
+    factories.Patient(ramq='MARG99991313')
+    factories.CaregiverProfile(user_id=user.id)
+    form_data = [
+        ('site', {'sites': site.pk}),
+        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
+        ('confirm', {'is_correct': True}),
+        ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
+        ('account', {'user_type': '1'}),
+        ('requestor', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
+        ('existing', {'is_correct': True, 'is_id_checked': True}),
+        ('password', {'confirm_password': 'testpassword'}),
+    ]
+    response = registration_user.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+
+    for step, step_data in form_data:
+        step_data = {
+            '{0}-{1}'.format(step, key): value
+            for key, value in step_data.items()
+        }
+        step_data['access_request_view-current_step'] = step
+        response = registration_user.post(url, step_data, follow=True)
+        assert response.status_code == HTTPStatus.OK
+
+        if 'search' in step:  # noqa: WPS223
+            assert response.context['wizard']['steps'].current == 'confirm'
+        elif 'confirm' in step:
+            assert response.context['wizard']['steps'].current == 'relationship'
+        elif 'relationship' in step:
+            assert response.context['wizard']['steps'].current == 'account'
+        elif 'account' in step:
+            assert response.context['wizard']['steps'].current == 'requestor'
+        elif 'requestor' in step:
+            assert response.context['wizard']['steps'].current == 'existing'
+        elif 'existing' in step:
+            assert response.context['wizard']['steps'].current == 'password'
+        elif 'password' in step:
+            assertTemplateUsed(response, 'patients/access_request/qr_code.html')
 
 
 def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
