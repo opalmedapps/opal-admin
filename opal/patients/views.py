@@ -1,9 +1,9 @@
 """This module provides views for hospital-specific settings."""
 import base64
 import io
-from collections import Counter
+from collections import Counter, OrderedDict
 from datetime import date
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, cast
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -118,29 +118,41 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         'existing': 'patients/access_request/access_request.html',
         'password': 'patients/access_request/access_request.html',
     }
-    def get(self, request, *args, **kwargs):
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
-        This method handles GET requests.
+        Override standard wizard/views GET requests.
 
         If a GET request reaches this point, the wizard assumes that the user
         just starts at the first step or wants to restart the process.
         The data of the wizard will be resetted before rendering the first step
+
+        Args:
+            request: the http request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            HttpResponse template that has the correct template of the form step
         """
         self.storage.reset()
 
         # reset the current step to the first step.
         sites = Site.objects.all()
-        if len(sites)==1:
+        local_form_list: OrderedDict = OrderedDict(self.form_list)
+
+        if len(sites) == 1:
             self.request.session['site_selection'] = sites[0].pk
-            if self.form_list.get('site'):
-                self.form_list.__delitem__('site')
+            if local_form_list.get('site'):
+                local_form_list.pop('site')
         else:
-            self.form_list['site'] = forms.SelectSiteForm
-            self.form_list.move_to_end('site',last=False)
+            local_form_list['site'] = forms.SelectSiteForm
+            local_form_list.move_to_end('site', last=False)
 
+        self.form_list = cast(List[Tuple[str, type]], local_form_list)  # noqa: WPS601
         self.storage.current_step = self.steps.first
-        return self.render(self.get_form())
 
+        return cast(HttpResponse, self.render(self.get_form()))
 
     def get_template_names(self) -> List[str]:
         """
@@ -479,8 +491,9 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
             for key, value in form_data.items():
                 processed_form_date[key] = value
 
-        if not self.form_list.get('site'):
-            processed_form_date['sites'] = Site.objects.filter(pk=self.request.session['site_selection']).first()
+        if not OrderedDict(self.form_list).get('site'):
+            site_id = self.request.session['site_selection']
+            processed_form_date['sites'] = Site.objects.filter(pk=site_id).first()
         return processed_form_date
 
     def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
