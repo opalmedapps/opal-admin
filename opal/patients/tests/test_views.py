@@ -444,7 +444,9 @@ def test_form_view_contains_site_form(
     factories.Site()
     factories.Site()
     response = registration_user.get(url)
+    assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
     assert response.context['view'].form_list['site']
+    assert len(response.context['view'].form_list) == 8
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -457,7 +459,9 @@ def test_form_view_not_site_form_single_site(
     url = reverse(url_name)
     factories.Site()
     response = registration_user.get(url)
+    assert response.context['view'].get(response.request).status_code == HTTPStatus.OK
     assert not response.context['view'].form_list.get('site')
+    assert len(response.context['view'].form_list) == 7
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
