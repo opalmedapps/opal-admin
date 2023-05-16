@@ -268,6 +268,7 @@ def test_form_post_success(
     """Ensure that the form submission with POST is successful."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
+    factories.Site()
     response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
@@ -393,6 +394,111 @@ def test_form_error_in_template(
     assert response.context['header_title'] == 'Patient Details'
     assert response.context['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
     assertTemplateUsed(response, template)
+
+
+# when there is only single site
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_stepback_single_site(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+    mocker: MockerFixture,
+) -> None:
+    """Ensure that the form can go back to the previous step when there is only single site."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': CUSTOMIZED_OIE_PATIENT_DATA,
+        },
+    )
+
+    url = reverse(url_name)
+    wizard_step_data = _wizard_step_data(factories.Site())
+    response = registration_user.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+    assert response.context['header_title'] == 'Patient Details'
+
+    response = registration_user.post(url, wizard_step_data[1])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'confirm'
+    assert response.context['header_title'] == 'Patient Details'
+
+    response = registration_user.post(url, {
+        'wizard_goto_step': response.context['wizard']['steps'].prev,
+    })
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_single_site_search_first_step(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that the form start with search as first step a single site only."""
+    url = reverse(url_name)
+    _wizard_step_data(factories.Site())
+    response = registration_user.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+    assert response.context['wizard']['steps'].next == 'confirm'
+    assert response.context['wizard']['steps'].count == 7
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_initial_call_single_site(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that steps are called initially and correctly when there is only single site."""
+    url = reverse(url_name)
+    factories.Site()
+    response = registration_user.get(url)
+    wizard = response.context['wizard']
+
+    assert response.status_code == HTTPStatus.OK
+    assert wizard['steps'].current == 'search'
+    assert wizard['steps'].last == 'password'
+    assert wizard['steps'].next == 'confirm'
+    assert wizard['steps'].count == 7
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_finish_single_site(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+    mocker: MockerFixture,
+) -> None:
+    """Ensure that the form can go through all the steps when there is only single site."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': CUSTOMIZED_OIE_PATIENT_DATA,
+        },
+    )
+
+    url = reverse(url_name)
+    wizard_step_data = _wizard_step_data(factories.Site())
+    response = registration_user.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+    assert response.context['header_title'] == 'Patient Details'
+
+    response = registration_user.post(url, wizard_step_data[1])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'confirm'
+    assert response.context['header_title'] == 'Patient Details'
+
+    response = registration_user.post(url, wizard_step_data[2])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'relationship'
+    assert response.context['header_title'] == 'Requestor Details'
 
 
 def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
