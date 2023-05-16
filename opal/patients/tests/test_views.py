@@ -434,6 +434,33 @@ def test_form_stepback_single_site(
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_view_contains_site_form(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that site form exists when there is more than one site."""
+    url = reverse(url_name)
+    factories.Site()
+    factories.Site()
+    response = registration_user.get(url)
+    assert response.context['view'].form_list['site']
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_view_not_site_form_single_site(
+    registration_user: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that site form does not exists when there is only one site."""
+    url = reverse(url_name)
+    factories.Site()
+    response = registration_user.get(url)
+    assert not response.context['view'].form_list.get('site')
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_single_site_search_first_step(
     registration_user: Client,
     url_name: str,
