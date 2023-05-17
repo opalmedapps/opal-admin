@@ -27,7 +27,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import AccessRequestView, ManagePendingUpdateView, PendingRelationshipListView
+from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -61,7 +61,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-pending-list'), 'patients/relationships/pending_relationship_list.html'),
+    (reverse('patients:relationships-list'), 'patients/relationships/pending_relationship_list.html'),
 ]
 
 
@@ -1122,14 +1122,14 @@ def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
     factories.Relationship(status=models.RelationshipStatus.PENDING)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
 def test_relationships_list_empty(relationship_user: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -1145,7 +1145,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
         factories.Relationship(type=caregivertype3, request_date='2016-01-01'),
     ]
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
@@ -1163,14 +1163,14 @@ def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert len(response.context['relationship_list']) == 2
 
 
 def test_relationships_pending_list_table(relationship_user: Client) -> None:
     """Ensures that pending relationships list uses the corresponding table."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
@@ -1180,10 +1180,10 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assert response.context['cancel_url'] == reverse('patients:relationships-pending-list')
-    assert response.context['view'].get_success_url() == reverse('patients:relationships-pending-list')
+    assert response.context['cancel_url'] == reverse('patients:relationships-list')
+    assert response.context['view'].get_success_url() == reverse('patients:relationships-list')
 
 
 def test_form_pending_readonly_update_template(relationship_user: Client) -> None:
@@ -1199,11 +1199,11 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         status=models.RelationshipStatus.EXPIRED,
     )
 
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # test in case of EXPIRED status, readonly view
     assertContains(response, '<p>{0}</p>'.format(str(relationship_record.patient)))
-    assertContains(response, '{0}:&nbsp;{1}'.format(hospital_patient.site.code, hospital_patient.mrn))
+    assertContains(response, '{0}: {1}'.format(hospital_patient.site.code, hospital_patient.mrn))
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 
@@ -1215,7 +1215,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         status=models.RelationshipStatus.PENDING,
     )
 
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 2}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 2}))
 
     # test in case of PENDING status, update view
     assertContains(response, str(relationship_record.patient.first_name))
@@ -1230,7 +1230,6 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         models.RelationshipStatus.PENDING,
         models.RelationshipStatus.CONFIRMED,
         models.RelationshipStatus.REVOKED,
-        models.RelationshipStatus.EXPIRED,
         models.RelationshipStatus.DENIED,
     ],
 )
@@ -1238,7 +1237,7 @@ def test_relationships_search_result_form(relationship_user: Client, status: mod
     """Ensures that edit search results uses the right form for each all relationship statuses."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype, status=status)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
 
@@ -1248,7 +1247,7 @@ def test_relationships_search_result_content(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
@@ -1258,7 +1257,7 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # assert getter
     assert response_get.status_code == HTTPStatus.OK
@@ -1271,7 +1270,7 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
 
     # post
-    relationship_user.post(reverse('patients:relationships-pending-update', kwargs={'pk': 1}), data=data)
+    relationship_user.post(reverse('patients:relationships-view-update', kwargs={'pk': 1}), data=data)
 
     # assert successful update
     relationship_record = models.Relationship.objects.get(pk=1)
@@ -1283,10 +1282,10 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm  # type: ignore[attr-defined]
-    assert response_get.context_data['view'].__class__ == ManagePendingUpdateView  # type: ignore[attr-defined]
+    assert response_get.context_data['view'].__class__ == ManageCaregiverAccessUpdateView  # type: ignore[attr-defined]
 
 
 def test_form_search_result_default_sucess_url(relationship_user: Client) -> None:
@@ -1294,13 +1293,13 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
     assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
 
 
@@ -1311,7 +1310,7 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
     response_get = relationship_user.get(
         reverse(
-            'patients:relationships-pending-update',
+            'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
         HTTP_REFERER='patient/test/?search-query',
@@ -1323,7 +1322,7 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
 
     response_post = relationship_user.post(
         reverse(
-            'patients:relationships-pending-update',
+            'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
         {
@@ -1338,50 +1337,108 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     assert success_url == cancel_url
 
 
-# Readonly view for expired caregiver requests
-def test_form_readonly_expired_access_requests(relationship_user: Client) -> None:
-    """Ensures that post is not allowed for readonly pending relationship view."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-readonly', kwargs={'pk': 1}))
-
-    # assert getter
-    assert response_get.status_code == HTTPStatus.OK
-
-    # post
-    response_post = relationship_user.post(reverse('patients:relationships-pending-readonly', kwargs={'pk': 1}))
-    assert response_post.status_code == HTTPStatus.METHOD_NOT_ALLOWED
-
-
 def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Client) -> None:
     """Ensures that post is not allowed for readonly pending even if front-end is bypassed."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.EXPIRED)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.EXPIRED,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # assert getter
     assert response_get.status_code == HTTPStatus.OK
 
     # prepare data to post
-    data = model_to_dict(response_get.context_data['object'])  # type: ignore[attr-defined]
+    data = model_to_dict(relationship)
     data['status'] = models.RelationshipStatus.CONFIRMED
     data['first_name'] = 'test_firstname'
     data['last_name'] = 'test_lastname'
-    data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
+    data['cancel_url'] = response_get.context['cancel_url']
 
     # post
     response_post = relationship_user.post(
-        reverse('patients:relationships-pending-update', kwargs={'pk': 1}),
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
         data=data,
     )
 
     # make sure that update is not applied and response is `NOT_ALLOWED`
     assert response_post.status_code == HTTPStatus.METHOD_NOT_ALLOWED
-    relationship = models.Relationship.objects.get(pk=1)
-    new_caregiver = relationship.caregiver.user
+    relationship_object = models.Relationship.objects.get(pk=1)
+    new_caregiver = relationship_object.caregiver.user
     assert new_caregiver.first_name != 'test_firstname'
+
+
+def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> None:
+    """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    longname = ''.join('a' for letter in range(200))
+    error_message = 'Ensure this value has at most 150 characters (it has 200).'
+
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = longname
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    response_post = relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    form = response_post.context['form']
+    assert not form.is_valid()
+    assert form.errors['last_name'][0] == error_message
+
+
+def test_relationship_update_success(relationship_user: Client) -> None:
+    """Ensures that post is successful for correct entries."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = 'test_lastname'
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    # assertions
+    relationship_record = models.Relationship.objects.get(pk=1)
+    assert relationship_record.caregiver.user.last_name == data['last_name']
 
 
 # relationshiptype tests
@@ -1421,7 +1478,7 @@ def test_relationships_pending_form(relationship_user: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
 
@@ -1431,7 +1488,7 @@ def test_relationships_pending_form_content(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
@@ -1442,7 +1499,7 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
     caregiver = factories.CaregiverProfile()
     patient = factories.Patient()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
     response.content.decode('utf-8')
 
     assertContains(response, patient)
@@ -1453,8 +1510,8 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
-        reverse('patients:relationships-pending-update', args=(1,)),
+        reverse('patients:relationships-list'),
+        reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
 def test_relationship_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
@@ -1466,13 +1523,13 @@ def test_relationship_permission_required_fail(user_client: Client, django_user_
     request = RequestFactory().get(response)  # type: ignore[arg-type]
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
-        reverse('patients:relationships-pending-update', args=(1,)),
+        reverse('patients:relationships-list'),
+        reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
 def test_relationship_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
@@ -1532,7 +1589,7 @@ def test_relationshiptype_perm_required_fail(user_client: Client, django_user_mo
 
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
@@ -1644,7 +1701,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
@@ -1704,7 +1761,7 @@ def test_not_display_duplicated_patients(relationship_user: Client, django_user_
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
@@ -1769,7 +1826,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
     response.content.decode('utf-8')

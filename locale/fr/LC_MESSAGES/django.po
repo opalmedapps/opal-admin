@@ -61,6 +61,10 @@ msgstr "Le Groupe Informatique Opal Santé"
 msgid "Are you sure you want to delete \"%(object)s\"?"
 msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
 
+#: opal/templates/components/form_back.html
+msgid "Back"
+msgstr ""
+
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"
 msgstr "Annuler"
