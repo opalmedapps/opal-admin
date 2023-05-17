@@ -607,6 +607,29 @@ def test_access_request_done_single_site(  # noqa: C901 WPS231
             assertTemplateUsed(response, 'patients/access_request/qr_code.html')
 
 
+def test_access_request_process_data_single_site(  # noqa: C901 WPS231
+    registration_user: Client,
+    mocker: MockerFixture,
+) -> None:
+    """Ensure that processed data contains site in case of single site only."""
+    url = reverse('patients:access-request')
+    form_data = [
+        {'is_correct': True},
+        {'relationship_type': 1, 'requestor_form': True},
+        {'user_type': 1},
+        {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'},
+        {'confirm_password': 'Abc@1234'},
+    ]
+    factories.Site()
+
+    response = registration_user.get(url)
+    view = response.context['view']
+    processed_form_data = view._process_form_data(form_data)
+
+    # make sure sites infomration is maintained although form data does not contain it
+    assert processed_form_data.get('sites').pk == view.request.session.get('site_selection')
+
+
 def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
     registration_user: Client,
     mocker: MockerFixture,
