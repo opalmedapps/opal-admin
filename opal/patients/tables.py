@@ -195,13 +195,13 @@ class PendingRelationshipTable(tables.Table):
         """
         if record.status == RelationshipStatus.EXPIRED:
             column.extra_context.update({
-                'urlname_view': 'patients:relationships-pending-readonly',
+                'urlname_view': 'patients:relationships-view-update',
                 'urlname_update': '',
             })
         else:
             column.extra_context.update({
                 'urlname_view': '',
-                'urlname_update': 'patients:relationships-pending-update',
+                'urlname_update': 'patients:relationships-view-update',
             })
 
         return column.render(record, *args, **kwargs)  # type: ignore[no-any-return]
