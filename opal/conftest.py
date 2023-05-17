@@ -4,7 +4,6 @@ from typing import Type
 
 from django.apps import apps
 from django.conf import LazySettings
-from django.contrib.auth.models import Permission
 from django.db import connections
 from django.db.models import Model
 from django.test import Client
@@ -93,8 +92,8 @@ def user_client(client: Client, django_user_model: User) -> Client:
         an instance of `Client` with a logged in user
     """
     user = django_user_model.objects.create(username='testuser')
-    manage_institution_permission = Permission.objects.get(codename='can_manage_institutions')
-    user.user_permissions.add(manage_institution_permission)
+    # manage_institution_permission = Permission.objects.get(codename='can_manage_institutions')
+    # user.user_permissions.add(manage_institution_permission)
     user.set_password('testpassword')
     user.save()
     client.force_login(user)
