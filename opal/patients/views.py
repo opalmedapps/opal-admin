@@ -1,13 +1,17 @@
 """This module provides views for hospital-specific settings."""
 import base64
 import io
-from collections import Counter
+import json
+from collections import Counter, OrderedDict
 from datetime import date
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import SuspiciousOperation
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Model
 from django.forms import Form
 from django.forms.models import ModelForm
 from django.http import HttpResponse
@@ -16,6 +20,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 import qrcode
 from django_filters.views import FilterView
@@ -32,8 +37,10 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm, RelationshipTypeUpdateForm
+from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+
+_StorageValue = str | dict[str, Any]
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
@@ -56,7 +63,7 @@ class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView
     model = RelationshipType
     permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/form.html'
-    form_class = RelationshipTypeUpdateForm
+    form_class = forms.RelationshipTypeUpdateForm
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
@@ -77,6 +84,390 @@ class RelationshipTypeDeleteView(
     permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
+
+
+class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: WPS214 (too many methods)
+    """
+    View to process an access request.
+
+    Supports multiple forms within the same view.
+    The form for the current form is active.
+    Any previous form (validated) is disabled.
+    """
+
+    template_name = 'patients/access_request/new_access_request.html'
+    template_name_confirm = 'patients/access_request/access_request_confirm.html'
+    prefix = 'search'
+
+    forms = OrderedDict({
+        'search': forms.AccessRequestSearchPatientForm,
+        'patient': forms.AccessRequestConfirmPatientForm,
+        'relationship': forms.AccessRequestRequestorForm,
+        'confirm': forms.AccessRequestConfirmForm,
+    })
+    texts = {
+        'search': 'Find Patient',
+        'patient': 'Confirm Patient Data',
+        'relationship': 'Continue',
+        'confirm': 'Generate Registration Code',
+    }
+    current_step_name = 'current_step'
+    session_key_name = 'access_request'
+
+    def get(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        """
+        Handle GET requests: instantiate a blank version of the form.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        self.request.session[self.session_key_name] = {}
+
+        return self.render_to_response(self.get_context_data(
+            search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
+        ))
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: C901, WPS210, WPS231
+        """
+        Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+
+        Raises:
+            SuspiciousOperation: if the step is invalid
+        """
+        management_form = forms.AccessRequestManagementForm(request.POST)
+        if not management_form.is_valid():
+            raise SuspiciousOperation('ManagementForm data is missing or has been tampered with.')
+
+        current_step = management_form.cleaned_data.get(self.current_step_name)
+
+        if current_step and current_step in self.forms:
+            next_step = current_step
+            # get all current forms and validate them
+            current_forms = self._get_forms(current_step)
+            current_form = current_forms[-1]
+
+            # only validate the current form since all others use stored data
+            # don't continue if the next button was not clicked (e.g., an unpoly event was triggered)
+            if current_form.is_valid() and 'next' in self.request.POST:
+                # store data for current step in session
+                self._store_form_data(current_form, current_step)
+                next_step = self._next_step(current_step)
+
+                if next_step:
+                    current_form.disable_fields()  # type: ignore[attr-defined]
+                    next_form_class = self.forms[next_step]
+                    current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
+                else:
+                    # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
+                    return render(self.request, 'patients/access_request/qr_code.html', {
+                        'qrcode': base64.b64encode(self._generate_qr_code('').getvalue()).decode(),
+                        'header_title': _('New Access Request: Success'),
+                    })
+            else:
+                print("some forms are invalid (or the next button wasn't clicked)")
+                for form in current_forms:
+                    print(form.errors)
+
+            context_data = self.get_context_data(
+                current_forms=current_forms,
+                current_step=current_step,
+                next_step=next_step,
+            )
+
+            if next_step == 'confirm':
+                return render(self.request, self.template_name_confirm, context=context_data)
+
+            return self.render_to_response(context_data)
+
+        return self.get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: C901, WPS210
+        """
+        Return the context data for rendering the view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            a dictionary of data to be accessible by the template
+        """
+        context_data = super().get_context_data(**kwargs)
+        current_step = kwargs.get('current_step', 'search')
+        next_step = kwargs.get('next_step', 'search')
+        current_forms = kwargs.get('current_forms', [])
+
+        context_data['management_form'] = forms.AccessRequestManagementForm(initial={
+            'current_step': next_step,
+        })
+        context_data['next_button_text'] = self.texts.get(next_step)
+
+        for current_form in current_forms:
+            prefix = self._get_prefix(current_form.__class__)
+            context_data[f'{prefix}_form'] = current_form
+
+        disable_next = False
+
+        if len(current_forms) >= 2 and current_forms[0].is_valid():
+            patient_form = current_forms[1]
+            if patient_form.patient:
+                patients = [patient_form.patient]
+            else:
+                patients = []
+
+            disable_next = not patient_form.is_valid()
+
+            context_data['patient_table'] = tables.PatientTable(patients)
+
+        relationship_form = context_data.get('relationship_form')
+
+        if relationship_form:
+            existing_user = relationship_form.existing_user
+            table_data = [existing_user] if existing_user else []
+            context_data['user_table'] = tables.ExistingUserTable(table_data)
+
+        if current_step == 'confirm' or next_step == 'confirm':
+            # populate relationship type (in case it is just the ID)
+            relationship_form.full_clean()
+            print(relationship_form.cleaned_data)
+            context_data['relationship_type'] = relationship_form.cleaned_data['relationship_type']
+            # TODO: convert to correct user type to have the user-facing name for it (via constants.TYPE_USERS)
+            # might be helpful to use an enum like done with MedicalCard
+            user_type = relationship_form.cleaned_data['user_type']
+            context_data['user_type'] = user_type
+            is_existing_user = user_type == '1'
+            context_data['is_existing_user'] = is_existing_user
+
+            if is_existing_user:
+                context_data['next_button_text'] = 'Submit Access Request'
+            else:
+                context_data['first_name'] = relationship_form.cleaned_data['first_name']
+                context_data['last_name'] = relationship_form.cleaned_data['last_name']
+
+        # TODO: might not be needed anymore
+        context_data['next_button_disabled'] = disable_next
+
+        return context_data
+
+    def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
+        """
+        Generate a QR code for Opal registration system.
+
+        Args:
+            registration_code: registration code
+
+        Returns:
+            a stream of in-memory bytes for a QR-code image
+        """
+        factory = svg.SvgImage
+        img = qrcode.make(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            image_factory=factory,
+            box_size=constants.QR_CODE_BOX_SIZE,
+        )
+        stream = io.BytesIO()
+        img.save(stream)
+
+        return stream
+
+    def _get_prefix(self, form_class: Type[Form]) -> Optional[str]:
+        """
+        Return the prefix for the given form class.
+
+        The prefix needs to be defined in the class's `form` attribute.
+
+        Args:
+            form_class: the form class
+
+        Returns:
+            the prefix for the form class, None if the form class is not present
+        """
+        for prefix, current_form_class in self.forms.items():
+            if current_form_class == form_class:
+                return prefix
+
+        return None
+
+    def _get_storage(self) -> dict[str, _StorageValue]:
+        """
+        Return the storage for this view from the user's session.
+
+        Returns:
+            the storage dictionary
+        """
+        storage: dict[str, _StorageValue] = self.request.session[self.session_key_name]
+
+        return storage  # noqa: WPS331
+
+    def _get_saved_form_data(self, step: str) -> dict[str, Any]:
+        """
+        Return the stored form data from the given step.
+
+        Args:
+            step: the name of the step
+
+        Returns:
+            the dictionary of form data for the given step
+        """
+        storage = self._get_storage()
+
+        # the data for a step is always a dict
+        return storage[f'step_{step}']  # type: ignore[return-value]
+
+    def _store_form_data(self, form: Form, step: str) -> None:  # noqa: WPS210
+        """
+        Store the validated form data for the given step in the user's session.
+
+        The form needs to be validated first.
+
+        To support serialization to JSON in the session,
+        model instances are replaced with their primary key.
+        Named tuples are replaced with their dictionary representation.
+
+        Args:
+            form: the valid form
+            step: the step the form is for
+        """
+        storage = self._get_storage()
+
+        cleaned_data = form.cleaned_data
+        for key, value in cleaned_data.items():
+            # convert model instances to their primary key
+            # to support serializing them to JSON
+            if isinstance(value, Model):
+                cleaned_data[key] = value.pk
+
+        storage[f'step_{step}'] = cleaned_data
+
+        if step == 'search':
+            # form type is the search form which has the patient attribute
+            patient = form.patient  # type: ignore[attr-defined]
+            # TODO: patient could also be an actual Patient instance, need to add support
+            # convert it to a dictionary to be able to serialize it into JSON
+            data_dict = patient._asdict()  # noqa: WPS437
+            data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
+            # use DjangoJSONEncoder which supports date/datetime
+            storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
+
+        self.request.session.modified = True
+
+    def _get_form_kwargs(self, step: str) -> dict[str, Any]:
+        """
+        Return the kwargs for the form of the given step.
+
+        Takes care of loading any required data from the session storage.
+
+        Args:
+            step: the step to get the form's kwargs for
+
+        Returns:
+            the dictionary of keyword arguments
+        """
+        kwargs: dict[str, Any] = {'prefix': step}
+        storage = self._get_storage()
+
+        if step in {'patient', 'relationship'}:
+            # TODO: should also support a Patient instance that way
+            # i.e., the patient already exists
+            # TODO: might be better to refactor into a function so it can be tested easier
+            patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
+            patient = json.loads(patient_data)
+
+            if step == 'patient':
+                kwargs.update({
+                    'patient': patient,
+                })
+            else:
+                kwargs.update({
+                    'date_of_birth': date.fromisoformat(patient['date_of_birth']),
+                })
+        elif step == 'confirm':
+            kwargs.update({
+                'username': self.request.user.username,
+            })
+
+        return kwargs
+
+    def _get_forms(self, current_step: str) -> list[Form]:  # noqa: WPS210, WPS231
+        """
+        Return all forms up to the current step.
+
+        Initialize previous (already valid forms) with data from the session storage.
+        All fields for these forms are also disabled.
+
+        The current form is initialized with the POST data from the current request.
+
+        Args:
+            current_step: the current step
+
+        Returns:
+            the list of forms
+        """
+        form_list = []
+
+        for step, form_class in self.forms.items():
+            # use the request data for the current step
+            # otherwise, load the form data from session storage
+            data = self.request.POST if step == current_step else self._get_saved_form_data(step)
+            # since form fields of previous forms are disabled, initial needs to be used
+            # disabled form fields ignore the data and use initial instead
+            #
+            # initial requires the field name without the prefix,
+            # strip it from the POST data which contains keys with the prefix
+            initial = {
+                key.replace(f'{current_step}-', ''): value
+                for key, value in data.items()
+            }
+
+            # use initial instead of data to avoid validating a form when up-validate is used
+            if step == current_step and 'X-Up-Validate' in self.request.headers:
+                data = {}
+
+            form = form_class(
+                # pass none instead of empty dict to not bind the form
+                data=data or None,
+                initial=initial,
+                **self._get_form_kwargs(step),
+            )
+
+            # disable fields for all forms except the current one
+            if step != current_step:
+                form.disable_fields()
+
+            form_list.append(form)
+
+            if step == current_step:
+                break
+
+        return form_list
+
+    def _next_step(self, current_step: str) -> Optional[str]:
+        """
+        Determine the next step in the process.
+
+        Args:
+            current_step: the current step name
+
+        Returns:
+            the next step name, None if the current step is the last step
+        """
+        keys = list(self.forms.keys())
+
+        next_index = keys.index(current_step) + 1
+
+        return keys[next_index] if len(keys) > next_index else None
 
 
 class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WPS214
