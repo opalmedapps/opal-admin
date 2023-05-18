@@ -29,6 +29,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
+        initial=constants.MedicalCard.ramq.name,
         required=True,
         empty_label=_('Choose...'),
     )
@@ -38,6 +39,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         queryset=Site.objects.all(),
         label=_('Hospital'),
         empty_label=_('Choose...'),
+        required=False,
     )
 
     medical_number = django_filters.CharFilter(
@@ -60,6 +62,17 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             args: additional arguments
             kwargs: additional keyword arguments
         """
+        request = kwargs.get('request')
+
+        # replace form's data with initial in case of up-validate
+        # such that missing fields don't cause the "required" validation error
+        # TODO: move this into a DynamicFilterSetMixin that can be reused where needed
+        if request and 'X-Up-Validate' in request.headers:
+            data = kwargs.pop('data')
+
+            for name, the_filter in self.base_filters.items():
+                the_filter.extra['initial'] = data.get(name)
+
         super().__init__(*args, **kwargs)
         self.form.helper = FormHelper()
         self.form.helper.form_class = 'form-inline row row-cols-lg-auto g-3 align-items-baseline'
