@@ -224,7 +224,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             Q(patient__id=patient.id) | Q(caregiver__id=patient_caregiver_id),
         ).update(
             end_date=patient.date_of_death,
-            reason=gettext('Opal Account Inactivated'),
+            reason=gettext('Opal Account Deactivated'),
             status=RelationshipStatus.EXPIRED,
         )
 

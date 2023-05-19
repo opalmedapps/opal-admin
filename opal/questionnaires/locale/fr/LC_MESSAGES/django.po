@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-02 20:58+0300\n"
+"POT-Creation-Date: 2023-05-19 15:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,19 +37,19 @@ msgstr "Exportation de Rapports"
 
 #: opal/questionnaires/models.py
 msgid "User"
-msgstr ""
+msgstr "Utilisateur"
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire List"
-msgstr ""
+msgstr "Liste des questionnaires"
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire Profile"
-msgstr ""
+msgstr "Profil de questionnaires"
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire Profiles"
-msgstr ""
+msgstr "Profils de questionnaires"
 
 #: opal/questionnaires/queries.py
 #, python-brace-format
@@ -58,6 +58,9 @@ msgid ""
 "production database? \n"
 " Error:  {error} "
 msgstr ""
+"DatabaseError: Aucun questionnaire trouvé, êtes-vous sûr d'être connecté à "
+"une base de données de production? \n"
+" Erreur:  {error} "
 
 #: opal/questionnaires/tables.py
 msgid "Patient ID"
@@ -97,15 +100,15 @@ msgstr "Questionnaires"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 msgid "Title"
-msgstr ""
+msgstr "Titre"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 msgid "Last viewed"
-msgstr ""
+msgstr "Dernière consultation"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 msgid "You are not following any questionnaires"
-msgstr ""
+msgstr "Vous ne suivez aucun questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 msgid "View all questionnaires"
@@ -157,7 +160,7 @@ msgstr "Questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Follow in my dashboard"
-msgstr ""
+msgstr "Suivre dans mon tableau de bord"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Description"
