@@ -703,3 +703,47 @@ def test_caregiver_first_last_name_invalid() -> None:
     assert not form.is_valid()
     assert form.errors['first_name'][0] == error_message
     assert form.errors['last_name'][0] == error_message
+
+
+# Opal Registration Tests
+def test_accessrequestsearchform_ramq() -> None:
+    """Ensure that site field is disabled when card type is ramq."""
+    form_data = {
+        'card_type': 'ramq',
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    assert form.is_valid()
+    assert form.fields['site'].disabled
+
+
+def test_accessrequestsearchform_single_site_mrn() -> None:
+    """Ensure that site field is disabled when there is only one site."""
+    site = factories.Site()
+    form_data = {
+        'card_type': 'mrn',
+        'medical_number': '9666666',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.fields['site'].initial = site
+
+    assert form.is_valid()
+    assert form.fields['site'].disabled
+
+
+def test_accessrequestsearchform_more_than_site() -> None:
+    """Ensure that site field is not disabled when there is more than one site."""
+    site = factories.Site()
+    factories.Site()
+
+    form_data = {
+        'card_type': 'mrn',
+        'site': site,
+        'medical_number': '9666666',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert form.is_valid()
+    assert not form.fields['site'].disabled
