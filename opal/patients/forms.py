@@ -73,15 +73,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
     site = DynamicField(
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
-        # TODO: initialize to first site if there is only one
-        # check if initial can be a callable to accomplish this
         label=_('Hospital'),
-        # TODO: required when MRN but only if there is more than one site
-        # might be better to move it into a function
         required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
-        # TODO: disabled when not MRN or when MRN and there is only one site
-        # might be better to move it into a function
-        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name,
+        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name or len(Site.objects.all()) == 1,  # noqa: WPS221, E501
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -97,6 +91,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         # store response for patient searched in hospital
         self.patient: Union[OIEPatientData, Patient, None] = None
+
+        # initialize site with proper value
+        site_field: DynamicField = self.fields['site']
+        cardtype_initial_value = self.initial.get('card_type')
+
+        if len(site_field.queryset) == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
+            self.fields['site'].initial = site_field.queryset.first()
+        else:
+            self.fields['site'].initial = None
 
         # TODO: potential improvement: make a mixin for all access request forms
         # that initializes the form helper and sets these two properties
