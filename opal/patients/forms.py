@@ -92,7 +92,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         # store response for patient searched in hospital
         self.patient: Union[OIEPatientData, Patient, None] = None
 
-        # initialize site with proper value
+        # initialize site with a site object when there is a single site and card type is mrn
         site_field: DynamicField = self.fields['site']
         cardtype_initial_value = self.initial.get('card_type')
 
