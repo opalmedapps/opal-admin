@@ -106,7 +106,10 @@ class PatientTable(tables.Table):
 
         return value
 
-    def render_mrns(self, value: QuerySet[HospitalPatient] | list[OIEMRNData]) -> str:
+    def render_mrns(
+        self,
+        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[OIEMRNData],  # noqa: WPS221
+    ) -> str:
         """Render MRN column.
 
         Concat list of MRN/site pairs into one string.
@@ -122,9 +125,15 @@ class PatientTable(tables.Table):
         # For more details:
         # https://django-tables2.readthedocs.io/en/latest/pages/custom-data.html#table-render-foo-methods
         if isinstance(value, list):
-            mrn_site_list = [
-                f'{hospital_patient.site}: {hospital_patient.mrn}' for hospital_patient in value
-            ]
+            mrn_site_list = []
+
+            for item in value:
+                if isinstance(item, OIEMRNData):
+                    item = item._asdict()  # noqa: WPS437
+
+                mrn_site_list.append(
+                    f'{item.get("site")}: {item.get("mrn")}',
+                )
         else:
             mrn_site_list = [
                 f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
