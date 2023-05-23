@@ -232,6 +232,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         if not self.patient:
             self.add_error(None, 'There is no patient to confirm')
 
+        # TODO: validate that the patient is not deceased
         # TODO: validate the patient record (if coming from the OIE)
         #  - multiple MRNs at same site
         #  - ...
