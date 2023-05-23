@@ -56,6 +56,18 @@ def test_patienttable_render_mrns_mrndata() -> None:
     assert site_mrn == 'RVH: 9999996, MGH: 1234567'
 
 
+def test_patienttable_render_mrns_dict() -> None:
+    """Ensure that MRNs are rendered correctly for a dictionary of MRN data."""
+    mrns = [
+        {'site': 'RVH', 'mrn': '9999996', 'active': True},
+        {'site': 'MGH', 'mrn': '1234567', 'active': True},
+    ]
+
+    patient_table = tables.PatientTable([])
+    site_mrn = patient_table.render_mrns(mrns)
+    assert site_mrn == 'RVH: 9999996, MGH: 1234567'
+
+
 def test_relationshiptable_pending_status_render_singular() -> None:
     """Ensure that pending status is rendered in the form `STATUS (number of days)` in singular form."""
     # in case of `zero` number of days

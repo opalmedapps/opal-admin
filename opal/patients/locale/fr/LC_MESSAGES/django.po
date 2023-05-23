@@ -529,8 +529,8 @@ msgid "Opal Registration"
 msgstr ""
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Opal Patient Registration Code"
-msgstr "Code d'enregistrement du patient Opal"
+msgid "Opal Registration: Confirmation"
+msgstr ""
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
@@ -649,10 +649,6 @@ msgstr "Afficher l'accès des soignants"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided"
-msgstr ""
-
-#: opal/patients/views.py
-msgid "New Access Request: Success"
 msgstr ""
 
 #: opal/patients/views.py

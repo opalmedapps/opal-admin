@@ -172,9 +172,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
                 else:
                     # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
+                    # TODO: create relationship, patient (if new) etc.
                     return render(self.request, 'patients/access_request/qr_code.html', {
                         'qrcode': base64.b64encode(self._generate_qr_code('').getvalue()).decode(),
-                        'header_title': _('New Access Request: Success'),
                     })
             else:
                 print("some forms are invalid (or the next button wasn't clicked)")
@@ -187,14 +187,11 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 next_step=next_step,
             )
 
-            if next_step == 'confirm':
-                return render(self.request, self.template_name_confirm, context=context_data)
-
             return self.render_to_response(context_data)
 
         return self.get(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: C901, WPS210
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: C901, WPS210, WPS231
         """
         Return the context data for rendering the view.
 
@@ -229,7 +226,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
             disable_next = not patient_form.is_valid()
 
-            context_data['patient_table'] = tables.PatientTable(patients)
+            if isinstance(patient_form.patient, Patient):
+                context_data['patient_table'] = tables.PatientTable(patients)
+            else:
+                context_data['patient_table'] = tables.ConfirmPatientDetailsTable(patients)
 
         relationship_form = context_data.get('relationship_form')
 
@@ -241,20 +241,13 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
-            print(relationship_form.cleaned_data)
-            context_data['relationship_type'] = relationship_form.cleaned_data['relationship_type']
             # TODO: convert to correct user type to have the user-facing name for it (via constants.TYPE_USERS)
             # might be helpful to use an enum like done with MedicalCard
             user_type = relationship_form.cleaned_data['user_type']
-            context_data['user_type'] = user_type
             is_existing_user = user_type == '1'
-            context_data['is_existing_user'] = is_existing_user
 
             if is_existing_user:
                 context_data['next_button_text'] = 'Submit Access Request'
-            else:
-                context_data['first_name'] = relationship_form.cleaned_data['first_name']
-                context_data['last_name'] = relationship_form.cleaned_data['last_name']
 
         # TODO: might not be needed anymore
         context_data['next_button_disabled'] = disable_next
@@ -356,10 +349,13 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             patient = form.patient  # type: ignore[attr-defined]
             # TODO: patient could also be an actual Patient instance, need to add support
             # convert it to a dictionary to be able to serialize it into JSON
-            data_dict = patient._asdict()  # noqa: WPS437
-            data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
-            # use DjangoJSONEncoder which supports date/datetime
-            storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
+            if isinstance(patient, Patient):
+                storage['patient'] = patient.pk  # type: ignore[assignment]
+            else:
+                data_dict = patient._asdict()  # noqa: WPS437
+                data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
+                # use DjangoJSONEncoder which supports date/datetime
+                storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
 
         self.request.session.modified = True
 
@@ -383,7 +379,12 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             # i.e., the patient already exists
             # TODO: might be better to refactor into a function so it can be tested easier
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
-            patient = json.loads(patient_data)
+            if isinstance(patient_data, int):
+                patient = Patient.objects.get(pk=patient_data)
+                date_of_birth = patient.date_of_birth
+            else:
+                patient = json.loads(patient_data)
+                date_of_birth = date.fromisoformat(patient['date_of_birth'])
 
             if step == 'patient':
                 kwargs.update({
@@ -391,7 +392,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 })
             else:
                 kwargs.update({
-                    'date_of_birth': date.fromisoformat(patient['date_of_birth']),
+                    'date_of_birth': date_of_birth,
                 })
         elif step == 'confirm':
             kwargs.update({
