@@ -10,8 +10,8 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.hospital_settings.factories import Site
-from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.patients.models import RelationshipType, RoleType, SexType
+from opal.patients import factories as patient_factories
+from opal.patients.models import Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import User
 
@@ -71,7 +71,7 @@ def test_update_registration_code_status_success() -> None:
 
 def test_update_patient_legacy_id_valid() -> None:
     """Test update patient legacy id with valid value."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     legacy_id = patient.legacy_id + 1
     utils.update_patient_legacy_id(patient, legacy_id)
     patient.refresh_from_db()
@@ -80,7 +80,7 @@ def test_update_patient_legacy_id_valid() -> None:
 
 def test_update_patient_legacy_id_invalid() -> None:
     """Test update patient legacy id with invalid value."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     legacy_id = 0
     expected_message = "'legacy_id': ['Ensure this value is greater than or equal to 1.']"
     with assertRaisesMessage(
@@ -171,7 +171,7 @@ def test_insert_security_answers_failure() -> None:
 
 def test_valid_relationship_types_contain_self_role_type() -> None:
     """Get the queryset of valid relationship types contains self role type."""
-    patient = Patient()
+    patient = patient_factories.Patient()
 
     valid_types = list(utils.valid_relationship_types(patient).values_list('role_type', flat=True))
 
@@ -181,8 +181,8 @@ def test_valid_relationship_types_contain_self_role_type() -> None:
 
 def test_valid_relationship_types_not_contain_self_role_type() -> None:
     """Get the queryset of valid relationship types doesn't contain self role type."""
-    patient = Patient()
-    Relationship.create(
+    patient = patient_factories.Patient()
+    patient_factories.Relationship.create(
         patient=patient,
         type=RelationshipType.objects.self_type(),
     )
@@ -199,7 +199,7 @@ def test_get_patient_by_ramq_in_success() -> None:
     mrn = '9999993'
     site_code = 'MGH'
 
-    patient = Patient(ramq=ramq)
+    patient = patient_factories.Patient(ramq=ramq)
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
 
@@ -209,7 +209,7 @@ def test_get_patient_by_ramq_in_failed() -> None:
     ramq = 'MARG99991313'
     mrn = '9999993'
     site_code = 'MGH'
-    Patient(ramq='')
+    patient_factories.Patient(ramq='')
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
 
@@ -219,9 +219,9 @@ def test_get_patient_by_mrn_in_success() -> None:
     ramq = ''
     mrn = '9999993'
     site_code = 'MGH'
-    patient = Patient()
+    patient = patient_factories.Patient()
     site = Site(code=site_code)
-    HospitalPatient(patient=patient, site=site, mrn=mrn)
+    patient_factories.HospitalPatient(patient=patient, site=site, mrn=mrn)
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
 
@@ -231,8 +231,68 @@ def test_get_patient_by_mrn_in_failed() -> None:
     ramq = ''
     mrn = '9999993'
     site_code = 'MGH'
-    patient = Patient()
+    patient = patient_factories.Patient()
     site = Site(code=site_code)
-    HospitalPatient(patient=patient, site=site, mrn='9999996')
+    patient_factories.HospitalPatient(patient=patient, site=site, mrn='9999996')
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
+
+
+def test_create_relationship() -> None:
+    """A new relationship can be created."""
+    patient = patient_factories.Patient()
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    end_date = Relationship.calculate_end_date(
+        patient.date_of_birth,
+        self_type,
+    )
+
+    relationship = utils.create_relationship(
+        patient,
+        caregiver_profile,
+        self_type,
+        RelationshipStatus.CONFIRMED,
+    )
+
+    assert relationship.patient == patient
+    assert relationship.caregiver == caregiver_profile
+    assert relationship.type == self_type
+    assert relationship.status == RelationshipStatus.CONFIRMED
+    assert relationship.end_date == end_date
+
+
+def test_create_relationship_no_defaults() -> None:
+    """A new relationship can be created with specific values provided as arguments."""
+    patient = patient_factories.Patient()
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = utils.create_relationship(
+        patient,
+        caregiver_profile,
+        self_type,
+        RelationshipStatus.CONFIRMED,
+        date(2000, 2, 2),
+        date(2000, 1, 2),
+    )
+
+    assert relationship.request_date == date(2000, 2, 2)
+    assert relationship.start_date == date(2000, 1, 2)
+
+
+def test_create_relationship_defaults() -> None:
+    """A new relationship can be created with default values for unprovided arguments."""
+    patient = patient_factories.Patient()
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = utils.create_relationship(
+        patient,
+        caregiver_profile,
+        self_type,
+        RelationshipStatus.CONFIRMED,
+    )
+
+    assert relationship.request_date == date.today()
+    assert relationship.start_date == patient.date_of_birth

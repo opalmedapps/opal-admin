@@ -8,7 +8,7 @@ from django.utils import timezone
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
-from .models import Patient, Relationship, RelationshipType, RoleType
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR = 50
@@ -156,3 +156,52 @@ def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Opti
         hospital_patients__mrn=mrn,
         hospital_patients__site__code=site,
     ).first()
+
+
+def create_relationship(  # noqa: WPS211
+    patient: Patient,
+    caregiver_profile: caregiver_models.CaregiverProfile,
+    relationship_type: RelationshipType,
+    status: RelationshipStatus,
+    request_date: Optional[date] = None,
+    start_date: Optional[date] = None,
+) -> Relationship:
+    """
+    Create a new relationship instance with the given properties.
+
+    Args:
+        patient: the patient instance
+        caregiver_profile: the caregiver profile instance
+        relationship_type: the type of the relationship
+        status: the status of the relationship
+        request_date: the request date of the relationship, today's date if None
+        start_date: the start date of the relationship, the patient's date of birth if None
+
+    Returns:
+        the new relationship instance
+    """
+    if not request_date:
+        request_date = date.today()
+
+    if not start_date:
+        start_date = patient.date_of_birth
+
+    end_date = Relationship.calculate_end_date(
+        patient.date_of_birth,
+        relationship_type,
+    )
+
+    relationship = Relationship(
+        patient=patient,
+        caregiver=caregiver_profile,
+        type=relationship_type,
+        status=status,
+        request_date=request_date,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    relationship.full_clean()
+    relationship.save()
+
+    return relationship
