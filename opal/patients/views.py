@@ -658,7 +658,7 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         # create the registration code instance for the relationship and validate the registration code
         registration_code = RegistrationCode(
             relationship=relationship,
-            code=generate_random_registration_code(settings.INSTITUTION_CODE, constants.REGISTRATION_CODE_LENGTH),
+            code=generate_random_registration_code(settings.INSTITUTION_CODE, 10),
         )
         registration_code.full_clean()
         registration_code.save()

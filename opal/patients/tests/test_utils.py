@@ -1,11 +1,15 @@
 """App patient utils test functions."""
+import datetime as dt
 from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
+from pytest_django.fixtures import SettingsWrapper
+from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
@@ -404,3 +408,19 @@ def test_create_relationship_defaults() -> None:
 
     assert relationship.request_date == date.today()
     assert relationship.start_date == patient.date_of_birth
+
+
+def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapper) -> None:
+    """A new registration code can be created with a random code."""
+    # mock the current time to a fixed value
+    current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+    mocker.patch.object(timezone, 'now', return_value=current_time)
+    relationship = patient_factories.Relationship()
+    settings.INSTITUTION_CODE = 'XY'
+
+    registration_code = utils.create_registration_code(relationship)
+
+    assert registration_code.relationship == relationship
+    assert registration_code.code.startswith('XY')
+    assert registration_code.created_at == current_time
+    assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW

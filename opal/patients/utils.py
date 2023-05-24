@@ -1,18 +1,22 @@
 """App patients util functions."""
 from datetime import date
-from typing import Optional
+from typing import Final, Optional
 
+from django.conf import settings
 from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
+from opal.core.utils import generate_random_registration_code
 from opal.hospital_settings.models import Site
 from opal.users.models import Caregiver, User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
-RAMQ_FEMALE_INDICATOR = 50
+RAMQ_FEMALE_INDICATOR: Final = 50
+#: Length for the registration code excluding the two character prefix.
+REGISTRATION_CODE_LENGTH: Final = 10
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -246,8 +250,8 @@ def create_relationship(  # noqa: WPS211
         caregiver_profile: the caregiver profile instance
         relationship_type: the type of the relationship
         status: the status of the relationship
-        request_date: the request date of the relationship, today's date if None
-        start_date: the start date of the relationship, the patient's date of birth if None
+        request_date: the request date of the relationship, defaults to today's date if None
+        start_date: the start date of the relationship, defaults to the patient's date of birth if None
 
     Returns:
         the new relationship instance
@@ -277,3 +281,28 @@ def create_relationship(  # noqa: WPS211
     relationship.save()
 
     return relationship
+
+
+def create_registration_code(relationship: Relationship) -> caregiver_models.RegistrationCode:
+    """
+    Create a new registration code instance associated with the given relationship.
+
+    The code for the `RegistrationCode` is randomly generated and prefixed with the `INSTITUTION_CODE`
+    defined in the settings.
+
+    Args:
+        relationship: the relationship the registration code is for
+
+    Returns:
+        the new registration code instance
+    """
+    code = generate_random_registration_code(settings.INSTITUTION_CODE, REGISTRATION_CODE_LENGTH)
+    registration_code = caregiver_models.RegistrationCode(
+        relationship=relationship,
+        code=code,
+    )
+
+    registration_code.full_clean()
+    registration_code.save()
+
+    return registration_code
