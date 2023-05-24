@@ -13,6 +13,7 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Site
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
@@ -25,6 +26,7 @@ from opal.patients.models import (
     SexType,
 )
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.users import models as user_models
 from opal.users.factories import User
 
 from .. import utils
@@ -32,34 +34,20 @@ from .. import utils
 pytestmark = pytest.mark.django_db
 
 
-CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
-    date_of_birth=date.fromisoformat('1954-05-09'),
+PATIENT_DATA = OIEPatientData(
+    date_of_birth=date.fromisoformat('1986-10-01'),
     first_name='Marge',
     last_name='Simpson',
     sex='F',
     alias='',
     deceased=False,
-    death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
-    ramq='MARG99991313',
+    death_date_time=None,
+    ramq='SIMM86600199',
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
-    mrns=[
-        OIEMRNData(
-            site='MGH',
-            mrn='9999993',
-            active=True,
-        ),
-        OIEMRNData(
-            site='MCH',
-            mrn='9999994',
-            active=True,
-        ),
-        OIEMRNData(
-            site='RVH',
-            mrn='9999993',
-            active=True,
-        ),
-    ],
+    mrns=[],
 )
+MRN_DATA_RVH = OIEMRNData(site='RVH', mrn='9999993', active=True)
+MRN_DATA_MGH = OIEMRNData(site='MGH', mrn='9999996', active=False)
 
 
 @pytest.mark.parametrize(('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'), [
@@ -424,3 +412,197 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
     assert registration_code.code.startswith('XY')
     assert registration_code.created_at == current_time
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
+
+
+def test_create_access_request_existing() -> None:
+    """A new relationship is created for an existing patient and caregiver."""
+    patient = patient_factories.Patient()
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship, registration_code = utils.create_access_request(
+        patient,
+        caregiver_profile.user,
+        self_type,
+    )
+
+    assert registration_code is None
+    assert relationship.patient == patient
+    assert relationship.caregiver == caregiver_profile
+    assert relationship.type == self_type
+    assert relationship.status == RelationshipStatus.CONFIRMED
+    assert relationship.request_date == date.today()
+    assert relationship.start_date == patient.date_of_birth
+    assert relationship.end_date is None
+
+
+def test_create_access_request_non_self() -> None:
+    """A new relationship is created for a Parent/Guardian relationship."""
+    patient = patient_factories.Patient(date_of_birth=date(2003, 3, 27))
+    caregiver_profile = CaregiverProfile()
+    parent_type = RelationshipType.objects.parent_guardian()
+
+    relationship, registration_code = utils.create_access_request(
+        patient,
+        caregiver_profile.user,
+        parent_type,
+    )
+
+    assert registration_code is None
+    assert relationship.type == parent_type
+    assert relationship.status == RelationshipStatus.PENDING
+    assert relationship.request_date == date.today()
+    assert relationship.start_date == patient.date_of_birth
+    assert relationship.end_date == date(2017, 3, 27)
+
+
+def test_create_access_request_new_patient() -> None:
+    """A new relationship and new patient are created."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        caregiver_profile.user,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = Patient.objects.get()
+
+    assert relationship.patient == patient
+    assert patient.first_name == 'Marge'
+    assert patient.last_name == 'Simpson'
+    assert patient.date_of_birth == date(1986, 10, 1)
+    assert patient.sex == SexType.FEMALE
+    assert patient.ramq == 'SIMM86600199'
+    assert patient.date_of_death is None
+    assert HospitalPatient.objects.count() == 0
+
+
+def test_create_access_request_new_patient_mrns_missing_site() -> None:
+    """Everything is rolled back in case of an error such as a missing site."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+
+    with pytest.raises(hospital_models.Site.DoesNotExist):
+        utils.create_access_request(
+            OIEPatientData(**patient_data),
+            caregiver_profile.user,
+            self_type,
+        )
+
+    assert Patient.objects.count() == 0
+    assert HospitalPatient.objects.count() == 0
+    assert Relationship.objects.count() == 0
+
+
+def test_create_access_request_new_patient_mrns() -> None:
+    """A new ."""
+    Site(code='RVH')
+    Site(code='MGH')
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+
+    relationship, _ = utils.create_access_request(
+        OIEPatientData(**patient_data),
+        caregiver_profile.user,
+        self_type,
+    )
+
+    assert Patient.objects.count() == 1
+    patient = relationship.patient
+
+    hospital_patients = HospitalPatient.objects.filter(patient=patient)
+    assert hospital_patients.count() == 2
+
+    hospital_patient_rvh = hospital_patients[0]
+    assert hospital_patient_rvh.mrn == '9999993'
+    assert hospital_patient_rvh.is_active
+
+    hospital_patient_mgh = hospital_patients[1]
+    assert hospital_patient_mgh.mrn == '9999996'
+    assert not hospital_patient_mgh.is_active
+
+
+def test_create_access_request_new_caregiver() -> None:
+    """A new relationship and new caregiver are created."""
+    patient = patient_factories.Patient()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship, registration_code = utils.create_access_request(
+        patient,
+        ('Marge', 'Simpson'),
+        self_type,
+    )
+
+    assert registration_code is not None
+    assert caregiver_models.CaregiverProfile.objects.count() == 1
+    assert user_models.Caregiver.objects.count() == 1
+
+    caregiver_profile = caregiver_models.CaregiverProfile.objects.get()
+    caregiver = caregiver_profile.user
+    assert relationship.caregiver == caregiver_profile
+
+    assert caregiver.first_name == 'Marge'
+    assert caregiver.last_name == 'Simpson'
+    assert not caregiver.is_active
+
+
+def test_create_access_request_new_caregiver_registration_code(settings: SettingsWrapper) -> None:
+    """A registration code is created for a new caregiver."""
+    patient = patient_factories.Patient()
+    self_type = RelationshipType.objects.self_type()
+
+    relationship, registration_code = utils.create_access_request(
+        patient,
+        ('Marge', 'Simpson'),
+        self_type,
+    )
+
+    assert caregiver_models.RegistrationCode.objects.count() == 1
+
+    assert registration_code is not None
+    assert registration_code.relationship == relationship
+    assert registration_code.code.startswith(settings.INSTITUTION_CODE)
+
+
+def test_create_access_request_self_relationship_already_exists() -> None:
+    """Creating an access request is atomic."""
+    self_type = RelationshipType.objects.self_type()
+    existing_relationship = patient_factories.Relationship(type=self_type)
+
+    with pytest.raises(ValidationError, match='The patient already has a self-relationship'):
+        utils.create_access_request(
+            existing_relationship.patient,
+            existing_relationship.caregiver.user,
+            self_type,
+        )
+
+    assert caregiver_models.CaregiverProfile.objects.count() == 1
+    assert user_models.Caregiver.objects.count() == 1
+    assert Relationship.objects.count() == 1
+    assert Patient.objects.count() == 1
+
+
+def test_create_access_request_new_patient_caregiver() -> None:
+    """A new relationship, patient, caregiver and registration code are created."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        ('Marge', 'Simpson'),
+        self_type,
+    )
+
+    assert registration_code is not None
+    assert caregiver_models.CaregiverProfile.objects.count() == 1
+    assert user_models.Caregiver.objects.count() == 1
+    assert Relationship.objects.count() == 1
+    assert Patient.objects.count() == 1

@@ -3,12 +3,14 @@ from datetime import date
 from typing import Final, Optional
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code
 from opal.hospital_settings.models import Site
+from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
@@ -276,6 +278,7 @@ def create_relationship(  # noqa: WPS211
         start_date=start_date,
         end_date=end_date,
     )
+    print(relationship.__dict__)
 
     relationship.full_clean()
     relationship.save()
@@ -306,3 +309,60 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     registration_code.save()
 
     return registration_code
+
+
+@transaction.atomic
+def create_access_request(  # noqa: WPS210 (too many local variables)
+    patient: Patient | OIEPatientData,
+    caregiver: Caregiver | tuple[str, str],
+    relationship_type: RelationshipType,
+) -> tuple[Relationship, Optional[caregiver_models.RegistrationCode]]:
+    """
+    Create a new access request (relationship) between the patient and caregiver.
+
+    The patient/caregiver may be already existent or a new one.
+    If the patient/caregiver is new, a new instance will be created.
+    For a new caregiver a registration code will also be created.
+
+    Args:
+        patient: a `Patient` instance if the patient exists, `OIEPatientData` otherwise
+        caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
+        relationship_type: the type of relationship between the caregiver and patient
+
+    Returns:
+        the newly created relationship (which provides access to patient and caregiver)
+        and the registration code (in the case of a new caregiver, otherwise None)
+    """
+    if isinstance(patient, OIEPatientData):
+        mrns = [
+            (Site.objects.get(code=mrn_data.site), mrn_data.mrn, mrn_data.active)
+            for mrn_data in patient.mrns
+        ]
+
+        patient = create_patient(
+            first_name=patient.first_name,
+            last_name=patient.last_name,
+            date_of_birth=patient.date_of_birth,
+            sex=Patient.SexType(patient.sex),
+            ramq=patient.ramq,
+            mrns=mrns,
+        )
+
+    if isinstance(caregiver, tuple):
+        # create caregiver and caregiver profile
+        caregiver_profile = create_caregiver_profile(
+            first_name=caregiver[0],
+            last_name=caregiver[1],
+        )
+    else:
+        caregiver_profile = caregiver_models.CaregiverProfile.objects.get(user=caregiver)
+
+    status = (
+        RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
+    )
+
+    new_user = not isinstance(caregiver, Caregiver)
+    relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
+    registration_code = create_registration_code(relationship) if new_user else None
+
+    return relationship, registration_code
