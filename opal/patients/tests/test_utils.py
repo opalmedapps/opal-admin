@@ -238,6 +238,22 @@ def test_get_patient_by_mrn_in_failed() -> None:
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
 
 
+def test_create_caregiver_profile() -> None:
+    """A new caregiver profile and caregiver can be created."""
+    caregiver_profile = utils.create_caregiver_profile('Hans', 'Wurst')
+
+    caregiver_profile.full_clean()
+    assert caregiver_profile.legacy_id is None
+
+    caregiver = caregiver_profile.user
+    caregiver.full_clean(exclude=['password', 'username'])
+
+    assert caregiver.first_name == 'Hans'
+    assert caregiver.last_name == 'Wurst'
+    assert caregiver.is_active is False
+    assert caregiver.username == ''
+
+
 def test_create_relationship() -> None:
     """A new relationship can be created."""
     patient = patient_factories.Patient()

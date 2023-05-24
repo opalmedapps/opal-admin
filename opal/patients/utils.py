@@ -6,7 +6,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
-from opal.users.models import User
+from opal.users.models import Caregiver, User
 
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
@@ -156,6 +156,30 @@ def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Opti
         hospital_patients__mrn=mrn,
         hospital_patients__site__code=site,
     ).first()
+
+
+def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_models.CaregiverProfile:
+    """
+    Create new caregiver and caregiver profile instances.
+
+    The caregiver profile is associated to the caregiver.
+    The caregiver is not active and only has a first and last name.
+    No email, username or password.
+
+    Args:
+        first_name: the first name of the caregiver
+        last_name: the last name of the caregiver
+
+    Returns:
+        the caregiver profile instance, access the caregiver via the `user` property
+    """
+    caregiver = Caregiver.objects.create(
+        first_name=first_name,
+        last_name=last_name,
+        is_active=False,
+    )
+
+    return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
 
 def create_relationship(  # noqa: WPS211
