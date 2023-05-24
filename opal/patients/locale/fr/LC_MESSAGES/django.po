@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 15:55+0000\n"
+"POT-Creation-Date: 2023-05-24 16:27-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,7 +191,7 @@ msgstr "Confirmer"
 msgid "Relationship"
 msgstr "Relation"
 
-#: opal/patients/forms.py opal/patients/tables.py
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Status"
 msgstr "Statut"
@@ -392,24 +392,20 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
-msgid "Relationship Status"
-msgstr "Statut de la relation"
-
-#: opal/patients/models.py
 msgid "Reason of Status Change"
 msgstr "Raison du changement de statut"
 
 #: opal/patients/models.py
-msgid "Relationship Request Date"
-msgstr "Date de la demande de relation"
+msgid "Request Date"
+msgstr "Date de la demande"
 
-#: opal/patients/models.py
-msgid "Relationship Start Date"
-msgstr "Date de début de la relation"
+#: opal/patients/models.py opal/patients/tables.py
+msgid "Start Date"
+msgstr "Date de Début"
 
-#: opal/patients/models.py
-msgid "Relationship End Date"
-msgstr "Date de fin de relation"
+#: opal/patients/models.py opal/patients/tables.py
+msgid "End Date"
+msgstr "Date de Fin"
 
 #: opal/patients/models.py
 msgid "Can manage relationships"
@@ -507,14 +503,6 @@ msgstr[1] "%(number_of_days)d jours"
 #: opal/patients/tables.py
 msgid "No caregiver requests found."
 msgstr "Aucun aidant n'a pu être retrouvé."
-
-#: opal/patients/tables.py
-msgid "Start Date"
-msgstr "Date de Début"
-
-#: opal/patients/tables.py
-msgid "End Date"
-msgstr "Date de Fin"
 
 #: opal/patients/tables.py
 msgid "No caregiver could be found."
