@@ -6,9 +6,10 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
+from opal.hospital_settings.models import Site
 from opal.users.models import Caregiver, User
 
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR = 50
@@ -180,6 +181,53 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     )
 
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
+
+
+def create_patient(  # noqa: WPS211
+    first_name: str,
+    last_name: str,
+    date_of_birth: date,
+    sex: Patient.SexType,
+    ramq: Optional[str],
+    mrns: list[tuple[Site, str, bool]],
+) -> Patient:
+    """
+    Create a new patient instance and associated HospitalPatient instances (if necessary).
+
+    Args:
+        first_name: the patient's first name
+        last_name: the patient's last name
+        date_of_birth: the patient's date of birth
+        sex: the patient's sex
+        ramq: the patient's RAMQ, None if the patient has none
+        mrns: list of MRN tuples consisting of the site, MRN and whether the MRN is active
+
+    Returns:
+        the new patient instance
+    """
+    patient = Patient(
+        first_name=first_name,
+        last_name=last_name,
+        date_of_birth=date_of_birth,
+        sex=sex,
+        ramq=ramq,
+    )
+
+    patient.full_clean()
+    patient.save()
+
+    hospital_patients = [
+        HospitalPatient(
+            patient=patient,
+            site=site,
+            mrn=mrn,
+            is_active=is_active,
+        )
+        for (site, mrn, is_active) in mrns
+    ]
+    HospitalPatient.objects.bulk_create(hospital_patients)
+
+    return patient
 
 
 def create_relationship(  # noqa: WPS211

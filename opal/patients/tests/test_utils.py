@@ -11,7 +11,15 @@ from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.hospital_settings.factories import Site
 from opal.patients import factories as patient_factories
-from opal.patients.models import Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
+from opal.patients.models import (
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipStatus,
+    RelationshipType,
+    RoleType,
+    SexType,
+)
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import User
 
@@ -236,6 +244,90 @@ def test_get_patient_by_mrn_in_failed() -> None:
     patient_factories.HospitalPatient(patient=patient, site=site, mrn='9999996')
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
+
+
+def test_create_patient() -> None:
+    """A new patient can be created."""
+    patient = utils.create_patient(
+        first_name='Hans',
+        last_name='Wurst',
+        date_of_birth=date(1990, 10, 23),
+        sex=SexType.MALE,
+        ramq=None,
+        mrns=[],
+    )
+
+    assert patient.first_name == 'Hans'
+    assert patient.last_name == 'Wurst'
+    assert patient.date_of_birth == date(1990, 10, 23)
+    assert patient.sex == SexType.MALE
+    assert patient.ramq is None
+    assert HospitalPatient.objects.count() == 0
+
+
+def test_create_patient_ramq() -> None:
+    """A new patient can be created with a RAMQ."""
+    patient = utils.create_patient(
+        first_name='Hans',
+        last_name='Wurst',
+        date_of_birth=date(1990, 10, 23),
+        sex=SexType.MALE,
+        ramq='WURH90102399',
+        mrns=[],
+    )
+
+    assert patient.ramq == 'WURH90102399'
+
+
+def test_create_patient_hospitalpatients() -> None:
+    """A new patient can be created with associated hospital patient instances."""
+    site1 = Site()
+    site2 = Site()
+    patient = utils.create_patient(
+        first_name='Hans',
+        last_name='Wurst',
+        date_of_birth=date(1990, 10, 23),
+        sex=SexType.MALE,
+        ramq='WURH90102399',
+        mrns=[
+            (site1, '9999991', True),
+            (site2, '9999991', False),
+        ],
+    )
+
+    assert HospitalPatient.objects.count() == 2
+    hospital_patient1 = patient.hospital_patients.all()[0]
+    hospital_patient2 = patient.hospital_patients.all()[1]
+
+    assert hospital_patient1.site == site1
+    assert hospital_patient1.mrn == '9999991'
+    assert hospital_patient1.is_active
+
+    assert hospital_patient2.site == site2
+    assert hospital_patient2.mrn == '9999991'
+    assert not hospital_patient2.is_active
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_patient_hospitalpatients_error() -> None:
+    """A new patient can be created with associated hospital patient instances."""
+    site = Site()
+
+    with pytest.raises(IntegrityError):
+        utils.create_patient(
+            first_name='Hans',
+            last_name='Wurst',
+            date_of_birth=date(1990, 10, 23),
+            sex=SexType.MALE,
+            ramq='WURH90102399',
+            mrns=[
+                (site, '9999991', True),
+                (site, '9999992', False),
+            ],
+        )
+
+    assert Patient.objects.count() == 1
+    assert HospitalPatient.objects.count() == 0
 
 
 def test_create_caregiver_profile() -> None:
