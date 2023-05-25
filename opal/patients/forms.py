@@ -131,9 +131,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type == constants.MedicalCard.ramq.name:
             validators.validate_ramq(medical_number)
 
-        if card_type == constants.MedicalCard.mrn.name:
-            # TODO: add MRN validation
-            pass  # noqa: WPS420
+        # TODO: if card_type == constants.MedicalCard.mrn.name: to add MRN validation - no valdiation for now
 
         return medical_number
 
@@ -152,13 +150,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         medical_number = self.cleaned_data.get('medical_number')
 
         if card_type and medical_number:
-            # TODO: look in the Patient model first, only if not found search via OIE
-            # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
             if card_type == constants.MedicalCard.ramq.name:
-                self.patient = Patient.objects.filter(first_name='Marge').first()
-            else:
-                # TODO: handle connection errors here, i.e., raise helpful validation error
-                self.patient = self._fake_oie_response()
+                self.patient = Patient.objects.filter(ramq=medical_number).first()
+                if not self.patient:
+                    # TODO: handle connection errors here, i.e., raise helpful validation error
+                    self.patient = self._fake_oie_response()
 
         return self.cleaned_data
 
@@ -188,10 +184,6 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     This form can be validated after initialization to give early user feedback.
     Submitting the form (assuming it is valid) confirms that the correct patient was found.
     """
-
-    # TODO: if a checkbox is absolutely required use the following label for the BooleanField
-    # "The correct patient was found and the patient data is correct"
-
     def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
