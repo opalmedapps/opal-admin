@@ -17,11 +17,12 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.mixins.put_as_create import AllowPUTAsCreateMixin
 from opal.caregivers.api.serializers import (
+    CaregiverSerializer,
     DeviceSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
 )
-from opal.caregivers.models import Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -94,6 +95,14 @@ class GetCaregiverPatientsList(APIView):
         return Response(
             CaregiverPatientSerializer(relationships, many=True).data,
         )
+
+
+class CaregiverProfileView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CaregiverSerializer
+    queryset = CaregiverProfile.objects.all().select_related('user')
+    lookup_field = 'user__username'
+    lookup_url_kwarg = 'username'
 
 
 class RetrieveRegistrationCodeMixin(APIView):
