@@ -32,7 +32,16 @@ from opal.users.models import Caregiver
 from . import constants
 from .filters import ManageCaregiverAccessFilter
 from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
-from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import (
+    CaregiverProfile,
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipStatus,
+    RelationshipType,
+    RoleType,
+    Site,
+)
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
@@ -360,6 +369,35 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         return patient
 
+    def _create_hospital_patient(self, form_data: dict, patient: Patient) -> list[HospitalPatient]:
+        """
+        Create hospital patient instance if not exists.
+
+        Args:
+            form_data: form data
+            patient: patient instance
+
+        Returns:
+            list of hospital patient instance
+        """
+        patient_record = form_data['patient_record']
+        # Check if the patient record exists searching by RAMQ. If not, create a new record.
+        hospital_patients: List[HospitalPatient] = []
+        for data in patient_record.mrns:
+            hospital_patient, created = HospitalPatient.objects.get_or_create(
+                mrn=data.mrn,
+                site_id=Site.objects.get(code=data.site).id,
+                defaults={
+                    'mrn': data.mrn,
+                    'is_active': 0 if data.active else 1,
+                    'site_id': Site.objects.get(code=data.site).id,
+                    'patient_id': patient.id,
+                },
+            )
+            hospital_patient.full_clean()
+
+        return hospital_patients
+
     def _create_relationship(   # noqa: WPS210
         self,
         form_data: dict,
@@ -432,6 +470,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         # Create patient instance if not exists
         patient = self._create_patient(new_form_data)
+
+        # Create hospital patient instance if not exists
+        self._create_hospital_patient(new_form_data, patient)
 
         # Create relationship instance if not exists
         return self._create_relationship(new_form_data, caregiver_dict, patient)
