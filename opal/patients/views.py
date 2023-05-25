@@ -381,7 +381,8 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             list of hospital patient instance
         """
         patient_record = form_data['patient_record']
-        # Check if the patient record exists searching by RAMQ. If not, create a new record.
+        # Loop the list of patient medical record number, Check if the patient medical record number alreday exists
+        # by searching the mrn and the site, If not, create a new record
         hospital_patients: List[HospitalPatient] = []
         for data in patient_record.mrns:
             hospital_patient, created = HospitalPatient.objects.get_or_create(
@@ -395,6 +396,8 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 },
             )
             hospital_patient.full_clean()
+            hospital_patients.append(hospital_patient)
+            print(hospital_patients)
 
         return hospital_patients
 

@@ -835,6 +835,24 @@ def test_create_patient() -> None:
 
 
 @pytest.mark.django_db()
+def test_create_hospital_patient() -> None:
+    """Test create hospital patient instance."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    form_data = {
+        'patient_record': CUSTOMIZED_OIE_PATIENT_DATA,
+    }
+    patient = instance._create_patient(form_data=form_data)
+    hospital_patients = instance._create_hospital_patient(form_data=form_data, patient=patient)
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(hospital_patients) == len(CUSTOMIZED_OIE_PATIENT_DATA.mrns)
+
+
+@pytest.mark.django_db()
 def test_get_current_relationship() -> None:
     """Test get an existing relationship instance."""
     request = _init_session()
