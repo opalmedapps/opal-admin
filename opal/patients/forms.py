@@ -1008,6 +1008,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
         self.helper = FormHelper(self)
+        self.helper.attrs = {'novalidate': ''}
         self.helper.layout = Layout(
             Row(
                 CrispyField('first_name', wrapper_class='col-md-6'),
