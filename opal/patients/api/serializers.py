@@ -102,7 +102,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
         many=False,
     )
-    access_level = serializers.IntegerField(default=3)
+    data_access = serializers.IntegerField(source='patient.data_access')
 
     class Meta:
         model = Relationship
@@ -113,7 +113,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
             'last_name',
             'status',
             'relationship_type',
-            'access_level',
+            'data_access',
         ]
 
 

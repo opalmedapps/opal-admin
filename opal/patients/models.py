@@ -175,6 +175,13 @@ class SexType(models.TextChoices):
     UNKNOWN = 'U', _('Unknown')
 
 
+class DataAccessType(models.IntegerChoices):
+    """The desired access level for the patient's data."""
+
+    ALL = 1, _('All')
+    NEED_TO_KNOW = 2, _('Need To Know')
+
+
 class Patient(models.Model):
     """A patient whose data can be accessed."""
 
@@ -182,6 +189,7 @@ class Patient(models.Model):
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
     SexType: TypeAlias = SexType
+    DataAccessType: TypeAlias = DataAccessType
 
     uuid = models.UUIDField(
         verbose_name=_('UUID'),
@@ -189,7 +197,6 @@ class Patient(models.Model):
         default=uuid4,
         editable=False,
     )
-
     first_name = models.CharField(
         verbose_name=_('First Name'),
         max_length=150,
@@ -222,6 +229,11 @@ class Patient(models.Model):
         blank=True,
         null=True,
     )
+    data_access = models.IntegerField(
+        verbose_name=_('Data Access Level'),
+        choices=DataAccessType.choices,
+        default=DataAccessType.ALL,
+    )
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),
         related_name='patients',
@@ -235,6 +247,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
     )
+
     objects = PatientManager.from_queryset(PatientQueryset)()
 
     class Meta:
@@ -248,6 +261,10 @@ class Patient(models.Model):
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
                 check=models.Q(date_of_birth__lte=models.F('date_of_death')),
+            ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_access_level_valid',  # noqa: WPS323
+                check=models.Q(data_access__in=DataAccessType.values),
             ),
         ]
 
