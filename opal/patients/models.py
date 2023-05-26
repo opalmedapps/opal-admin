@@ -457,6 +457,10 @@ class Relationship(models.Model):
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
             errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
 
+        # validate Pending status is not associated with Self relationship.
+        if self.type.role_type == RoleType.SELF and self.status == RelationshipStatus.PENDING:
+            errors['status'].append(gettext('"Pending" status does not apply for the Self relationship.'))
+
         if (
             self.type.role_type == RoleType.SELF
             # exclude the current instance to support updating it
