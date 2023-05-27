@@ -1,0 +1,5 @@
+services:
+  db:
+    volumes:
+      - ./certs:/certs
+      - ./docker/mariadb/config/ssl.cnf:/etc/mysql/conf.d/ssl.cnf
