@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 from http import HTTPStatus
 from types import MappingProxyType
@@ -6,6 +7,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import requests
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
@@ -413,8 +415,8 @@ def test_empty_value_in_response_by_mrn(mocker: MockerFixture) -> None:
     )
 
 
-def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
-    """Ensure that find_patient_by_mrn return None."""
+def test_find_patient_by_mrn_failure(mocker: MockerFixture, caplog: LogCaptureFixture) -> None:
+    """Ensure that find_patient_by_mrn return None and log the error."""
     # mock find_patient_by_mrn and pretend it was failed
     _mock_requests_post(
         mocker,
@@ -425,18 +427,20 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
             },
         },
     )
-
-    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
-    assert response['status'] == 'error'
-    assert response['data'] == {
-        'message': ['Could not establish a connection to the hospital interface.', 'Caused by ConnectTimeoutError.'],
-        'responseData': {
-            'status': 'error',
-            'data': {
-                'message': 'Caused by ConnectTimeoutError.',
+    with caplog.at_level(logging.ERROR):
+        response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+        assert response['status'] == 'error'
+        assert response['data'] == {
+            'message': ['Could not establish a connection to the hospital interface.'],
+            'responseData': {
+                'status': 'error',
+                'data': {
+                    'message': 'Caused by ConnectTimeoutError.',
+                },
             },
-        },
-    }
+        }
+    assert caplog.records[-1].message == 'OIE error: Caused by ConnectTimeoutError.'
+    assert caplog.records[-1].levelname == 'ERROR'
 
 
 def test_find_patient_by_mrn_invalid_mrn(mocker: MockerFixture) -> None:
@@ -533,8 +537,8 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     )
 
 
-def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
-    """Ensure that find_patient_by_ramq return None."""
+def test_find_patient_by_ramq_failure(mocker: MockerFixture, caplog: LogCaptureFixture) -> None:
+    """Ensure that find_patient_by_ramq return None and log the error."""
     # mock find_patient_by_mrn and pretend it was failed
     _mock_requests_post(
         mocker,
@@ -546,17 +550,20 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
         },
     )
 
-    response = oie_service.find_patient_by_ramq(RAMQ_VALID)
-    assert response['status'] == 'error'
-    assert response['data'] == {
-        'message': ['Could not establish a connection to the hospital interface.', 'Caused by ConnectTimeoutError.'],
-        'responseData': {
-            'status': 'error',
-            'data': {
-                'message': 'Caused by ConnectTimeoutError.',
+    with caplog.at_level(logging.ERROR):
+        response = oie_service.find_patient_by_ramq(RAMQ_VALID)
+        assert response['status'] == 'error'
+        assert response['data'] == {
+            'message': ['Could not establish a connection to the hospital interface.'],
+            'responseData': {
+                'status': 'error',
+                'data': {
+                    'message': 'Caused by ConnectTimeoutError.',
+                },
             },
-        },
-    }
+        }
+    assert caplog.records[-1].message == 'OIE error: Caused by ConnectTimeoutError.'
+    assert caplog.records[-1].levelname == 'ERROR'
 
 
 def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
