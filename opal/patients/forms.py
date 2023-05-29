@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -171,6 +171,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                     self.patient = self._fake_oie_response()
                     # TODO: on deployment comment out the above line and uncomment the following line
                     # response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))  # noqa: E800
+                    # TODO: if multiple mrns is for the site that is being searched it should be done here
+                    # TODO: Not in `AccessRequestConfirmPatientForm` currently it is done for all sites
 
         self._handle_response(response)
         return self.cleaned_data
@@ -200,8 +202,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             deceased=False,
             death_date_time=None,
             mrns=[
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
-                OIEMRNData(site='MGH', mrn='9999994', active=True),
+                OIEMRNData(site='RVH', mrn='99999933', active=True),
+                OIEMRNData(site='RVH', mrn='99999934', active=True),
             ],
         )
 
@@ -238,7 +240,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
 
         self.patient = patient
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]:  # noqa: C901
         """
         Clean the form.
 
@@ -264,27 +266,18 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
                 errors['deceased'] = True
 
         else:
-            data_dict = self.patient
+            data_dict: dict[Any, Any] = cast(dict, self.patient)
             if data_dict.get('deceased') is True:
                 errors['deceased'] = True
-
-            mrns_list = data_dict.get('mrns')
-            site_dict: dict = {}
-            # loop over dicts and break and report an error whenever a site is repeated for different mrn
-            for dict_mrn in mrns_list:
-                if site_dict.get('site'):
-                    if dict_mrn.get('active') is True:
-                        errors['multiple_mrns'] = True
-                        break
-
-                if dict_mrn.get('active'):
-                    site_dict['site'] = dict_mrn.get('site')
+            if self._has_multiple_mrn():
+                errors['multiple_mrns'] = True
 
         if errors.get('deceased') is True:
             self.add_error(
                 NON_FIELD_ERRORS,
                 _('Unable to complete action with this patient. Please contact Medical Records.'),
             )
+
         if errors.get('multiple_mrns') is True:
             self.add_error(
                 NON_FIELD_ERRORS,
@@ -292,6 +285,28 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
             )
 
         return cleaned_data
+
+    def _has_multiple_mrn(self) -> bool:
+        """
+        Check if patient has more than one active mrns in the same site.
+
+        Returns:
+            True if there is multiple active mrns in the same site, False otherwise
+        """
+        data_dict: dict[Any, Any] = cast(dict, self.patient)
+        mrns_list: list[dict] = cast(list[dict], data_dict.get('mrns'))
+        all_mrns_dict: dict = {}
+        # loop over dicts and break and return true whenever a site is repeated for different mrn
+        dict_mrn: dict
+        for dict_mrn in mrns_list:
+            # create a string that contains site-active to check if there are two active mrns in the same site
+            site_active_str = f'{dict_mrn.get("site")}{dict_mrn.get("active")}'
+            if all_mrns_dict.get(site_active_str):
+                return True
+            else:
+                all_mrns_dict[site_active_str] = True
+
+        return False
 
 
 class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
