@@ -13,6 +13,8 @@ from .hospital_data import OIEReportExportData
 
 logger = logging.getLogger(__name__)
 
+# TODO: translate error messages add _(message)
+
 
 class OIEValidator:
     """OIE helper service that validates OIE request and response data."""
