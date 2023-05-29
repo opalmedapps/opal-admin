@@ -197,7 +197,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             alias='',
             ramq='SIML86531906',
             ramq_expiration=None,
-            deceased=True,
+            deceased=False,
             death_date_time=None,
             mrns=[
                 OIEMRNData(site='MGH', mrn='9999993', active=True),
