@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 19:19+0300\n"
+"POT-Creation-Date: 2023-05-29 19:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,12 +74,14 @@ msgstr "Afficher les demandes en attente"
 msgid ""
 "Unable to complete action with this patient. Please contact Medical Records."
 msgstr ""
-"Impossible de compléter la processus pour ce patient. Veuillez contacter le "
+"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
 "département des archives médicales."
 
 #: opal/patients/forms.py
 msgid "Patient has more than one active MRN, please visit medical records"
-msgstr "Le patient a plus d'un MRN actif, veuillez consulter département des archives médicales."
+msgstr ""
+"Le patient a plus d'un MRN actif, veuillez consulter département des "
+"archives médicales."
 
 #: opal/patients/forms.py
 msgid "Relationship to the patient"
@@ -179,7 +181,8 @@ msgstr ""
 
 #: opal/patients/forms.py
 msgid "This opal user already has a self-relationship with the patient."
-msgstr "Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
+msgstr ""
+"Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
 
 #: opal/patients/forms.py
 msgid "ID Checked?"
@@ -670,13 +673,6 @@ msgstr "Détails du demandeur"
 #: opal/patients/views.py
 msgid "Confirm access to patient data"
 msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid ""
-"Unable to complete action with this patient. Please contact Medical Records."
-msgstr ""
-"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
-"département des archives médicales."
 
 #: opal/patients/views.py
 msgid "Please note multiple MRNs need to be merged by medical records."
