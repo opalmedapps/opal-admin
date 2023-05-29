@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-24 16:27-0400\n"
+"POT-Creation-Date: 2023-05-29 19:19+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,6 +69,17 @@ msgstr "Rechercher l'accès des patients"
 #: opal/patients/filters.py
 msgid "Show Pending Requests"
 msgstr "Afficher les demandes en attente"
+
+#: opal/patients/forms.py opal/patients/views.py
+msgid ""
+"Unable to complete action with this patient. Please contact Medical Records."
+msgstr ""
+"Impossible de compléter la processus pour ce patient. Veuillez contacter le "
+"département des archives médicales."
+
+#: opal/patients/forms.py
+msgid "Patient has more than one active MRN, please visit medical records"
+msgstr "Le patient a plus d'un MRN actif, veuillez consulter département des archives médicales."
 
 #: opal/patients/forms.py
 msgid "Relationship to the patient"
@@ -447,7 +458,8 @@ msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
 
 #: opal/patients/models.py
 msgid "\"Pending\" status does not apply for the Self relationship."
-msgstr "Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
+msgstr ""
+"Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
 
 #: opal/patients/models.py
 msgid "The patient already has a self-relationship"
