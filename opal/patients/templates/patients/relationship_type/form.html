@@ -18,6 +18,9 @@
     {{ form|crispy }}
 
     {% url 'patients:relationshiptype-list' as cancel_url %}
-    {% form_actions cancel_url=cancel_url %}
+    {% #form_actions %}
+      {% form_cancel href=cancel_url %}
+      {% form_submit type="save" %}
+    {% /form_actions %}
   </form>
 {% endblock %}
