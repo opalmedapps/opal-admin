@@ -283,12 +283,12 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         if errors.get('deceased') is True:
             self.add_error(
                 NON_FIELD_ERRORS,
-                'Unable to complete action with this patient. Please contact Medical Records.',
+                _('Unable to complete action with this patient. Please contact Medical Records.'),
             )
         if errors.get('multiple_mrns') is True:
             self.add_error(
                 NON_FIELD_ERRORS,
-                'Patient has more than one active MRN, please visit medical records',
+                _('Patient has more than one active MRN, please visit medical records'),
             )
 
         return cleaned_data
