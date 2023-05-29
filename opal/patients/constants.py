@@ -29,7 +29,5 @@ NEW_USER: Final = 0
 EXISTING_USER: Final = 1
 #: Random uuid hexadecimal string length for the caregiver username.
 USERNAME_LENGTH: Final = 30
-#: Random alphanumeric string length for the registration code.
-REGISTRATION_CODE_LENGTH: Final = 10
 #: QR code dimension
 QR_CODE_BOX_SIZE: Final = 10

@@ -328,7 +328,7 @@ class Relationship(models.Model):
     )
 
     status = models.CharField(
-        verbose_name=_('Relationship Status'),
+        verbose_name=_('Status'),
         max_length=3,
         choices=RelationshipStatus.choices,
         default=RelationshipStatus.PENDING,
@@ -338,19 +338,19 @@ class Relationship(models.Model):
         verbose_name=_('Reason of Status Change'),
         max_length=255,
         blank=True,
-        default=None,
+        default='',
     )
 
     request_date = models.DateField(
-        verbose_name=_('Relationship Request Date'),
+        verbose_name=_('Request Date'),
     )
 
     start_date = models.DateField(
-        verbose_name=_('Relationship Start Date'),
+        verbose_name=_('Start Date'),
     )
 
     end_date = models.DateField(
-        verbose_name=_('Relationship End Date'),
+        verbose_name=_('End Date'),
         null=True,
         blank=True,
     )
