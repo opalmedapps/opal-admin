@@ -233,7 +233,7 @@ def _create_test_data() -> None:
     user_mona = _create_caregiver(
         first_name=mona.first_name,
         last_name=mona.last_name,
-        username='mona_username_undefined',
+        username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
         email='mona@opalmedapps.ca',
         language='fr',
         phone_number='+15144758941',
