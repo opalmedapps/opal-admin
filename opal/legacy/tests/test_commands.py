@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from django.db import connections
 from django.utils import timezone
@@ -178,6 +178,35 @@ class TestSecurityAnswersMigration(CommandTestMixin):
 
 class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     """Test class for security answers migration."""
+
+    def test_import_patient(self) -> None:
+        """The patient is imported with the correct data."""
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+
+        message, error = self._call_command('migrate_patients')
+
+        assert 'Imported patient, legacy_id: 51\n' in message
+        patient = Patient.objects.get(legacy_id=51)
+
+        assert patient.date_of_birth == date(2018, 1, 1)
+        assert patient.sex == Patient.SexType.MALE
+        assert patient.first_name == legacy_patient.firstname
+        assert patient.last_name == legacy_patient.lastname
+        assert patient.ramq == legacy_patient.ssn
+
+    @pytest.mark.parametrize(('data_access', 'legacy_data_access'), [
+        (Patient.DataAccessType.ALL, '3'),
+        (Patient.DataAccessType.NEED_TO_KNOW, '1'),
+    ])
+    def test_import_patient_data_access(self, data_access: Patient.DataAccessType, legacy_data_access: str) -> None:
+        """The patient is imported with the data access level."""
+        legacy_factories.LegacyPatientFactory(accesslevel=legacy_data_access)
+
+        message, error = self._call_command('migrate_patients')
+
+        assert 'Imported patient, legacy_id: 51\n' in message
+        patient = Patient.objects.get(legacy_id=51)
+        assert patient.data_access == data_access
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
         """Test import fails no legacy patient exists."""
