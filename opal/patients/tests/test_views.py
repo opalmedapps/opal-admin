@@ -1337,6 +1337,38 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     assert success_url == cancel_url
 
 
+@pytest.mark.parametrize(
+    'role_type', [
+        models.RoleType.SELF,
+        models.RoleType.MANDATARY,
+        models.RoleType.PARENT_GUARDIAN,
+        models.RoleType.GUARDIAN_CAREGIVER,
+    ],
+)
+def test_valid_relationship_contain_role_type_being_updated(
+    relationship_user: Client,
+    role_type: models.RoleType,
+) -> None:
+    """Ensure to include type being updated in the valid types list."""
+    relationshiptype = factories.RelationshipType(role_type=role_type, name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    response_get = relationship_user.get(
+        reverse(
+            'patients:relationships-view-update',
+            kwargs={'pk': 1},
+        ),
+        HTTP_REFERER='patient/test/?search-query',
+    )
+
+    # get choices available in the initialized form
+    response_context = response_get.context['form']
+    type_choices = response_context.fields['type'].queryset
+
+    # assert the relationship of relationshiptype being edited is in the choices of the type field in the form
+    assert relationshiptype in type_choices
+
+
 def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Client) -> None:
     """Ensures that post is not allowed for readonly pending even if front-end is bypassed."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
@@ -1850,3 +1882,28 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     # Check how many patients/caregivers are displayed
     patients = search_tables[0].find_all('tr')
     assert len(patients) == 3
+
+
+# New Access Request Tests
+def test_new_access_request_inital_search(registration_user: Client) -> None:
+    """Ensures that the patient search form initializes fields values as expected."""
+    site = factories.Site()
+    response_get = registration_user.get(reverse('patients:access-request-new'))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    management_form_data = {
+        'current_step': 'search',
+        'search-card_type': 'mrn',
+        'search-medical_number': '',
+        'next': 'Find Patient',
+    }
+
+    # post
+    response_post = registration_user.post(reverse('patients:access-request-new'), data=management_form_data)
+
+    # assert site field is being initialized with site when there is only one site
+    context = response_post.context
+    assert context['current_forms'][0]['site'].initial == site
