@@ -1008,7 +1008,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.type,
             ),
         })
+
         available_choices = utils.valid_relationship_types(self.instance.patient)
+
+        # get the RelationshipType record that corresponds to the instance
+        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+
+        # combine the instance value and with the valid relationshiptypes
+        available_choices |= existing_choice
+
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         # setting the value of caregiver first and last names
