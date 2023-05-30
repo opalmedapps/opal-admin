@@ -175,11 +175,11 @@ class SexType(models.TextChoices):
     UNKNOWN = 'U', _('Unknown')
 
 
-class DataAccessType(models.IntegerChoices):
+class DataAccessType(models.TextChoices):
     """The desired access level for the patient's data."""
 
-    ALL = 1, _('All')
-    NEED_TO_KNOW = 2, _('Need To Know')
+    ALL = 'ALL', _('All')
+    NEED_TO_KNOW = 'NTK', _('Need To Know')
 
 
 class Patient(models.Model):
@@ -229,8 +229,9 @@ class Patient(models.Model):
         blank=True,
         null=True,
     )
-    data_access = models.IntegerField(
+    data_access = models.CharField(
         verbose_name=_('Data Access Level'),
+        max_length=3,
         choices=DataAccessType.choices,
         default=DataAccessType.ALL,
     )
