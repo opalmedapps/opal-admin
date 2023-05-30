@@ -59,7 +59,14 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
 
-    data_fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
+    data_fields = [
+        'patient_id',
+        'patient_legacy_id',
+        'first_name', 'last_name',
+        'status',
+        'relationship_type',
+        'data_access',
+    ]
     for data_field in data_fields:
         assert data_field in response.data[0]
 
