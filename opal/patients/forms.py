@@ -62,7 +62,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-def _is_not_mrn_or_single_site(form: forms.Form) -> Any:
+def _is_not_mrn_or_single_site(form: forms.Form) -> bool:
     """
     Check whether the form's `card_type` has not MRN selected or there is only one site.
 
@@ -132,7 +132,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
         )
-        self.oie_service = OIEService()
 
     def clean_medical_number(self) -> str:
         """
@@ -176,7 +175,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if card_type == constants.MedicalCard.ramq.name:
                 self.patient = Patient.objects.filter(ramq=medical_number).first()
                 if not self.patient:
-                    response = self.oie_service.find_patient_by_ramq(str(medical_number))
+                    response = self.oie_service.find_patient_by_ramq(medical_number)
                     # TODO: comment the line above and uncomment the line below to test locally
                     # self.patient = self._fake_oie_response()  # noqa: E800
 
@@ -222,8 +221,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             deceased=False,
             death_date_time=None,
             mrns=[
-                OIEMRNData(site='RVH', mrn='99999933', active=True),
-                OIEMRNData(site='RVH', mrn='99999934', active=True),
+                OIEMRNData(site='MGH', mrn='9999993', active=True),
+                OIEMRNData(site='RVH', mrn='9999993', active=True),
             ],
         )
 
@@ -236,6 +235,9 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     This form can be validated after initialization to give early user feedback.
     Submitting the form (assuming it is valid) confirms that the correct patient was found.
     """
+
+    # TODO: if a checkbox is absolutely required use the following label for the BooleanField
+    # "The correct patient was found and the patient data is correct"
 
     def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
         """
@@ -434,6 +436,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
             ))
 
+        # TODO: filter out self if there is already a self relationship
+        # at this point there would be a Patient instance if it exists
+        # then use utils.valid_relationship_types(patient)
+        # otherwise search_relationship_types_by_patient_age
+        # see old access request form
         available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
