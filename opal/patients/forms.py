@@ -132,6 +132,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
         )
+        self.oie_service = OIEService()
 
     def clean_medical_number(self) -> str:
         """
