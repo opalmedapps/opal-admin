@@ -131,6 +131,10 @@ TEMPLATES = [
 ]
 
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
+FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
+
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'opal.wsgi.application'
 

@@ -2,14 +2,17 @@
 {% load extra_filters %}
 
 {% var type=type|default:"cancel" %}
+{% var button_type=type|match:"done:primary,back:primary"|default:"secondary" %}
 
 {% fragment as label %}
-  {% if type == "cancel" %}
-    {% translate "Cancel" %}
-  {% elif type == "back" %}
+  {% if type == "back" %}
     {% translate "Back" %}
+  {% elif type == "done" %}
+    {% translate "Done" %}
+  {% else %}
+    {% translate "Cancel" %}
   {% endif %}
 {% endfragment %}
 
 {# keep in one line to satisfy coverage detection #}
-{% #button href=href type="secondary" %}{{ label|strip }}{% /button %}
+{% #button href=href type=button_type %}{{ label|strip }}{% /button %}

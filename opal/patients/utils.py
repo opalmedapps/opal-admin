@@ -17,10 +17,10 @@ from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, 
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
-#: Length for the registration code excluding the two character prefix.
-REGISTRATION_CODE_LENGTH: Final = 10
 #: Length of the random username
 RANDOM_USERNAME_LENGTH: Final = 16
+#: Length for the registration code excluding the two character prefix.
+REGISTRATION_CODE_LENGTH: Final = 10
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -139,11 +139,13 @@ def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
         Queryset of valid relationship types
     """
     relationship_types_queryset = search_relationship_types_by_patient_age(patient.date_of_birth)
+
     if Relationship.objects.filter(
         patient=patient,
         type__role_type=RoleType.SELF,
     ).exists():
         return relationship_types_queryset.exclude(role_type=RoleType.SELF)
+
     return relationship_types_queryset
 
 
