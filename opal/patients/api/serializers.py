@@ -102,7 +102,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
         many=False,
     )
-    data_access = serializers.IntegerField(source='patient.data_access')
+    data_access = serializers.CharField(source='patient.data_access')
 
     class Meta:
         model = Relationship
