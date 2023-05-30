@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+
+{% block heading %}
+  {% translate "Opal Registration: Confirmation" %}
+{% endblock %}
+
+{% block content %}
+  <p>{% translate "The following access request has been created for the following patient and caregiver:" %}</p>
+  <p>
+    <strong>{% translate "Patient:" %}</strong> {{ patient }}<br>
+    <strong>{% translate "Requestor:" %}</strong> {{ requestor }}
+  </p>
+  <p>
+    {# reduce spacing for blocktranslate for easier reuse in another template #}
+{% blocktranslate %}
+Please inform the requestor that access to patient data is subject to approval by Medical Records
+and inform them about any steps required to be done as per hospital policy.
+{% endblocktranslate %}
+  </p>
+  {% #form_actions %}
+    {% form_cancel href='/'|add:request.resolver_match.route type="done" %}
+  {% /form_actions %}
+{% endblock %}

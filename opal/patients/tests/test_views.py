@@ -454,7 +454,7 @@ def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
         elif 'existing' in step:
             assert response.context['wizard']['steps'].current == 'password'
         elif 'password' in step:
-            assertTemplateUsed(response, 'patients/access_request/qr_code.html')
+            assertTemplateUsed(response, 'patients/access_request/confirmation_code.html')
 
 
 class _TestAccessRequestView(AccessRequestView):
@@ -1884,25 +1884,31 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     assert len(patients) == 3
 
 
-# New Access Request Tests
-def test_new_access_request_inital_search(registration_user: Client) -> None:
-    """Ensures that the patient search form initializes fields values as expected."""
+# Access Request Tests
+def test_access_request_cancel_button(registration_user: Client) -> None:
+    """Ensure the cancel button links to the correct URL."""
+    url = reverse('patients:access-request-new')
+    response = registration_user.get(url)
+
+    assertContains(response, f'href="{url}"')
+
+
+def test_access_request_initial_search(registration_user: Client) -> None:
+    """Ensure that the patient search form initializes fields values as expected."""
     site = factories.Site()
-    response_get = registration_user.get(reverse('patients:access-request-new'))
 
-    # assert getter
-    assert response_get.status_code == HTTPStatus.OK
+    # initialize the session storage
+    response = registration_user.get(reverse('patients:access-request-new'))
 
-    # prepare data to post
-    management_form_data = {
+    assert response.status_code == HTTPStatus.OK
+
+    form_data = {
         'current_step': 'search',
         'search-card_type': 'mrn',
         'search-medical_number': '',
-        'next': 'Find Patient',
     }
 
-    # post
-    response_post = registration_user.post(reverse('patients:access-request-new'), data=management_form_data)
+    response_post = registration_user.post(reverse('patients:access-request-new'), data=form_data)
 
     # assert site field is being initialized with site when there is only one site
     context = response_post.context

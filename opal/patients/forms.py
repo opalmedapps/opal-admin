@@ -62,7 +62,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-def _is_not_mrn_or_single_site(form: forms.Form) -> Any:
+def _is_not_mrn_or_single_site(form: forms.Form) -> bool:
     """
     Check whether the form's `card_type` has not MRN selected or there is only one site.
 
@@ -365,6 +365,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
             ))
 
+        # TODO: filter out self if there is already a self relationship
+        # at this point there would be a Patient instance if it exists
+        # then use utils.valid_relationship_types(patient)
+        # otherwise search_relationship_types_by_patient_age
+        # see old access request form
         available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
