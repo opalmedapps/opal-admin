@@ -18,7 +18,7 @@ isort==5.12.0  # https://github.com/PyCQA/isort
 django-stubs==4.2.0  # https://github.com/typeddjango/django-stubs
 djangorestframework-stubs==3.14.0  # https://github.com/typeddjango/djangorestframework-stubs
 types-requests==2.30.0.0
-types-python-dateutil==2.8.19.12
+types-python-dateutil==2.8.19.13
 
 # Code quality
 #
