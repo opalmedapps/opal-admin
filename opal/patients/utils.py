@@ -17,10 +17,10 @@ from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, 
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
-#: Length for the registration code excluding the two character prefix.
-REGISTRATION_CODE_LENGTH: Final = 10
 #: Length of the random username
 RANDOM_USERNAME_LENGTH: Final = 16
+#: Length for the registration code excluding the two character prefix.
+REGISTRATION_CODE_LENGTH: Final = 10
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
