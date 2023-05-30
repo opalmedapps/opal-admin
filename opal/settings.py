@@ -130,6 +130,9 @@ TEMPLATES = [
     },
 ]
 
+# Setting Form Renderer to follow the recommendation in
+# https://docs.djangoproject.com/en/dev/ref/settings/#std-setting-FORM_RENDERER
+FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'opal.wsgi.application'
