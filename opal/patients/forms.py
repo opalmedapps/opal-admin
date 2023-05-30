@@ -176,9 +176,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if card_type == constants.MedicalCard.ramq.name:
                 self.patient = Patient.objects.filter(ramq=medical_number).first()
                 if not self.patient:
-                    self.patient = self._fake_oie_response()
-                    # TODO: on deployment comment out the above line and uncomment the following line
-                    # response = self.oie_service.find_patient_by_ramq(str(medical_number))  # noqa: E800
+                    response = self.oie_service.find_patient_by_ramq(str(medical_number))
+                    # TODO: comment the line above and uncomment the line below to test locally
+                    # self.patient = self._fake_oie_response()  # noqa: E800
+
             # MRN
             elif card_type == constants.MedicalCard.mrn.name and site:
                 patient_queryset = Patient.objects.filter(
@@ -187,11 +188,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 )
                 self.patient = patient_queryset.first()
                 if not self.patient:
-                    self.patient = self._fake_oie_response()
-                    # TODO: on deployment comment out the above line and uncomment the following line
-                    # response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))  # noqa: E800
+                    response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
+                    # TODO: comment the line above and uncomment the line below to test locally
+                    # self.patient = self._fake_oie_response()  # noqa: E800
                     # TODO: if multiple mrns is for the site that is being searched it should be done here
-                    # TODO: Not in `AccessRequestConfirmPatientForm` currently it is done for all sites
+                    # TODO: Not in `AccessRequestConfirmPatientForm`. Currently, it is done for all sites
 
         self._handle_response(response)
         return self.cleaned_data
@@ -207,7 +208,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self.add_error(NON_FIELD_ERRORS, response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
-            self.cleaned_data['patient_record'] = response['data']
+            self.patient = response['data']
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(

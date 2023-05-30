@@ -708,12 +708,14 @@ def test_caregiver_first_last_name_invalid() -> None:
 # Opal Registration Tests
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
+    factories.Patient(ramq='RAMQ12345678')
     form_data = {
         'card_type': 'ramq',
         'site': '',
         'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+
     assert form.is_valid()
     assert form.fields['site'].disabled
 
@@ -721,9 +723,11 @@ def test_accessrequestsearchform_ramq() -> None:
 def test_accessrequestsearchform_single_site_mrn() -> None:
     """Ensure that site field is disabled when there is only one site."""
     site = factories.Site()
+    patient = factories.Patient()
+    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
     form_data = {
         'card_type': 'mrn',
-        'medical_number': '9666666',
+        'medical_number': hospital_patient.mrn,
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     form.fields['site'].initial = site
@@ -736,14 +740,187 @@ def test_accessrequestsearchform_more_than_site() -> None:
     """Ensure that site field is not disabled when there is more than one site."""
     site = factories.Site()
     factories.Site()
+    patient = factories.Patient()
+    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
 
     form_data = {
         'card_type': 'mrn',
         'site': site,
-        'medical_number': '9666666',
+        'medical_number': hospital_patient.mrn,
     }
 
     form = forms.AccessRequestSearchPatientForm(data=form_data)
 
     assert form.is_valid()
     assert not form.fields['site'].disabled
+
+
+def test_accessrequestsearchform_ramq_validation_fail() -> None:
+    """Ensure that invalid ramq is caught and proper error message is displayed."""
+    form_data = {
+        'card_type': 'ramq',
+        'medical_number': 'abc123',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert not form.is_valid()
+    assert form.errors['medical_number'][0] == 'Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'
+
+
+def test_accessrequestsearchform_mrn_validation_fail() -> None:
+    """Ensure that missing site and mrn are caught and proper error message is displayed."""
+    form_data = {
+        'card_type': 'mrn',
+        'medical_number': '',
+        'site': '',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert not form.is_valid()
+    assert form.errors['medical_number'][0] == 'This field is required.'
+    assert form.errors['site'][0] == 'This field is required.'
+
+
+def test_accessrequestsearchform_mrn_found_patient_model() -> None:
+    """Ensure that patient is found by mrn in Patient model if it exists."""
+    patient = factories.Patient()
+    site = factories.Site()
+    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
+    form_data = {
+        'card_type': 'mrn',
+        'medical_number': hospital_patient.mrn,
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.fields['site'].initial = site
+
+    assert form.is_valid()
+    # asserting that patient object is found
+    assert form.patient == patient
+
+
+def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that proper error message is displayed in OIE response when search by mrn.
+
+    Mock find_patient_by_mrn and pretend it was failed.
+    """
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
+            'status': 'error',
+            'data': {
+                'message': 'Could not establish a connection to the hospital interface.',
+            },
+        },
+    )
+    site = factories.Site()
+    form_data = {
+        'card_type': 'mrn',
+        'medical_number': '9999993',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.fields['site'].initial = site
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
+
+
+def test_accessrequestsearchform_mrn_success_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that patient is found by mrn and returned by oie if it exists.
+
+    Mock find_patient_by_mrn and pretend it was successful
+    """
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
+    site = factories.Site(code='MGH')
+
+    form_data = {
+        'card_type': 'mrn',
+        'medical_number': '9999993',
+        'site': 'MGH',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.fields['site'].initial = site
+
+    assert form.is_valid()
+    # assert that data come from OIE in case patient is not found in Patient model
+    assert form.patient == OIE_PATIENT_DATA
+
+
+def test_accessrequestsearchform_ramq_found_patient_model() -> None:
+    """Ensure that patient is found by ramq in Patient model if it exists."""
+    patient = factories.Patient(ramq='RAMQ12345678')
+    form_data = {
+        'card_type': 'ramq',
+        'medical_number': patient.ramq,
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert form.is_valid()
+    # asserting that patient object is found
+    assert form.patient == patient
+
+
+def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that proper error message is displayed in OIE response when search by ramq.
+
+    Mock find_patient_by_mrn and pretend it was failed.
+    """
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {
+                'message': 'Could not establish a connection to the hospital interface.',
+            },
+        },
+    )
+
+    form_data = {
+        'card_type': 'ramq',
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
+
+
+def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that patient is found by ramq and returned by oie if it exists.
+
+    Mock find_patient_by_mrn and pretend it was successful
+    """
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
+    form_data = {
+        'card_type': 'ramq',
+        'medical_number': 'TESS53510111',
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    assert form.is_valid()
+    # assert that data come from OIE in case patient is not found in Patient model
+    assert form.patient == OIE_PATIENT_DATA
