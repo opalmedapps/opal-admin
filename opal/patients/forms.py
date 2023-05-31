@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.db.models import QuerySet
 from django.forms.fields import Field
 from django.urls import reverse
 from django.utils.translation import gettext
@@ -62,22 +63,6 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-def _is_not_mrn_or_single_site(form: forms.Form) -> bool:
-    """
-    Check whether the form's `card_type` has not MRN selected or there is only one site.
-
-    Args:
-        form: django form object expected to have a card type field
-
-    Returns:
-        True if there is only one site or the selected `card_type` is MRN, False otherwise
-    """
-    site_count = Site.objects.all().count()
-    card_type = form['card_type'].value()
-
-    return card_type != constants.MedicalCard.mrn.name or site_count == 1
-
-
 class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
@@ -90,8 +75,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
         label=_('Hospital'),
-        required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
-        disabled=_is_not_mrn_or_single_site,
+        required=lambda form: form.is_mrn_selected(),
+        disabled=lambda form: form.is_not_mrn_or_single_site(),
+        empty_label=lambda form: _('Choose...') if form.is_mrn_selected() else _('Not required'),
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -109,13 +95,16 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         self.patient: Union[OIEPatientData, Patient, None] = None
 
         # initialize site with a site object when there is a single site and card type is mrn
-        site_field: DynamicField = self.fields['site']
-        cardtype_initial_value = self.initial.get('card_type')
+        site_field: forms.ModelChoiceField = self.fields['site']  # type: ignore[assignment]
+        sites: QuerySet[Site] = site_field.queryset  # type: ignore[assignment]
 
-        if site_field.queryset.count() == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
-            self.fields['site'].initial = site_field.queryset.first()
+        if sites.count() == 1:
+            site_field.widget = forms.HiddenInput()
+
+            if self.is_mrn_selected():
+                site_field.initial = sites.first()
         else:
-            self.fields['site'].initial = None
+            site_field.initial = None
 
         # TODO: potential improvement: make a mixin for all access request forms
         # that initializes the form helper and sets these two properties
@@ -126,8 +115,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         self.helper.layout = Layout(
             Div(
                 'card_type',
-                'site',
                 'medical_number',
+                'site',
                 # make form inline
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
@@ -180,6 +169,27 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.patient = self._fake_oie_response()
 
         return self.cleaned_data
+
+    def is_mrn_selected(self) -> bool:
+        """
+        Return whether MRN is selected as the card type.
+
+        Returns:
+            True, if MRN is selected, False otherwise
+        """
+        card_type: str = self['card_type'].value()
+        return card_type == constants.MedicalCard.mrn.name
+
+    def is_not_mrn_or_single_site(self) -> bool:
+        """
+        Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
+
+        Returns:
+            True if there is only one site or the selected `card_type` is MRN, False otherwise
+        """
+        site_count = Site.objects.all().count()
+
+        return not self.is_mrn_selected() or site_count == 1
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
