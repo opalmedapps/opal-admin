@@ -173,10 +173,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         site: Optional[Site] = self.cleaned_data.get('site')
 
         if card_type and medical_number:
-            self._search_patient(medical_number, card_type, site)
+            self._search_patient(card_type, medical_number, site)
         return self.cleaned_data
 
-    def _search_patient(self, medical_number: Optional[str], card_type: Optional[str], site: Optional[Site]) -> None:
+    def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
         """
         Perform patient search in `Patient` model then in OIE.
 
@@ -186,19 +186,20 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             site: `Site` object
         """
         response: dict[str, Any] = {}
+
         if card_type == constants.MedicalCard.ramq.name:
             self.patient = Patient.objects.filter(ramq=medical_number).first()
             if not self.patient:
-                response = self.oie_service.find_patient_by_ramq(str(medical_number))
+                response = self.oie_service.find_patient_by_ramq(medical_number)
         # MRN
         elif card_type == constants.MedicalCard.mrn.name and site:
             self.patient = Patient.objects.filter(
                 hospital_patients__mrn=medical_number,
-                hospital_patients__site__code=site.code,
+                hospital_patients__site=site,
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
+                response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
 
         self._handle_response(response)
 
@@ -208,12 +209,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
-        # add error message to the template
-        if response and response['status'] == 'error':
-            self.add_error(NON_FIELD_ERRORS, response['data']['message'])
-        # save patient data to the JSONfield
-        elif response and response['status'] == 'success':
-            self.patient = response['data']
+        if response:
+            if response['status'] == 'success':
+                self.patient = response['data']
+            else:
+                self.add_error(NON_FIELD_ERRORS, response['data']['message'])
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
