@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-28 21:03-0400\n"
+"POT-Creation-Date: 2023-05-31 22:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,6 +70,10 @@ msgstr "Rechercher l'accès des patients"
 msgid "Show Pending Requests"
 msgstr "Afficher les demandes en attente"
 
+#: opal/patients/forms.py
+msgid "There is no patient to confirm"
+msgstr ""
+
 #: opal/patients/forms.py opal/patients/views.py
 msgid ""
 "Unable to complete action with this patient. Please contact Medical Records."
@@ -78,7 +82,9 @@ msgstr ""
 "département des archives médicales."
 
 #: opal/patients/forms.py
-msgid "Patient has more than one active MRN, please visit medical records"
+msgid ""
+"Patient has more than one active MRN at the same hospital, please contact "
+"Medical Records."
 msgstr ""
 "Le patient a plus d'un MRN actif, veuillez consulter département des "
 "archives médicales."
