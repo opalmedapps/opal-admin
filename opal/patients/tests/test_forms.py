@@ -1,7 +1,7 @@
 from datetime import date
 from types import MappingProxyType
 
-from django.forms import model_to_dict
+from django.forms import HiddenInput, model_to_dict
 
 import pytest
 from dateutil.relativedelta import relativedelta
@@ -716,24 +716,26 @@ def test_accessrequestsearchform_ramq() -> None:
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     assert form.is_valid()
     assert form.fields['site'].disabled
+    assert not isinstance(form.fields['site'].widget, HiddenInput)
 
 
 def test_accessrequestsearchform_single_site_mrn() -> None:
-    """Ensure that site field is disabled when there is only one site."""
+    """Ensure that site field is disabled and hidden when there is only one site."""
     site = factories.Site()
     form_data = {
         'card_type': 'mrn',
         'medical_number': '9666666',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
-    form.fields['site'].initial = site
 
     assert form.is_valid()
+    assert form['site'].value() == site.pk
     assert form.fields['site'].disabled
+    assert isinstance(form.fields['site'].widget, HiddenInput)
 
 
 def test_accessrequestsearchform_more_than_site() -> None:
-    """Ensure that site field is not disabled when there is more than one site."""
+    """Ensure that site field is not disabled and not hidden when there is more than one site."""
     site = factories.Site()
     factories.Site()
 
@@ -747,3 +749,4 @@ def test_accessrequestsearchform_more_than_site() -> None:
 
     assert form.is_valid()
     assert not form.fields['site'].disabled
+    assert not isinstance(form.fields['site'].widget, HiddenInput)

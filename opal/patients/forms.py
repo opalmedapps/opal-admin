@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.db.models import QuerySet
 from django.forms.fields import Field
 from django.urls import reverse
 from django.utils.translation import gettext
@@ -90,7 +91,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
         label=_('Hospital'),
-        required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
+        required=lambda form: form.is_mrn_selected(),
         disabled=_is_not_mrn_or_single_site,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
@@ -109,13 +110,16 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         self.patient: Union[OIEPatientData, Patient, None] = None
 
         # initialize site with a site object when there is a single site and card type is mrn
-        site_field: DynamicField = self.fields['site']
-        cardtype_initial_value = self.initial.get('card_type')
+        site_field: forms.ModelChoiceField = self.fields['site']  # type: ignore[assignment]
+        sites: QuerySet[Site] = site_field.queryset  # type: ignore[assignment]
 
-        if site_field.queryset.count() == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
-            self.fields['site'].initial = site_field.queryset.first()
+        if sites.count() == 1:
+            site_field.widget = forms.HiddenInput()
+
+            if self.is_mrn_selected():
+                site_field.initial = sites.first()
         else:
-            self.fields['site'].initial = None
+            site_field.initial = None
 
         # TODO: potential improvement: make a mixin for all access request forms
         # that initializes the form helper and sets these two properties
@@ -180,6 +184,16 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.patient = self._fake_oie_response()
 
         return self.cleaned_data
+
+    def is_mrn_selected(self) -> bool:
+        """
+        Return whether MRN is selected as the card type.
+
+        Returns:
+            True, if MRN is selected, False otherwise
+        """
+        card_type: str = self['card_type'].value()
+        return card_type == constants.MedicalCard.mrn.name
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
