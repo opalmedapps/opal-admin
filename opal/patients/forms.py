@@ -10,7 +10,6 @@ from django.urls import reverse
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-import validators as patient_validators
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Column, Div
 from crispy_forms.layout import Field as CrispyField
@@ -26,6 +25,7 @@ from opal.users.models import Caregiver, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 
 class DisableFieldsMixin(forms.Form):
@@ -269,8 +269,8 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         if not self.patient:  # noqa: WPS504
             self.add_error(NON_FIELD_ERRORS, _('There is no patient to confirm'))
         else:
-            deceased = patient_validators.is_deceased(self.patient)
-            multiple_mrns = patient_validators.has_multiple_mrns_with_same_site_code(
+            deceased = is_deceased(self.patient)
+            multiple_mrns = has_multiple_mrns_with_same_site_code(
                 self.patient,
             ) if isinstance(
                 self.patient,

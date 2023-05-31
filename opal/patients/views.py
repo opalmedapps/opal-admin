@@ -23,7 +23,6 @@ from django.views import generic
 from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 import qrcode
-import validators
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
@@ -41,6 +40,7 @@ from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .utils import create_access_request
+from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 _StorageValue = str | dict[str, Any]
 
@@ -899,12 +899,12 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         Returns:
             the template context for step 'confirm'
         """
-        if validators.is_searched_patient_deceased(patient_record):
+        if is_deceased(patient_record):
             context.update({
                 'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
-        elif validators.has_multiple_mrns_with_same_site_code(patient_record):
+        elif has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
             })
