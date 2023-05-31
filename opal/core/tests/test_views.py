@@ -23,7 +23,7 @@ def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) ->
     # follow any redirect to retrieve content
     response = user_client.get(reverse('start'), follow=True)
 
-    assertContains(response, text='href="{url}/#!/Home"'.format(url=url))
+    assertContains(response, text='href="{url}/#!/home"'.format(url=url))
 
 
 def test_logout_url_shown(user_client: Client) -> None:
