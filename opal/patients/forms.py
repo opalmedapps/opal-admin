@@ -174,7 +174,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         if card_type and medical_number:
             self._search_patient(medical_number, card_type, site)
-            print(type(site))
         return self.cleaned_data
 
     def _search_patient(self, medical_number: Optional[str], card_type: Optional[str], site: Optional[Site]) -> None:
@@ -199,7 +198,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             ).first()
 
             if not self.patient:
-                self.patient = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
+                response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
 
         self._handle_response(response)
 
