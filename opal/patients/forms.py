@@ -132,7 +132,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
         )
-        self.oie_service = OIEService()
 
     def clean_medical_number(self) -> str:
         """
@@ -165,6 +164,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             the cleaned data
         """
         super().clean()
+        # initialize the OIEService to communicate with oie
+        self.oie_service = OIEService()
 
         card_type = self.cleaned_data.get('card_type')
         medical_number = self.cleaned_data.get('medical_number')

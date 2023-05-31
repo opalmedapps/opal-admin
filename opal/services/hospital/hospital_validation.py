@@ -1,6 +1,5 @@
 """Module providing validation rules for the data being sent/received to/from the OIE."""
 import datetime
-import logging
 import re
 from typing import Any
 
@@ -11,9 +10,7 @@ from opal.utils.base64 import Base64Util
 
 from .hospital_data import OIEReportExportData
 
-logger = logging.getLogger(__name__)
-
-# TODO: translate error messages add _(message)
+# TODO: translate error messages add _(message) that will be shown to the user.
 
 
 class OIEValidator:
@@ -116,14 +113,6 @@ class OIEValidator:
             errors += self.check_patient_data(patient_data)
         elif status == 'error':
             errors.append('Could not establish a connection to the hospital interface.')
-
-            # log OIE errors to only show meaningful messages to end user.
-            logger.error(
-                'OIE error: {oie_message}'.format(
-                    oie_message=str(response_data['data']['message']),
-                ),
-            )
-
         return errors
 
     def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231
