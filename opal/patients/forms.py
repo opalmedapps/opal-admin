@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+import validators as patient_validators
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Column, Div
 from crispy_forms.layout import Field as CrispyField
@@ -20,7 +21,7 @@ from opal.core import validators
 from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
 
 from . import constants, utils
@@ -154,7 +155,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         return medical_number
 
-    def clean(self) -> dict[str, Any]:  # noqa: WPS231
+    def clean(self) -> dict[str, Any]:
         """
         Clean the form.
 
@@ -165,40 +166,44 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         """
         super().clean()
         # initialize the OIEService to communicate with oie
-        self.oie_service = OIEService()
+        self.oie_service: OIEService = OIEService()
 
-        card_type = self.cleaned_data.get('card_type')
-        medical_number = self.cleaned_data.get('medical_number')
-        site = self.cleaned_data.get('site')
-        response: dict = {}
+        card_type: Optional[str] = self.cleaned_data.get('card_type')
+        medical_number: Optional[str] = self.cleaned_data.get('medical_number')
+        site: Optional[Site] = self.cleaned_data.get('site')
 
         if card_type and medical_number:
-            # RAMQ
-            if card_type == constants.MedicalCard.ramq.name:
-                self.patient = Patient.objects.filter(ramq=medical_number).first()
-                if not self.patient:
-                    response = self.oie_service.find_patient_by_ramq(medical_number)
-                    # TODO: comment the line above and uncomment the line below to test locally
-                    # self.patient = self._fake_oie_response()  # noqa: E800
-
-            # MRN
-            elif card_type == constants.MedicalCard.mrn.name and site:
-                patient_queryset = Patient.objects.filter(
-                    hospital_patients__mrn=medical_number,
-                    hospital_patients__site__code=site.code,
-                )
-                self.patient = patient_queryset.first()
-                if not self.patient:
-                    response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
-                    # TODO: comment the line above and uncomment the line below to test locally
-                    # self.patient = self._fake_oie_response()  # noqa: E800
-                    # TODO: if multiple mrns is for the site that is being searched it should be done here
-                    # TODO: Not in `AccessRequestConfirmPatientForm`. Currently, it is done for all sites
-
-        self._handle_response(response)
+            self._search_patient(medical_number, card_type, site)
+            print(type(site))
         return self.cleaned_data
 
-    def _handle_response(self, response: Any) -> None:
+    def _search_patient(self, medical_number: Optional[str], card_type: Optional[str], site: Optional[Site]) -> None:
+        """
+        Perform patient search in `Patient` model then in OIE.
+
+        Args:
+            card_type: card type either ramq or mrn
+            medical_number: medical number of the proper card type in string form
+            site: `Site` object
+        """
+        response: dict[str, Any] = {}
+        if card_type == constants.MedicalCard.ramq.name:
+            self.patient = Patient.objects.filter(ramq=medical_number).first()
+            if not self.patient:
+                response = self.oie_service.find_patient_by_ramq(str(medical_number))
+        # MRN
+        elif card_type == constants.MedicalCard.mrn.name and site:
+            self.patient = Patient.objects.filter(
+                hospital_patients__mrn=medical_number,
+                hospital_patients__site__code=site.code,
+            ).first()
+
+            if not self.patient:
+                self.patient = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
+
+        self._handle_response(response)
+
+    def _handle_response(self, response: dict[str, Any]) -> None:
         """Handle the response from OIE service.
 
         Args:
@@ -210,23 +215,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
             self.patient = response['data']
-
-    def _fake_oie_response(self) -> OIEPatientData:
-        return OIEPatientData(
-            date_of_birth=date.fromisoformat('2018-01-01'),
-            first_name='Lisa',
-            last_name='Simpson',
-            sex='F',
-            alias='',
-            ramq='SIML86531906',
-            ramq_expiration=None,
-            deceased=False,
-            death_date_time=None,
-            mrns=[
-                OIEMRNData(site='MGH', mrn='9999993', active=True),
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
-            ],
-        )
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -277,60 +265,31 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         """
         super().clean()
         cleaned_data = self.cleaned_data
-        errors = {
-            'deceased': False,
-            'multiple_mrns': False,
-        }
-        if not self.patient:
-            self.add_error(NON_FIELD_ERRORS, 'There is no patient to confirm')
 
-        # check if it is coming from OIE or from django model `Patient`
-        if isinstance(self.patient, Patient):
-            if self.patient.date_of_death:
-                errors['deceased'] = True
-
+        if not self.patient:  # noqa: WPS504
+            self.add_error(NON_FIELD_ERRORS, _('There is no patient to confirm'))
         else:
-            data_dict: dict[Any, Any] = cast(dict, self.patient)
-            if data_dict.get('deceased') is True:
-                errors['deceased'] = True
-            if self._has_multiple_mrn():
-                errors['multiple_mrns'] = True
+            deceased = patient_validators.is_deceased(self.patient)
+            multiple_mrns = patient_validators.has_multiple_mrns_with_same_site_code(
+                self.patient,
+            ) if isinstance(
+                self.patient,
+                OIEPatientData,
+            ) else False
 
-        if errors.get('deceased') is True:
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('Unable to complete action with this patient. Please contact Medical Records.'),
-            )
+            if deceased:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('Unable to complete action with this patient. Please contact Medical Records.'),
+                )
 
-        if errors.get('multiple_mrns') is True:
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('Patient has more than one active MRN, please visit medical records'),
-            )
+            if multiple_mrns:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
+                )
 
         return cleaned_data
-
-    def _has_multiple_mrn(self) -> bool:
-        """
-        Check if patient has more than one active mrns in the same site.
-
-        Returns:
-            True if there is multiple active mrns in the same site, False otherwise
-        """
-        data_dict: dict[Any, Any] = cast(dict, self.patient)
-        mrns_list: list[dict] = cast(list[dict], data_dict.get('mrns'))
-        all_mrns_dict: dict = {}
-        # loop over dicts and break and return true whenever a site is repeated for different mrn
-        dict_mrn: dict
-        for dict_mrn in mrns_list:
-            # create a string that contains site-active to check if there are two active mrns in the same site
-            site_active_str = f'{dict_mrn.get("site")}{dict_mrn.get("active")}'
-            if all_mrns_dict.get(site_active_str):
-                return True
-            else:
-                all_mrns_dict[site_active_str] = True
-
-        return False
 
 
 class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
