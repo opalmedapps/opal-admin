@@ -215,6 +215,35 @@ class TestApiEmailVerification:
             ),
         ]
 
+    def test_registered_confirmation_email_sent(  # noqa: WPS218
+        self,
+        api_client: APIClient,
+        admin_user: AbstractUser,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test that the registered confirmation email is sent when verifying an email address."""
+        api_client.force_login(user=admin_user)
+        print(admin_user.email)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
+        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
+        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
+        email = admin_user.email
+
+        api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email},
+            format='json',
+        )
+
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
+        assert mail.outbox[0].to == [email]
+        assert 'Dear' in mail.outbox[0].body
+        assert mail.outbox[0].subject == 'Registered Confirmation'
+
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""
         api_client.force_login(user=admin_user)

@@ -145,6 +145,15 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
+        #  Check email is registered or not
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            pass  # noqa: WPS420
+        else:
+            self._send_registered_email(email, user)
+            return Response()
+
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
         caregiver = registration_code.relationship.caregiver
         try:
@@ -158,7 +167,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_email(email_verification, caregiver.user)
+            self._send_verification_code_email(email_verification, caregiver.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -171,7 +180,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_email(email_verification, caregiver.user)
+                self._send_verification_code_email(email_verification, caregiver.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
@@ -179,7 +188,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         return Response()
 
-    def _send_email(  # noqa: WPS210
+    def _send_verification_code_email(  # noqa: WPS210
         self,
         email_verification: EmailVerification,
         user: User,
@@ -212,6 +221,37 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             # TODO: change to a proper from email
             settings.EMAIL_HOST_USER,
             [email_verification.email],
+            html_message=email_html,
+        )
+
+    def _send_registered_email(self, email: str, user: User) -> None:
+        """
+        Send registerd confirmation email to the user with an template according to the user language.
+
+        Args:
+            email: input email address
+            user: object User
+        """
+        context = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+
+        email_plain = render_to_string(
+            'email/registered_confirmation.txt',
+            context,
+        )
+        email_html = render_to_string(
+            'email/registered_confirmation.html',
+            context,
+        )
+
+        send_mail(
+            _('Registered Confirmation'),
+            email_plain,
+            # TODO: change to a proper from email
+            settings.EMAIL_HOST_USER,
+            [email],
             html_message=email_html,
         )
 
