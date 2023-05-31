@@ -1,7 +1,7 @@
 from datetime import date
 from types import MappingProxyType
 
-from django.forms import model_to_dict
+from django.forms import HiddenInput, model_to_dict
 
 import pytest
 from dateutil.relativedelta import relativedelta
@@ -715,13 +715,17 @@ def test_accessrequestsearchform_ramq() -> None:
         'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+    site_field = form.fields['site']
 
     assert form.is_valid()
-    assert form.fields['site'].disabled
+    assert site_field.disabled
+    assert not site_field.required
+    assert not isinstance(form.fields['site'].widget, HiddenInput)
+    assert site_field.empty_label == 'Not required'  # type: ignore[attr-defined]
 
 
 def test_accessrequestsearchform_single_site_mrn() -> None:
-    """Ensure that site field is disabled when there is only one site."""
+    """Ensure that site field is disabled and hidden when there is only one site."""
     site = factories.Site()
     patient = factories.Patient()
     hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
@@ -730,14 +734,17 @@ def test_accessrequestsearchform_single_site_mrn() -> None:
         'medical_number': hospital_patient.mrn,
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
-    form.fields['site'].initial = site
+    site_field = form.fields['site']
 
     assert form.is_valid()
-    assert form.fields['site'].disabled
+    assert form['site'].value() == site.pk
+    assert site_field.disabled
+    assert site_field.required
+    assert isinstance(site_field.widget, HiddenInput)
 
 
 def test_accessrequestsearchform_more_than_site() -> None:
-    """Ensure that site field is not disabled when there is more than one site."""
+    """Ensure that site field is not disabled and not hidden when there is more than one site."""
     site = factories.Site()
     factories.Site()
     patient = factories.Patient()
@@ -750,9 +757,12 @@ def test_accessrequestsearchform_more_than_site() -> None:
     }
 
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+    site_field = form.fields['site']
 
     assert form.is_valid()
-    assert not form.fields['site'].disabled
+    assert not site_field.disabled
+    assert site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
 
 
 def test_accessrequestsearchform_ramq_validation_fail() -> None:

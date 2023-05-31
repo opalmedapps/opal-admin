@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 22:02+0300\n"
+"POT-Creation-Date: 2023-05-31 11:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr "Utilisateur Opal existant"
 msgid "Card Type"
 msgstr "Type de Carte"
 
-#: opal/patients/filters.py
+#: opal/patients/filters.py opal/patients/forms.py
 msgid "Choose..."
 msgstr "Choisir..."
 
@@ -88,6 +88,10 @@ msgid ""
 msgstr ""
 "Le patient a plus d'un MRN actif, veuillez consulter département des "
 "archives médicales."
+
+#: opal/patients/forms.py
+msgid "Not required"
+msgstr "Non requis"
 
 #: opal/patients/forms.py
 msgid "Relationship to the patient"
