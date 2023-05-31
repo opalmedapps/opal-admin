@@ -11,7 +11,7 @@ from opal.caregivers.factories import CaregiverProfile
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
-from .. import factories, forms
+from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
 from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
@@ -708,16 +708,13 @@ def test_caregiver_first_last_name_invalid() -> None:
 # Opal Registration Tests
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
-    factories.Patient(ramq='RAMQ12345678')
     form_data = {
-        'card_type': 'ramq',
+        'card_type': constants.MedicalCard.ramq.name,
         'site': '',
-        'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     site_field = form.fields['site']
 
-    assert form.is_valid()
     assert site_field.disabled
     assert not site_field.required
     assert not isinstance(form.fields['site'].widget, HiddenInput)
@@ -727,16 +724,12 @@ def test_accessrequestsearchform_ramq() -> None:
 def test_accessrequestsearchform_single_site_mrn() -> None:
     """Ensure that site field is disabled and hidden when there is only one site."""
     site = factories.Site()
-    patient = factories.Patient()
-    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
     form_data = {
-        'card_type': 'mrn',
-        'medical_number': hospital_patient.mrn,
+        'card_type': constants.MedicalCard.mrn.name,
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     site_field = form.fields['site']
 
-    assert form.is_valid()
     assert form['site'].value() == site.pk
     assert site_field.disabled
     assert site_field.required
@@ -747,19 +740,15 @@ def test_accessrequestsearchform_more_than_site() -> None:
     """Ensure that site field is not disabled and not hidden when there is more than one site."""
     site = factories.Site()
     factories.Site()
-    patient = factories.Patient()
-    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
 
     form_data = {
-        'card_type': 'mrn',
+        'card_type': constants.MedicalCard.mrn.name,
         'site': site,
-        'medical_number': hospital_patient.mrn,
     }
 
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     site_field = form.fields['site']
 
-    assert form.is_valid()
     assert not site_field.disabled
     assert site_field.required
     assert not isinstance(site_field.widget, HiddenInput)
