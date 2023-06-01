@@ -18,7 +18,7 @@ def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
         True if patient is deceased, False otherwise
     """
     if isinstance(patient, Patient):
-        return bool(patient.date_of_birth)
+        return bool(patient.date_of_death)
 
     return bool(patient.deceased)
 

@@ -41,18 +41,32 @@ OIE_PATIENT_DATA = OIEPatientData(
 )
 
 
+def test_patient_validator_not_deceased_oie_patient() -> None:
+    """Ensure `is_deceased` returns False when patients are not deceased for OIE patients."""
+    oie_patient = OIE_PATIENT_DATA
+
+    assert is_deceased(oie_patient) is False
+
+
 def test_patient_validator_is_deceased_oie_patient() -> None:
     """Ensure deceased patients are caught in the validator for oie patients."""
     oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
 
-    assert is_deceased(oie_patient)
+    assert is_deceased(oie_patient) is True
 
 
 def test_patient_validator_is_deceased_patient_model() -> None:
     """Ensure deceased patients are caught in the validator for patients of `Patient` model."""
     patient = factories.Patient(date_of_death=timezone.now())
 
-    assert is_deceased(patient)
+    assert is_deceased(patient) is True
+
+
+def test_patient_validator_not_deceased_patient_model() -> None:
+    """Ensure `is_deceased` returns False when patients are not deceased in `Patient` model."""
+    patient = factories.Patient()
+
+    assert is_deceased(patient) is False
 
 
 def test_patient_validator_has_multiple_mrns_for_one_site() -> None:
@@ -72,4 +86,11 @@ def test_patient_validator_has_multiple_mrns_for_one_site() -> None:
         ],
     )
 
-    assert has_multiple_mrns_with_same_site_code(oie_patient)
+    assert has_multiple_mrns_with_same_site_code(oie_patient) is True
+
+
+def test_patient_validator_not_multiple_mrns_for_one_site() -> None:
+    """Ensure `has_multiple_for_one_site` returns False when case is not met for oie patients."""
+    oie_patient = OIE_PATIENT_DATA
+
+    assert has_multiple_mrns_with_same_site_code(oie_patient) is False
