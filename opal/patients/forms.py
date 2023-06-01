@@ -26,6 +26,7 @@ from opal.users.models import Caregiver, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 
 class DisableFieldsMixin(forms.Form):
@@ -63,7 +64,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
     """Access request form that allows a user to search for a patient."""
 
     card_type = forms.ChoiceField(
@@ -139,9 +140,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type == constants.MedicalCard.ramq.name:
             validators.validate_ramq(medical_number)
 
-        if card_type == constants.MedicalCard.mrn.name:
-            # TODO: add MRN validation
-            pass  # noqa: WPS420
+        # TODO: if card_type == constants.MedicalCard.mrn.name: to add MRN validation - no valdiation for now
 
         return medical_number
 
@@ -155,19 +154,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             the cleaned data
         """
         super().clean()
+        # initialize the OIEService to communicate with oie
+        self.oie_service: OIEService = OIEService()
 
-        card_type = self.cleaned_data.get('card_type')
-        medical_number = self.cleaned_data.get('medical_number')
+        card_type: Optional[str] = self.cleaned_data.get('card_type')
+        medical_number: Optional[str] = self.cleaned_data.get('medical_number')
+        site: Optional[Site] = self.cleaned_data.get('site')
 
         if card_type and medical_number:
-            # TODO: look in the Patient model first, only if not found search via OIE
-            # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
-            if card_type == constants.MedicalCard.ramq.name:
-                self.patient = Patient.objects.filter(ramq=medical_number).first()
-            else:
-                # TODO: handle connection errors here, i.e., raise helpful validation error
-                self.patient = self._fake_oie_response()
-
+            self._search_patient(medical_number, card_type, site)
         return self.cleaned_data
 
     def is_mrn_selected(self) -> bool:
@@ -190,6 +185,45 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         site_count = Site.objects.all().count()
 
         return not self.is_mrn_selected() or site_count == 1
+
+    def _search_patient(self, medical_number: Optional[str], card_type: Optional[str], site: Optional[Site]) -> None:
+        """
+        Perform patient search in `Patient` model then in OIE.
+
+        Args:
+            card_type: card type either ramq or mrn
+            medical_number: medical number of the proper card type in string form
+            site: `Site` object
+        """
+        response: dict[str, Any] = {}
+        if card_type == constants.MedicalCard.ramq.name:
+            self.patient = Patient.objects.filter(ramq=medical_number).first()
+            if not self.patient:
+                response = self.oie_service.find_patient_by_ramq(str(medical_number))
+        # MRN
+        elif card_type == constants.MedicalCard.mrn.name and site:
+            self.patient = Patient.objects.filter(
+                hospital_patients__mrn=medical_number,
+                hospital_patients__site__code=site.code,
+            ).first()
+
+            if not self.patient:
+                response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))
+
+        self._handle_response(response)
+
+    def _handle_response(self, response: dict[str, Any]) -> None:
+        """Handle the response from OIE service.
+
+        Args:
+            response: OIE service response
+        """
+        # add error message to the template
+        if response and response['status'] == 'error':
+            self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+        # save patient data to the JSONfield
+        elif response and response['status'] == 'success':
+            self.patient = response['data']
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
@@ -244,7 +278,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
 
         self.patient = patient
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]:  # noqa: C901
         """
         Clean the form.
 
@@ -258,14 +292,28 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         super().clean()
         cleaned_data = self.cleaned_data
 
-        if not self.patient:
-            self.add_error(None, 'There is no patient to confirm')
+        if not self.patient:  # noqa: WPS504
+            self.add_error(NON_FIELD_ERRORS, _('There is no patient to confirm'))
+        else:
+            deceased = is_deceased(self.patient)
+            multiple_mrns = has_multiple_mrns_with_same_site_code(
+                self.patient,
+            ) if isinstance(
+                self.patient,
+                OIEPatientData,
+            ) else False
 
-        # TODO: validate that the patient is not deceased
-        # TODO: validate the patient record (if coming from the OIE)
-        #  - multiple MRNs at same site
-        #  - ...
-        # self.add_error(NON_FIELD_ERRORS, 'test')  # noqa: E800
+            if deceased:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('Unable to complete action with this patient. Please contact Medical Records.'),
+                )
+
+            if multiple_mrns:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
+                )
 
         return cleaned_data
 

@@ -27,6 +27,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
+from ..validators import has_multiple_mrns_with_same_site_code
 from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
@@ -1029,7 +1030,7 @@ def test_some_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
+    assert has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_all_mrns_have_same_site_code() -> None:
@@ -1053,7 +1054,7 @@ def test_all_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
+    assert has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_no_mrns_have_same_site_code() -> None:
@@ -1077,7 +1078,7 @@ def test_no_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is False
+    assert has_multiple_mrns_with_same_site_code(patient_data) is False
 
 
 def test_error_message_mrn_with_same_site_code() -> None:
