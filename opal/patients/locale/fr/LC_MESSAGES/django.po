@@ -75,6 +75,25 @@ msgid "Not required"
 msgstr "Non requis"
 
 #: opal/patients/forms.py
+msgid "There is no patient to confirm"
+msgstr ""
+
+#: opal/patients/forms.py opal/patients/views.py
+msgid ""
+"Unable to complete action with this patient. Please contact Medical Records."
+msgstr ""
+"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
+"département des archives médicales."
+
+#: opal/patients/forms.py
+msgid ""
+"Patient has more than one active MRN at the same hospital, please contact "
+"Medical Records."
+msgstr ""
+"Le patient a plus d'un MRN actif, veuillez consulter département des "
+"archives médicales."
+
+#: opal/patients/forms.py
 msgid "Relationship to the patient"
 msgstr ""
 
@@ -676,13 +695,6 @@ msgstr "Patient de l'hôpital"
 #: opal/patients/views.py
 msgid "Confirm access to patient data"
 msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid ""
-"Unable to complete action with this patient. Please contact Medical Records."
-msgstr ""
-"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
-"département des archives médicales."
 
 #: opal/patients/views.py
 msgid "Please note multiple MRNs need to be merged by medical records."

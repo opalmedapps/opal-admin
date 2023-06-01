@@ -10,6 +10,8 @@ from opal.utils.base64 import Base64Util
 
 from .hospital_data import OIEReportExportData
 
+# TODO: translate error messages add _(message) that will be shown to the user.
+
 
 class OIEValidator:
     """OIE helper service that validates OIE request and response data."""
@@ -111,8 +113,6 @@ class OIEValidator:
             errors += self.check_patient_data(patient_data)
         elif status == 'error':
             errors.append('Could not establish a connection to the hospital interface.')
-            errors.append(response_data['data']['message'])
-
         return errors
 
     def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231

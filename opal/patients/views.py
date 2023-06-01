@@ -2,7 +2,7 @@
 import base64
 import io
 import json
-from collections import Counter, OrderedDict
+from collections import OrderedDict
 from datetime import date
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple, Type
@@ -40,6 +40,7 @@ from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .utils import create_access_request
+from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 _StorageValue = str | dict[str, Any]
 
@@ -175,7 +176,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 else:
                     return self._done(current_forms)
             else:
-                print("some forms are invalid (or the next button wasn't clicked)")
                 for form in current_forms:
                     print(form.errors)
 
@@ -364,10 +364,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
             # TODO: patient could also be an actual Patient instance, need to add support
-            # convert it to a dictionary to be able to serialize it into JSON
             if isinstance(patient, Patient):
                 storage['patient'] = patient.pk  # type: ignore[assignment]
             else:
+                # convert it to a dictionary to be able to serialize it into JSON
                 data_dict = patient._asdict()  # noqa: WPS437
                 data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
                 # use DjangoJSONEncoder which supports date/datetime
@@ -872,20 +872,6 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
                 processed_form_date[key] = value
         return processed_form_date
 
-    def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
-        """
-        Check if the number of MRN records with the same site code is greater than 1.
-
-        Args:
-            patient_record: patient record search by RAMQ or MRN
-
-        Returns:
-            True if the number of MRN records with the same site code is greater than 1
-        """
-        mrns = patient_record.mrns
-        key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
-        return any(count > 1 for (site, count) in key_counts.items())
-
     def _is_searched_patient_deceased(self, patient_record: OIEPatientData) -> bool:
         """
         Check if the searched patient is deceased.
@@ -913,12 +899,12 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         Returns:
             the template context for step 'confirm'
         """
-        if self._is_searched_patient_deceased(patient_record):
+        if is_deceased(patient_record):
             context.update({
                 'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
-        elif self._has_multiple_mrns_with_same_site_code(patient_record):
+        elif has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
             })
