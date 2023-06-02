@@ -712,11 +712,9 @@ def test_caregiver_first_last_name_invalid() -> None:
 # Opal Registration Tests
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
-    factories.Patient(ramq='RAMQ12345678')
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
         'site': '',
-        'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     site_field = form.fields['site']
@@ -732,7 +730,6 @@ def test_accessrequestsearchform_single_site_mrn() -> None:
     site = factories.Site()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
-        'medical_number': '9666666',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
     site_field = form.fields['site']
@@ -751,7 +748,6 @@ def test_accessrequestsearchform_more_than_site() -> None:
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'site': site.pk,
-        'medical_number': '9666666',
     }
 
     form = forms.AccessRequestSearchPatientForm(data=form_data)
