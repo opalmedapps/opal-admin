@@ -1,5 +1,4 @@
-from datetime import date
-from types import MappingProxyType
+from datetime import date, datetime
 from typing import Optional
 
 from django.forms import HiddenInput, model_to_dict
@@ -10,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.factories import CaregiverProfile
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
@@ -20,22 +20,20 @@ from ..tables import ExistingUserTable
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = MappingProxyType({
-    'dateOfBirth': '1953-01-01 00:00:00',
-    'firstName': 'SANDRA',
-    'lastName': 'TESTMUSEMGHPROD',
-    'sex': 'F',
-    'alias': '',
-    'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
-    'mrns': [
-        {
-            'site': 'MGH',
-            'mrn': '9999993',
-            'active': True,
-        },
+OIE_PATIENT_DATA = OIEPatientData(
+    date_of_birth=date(1986, 10, 1),
+    first_name='Marge',
+    last_name='Simpson',
+    sex='F',
+    alias='',
+    ramq='SIMM86600199',
+    deceased=False,
+    death_date_time=None,
+    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    mrns=[
+        OIEMRNData(site='MGH', mrn='9999993', active=True),
     ],
-})
+)
 
 
 def test_relationshippending_form_is_valid() -> None:
@@ -263,7 +261,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': OIE_PATIENT_DATA._asdict(),
         },
     )
 
@@ -325,7 +323,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': OIE_PATIENT_DATA._asdict(),
         },
     )
 
@@ -931,7 +929,7 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
 
 def test_accessrequestrequestorform_form_filled_default() -> None:
     """Ensure the form_filled dynamic field can handle an empty value to initialize."""
-    form = forms.AccessRequestRequestorForm(date_of_birth=date(2013, 1, 1))
+    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
 
     assert form._form_required()
     assert form.fields['form_filled'].required
@@ -943,7 +941,7 @@ def test_accessrequestrequestorform_form_filled_required_type(role_type: RoleTyp
     relationship_type = RelationshipType.objects.get(role_type=role_type)
 
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={
             'relationship_type': relationship_type.pk,
         },
@@ -966,8 +964,10 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
         ).values_list('name', flat=True),
     )
 
+    patient = OIE_PATIENT_DATA._asdict()
+    patient['date_of_birth'] = date.today() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date.today() - relativedelta(years=age),
+        patient=OIEPatientData(**patient),
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
@@ -979,6 +979,35 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
 
     assert len(actual_enabled) == len(relationship_types)
     assert actual_enabled == relationship_types
+
+
+def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
+    """Ensure that the self option is disabled when the patient already has a self relationship."""
+    patient = factories.Patient()
+    factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
+
+    form = forms.AccessRequestRequestorForm(
+        patient=patient,
+    )
+
+    options = form.fields['relationship_type'].widget.options('relationship-type', '')
+    disabled_options = [
+        option['label']
+        for option in options
+        if option['attrs'].get('disabled', '') == 'disabled'
+    ]
+
+    disabled_types = list(
+        RelationshipType.objects.filter(
+            role_type__in=[
+                RoleType.SELF,
+                RoleType.GUARDIAN_CAREGIVER,
+                RoleType.PARENT_GUARDIAN,
+            ],
+        ).values_list('name', flat=True),
+    )
+
+    assert disabled_options == disabled_types
 
 
 @pytest.mark.parametrize('user_type', [
@@ -993,7 +1022,7 @@ def test_accessrequestrequestorform_existing_user_selected(user_type: Optional[s
     if user_type:
         data = {'user_type': user_type}
 
-    form = forms.AccessRequestRequestorForm(date_of_birth=date(2013, 1, 1), data=data)
+    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
     expected_type = user_type or constants.UserType.NEW.name
     existing_user_selected = user_type == constants.UserType.EXISTING.name
@@ -1004,7 +1033,7 @@ def test_accessrequestrequestorform_existing_user_selected(user_type: Optional[s
 def test_accessrequestrequestorform_existing_user_selected_cleaned_data() -> None:
     """Ensure the existing user is not selected by default."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
     form.full_clean()
@@ -1015,7 +1044,7 @@ def test_accessrequestrequestorform_existing_user_selected_cleaned_data() -> Non
 def test_accessrequestrequestorform_new_user_required_fields() -> None:
     """Ensure the new user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
     )
 
     assert form.fields['first_name'].required
@@ -1027,7 +1056,7 @@ def test_accessrequestrequestorform_new_user_required_fields() -> None:
 def test_accessrequestrequestorform_new_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
     )
 
     html = render_crispy_form(form)
@@ -1040,7 +1069,7 @@ def test_accessrequestrequestorform_new_user_layout() -> None:
 def test_accessrequestrequestorform_existing_user_required_fields() -> None:
     """Ensure the existing user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
@@ -1053,7 +1082,7 @@ def test_accessrequestrequestorform_existing_user_required_fields() -> None:
 def test_accessrequestrequestorform_existing_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
