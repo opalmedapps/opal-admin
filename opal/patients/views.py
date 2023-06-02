@@ -240,11 +240,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
-            user_type = relationship_form.cleaned_data['user_type']
-            # might be helpful to use an enum like done with MedicalCard
-            is_existing_user = user_type == '1'
 
-            if is_existing_user:
+            if relationship_form.existing_user_selected(relationship_form.cleaned_data):
                 context_data['next_button_text'] = 'Submit Access Request'
 
         # TODO: might not be needed anymore
