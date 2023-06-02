@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 11:46-0400\n"
+"POT-Creation-Date: 2023-05-31 15:41-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -118,10 +118,6 @@ msgstr "Adresse courriel"
 #: opal/patients/forms.py
 msgid "Phone Number"
 msgstr "Numéro de téléphone"
-
-#: opal/patients/forms.py
-msgid "A request form is required for the selected relationship."
-msgstr ""
 
 #: opal/patients/forms.py
 msgid ""
