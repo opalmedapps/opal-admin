@@ -18,9 +18,9 @@ def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
         True if patient is deceased, False otherwise
     """
     if isinstance(patient, Patient):
-        return bool(patient.date_of_birth)
+        return patient.date_of_death is not None
 
-    return bool(patient.deceased)
+    return patient.deceased
 
 
 def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> bool:
@@ -33,7 +33,6 @@ def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> boo
     Returns:
         True if the number of MRN records with the same site code is greater than 1
     """
-    # TODO: the same function is used in patients/views.py, refactor to reuse.
     if isinstance(patient_record, Patient):
         return False
 

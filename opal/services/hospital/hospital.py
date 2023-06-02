@@ -67,7 +67,7 @@ class OIEService:
             },
         )
 
-    def find_patient_by_mrn(self, mrn: str, site: str) -> Any:  # noqa: WPS210
+    def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:  # noqa: WPS210
         """Search patient info by MRN code.
 
         Args:
@@ -140,7 +140,7 @@ class OIEService:
             },
         )
 
-    def find_patient_by_ramq(self, ramq: str) -> Any:  # noqa: WPS210
+    def find_patient_by_ramq(self, ramq: str) -> dict[str, Any]:  # noqa: WPS210
         """Search patient info by RAMQ code.
 
         Args:
