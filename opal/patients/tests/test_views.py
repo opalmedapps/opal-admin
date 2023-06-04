@@ -221,7 +221,7 @@ def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict, dict, dict]:
             'access_request_view-current_step': 'site',
         },
         {
-            'search-medical_card': 'ramq',
+            'search-medical_card': constants.MedicalCard.RAMQ.name,
             'search-medical_number': 'RAMQ99996666',
             'access_request_view-current_step': 'search',
         },
@@ -418,7 +418,7 @@ def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
     factories.CaregiverProfile(user_id=user.id)
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
+        ('search', {'medical_card': constants.MedicalCard.RAMQ.name, 'medical_number': 'MARG99991313'}),
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': '1'}),
@@ -651,7 +651,7 @@ def test_new_user_form_by_user_choice(
     relationship = factories.RelationshipType()
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
+        ('search', {'medical_card': constants.MedicalCard.RAMQ.name, 'medical_number': 'MARG99991313'}),
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 0}),
@@ -690,7 +690,7 @@ def test_existing_user_form_by_user_choice(
     relationship = factories.RelationshipType()
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
+        ('search', {'medical_card': constants.MedicalCard.RAMQ.name, 'medical_number': 'MARG99991313'}),
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 1}),
@@ -732,7 +732,7 @@ def test_new_user_case_in_password_step(
 
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
+        ('search', {'medical_card': constants.MedicalCard.RAMQ.name, 'medical_number': 'MARG99991313'}),
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 0}),
@@ -968,7 +968,7 @@ def test_process_form_data(registration_user: Client) -> None:
 
     form_data = [
         {
-            'medical_card': 'mrn',
+            'medical_card': constants.MedicalCard.MRN.name,
             'medical_number': '4356789',
             'site_code': 'MGH',
         },
@@ -983,7 +983,7 @@ def test_process_form_data(registration_user: Client) -> None:
     ]
 
     processed_form_data = {
-        'medical_card': 'mrn',
+        'medical_card': constants.MedicalCard.MRN.name,
         'medical_number': '4356789',
         'site_code': 'MGH',
         'user_email': 'marge.simpson@gmail.com',
@@ -1006,78 +1006,6 @@ def test_qr_code_class_type(registration_user: Client) -> None:
 
     assert response.status_code == HTTPStatus.OK
     assert isinstance(instance._generate_qr_code('Wcyxh2Ucwu'), io.BytesIO)
-
-
-def test_some_mrns_have_same_site_code() -> None:
-    """Test some MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
-
-
-def test_all_mrns_have_same_site_code() -> None:
-    """Test all MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
-
-
-def test_no_mrns_have_same_site_code() -> None:
-    """Test No MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is False
 
 
 def test_error_message_mrn_with_same_site_code() -> None:
@@ -1727,7 +1655,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     )
 
     form_data = {
-        'card_type': 'mrn',
+        'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
         'medical_number': hospital_patient.mrn,
     }
@@ -1787,7 +1715,7 @@ def test_not_display_duplicated_patients(relationship_user: Client, django_user_
     )
 
     form_data = {
-        'card_type': 'mrn',
+        'card_type': constants.MedicalCard.MRN.name,
         'site': site2.id,
         'medical_number': hospital_patient1.mrn,
     }
@@ -1852,7 +1780,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     )
 
     form_data = {
-        'card_type': 'ramq',
+        'card_type': constants.MedicalCard.RAMQ.name,
         'site': '',
         'medical_number': hospital_patient.patient.ramq,
     }
@@ -1904,7 +1832,7 @@ def test_access_request_initial_search(registration_user: Client) -> None:
 
     form_data = {
         'current_step': 'search',
-        'search-card_type': 'mrn',
+        'search-card_type': constants.MedicalCard.MRN.name,
         'search-medical_number': '',
     }
 

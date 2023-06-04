@@ -1,6 +1,7 @@
 """Module providing business logic for the hospital's internal communication (e.g., Opal Integration Engine)."""
 
 import json
+import logging
 from typing import Any, Optional
 
 from django.conf import settings
@@ -9,6 +10,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from .hospital_error import OIEErrorHandler
+
+# add this in any module that need to log
+logger = logging.getLogger(__name__)
 
 
 class OIEHTTPCommunicationManager:
@@ -52,6 +56,13 @@ class OIEHTTPCommunicationManager:
                 timeout=5,
             ).json()
         except requests.exceptions.RequestException as req_exp:
+
+            # log OIE errors
+            logger.error(
+                'OIE error: {oie_message}'.format(
+                    oie_message=str(req_exp),
+                ),
+            )
             return self.error_handler.generate_error({'message': str(req_exp)})
 
     # TODO: make function async

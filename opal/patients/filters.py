@@ -29,7 +29,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
-        initial=constants.MedicalCard.ramq.name,
+        initial=constants.MedicalCard.RAMQ.name,
         required=True,
         empty_label=_('Choose...'),
     )
@@ -113,7 +113,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         card_type = self.form.cleaned_data.pop('card_type')
         medical_number = self.form.cleaned_data.pop('medical_number')
 
-        if card_type == constants.MedicalCard.mrn.name:
+        if card_type == constants.MedicalCard.MRN.name:
             site_obj = self.form.cleaned_data.pop('site')
             queryset = queryset.filter(
                 patient__hospital_patients__site__name=site_obj.name,
