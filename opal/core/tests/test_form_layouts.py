@@ -68,6 +68,16 @@ def test_inlinesubmit_kwargs() -> None:
     assert 'data-extra="test"' in html
 
 
+def test_inlinesubmit_no_name() -> None:
+    """Ensure the InlineSubmit can handle an empty name argument."""
+    form = SampleForm(layouts.InlineSubmit(''))
+
+    html = render_crispy_form(form)
+
+    assert '<input type="submit"' in html
+    assert 'name=""' in html
+
+
 def test_inlinereset_url() -> None:
     """Ensure the InlineReset refers to the correct URL."""
     form = SampleForm(layouts.InlineReset())

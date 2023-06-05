@@ -84,6 +84,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column('site'),
             Column('medical_number'),
             Column(InlineSubmit(
+                name='',
                 label=gettext('Search Specific Patient'),
                 active=self.is_bound,
                 extra_css='btn-secondary',
