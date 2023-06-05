@@ -251,8 +251,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
     def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
         patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
-        # at this point the patient cannot be None
-        patient: Patient | OIEPatientData = patient_form.patient  # type: ignore[assignment]
+        patient = patient_form.patient
 
         relationship_form: forms.AccessRequestRequestorForm = current_forms[2]  # type: ignore[assignment]
         # populate relationship type (in case it is just the ID)
@@ -360,7 +359,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if step == 'search':
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
-            # TODO: patient could also be an actual Patient instance, need to add support
             if isinstance(patient, Patient):
                 storage['patient'] = patient.pk  # type: ignore[assignment]
             else:
