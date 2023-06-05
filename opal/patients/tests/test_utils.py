@@ -314,12 +314,14 @@ def test_create_patient_hospitalpatients() -> None:
     assert not hospital_patient2.is_active
 
 
-@pytest.mark.django_db(transaction=True)
 def test_create_patient_hospitalpatients_error() -> None:
     """A new patient is created even though an error occurs when creating associated hospital patient instances."""
     site = Site()
 
-    with pytest.raises(IntegrityError):
+    # keep the asserts within the context manager
+    # the alternative is enabling transactions
+    # this can cause issues since it flushes the database and loses the default relationship types
+    with pytest.raises(IntegrityError):  # noqa: PT012
         utils.create_patient(
             first_name='Hans',
             last_name='Wurst',
@@ -332,8 +334,8 @@ def test_create_patient_hospitalpatients_error() -> None:
             ],
         )
 
-    assert Patient.objects.count() == 1
-    assert HospitalPatient.objects.count() == 0
+        assert Patient.objects.count() == 1
+        assert HospitalPatient.objects.count() == 0
 
 
 def test_create_caregiver_profile() -> None:

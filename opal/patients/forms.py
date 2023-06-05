@@ -343,11 +343,15 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         forms.CharField,
         label=_('First Name'),
         required=lambda form: not form.existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.first_name if form.is_patient_requestor() else None,
     )
     last_name = DynamicField(
         forms.CharField,
         label=_('Last Name'),
         required=lambda form: not form.existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.last_name if form.is_patient_requestor() else None,
     )
 
     user_email = DynamicField(
@@ -372,6 +376,23 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             args: additional arguments
             kwargs: additional keyword arguments
         """
+        # dynamic fields require the patient to be set
+        self.patient = patient
+
+        initial = kwargs.pop('initial', None)
+
+        # remove empty first and last name if present in initial data
+        # this allows us to provide the first and last name of the patient as initial data in the dynamic form field
+        # this can happen when switching to "Self" and receiving an "up-validate" request
+        # where we pass the existing data as initial to avoid form validation
+        if initial:
+            if 'first_name' in initial and not initial.get('first_name'):
+                initial.pop('first_name')
+            if 'last_name' in initial and not initial.get('last_name'):
+                initial.pop('last_name')
+
+        kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
 
         self.existing_user: Optional[Caregiver] = None
@@ -424,6 +445,23 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         available_choices = relationship_types.values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = list(available_choices)
 
+    def is_patient_requestor(self) -> bool:
+        """
+        Return whether the patient is also the requestor.
+
+        This is the case when a self relationship is selected.
+        In the case of no selection, False is returned.
+
+        Returns:
+            True, if the selected relationship type is Self, False otherwise
+        """
+        relationship_type = self['relationship_type'].value()
+
+        if relationship_type:
+            return RelationshipType.objects.get(pk=relationship_type).role_type == RoleType.SELF
+
+        return False
+
     def existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
         """
         Return whether the existing user option is selected.
@@ -455,7 +493,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         cleaned_data = self.cleaned_data
 
         if self.existing_user_selected(cleaned_data):
+            # TODO: rename to search
             self._validate_existing_user()
+
+            # TODO: check that if self, the patient and caregiver name matches
+            # TODO: ensure that if self, the patient does not already have a self relationship
 
         return cleaned_data
 
