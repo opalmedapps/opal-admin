@@ -947,7 +947,7 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
 
     assert not form.is_valid()
     assert form.patient is None
-    assert form.non_field_errors()[0] == 'The patient could not be found'
+    assert form.non_field_errors()[0] == 'No patient could be found.'
 
 
 def test_accessrequestrequestorform_form_filled_default() -> None:
