@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 17:06-0400\n"
+"POT-Creation-Date: 2023-06-05 11:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,9 +74,9 @@ msgstr "Afficher les demandes en attente"
 msgid "Not required"
 msgstr "Non requis"
 
-#: opal/patients/forms.py
-msgid "There is no patient to confirm"
-msgstr ""
+#: opal/patients/forms.py opal/patients/tables.py
+msgid "No patient could be found."
+msgstr "Aucun patient n'a pu être retrouvé."
 
 #: opal/patients/forms.py opal/patients/views.py
 msgid ""
@@ -509,10 +509,6 @@ msgstr "Aucun type de relation défini."
 #: opal/patients/tables.py
 msgid "MRN"
 msgstr "MRN"
-
-#: opal/patients/tables.py
-msgid "No patient could be found."
-msgstr "Aucun patient n'a pu être retrouvé."
 
 #: opal/patients/tables.py
 msgid "No existing user could be found."
