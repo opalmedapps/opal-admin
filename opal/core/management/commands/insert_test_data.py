@@ -363,14 +363,17 @@ def _create_institution() -> Institution:
     Returns:
         the newly created institution
     """
-    with DIRECTORY_FILES.joinpath('logo.png').open('rb') as logo_file:
-        logo = ContentFile(logo_file.read(), logo_file.name)
+    logo_path = DIRECTORY_FILES.joinpath('logo.png')
+    with logo_path.open('rb') as logo_file:
+        logo = ContentFile(logo_file.read(), logo_path.name)
 
-    with DIRECTORY_FILES.joinpath('terms_of_use_en.pdf').open('rb') as terms_file_en:
-        terms_of_use_en = ContentFile(terms_file_en.read(), terms_file_en.name)
+    terms_path_en = DIRECTORY_FILES.joinpath('terms_of_use_en.pdf')
+    with terms_path_en.open('rb') as terms_file_en:
+        terms_of_use_en = ContentFile(terms_file_en.read(), terms_path_en.name)
 
-    with DIRECTORY_FILES.joinpath('terms_of_use_fr.pdf').open('rb') as terms_file_fr:
-        terms_of_use_fr = ContentFile(terms_file_fr.read(), terms_file_fr.name)
+    terms_path_fr = DIRECTORY_FILES.joinpath('terms_of_use_fr.pdf')
+    with terms_path_fr.open('rb') as terms_file_fr:
+        terms_of_use_fr = ContentFile(terms_file_fr.read(), terms_path_fr.name)
 
     institution = Institution(
         name='McGill University Health Centre',
