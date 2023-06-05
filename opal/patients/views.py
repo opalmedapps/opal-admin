@@ -251,8 +251,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
     def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
         patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
-        # at this point the patient cannot be None
-        patient: Patient | OIEPatientData = patient_form.patient  # type: ignore[assignment]
+        patient = patient_form.patient
 
         relationship_form: forms.AccessRequestRequestorForm = current_forms[2]  # type: ignore[assignment]
         # populate relationship type (in case it is just the ID)
@@ -360,7 +359,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if step == 'search':
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
-            # TODO: patient could also be an actual Patient instance, need to add support
             if isinstance(patient, Patient):
                 storage['patient'] = patient.pk  # type: ignore[assignment]
             else:
@@ -394,7 +392,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
-                date_of_birth = patient.date_of_birth
             else:
                 patient_json = json.loads(patient_data)
                 date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
@@ -406,14 +403,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 patient_json['date_of_birth'] = date_of_birth
                 patient = OIEPatientData(**patient_json)
 
-            if step == 'patient':
-                kwargs.update({
-                    'patient': patient,
-                })
-            else:
-                kwargs.update({
-                    'date_of_birth': date_of_birth,
-                })
+            kwargs.update({
+                'patient': patient,
+            })
         elif step == 'confirm':
             kwargs.update({
                 'username': self.request.user.username,
