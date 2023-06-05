@@ -333,7 +333,6 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     }
 
     form = forms.SearchForm(data=form_data)
-    print(form.errors)
     assert form.is_valid()
 
 
@@ -1117,3 +1116,78 @@ def test_accessrequestrequestorform_existing_user_layout() -> None:
     assert '<input type="text" name="last_name"' not in html
     assert '<input type="text" name="user_email"' in html
     assert '<input type="text" name="user_phone"' in html
+
+
+def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:
+    """Ensure that the first and last name are not disabled for no selection."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+    )
+
+    assert not form.fields['first_name'].disabled
+    assert not form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_first_last_name_not_disabled_selection() -> None:
+    """Ensure that the first and last name are not disabled for a non-self relationship type selection."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.mandatary().pk},
+    )
+
+    assert not form.fields['first_name'].disabled
+    assert not form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_first_last_name_disabled() -> None:
+    """Ensure that the first and last name are disabled when self is selected."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+    )
+
+    assert form.fields['first_name'].disabled
+    assert form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_self_names_prefilled() -> None:
+    """Ensure the first and last name are pre-filled with the patient's name if self is selected."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_self_names_prefilled_empty_initial() -> None:
+    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+        # this happens when switching to self due to the up-validate request handling
+        initial={'first_name': '', 'last_name': ''},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None:
+    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+        # this happens when switching to self due to the up-validate request handling
+        initial={'first_name': 'Hans', 'last_name': 'Wurst'},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == 'Hans'
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == 'Wurst'
