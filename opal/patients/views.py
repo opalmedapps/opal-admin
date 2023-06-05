@@ -175,9 +175,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
                 else:
                     return self._done(current_forms)
-            else:
-                for form in current_forms:
-                    print(form.errors)
 
             context_data = self.get_context_data(
                 current_forms=current_forms,

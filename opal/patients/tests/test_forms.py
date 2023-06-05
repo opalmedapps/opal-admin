@@ -333,7 +333,6 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     }
 
     form = forms.SearchForm(data=form_data)
-    print(form.errors)
     assert form.is_valid()
 
 
