@@ -92,6 +92,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column(InlineReset(
                 label=gettext('Show Pending Requests'),
                 active=not self.is_bound,
+                # extra_css='btn-primary',
             )),
         )
 
