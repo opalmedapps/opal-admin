@@ -927,6 +927,29 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
     assert form.patient == OIE_PATIENT_DATA
 
 
+# skip until OIE is fixed
+@pytest.mark.skip()
+def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if no patient was found."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': '400',
+            'data': {'message': 'Bad request'},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert form.non_field_errors()[0] == 'The patient could not be found'
+
+
 def test_accessrequestrequestorform_form_filled_default() -> None:
     """Ensure the form_filled dynamic field can handle an empty value to initialize."""
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
