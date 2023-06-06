@@ -447,7 +447,7 @@ def test_create_access_request_existing() -> None:
 
     relationship, registration_code = utils.create_access_request(
         patient,
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -469,7 +469,7 @@ def test_create_access_request_non_self() -> None:
 
     relationship, registration_code = utils.create_access_request(
         patient,
-        caregiver_profile.user,
+        caregiver_profile,
         parent_type,
     )
 
@@ -488,7 +488,7 @@ def test_create_access_request_new_patient() -> None:
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -516,7 +516,7 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
             OIEPatientData(**patient_data),
-            caregiver_profile.user,
+            caregiver_profile,
             self_type,
         )
 
@@ -537,7 +537,7 @@ def test_create_access_request_new_patient_mrns() -> None:
 
     relationship, _ = utils.create_access_request(
         OIEPatientData(**patient_data),
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -606,7 +606,7 @@ def test_create_access_request_self_relationship_already_exists() -> None:
     with pytest.raises(ValidationError, match='The patient already has a self-relationship'):
         utils.create_access_request(
             existing_relationship.patient,
-            existing_relationship.caregiver.user,
+            existing_relationship.caregiver,
             self_type,
         )
 

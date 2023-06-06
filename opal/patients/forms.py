@@ -17,6 +17,7 @@ from crispy_forms.layout import Field as CrispyField
 from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 
+from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
 from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
@@ -395,7 +396,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[Caregiver] = None
+        self.existing_user: Optional[CaregiverProfile] = None
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -518,10 +519,9 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             user_phone = cleaned_data['user_phone']
 
             if user_email and user_phone:
-                # ensure that we are only looking among Caregivers
-                self.existing_user = Caregiver.objects.filter(  # type: ignore[assignment]
-                    email=user_email,
-                    phone_number=user_phone,
+                self.existing_user = CaregiverProfile.objects.filter(
+                    user__email=user_email,
+                    user__phone_number=user_phone,
                 ).first()
 
             # prevent continuing when no user was found
@@ -531,8 +531,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     _('No existing user could be found.'),
                 )
 
-    def _validate_patient_requestor(self, patient: Patient | OIEPatientData, caregiver: Caregiver) -> None:
-        if patient.first_name != caregiver.first_name or patient.last_name != caregiver.last_name:
+    def _validate_patient_requestor(self, patient: Patient | OIEPatientData, caregiver: CaregiverProfile) -> None:
+        if patient.first_name != caregiver.user.first_name or patient.last_name != caregiver.user.last_name:
             self.add_error(
                 NON_FIELD_ERRORS,
                 _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),

@@ -1167,11 +1167,11 @@ def test_accessrequestrequestorform_existing_user_empty_data() -> None:
 
 def test_accessrequestrequestorform_existing_user_found() -> None:
     """Ensure `clean()` finds an existing caregiver."""
-    caregiver = Caregiver(
-        first_name='Marge',
-        last_name='Simpson',
-        email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1181,22 +1181,23 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
             'relationship_type': RelationshipType.objects.mandatary(),
             'form_filled': True,
             'id_checked': True,
-            'user_email': caregiver.email,
-            'user_phone': caregiver.phone_number,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
         },
     )
 
+    print(form.errors)
     assert form.is_valid()
     assert form.existing_user == caregiver
 
 
 def test_accessrequestrequestorform_existing_user_validate_self() -> None:
     """Ensure `clean()` validates a self relationship to match names."""
-    caregiver = Caregiver(
-        first_name='Marge',
-        last_name='Simpson',
-        email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1205,8 +1206,8 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
             'id_checked': True,
-            'user_email': caregiver.email,
-            'user_phone': caregiver.phone_number,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
         },
     )
 
@@ -1216,11 +1217,11 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
     """Ensure `clean()` can handle a name mismatch for self relationships."""
-    caregiver = Caregiver(
-        first_name='Ned',
-        last_name='Flanders',
-        email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+    CaregiverProfile(
+        user__first_name='Ned',
+        user__last_name='Flanders',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1229,8 +1230,8 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
             'id_checked': True,
-            'user_email': caregiver.email,
-            'user_phone': caregiver.phone_number,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
         },
     )
 
