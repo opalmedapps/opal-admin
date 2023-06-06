@@ -279,8 +279,20 @@ def test_relationship_clean_no_end_date() -> None:
 def test_relationship_clean_no_data() -> None:
     """Ensure that the relationship validation works with missing data."""
     relationship = Relationship()
-    # ignore "This field cannot be null" errors
-    relationship.full_clean(exclude=['patient', 'caregiver', 'type', 'request_date', 'start_date'])
+    assert hasattr(relationship, 'start_date')
+    assert relationship.start_date is None
+
+    relationship.clean()
+
+
+def test_relationship_clean_no_patient_caregiver() -> None:
+    """Ensure that the relationship validation works with a missing patient and caregiver."""
+    relationship = Relationship(
+        type=RelationshipType.objects.self_type(),
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    relationship.clean()
 
 
 def test_relationship_clean_valid_dates() -> None:

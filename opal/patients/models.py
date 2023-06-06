@@ -444,7 +444,8 @@ class Relationship(models.Model):  # noqa: WPS214
         errors = []
 
         if (
-            self.type.role_type == RoleType.SELF
+            hasattr(self, 'patient')
+            and self.type.role_type == RoleType.SELF
             # exclude the current instance to support updating it
             and Relationship.objects.exclude(
                 pk=self.pk,
@@ -456,7 +457,8 @@ class Relationship(models.Model):  # noqa: WPS214
             errors.append(gettext('The patient already has a self-relationship'))
 
         if (
-            self.type.role_type == RoleType.SELF
+            hasattr(self, 'caregiver')
+            and self.type.role_type == RoleType.SELF
             # exclude the current instance to support updating it
             and Relationship.objects.exclude(
                 pk=self.pk,
@@ -478,7 +480,7 @@ class Relationship(models.Model):  # noqa: WPS214
         # support adding multiple errors for the same field/non-fields
         errors: dict[str, list[str]] = defaultdict(list)
 
-        if hasattr(self, 'start_date') and hasattr(self, 'patient'):
+        if self.start_date is not None and hasattr(self, 'patient'):  # type: ignore[redundant-expr]
             start_date_errors = self.validate_start_date()
 
             if start_date_errors:
