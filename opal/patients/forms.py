@@ -163,6 +163,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
+
+        if not self.patient:
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
+
         return self.cleaned_data
 
     def is_mrn_selected(self) -> bool:
@@ -257,14 +261,14 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     # make form continue when clicking checkbox
     # "The correct patient was found and the patient data is correct"
 
-    def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
 
         The patient can either be an existing patient or a search result from the hospital.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance, `None` if no patient was found
+            patient: a `Patient` or `OIEPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -294,21 +298,17 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         super().clean()
         cleaned_data = self.cleaned_data
 
-        # TODO: this should be done in AccessRequestSearchPatientForm
-        if not self.patient:  # noqa: WPS504
-            self.add_error(NON_FIELD_ERRORS, _('There is no patient to confirm'))
-        else:
-            if is_deceased(self.patient):
-                self.add_error(
-                    NON_FIELD_ERRORS,
-                    _('Unable to complete action with this patient. Please contact Medical Records.'),
-                )
+        if is_deceased(self.patient):
+            self.add_error(
+                NON_FIELD_ERRORS,
+                _('Unable to complete action with this patient. Please contact Medical Records.'),
+            )
 
-            if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
-                self.add_error(
-                    NON_FIELD_ERRORS,
-                    _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
-                )
+        if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
+            self.add_error(
+                NON_FIELD_ERRORS,
+                _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
+            )
 
         return cleaned_data
 
@@ -343,11 +343,15 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         forms.CharField,
         label=_('First Name'),
         required=lambda form: not form.existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.first_name if form.is_patient_requestor() else None,
     )
     last_name = DynamicField(
         forms.CharField,
         label=_('Last Name'),
         required=lambda form: not form.existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.last_name if form.is_patient_requestor() else None,
     )
 
     user_email = DynamicField(
@@ -363,15 +367,32 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.existing_user_selected(),
     )
 
-    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            date_of_birth: patient's date of birth
+            patient: a `Patient` or `OIEPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
+        # dynamic fields require the patient to be set
+        self.patient = patient
+
+        initial = kwargs.pop('initial', None)
+
+        # remove empty first and last name if present in initial data
+        # this allows us to provide the first and last name of the patient as initial data in the dynamic form field
+        # this can happen when switching to "Self" and receiving an "up-validate" request
+        # where we pass the existing data as initial to avoid form validation
+        if initial:
+            if 'first_name' in initial and not initial.get('first_name'):
+                initial.pop('first_name')
+            if 'last_name' in initial and not initial.get('last_name'):
+                initial.pop('last_name')
+
+        kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
 
         self.existing_user: Optional[Caregiver] = None
@@ -416,13 +437,30 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
             ))
 
-        # TODO: filter out self if there is already a self relationship
-        # at this point there would be a Patient instance if it exists
-        # then use utils.valid_relationship_types(patient)
-        # otherwise search_relationship_types_by_patient_age
-        # see old access request form
-        available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
-        self.fields['relationship_type'].widget.available_choices = available_choices
+        if isinstance(patient, Patient):
+            relationship_types = utils.valid_relationship_types(patient)
+        else:
+            relationship_types = utils.search_relationship_types_by_patient_age(patient.date_of_birth)
+
+        available_choices = relationship_types.values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = list(available_choices)
+
+    def is_patient_requestor(self) -> bool:
+        """
+        Return whether the patient is also the requestor.
+
+        This is the case when a self relationship is selected.
+        In the case of no selection, False is returned.
+
+        Returns:
+            True, if the selected relationship type is Self, False otherwise
+        """
+        relationship_type = self['relationship_type'].value()
+
+        if relationship_type:
+            return RelationshipType.objects.get(pk=relationship_type).role_type == RoleType.SELF
+
+        return False
 
     def existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
         """
@@ -455,7 +493,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         cleaned_data = self.cleaned_data
 
         if self.existing_user_selected(cleaned_data):
+            # TODO: rename to search
             self._validate_existing_user()
+
+            # TODO: check that if self, the patient and caregiver name matches
+            # TODO: ensure that if self, the patient does not already have a self relationship
 
         return cleaned_data
 

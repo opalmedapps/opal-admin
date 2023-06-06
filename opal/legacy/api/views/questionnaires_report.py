@@ -77,7 +77,7 @@ class QuestionnairesReportView(views.APIView):
                 patient_name=f'{patient.first_name} {patient.last_name}',
                 patient_site=serializer.validated_data.get('site'),
                 patient_mrn=serializer.validated_data.get('mrn'),
-                logo_path=Path(Institution.objects.get(pk=1).logo.path),
+                logo_path=Path(Institution.objects.get().logo.path),
                 language=lang,
             ),
         )
