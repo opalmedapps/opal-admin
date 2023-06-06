@@ -238,7 +238,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
 
-            if relationship_form.existing_user_selected(relationship_form.cleaned_data):
+            if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
                 context_data['next_button_text'] = 'Submit Access Request'
 
         # TODO: might not be needed anymore
