@@ -495,6 +495,16 @@ class Relationship(models.Model):  # noqa: WPS214
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
             errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
 
+        if hasattr(self, 'patient') and hasattr(self, 'caregiver'):
+            if Relationship.objects.filter(
+                patient=self.patient,
+                caregiver=self.caregiver,
+                status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
+            ).exists():
+                errors[NON_FIELD_ERRORS].append(
+                    gettext('There already exists an active relationship between the patient and caregiver.'),
+                )
+
         # validate Pending status is not associated with Self relationship.
         if hasattr(self, 'type'):
             if self.type.role_type == RoleType.SELF and self.status == RelationshipStatus.PENDING:

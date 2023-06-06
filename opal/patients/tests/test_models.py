@@ -390,6 +390,44 @@ def test_relationship_no_patient_multiple_self() -> None:
         relationship2.full_clean()
 
 
+@pytest.mark.parametrize('status', [
+    RelationshipStatus.CONFIRMED,
+    RelationshipStatus.PENDING,
+])
+def test_relationship_no_caregiver_multiple_active_relationships(status: RelationshipStatus) -> None:
+    """Ensure that a caregiver cannot have multiple active relationships to the same patient."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type, status=status)
+    # create a relationship with a new relationship type
+    relationship2 = Relationship(
+        patient=relationship.patient,
+        caregiver=relationship.caregiver,
+        status=RelationshipStatus.PENDING,
+        type=RelationshipType.objects.mandatary(),
+    )
+
+    with assertRaisesMessage(
+        ValidationError,
+        'There already exists an active relationship between the patient and caregiver.',
+    ):
+        relationship2.clean()
+
+    # create a relationship with a new relationship type
+    relationship3 = Relationship(
+        patient=relationship.patient,
+        caregiver=relationship.caregiver,
+        status=RelationshipStatus.CONFIRMED,
+        type=RelationshipType.objects.mandatary(),
+    )
+
+    with assertRaisesMessage(
+        ValidationError,
+        'There already exists an active relationship between the patient and caregiver.',
+    ):
+        relationship3.clean()
+
+
 def test_relationship_can_update_existing_self() -> None:
     """Ensure that an existing self-relationship can be updated."""
     self_type = RelationshipType.objects.self_type()
