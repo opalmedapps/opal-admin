@@ -1241,7 +1241,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
 
-def test_accessrequestrequestorform_existing_user_validate_self_exists() -> None:
+def test_accessrequestrequestorform_existing_user_validate_self_patient_exists() -> None:
     """Ensure `clean()` handles an existing patient already having a self relationship."""
     caregiver = Caregiver(
         first_name='Marge',
@@ -1270,6 +1270,38 @@ def test_accessrequestrequestorform_existing_user_validate_self_exists() -> None
     assert not form.is_valid()
     assert form.non_field_errors()[0] == (
         'The patient already has a self-relationship'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists() -> None:
+    """Ensure `clean()` handles an existing caregiver already having a self relationship."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.self_type(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'The caregiver already has a self-relationship'
     )
 
 

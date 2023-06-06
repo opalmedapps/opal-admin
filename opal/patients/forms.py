@@ -314,7 +314,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         return cleaned_data
 
 
-class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type = forms.ModelChoiceField(
@@ -481,7 +481,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return user_type == constants.UserType.EXISTING.name
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]:  # noqa: WPS231
         """
         Validate the form.
 
@@ -496,8 +496,17 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
 
-            if self.existing_user and self.is_patient_requestor():
-                self._validate_patient_requestor(self.patient, self.existing_user)
+            existing_user = self.existing_user
+            patient = self.patient
+            relationship_type = cleaned_data.get('relationship_type')
+
+            if existing_user:
+                if self.is_patient_requestor():
+                    self._validate_patient_requestor(patient, existing_user)
+
+                if relationship_type:
+                    patient_instance = patient if isinstance(patient, Patient) else None
+                    self._validate_relationship(patient_instance, existing_user, relationship_type)
 
         return cleaned_data
 
@@ -538,14 +547,23 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),
             )
 
-        if (
-            isinstance(patient, Patient)
-            and Relationship.objects.filter(patient=patient, type__role_type=RoleType.SELF).exists()
-        ):
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('The patient already has a self-relationship'),
-            )
+    def _validate_relationship(
+        self, patient: Patient | None,
+        caregiver: CaregiverProfile,
+        relationship_type: RelationshipType,
+    ) -> None:
+        relationship = Relationship(
+            patient=patient,
+            caregiver=caregiver,
+            type=relationship_type,
+            status=RelationshipStatus.CONFIRMED,
+        )
+        # reuse the model's existing validation
+        try:
+            relationship.clean()
+        except ValidationError as exc:
+            for error in exc.error_dict.get(NON_FIELD_ERRORS, []):
+                self.add_error(NON_FIELD_ERRORS, error)
 
     def _form_required(self) -> bool:
         # at form initialization the selected value is only the primary key
