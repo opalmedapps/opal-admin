@@ -276,6 +276,13 @@ def test_relationship_clean_no_end_date() -> None:
     relationship.clean()
 
 
+def test_relationship_clean_no_data() -> None:
+    """Ensure that the relationship validation works with missing data."""
+    relationship = Relationship()
+    # ignore "This field cannot be null" errors
+    relationship.full_clean(exclude=['patient', 'caregiver', 'type', 'request_date', 'start_date'])
+
+
 def test_relationship_clean_valid_dates() -> None:
     """Ensure that the date is valid if start date is earlier than end date."""
     relationship = factories.Relationship(start_date='2022-05-01', end_date='2022-05-04')

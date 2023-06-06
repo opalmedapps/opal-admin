@@ -303,7 +303,7 @@ class RelationshipStatus(models.TextChoices):
     REVOKED = 'REV', _('Revoked')
 
 
-class Relationship(models.Model):
+class Relationship(models.Model):  # noqa: WPS214
     """Relationship for user and patient model."""
 
     patient = models.ForeignKey(
@@ -435,31 +435,13 @@ class Relationship(models.Model):
 
         return errors
 
-    def clean(self) -> None:  # noqa: C901
-        """Validate date and reason fields.
+    def validate_type(self) -> list[str]:
+        """Validate the `type` field.
 
-        Raises:
-            ValidationError: the error shows when entries do not comply with the validation rules.
+        Returns:
+            a list of error messages
         """
-        # support adding multiple errors for the same field/non-fields
-        errors: dict[str, list[str]] = defaultdict(list)
-
-        start_date_errors = self.validate_start_date()
-        end_date_errors = self.validate_end_date()
-
-        if start_date_errors:
-            errors['start_date'].extend(start_date_errors)
-
-        if end_date_errors:
-            errors['end_date'].extend(end_date_errors)
-
-        # validate status is not empty if status is revoked or denied.
-        if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
-            errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
-
-        # validate Pending status is not associated with Self relationship.
-        if self.type.role_type == RoleType.SELF and self.status == RelationshipStatus.PENDING:
-            errors['status'].append(gettext('"Pending" status does not apply for the Self relationship.'))
+        errors = []
 
         if (
             self.type.role_type == RoleType.SELF
@@ -471,7 +453,7 @@ class Relationship(models.Model):
                 type__role_type=RoleType.SELF,
             ).exists()
         ):
-            errors[NON_FIELD_ERRORS].append(gettext('The patient already has a self-relationship'))
+            errors.append(gettext('The patient already has a self-relationship'))
 
         if (
             self.type.role_type == RoleType.SELF
@@ -483,7 +465,43 @@ class Relationship(models.Model):
                 type__role_type=RoleType.SELF,
             ).exists()
         ):
-            errors[NON_FIELD_ERRORS].append(gettext('The caregiver already has a self-relationship'))
+            errors.append(gettext('The caregiver already has a self-relationship'))
+
+        return errors
+
+    def clean(self) -> None:  # noqa: C901, WPS231
+        """Validate additionally across fields.
+
+        Raises:
+            ValidationError: the error shows when entries do not comply with the validation rules.
+        """
+        # support adding multiple errors for the same field/non-fields
+        errors: dict[str, list[str]] = defaultdict(list)
+
+        if hasattr(self, 'start_date') and hasattr(self, 'patient'):
+            start_date_errors = self.validate_start_date()
+
+            if start_date_errors:
+                errors['start_date'].extend(start_date_errors)
+
+            end_date_errors = self.validate_end_date()
+
+            if end_date_errors:
+                errors['end_date'].extend(end_date_errors)
+
+        # validate status is not empty if status is revoked or denied.
+        if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
+            errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
+
+        # validate Pending status is not associated with Self relationship.
+        if hasattr(self, 'type'):
+            if self.type.role_type == RoleType.SELF and self.status == RelationshipStatus.PENDING:
+                errors['status'].append(gettext('"Pending" status does not apply for the Self relationship.'))
+
+            type_errors = self.validate_type()
+
+            if type_errors:
+                errors[NON_FIELD_ERRORS].extend(type_errors)
 
         if errors:
             raise ValidationError(errors)
