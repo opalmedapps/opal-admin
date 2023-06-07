@@ -24,7 +24,7 @@ def test_databankconsent_str() -> None:
     databank_consent = factories.DatabankConsent()
     databank_consent.full_clean()
 
-    assert str(databank_consent) == "Simpson, Bart's Databank Consent"
+    assert str(databank_consent) == "Simpson, Marge's Databank Consent"
 
 
 def test_shareddata_factory() -> None:

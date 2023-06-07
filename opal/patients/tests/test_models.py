@@ -276,6 +276,25 @@ def test_relationship_clean_no_end_date() -> None:
     relationship.clean()
 
 
+def test_relationship_clean_no_data() -> None:
+    """Ensure that the relationship validation works with missing data."""
+    relationship = Relationship()
+    assert hasattr(relationship, 'start_date')
+    assert relationship.start_date is None
+
+    relationship.clean()
+
+
+def test_relationship_clean_no_patient_caregiver() -> None:
+    """Ensure that the relationship validation works with a missing patient and caregiver."""
+    relationship = Relationship(
+        type=RelationshipType.objects.self_type(),
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    relationship.clean()
+
+
 def test_relationship_clean_valid_dates() -> None:
     """Ensure that the date is valid if start date is earlier than end date."""
     relationship = factories.Relationship(start_date='2022-05-01', end_date='2022-05-04')
@@ -305,7 +324,7 @@ def test_relationship_clean_start_date_before_date_of_birth() -> None:
         relationship.clean()
 
 
-def test_relationship_end_date_beyond_boundary() -> None:
+def test_relationship_clean_end_date_beyond_boundary() -> None:
     """Ensure that the relationship end_date cannot be before the boundary."""
     relationship = factories.Relationship()
     relationship.patient.date_of_birth = date(2008, 5, 9)
@@ -324,7 +343,7 @@ def test_relationship_end_date_beyond_boundary() -> None:
         relationship.clean()
 
 
-def test_relationship_pending_not_apply_self_role() -> None:
+def test_relationship_clean_pending_not_apply_self_role() -> None:
     """Ensure that the relationship Pending status does not apply for the Self relationship."""
     self_type = RelationshipType.objects.self_type()
     relationship = factories.Relationship(type=self_type)
@@ -333,6 +352,127 @@ def test_relationship_pending_not_apply_self_role() -> None:
     expected_message = '"Pending" status does not apply for the Self relationship.'
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
+
+
+def test_relationship_clean_no_patient_multiple_self() -> None:
+    """Ensure that a patient can only have one self-relationship."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+    # create a relationship with a new relationship type
+    relationship2 = factories.Relationship(patient=relationship.patient)
+    relationship2.full_clean()
+
+    relationship2.type = self_type
+
+    with assertRaisesMessage(ValidationError, 'The patient already has a self-relationship.'):
+        relationship2.full_clean()
+
+
+def test_relationship_clean_no_caregiver_multiple_self() -> None:
+    """Ensure that a caregiver can only have one self-relationship."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+    # create a relationship with a new relationship type and patient
+    patient = factories.Patient(ramq='SIMM86100299')
+    relationship2 = factories.Relationship(patient=patient, caregiver=relationship.caregiver)
+    relationship2.full_clean()
+
+    relationship2.type = self_type
+
+    with assertRaisesMessage(ValidationError, 'The caregiver already has a self-relationship.'):
+        relationship2.full_clean()
+
+
+@pytest.mark.parametrize('status', [
+    RelationshipStatus.CONFIRMED,
+    RelationshipStatus.PENDING,
+])
+def test_relationship_clean_no_caregiver_multiple_active_relationships(status: RelationshipStatus) -> None:
+    """Ensure that a caregiver cannot have multiple active relationships to the same patient."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type, status=status)
+    # create a relationship with a new relationship type
+    relationship2 = Relationship(
+        patient=relationship.patient,
+        caregiver=relationship.caregiver,
+        status=RelationshipStatus.PENDING,
+        type=RelationshipType.objects.mandatary(),
+    )
+
+    with assertRaisesMessage(
+        ValidationError,
+        'There already exists an active relationship between the patient and caregiver.',
+    ):
+        relationship2.clean()
+
+    # create a relationship with a new relationship type
+    relationship3 = Relationship(
+        patient=relationship.patient,
+        caregiver=relationship.caregiver,
+        status=RelationshipStatus.CONFIRMED,
+        type=RelationshipType.objects.mandatary(),
+    )
+
+    with assertRaisesMessage(
+        ValidationError,
+        'There already exists an active relationship between the patient and caregiver.',
+    ):
+        relationship3.clean()
+
+
+def test_relationship_clean_can_update_existing_self() -> None:
+    """Ensure that an existing self-relationship can be updated."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+    relationship.status = RelationshipStatus.CONFIRMED
+    relationship.end_date = None  # type: ignore[assignment]
+    relationship.full_clean()
+
+
+def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
+    """Ensure that a name mismatch between patient and caregiver for a self-relationship is detected."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        type=self_type,
+        status=RelationshipStatus.CONFIRMED,
+        caregiver__user__first_name='Marge',
+        caregiver__user__last_name='Simpson',
+    )
+    relationship.full_clean()
+
+    with assertRaisesMessage(
+        ValidationError,
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+    ):
+        relationship.patient.first_name = 'Homer'
+        relationship.full_clean()
+
+    with assertRaisesMessage(
+        ValidationError,
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+    ):
+        relationship.patient.first_name = 'Marge'
+        relationship.patient.last_name = 'Flanders'
+        relationship.full_clean()
+
+
+def test_relationship_clean_unsaved_instance() -> None:
+    """Ensure that an unsaved relationship instance can be cleaned."""
+    self_type = RelationshipType.objects.self_type()
+
+    patient = factories.Patient()
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
+    relationship.status = RelationshipStatus.CONFIRMED
+
+    relationship.full_clean()
 
 
 def test_relationship_invalid_dates_constraint() -> None:
@@ -354,58 +494,6 @@ def test_relationship_status_constraint() -> None:
     constraint_name = 'patients_relationship_status_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):
         relationship.save()
-
-
-def test_relationship_no_patient_multiple_self() -> None:
-    """Ensure that a patient can only have one self-relationship."""
-    self_type = RelationshipType.objects.self_type()
-
-    relationship = factories.Relationship(type=self_type)
-    # create a relationship with a new relationship type
-    relationship2 = factories.Relationship(patient=relationship.patient)
-    relationship2.full_clean()
-
-    relationship2.type = self_type
-
-    with assertRaisesMessage(ValidationError, 'The patient already has a self-relationship'):
-        relationship2.full_clean()
-
-
-def test_relationship_can_update_existing_self() -> None:
-    """Ensure that an existing self-relationship can be updated."""
-    self_type = RelationshipType.objects.self_type()
-
-    relationship = factories.Relationship(type=self_type)
-    relationship.status = RelationshipStatus.CONFIRMED
-    relationship.end_date = None  # type: ignore[assignment]
-    relationship.full_clean()
-
-
-def test_relationship_clean_unsaved_instance() -> None:
-    """Ensure that an unsaved relationship instance can be cleaned."""
-    self_type = RelationshipType.objects.self_type()
-
-    patient = factories.Patient()
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
-    relationship.status = RelationshipStatus.CONFIRMED
-
-    relationship.full_clean()
-
-
-def test_relationship_no_caregiver_multiple_self() -> None:
-    """Ensure that a caregiver can only have one self-relationship."""
-    self_type = RelationshipType.objects.self_type()
-
-    relationship = factories.Relationship(type=self_type)
-    # create a relationship with a new relationship type
-    relationship2 = factories.Relationship(caregiver=relationship.caregiver)
-    relationship2.full_clean()
-
-    relationship2.type = self_type
-
-    with assertRaisesMessage(ValidationError, 'The caregiver already has a self-relationship'):
-        relationship2.full_clean()
 
 
 def test_hospitalpatient_factory() -> None:
