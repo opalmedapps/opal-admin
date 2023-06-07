@@ -54,7 +54,7 @@ def test_relationshippending_form_is_valid() -> None:
 def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -96,7 +96,7 @@ def test_relationshippending_update() -> None:
 def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -1037,7 +1037,7 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     constants.UserType.NEW.name,
     constants.UserType.EXISTING.name,
 ])
-def test_accessrequestrequestorform_existing_user_selected(user_type: Optional[str]) -> None:
+def test_accessrequestrequestorform_is_existing_user_selected(user_type: Optional[str]) -> None:
     """Ensure the existing user is not selected by default."""
     data = None
 
@@ -1047,12 +1047,12 @@ def test_accessrequestrequestorform_existing_user_selected(user_type: Optional[s
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
     expected_type = user_type or constants.UserType.NEW.name
-    existing_user_selected = user_type == constants.UserType.EXISTING.name
-    assert form.existing_user_selected() == existing_user_selected
+    is_existing_user_selected = user_type == constants.UserType.EXISTING.name
+    assert form.is_existing_user_selected() == is_existing_user_selected
     assert form['user_type'].value() == expected_type
 
 
-def test_accessrequestrequestorform_existing_user_selected_cleaned_data() -> None:
+def test_accessrequestrequestorform_is_existing_user_selected_cleaned_data() -> None:
     """Ensure the existing user is not selected by default."""
     form = forms.AccessRequestRequestorForm(
         patient=OIE_PATIENT_DATA,
@@ -1060,7 +1060,7 @@ def test_accessrequestrequestorform_existing_user_selected_cleaned_data() -> Non
     )
     form.full_clean()
 
-    assert form.existing_user_selected(form.cleaned_data)
+    assert form.is_existing_user_selected(form.cleaned_data)
 
 
 def test_accessrequestrequestorform_new_user_required_fields() -> None:
@@ -1114,8 +1114,227 @@ def test_accessrequestrequestorform_existing_user_layout() -> None:
     )
     assert '<input type="text" name="first_name"' not in html
     assert '<input type="text" name="last_name"' not in html
-    assert '<input type="text" name="user_email"' in html
+    assert '<input type="email" name="user_email"' in html
     assert '<input type="text" name="user_phone"' in html
+
+
+def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
+    """Ensure an error is shown when no existing user is found."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == 'No existing user could be found.'
+
+
+def test_accessrequestrequestorform_existing_user_no_data() -> None:
+    """Ensure `clean()` can handle non-existent user email and phone fields."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+        },
+    )
+
+    assert not form.is_valid()
+
+
+def test_accessrequestrequestorform_existing_user_empty_data() -> None:
+    """Ensure `clean()` can handle empty user email and phone fields."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': '',
+            'user_phone': '',
+        },
+    )
+
+    assert not form.is_valid()
+
+
+def test_accessrequestrequestorform_existing_user_found() -> None:
+    """Ensure `clean()` finds an existing caregiver."""
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.mandatary(),
+            'form_filled': True,
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.existing_user == caregiver
+
+
+def test_accessrequestrequestorform_existing_user_validate_self() -> None:
+    """Ensure `clean()` validates a self relationship to match names."""
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.existing_user == caregiver
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
+    """Ensure `clean()` can handle a name mismatch for self relationships."""
+    CaregiverProfile(
+        user__first_name='Ned',
+        user__last_name='Flanders',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=factories.Patient(),
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == (
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_patient_exists() -> None:
+    """Ensure `clean()` handles an existing patient already having a self relationship."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    relationship = factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.self_type(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=relationship.patient,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'The patient already has a self-relationship.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists() -> None:
+    """Ensure `clean()` handles an existing caregiver already having a self relationship."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.self_type(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'The caregiver already has a self-relationship.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
+    """Ensure clean handles a caregiver already having a CONFIRMED or PENDING relationship to the patient."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    relationship = factories.Relationship(
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.mandatary(),
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=relationship.patient,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.guardian_caregiver(),
+            'form_filled': True,
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'There already exists an active relationship between the patient and caregiver.'
+    )
 
 
 def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:

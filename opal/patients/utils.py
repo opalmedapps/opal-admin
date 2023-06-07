@@ -322,7 +322,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
 @transaction.atomic
 def create_access_request(  # noqa: WPS210 (too many local variables)
     patient: Patient | OIEPatientData,
-    caregiver: Caregiver | tuple[str, str],
+    caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
 ) -> tuple[Relationship, Optional[caregiver_models.RegistrationCode]]:
     """
@@ -363,15 +363,15 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             last_name=caregiver[1],
         )
     else:
-        caregiver_profile = caregiver_models.CaregiverProfile.objects.get(user=caregiver)
+        caregiver_profile = caregiver
 
     status = (
         RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
     )
 
-    new_user = not isinstance(caregiver, Caregiver)
+    is_new_user = not isinstance(caregiver, caregiver_models.CaregiverProfile)
     # TODO: check whether we want to default start_date to patient's date of birth here
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
-    registration_code = create_registration_code(relationship) if new_user else None
+    registration_code = create_registration_code(relationship) if is_new_user else None
 
     return relationship, registration_code

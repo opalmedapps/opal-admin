@@ -201,7 +201,7 @@ class TestQuestionnairesReportView:
         mock_generate_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
-                patient_name='Bart Simpson',
+                patient_name='Marge Simpson',
                 patient_site='RVH',
                 patient_mrn='9999996',
                 logo_path=Path(institution.logo.path),
@@ -239,7 +239,7 @@ class TestQuestionnairesReportView:
         mock_generate_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
-                patient_name='Bart Simpson',
+                patient_name='Marge Simpson',
                 patient_site='RVH',
                 patient_mrn='9999996',
                 logo_path=Path(institution.logo.path),
