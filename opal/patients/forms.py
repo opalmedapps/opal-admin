@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -28,6 +28,36 @@ from opal.users.models import Caregiver, User
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+
+# functions that are reused between two forms
+def is_mrn_selected(form: forms.Form) -> bool:
+    """
+    Return whether MRN is selected as the card type.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        True, if MRN is selected, False otherwise
+    """
+    card_type: str = form['card_type'].value()
+    return card_type == constants.MedicalCard.MRN.name
+
+
+def is_not_mrn_or_single_site(form: forms.Form) -> bool:
+    """
+    Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        True if there is only one site or the selected `card_type` is MRN, False otherwise
+    """
+    site_count = Site.objects.all().count()
+
+    return not is_mrn_selected(form) or site_count == 1
 
 
 class DisableFieldsMixin(forms.Form):
@@ -77,9 +107,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
         label=_('Hospital'),
-        required=lambda form: form.is_mrn_selected(),
-        disabled=lambda form: form.is_not_mrn_or_single_site(),
-        empty_label=lambda form: _('Choose...') if form.is_mrn_selected() else _('Not required'),
+        required=is_mrn_selected,
+        disabled=is_not_mrn_or_single_site,
+        empty_label=lambda form: _('Choose...') if is_mrn_selected(form) else _('Not required'),  # noqa: WPS506
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -103,7 +133,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if sites.count() == 1:
             site_field.widget = forms.HiddenInput()
 
-            if self.is_mrn_selected():
+            if is_mrn_selected(self):
                 site_field.initial = sites.first()
         else:
             site_field.initial = None
@@ -169,27 +199,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
         return self.cleaned_data
-
-    def is_mrn_selected(self) -> bool:
-        """
-        Return whether MRN is selected as the card type.
-
-        Returns:
-            True, if MRN is selected, False otherwise
-        """
-        card_type: str = self['card_type'].value()
-        return card_type == constants.MedicalCard.MRN.name
-
-    def is_not_mrn_or_single_site(self) -> bool:
-        """
-        Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
-
-        Returns:
-            True if there is only one site or the selected `card_type` is MRN, False otherwise
-        """
-        site_count = Site.objects.all().count()
-
-        return not self.is_mrn_selected() or site_count == 1
 
     def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
         """
@@ -1254,14 +1263,26 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type = self.fields['card_type']
-        card_type.widget.attrs.update({'up-validate': ''})
-        card_type_value = self['card_type'].value()
+        card_type: forms.ModelChoiceField = cast(forms.ModelMultipleChoiceField, self.fields['card_type'])
+        site: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['site'])
 
-        if card_type_value == constants.MedicalCard.MRN.name:
-            self.fields['site'].required = True
+        # add up-validate to `card_type` field to trigger post on change
+        card_type.widget.attrs.update({'up-validate': ''})
+        # check if mrn is selected to disable
+        if is_mrn_selected(self):
+            site.required = True
+            site.empty_label = _('Choose...')
+
         else:
-            self.fields['site'].disabled = True
+            site.disabled = True
+            site.empty_label = _('Not Required')
+            # set it to Not Required
+            site.initial = None
+
+        if Site.objects.all().count() == 1:
+            site.disabled = True
+            site.widget = forms.HiddenInput()
+            site.initial = Site.objects.first()
 
 
 class ManageCaregiverAccessUserForm(forms.ModelForm[User]):
