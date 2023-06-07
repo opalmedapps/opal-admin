@@ -28,8 +28,8 @@ class LegacyPatientFactory(DjangoModelFactory):
         django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
-    firstname = 'TEST'
-    lastname = 'LEGACY'
+    firstname = 'Marge'
+    lastname = 'Simpson'
     telnum = '5149995555'
     dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
