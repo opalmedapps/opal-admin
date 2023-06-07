@@ -1148,7 +1148,6 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'status',
             'reason',
             'cancel_url',
-            'type',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
