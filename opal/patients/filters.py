@@ -81,8 +81,8 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         self.form.helper.disable_csrf = True
         self.form.helper.layout = Layout(
             Column('card_type'),
-            Column('site'),
             Column('medical_number'),
+            Column('site'),
             Column(InlineSubmit(
                 label=gettext('Search Specific Patient'),
                 active=self.is_bound,
