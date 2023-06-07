@@ -96,17 +96,21 @@ def test_update_caregiver_success() -> None:
     phone_number2 = '+15141112223'
     language1 = 'en'
     language2 = 'fr'
-    user = User(phone_number=phone_number1, language=language1)
+    username1 = 'username-1'
+    username2 = 'username-2'
+    user = User(phone_number=phone_number1, language=language1, username=username1)
     info: dict = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
+            'username': username2,
         },
     }
     utils.update_caregiver(user, info)
     user.refresh_from_db()
     assert user.language == language2
     assert user.phone_number == phone_number2
+    assert user.username == username2
 
 
 def test_update_caregiver_failure() -> None:
@@ -115,11 +119,14 @@ def test_update_caregiver_failure() -> None:
     phone_number2 = '11111112223'
     language1 = 'en'
     language2 = 'fr'
-    user = User(phone_number=phone_number1, language=language1)
+    username1 = 'username-1'
+    username2 = 'username-2'
+    user = User(phone_number=phone_number1, language=language1, username=username1)
     info: dict = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
+            'username': username2,
         },
     }
     expected_message = "{'phone_number': ['Enter a valid value.']}"
