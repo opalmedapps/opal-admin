@@ -1,9 +1,0 @@
-/*
-  Customise card appearance, borders, and colors.
-
-  All details related to card styling should be added here.
-*/
-
-.card {
-  --bs-card-border-color: black;
-}
