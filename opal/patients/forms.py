@@ -1113,6 +1113,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=_('Last Name'),
     )
     type = forms.ModelChoiceField(  # noqa: A003
+        widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
         empty_label=None,
@@ -1192,6 +1193,12 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         # setting the value of caregiver first and last names
         self.fields['last_name'].initial = self.instance.caregiver.user.last_name
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
+
+        selected_type = self['type'].value()
+        initial_type = RelationshipType.objects.get(pk=selected_type)
+        # change to required/not-required according to the type of the relationship
+        if initial_type.role_type == RoleType.SELF.name:
+            self.fields['end_date'].required = False
 
         self.helper = FormHelper(self)
         self.helper.attrs = {'novalidate': ''}
