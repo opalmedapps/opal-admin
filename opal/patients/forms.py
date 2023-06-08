@@ -1263,7 +1263,7 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type: forms.ModelChoiceField = cast(forms.ModelMultipleChoiceField, self.fields['card_type'])
+        card_type: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['card_type'])
         site: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['site'])
 
         # add up-validate to `card_type` field to trigger post on change
