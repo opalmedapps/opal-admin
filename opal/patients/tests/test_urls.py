@@ -29,11 +29,11 @@ def test_relationshiptype_delete() -> None:
     assert resolve(url).view_name == 'patients:relationshiptype-delete'
 
 
-def test_multiform_step_url() -> None:
-    """A URL for each step in multiform wizard."""
-    url = '/patients/access-request/'
-    assert reverse('patients:access-request') == url
-    assert resolve(url).view_name == 'patients:access-request'
+def test_access_request() -> None:
+    """A URL for the access request view."""
+    url = '/patients/access-request-new/'
+    assert reverse('patients:access-request-new') == url
+    assert resolve(url).view_name == 'patients:access-request-new'
 
 
 def test_relationships_pending_list() -> None:
