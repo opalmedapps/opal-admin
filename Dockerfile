@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.0-experimental
-FROM python:3.10.11-slim-bullseye
+FROM python:3.10.12-slim-bullseye
 
 # for which environment the build is done: development or production
 ARG ENV=development
