@@ -551,7 +551,6 @@ class Relationship(models.Model):  # noqa: WPS214
             statuses += [
                 RelationshipStatus.PENDING,
                 RelationshipStatus.REVOKED,
-                RelationshipStatus.EXPIRED,
             ]
         elif current == RelationshipStatus.DENIED:
             statuses += [RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
