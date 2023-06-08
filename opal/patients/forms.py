@@ -1184,6 +1184,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        # get the selected type
+        selected_type = self['type'].value()
+        initial_type = RelationshipType.objects.get(pk=selected_type)
+
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
@@ -1193,14 +1197,14 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
-                self.instance.type,
+                initial_type,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
             'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
-                self.instance.type,
+                initial_type,
             ),
         })
 
@@ -1218,8 +1222,6 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['last_name'].initial = self.instance.caregiver.user.last_name
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
-        selected_type = self['type'].value()
-        initial_type = RelationshipType.objects.get(pk=selected_type)
         # change to required/not-required according to the type of the relationship
         if initial_type.role_type == RoleType.SELF.name:
             self.fields['end_date'].required = False
