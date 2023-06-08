@@ -29,7 +29,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
-        initial=constants.MedicalCard.RAMQ.name,
+        initial=constants.MedicalCard.MRN.name,
         required=True,
         empty_label=None,
     )
