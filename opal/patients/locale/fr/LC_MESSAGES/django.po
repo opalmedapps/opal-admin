@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-08 18:12+0300\n"
+"POT-Creation-Date: 2023-06-08 19:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -240,10 +240,6 @@ msgstr "Explication des changements"
 msgid "Save"
 msgstr "Enregistrer"
 
-#: opal/patients/forms.py
-msgid "Not Required"
-msgstr "Non requis"
-
 #: opal/patients/models.py
 msgid "Self"
 msgstr "Soi"
@@ -390,7 +386,6 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending_relationship_list.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Patient"
 msgstr "Patient"
@@ -633,6 +628,7 @@ msgstr ""
 
 #: opal/patients/templates/patients/access_request/new_access_request.html
 #: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
 #: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
