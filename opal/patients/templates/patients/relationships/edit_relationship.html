@@ -2,64 +2,22 @@
 {% load l10n %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
 
 {% block heading %}
   {% translate "Edit Caregiver Access" %}
 {% endblock %}
 
 {% block content %}
-  <div class="card mb-3">
-    <div class="card-body">
-      <div class="row">
-
-        <h5 class="mb-4">{% translate "Patient" %}</h5>
-
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient }}</p>
-          </div>
-        </div>
-
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.date_of_birth | localize }}</p>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>
-              {{ relationship.patient.hospital_patients.reverse |join:', ' }}
-            </p>
-          </div>
-        </div>
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.ramq }}</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
   <div class="card">
     <div class="card-body">
-      <h5 class="mb-4">{%  translate "Caregiver" %}</h5>
+      <legend>{% translate "Patient" %}</legend>
+      <div class="row">
+        {% render_table patient_table %}
+      </div>
+    </div>
+    <div class="card-body">
+      <legend>{% translate "Caregivers" %}</legend>
       {% crispy form %}
     </div>
   </div>
