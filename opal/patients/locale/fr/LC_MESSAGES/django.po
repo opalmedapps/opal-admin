@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-06 20:19-0400\n"
+"POT-Creation-Date: 2023-06-08 04:12+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,12 +51,12 @@ msgid "Card Type"
 msgstr "Type de Carte"
 
 #: opal/patients/filters.py opal/patients/forms.py
-msgid "Choose..."
-msgstr "Choisir..."
-
-#: opal/patients/filters.py opal/patients/forms.py
 msgid "Hospital"
 msgstr "Nom de l'hôpital:"
+
+#: opal/patients/filters.py opal/patients/forms.py
+msgid "Choose..."
+msgstr "Choisir..."
 
 #: opal/patients/filters.py opal/patients/forms.py
 msgid "Identification Number"
@@ -239,6 +239,10 @@ msgstr "Explication des changements"
 #: opal/patients/forms.py
 msgid "Save"
 msgstr "Enregistrer"
+
+#: opal/patients/forms.py
+msgid "Not Required"
+msgstr "Non requis"
 
 #: opal/patients/models.py
 msgid "Self"
