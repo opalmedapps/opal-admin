@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 class MedicalCard(Enum):
     """An enumeration of supported medical card types."""
 
-    RAMQ = _('Medicare Card (RAMQ)')  # noqa: WPS115
     MRN = _('Hospital Card (MRN)')  # noqa: WPS115
+    RAMQ = _('Medicare Card (RAMQ)')  # noqa: WPS115
 
 
 class UserType(Enum):
