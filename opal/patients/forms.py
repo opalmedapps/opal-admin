@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Column, Div
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
+from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
@@ -117,6 +117,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
     card_type = forms.ChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         choices=constants.MEDICAL_CARDS,
+        initial=constants.MedicalCard.MRN.name,
         label=_('Card Type'),
     )
     site = DynamicField(
@@ -211,9 +212,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
 
-        if not self.patient:
-            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
         return self.cleaned_data
 
     def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
@@ -254,6 +252,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.patient = response['data']
             else:
                 self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+
+            if not self.patient:
+                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
@@ -343,7 +344,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type = forms.ModelChoiceField(
-        queryset=RelationshipType.objects.all(),
+        queryset=RelationshipType.objects.all().reverse(),
         # TODO: provide a custom template that can show a tooltip
         # when hovering over the relationship type with the details of the relationship type
         # can be done as a completely separate MR at the end
@@ -433,11 +434,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     'relationship_type',
                 ),
                 Column(
-                    Fieldset(
-                        'Validation',
-                        'form_filled',
-                        'id_checked',
-                    ),
+                    # make it appear like a label
+                    HTML('<p class="fw-semibold">{0}</p>'.format(_('Validation'))),
+                    'form_filled',
+                    'id_checked',
                 ),
             ),
             TabRadioSelect('user_type'),

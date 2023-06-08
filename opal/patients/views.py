@@ -88,7 +88,12 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: WPS214 (too many methods)
+class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+    PermissionRequiredMixin,
+    TemplateResponseMixin,
+    ContextMixin,
+    View,
+):
     """
     View to process an access request.
 
@@ -97,6 +102,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
     Any previous form (validated) is disabled.
     """
 
+    permission_required = ('patients.can_perform_registration',)
     template_name = 'patients/access_request/new_access_request.html'
     template_name_confirmation_code = 'patients/access_request/confirmation_code.html'
     template_name_confirmation = 'patients/access_request/confirmation.html'
