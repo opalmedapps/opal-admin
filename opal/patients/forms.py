@@ -71,6 +71,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
     card_type = forms.ChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         choices=constants.MEDICAL_CARDS,
+        initial=constants.MedicalCard.MRN.name,
         label=_('Card Type'),
     )
     site = DynamicField(
@@ -178,6 +179,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             True, if MRN is selected, False otherwise
         """
         card_type: str = self['card_type'].value()
+        print(self.is_bound)
+        print(card_type)
+        print(self['card_type'].initial)
         return card_type == constants.MedicalCard.MRN.name
 
     def is_not_mrn_or_single_site(self) -> bool:

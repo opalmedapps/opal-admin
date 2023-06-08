@@ -707,6 +707,16 @@ def test_caregiver_first_last_name_invalid() -> None:
 
 
 # Opal Registration Tests
+def test_accessrequestsearchform_initial() -> None:
+    """Ensure that the card type is the default and the site field is required."""
+    form = forms.AccessRequestSearchPatientForm()
+    site_field = form.fields['site']
+
+    assert form['card_type'].value() == constants.MedicalCard.MRN.name
+    assert not site_field.disabled
+    assert site_field.required
+
+
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
     form_data = {
