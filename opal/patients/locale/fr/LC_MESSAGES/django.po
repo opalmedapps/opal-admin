@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-08 04:12+0300\n"
+"POT-Creation-Date: 2023-06-08 04:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -261,13 +261,11 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Name"
 msgstr "Nom"
@@ -365,7 +363,6 @@ msgid "UUID"
 msgstr "UUID"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
@@ -383,6 +380,7 @@ msgid "RAMQ Number"
 msgstr "Numéro de RAMQ"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Caregivers"
 msgstr "Proches aidants"
 
@@ -392,6 +390,7 @@ msgstr "Identifiant existant"
 
 #: opal/patients/models.py
 #: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Patient"
 msgstr "Patient"
@@ -662,16 +661,6 @@ msgstr "Nouveau type de relation"
 msgid "Edit Caregiver Access"
 msgstr "Générer une demande d'accès"
 
-#: opal/patients/templates/patients/relationships/edit_relationship.html
-#: opal/patients/templates/patients/relationships/view_relationship.html
-msgid "MRN(s)"
-msgstr "MRN(s)"
-
-#: opal/patients/templates/patients/relationships/edit_relationship.html
-#: opal/patients/templates/patients/relationships/view_relationship.html
-msgid "RAMQ"
-msgstr "RAMQ"
-
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
 msgstr "Générer une demande d'accès"
@@ -687,6 +676,14 @@ msgstr "En attendant"
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "View Caregiver Access"
 msgstr "Afficher l'accès des soignants"
+
+#: opal/patients/templates/patients/relationships/view_relationship.html
+msgid "MRN(s)"
+msgstr "MRN(s)"
+
+#: opal/patients/templates/patients/relationships/view_relationship.html
+msgid "RAMQ"
+msgstr "RAMQ"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided"
