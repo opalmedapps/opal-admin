@@ -166,9 +166,6 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
 
-        if not self.patient:
-            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
         return self.cleaned_data
 
     def is_mrn_selected(self) -> bool:
@@ -230,6 +227,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.patient = response['data']
             else:
                 self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+
+            if not self.patient:
+                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
