@@ -51,12 +51,12 @@ msgid "Card Type"
 msgstr "Type de Carte"
 
 #: opal/patients/filters.py opal/patients/forms.py
-msgid "Choose..."
-msgstr "Choisir..."
-
-#: opal/patients/filters.py opal/patients/forms.py
 msgid "Hospital"
 msgstr "Nom de l'hôpital:"
+
+#: opal/patients/filters.py opal/patients/forms.py
+msgid "Choose..."
+msgstr "Choisir..."
 
 #: opal/patients/filters.py opal/patients/forms.py
 msgid "Identification Number"
@@ -261,7 +261,6 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Caregiver"
 msgstr "Proche aidant"
@@ -391,7 +390,6 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Patient"
 msgstr "Patient"
@@ -633,6 +631,8 @@ msgid "Opal Registration"
 msgstr ""
 
 #: opal/patients/templates/patients/access_request/new_access_request.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
 #: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
@@ -671,6 +671,10 @@ msgstr "MRN(s)"
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "RAMQ"
 msgstr "RAMQ"
+
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+msgid "Caregiver Details"
+msgstr "Proches aidants"
 
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"

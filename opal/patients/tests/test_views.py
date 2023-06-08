@@ -1238,9 +1238,9 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
 
 def test_form_search_result_http_referer(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    relationshiptype = factories.RelationshipType(pk=11, name='relationshiptype')
     caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
     response_get = relationship_user.get(
         reverse(
             'patients:relationships-view-update',
@@ -1253,21 +1253,22 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']  # type: ignore[attr-defined]
     assert cancel_url == 'patient/test/?search-query'
 
+    relationship_data = model_to_dict(relationship)
+    relationship_data['type'] = 11
+    relationship_data['first_name'] = 'test_firstname'
+    relationship_data['last_name'] = 'test_lastname'
+    relationship_data['cancel_url'] = cancel_url
+
     response_post = relationship_user.post(
         reverse(
             'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
-        {
-            'cancel_url': cancel_url,
-            'first_name': 'test_firstname',
-            'last_name': 'test_lastname',
-        },
+        data=relationship_data,
     )
 
     # assert success_url is equal to the new cancel_url
-    success_url = response_post.context_data['view'].get_success_url()  # type: ignore[attr-defined]
-    assert success_url == cancel_url
+    assert response_post.url == cancel_url  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
