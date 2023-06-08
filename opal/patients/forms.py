@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Column, Div
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
+from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
@@ -412,11 +412,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     'relationship_type',
                 ),
                 Column(
-                    Fieldset(
-                        'Validation',
-                        'form_filled',
-                        'id_checked',
-                    ),
+                    # make it appear like a label
+                    HTML('<p class="fw-semibold">{0}</p>'.format(_('Validation'))),
+                    'form_filled',
+                    'id_checked',
                 ),
             ),
             TabRadioSelect('user_type'),
