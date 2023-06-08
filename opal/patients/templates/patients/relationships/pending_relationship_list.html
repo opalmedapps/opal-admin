@@ -11,16 +11,16 @@
 {% block content %}
   <div class="btn-toolbar-no-group mb-2">
     {% if filter %}
-      <h5>Patient</h5>
+      <legend>{% translate "Patient" %}</legend>
       <div class="mt-2">
         {% crispy filter.form %}
       </div>
     {% endif %}
     <div class="mt-4">
       {% if is_search %}
-        <h5>{% translate "Specific Patient" %}</h5>
+        <legend>{% translate "Specific Patient" %}</legend>
       {% else %}
-        <h5>{% translate "Pending Requests" %}</h5>
+        <legend>{% translate "Pending Requests" %}</legend>
       {% endif %}
       {% render_table table %}
     </div>
