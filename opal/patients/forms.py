@@ -60,6 +60,22 @@ def is_not_mrn_or_single_site(form: forms.Form) -> bool:
     return not is_mrn_selected(form) or site_count == 1
 
 
+def get_site_empty_label(form: forms.Form) -> str:
+    """
+    Set the site empty label according to selected `card_type`.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        `Choose` if mrn is selected, `Not Required` otherwise
+    """
+    if is_mrn_selected(form):
+        return cast(str, _('Choose...'))
+
+    return cast(str, _('Not required'))
+
+
 class DisableFieldsMixin(forms.Form):
     """Form mixin that has the ability to disable all form fields."""
 
@@ -109,7 +125,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         label=_('Hospital'),
         required=is_mrn_selected,
         disabled=is_not_mrn_or_single_site,
-        empty_label=lambda form: _('Choose...') if is_mrn_selected(form) else _('Not required'),  # noqa: WPS506
+        empty_label=get_site_empty_label,  # noqa: WPS506
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -1271,13 +1287,12 @@ class ManageCaregiverAccessForm(forms.Form):
         # check if mrn is selected to disable
         if is_mrn_selected(self):
             site.required = True
-            site.empty_label = _('Choose...')
-
         else:
             site.disabled = True
-            site.empty_label = _('Not Required')
-            # set it to Not Required
             site.initial = None
+
+        # get the proper empty value string for the selected `card_type`
+        site.empty_label = get_site_empty_label(self)
 
         if Site.objects.all().count() == 1:
             site.disabled = True
