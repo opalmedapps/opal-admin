@@ -1080,11 +1080,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             )
 
         data = self.request.POST
-        # remove string/list notation from data dict
-        initial = {
-            key: value
-            for key, value in data.items()
-        }
+        # convert data from queryset to dict
+        initial = data.dict()
 
         # use initial instead of data to avoid validating a form when up-validate is used
         form = self.form_class(
