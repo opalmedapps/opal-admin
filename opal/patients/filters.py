@@ -63,7 +63,8 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             kwargs: additional keyword arguments
         """
         request = kwargs.get('request')
-
+        # set the initial value to MRN
+        self.base_filters['card_type'].extra['initial'] = constants.MedicalCard.MRN.name
         # replace form's data with initial in case of up-validate
         # such that missing fields don't cause the "required" validation error
         # TODO: move this into a DynamicFilterSetMixin that can be reused where needed
