@@ -1,5 +1,11 @@
-/* Customized active color for special buttons */
-.btn-active {
-  --bs-btn-active-bg: var(--opal-purple);
-  --bs-btn-active-border-color: var(--opal-purple);
+/* Opal Purple for the primary button */
+.btn-primary {
+  --bs-btn-bg: var(--opal-purple);
+  --bs-btn-border-color: var(--opal-purple);
+  --bs-btn-hover-bg: #604887;
+  --bs-btn-hover-border-color: #553f77;
+  --bs-btn-active-bg: #553f77;
+  --bs-btn-active-border-color: #4a3667;
+  --bs-btn-disabled-bg: var(--opal-purple);
+  --bs-btn-disabled-border-color: var(--opal-purple);
 }

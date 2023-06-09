@@ -1,5 +1,4 @@
-from datetime import date
-from types import MappingProxyType
+from datetime import date, datetime
 from typing import Optional
 
 from django.forms import HiddenInput, model_to_dict
@@ -10,8 +9,8 @@ from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.factories import CaregiverProfile
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
-from opal.users.models import User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -20,22 +19,20 @@ from ..tables import ExistingUserTable
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = MappingProxyType({
-    'dateOfBirth': '1953-01-01 00:00:00',
-    'firstName': 'SANDRA',
-    'lastName': 'TESTMUSEMGHPROD',
-    'sex': 'F',
-    'alias': '',
-    'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
-    'mrns': [
-        {
-            'site': 'MGH',
-            'mrn': '9999993',
-            'active': True,
-        },
+OIE_PATIENT_DATA = OIEPatientData(
+    date_of_birth=date(1986, 10, 1),
+    first_name='Marge',
+    last_name='Simpson',
+    sex='F',
+    alias='',
+    ramq='SIMM86600199',
+    deceased=False,
+    death_date_time=None,
+    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    mrns=[
+        OIEMRNData(site='MGH', mrn='9999993', active=True),
     ],
-})
+)
 
 
 def test_relationshippending_form_is_valid() -> None:
@@ -56,7 +53,7 @@ def test_relationshippending_form_is_valid() -> None:
 def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -98,7 +95,7 @@ def test_relationshippending_update() -> None:
 def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -173,452 +170,6 @@ def test_relationship_pending_status_reason() -> None:
 
     assert not pending_form.is_valid()
     assert pending_form.errors['reason'][0] == message
-
-
-def test_site_selection_exist() -> None:
-    """Ensure that the site selection is valid."""
-    site = factories.Site(name='Montreal General Hospital', code='MGH')
-    form_data = {
-        'sites': site,
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert form.is_valid()
-
-
-def test_site_selection_not_exist() -> None:
-    """Ensure that the empty site selection is not valid."""
-    form_data = {
-        'sites': '',
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert not form.is_valid()
-
-
-def test_find_patient_by_mrn_invalid_mrn() -> None:
-    """Ensure that the `find_patient_by_mrn` catch an error with an invalid MRN."""
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '',
-        'site_code': 'RVH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-
-    assert 'This field is required.' in form.errors['medical_number']
-    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
-
-
-def test_find_patient_by_mrn_invalid_site_code() -> None:
-    """Ensure that the `find_patient_by_mrn` catch an error with an invalid site code."""
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999996',
-        'site_code': '',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
-
-
-def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is not valid and return an error message.
-
-    Mock find_patient_by_mrn and pretend it was failed.
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
-            },
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999993',
-        'site_code': 'MGH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
-
-
-def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is valid by returning the expected OIE data structure.
-
-    Mock find_patient_by_mrn and pretend it was successful
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
-        return_value={
-            'status': 'success',
-            'data': OIE_PATIENT_DATA,
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999993',
-        'site_code': 'MGH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_find_patient_by_ramq_invalid_ramq() -> None:
-    """Ensure that the `find_patient_by_ramq` catch an error with an invalid site ramq."""
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'ram99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
-
-
-def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is not valid and return an error message.
-
-    Mock find_patient_by_ramq and pretend it was failed.
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
-            },
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'RAMQ99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
-
-
-def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is valid by returning the expected OIE data structure.
-
-    Mock find_patient_by_ramq and pretend it was successful
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
-        return_value={
-            'status': 'success',
-            'data': OIE_PATIENT_DATA,
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'RAMQ99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    print(form.errors)
-    assert form.is_valid()
-
-
-def test_is_correct_checked() -> None:
-    """Ensure that the 'Correct?' checkbox is checked."""
-    form_data = {
-        'is_correct': True,
-    }
-
-    form = forms.ConfirmPatientForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_is_correct_not_checked() -> None:
-    """Ensure that the 'Correct?' checkbox is not checked."""
-    form_data = {
-        'is_correct': False,
-    }
-
-    form = forms.ConfirmPatientForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_correct'] == ['This field is required.']
-
-
-def test_requestor_form_not_check_if_required() -> None:
-    """Ensure that the 'requestor_form' checkbox is not checked."""
-    form_data = {
-        'relationship_type': factories.RelationshipType(start_age=1, form_required=True),
-        'requestor_form': False,
-    }
-
-    form = forms.RequestorDetailsForm(
-        data=form_data,
-        ramq='MARG99991313',
-        mrn='9999993',
-        site='MGH',
-        date_of_birth=date.today() - relativedelta(
-            years=14,
-        ),
-    )
-    assert not form.is_valid()
-    assert form.errors['requestor_form'] == ['Form request is required.']
-
-
-def test_disabled_option_exists() -> None:
-    """Ensure that a disabled option exists."""
-    self_type = RelationshipType.objects.self_type()
-    mandatary_type = RelationshipType.objects.mandatary()
-    factories.Patient(ramq='MARG99991313')
-
-    form_data = {
-        'relationship_type': RelationshipType.objects.all(),
-    }
-    form = forms.RequestorDetailsForm(
-        data=form_data,
-        ramq='MARG99991313',
-        mrn='9999993',
-        site='MGH',
-        date_of_birth=date.today() - relativedelta(
-            years=14,
-        ),
-    )
-
-    options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    for option in options:
-        if option['label'] in {'Self', 'Mandatary'}:
-            assert 'disabled' not in option['attrs']
-        else:
-            assert option['attrs']['disabled'] == 'disabled'
-
-    assert list(form.fields['relationship_type'].widget.available_choices) == [
-        mandatary_type.pk,
-        self_type.pk,
-    ]
-
-
-def test_requestor_account_form_valid() -> None:
-    """Ensure that the requestor account form is valid."""
-    form_data = {
-        'user_type': 1,
-    }
-    form = forms.RequestorAccountForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_requestor_account_form_invalid() -> None:
-    """Ensure that the requestor account form is not valid."""
-    form_data = {
-        'user_type': '',
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert not form.is_valid()
-
-
-def test_existing_user_form_phone_field_error() -> None:
-    """Ensure that the existing user form phone field has error."""
-    form_data = {
-        'user_email': 'marge.simpson@gmail.com',
-        'user_phone': '5141111111',
-    }
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    assert not form.is_valid()
-    assert form.errors['user_phone'] == [
-        'Enter a valid phone number having the format: '
-        + '+<countryCode><phoneNumber> (for example +15141234567) '
-        + 'with an optional extension "x123"',
-    ]
-
-
-def test_existing_user_form_email_field_error() -> None:
-    """Ensure that the existing user form email field has error."""
-    form_data = {
-        'user_email': 'marge.simpson',
-        'user_phone': '5141111111',
-    }
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    assert not form.is_valid()
-    assert form.errors['user_email'] == ['Enter a valid email address.']
-
-
-def test_existing_user_form_user_not_found() -> None:
-    """Ensure that the existing user is not found."""
-    form_data = {
-        'user_email': 'marge.simpson@gmail.com',
-        'user_phone': '+15142222222',
-    }
-    Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    error_message = (
-        'Opal user was not found in your database. '
-        + 'This may be an out-of-hospital account. '
-        + 'Please proceed to generate a new QR code. '
-        + 'Inform the user they must register at the Registration website.'
-    )
-
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == error_message
-
-
-def test_existing_user_not_more_than_one_self() -> None:
-    """Ensure that the existing user is not allowed to have more than one self relationship."""
-    form_data = {
-        'user_email': 'bart.simpson@gmail.com',
-        'user_phone': '+15142222222',
-    }
-    user_caregiver = Caregiver(
-        email='bart.simpson@gmail.com',
-        phone_number='+15142222222',
-        first_name='Bart',
-        last_name='Simpson',
-    )
-    caregiver = CaregiverProfile(user=user_caregiver)
-    patient = factories.Patient(first_name='Bart', last_name='Simpson')
-    relationship_type = factories.RelationshipType(
-        role_type=RoleType.SELF,
-        name='Self',
-        start_age=1,
-        form_required=True,
-    )
-    factories.Relationship(patient=patient, caregiver=caregiver, type=relationship_type)
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=relationship_type,
-    )
-
-    error_message = (
-        'This opal user already has a self-relationship with the patient.'
-    )
-
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == error_message
-
-
-def test_both_checkbox_checked() -> None:
-    """Ensure that the `Correct?` and `ID Checked?` checkboxes are checked."""
-    form_data = {
-        'is_correct': True,
-        'is_id_checked': True,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_correct_is_not_checked() -> None:
-    """Ensure that the `Correct?` is not checked."""
-    form_data = {
-        'is_correct': False,
-        'is_id_checked': True,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_correct'] == ['This field is required.']
-
-
-def test_id_checked_is_not_checked() -> None:
-    """Ensure that the `ID Checked?` is not checked."""
-    form_data = {
-        'is_correct': True,
-        'is_id_checked': False,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_id_checked'] == ['This field is required.']
-
-
-def test_new_user_form_valid() -> None:
-    """Ensure that the `NewUserForm` is valid."""
-    form_data = {
-        'first_name': 'Marge',
-        'last_name': 'Simpson',
-        'is_id_checked': True,
-    }
-
-    form = forms.NewUserForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_new_user_form_not_valid() -> None:
-    """Ensure that the `NewUserForm` is not valid."""
-    form_data = {
-        'first_name': 'Marge',
-        'last_name': 'Simpson',
-        'is_id_checked': False,
-    }
-
-    form = forms.NewUserForm(data=form_data)
-    assert not form.is_valid()
-
-
-def test_confirm_password_form_valid(mocker: MockerFixture) -> None:
-    """Ensure that the confirm user password form is valid."""
-    form_data = {
-        'confirm_password': 'test-password',
-    }
-    user = User.objects.create()
-    user.set_password(form_data['confirm_password'])
-
-    # mock fed authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
-
-    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
-
-    assert form.is_valid()
-
-
-def test_confirm_password_form_password_invalid(mocker: MockerFixture) -> None:
-    """Ensure that user password is not valid."""
-    form_data = {
-        'confirm_password': 'test-password',
-    }
-    user = User.objects.create()
-    user.set_password('password')
-
-    # mock fed authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = None
-
-    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
-
-    assert form.errors['confirm_password'] == ['The password you entered is incorrect. Please try again.']
-    assert not form.is_valid()
 
 
 # Tests for ManageCaregiverAccessFilter
@@ -710,6 +261,16 @@ def test_caregiver_first_last_name_invalid() -> None:
 
 
 # Opal Registration Tests
+def test_accessrequestsearchform_initial() -> None:
+    """Ensure that the card type is the default and the site field is required."""
+    form = forms.AccessRequestSearchPatientForm()
+    site_field = form.fields['site']
+
+    assert form['card_type'].value() == constants.MedicalCard.MRN.name
+    assert not site_field.disabled
+    assert site_field.required
+
+
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
     form_data = {
@@ -929,9 +490,32 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
     assert form.patient == OIE_PATIENT_DATA
 
 
+# skip until OIE is fixed
+@pytest.mark.skip()
+def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if no patient was found."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': '400',
+            'data': {'message': 'Bad request'},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert form.non_field_errors()[0] == 'No patient could be found.'
+
+
 def test_accessrequestrequestorform_form_filled_default() -> None:
     """Ensure the form_filled dynamic field can handle an empty value to initialize."""
-    form = forms.AccessRequestRequestorForm(date_of_birth=date(2013, 1, 1))
+    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
 
     assert form._form_required()
     assert form.fields['form_filled'].required
@@ -943,7 +527,7 @@ def test_accessrequestrequestorform_form_filled_required_type(role_type: RoleTyp
     relationship_type = RelationshipType.objects.get(role_type=role_type)
 
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={
             'relationship_type': relationship_type.pk,
         },
@@ -963,11 +547,13 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
     relationship_types = list(
         RelationshipType.objects.filter(
             role_type__in=enabled_options,
-        ).values_list('name', flat=True),
+        ).values_list('name', flat=True).reverse(),
     )
 
+    patient = OIE_PATIENT_DATA._asdict()
+    patient['date_of_birth'] = date.today() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date.today() - relativedelta(years=age),
+        patient=OIEPatientData(**patient),
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
@@ -981,41 +567,70 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
     assert actual_enabled == relationship_types
 
 
+def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
+    """Ensure that the self option is disabled when the patient already has a self relationship."""
+    patient = factories.Patient()
+    factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
+
+    form = forms.AccessRequestRequestorForm(
+        patient=patient,
+    )
+
+    options = form.fields['relationship_type'].widget.options('relationship-type', '')
+    disabled_options = [
+        option['label']
+        for option in options
+        if option['attrs'].get('disabled', '') == 'disabled'
+    ]
+
+    disabled_types = list(
+        RelationshipType.objects.filter(
+            role_type__in=[
+                RoleType.SELF,
+                RoleType.GUARDIAN_CAREGIVER,
+                RoleType.PARENT_GUARDIAN,
+            ],
+        ).values_list('name', flat=True).reverse(),
+    )
+
+    assert disabled_options == disabled_types
+
+
 @pytest.mark.parametrize('user_type', [
     None,
     constants.UserType.NEW.name,
     constants.UserType.EXISTING.name,
 ])
-def test_accessrequestrequestorform_existing_user_selected(user_type: Optional[str]) -> None:
+def test_accessrequestrequestorform_is_existing_user_selected(user_type: Optional[str]) -> None:
     """Ensure the existing user is not selected by default."""
     data = None
 
     if user_type:
         data = {'user_type': user_type}
 
-    form = forms.AccessRequestRequestorForm(date_of_birth=date(2013, 1, 1), data=data)
+    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
     expected_type = user_type or constants.UserType.NEW.name
-    existing_user_selected = user_type == constants.UserType.EXISTING.name
-    assert form.existing_user_selected() == existing_user_selected
+    is_existing_user_selected = user_type == constants.UserType.EXISTING.name
+    assert form.is_existing_user_selected() == is_existing_user_selected
     assert form['user_type'].value() == expected_type
 
 
-def test_accessrequestrequestorform_existing_user_selected_cleaned_data() -> None:
+def test_accessrequestrequestorform_is_existing_user_selected_cleaned_data() -> None:
     """Ensure the existing user is not selected by default."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
     form.full_clean()
 
-    assert form.existing_user_selected(form.cleaned_data)
+    assert form.is_existing_user_selected(form.cleaned_data)
 
 
 def test_accessrequestrequestorform_new_user_required_fields() -> None:
     """Ensure the new user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
     )
 
     assert form.fields['first_name'].required
@@ -1027,7 +642,7 @@ def test_accessrequestrequestorform_new_user_required_fields() -> None:
 def test_accessrequestrequestorform_new_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
     )
 
     html = render_crispy_form(form)
@@ -1040,7 +655,7 @@ def test_accessrequestrequestorform_new_user_layout() -> None:
 def test_accessrequestrequestorform_existing_user_required_fields() -> None:
     """Ensure the existing user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
@@ -1053,7 +668,7 @@ def test_accessrequestrequestorform_existing_user_required_fields() -> None:
 def test_accessrequestrequestorform_existing_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        date_of_birth=date(2013, 1, 1),
+        patient=OIE_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
@@ -1063,5 +678,299 @@ def test_accessrequestrequestorform_existing_user_layout() -> None:
     )
     assert '<input type="text" name="first_name"' not in html
     assert '<input type="text" name="last_name"' not in html
-    assert '<input type="text" name="user_email"' in html
+    assert '<input type="email" name="user_email"' in html
     assert '<input type="text" name="user_phone"' in html
+
+
+def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
+    """Ensure an error is shown when no existing user is found."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == 'No existing user could be found.'
+
+
+def test_accessrequestrequestorform_existing_user_no_data() -> None:
+    """Ensure `clean()` can handle non-existent user email and phone fields."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+        },
+    )
+
+    assert not form.is_valid()
+
+
+def test_accessrequestrequestorform_existing_user_empty_data() -> None:
+    """Ensure `clean()` can handle empty user email and phone fields."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': '',
+            'user_phone': '',
+        },
+    )
+
+    assert not form.is_valid()
+
+
+def test_accessrequestrequestorform_existing_user_found() -> None:
+    """Ensure `clean()` finds an existing caregiver."""
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.mandatary(),
+            'form_filled': True,
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.existing_user == caregiver
+
+
+def test_accessrequestrequestorform_existing_user_validate_self() -> None:
+    """Ensure `clean()` validates a self relationship to match names."""
+    caregiver = CaregiverProfile(
+        user__first_name='Marge',
+        user__last_name='Simpson',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.existing_user == caregiver
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
+    """Ensure `clean()` can handle a name mismatch for self relationships."""
+    CaregiverProfile(
+        user__first_name='Ned',
+        user__last_name='Flanders',
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=factories.Patient(),
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+    )
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == (
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_patient_exists() -> None:
+    """Ensure `clean()` handles an existing patient already having a self relationship."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    relationship = factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.self_type(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=relationship.patient,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'The patient already has a self-relationship.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists() -> None:
+    """Ensure `clean()` handles an existing caregiver already having a self relationship."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.self_type(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'The caregiver already has a self-relationship.'
+    )
+
+
+def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
+    """Ensure clean handles a caregiver already having a CONFIRMED or PENDING relationship to the patient."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    relationship = factories.Relationship(
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.mandatary(),
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=relationship.patient,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.guardian_caregiver(),
+            'form_filled': True,
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'There already exists an active relationship between the patient and caregiver.'
+    )
+
+
+def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:
+    """Ensure that the first and last name are not disabled for no selection."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+    )
+
+    assert not form.fields['first_name'].disabled
+    assert not form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_first_last_name_not_disabled_selection() -> None:
+    """Ensure that the first and last name are not disabled for a non-self relationship type selection."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.mandatary().pk},
+    )
+
+    assert not form.fields['first_name'].disabled
+    assert not form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_first_last_name_disabled() -> None:
+    """Ensure that the first and last name are disabled when self is selected."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+    )
+
+    assert form.fields['first_name'].disabled
+    assert form.fields['last_name'].disabled
+
+
+def test_accessrequestrequestorform_self_names_prefilled() -> None:
+    """Ensure the first and last name are pre-filled with the patient's name if self is selected."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_self_names_prefilled_empty_initial() -> None:
+    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+        # this happens when switching to self due to the up-validate request handling
+        initial={'first_name': '', 'last_name': ''},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None:
+    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={'relationship_type': RelationshipType.objects.self_type().pk},
+        # this happens when switching to self due to the up-validate request handling
+        initial={'first_name': 'Hans', 'last_name': 'Wurst'},
+    )
+
+    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
+    assert form['first_name'].value() == 'Hans'
+    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
+    assert form['last_name'].value() == 'Wurst'

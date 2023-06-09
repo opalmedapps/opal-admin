@@ -19,7 +19,8 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['code']
 
     def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:
-        """REST API method for handling HTTP requests to retrieve `Institution's` terms of use PDF file in base64 format.
+        """
+        REST API method for handling HTTP requests to retrieve `Institution's` terms of use PDF file in base64 format.
 
         Args:
             request: HTTP GET request
