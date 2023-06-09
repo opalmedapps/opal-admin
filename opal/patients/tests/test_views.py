@@ -388,7 +388,6 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
 
 @pytest.mark.parametrize(
     'role_type', [
-        models.RoleType.SELF,
         models.RoleType.MANDATARY,
         models.RoleType.PARENT_GUARDIAN,
         models.RoleType.GUARDIAN_CAREGIVER,

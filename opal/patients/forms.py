@@ -17,7 +17,7 @@ from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -705,7 +705,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
         Set the layout.
 
@@ -714,9 +714,35 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        # get the RelationshipType record that corresponds to the instance
+        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+        available_choices: QuerySet[RelationshipType] = existing_choice
+
+        caregiver_firstname_field: Field = self.fields['first_name']
+        caregiver_lastname_field: Field = self.fields['last_name']
+
+        # setting the value of caregiver first and last names
+        caregiver_firstname_field.initial = self.instance.caregiver.user.first_name
+        caregiver_lastname_field.initial = self.instance.caregiver.user.last_name
+
         # get the selected type
-        selected_type = self['type'].value()
-        initial_type = RelationshipType.objects.get(pk=selected_type)
+        initial_type: RelationshipType = self.instance.type
+        # ensure that self cannot be changed
+        if initial_type.role_type == RoleType.SELF:
+            self.fields['type'].disabled = True
+            # use readonly to include information in data post
+            caregiver_firstname_field.widget.attrs['readonly'] = True
+            caregiver_lastname_field.widget.attrs['readonly'] = True
+            # change to required/not-required according to the type of the relationship
+            self.fields['end_date'].required = False
+        else:
+            selected_type = self['type'].value()
+            initial_type = RelationshipType.objects.get(pk=selected_type)
+            # combine the instance value and with the valid relationshiptypes
+            available_choices |= utils.valid_relationship_types(self.instance.patient)
+
+        # set the type field with the proper choices
+        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
@@ -737,29 +763,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 initial_type,
             ),
         })
-        # get the RelationshipType record that corresponds to the instance
-        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
-        available_choices: QuerySet[RelationshipType] = existing_choice
-
-        # combine the instance value and with the valid relationshiptypes
-        if existing_choice[0].role_type == RoleType.SELF.name:
-            self.fields['type'].disabled = True
-        else:
-            available_choices |= utils.valid_relationship_types(self.instance.patient)
-
-        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
-
-        # setting the value of caregiver first and last names
-        self.fields['last_name'].initial = self.instance.caregiver.user.last_name
-        self.fields['first_name'].initial = self.instance.caregiver.user.first_name
-
-        # change to required/not-required according to the type of the relationship
-        if initial_type.role_type == RoleType.SELF.name:
-            self.fields['end_date'].required = False
 
         self.helper = FormHelper(self)
         self.helper.attrs = {'novalidate': ''}
-        self.helper.layout = Layout(
+        self.helper.layout = EnterSuppressedLayout(
             Row(
                 CrispyField('first_name', wrapper_class='col-md-6'),
                 CrispyField('last_name', wrapper_class='col-md-6'),
@@ -777,6 +784,31 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 ),
             ),
         )
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Validate the that patient and caregiver have same names when relationship is of `SELF` type.
+
+        Returns:
+            the cleaned form data
+        """
+        super().clean()
+        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
+        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
+        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+
+        if type_field.role_type == RoleType.SELF.name:
+            if (
+                self.instance.patient.first_name != caregiver_firstname
+                or self.instance.patient.last_name != caregiver_lastname
+            ):
+                # this is to capture before saving patient and caregiver has matching names
+                error = (_(
+                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+                ))
+                self.add_error(NON_FIELD_ERRORS, error)
+
+        return self.cleaned_data
 
 
 # TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
