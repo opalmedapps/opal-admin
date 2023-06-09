@@ -490,15 +490,13 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
     assert form.patient == OIE_PATIENT_DATA
 
 
-# skip until OIE is fixed
-@pytest.mark.skip()
 def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
     """Ensure that the validation fails if no patient was found."""
     mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
-            'status': '400',
-            'data': {'message': 'Bad request'},
+            'status': 'error',
+            'data': {'message': 'Patient could not be found'},
         },
     )
 

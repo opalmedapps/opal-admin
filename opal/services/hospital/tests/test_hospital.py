@@ -378,7 +378,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     )
 
 
-def test_empty_value_in_response_by_mrn(mocker: MockerFixture) -> None:
+def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     """Ensure that None value in response returned from find_patient_by_mrn."""
     oie_patient_data_copy = OIE_PATIENT_DATA.copy()
     oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
@@ -416,8 +416,56 @@ def test_empty_value_in_response_by_mrn(mocker: MockerFixture) -> None:
     )
 
 
+def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_mrn handles the not found error accordingly."""
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'message': 'Patient 00000000null not found',
+        },
+    )
+
+    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+    assert response['status'] == 'error'
+    assert response['data']['message'] == ['Patient could not be found']
+
+
+def test_find_by_mrn_patient_not_test_patient(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_mrn handles the not a test patient error accordingly."""
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'message': 'Not Opal test patient',
+        },
+    )
+
+    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+    assert response['status'] == 'error'
+    assert response['data']['message'] == ['The patient is not an Opal test patient']
+
+
+def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
+    """Ensure that find_patient_by_mrn handles the not found error accordingly."""
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'message': 'Patient 00000000null not found',
+        },
+    )
+
+    response = oie_service.find_patient_by_ramq('SIMM86100199')
+    assert response['status'] == 'error'
+    assert response['data']['message'] == ['Patient could not be found']
+
+
 @patch('requests.post')
-def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFixture) -> None:
+def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
     post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
@@ -436,6 +484,7 @@ def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFix
             'status': 'error',
             'data': {
                 'message': 'Caused by ConnectTimeoutError.',
+                'exception': mocker.ANY,
             },
         },
     }
@@ -540,7 +589,7 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
 
 
 @patch('requests.post')
-def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFixture) -> None:
+def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
     post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
@@ -559,6 +608,7 @@ def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFi
             'status': 'error',
             'data': {
                 'message': 'Caused by ConnectTimeoutError.',
+                'exception': mocker.ANY,
             },
         },
     }
