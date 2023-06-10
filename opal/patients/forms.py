@@ -793,22 +793,37 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             the cleaned form data
         """
         super().clean()
-        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
-        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
         type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
 
-        if type_field.role_type == RoleType.SELF.name:
-            if (
-                self.instance.patient.first_name != caregiver_firstname
-                or self.instance.patient.last_name != caregiver_lastname
-            ):
-                # this is to capture before saving patient and caregiver has matching names
-                error = (_(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                ))
-                self.add_error(NON_FIELD_ERRORS, error)
+        if type_field.role_type == RoleType.SELF.name and not self._is_patient_similar_to_caregiver():
+            # this is to capture before saving patient and caregiver have matching names
+            error = (_(
+                'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+            ))
+            self.add_error(NON_FIELD_ERRORS, error)
+        elif type_field.role_type != RoleType.SELF.name and self._is_patient_similar_to_caregiver():
+            # this is to capture before saving patient and caregiver do not have matching names
+            error = (_(
+                'Caregiver cannot have the same name as patient for non-self relationships',
+            ))
+            self.add_error(NON_FIELD_ERRORS, error)
 
         return self.cleaned_data
+
+    def _is_patient_similar_to_caregiver(self) -> bool:
+        """
+        Check whether patient and caregiver have the same name.
+
+        Returns:
+            True if patient and caregiver have the same first and last name. False otherwise.
+        """
+        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
+        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
+
+        return (
+            self.instance.patient.first_name == caregiver_firstname
+            and self.instance.patient.last_name == caregiver_lastname
+        )
 
 
 # TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
