@@ -83,11 +83,12 @@ class TestInsertTestData(CommandTestMixin):
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
-        caregiver_fr = CaregiverProfile.objects.get(user__first_name='Bart')
-        question_fr = SecurityAnswer.objects.filter(user=caregiver_fr)[0].question
+        caregiver_fr = CaregiverProfile.objects.filter(user__language='fr').first()
 
         assert question_en == 'What is the name of your first pet?'
-        assert question_fr == 'Quel est le nom de votre premier animal de compagnie?'
+        # left to catch any changes to the languages
+        # if changed, assert that the French caregiver has a French security question
+        assert caregiver_fr is None
 
 
 class TestInitializeData(CommandTestMixin):
