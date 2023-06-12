@@ -85,14 +85,14 @@ class OIEValidator:
         reg_exp = re.compile(r'^[A-Z]{4}\d{8}$')
         return bool(reg_exp.match(ramq))
 
-    def is_patient_response_valid(  # noqa: C901
+    def is_patient_response_valid(  # noqa: C901, WPS231
         self,
         response_data: Any,
     ) -> list:
         """Check if the OIE patient response data is valid.
 
         Args:
-            response_data (Any): OIE paitent response data received from the OIE
+            response_data (Any): OIE patient response data received from the OIE
 
         return:
             return errors list
@@ -104,15 +104,23 @@ class OIEValidator:
         except (KeyError):
             errors.append('Patient response data does not have the attribute status')
 
-        try:
-            patient_data = response_data['data']
-        except (KeyError):
-            errors.append('Patient response data does not have the attribute data')
+        patient_data = response_data.get('data')
 
-        if not errors and status == 'success':
+        if not errors and patient_data and status == 'success':
             errors += self.check_patient_data(patient_data)
         elif status == 'error':
-            errors.append('Could not establish a connection to the hospital interface.')
+            if patient_data and 'exception' in patient_data:
+                errors.append('connection_error')
+            message: str = response_data.get('message')
+
+            if message:
+                # TODO: improve
+                friendly_message = message.replace('Patient 00000000null not found', 'not_found')
+                friendly_message = friendly_message.replace(
+                    'Not Opal test patient',
+                    'no_test_patient',
+                )
+                errors.append(friendly_message)
         return errors
 
     def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231

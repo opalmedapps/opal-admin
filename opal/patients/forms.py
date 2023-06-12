@@ -249,7 +249,12 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if response['status'] == 'success':
                 self.patient = response['data']
             else:
-                self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+                message = response['data'].get('message')
+
+                if message == 'connection_error':
+                    self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
+                elif message == 'no_test_patient':
+                    self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
             if not self.patient:
                 self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
