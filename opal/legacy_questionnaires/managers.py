@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
     """legacy questionnaire manager."""
 
-    def new_questionnaires(self, patient_sernum: int) -> models.QuerySet['LegacyQuestionnaire']:
+    def new_questionnaires(self, patient_sernum: int, purpose_id: int) -> models.QuerySet['LegacyQuestionnaire']:
         """Get the queryset of new questionnaires for a given user.
 
         Note the input sernum for this query is the OpalDB PatientSerNum, we use the
@@ -26,6 +26,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 
         Args:
             patient_sernum: OpalDB.Patient.PatientSerNum
+            purpose_id: 1 = CLINICAL, 2 = RESEARCH, 3 = QUALITY, 4 = CONSENT, 5 = CLERICAL, 6 = OPAL
 
         Returns:
             Queryset of new questionnaires.
@@ -33,5 +34,5 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         return self.filter(
             legacyanswerquestionnaire__status=0,                             # 0 = New questionnaires
             legacyanswerquestionnaire__patientid__externalid=patient_sernum,
-            purposeid=1,                                                     # 1 = Clinical questionnaire purpose
+            purposeid=purpose_id,                                            # questionnaire purpose
         )
