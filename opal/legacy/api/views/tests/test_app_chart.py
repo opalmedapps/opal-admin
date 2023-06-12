@@ -96,8 +96,10 @@ class TestChartAppView:
         """Test if function returns number of new clinical questionnaires."""
         clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
         research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
+        consent_purpose = questionnaires_factories.LegacyPurposeFactory(id=4)
         clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
         research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
+        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=consent_purpose)
         patient_one = questionnaires_factories.LegacyPatientFactory()
         patient_two = questionnaires_factories.LegacyPatientFactory(externalid=52)
 
@@ -117,10 +119,25 @@ class TestChartAppView:
             patientid=patient_one,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+            questionnaireid=consent_questionnaire,
+            patientid=patient_one,
+        )
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
             questionnaireid=clinical_questionnaire,
             patientid=patient_two,
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=51,
+            purpose_id=1,
+        ).count()
+        assert new_questionnaires == 1
+        new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
+            patient_sernum=51,
+            purpose_id=2,
+        ).count()
+        assert new_questionnaires == 1
+        new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
+            patient_sernum=51,
+            purpose_id=4,
         ).count()
         assert new_questionnaires == 1
