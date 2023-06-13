@@ -20,8 +20,8 @@ class HospitalPatientAdmin(admin.ModelAdmin):
 class PatientAdmin(admin.ModelAdmin):
     """Admin options for the `Patient` model."""
 
-    list_display = ['__str__', 'date_of_birth', 'date_of_death', 'sex', 'ramq', 'legacy_id']
-    list_filter = ['sex', 'date_of_birth', 'date_of_death']
+    list_display = ['__str__', 'date_of_birth', 'date_of_death', 'sex', 'ramq', 'data_access', 'legacy_id']
+    list_filter = ['sex', 'date_of_birth', 'date_of_death', 'data_access']
     readonly_fields = ['uuid']
     search_fields = ['first_name', 'last_name', 'ramq']
 

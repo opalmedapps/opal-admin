@@ -47,6 +47,7 @@ class LegacyPatient(models.Model):
     dateofbirth = models.DateTimeField(db_column='DateOfBirth')
     death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
     ssn = models.CharField(db_column='SSN', max_length=16)
+    accesslevel = models.CharField(db_column='AccessLevel', max_length=1, default='1')
     sex = models.CharField(db_column='Sex', max_length=25)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
