@@ -1,11 +1,12 @@
 """Management command for inserting test data."""
 from datetime import date, datetime
 from decimal import Decimal
+from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
 from django.core.files.base import ContentFile
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.utils import timezone
 
@@ -19,6 +20,13 @@ from opal.users.models import Caregiver
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
 
+class InstitutionOption(Enum):
+    muhc = 'MUHC'
+    chusj = 'CHUSJ'
+
+    def __str__(self) -> str:
+        return self.name
+
 
 class Command(BaseCommand):
     """
@@ -29,8 +37,22 @@ class Command(BaseCommand):
 
     help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'  # noqa: A003
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            'institution',
+            type=InstitutionOption,
+            choices=list(InstitutionOption),
+            help='Choose the institution for which to insert test data',
+        )
+        parser.add_argument(
+            '--force-delete',
+            action='store_true',
+            default=False,
+            help='Force deleting existing test data without prior confirmation',
+        )
+
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle execution of the command.
 
@@ -39,7 +61,7 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            kwargs: additional keyword arguments
+            options: additional keyword arguments
         """
         if any([
             Relationship.objects.all().exists(),
@@ -78,7 +100,7 @@ def _delete_existing_data() -> None:
     Institution.objects.all().delete()
 
 
-def _create_test_data() -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:
     """
     Create all test data.
 
