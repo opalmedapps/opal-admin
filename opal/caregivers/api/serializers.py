@@ -142,6 +142,8 @@ class SecurityAnswerSerializer(DynamicFieldsSerializer):
 class CaregiverSerializer(DynamicFieldsSerializer):
     """Serializer for caregiver profile."""
 
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
     username = serializers.CharField(source='user.username')
@@ -154,6 +156,8 @@ class CaregiverSerializer(DynamicFieldsSerializer):
         model = CaregiverProfile
         fields = [
             'uuid',
+            'first_name',
+            'last_name',
             'language',
             'phone_number',
             'username',
