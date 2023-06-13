@@ -273,11 +273,10 @@ def _create_test_data() -> None:
         patient=homer,
         caregiver=user_homer,
         relationship_type=type_self,
-        status=RelationshipStatus.REVOKED,
+        status=RelationshipStatus.CONFIRMED,
         request_date=_relative_date(today, -10),
         start_date=_relative_date(today, -12),
         end_date=_relative_date(today, -1),
-        reason='Revoked due to legal court order.',
     )
 
     # Marge --> Bart: Guardian/Parent
