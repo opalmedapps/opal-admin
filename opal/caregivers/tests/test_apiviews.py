@@ -59,13 +59,59 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
 
-    data_fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
+    data_fields = [
+        'patient_id',
+        'patient_legacy_id',
+        'first_name', 'last_name',
+        'status',
+        'relationship_type',
+        'data_access',
+    ]
     for data_field in data_fields:
         assert data_field in response.data[0]
 
     relationship_type_fields = ['id', 'name', 'can_answer_questionnaire', 'role_type']
     for relationship_type_field in relationship_type_fields:
         assert relationship_type_field in response.data[0]['relationship_type']
+
+
+def test_caregiver_profile(api_client: APIClient, admin_user: User) -> None:
+    """The caregiver's profile is returned."""
+    caregiver_profile = caregiver_factory.CaregiverProfile(user__username='johnwaynedabest')
+
+    api_client.force_login(user=admin_user)
+    api_client.credentials(HTTP_APPUSERID=caregiver_profile.user.username)
+    response = api_client.get(reverse('api:caregivers-profile'))
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+
+    expected_data = ['uuid', 'first_name', 'last_name', 'language', 'phone_number', 'username', 'devices']
+    assert list(data.keys()) == expected_data
+    assert data['username'] == 'johnwaynedabest'
+    assert not data['devices']
+
+
+def test_caregiver_profile_not_found(api_client: APIClient, admin_user: User) -> None:
+    """A 404 is returned if the caregiver does not exist."""
+    api_client.force_login(user=admin_user)
+    api_client.credentials(HTTP_APPUSERID='johnwaynedabest')
+    response = api_client.get(reverse('api:caregivers-profile'))
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    # ensure that the response contains JSON
+    response.json()
+
+
+def test_caregiver_profile_missing_header(api_client: APIClient, admin_user: User) -> None:
+    """An error is returned if the `Appuserid` header is missing."""
+    api_client.force_login(user=admin_user)
+    response = api_client.get(reverse('api:caregivers-profile'))
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    data = response.json()
+
+    assert 'detail' in data
 
 
 def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
