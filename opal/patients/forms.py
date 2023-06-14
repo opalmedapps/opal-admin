@@ -730,7 +730,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         caregiver_firstname_field.initial = self.instance.caregiver.user.first_name
         caregiver_lastname_field.initial = self.instance.caregiver.user.last_name
 
-        # get the selected type
+        # get the saved type
         initial_type: RelationshipType = self.instance.type
         # ensure that self cannot be changed
         if initial_type.role_type == RoleType.SELF:
@@ -741,6 +741,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             # change to required/not-required according to the type of the relationship
             self.fields['end_date'].required = False
         else:
+            # get the selected type
             selected_type = self['type'].value()
             initial_type = RelationshipType.objects.get(pk=selected_type)
             # combine the instance value and with the valid relationshiptypes
