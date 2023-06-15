@@ -1,6 +1,7 @@
 """This module provides views for any health-data related functionality."""
 from typing import Any, Dict, Optional
 
+from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
@@ -23,8 +24,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
     """
 
     model = QuantitySample
-    template_name = 'health_data_display.html'
     permission_required = ('health_data.view_quantitysample')
+    http_method_names = ['get', 'head', 'options', 'trace']
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """Update the context with patient identifiers and wearables plot HTML strings.
@@ -57,6 +58,25 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
             },
         )
         return context
+
+    def get_template_names(self) -> list[str]:
+        """Return a list of template names to be used for the request based on the request type.
+
+        Provide partial HTML for the wearables data charts if receive AJAX GET request.
+        Otherwise return the whole page.
+
+        See `TemplateResponseMixin` for more details.
+
+        Returns:
+            List of template names
+        """
+        if (
+            self.request.method == 'GET'
+            and self.request.headers.get('Origin') == settings.ORMS_URL
+        ):
+            return ['chart_display.html']
+
+        return ['index.html']
 
     def _generate_plot(self, title: str, label_x: str, label_y: str, data: QuerySet[QuantitySample]) -> Optional[str]:
         """Generate a plotly chart for the given sample type.
