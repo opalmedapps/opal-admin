@@ -51,6 +51,8 @@ class AppChartView(APIView):
             'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
                 legacy_id,
                 user_name,
+            ).filter(
+                educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
             ).count(),
             'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
