@@ -234,14 +234,44 @@ def test_filter_managecaregiver_valid_mrn() -> None:
 
 
 def test_filter_managecaregiver_valid_ramq() -> None:
-    """Ensure that filtering caregiver access by `ramq` does not require `site`."""
+    """Ensure that filtering caregiver access by `ramq` does not require `site` and disabled it."""
+    factories.HospitalPatient()
+    factories.Site()
+
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
         'site': '',
         'medical_number': 'RAMQ12345678',
     }
-    form = ManageCaregiverAccessFilter(data=form_data)
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+
     assert form.is_valid()
+    assert form.cleaned_data['card_type'] == constants.MedicalCard.RAMQ.name
+    assert site_field.disabled
+    assert not site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Not required'
+
+
+def test_filter_managecaregiver_valid_ramq_single_site() -> None:
+    """Ensure that filtering caregiver access by `ramq` when there is single site, hides `site`."""
+    hospital_patient = factories.HospitalPatient()
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
+
+    assert card_type_field.initial != constants.MedicalCard.RAMQ.name
+    assert form.is_valid()
+    # assert value of site is set although the field is hidden
+    assert form.cleaned_data['site'] == hospital_patient.site
+    assert site_field.disabled
+    assert isinstance(site_field.widget, HiddenInput)
 
 
 def test_filter_managecaregiver_valid_mrn_single_site() -> None:
