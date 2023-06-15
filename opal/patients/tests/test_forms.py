@@ -321,6 +321,26 @@ def test_caregiver_first_last_name_invalid() -> None:
     assert form.errors['last_name'][0] == error_message
 
 
+def test_caregiver_access_form_update() -> None:
+    """Ensure that `first_name` and `last_name` can be updated through the assigned form."""
+    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
+    patient = factories.Patient()
+
+    relationship = factories.Relationship(
+        patient=patient,
+        type=self_type,
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    form_data = model_to_dict(relationship)
+    form_data['first_name'] = patient.first_name
+    form_data['last_name'] = patient.last_name
+
+    form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
+
+    assert form.is_valid()
+
+
 # Opal Registration Tests
 def test_accessrequestsearchform_initial() -> None:
     """Ensure that the card type is the default and the site field is required."""
