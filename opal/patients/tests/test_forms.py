@@ -211,17 +211,26 @@ def test_filter_managecaregiver_missing_ramq() -> None:
     assert form.errors['medical_number'] == ['This field is required.']
 
 
-def test_filter_managecaregiver_missing_valid_mrn() -> None:
+def test_filter_managecaregiver_valid_mrn() -> None:
     """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
     hospital_patient = factories.HospitalPatient()
-
+    factories.Site()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
         'medical_number': '9999996',
     }
-    form = ManageCaregiverAccessFilter(data=form_data)
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
+
     assert form.is_valid()
+    # test that form is defaulted to MRN
+    assert card_type_field.initial == constants.MedicalCard.MRN.name
+    assert not site_field.disabled
+    assert site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Choose...'
 
 
 def test_filter_managecaregiver_valid_ramq() -> None:
@@ -233,6 +242,28 @@ def test_filter_managecaregiver_valid_ramq() -> None:
     }
     form = ManageCaregiverAccessFilter(data=form_data)
     assert form.is_valid()
+
+
+def test_filter_managecaregiver_valid_mrn_single_site() -> None:
+    """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
+    hospital_patient = factories.HospitalPatient()
+
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'site': hospital_patient.site.id,
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
+
+    assert card_type_field.initial == constants.MedicalCard.MRN.name
+    assert form.is_valid()
+    # assert value of site is set although the field is hidden
+    assert form.cleaned_data['site'] == hospital_patient.site
+    assert site_field.disabled
+    assert isinstance(site_field.widget, HiddenInput)
 
 
 # Tests for ManageCaregiverAccessUpdateForm
@@ -317,6 +348,7 @@ def test_accessrequestsearchform_more_than_site() -> None:
     assert not site_field.disabled
     assert site_field.required
     assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Choose...'  # type: ignore[attr-defined]
 
 
 def test_accessrequestsearchform_ramq_validation_fail() -> None:
