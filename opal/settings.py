@@ -472,6 +472,8 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
 
+CORS_ALLOW_HEADERS = env.list('CORS_ALLOW_HEADERS')
+
 # Easy Audit
 #
 # Remove /admin to log requests to the admin site
@@ -515,8 +517,6 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_USER_GROUP = 'orms'
-# base URL to ORMS (no trailing slash)
-ORMS_URL = env.url('ORMS_URL').geturl()
 
 # Institution code for registration
 INSTITUTION_CODE = env.str('INSTITUTION_CODE')

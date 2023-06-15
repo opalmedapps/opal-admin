@@ -1,7 +1,6 @@
 """This module provides views for any health-data related functionality."""
 from typing import Any, Dict, Optional
 
-from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
@@ -72,7 +71,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
         """
         if (
             self.request.method == 'GET'
-            and self.request.headers.get('Origin') == settings.ORMS_URL
+            and 'x-orms-wearablecharts' in self.request.headers
+            and self.request.headers.get('x-orms-wearablecharts') == 'True'
         ):
             return ['chart_display.html']
 
