@@ -35,25 +35,6 @@ def test_health_data_ui_template_used(user_client: Client, admin_user: AbstractU
     patient_identifiers = soup.find_all('h4')
 
     assert response.status_code == HTTPStatus.OK
-    assertTemplateUsed(response, 'index.html')
-    assert len(patient_identifiers) == 1
-    assert hd_patient.first_name in str(patient_identifiers[0])
-    assert hd_patient.last_name in str(patient_identifiers[0])
-    assert hd_patient.ramq in str(patient_identifiers[0])
-
-
-def test_health_data_ui_partial_graphs_template_for_orms(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure the health data partial graphs page can be rendered for the ORMS."""
-    user_client.force_login(admin_user)
-    hd_patient = patient_factory.Patient(ramq='OTES12345678')
-    response = user_client.get(
-        reverse('health_data:health-data-ui', kwargs={'uuid': hd_patient.uuid}),
-        headers={'x-orms-wearablecharts': 'True'},
-    )
-    soup = BeautifulSoup(response.content, 'html.parser')
-    patient_identifiers = soup.find_all('h4')
-
-    assert response.status_code == HTTPStatus.OK
     assertTemplateUsed(response, 'chart_display.html')
     assert len(patient_identifiers) == 1
     assert hd_patient.first_name in str(patient_identifiers[0])
