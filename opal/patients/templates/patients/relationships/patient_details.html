@@ -1,48 +1,50 @@
- <!-- This file is to reuse the patient's details section in edit and view relationships forms. -->
+<!-- This file is to reuse the patient's details section in edit and view relationships forms. -->
 {% load l10n %}
 {% load i18n %}
-<div class="card-body">
-  <div class="row">
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row">
 
-    <h5 class="mb-4">{% translate "Patient Details" %}</h5>
+      <h4 class="card-title">{% translate "Patient Details" %}</h4>
 
-    <div class="col-lg-3 col-md-3">
-      <div class="row h-25 mb-1">
-        <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
+      <div class="col-lg-3 col-md-3">
+        <div class="row h-25 mb-1">
+          <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
+        </div>
+        <div class="row">
+          <p>{{ relationship.patient }}</p>
+        </div>
       </div>
-      <div class="row">
-        <p>{{ relationship.patient }}</p>
+
+      <div class="col-lg-3 col-md-3">
+        <div class="row h-25 mb-1">
+          <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
+        </div>
+        <div class="row">
+          <p>{{ relationship.patient.date_of_birth | localize }}</p>
+        </div>
       </div>
+
+      <div class="col-lg-3 col-md-3">
+        <div class="row h-25 mb-1">
+          <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
+        </div>
+        <div class="row">
+          <p>
+            {{ relationship.patient.hospital_patients.reverse | join:', ' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-3">
+        <div class="row h-25 mb-1">
+          <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
+        </div>
+        <div class="row">
+          <p>{{ relationship.patient.ramq }}</p>
+        </div>
+      </div>
+
     </div>
-
-    <div class="col-lg-3 col-md-3">
-      <div class="row h-25 mb-1">
-        <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
-      </div>
-      <div class="row">
-        <p>{{ relationship.patient.date_of_birth | localize }}</p>
-      </div>
-    </div>
-
-    <div class="col-lg-3 col-md-3">
-      <div class="row h-25 mb-1">
-        <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
-      </div>
-      <div class="row">
-        <p>
-          {{ relationship.patient.hospital_patients.reverse | join:', ' }}
-        </p>
-      </div>
-    </div>
-
-    <div class="col-lg-3 col-md-3">
-      <div class="row h-25 mb-1">
-        <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
-      </div>
-      <div class="row">
-        <p>{{ relationship.patient.ramq }}</p>
-      </div>
-    </div>
-
   </div>
 </div>
