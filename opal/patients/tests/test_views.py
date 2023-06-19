@@ -5,7 +5,7 @@ from http import HTTPStatus
 from typing import Tuple
 
 from django.contrib.auth.models import AbstractUser, Permission
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.forms.models import model_to_dict
 from django.test import Client, RequestFactory
 from django.urls import reverse
@@ -384,6 +384,96 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
 
     # assert success_url is equal to the new cancel_url
     assert response_post.url == cancel_url  # type: ignore[attr-defined]
+
+
+def test_caregiver_access_update_form_fail(relationship_user: Client) -> None:
+    """Ensures patient cannot have different name from caregiver in self-relationship."""
+    patient = factories.Patient()
+    self_type = factories.RelationshipType(role_type=models.RoleType.SELF.name)
+    relationship = factories.Relationship(patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['end_date'] = date.fromisoformat('2023-05-09')
+    form_data['cancel_url'] = cancel_url
+
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    response_post = relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    assert err_msg in response_post.context['form'].errors['__all__']
+
+
+@pytest.mark.parametrize(
+    'role_type', [
+        models.RoleType.MANDATARY,
+        models.RoleType.PARENT_GUARDIAN,
+        models.RoleType.GUARDIAN_CAREGIVER,
+    ],
+)
+def test_caregiver_access_update_form_pass(relationship_user: Client, role_type: models.RoleType) -> None:
+    """Ensure patient can have different name from caregiver in non-self relationship."""
+    patient = factories.Patient()
+    relationshiptype = factories.RelationshipType(role_type=role_type)
+    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['end_date'] = date.fromisoformat('2023-05-09')
+    form_data['cancel_url'] = cancel_url
+
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+
+    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
+    # assert the first and last name have been changed
+    assert relationship_record.caregiver.user.first_name == form_data['first_name']
+    assert relationship_record.caregiver.user.last_name == form_data['last_name']
+
+
+def test_caregiver_access_update_form_self_pass(relationship_user: Client) -> None:
+    """Ensure patient cannot have different name from caregiver in self relationship."""
+    patient = factories.Patient()
+    relationshiptype = factories.RelationshipType(role_type=models.RoleType.SELF)
+    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['cancel_url'] = cancel_url
+
+    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    post_response = relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+    form_context = post_response.context['form']
+
+    assert err_msg in form_context.errors.get(NON_FIELD_ERRORS)
+    # assert the first and last name have not been changed
+    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
+    assert relationship_record.caregiver.user.first_name != form_data['first_name']
+    assert relationship_record.caregiver.user.last_name != form_data['last_name']
 
 
 @pytest.mark.parametrize(
