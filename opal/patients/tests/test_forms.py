@@ -116,6 +116,37 @@ def test_relationshippending_update_fail() -> None:
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
+    assert relationshippending_form.fields['type'].queryset  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(
+    'relationship_type', [
+        RoleType.GUARDIAN_CAREGIVER,
+        RoleType.PARENT_GUARDIAN,
+        RoleType.MANDATARY,
+    ],
+)
+def test_relationshippending_type_not_contain_self(relationship_type: Optional[str]) -> None:
+    """Ensure that the `type` field does not contain self but contains the relationship type being updated."""
+    self_type = RelationshipType.objects.self_type()
+    relation_type = RelationshipType.objects.get(role_type=relationship_type)
+    relationship_info = factories.Relationship(
+        patient=factories.Patient(
+            date_of_birth=date.today() - relativedelta(
+                years=14,
+            ),
+        ),
+        type=relation_type,
+    )
+    form_data = model_to_dict(relationship_info)
+
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+    )
+
+    assert self_type not in relationshippending_form.fields['type'].queryset  # type: ignore[attr-defined]
+    assert relation_type in relationshippending_form.fields['type'].queryset  # type: ignore[attr-defined]
 
 
 def test_relationshippending_form_date_validated() -> None:
