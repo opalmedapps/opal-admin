@@ -59,6 +59,24 @@ def test_legacy_checkboxoption_factory() -> None:
     test_checkboxoption.full_clean()
 
 
+def test_legacy_label_factory() -> None:
+    """Test whether the factory creates a valid LegacyLabelFactory model instance."""
+    test_label = factories.LegacyLabelFactory()
+    test_label.full_clean()
+
+
+def test_checkbox_factory() -> None:
+    """Test whether the factory creates a valid LegacyCheckbox model instance."""
+    test_checkbox = factories.LegacyCheckboxFactory()
+    test_checkbox.full_clean()
+
+
+def test_radio_button_factory() -> None:
+    """Test whether the factory creates a valid LegacyRadioButton model instance."""
+    test_rb = factories.LegacyRadioButtonFactory()
+    test_rb.full_clean()
+
+
 def test_legacy_labeloption_factory() -> None:
     """Test whether the factory creates a valid LegacyLabelOptionFactory model instance."""
     test_labeloption = factories.LegacyLabelOptionFactory()

@@ -99,7 +99,7 @@ class TestChartAppView:
         clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
         research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
         patient_one = questionnaires_factories.LegacyPatientFactory()
-        patient_two = questionnaires_factories.LegacyPatientFactory(externalid=52)
+        patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
 
         # status=0 by default for new questionnaires
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
