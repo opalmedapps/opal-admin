@@ -96,6 +96,7 @@ class LegacyAppointment(models.Model):
         'LegacyPatient',
         models.DO_NOTHING,
         db_column='PatientSerNum',
+        to_field='patientsernum',
     )
     state = models.CharField(db_column='State', max_length=25)
     scheduledstarttime = models.DateTimeField(db_column='ScheduledStartTime')
@@ -109,7 +110,12 @@ class LegacyAppointment(models.Model):
     scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
     appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
 
     objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
@@ -122,7 +128,12 @@ class LegacyAliasExpression(models.Model):
     """Legcy alias expression model mapping AliasExpression table from legacy database."""
 
     aliasexpressionsernum = models.AutoField(db_column='AliasExpressionSerNum', primary_key=True)
-    aliassernum = models.ForeignKey('LegacyAlias', models.DO_NOTHING, db_column='AliasSerNum')
+    aliassernum = models.ForeignKey(
+        'LegacyAlias',
+        models.DO_NOTHING,
+        db_column='AliasSerNum',
+        to_field='aliassernum',
+    )
     expression_name = models.CharField(db_column='ExpressionName', max_length=250)
     description = models.CharField(db_column='Description', max_length=250)
     master_source_alias_id = models.ForeignKey(

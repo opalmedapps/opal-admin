@@ -141,6 +141,57 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             'scheduledstarttime',
         ).first()
 
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: models.DateTimeField,
+        sent_data_ids: list,
+    ) -> Optional[models.QuerySet]:
+        """
+        Retrieve the latest de-identified appointment data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+            sent_data_ids: List of ids that have previously been successfully sent to the databank
+
+        Returns:
+            Appointment data
+
+        """
+        return self.select_related(
+            'aliasexpressionsernum',
+            'aliasexpressionsernum__aliassernum',
+            'source_database',
+            'patientsernum',
+        ).filter(
+            checkin=1,
+            patientsernum__patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).exclude(
+            appointmentsernum__in=sent_data_ids,
+        ).annotate(
+            appointment_ser_num=models.F('appointmentsernum'),
+            date_created=models.F('date_added'),
+            source_db_name=models.F('source_database__source_database_name'),
+            source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
+            source_db_alias_description=models.F('aliasexpressionsernum__description'),
+            source_db_appointment_id=models.F('appointment_aria_ser'),
+            alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
+            scheduled_start_time=models.F('scheduledstarttime'),
+        ).values(
+            'appointment_ser_num',
+            'date_created',
+            'source_db_name',
+            'source_db_alias_code',
+            'source_db_alias_description',
+            'source_db_appointment_id',
+            'aliasexpressionsernum__aliassernum__aliasname_en',
+            'scheduledstarttime',
+            'scheduled_end_time',
+            'last_updated',
+        )
+
 
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
     """legacy document manager."""
