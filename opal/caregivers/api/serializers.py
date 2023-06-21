@@ -150,7 +150,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
 
     caregiver = CaregiverSerializer(
         source='relationship.caregiver',
-        fields=('uuid', 'legacy_id'),
+        fields=('uuid', 'first_name', 'last_name', 'legacy_id'),
         many=False,
         read_only=True,
     )
