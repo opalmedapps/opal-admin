@@ -10,7 +10,8 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
-from typing import TYPE_CHECKING, Optional, TypeVar
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional, TypeVar, Any
 
 from django.db import models
 from django.utils import timezone
@@ -144,11 +145,16 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: models.DateTimeField,
+        last_synchronized: datetime,
         sent_data_ids: list,
-    ) -> Optional[models.QuerySet]:
+    ) -> models.QuerySet:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
+
+        TODO: The sent_data_ids exclusions are theoretically useful to reduce the amount of re-sent data after
+        partial sender errors, but by using them we are potentially losing the ability to send data that gets
+        updated (under the same data_ser_num) after it has previously been sent to the databank. This is somewhat
+        common for labs, for example, so we might not be able to filter out the previously sent ids. TBD
 
         Args:
             patient_ser_num: Legacy OpalDB patient ser num
@@ -186,7 +192,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             'source_db_alias_code',
             'source_db_alias_description',
             'source_db_appointment_id',
-            'aliasexpressionsernum__aliassernum__aliasname_en',
+            'alias_name',
             'scheduledstarttime',
             'scheduled_end_time',
             'last_updated',
@@ -233,3 +239,43 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         ).values(
             'postcontrolsernum',
         ).distinct().count() or 0
+
+
+class LegacyPatientManager(models.Manager):
+    """LegacyPatient model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified demographics data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Demographics data
+
+        """
+        return self.filter(
+            patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized
+        ).annotate(
+            patient_ser_num=models.F('patientsernum'),
+            opal_registration_date=models.F('registrationdate'),
+            patient_sex=models.F('sex'),
+            patient_dob=models.F('dateofbirth'),
+            patient_primary_language=models.F('language'),
+            patient_death_date=models.F('death_date'),
+        ).values(
+            'patient_ser_num',
+            'opal_registration_date',
+            'patient_sex',
+            'patient_dob',
+            'patient_primary_language',
+            'patient_death_date',
+            'last_updated',
+        )

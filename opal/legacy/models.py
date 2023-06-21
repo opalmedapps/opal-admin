@@ -52,6 +52,8 @@ class LegacyPatient(models.Model):
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
 
+    objects: managers.LegacyPatientManager = managers.LegacyPatientManager()
+
     class Meta:
         managed = False
         db_table = 'Patient'

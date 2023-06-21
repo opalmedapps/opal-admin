@@ -52,18 +52,29 @@ class LegacyNotificationFactory(DjangoModelFactory):
     patientsernum = SubFactory(LegacyPatientFactory)
 
 
+class LegacyHospitalMapFactory(DjangoModelFactory):
+    """HospitalMap factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyHospitalMap
+
+    mapname_en = 'R720'
+    mapname_fr = 'R720'
+    dateadded = timezone.make_aware(datetime(2023, 3, 15))
+
+
 class LegacyAliasFactory(DjangoModelFactory):
     """Alias factory from the legacy database."""
 
     class Meta:
         model = models.LegacyAlias
 
-    aliassernum = 283
     aliastype = 'Appointment'
     aliasname_en = 'Calcul de la Dose'
     aliasname_fr = 'Calcul de la Dose'
     alias_description_en = 'Calcul de la Dose'
     alias_description_fr = 'Calcul de la Dose'
+    hospitalmapsernum = SubFactory(LegacyHospitalMapFactory)
 
 
 class LegacyMasterSourceAliasFactory(DjangoModelFactory):
@@ -120,7 +131,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     date_added = timezone.make_aware(datetime(2018, 1, 1))
     appointment_aria_ser = Sequence(lambda number: number + 1)
     last_updated = timezone.make_aware(datetime(2018, 1, 1))
-    source_database = 1
+    source_database = SubFactory(LegacySourceDatabaseFactory)
 
 
 class LegacyDocumentFactory(DjangoModelFactory):
@@ -251,18 +262,6 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
     mrn = '9999996'
     isactive = True
-
-
-class LegacyHospitalMapFactory(DjangoModelFactory):
-    """HospitalMap factory from the legacy database OpalDB."""
-
-    class Meta:
-        model = models.LegacyHospitalMap
-
-    hospitalmapsernum = 1
-    mapname_en = 'R720'
-    mapname_fr = 'R720'
-    dateadded = timezone.make_aware(datetime(2023, 3, 15))
 
 
 class LegacyDiagnosisFactory(DjangoModelFactory):
