@@ -63,6 +63,7 @@ def qr_code(text: str) -> bytes:
     """
     code = qrcode.QRCode(
         version=1,
+        border=0,
     )
     code.add_data(text)
     code.make(fit=True)
