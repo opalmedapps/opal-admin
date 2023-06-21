@@ -1,4 +1,6 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+from typing import Any
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
@@ -17,15 +19,16 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.mixins.put_as_create import AllowPUTAsCreateMixin
 from opal.caregivers.api.serializers import (
+    CaregiverSerializer,
     DeviceSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
 )
-from opal.caregivers.models import Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
-from opal.users.models import User
+from opal.users.models import Caregiver, User
 
 from .. import constants
 
@@ -74,7 +77,7 @@ class GetCaregiverPatientsList(APIView):
         Handle GET requests from `caregivers/patients/`.
 
         Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
+            request: Http request made by the listener needed to retrieve `Appuserid`.
 
         Raises:
             ParseError: If the caregiver username was not provided.
@@ -86,14 +89,50 @@ class GetCaregiverPatientsList(APIView):
 
         if not user_id:
             raise exceptions.ParseError(
-                'Requests to APIs using CaregiverPatientPermissions must provide a string'
-                + " 'Appuserid' header representing the current user.",
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
             )
 
         relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
         return Response(
             CaregiverPatientSerializer(relationships, many=True).data,
         )
+
+
+class CaregiverProfileView(RetrieveAPIView):
+    """Retrieve the profile of the current caregiver."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CaregiverSerializer
+    queryset = CaregiverProfile.objects.all().select_related('user')
+    lookup_field = 'user__username'
+    lookup_url_kwarg = 'username'
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle retrieval of a caregiver profile.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+
+        Raises:
+            ParseError: if the Appuserid HTTP header is missing
+        """
+        user_id = request.headers.get('Appuserid')
+
+        if not user_id:
+            raise exceptions.ParseError(
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
+            )
+
+        # manually set the username kwarg since it is not provided via the URL
+        self.kwargs['username'] = user_id
+
+        return super().retrieve(request, *args, **kwargs)
 
 
 class RetrieveRegistrationCodeMixin(APIView):
@@ -145,20 +184,27 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
+        #  Check whether the email is already registered
+        caregiver = Caregiver.objects.filter(email=email).first()
+        if caregiver:
+            raise drf_serializers.ValidationError(
+                _('The email is already registered.'),
+            )
+
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
-        caregiver = registration_code.relationship.caregiver
+        caregiver_profile = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
             email_verification = EmailVerification.objects.create(
-                caregiver=caregiver,
+                caregiver=caregiver_profile,
                 code=verification_code,
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_email(email_verification, caregiver.user)
+            self._send_verification_code_email(email_verification, caregiver_profile.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -171,7 +217,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_email(email_verification, caregiver.user)
+                self._send_verification_code_email(email_verification, caregiver_profile.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
@@ -179,7 +225,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         return Response()
 
-    def _send_email(  # noqa: WPS210
+    def _send_verification_code_email(  # noqa: WPS210
         self,
         email_verification: EmailVerification,
         user: User,
@@ -209,8 +255,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         send_mail(
             _('Opal Verification Code'),
             email_plain,
-            # TODO: change to a proper from email
-            settings.EMAIL_HOST_USER,
+            settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
             html_message=email_html,
         )

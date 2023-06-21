@@ -2,67 +2,25 @@
 {% load l10n %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block heading %}
   {% translate "View Caregiver Access" %}
 {% endblock %}
 
 {% block content %}
-  <div class="card mb-3">
-    <div class="card-body">
-      <div class="row">
-
-        <h5 class="mb-4">{% translate "Patient" %}</h5>
-
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient }}</p>
-          </div>
-        </div>
-
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.date_of_birth | localize }}</p>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>
-              {{ relationship.patient.hospital_patients.reverse |join:', ' }}
-            </p>
-          </div>
-        </div>
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.ramq }}</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  <!-- reused file in both edit and view templates -->
+  {% include "patients/relationships/patient_details.html" %}
   <div class="card">
     <div class="card-body">
       <div class="row">
-
-        <h5 class="mb-4">{% translate "Caregiver" %}</h5>
-
+        <h4 class="card-title">{% translate "Caregiver Details" %}</h4>
+        <div class="col-lg-12 mb-2">
+          <p class="mb-0">{% translate "This screen allows you to view an access that has expired." %}</p>
+          <ul>
+            <li>{% translate "Caregiver accesses that have expired cannot be changed, they can only be viewed." %}</li>
+          </ul>
+        </div>
         <div class="col">
           <div class="row h-25 mb-1">
             <p><span class="fw-bold">{% translate "First Name" %}</span>:</p>
@@ -92,6 +50,16 @@
             <p>{{ relationship.type }}</p>
           </div>
         </div>
+
+        <div class="col">
+          <div class="row h-25 mb-1">
+            <p><span class="fw-bold">{% translate "Status" %}</span>:</p>
+          </div>
+          <div class="row">
+            <p>{{ relationship.get_status_display }}</p>
+          </div>
+        </div>
+
         <div class="col">
           <div class="row h-25 mb-1">
             <p><span class="fw-bold">{% translate "Access Start" %}</span>:</p>
@@ -101,17 +69,6 @@
           </div>
         </div>
 
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Status" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.get_status_display }}</p>
-          </div>
-        </div>
         <div class="col">
           <div class="row h-25 mb-1">
             <p><span class="fw-bold">{% translate "Access End" %}</span>:</p>
@@ -133,13 +90,14 @@
           </div>
         </div>
         <div class="col">
-
         </div>
-
       </div>
+
       {% #form_actions %}
-        {% form_cancel href=cancel_url type="back" %}
+      {% form_cancel href=cancel_url type="back" %}
       {% /form_actions %}
+
     </div>
+
   </div>
 {% endblock %}

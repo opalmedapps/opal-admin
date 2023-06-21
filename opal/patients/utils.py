@@ -300,7 +300,6 @@ def create_relationship(  # noqa: WPS211
         start_date=start_date,
         end_date=end_date,
     )
-    print(relationship.__dict__)
 
     relationship.full_clean()
     relationship.save()

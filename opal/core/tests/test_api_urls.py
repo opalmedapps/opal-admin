@@ -102,6 +102,22 @@ def test_api_caregiver_security_questions_defined(settings: SettingsWrapper) -> 
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-detail'
 
 
+def test_api_caregiver_patient_list_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the API for retrieving a caregiver's patients is defined."""
+    url = f'/{settings.API_ROOT}/caregivers/patients/'
+
+    assert reverse('api:caregivers-patient-list') == url
+    assert resolve(url).view_name == 'api:caregivers-patient-list'
+
+
+def test_api_caregiver_profile_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the API for retrieving a caregiver's profile is defined."""
+    url = f'/{settings.API_ROOT}/caregivers/profile/'
+
+    assert reverse('api:caregivers-profile') == url
+    assert resolve(url).view_name == 'api:caregivers-profile'
+
+
 def test_api_security_question_random_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions random endpoints are defined."""
     question_path = '/{api_root}/caregivers/{username}/security-questions/random/'.format(

@@ -1,13 +1,17 @@
 """This module provides forms for the `patients` app."""
-from datetime import date, timedelta
+import logging
+from datetime import timedelta
 from typing import Any, Optional, Union, cast
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db.models import QuerySet
 from django.forms.fields import Field
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import override
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div
@@ -20,12 +24,15 @@ from opal.core import validators
 from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.models import Caregiver, User
+from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.twilio import TwilioService, TwilioServiceError
+from opal.users.models import Caregiver, Language, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+LOGGER = logging.getLogger(__name__)
 
 
 # functions that are reused between two forms
@@ -87,7 +94,7 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression; move to setup.cfg?)
+        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression)
 
         self.has_existing_data = False
 
@@ -109,7 +116,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
     card_type = forms.ChoiceField(
@@ -124,7 +131,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         label=_('Hospital'),
         required=is_mrn_selected,
         disabled=is_not_mrn_or_single_site,
-        empty_label=get_site_empty_label,  # noqa: WPS506
+        empty_label=get_site_empty_label,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -237,7 +244,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if not self.patient:
                 response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
 
-        self._handle_response(response)
+        if response:
+            self._handle_response(response)
+
+        if not self.patient and not self._errors:
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
         """Handle the response from OIE service.
@@ -245,31 +256,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
-        if response:
-            if response['status'] == 'success':
-                self.patient = response['data']
-            else:
-                self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+        if response['status'] == 'success':
+            self.patient = response['data']
+        else:
+            messages = response['data'].get('message')
 
-            if not self.patient:
-                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
-    def _fake_oie_response(self) -> OIEPatientData:
-        return OIEPatientData(
-            date_of_birth=date.fromisoformat('2018-01-01'),
-            first_name='Lisa',
-            last_name='Simpson',
-            sex='F',
-            alias='',
-            ramq='SIML86531906',
-            ramq_expiration=None,
-            deceased=False,
-            death_date_time=None,
-            mrns=[
-                OIEMRNData(site='MGH', mrn='9999993', active=True),
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
-            ],
-        )
+            if 'connection_error' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
+            elif 'no_test_patient' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -392,12 +387,19 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        patient: Patient | OIEPatientData,
+        existing_user: Optional[CaregiverProfile] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
             patient: a `Patient` or `OIEPatientData` instance
+            existing_user: a `CaregiverProfile` if it a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -420,7 +422,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = None
+        self.existing_user: Optional[CaregiverProfile] = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -550,11 +552,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             user_email = cleaned_data['user_email']
             user_phone = cleaned_data['user_phone']
 
-            if user_email and user_phone:
-                self.existing_user = CaregiverProfile.objects.filter(
-                    user__email=user_email,
-                    user__phone_number=user_phone,
-                ).first()
+            self.existing_user = CaregiverProfile.objects.filter(
+                user__email=user_email,
+                user__phone_number=user_phone,
+            ).first()
 
             # prevent continuing when no user was found
             if not self.existing_user:
@@ -602,7 +603,8 @@ class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 
     password = forms.CharField(
-        widget=forms.PasswordInput(),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}),
+        strip=False,
         label=_('Please confirm access to patient data by entering your password.'),
     )
 
@@ -656,6 +658,79 @@ class TabRadioSelect(CrispyField):
     """
 
     template = 'patients/radioselect_tabs.html'
+
+
+class AccessRequestSendSMSForm(forms.Form):
+    """This form provides the ability to send SMS with a registration code."""
+
+    language = forms.ChoiceField(
+        choices=Language,
+    )
+
+    phone_number = forms.CharField(
+        label=_('Phone Number'),
+        initial='+1',
+        validators=[validators.validate_phone_number],
+    )
+
+    def __init__(self, registration_code: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for the send SMS form.
+
+        Args:
+            registration_code: the registration code that can be sent to a phone number
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        self.registration_code = registration_code
+
+        self.helper = FormHelper()
+        self.helper.attrs = {'novalidate': '', 'up-submit': '', 'up-target': '#sendSMS'}
+        self.helper.layout = Layout(
+            Div(
+                'language',
+                CrispyField('phone_number', wrapper_class='col-4'),
+                # wrap the submit button to not make it increase in size if the form has field errors
+                Div(
+                    InlineSubmit('send_sms', 'Send'),
+                ),
+                # make form inline
+                css_class='d-md-flex flex-row justify-content-start gap-3',
+            ),
+        )
+
+    def clean(self) -> Optional[dict[str, Any]]:  # noqa: WPS210 (too many local variables)
+        """
+        Send the SMS to the phone number if the form fields are valid.
+
+        Returns:
+            the cleaned form data
+        """
+        cleaned_data = self.cleaned_data
+
+        language = cleaned_data.get('language')
+        phone_number = cleaned_data.get('phone_number')
+        registration_code = self.registration_code
+
+        if language and phone_number:
+            url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
+            with override(language):
+                message = gettext('Your Opal registration code is: {code}. Please go to: {url}'.format(
+                    code=registration_code,
+                    url=url,
+                ))
+
+            twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
+
+            try:
+                twilio.send_sms(phone_number, message)
+            except TwilioServiceError:
+                self.add_error(NON_FIELD_ERRORS, gettext('An error occurred while sending the SMS'))
+                LOGGER.exception(f'Sending SMS failed to {phone_number}')
+
+        return cleaned_data
 
 
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
@@ -725,7 +800,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         caregiver_firstname_field.initial = self.instance.caregiver.user.first_name
         caregiver_lastname_field.initial = self.instance.caregiver.user.last_name
 
-        # get the selected type
+        # get the saved type
         initial_type: RelationshipType = self.instance.type
         # ensure that self cannot be changed
         if initial_type.role_type == RoleType.SELF:
@@ -736,10 +811,13 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             # change to required/not-required according to the type of the relationship
             self.fields['end_date'].required = False
         else:
+            # get the selected type
             selected_type = self['type'].value()
             initial_type = RelationshipType.objects.get(pk=selected_type)
             # combine the instance value and with the valid relationshiptypes
             available_choices |= utils.valid_relationship_types(self.instance.patient)
+            # exclude self relationship to disallow switching to self
+            available_choices = available_choices.exclude(role_type=RelationshipType.objects.self_type())
 
         # set the type field with the proper choices
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]

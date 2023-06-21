@@ -113,6 +113,7 @@ def test_submit_error(mocker: MockerFixture) -> None:
         'status': 'error',
         'data': {
             'message': 'request failed',
+            'exception': mocker.ANY,
         },
     }
 
@@ -191,6 +192,7 @@ def test_submit_json_decode_error(mocker: MockerFixture) -> None:
         'status': 'error',
         'data': {
             'message': 'request failed: line 1 column 1 (char 0)',
+            'exception': mocker.ANY,
         },
     }
 

@@ -9,28 +9,40 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-md-8 col-sm-12">
-      <p>{% translate "A unique one-time Opal registration code has been created for the following patient:" %}</p>
-      <p>
-        <strong>{% translate "Patient:" %}</strong> {{ patient }}<br>
-        <strong>{% translate "Requestor:" %}</strong> {{ requestor }}
-      </p>
-    </div>
-    <div class="col-md-4 col-sm-12 text-center">
+  <div>
+    <p>{% translate "A unique one-time Opal registration code has been created for the following patient:" %}</p>
+    <p>
+      <strong>{% translate "Patient:" %}</strong> {{ patient }}<br>
+      <strong>{% translate "Requestor:" %}</strong> {{ requestor }}
+    </p>
+  </div>
+  <div class="d-flex justify-content-center text-center gap-5">
+    <div>
       <h4 class="mb-3">{% translate "Registration Code" %}</h4>
       <span class="h5">{{ registration_code }}</span>
-      <img src="data:image/svg+xml;utf8;base64,{{ qr_code|safe }}" class="img-fluid d-block mx-auto text-center w-75">
+    </div>
+    <div>
+      <h4 class="mb-3">{% translate "QR Code" %}</h4>
+      <img src="data:image/svg+xml;utf8;base64,{{ qr_code|safe }}" class="img-fluid">
     </div>
   </div>
+  <h5>{% translate "Send code via SMS" %}</h5>
+  <div class="d-flex align-items-baseline mt-3 gap-3" id="sendSMS">
+    {% if send_sms_success %}
+      <p class="text-success">{% translate "SMS sent successfully" %}</p>
+    {% elif form %}
+      {% crispy form %}
+    {% endif %}
+  </div>
+
   <h5>{%translate "Instructions" %}</h5>
   <ul>
+    <li class="text-danger fw-semibold">{% translate "Do not print this page!" %}</li>
     <li>
-      {# reduce spacing for blocktranslate for easier reuse in another template #}
-{% blocktranslate %}
-Please inform the requestor that access to patient data is subject to approval by Medical Records
-and inform them about any steps required to be done as per hospital policy.
-{% endblocktranslate %}
+      {% blocktranslate trimmed %}
+        Please inform the requestor that access to patient data is subject to approval by Medical Records
+        and inform them about any steps required to be done as per hospital policy.
+      {% endblocktranslate %}
     </li>
     <li>{% translate "Inform the requestor that the code is valid for 72 hours." %}</li>
     <li>{% translate "Inform the requestor how to proceed if the code expired (as per hospital policy)." %}</li>
@@ -42,6 +54,7 @@ and inform them about any steps required to be done as per hospital policy.
     </ul>
   </ul>
   {% #form_actions %}
-    {% form_cancel href='/'|add:request.resolver_match.route type="done" %}
+    {% url "patients:access-request" as url %}
+    {% form_cancel href=url type="done" %}
   {% /form_actions %}
 {% endblock %}

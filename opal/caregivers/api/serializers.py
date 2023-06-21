@@ -135,6 +135,8 @@ class CaregiverSerializer(DynamicFieldsSerializer):
         model = CaregiverProfile
         fields = [
             'uuid',
+            'first_name',
+            'last_name',
             'language',
             'phone_number',
             'username',

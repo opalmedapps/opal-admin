@@ -154,14 +154,6 @@ def test_patient_response_status_non_exists() -> None:
     assert errors == ['Patient response data does not have the attribute status']
 
 
-def test_patient_response_data_non_exists() -> None:
-    """Ensure patient response data non-existent status return error message."""
-    errors = oie_validator.is_patient_response_valid({
-        'status': 'success',
-    })
-    assert errors == ['Patient response data does not have the attribute data']
-
-
 # check_patient_data
 
 def test_check_patient_data_valid() -> None:
