@@ -516,6 +516,8 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_USER_GROUP = 'orms'
+# base URL to ORMS (no trailing slash)
+ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # Institution code for registration
 INSTITUTION_CODE = env.str('INSTITUTION_CODE')
