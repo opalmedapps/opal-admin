@@ -545,11 +545,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             user_email = cleaned_data['user_email']
             user_phone = cleaned_data['user_phone']
 
-            if user_email and user_phone:
-                self.existing_user = CaregiverProfile.objects.filter(
-                    user__email=user_email,
-                    user__phone_number=user_phone,
-                ).first()
+            self.existing_user = CaregiverProfile.objects.filter(
+                user__email=user_email,
+                user__phone_number=user_phone,
+            ).first()
 
             # prevent continuing when no user was found
             if not self.existing_user:
