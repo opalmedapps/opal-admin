@@ -12,7 +12,7 @@ from pytest_mock.plugin import MockerFixture
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.services.twilio import TwilioServiceError
-from opal.users.factories import Caregiver
+from opal.users.factories import Caregiver, User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -1417,6 +1417,36 @@ def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
     form.is_valid()
 
     assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestconfirmform() -> None:
+    """Ensure the confirm form is invalid by default."""
+    form = forms.AccessRequestConfirmForm(username='noone')
+
+    assert not form.is_valid()
+
+
+def test_accessrequestconfirmform_invalid_password(admin_user: User, mocker: MockerFixture) -> None:
+    """Ensure that an invalid password fails the form validation."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
+
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'invalid',
+    })
+
+    assert not form.is_valid()
+    assert form.has_error('password')
+
+
+def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
+    """Ensure that a valid user's password makes the form valid."""
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'password',
+    })
+
+    assert form.is_valid()
 
 
 def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
