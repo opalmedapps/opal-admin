@@ -11,7 +11,7 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional, TypeVar, Any
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 from django.db import models
 from django.utils import timezone
@@ -262,7 +262,7 @@ class LegacyPatientManager(models.Manager):
         """
         return self.filter(
             patientsernum=patient_ser_num,
-            last_updated__gt=last_synchronized
+            last_updated__gt=last_synchronized,
         ).annotate(
             patient_ser_num=models.F('patientsernum'),
             opal_registration_date=models.F('registrationdate'),
