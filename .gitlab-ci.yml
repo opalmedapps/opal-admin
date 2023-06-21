@@ -34,6 +34,9 @@ default:
     # generate secret key
     - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+    # add fake Twilio credentials
+    - sed -i "s/^TWILIO_ACCOUNT_SID=.*/TWILIO_ACCOUNT_SID=testsid/" .env
+    - sed -i "s/^TWILIO_AUTH_TOKEN=.*/TWILIO_AUTH_TOKEN=testtoken/" .env
 
 
 stages:

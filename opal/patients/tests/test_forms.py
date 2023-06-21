@@ -11,6 +11,7 @@ from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver
 
 from .. import constants, factories, forms
@@ -1416,3 +1417,61 @@ def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
     form.is_valid()
 
     assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
+    """Ensure that the SMS is not sent when the form is incomplete."""
+    mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+        },
+    )
+
+    form.full_clean()
+
+    mock_send.assert_not_called()
+
+
+def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
+    """Ensure that the SMS is sent successfully."""
+    mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    form.full_clean()
+
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)
+
+
+def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
+    """Ensure that the form shows an error if sending the SMS failed."""
+    mock_send = mocker.patch(
+        'opal.services.twilio.TwilioService.send_sms',
+        side_effect=TwilioServiceError('catastrophe!'),
+    )
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    form.full_clean()
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'An error occurred while sending the SMS'
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)

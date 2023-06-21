@@ -14,6 +14,7 @@ from django.utils.html import strip_tags
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_mock.plugin import MockerFixture
 
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
@@ -773,7 +774,6 @@ def test_relationshiptype_perm_required_fail(user_client: Client, django_user_mo
 )
 def test_relationshiptype_perm_required_success(
     relationshiptype_user: Client,
-    django_user_model: User,
     url_name: str,
 ) -> None:
     """Ensure that `RelationshipType` can be accessed with the required permission."""
@@ -785,7 +785,7 @@ def test_relationshiptype_perm_required_success(
 
 
 @pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
-def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
+def test_relationshiptype_response_contains_menu(relationshiptype_user: Client) -> None:
     """Ensures that pending relationshiptypes is displayed for users with permission."""
     response = relationshiptype_user.get(reverse('hospital-settings:index'))
 
@@ -802,7 +802,7 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     assertNotContains(response, 'Relationship Types')
 
 
-def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, django_user_model: User) -> None:
+def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client) -> None:
     """
     Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
 
@@ -857,7 +857,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     assert len(patients) == 3
 
 
-def test_not_display_duplicated_patients(relationship_user: Client, django_user_model: User) -> None:
+def test_not_display_duplicated_patients(relationship_user: Client) -> None:
     """
     Ensure that `Search Patient Access` template does not display duplicated `Patient Details` search results.
 
@@ -925,7 +925,7 @@ def test_not_display_duplicated_patients(relationship_user: Client, django_user_
     assert strip_tags(patient_names[0]) == str(patient2)
 
 
-def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, django_user_model: User) -> None:
+def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) -> None:
     """
     Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
 
@@ -1048,3 +1048,176 @@ def test_access_request_initial_search(client: Client, registration_user: User) 
     # assert site field is being initialized with site when there is only one site
     context = response_post.context
     assert context['current_forms'][0]['site'].initial == site
+
+
+def test_access_request_confirmation_no_permission(django_user_model: User) -> None:
+    """Ensure that the access request confirmation view can not be viewed without the required permission."""
+    request = RequestFactory().get(reverse('patients:access-request-confirmation'))
+    request.user = django_user_model.objects.create(username='testuser')
+
+    with pytest.raises(PermissionDenied):
+        AccessRequestView.as_view()(request)
+
+
+def test_access_request_confirmation_no_data_redirects(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view redirects when there is no data in the session."""
+    client.force_login(registration_user)
+
+    # initialize the session storage
+    response = client.get(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == reverse('patients:access-request')
+
+
+def test_access_request_confirmation_partial_data_redirects(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view redirects when there is only partial data in the session."""
+    client.force_login(registration_user)
+
+    session = client.session
+    session[AccessRequestView.session_key_name] = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+    }
+    session.save()
+
+    response = client.get(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == reverse('patients:access-request')
+
+
+def test_access_request_confirmation_no_code(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view shows the confirmation template for an existing user without a code."""
+    client.force_login(registration_user)
+
+    session = client.session
+    session[AccessRequestView.session_key_name] = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+        'registration_code': None,
+    }
+    session.save()
+
+    # initialize the session storage
+    response = client.get(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.OK
+    # the registration data was deleted
+    assert not client.session[AccessRequestView.session_key_name]
+    # the response displays the correct information
+    assertTemplateUsed(response, 'patients/access_request/confirmation.html')
+    assertContains(response, 'Hans Wurst')
+    assertContains(response, 'John Wayne')
+    url = reverse('patients:access-request')
+    assertContains(response, f'href="{url}"')
+
+
+def test_access_request_confirmation_code(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view shows the confirmation template for a new user with the code."""
+    client.force_login(registration_user)
+
+    data = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+        'registration_code': '123456',
+    }
+    session = client.session
+    session[AccessRequestView.session_key_name] = data
+    session.save()
+
+    # initialize the session storage
+    response = client.get(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.OK
+    # the registration data was not deleted
+    assert client.session[AccessRequestView.session_key_name] == data
+    # the response displays the correct information
+    assertTemplateUsed(response, 'patients/access_request/confirmation_code.html')
+    assert 'form' in response.context
+    assertContains(response, 'Hans Wurst')
+    assertContains(response, 'John Wayne')
+    assertContains(response, '123456')
+    url = reverse('patients:access-request')
+    assertContains(response, f'href="{url}"')
+
+
+def test_access_request_confirmation_post_no_code(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view prevents posts when there is no code."""
+    client.force_login(registration_user)
+
+    data = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+        'registration_code': None,
+    }
+    session = client.session
+    session[AccessRequestView.session_key_name] = data
+    session.save()
+
+    # initialize the session storage
+    response = client.post(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == reverse('patients:access-request')
+
+
+def test_access_request_confirmation_post_no_data(client: Client, registration_user: User) -> None:
+    """Ensure that the confirmation view handles posts for the form."""
+    client.force_login(registration_user)
+
+    data = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+        'registration_code': '123456',
+    }
+    session = client.session
+    session[AccessRequestView.session_key_name] = data
+    session.save()
+
+    # initialize the session storage
+    response = client.post(reverse('patients:access-request-confirmation'))
+
+    assert response.status_code == HTTPStatus.OK
+    # the registration data was not deleted
+    assert client.session[AccessRequestView.session_key_name] == data
+
+
+def test_access_request_confirmation_post_success(
+    client: Client,
+    registration_user: User,
+    mocker: MockerFixture,
+) -> None:
+    """Ensure that the confirmation view handles posts for the form and re-shows the template on success."""
+    client.force_login(registration_user)
+
+    mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
+
+    data = {
+        'patient': 'Hans Wurst',
+        'requestor': 'John Wayne',
+        'registration_code': '123456',
+    }
+    session = client.session
+    session[AccessRequestView.session_key_name] = data
+    session.save()
+
+    # initialize the session storage
+    response = client.post(
+        reverse('patients:access-request-confirmation'),
+        {
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)
+    assertContains(response, 'SMS sent successfully')
+    # the template still contains the relevant data
+    assertContains(response, 'Hans Wurst')
+    assertContains(response, 'John Wayne')
+    assertContains(response, '123456')
+    # the registration data was deleted
+    assert not client.session[AccessRequestView.session_key_name]
