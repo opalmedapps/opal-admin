@@ -23,8 +23,9 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
     """
 
     model = QuantitySample
-    template_name = 'health_data_display.html'
+    template_name = 'chart_display.html'
     permission_required = ('health_data.view_quantitysample')
+    http_method_names = ['get', 'head', 'options', 'trace']
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """Update the context with patient identifiers and wearables plot HTML strings.
