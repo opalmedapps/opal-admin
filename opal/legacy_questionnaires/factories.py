@@ -262,7 +262,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     section = SubFactory(LegacySectionFactory)
     question = SubFactory(LegacyQuestionFactory)
-    type = SubFactory(LegacyTypeFactory)
+    type = SubFactory(LegacyTypeFactory)  # noqa: A003
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
     patient = SubFactory(LegacyPatientFactory)
