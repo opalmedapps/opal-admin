@@ -86,7 +86,7 @@ def test_caregiver_profile(api_client: APIClient, admin_user: User) -> None:
     assert response.status_code == HTTPStatus.OK
     data = response.json()
 
-    expected_data = ['uuid', 'first_name', 'last_name', 'language', 'phone_number', 'username', 'devices']
+    expected_data = ['uuid', 'first_name', 'last_name', 'language', 'phone_number', 'username', 'devices', 'legacy_id']
     assert list(data.keys()) == expected_data
     assert data['username'] == 'johnwaynedabest'
     assert not data['devices']

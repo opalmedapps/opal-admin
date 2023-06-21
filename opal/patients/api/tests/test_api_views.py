@@ -153,8 +153,8 @@ class TestApiRetrieveRegistrationDetails:
         assert response.json() == {
             'caregiver': {
                 'uuid': caregiver.uuid,
-                'first_name': caregiver.first_name,
-                'last_name': caregiver.last_name,
+                'first_name': caregiver.user.first_name,
+                'last_name': caregiver.user.last_name,
                 'legacy_id': caregiver.legacy_id,
             },
             'patient': {
