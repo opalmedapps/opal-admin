@@ -20,7 +20,13 @@ from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermi
 
 from ..api.serializers import CaregiverRelationshipSerializer, HospitalPatientSerializer, PatientDemographicSerializer
 from ..models import Patient, Relationship
-from ..utils import insert_security_answers, update_caregiver, update_caregiver_profile, update_patient_legacy_id, update_registration_code_status
+from ..utils import (
+    insert_security_answers,
+    update_caregiver,
+    update_caregiver_profile,
+    update_patient_legacy_id,
+    update_registration_code_status,
+)
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
