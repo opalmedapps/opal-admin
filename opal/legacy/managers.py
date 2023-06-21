@@ -149,10 +149,10 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     ) -> models.QuerySet:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
+
         Args:
             patient_ser_num: Legacy OpalDB patient ser num
             last_synchronized: Last time the cron process to send databank data ran successfully
-            sent_data_ids: List of ids that have previously been successfully sent to the databank
 
         Returns:
             Appointment data
