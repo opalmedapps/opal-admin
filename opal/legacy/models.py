@@ -400,24 +400,6 @@ class LegacyMasterSourceAlias(models.Model):
         db_table = 'masterSourceAlias'
 
 
-class LegacyDiagnosis(models.Model):
-    """Diagnosis from the legacy database OpalDB."""
-
-    diagnosis_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisSerNum')
-    patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
-    diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
-    diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=50)
-    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
-    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
-    creation_date = models.DateTimeField(db_column='CreationDate')
-
-    class Meta:
-        managed = False
-        db_table = 'Diagnosis'
-
-
 class LegacyDiagnosisTranslation(models.Model):
     """DiagnosisTranslation from the legacy database OpalDB."""
 
@@ -447,15 +429,50 @@ class LegacyDiagnosisCode(models.Model):
         db_table = 'DiagnosisCode'
 
 
+class LegacyDiagnosis(models.Model):
+    """Diagnosis from the legacy database OpalDB."""
+
+    diagnosis_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisSerNum')
+    patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
+    diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
+    diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=100)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
+    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
+    creation_date = models.DateTimeField(db_column='CreationDate')
+
+    objects: managers.LegacyDiagnosisManager = managers.LegacyDiagnosisManager()
+
+    class Meta:
+        managed = False
+        db_table = 'Diagnosis'
+
+
 class LegacyTestResult(models.Model):
     """TestResult from the legacy database OpalDB."""
 
     test_result_ser_num = models.AutoField(db_column='TestResultSerNum', primary_key=True)
     test_result_group_ser_num = models.IntegerField(db_column='TestResultGroupSerNum')
-    test_result_control_ser_num = models.IntegerField(db_column='TestResultControlSerNum')
+    test_result_control_ser_num = models.ForeignKey(
+        'LegacyTestResultControl',
+        models.DO_NOTHING,
+        db_column='TestResultControlSerNum',
+        to_field='test_result_control_ser_num',
+    )
     test_result_expression_ser_num = models.IntegerField(db_column='TestResultExpressionSerNum')
     patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    source_database = models.IntegerField(db_column='SourceDatabaseSerNum')
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
     test_result_aria_ser = models.CharField(db_column='TestResultAriaSer', max_length=100)
     component_name = models.CharField(db_column='ComponentName', max_length=30)
     fac_component_name = models.CharField(db_column='FacComponentName', max_length=30)
@@ -471,6 +488,8 @@ class LegacyTestResult(models.Model):
     date_added = models.DateTimeField(db_column='DateAdded')
     read_status = models.IntegerField(db_column='ReadStatus')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    objects: managers.LegacyTestResultManager = managers.LegacyTestResultManager()
 
     class Meta:
         managed = False

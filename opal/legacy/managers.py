@@ -270,3 +270,111 @@ class LegacyPatientManager(models.Manager):
             'patient_death_date',
             'last_updated',
         )
+
+
+class LegacyDiagnosisManager(models.Manager):
+    """LegacyDiagnosis model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Diagnosis data
+        """
+        return self.select_related(
+            'patient_ser_num',
+            'diagnosis_code__diagnosis_translation_ser_num',
+        ).filter(
+            patient_ser_num__patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            date_created=models.F('creation_date'),
+            source_system=models.F('source_database__source_database_name'),
+            source_system_ser=models.F('diagnosis_aria_ser'),
+            source_system_code=models.F('diagnosis_code'),
+            source_system_code_description=models.F('diagnosis_code__description'),
+            internal_description=models.F('description_EN'),
+            diagnosis_translation=models.F('diagnosis_code__diagnosis_translation_ser_num__name_en'),
+            stage=models.F('stage'),
+            stage_criteria=models.F('stage_criteria'),
+            last_updated=models.F('last_updated'),
+        ).values(
+            'diagnosis_ser_num',
+            'date_created',
+            'source_system',
+            'source_system_ser',
+            'source_system_code',
+            'source_system_code_description',
+            'internal_description',
+            'diagnosis_translation',
+            'stage',
+            'stage_criteria',
+            'last_updated',
+        )
+
+
+class LegacyTestResultManager(models.Manager):
+    """LegacyTestResult model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified labs data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Lab data
+        """
+        return self.select_related(
+            'patient_ser_num',
+            'test_result_control_ser_num',
+        ).filter(
+            patient_ser_num__patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            test_component_date=models.F('test_date'),
+            test_group_name=models.F('test_result_control_ser_num__group_en'),
+            test_component_name=models.F('component_name'),
+            test_name=models.F('test_result_control_ser_num__name_en'),
+            test_value=models.F('test_value'),
+            test_units=models.F('unit_description'),
+            max_norm_range=models.F('max_norm'),
+            min_norm_range=models.F('min_norm'),
+            abnormal_flag=models.F('abnormal_flag'),
+            approved_flag=models.F('approved_flag'),
+            valid_flag=models.F('valid_entry'),
+            source_system=models.F('source_database__source_database_name'),
+            source_system_ser=models.F('test_result_aria_ser'),
+            last_updated=models.F('last_updated'),
+        ).values(
+            'test_result_ser_num',
+            'test_component_date',
+            'test_group_name',
+            'test_component_name',
+            'test_name',
+            'test_value',
+            'test_units',
+            'max_norm_range',
+            'min_norm_range',
+            'abnormal_flag',
+            'approved_flag',
+            'valid_flag',
+            'source_system',
+            'source_system_ser',
+            'last_updated',
+        )

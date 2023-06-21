@@ -264,22 +264,6 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     isactive = True
 
 
-class LegacyDiagnosisFactory(DjangoModelFactory):
-    """Diagnosis factory from the legacy database OpalDB."""
-
-    class Meta:
-        model = models.LegacyDiagnosis
-
-    patient_ser_num = SubFactory(LegacyPatientFactory)
-    source_database = 1
-    diagnosis_aria_ser = '22234'
-    diagnosis_code = 'C71.1'
-    last_updated = timezone.make_aware(datetime(2018, 1, 1))
-    stage = 'IIIB'
-    stage_criteria = 'T2, pN1a, M0'
-    creation_date = timezone.make_aware(datetime(2018, 1, 1))
-
-
 class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
     """DiagnosisTranslation factory from the legacy database OpalDB."""
 
@@ -302,31 +286,20 @@ class LegacyDiagnosisCodeFactory(DjangoModelFactory):
     diagnosis_translation_ser_num = SubFactory(LegacyDiagnosisTranslationFactory)
 
 
-class LegacyTestResultFactory(DjangoModelFactory):
-    """TestResultControl factory from the legacy database OpalDB."""
+class LegacyDiagnosisFactory(DjangoModelFactory):
+    """Diagnosis factory from the legacy database OpalDB."""
 
     class Meta:
-        model = models.LegacyTestResult
+        model = models.LegacyDiagnosis
 
-    test_result_group_ser_num = Sequence(lambda number: number + 1)
-    test_result_control_ser_num = Sequence(lambda number: number + 1)
-    test_result_expression_ser_num = Sequence(lambda number: number + 1)
     patient_ser_num = SubFactory(LegacyPatientFactory)
-    source_database = 1
-    test_result_aria_ser = Faker('word')
-    component_name = Faker('word')
-    fac_component_name = Faker('word')
-    abnormal_flag = 'N'
-    test_date = timezone.make_aware(datetime(2018, 1, 1))
-    max_norm = Faker('pyfloat', positive=True)
-    min_norm = Faker('pyfloat', positive=True)
-    approved_flag = 'Y'
-    test_value = Faker('pyfloat', positive=True)
-    test_value_string = Faker('sentence')
-    unit_description = Faker('word')
-    valid_entry = 'Y'
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
-    read_status = Faker('random_int', min=0, max=1)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    diagnosis_aria_ser = '22234'
+    diagnosis_code = 'C12.3'
+    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    stage = 'IIIB'
+    stage_criteria = 'T2, pN1a, M0'
+    creation_date = timezone.make_aware(datetime(2018, 1, 1))
 
 
 class LegacyTestResultControlFactory(DjangoModelFactory):
@@ -349,3 +322,30 @@ class LegacyTestResultControlFactory(DjangoModelFactory):
     last_updated = datetime.now()
     url_en = Faker('url')
     url_fr = Faker('url')
+
+
+class LegacyTestResultFactory(DjangoModelFactory):
+    """TestResultControl factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyTestResult
+
+    test_result_group_ser_num = Sequence(lambda number: number + 1)
+    test_result_control_ser_num = SubFactory(LegacyTestResultControlFactory)
+    test_result_expression_ser_num = Sequence(lambda number: number + 1)
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    test_result_aria_ser = Faker('word')
+    component_name = Faker('word')
+    fac_component_name = Faker('word')
+    abnormal_flag = 'N'
+    test_date = timezone.make_aware(datetime(2018, 1, 1))
+    max_norm = Faker('pyfloat', positive=True)
+    min_norm = Faker('pyfloat', positive=True)
+    approved_flag = 'Y'
+    test_value = Faker('pyfloat', positive=True)
+    test_value_string = Faker('sentence')
+    unit_description = Faker('word')
+    valid_entry = 'Y'
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    read_status = Faker('random_int', min=0, max=1)
