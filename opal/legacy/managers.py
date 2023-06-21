@@ -146,16 +146,9 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-        sent_data_ids: list,
     ) -> models.QuerySet:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
-
-        TODO: The sent_data_ids exclusions are theoretically useful to reduce the amount of re-sent data after
-        partial sender errors, but by using them we are potentially losing the ability to send data that gets
-        updated (under the same data_ser_num) after it has previously been sent to the databank. This is somewhat
-        common for labs, for example, so we might not be able to filter out the previously sent ids. TBD
-
         Args:
             patient_ser_num: Legacy OpalDB patient ser num
             last_synchronized: Last time the cron process to send databank data ran successfully
@@ -174,8 +167,6 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             checkin=1,
             patientsernum__patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
-        ).exclude(
-            appointmentsernum__in=sent_data_ids,
         ).annotate(
             appointment_ser_num=models.F('appointmentsernum'),
             date_created=models.F('date_added'),
