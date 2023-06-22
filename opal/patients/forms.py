@@ -18,6 +18,7 @@ from crispy_forms.layout import HTML, Column, Div
 from crispy_forms.layout import Field as CrispyField
 from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
+from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
@@ -726,7 +727,7 @@ class AccessRequestSendSMSForm(forms.Form):
 
             try:
                 twilio.send_sms(phone_number, message)
-            except TwilioServiceError:
+            except (TwilioServiceError, RequestException):
                 self.add_error(NON_FIELD_ERRORS, gettext('An error occurred while sending the SMS'))
                 LOGGER.exception(f'Sending SMS failed to {phone_number}')
 
