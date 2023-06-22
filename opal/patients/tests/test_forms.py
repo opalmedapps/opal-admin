@@ -8,6 +8,7 @@ import pytest
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
+from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -1458,6 +1459,30 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
+    )
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    form.full_clean()
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'An error occurred while sending the SMS'
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)
+
+
+def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
+    """Ensure that the form shows an error if the connection to Twilio fails."""
+    mock_send = mocker.patch(
+        'opal.services.twilio.TwilioService.send_sms',
+        side_effect=RequestException('SSL key too weak'),
     )
 
     form = forms.AccessRequestSendSMSForm(
