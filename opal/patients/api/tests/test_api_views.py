@@ -222,6 +222,8 @@ class TestApiRegistrationCompletion:
             data=valid_input_data,
             format='json',
         )
+        # TODO temporary debug line
+        print(response.data)
         registration_code.refresh_from_db()
         security_answers = SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.OK
