@@ -152,7 +152,7 @@ class TestApiRetrieveRegistrationDetails:
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
             'caregiver': {
-                'uuid': caregiver.uuid,
+                'uuid': str(caregiver.uuid),
                 'first_name': caregiver.user.first_name,
                 'last_name': caregiver.user.last_name,
                 'legacy_id': caregiver.legacy_id,
@@ -190,7 +190,7 @@ class TestApiRegistrationCompletion:
             'language': 'fr',
             'phone_number': '+15141112222',
             'username': 'test-username',
-            'legacy_id': 1,
+            'legacy_id': 9,
         },
         'security_answers': [
             {
