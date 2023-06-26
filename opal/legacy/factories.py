@@ -296,6 +296,7 @@ class LegacyDiagnosisFactory(DjangoModelFactory):
     source_database = SubFactory(LegacySourceDatabaseFactory)
     diagnosis_aria_ser = '22234'
     diagnosis_code = 'C12.3'
+    description_en = 'Breast Cancer'
     last_updated = timezone.make_aware(datetime(2018, 1, 1))
     stage = 'IIIB'
     stage_criteria = 'T2, pN1a, M0'

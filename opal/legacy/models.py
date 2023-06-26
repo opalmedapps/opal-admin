@@ -442,6 +442,7 @@ class LegacyDiagnosis(models.Model):
     )
     diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
     diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=100)
+    description_en = models.CharField(db_column='Description_EN', max_length=200)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
     stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
