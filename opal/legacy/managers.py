@@ -27,9 +27,9 @@ if TYPE_CHECKING:
         LegacyDocument,
         LegacyEducationalMaterial,
         LegacyNotification,
+        LegacyPatient,
         LegacyQuestionnaire,
         LegacyTxTeamMessage,
-        LegacyPatient,
     )
 
 _Model = TypeVar('_Model', bound=models.Model)
