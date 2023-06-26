@@ -29,6 +29,7 @@ if TYPE_CHECKING:
         LegacyNotification,
         LegacyQuestionnaire,
         LegacyTxTeamMessage,
+        LegacyPatient,
     )
 
 _Model = TypeVar('_Model', bound=models.Model)
@@ -65,11 +66,11 @@ class UnreadQuerySetMixin(models.Manager[_Model]):
 
 
 class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], models.Manager['LegacyNotification']):
-    """legacy notification manager."""
+    """LegacyNotification manager."""
 
 
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
-    """legacy appointment manager."""
+    """LegacyAppointment manager."""
 
     def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet['LegacyAppointment']:
         """
@@ -159,7 +160,6 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
         """
         return self.select_related(
-            'aliasexpressionsernum',
             'aliasexpressionsernum__aliassernum',
             'source_database',
             'patientsernum',
@@ -184,33 +184,33 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             'source_db_alias_description',
             'source_db_appointment_id',
             'alias_name',
-            'scheduledstarttime',
+            'scheduled_start_time',
             'scheduled_end_time',
             'last_updated',
         )
 
 
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
-    """legacy document manager."""
+    """LegacyDocument manager."""
 
 
 class LegacyTxTeamMessageManager(UnreadQuerySetMixin['LegacyTxTeamMessage'], models.Manager['LegacyTxTeamMessage']):
-    """legacy txteammessage manager."""
+    """LegacyTxTeamMessage manager."""
 
 
 class LegacyEducationalMaterialManager(
     UnreadQuerySetMixin['LegacyEducationalMaterial'],
     models.Manager['LegacyEducationalMaterial'],
 ):
-    """legacy educational material manager."""
+    """LegacyEducationalMaterial manager."""
 
 
 class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
-    """legacy questionnaire manager."""
+    """LegacyQuestionnaire manager."""
 
 
 class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
-    """legacy announcement manager."""
+    """LegacyAnnouncement manager."""
 
     def get_unread_queryset(self, patient_sernum_list: list[int], user_name: str) -> int:
         """
@@ -232,7 +232,7 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         ).distinct().count() or 0
 
 
-class LegacyPatientManager(models.Manager):
+class LegacyPatientManager(models.Manager['LegacyPatient']):
     """LegacyPatient model manager."""
 
     def get_databank_data_for_patient(

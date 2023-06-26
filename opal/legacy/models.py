@@ -93,6 +93,7 @@ class LegacyAppointment(models.Model):
         'LegacyAliasExpression',
         models.DO_NOTHING,
         db_column='AliasExpressionSerNum',
+        to_field='aliasexpressionsernum',
     )
     patientsernum = models.ForeignKey(
         'LegacyPatient',
@@ -113,7 +114,7 @@ class LegacyAppointment(models.Model):
     appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     source_database = models.ForeignKey(
-        LegacySourceDatabase,
+        'LegacySourceDatabase',
         models.DO_NOTHING,
         db_column='SourceDatabaseSerNum',
         to_field='source_database',
