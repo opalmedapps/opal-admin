@@ -711,9 +711,9 @@ class AccessRequestSendSMSForm(forms.Form):
             the cleaned form data
         """
         cleaned_data = self.cleaned_data
-
         language = cleaned_data.get('language')
         phone_number = cleaned_data.get('phone_number')
+
         registration_code = self.registration_code
 
         if language and phone_number:
