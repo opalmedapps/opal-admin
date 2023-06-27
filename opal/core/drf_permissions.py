@@ -46,7 +46,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:  # noqa: WPS210
+    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -202,7 +202,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:  # noqa: WPS210
+    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed self relationship between a caregiver and a patient.
 
