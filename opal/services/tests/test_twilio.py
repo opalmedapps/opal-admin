@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import pytest
 from pytest_mock import MockerFixture
-from twilio.base.exceptions import TwilioRestException
+from twilio.base.exceptions import TwilioException, TwilioRestException
 from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceError
@@ -27,6 +27,18 @@ class TestTwilioService:
         )
 
         mock_create.assert_called_once_with(to=to, from_=self.sender, body=message)
+
+    def test_send_sms_empty_credentials(self, mocker: MockerFixture) -> None:
+        """Ensure we catch the TwilioException when instantiating the client."""
+        # Twilio reads environment variables if the provided credentials are falsy
+        mocker.patch.dict('os.environ', {'TWILIO_ACCOUNT_SID': '', 'TWILIO_AUTH_TOKEN': ''})
+        service = TwilioService('', '', self.sender)
+
+        with pytest.raises(TwilioServiceError) as exc:
+            service.send_sms('', '')
+
+        assert str(exc.value) == 'Sending SMS failed'
+        assert isinstance(exc.value.__cause__, TwilioException)
 
     def test_send_sms_exception(self, mocker: MockerFixture) -> None:
         """Ensure we catch and handle the TwilioException correctly."""

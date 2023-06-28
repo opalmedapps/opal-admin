@@ -1,4 +1,4 @@
-"""This module provides views for hospital-specific settings."""
+"""This module provides views for the patients app."""
 import base64
 import json
 from collections import OrderedDict
@@ -619,6 +619,8 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             #
             # initial requires the field name without the prefix,
             # strip it from the POST data which contains keys with the prefix
+            # NOTE: this is not ideal since even the current form will get initial data this way
+            # which can cause issues when the form itself has actual disabled fields
             initial = {
                 key.replace(f'{current_step}-', ''): value
                 for key, value in data.items()
