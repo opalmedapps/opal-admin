@@ -78,10 +78,12 @@ def test_get_diagnosis_databank_data() -> None:
     """Ensure diagnosis data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
+    non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
     # Prepare diagnosis data
     factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
     factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
+    factories.LegacyDiagnosisFactory(patient_ser_num=non_consenting_patient)
     # Fetch the data
     databank_data = LegacyDiagnosis.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,

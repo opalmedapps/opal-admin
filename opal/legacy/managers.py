@@ -11,24 +11,27 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, TypedDict
 
 from django.db import models
 from django.utils import timezone
+from django_stubs_ext import ValuesQuerySet
 
 from opal.patients.models import Relationship, RelationshipStatus
 
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
-    from opal.legacy.models import (  # noqa: F401
+    from opal.legacy.models import (  # noqa: F401, WPS235
         LegacyAnnouncement,
         LegacyAppointment,
+        LegacyDiagnosis,
         LegacyDocument,
         LegacyEducationalMaterial,
         LegacyNotification,
         LegacyPatient,
         LegacyQuestionnaire,
+        LegacyTestResult,
         LegacyTxTeamMessage,
     )
 
@@ -272,7 +275,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         )
 
 
-class LegacyDiagnosisManager(models.Manager):
+class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
     """LegacyDiagnosis model manager."""
 
     def get_databank_data_for_patient(
@@ -322,7 +325,7 @@ class LegacyDiagnosisManager(models.Manager):
         )
 
 
-class LegacyTestResultManager(models.Manager):
+class LegacyTestResultManager(models.Manager['LegacyTestResult']):
     """LegacyTestResult model manager."""
 
     def get_databank_data_for_patient(
