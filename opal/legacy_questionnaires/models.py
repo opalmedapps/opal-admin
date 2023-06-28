@@ -210,6 +210,7 @@ class LegacyAnswerQuestionnaire(models.Model):
     deleted_by = models.CharField(db_column='deletedBy', max_length=255)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
+    objects: managers.LegacyAnswerQuestionnaireManager = managers.LegacyAnswerQuestionnaireManager()
 
     class Meta:
         managed = False
