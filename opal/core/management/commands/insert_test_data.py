@@ -46,6 +46,63 @@ INSTITUTION_DATA = MappingProxyType({
     },
 })
 
+SITE_DATA = MappingProxyType({
+    InstitutionOption.muhc: [
+        (
+            'Royal Victoria Hospital',
+            'Hôpital Royal Victoria',
+            'RVH',
+            PARKING_URLS,
+            ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
+            Decimal('45.473435'),
+            Decimal('-73.601611'),
+        ),
+        (
+            'Montreal General Hospital',
+            'Hôpital général de Montréal',
+            'MGH',
+            PARKING_URLS,
+            (
+                'https://muhc.ca/how-get-montreal-general-hospital',
+                'https://cusm.ca/se-rendre-lhopital-general-de-montreal',
+            ),
+            Decimal('45.496828'),
+            Decimal('-73.588782'),
+        ),
+        (
+            "Montreal Children's Hospital",
+            "L'Hôpital de Montréal pour enfants",
+            'MCH',
+            PARKING_URLS,
+            ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
+            Decimal('45.473343'),
+            Decimal('-73.600802'),
+        ),
+        (
+            'Lachine Hospital',
+            'Hôpital de Lachine',
+            'LAC',
+            PARKING_URLS,
+            ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
+            Decimal('45.44121'),
+            Decimal('-73.676791'),
+        ),
+    ],
+})
+
+MRN_DATA = MappingProxyType({
+    InstitutionOption.muhc: {
+        'Marge Simpson': [('RVH', '9999996')],
+        'Homer Simpson': [
+            ('RVH', '9999997'),
+            ('MGH', '9999996'),
+        ],
+        'Bart Simpson': [('MCH', '9999996')],
+        'Lisa Simpson': [('MCH', '9999993')],
+        'Mona Simpson': [('RVH', '9999993')],
+    },
+})
+
 
 class Command(BaseCommand):
     """
@@ -145,46 +202,13 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
 
     # hospital settings
     institution = _create_institution(institution_option)
-    rvh = _create_site(
-        institution,
-        'Royal Victoria Hospital',
-        'Hôpital Royal Victoria',
-        'RVH',
-        PARKING_URLS,
-        ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
-        Decimal('45.473435'),
-        Decimal('-73.601611'),
-    )
-    mgh = _create_site(
-        institution,
-        'Montreal General Hospital',
-        'Hôpital général de Montréal',
-        'MGH',
-        PARKING_URLS,
-        ('https://muhc.ca/how-get-montreal-general-hospital', 'https://cusm.ca/se-rendre-lhopital-general-de-montreal'),
-        Decimal('45.496828'),
-        Decimal('-73.588782'),
-    )
-    mch = _create_site(
-        institution,
-        "Montreal Children's Hospital",
-        "L'Hôpital de Montréal pour enfants",
-        'MCH',
-        PARKING_URLS,
-        ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
-        Decimal('45.473343'),
-        Decimal('-73.600802'),
-    )
-    _create_site(
-        institution,
-        'Lachine Hospital',
-        'Hôpital de Lachine',
-        'LAC',
-        PARKING_URLS,
-        ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
-        Decimal('45.44121'),
-        Decimal('-73.676791'),
-    )
+    sites = _create_sites(institution_option, institution)
+
+    mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
+
+    for key, value in MRN_DATA[institution_option].items():
+        new_value = [(sites[site], mrn) for site, mrn in value]
+        mrn_data[key] = new_value
 
     # patients
     marge = _create_patient(
@@ -194,9 +218,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         sex=Patient.SexType.FEMALE,
         ramq='SIMM86600199',
         legacy_id=51,
-        mrns=[
-            (rvh, '9999996'),
-        ],
+        mrns=mrn_data['Marge Simpson'],
     )
 
     homer = _create_patient(
@@ -206,10 +228,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         sex=Patient.SexType.MALE,
         ramq='SIMH83051299',
         legacy_id=52,
-        mrns=[
-            (rvh, '9999997'),
-            (mgh, '9999996'),
-        ],
+        mrns=mrn_data['Homer Simpson'],
     )
 
     bart = _create_patient(
@@ -219,9 +238,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         sex=Patient.SexType.MALE,
         ramq='SIMB13022399',
         legacy_id=53,
-        mrns=[
-            (mch, '9999996'),
-        ],
+        mrns=mrn_data['Bart Simpson'],
     )
 
     lisa = _create_patient(
@@ -231,9 +248,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         sex=Patient.SexType.FEMALE,
         ramq='SIML14550999',
         legacy_id=54,
-        mrns=[
-            (mch, '9999993'),
-        ],
+        mrns=mrn_data['Lisa Simpson'],
     )
 
     mona = _create_patient(
@@ -243,9 +258,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         sex=Patient.SexType.FEMALE,
         ramq='SIMM40531599',
         legacy_id=55,
-        mrns=[
-            (rvh, '9999993'),
-        ],
+        mrns=mrn_data['Mona Simpson'],
         date_of_death=_relative_date(today, -2),
     )
 
@@ -445,6 +458,26 @@ def _create_institution(institution_option: InstitutionOption) -> Institution:
     institution.save()
 
     return institution
+
+
+def _create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
+    """
+    Create sites according to the definition of the `SITE_DATA` constant for the chosen institution.
+
+    Args:
+        institution_option: the institution for which to create sites for
+        institution: the institution instance
+
+    Returns:
+        a mapping from site code to `Site` instance
+    """
+    result: dict[str, Site] = {}
+
+    for site_data in SITE_DATA[institution_option]:
+        site = _create_site(institution, *site_data)
+        result[site_data[2]] = site
+
+    return result
 
 
 def _create_site(
