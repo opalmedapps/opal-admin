@@ -47,11 +47,11 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().code == 'CHUSJ'
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 5
-        assert HospitalPatient.objects.count() == 6
-        assert CaregiverProfile.objects.count() == 4
-        assert Relationship.objects.count() == 9
-        assert SecurityAnswer.objects.count() == 9
+        assert Patient.objects.count() == 2
+        assert HospitalPatient.objects.count() == 2
+        assert CaregiverProfile.objects.count() == 2
+        assert Relationship.objects.count() == 3
+        assert SecurityAnswer.objects.count() == 6
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:

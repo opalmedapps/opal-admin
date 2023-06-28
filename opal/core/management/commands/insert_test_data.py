@@ -124,6 +124,10 @@ MRN_DATA = MappingProxyType({
         'Lisa Simpson': [('MCH', '9999993')],
         'Mona Simpson': [('RVH', '9999993')],
     },
+    InstitutionOption.chusj: {
+        'Bart Simpson': [('CHUSJ', '9999996')],
+        'Lisa Simpson': [('CHUSJ', '9999993')],
+    },
 })
 
 
@@ -148,12 +152,6 @@ class Command(BaseCommand):
             type=InstitutionOption,
             choices=list(InstitutionOption),
             help='Choose the institution for which to insert test data',
-        )
-        parser.add_argument(
-            '--force-delete',
-            action='store_true',
-            default=False,
-            help='Force deleting existing test data without prior confirmation',
         )
 
     @transaction.atomic
@@ -290,8 +288,9 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
 
     # caregivers
     user_marge = _create_caregiver(
-        first_name=marge.first_name,
-        last_name=marge.last_name,
+        # hard-coded name since the patient Marge might not exist
+        first_name='Marge',
+        last_name='Simpson',
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
         email='marge@opalmedapps.ca',
         language='en',
@@ -340,6 +339,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     type_mandatary = RelationshipType.objects.mandatary()
 
     # relationships
+    date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
     if not is_pediatric:
         # Marge --> Marge: Self
@@ -398,7 +398,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         )
 
         # Marge --> Bart: Guardian/Parent
-        date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
         _create_relationship(
             patient=bart,
             caregiver=user_marge,
