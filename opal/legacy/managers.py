@@ -11,11 +11,10 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, TypedDict
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 from django.db import models
 from django.utils import timezone
-from django_stubs_ext import ValuesQuerySet
 
 from opal.patients.models import Relationship, RelationshipStatus
 
