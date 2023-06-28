@@ -210,26 +210,40 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         new_value = [(sites[site], mrn) for site, mrn in value]
         mrn_data[key] = new_value
 
-    # patients
-    marge = _create_patient(
-        first_name='Marge',
-        last_name='Simpson',
-        date_of_birth=_create_date(36, 10, 1),
-        sex=Patient.SexType.FEMALE,
-        ramq='SIMM86600199',
-        legacy_id=51,
-        mrns=mrn_data['Marge Simpson'],
-    )
+    is_pediatric = institution_option == InstitutionOption.chusj
 
-    homer = _create_patient(
-        first_name='Homer',
-        last_name='Simpson',
-        date_of_birth=_create_date(39, 5, 12),
-        sex=Patient.SexType.MALE,
-        ramq='SIMH83051299',
-        legacy_id=52,
-        mrns=mrn_data['Homer Simpson'],
-    )
+    # patients
+    if not is_pediatric:
+        marge = _create_patient(
+            first_name='Marge',
+            last_name='Simpson',
+            date_of_birth=_create_date(36, 10, 1),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIMM86600199',
+            legacy_id=51,
+            mrns=mrn_data['Marge Simpson'],
+        )
+
+        homer = _create_patient(
+            first_name='Homer',
+            last_name='Simpson',
+            date_of_birth=_create_date(39, 5, 12),
+            sex=Patient.SexType.MALE,
+            ramq='SIMH83051299',
+            legacy_id=52,
+            mrns=mrn_data['Homer Simpson'],
+        )
+
+        mona = _create_patient(
+            first_name='Mona',
+            last_name='Simpson',
+            date_of_birth=date(1940, 3, 15),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIMM40531599',
+            legacy_id=55,
+            mrns=mrn_data['Mona Simpson'],
+            date_of_death=_relative_date(today, -2),
+        )
 
     bart = _create_patient(
         first_name='Bart',
@@ -251,17 +265,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         mrns=mrn_data['Lisa Simpson'],
     )
 
-    mona = _create_patient(
-        first_name='Mona',
-        last_name='Simpson',
-        date_of_birth=date(1940, 3, 15),
-        sex=Patient.SexType.FEMALE,
-        ramq='SIMM40531599',
-        legacy_id=55,
-        mrns=mrn_data['Mona Simpson'],
-        date_of_death=_relative_date(today, -2),
-    )
-
     # caregivers
     user_marge = _create_caregiver(
         first_name=marge.first_name,
@@ -271,18 +274,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         language='en',
         phone_number='+15551234567',
         legacy_id=1,
-    )
-
-    user_homer = _create_caregiver(
-        first_name=homer.first_name,
-        last_name=homer.last_name,
-        username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
-        email='homer@opalmedapps.ca',
-        language='en',
-        phone_number='+15557654321',
-        legacy_id=2,
-        # homer is blocked: he lost access due to him being unstable
-        is_active=False,
     )
 
     user_bart = _create_caregiver(
@@ -295,16 +286,29 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         legacy_id=3,
     )
 
-    user_mona = _create_caregiver(
-        first_name=mona.first_name,
-        last_name=mona.last_name,
-        username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
-        email='mona@opalmedapps.ca',
-        language='en',
-        phone_number='+15144758941',
-        legacy_id=4,
-        is_active=False,
-    )
+    if not is_pediatric:
+        user_homer = _create_caregiver(
+            first_name=homer.first_name,
+            last_name=homer.last_name,
+            username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
+            email='homer@opalmedapps.ca',
+            language='en',
+            phone_number='+15557654321',
+            legacy_id=2,
+            # homer is blocked: he lost access due to him being unstable
+            is_active=False,
+        )
+
+        user_mona = _create_caregiver(
+            first_name=mona.first_name,
+            last_name=mona.last_name,
+            username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
+            email='mona@opalmedapps.ca',
+            language='en',
+            phone_number='+15144758941',
+            legacy_id=4,
+            is_active=False,
+        )
 
     # get relationship types
     type_self = RelationshipType.objects.self_type()
@@ -313,48 +317,74 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     type_mandatary = RelationshipType.objects.mandatary()
 
     # relationships
-    # Marge --> Marge: Self
-    _create_relationship(
-        patient=marge,
-        caregiver=user_marge,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -4),
-        start_date=_relative_date(today, -6),
-    )
 
-    # Marge --> Homer: Mandatary
-    _create_relationship(
-        patient=homer,
-        caregiver=user_marge,
-        relationship_type=type_mandatary,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -1),
-        start_date=_relative_date(today, -1),
-    )
+    if not is_pediatric:
+        # Marge --> Marge: Self
+        _create_relationship(
+            patient=marge,
+            caregiver=user_marge,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -4),
+            start_date=_relative_date(today, -6),
+        )
 
-    # Homer --> Homer: Self
-    _create_relationship(
-        patient=homer,
-        caregiver=user_homer,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -10),
-        start_date=_relative_date(today, -12),
-        end_date=_relative_date(today, -1),
-    )
+        # Marge --> Homer: Mandatary
+        _create_relationship(
+            patient=homer,
+            caregiver=user_marge,
+            relationship_type=type_mandatary,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -1),
+        )
 
-    # Marge --> Bart: Guardian/Parent
-    date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
-    _create_relationship(
-        patient=bart,
-        caregiver=user_marge,
-        relationship_type=type_parent,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -9),
-        start_date=bart.date_of_birth,
-        end_date=date_bart_fourteen,
-    )
+        # Homer --> Homer: Self
+        _create_relationship(
+            patient=homer,
+            caregiver=user_homer,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -10),
+            start_date=_relative_date(today, -12),
+            end_date=_relative_date(today, -1),
+        )
+
+        # Marge --> Mona: Mandatary
+        _create_relationship(
+            patient=mona,
+            caregiver=user_marge,
+            relationship_type=type_mandatary,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -5),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(today, -2),
+            reason='Patient deceased.',
+        )
+
+        # Mona --> Mona: Self
+        _create_relationship(
+            patient=mona,
+            caregiver=user_mona,
+            relationship_type=type_self,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -5),
+            start_date=_relative_date(today, -4),
+            end_date=_relative_date(today, -2),
+            reason='Patient deceased.',
+        )
+
+        # Marge --> Bart: Guardian/Parent
+        date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
+        _create_relationship(
+            patient=bart,
+            caregiver=user_marge,
+            relationship_type=type_parent,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -9),
+            start_date=bart.date_of_birth,
+            end_date=date_bart_fourteen,
+        )
 
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
@@ -388,32 +418,11 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         start_date=date_bart_fourteen,
     )
 
-    # Marge --> Mona: Mandatary
-    _create_relationship(
-        patient=mona,
-        caregiver=user_marge,
-        relationship_type=type_mandatary,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -5),
-        start_date=_relative_date(today, -3),
-        end_date=_relative_date(today, -2),
-        reason='Patient deceased.',
-    )
-
-    # Mona --> Mona: Self
-    _create_relationship(
-        patient=mona,
-        caregiver=user_mona,
-        relationship_type=type_self,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -5),
-        start_date=_relative_date(today, -4),
-        end_date=_relative_date(today, -2),
-        reason='Patient deceased.',
-    )
     # create the same security question and answers for the caregivers
+    if not is_pediatric:
+        _create_security_answers(user_homer)
+
     _create_security_answers(user_marge)
-    _create_security_answers(user_homer)
     _create_security_answers(user_bart)
 
 
