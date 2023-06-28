@@ -388,7 +388,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(
+    def __init__(  # noqa: WPS231 (too much cognitive complexity)
         self,
         patient: Patient | OIEPatientData,
         existing_user: Optional[CaregiverProfile] = None,
@@ -400,7 +400,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         Args:
             patient: a `Patient` or `OIEPatientData` instance
-            existing_user: a `CaregiverProfile` if it a user was previously found, None otherwise
+            existing_user: a `CaregiverProfile` if a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -414,9 +414,13 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         # this can happen when switching to "Self" and receiving an "up-validate" request
         # where we pass the existing data as initial to avoid form validation
         if initial:
-            if 'first_name' in initial and not initial.get('first_name'):
+            relationship_type = initial.get('relationship_type')
+            # the relationship type is a string at this point
+            is_patient_requestor = relationship_type == str(RelationshipType.objects.self_type().pk)
+
+            if 'first_name' in initial and (not initial.get('first_name') or is_patient_requestor):
                 initial.pop('first_name')
-            if 'last_name' in initial and not initial.get('last_name'):
+            if 'last_name' in initial and (not initial.get('last_name') or is_patient_requestor):
                 initial.pop('last_name')
 
         kwargs['initial'] = initial
