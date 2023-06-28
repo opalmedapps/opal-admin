@@ -19,7 +19,7 @@ from opal.patients.models import HospitalPatient, Patient, Relationship, Relatio
 from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
-PARKING_URLS = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
 
 
 class InstitutionOption(Enum):
@@ -44,6 +44,11 @@ INSTITUTION_DATA = MappingProxyType({
         'name_fr': 'Centre universitaire de santé McGill',
         'support_email': 'opal@muhc.mcgill.ca',
     },
+    InstitutionOption.chusj: {
+        'name': 'CHU Sainte-Justine - Mother and child university hospital center',
+        'name_fr': 'CHU Sainte-Justine - Le centre hospitalier universitaire mère-enfant',
+        'support_email': 'opal+chusj@muhc.mcgill.ca',
+    },
 })
 
 SITE_DATA = MappingProxyType({
@@ -52,7 +57,7 @@ SITE_DATA = MappingProxyType({
             'Royal Victoria Hospital',
             'Hôpital Royal Victoria',
             'RVH',
-            PARKING_URLS,
+            PARKING_URLS_MUHC,
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
@@ -61,7 +66,7 @@ SITE_DATA = MappingProxyType({
             'Montreal General Hospital',
             'Hôpital général de Montréal',
             'MGH',
-            PARKING_URLS,
+            PARKING_URLS_MUHC,
             (
                 'https://muhc.ca/how-get-montreal-general-hospital',
                 'https://cusm.ca/se-rendre-lhopital-general-de-montreal',
@@ -73,7 +78,7 @@ SITE_DATA = MappingProxyType({
             "Montreal Children's Hospital",
             "L'Hôpital de Montréal pour enfants",
             'MCH',
-            PARKING_URLS,
+            PARKING_URLS_MUHC,
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
             Decimal('-73.600802'),
@@ -82,10 +87,28 @@ SITE_DATA = MappingProxyType({
             'Lachine Hospital',
             'Hôpital de Lachine',
             'LAC',
-            PARKING_URLS,
+            PARKING_URLS_MUHC,
             ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
             Decimal('45.44121'),
             Decimal('-73.676791'),
+        ),
+    ],
+    InstitutionOption.chusj: [
+        (
+            'CHU Sainte-Justine',
+            'CHU Sainte-Justine',
+            'CHUSJ',
+            (
+                'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
+                'https://www.chusj.org/a-propos/coordonnees/Stationnement',
+            ),
+            (
+                # there are two pages for "getting there" (car and public transport): favouring public transport
+                'https://www.chusj.org/en/a-propos/coordonnees/Se-rendre-en-transport-public',
+                'https://www.chusj.org/a-propos/coordonnees/Se-rendre-en-transport-public',
+            ),
+            Decimal('45.503426'),
+            Decimal('-73.624549'),
         ),
     ],
 })

@@ -40,6 +40,20 @@ class TestInsertTestData(CommandTestMixin):
         assert SecurityAnswer.objects.count() == 9
         assert stdout == 'Test data successfully created\n'
 
+    def test_insert_chusj(self) -> None:
+        """Ensure that test data for Sainte-Justine is inserted when there is no existing data."""
+        stdout, _stderr = self._call_command('insert_test_data', 'CHUSJ')
+
+        assert Institution.objects.count() == 1
+        assert Institution.objects.get().code == 'CHUSJ'
+        assert Site.objects.count() == 1
+        assert Patient.objects.count() == 5
+        assert HospitalPatient.objects.count() == 6
+        assert CaregiverProfile.objects.count() == 4
+        assert Relationship.objects.count() == 9
+        assert SecurityAnswer.objects.count() == 9
+        assert stdout == 'Test data successfully created\n'
+
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The insertion can be cancelled when there is already data."""
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
@@ -89,7 +103,7 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        self._call_command('insert_test_data', 'MUHC')
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
