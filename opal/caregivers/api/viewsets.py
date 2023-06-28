@@ -16,7 +16,7 @@ from ..models import SecurityAnswer, SecurityQuestion
 from . import serializers
 
 
-class SecurityQuestionViewSet(ListModelMixin, viewsets.GenericViewSet):
+class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """
     This viewset provides an list model view for `SecurityQuestion`.
 
