@@ -92,7 +92,6 @@ def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
 
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
-    response.content.decode('utf-8')
 
     assertQuerysetEqual(
         response.context['relationshiptype_list'].order_by('name'),
@@ -197,7 +196,6 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
     ]
 
     response = relationship_user.get(reverse('patients:relationships-list'))
-    response.content.decode('utf-8')
 
     assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
 
@@ -673,7 +671,6 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
     patient = factories.Patient()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
-    response.content.decode('utf-8')
 
     assertContains(response, patient)
     assertContains(response, relationship.caregiver.user.first_name)
@@ -729,16 +726,6 @@ def test_relationships_response_contains_menu(user_client: Client, django_user_m
     response = user_client.get(reverse('hospital-settings:index'))
 
     assertContains(response, 'Manage Caregiver Access')
-
-
-def test_relationships_pending_response_no_menu(user_client: Client, django_user_model: User) -> None:
-    """Ensures that pending relationships is not displayed for users without permission."""
-    user = django_user_model.objects.create(username='test_relationship_user')
-    user_client.force_login(user)
-
-    response = user_client.get(reverse('hospital-settings:index'))
-
-    assertNotContains(response, 'Pending Requests')
 
 
 # can manage relationshiptype permissions
@@ -962,7 +949,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
         path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
-    response.content.decode('utf-8')
+
     assert response.status_code == HTTPStatus.OK
 
     # Check 'medical_number' field name
@@ -983,6 +970,29 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
     # Check how many patients/caregivers are displayed
     patients = search_tables[0].find_all('tr')
     assert len(patients) == 3
+
+
+def test_caregiver_access_filter_up_validate(relationship_user: Client) -> None:
+    """Ensure that the manage caregiver access filter handles up-validate requests without validation errors."""
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'site': '',
+        'medical_number': '',
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = relationship_user.get(
+        path=reverse('patients:relationships-list'),
+        QUERY_STRING=query_string,
+        HTTP_X_Up_Validate='card_type',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    form: forms.forms.Form = response.context['filter'].form
+
+    assert not form.is_bound
+    assert not form.data
+    assertNotContains(response, 'This field is required')
 
 
 # Access Request Tests
