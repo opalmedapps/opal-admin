@@ -28,11 +28,10 @@ def test_get_specific_active_security_question(api_client: APIClient, admin_user
     """Test get a specific active security question."""
     api_client.force_login(user=admin_user)
     security_question = factories.SecurityQuestion()
-    question_id = security_question.id
     response = api_client.get(
         reverse(
-            'api:security-questions-list',
-            kwargs={'pk': '{pk}'.format(pk=question_id)},
+            'api:security-questions-detail',
+            kwargs={'pk': security_question.id},
         ),
     )
     assert response.status_code == HTTPStatus.OK
