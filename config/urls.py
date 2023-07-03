@@ -25,7 +25,7 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from .core.views import LoginView
+from opal.core.views import LoginView
 
 # This approach for serving static files is only for development!
 # Please see: https://docs.djangoproject.com/en/dev/howto/static-files/deployment/
