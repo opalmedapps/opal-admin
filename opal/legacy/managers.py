@@ -170,7 +170,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             patientsernum__patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
-            appointment_ser_num=models.F('appointmentsernum'),
+            appointment_id=models.F('appointmentsernum'),
             date_created=models.F('date_added'),
             source_db_name=models.F('source_database__source_database_name'),
             source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
@@ -179,7 +179,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
             scheduled_start_time=models.F('scheduledstarttime'),
         ).values(
-            'appointment_ser_num',
+            'appointment_id',
             'date_created',
             'source_db_name',
             'source_db_alias_code',
@@ -257,14 +257,14 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
-            patient_ser_num=models.F('patientsernum'),
+            patient_id=models.F('patientsernum'),
             opal_registration_date=models.F('registrationdate'),
             patient_sex=models.F('sex'),
             patient_dob=models.F('dateofbirth'),
             patient_primary_language=models.F('language'),
             patient_death_date=models.F('death_date'),
         ).values(
-            'patient_ser_num',
+            'patient_id',
             'opal_registration_date',
             'patient_sex',
             'patient_dob',
@@ -306,16 +306,17 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
             patient_ser_num=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
+            diagnosis_id=models.F('diagnosis_ser_num'),
             date_created=models.F('creation_date'),
             source_system=models.F('source_database__source_database_name'),
-            source_system_ser=models.F('diagnosis_aria_ser'),
+            source_system_id=models.F('diagnosis_aria_ser'),
             source_system_code=models.F('diagnosis_code'),
             source_system_code_description=models.F('description_en'),
         ).values(
-            'diagnosis_ser_num',
+            'diagnosis_id',
             'date_created',
             'source_system',
-            'source_system_ser',
+            'source_system_id',
             'source_system_code',
             'source_system_code_description',
             'stage',
@@ -349,6 +350,7 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             patient_ser_num__patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
+            test_result_id=models.F('test_result_ser_num'),
             test_component_date=models.F('test_date'),
             test_group_name=models.F('test_result_control_ser_num__group_en'),
             test_component_name=models.F('component_name'),
@@ -358,9 +360,9 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             min_norm_range=models.F('min_norm'),
             valid_flag=models.F('valid_entry'),
             source_system=models.F('source_database__source_database_name'),
-            source_system_ser=models.F('test_result_aria_ser'),
+            source_system_id=models.F('test_result_aria_ser'),
         ).values(
-            'test_result_ser_num',
+            'test_result_id',
             'test_component_date',
             'test_group_name',
             'test_component_name',
@@ -373,6 +375,6 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             'approved_flag',
             'valid_flag',
             'source_system',
-            'source_system_ser',
+            'source_system_id',
             'last_updated',
         )
