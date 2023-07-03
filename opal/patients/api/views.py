@@ -18,9 +18,9 @@ from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
 from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
 
+from .. import utils
 from ..api.serializers import CaregiverRelationshipSerializer, HospitalPatientSerializer, PatientDemographicSerializer
 from ..models import Patient, Relationship
-from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -108,19 +108,25 @@ class RegistrationCompletionView(APIView):
 
         try:  # noqa: WPS229
 
-            update_registration_code_status(registration_code)
+            utils.update_registration_code_status(registration_code)
 
-            update_patient_legacy_id(
+            utils.update_patient_legacy_id(
                 registration_code.relationship.patient,
                 register_data['relationship']['patient']['legacy_id'],
             )
 
-            update_caregiver(
-                registration_code.relationship.caregiver.user,
-                register_data['relationship']['caregiver'],
-            )
+            existent_caregiver = utils.get_caregiver(register_data['relationship']['caregiver']['user'])
+
+            if existent_caregiver:
+                utils.rebuild_relationship(existent_caregiver, registration_code.relationship)
+            else:
+                utils.update_caregiver(
+                    registration_code.relationship.caregiver.user,
+                    register_data['relationship']['caregiver'],
+                )
+
             caregiver_profile = registration_code.relationship.caregiver
-            insert_security_answers(
+            utils.insert_security_answers(
                 caregiver_profile,
                 register_data['security_answers'],
             )

@@ -27,7 +27,7 @@ from opal.patients.models import (
 )
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users import models as user_models
-from opal.users.factories import User
+from opal.users.factories import Caregiver, User
 
 from .. import utils
 
@@ -90,6 +90,37 @@ def test_update_patient_legacy_id_invalid() -> None:
         utils.update_patient_legacy_id(patient, legacy_id)
 
 
+def test_get_caregiver_success_or_not() -> None:
+    """Test get caregiver information success or not."""
+    phone_number1 = '+15141112222'
+    phone_number2 = '+15141112223'
+    language1 = 'en'
+    language2 = 'fr'
+    username1 = 'username-1'
+    username2 = 'username-2'
+    user = User(phone_number=phone_number1, language=language1, username=username1)
+    info: dict = {
+        'user': {
+            'language': language1,
+            'phone_number': phone_number1,
+            'username': username1,
+        },
+    }
+    user.refresh_from_db()
+    caregiver = utils.get_caregiver(info['user'])
+    if caregiver:
+        assert caregiver.language == language1
+        assert caregiver.phone_number == phone_number1
+        assert caregiver.username == username1
+    info['user'] = {
+        'language': language2,
+        'phone_number': phone_number2,
+        'username': username2,
+    }
+    caregiver = utils.get_caregiver(info['user'])
+    assert not caregiver
+
+
 def test_update_caregiver_success() -> None:
     """Test update caregiver information success."""
     phone_number1 = '+15141112222'
@@ -135,6 +166,28 @@ def test_update_caregiver_failure() -> None:
         expected_message,
     ):
         utils.update_caregiver(user, info)
+
+
+def test_rebuild_relationship() -> None:
+    """Test rebuild relationship and remove the skeleton user."""
+    phone_number1 = '+15141112222'
+    phone_number2 = '+15141112223'
+    language1 = 'en'
+    language2 = 'fr'
+    username1 = 'username-1'
+    username2 = 'username-2'
+    caregiver = Caregiver(phone_number=phone_number1, language=language1, username=username1)
+    skeleton = User(phone_number=phone_number2, language=language2, username=username2)
+    profile = CaregiverProfile(user=skeleton)
+    relationship = Relationship(caregiver=profile)
+    utils.rebuild_relationship(caregiver, relationship)
+    assert relationship.caregiver.user.username == username1
+    expected_message = 'User matching query does not exist.'
+    with assertRaisesMessage(
+        user_models.User.DoesNotExist,
+        expected_message,
+    ):
+        user_models.User.objects.get(username=username2)
 
 
 def test_insert_security_answers_success() -> None:

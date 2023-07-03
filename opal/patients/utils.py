@@ -83,6 +83,27 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
+def get_caregiver(info: dict[str, Any]) -> Optional[User]:
+    """
+    Tell the caregiver exists or not.
+
+    Args:
+        info: User info to be checked
+
+    Returns:
+        return User if the caregiver eixsts otherwise return None
+    """
+    try:
+        user = User.objects.get(
+            username=info['username'],
+            language=info['language'],
+            phone_number=info['phone_number'],
+        )
+    except User.DoesNotExist:
+        return None
+    return user
+
+
 def update_caregiver(user: User, info: dict[str, Any]) -> None:
     """
     Update User information.
@@ -98,6 +119,21 @@ def update_caregiver(user: User, info: dict[str, Any]) -> None:
     user.is_active = True
     user.full_clean()
     user.save()
+
+
+def rebuild_relationship(user: User, relationship: Relationship) -> None:
+    """
+    Re-link the relationship to the existing caregiver and delete the skeleton one.
+
+    Args:
+        user: User object
+        relationship: Relationship object
+    """
+    skeleton_user = relationship.caregiver.user
+    relationship.caregiver.user = user
+    relationship.caregiver.full_clean()
+    relationship.caregiver.save()
+    skeleton_user.delete()
 
 
 def insert_security_answers(
