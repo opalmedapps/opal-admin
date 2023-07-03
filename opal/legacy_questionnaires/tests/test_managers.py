@@ -33,7 +33,7 @@ def test_get_questionnaire_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'answer_questionnaire_ser_num',
+        'answer_questionnaire_id',
         'creation_date',
         'questionnaire_id',
         'questionnaire_title',

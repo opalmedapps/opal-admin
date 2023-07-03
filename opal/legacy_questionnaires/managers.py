@@ -72,7 +72,6 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
         # Execute SQL contents
         with connections['questionnaire'].cursor() as conn:
             conn.execute(self._read_local_sql(query_dir_details), [patient_ser_num, last_synchronized])
-            conn.execute('SELECT * FROM tempAnswerDetails;')
             conn.execute(self._read_local_sql(query_dir_answer))
             return self._fetch_all_as_dict(conn)
 
