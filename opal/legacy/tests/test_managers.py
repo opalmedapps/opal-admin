@@ -28,7 +28,7 @@ def test_get_appointment_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'appointment_ser_num',
+        'appointment_id',
         'date_created',
         'source_db_name',
         'source_db_alias_code',
@@ -60,7 +60,7 @@ def test_get_demographics_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'patient_ser_num',
+        'patient_id',
         'opal_registration_date',
         'patient_sex',
         'patient_dob',
@@ -69,7 +69,7 @@ def test_get_demographics_databank_data() -> None:
         'last_updated',
     }
     assert databank_data[0]['last_updated'] > last_cron_sync_time
-    assert databank_data[0]['patient_ser_num'] == consenting_patient.patientsernum
+    assert databank_data[0]['patient_id'] == consenting_patient.patientsernum
     assert databank_data.count() == 1
     assert not (set(expected_returned_fields) - set(databank_data[0].keys()))
 
