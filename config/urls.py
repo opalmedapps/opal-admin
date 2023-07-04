@@ -41,7 +41,7 @@ urlpatterns = [
     path('health-data/', include('opal.health_data.urls')),
 
     # global config
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     # define simple login view reusing the admin template
     path('login', LoginView.as_view(), name='login'),
     path('logout', LogoutView.as_view(), name='logout'),
