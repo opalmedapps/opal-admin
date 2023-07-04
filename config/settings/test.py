@@ -4,7 +4,7 @@ With these settings, tests run faster.
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
 
-from .base import *  # noqa: F403, WPS347
+from .base import *  # noqa: F401, F403, WPS347
 from .base import env
 
 # GENERAL
@@ -24,10 +24,6 @@ PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-# DEBUGGING FOR TEMPLATES
-# ------------------------------------------------------------------------------
-TEMPLATES[0]['OPTIONS']['debug'] = True  # type: ignore[index] # noqa: F405
 
 # django-easy-audit
 # ------------------------------------------------------------------------------
