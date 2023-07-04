@@ -1,6 +1,6 @@
 # Django
 #
-django==4.1.9
+django==4.1.10
 django-environ==0.10.0  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.10  # https://django-modeltranslation.readthedocs.io/en/latest/
@@ -33,11 +33,11 @@ mysqlclient==2.2.0 # https://github.com/PyMySQL/mysqlclient
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
 requests==2.31.0  # https://github.com/psf/requests
 # required for ImageFields
-Pillow==9.5.0  # https://pypi.org/project/Pillow
+Pillow==10.0.0  # https://pypi.org/project/Pillow
 
 # Export Report functionality
 #
-pandas==2.0.2  # https://pypi.org/project/pandas/
+pandas==2.0.3  # https://pypi.org/project/pandas/
 openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
@@ -46,4 +46,4 @@ plotly==5.15.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
-twilio==8.3.0  # https://github.com/twilio/twilio-python
+twilio==8.4.0  # https://github.com/twilio/twilio-python
