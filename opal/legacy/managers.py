@@ -344,15 +344,21 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             Lab data
         """
         return self.select_related(
-            'patient_ser_num',
             'test_expression_ser_num',
+            'test_group_expression_ser_num',
+            'patient_ser_num',
+            'test_expression_ser_num__source_database',
         ).filter(
-            patient_ser_num__patientsernum=patient_ser_num,
+            patient_ser_num=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
             test_result_id=models.F('patient_test_result_ser_num'),
-            test_group_name=models.F('test_expression_ser_num__test_control_ser_num__group_en'),
-            test_component_name=models.F('test_expression_ser_num__test_control_ser_num__name_en'),
+            specimen_collected_date=models.F('collected_date_time'),
+            component_result_date=models.F('result_date_time'),
+            test_group_name=models.F('test_group_expression_ser_num__expression_name'),
+            test_group_indicator=models.F('test_group_expression_ser_num__test_group_expression_ser_num'),
+            test_component_sequence=models.F('sequence_num'),
+            test_component_name=models.F('test_expression_ser_num__expression_name'),
             test_value=models.F('test_value_numeric'),
             test_units=models.F('unit_description'),
             max_norm_range=models.F('normal_range_max'),
@@ -360,9 +366,11 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             source_system=models.F('test_expression_ser_num__source_database__source_database_name'),
         ).values(
             'test_result_id',
-            'collected_date_time',
-            'result_date_time',
+            'specimen_collected_date',
+            'component_result_date',
             'test_group_name',
+            'test_group_indicator',
+            'test_component_sequence',
             'test_component_name',
             'test_value',
             'test_units',
@@ -371,4 +379,4 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             'abnormal_flag',
             'source_system',
             'last_updated',
-        )
+        ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')

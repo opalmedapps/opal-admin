@@ -129,9 +129,11 @@ def test_get_labs_databank_data() -> None:
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
         'test_result_id',
-        'collected_date_time',
-        'result_date_time',
+        'specimen_collected_date',
+        'component_result_date',
         'test_group_name',
+        'test_group_indicator',
+        'test_component_sequence',
         'test_component_name',
         'test_value',
         'test_units',
