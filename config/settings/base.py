@@ -6,6 +6,8 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
+
+Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
 from pathlib import Path
 
@@ -20,20 +22,17 @@ import environ
 django_stubs_ext.monkeypatch()
 
 # get root of the project
-ROOT_DIR = Path(__file__).resolve(strict=True).parents[1]
+ROOT_DIR = Path(__file__).resolve(strict=True).parents[2]
 APPS_DIR = ROOT_DIR / 'opal'
 
 env = environ.Env()
 # OS environment variables take precedence over variables from .env
 environ.Env.read_env(str(ROOT_DIR / '.env'))
 
-# TODO: move
-SECRET_KEY = env.str('SECRET_KEY')
-
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG: bool = env.bool('DEBUG', default=False)
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 #

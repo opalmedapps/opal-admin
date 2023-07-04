@@ -31,9 +31,6 @@ default:
     - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
     # set up QuestionnaireDB connection as well
     - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
-    # generate secret key
-    - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-    - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 
 stages:

@@ -148,16 +148,6 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
 
 
-@pytest.fixture(autouse=True)
-def _set_email_backend_service(settings: LazySettings) -> None:
-    """Fixture changing the `EMAIL_BACKEND` setting to the in-memory backend.
-
-    Args:
-        settings: the Django settings
-    """
-    settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-
 @pytest.fixture(scope='session', autouse=True)
 def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) -> None:  # noqa: PT004, WPS442
     """Add test_QuestionnaireDB setup by executing code in tests/sql.
