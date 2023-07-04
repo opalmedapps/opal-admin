@@ -491,8 +491,6 @@ class LegacyTestResult(models.Model):
     read_status = models.IntegerField(db_column='ReadStatus')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
-    objects: managers.LegacyTestResultManager = managers.LegacyTestResultManager()
-
     class Meta:
         managed = False
         db_table = 'TestResult'
@@ -520,3 +518,123 @@ class LegacyTestResultControl(models.Model):
     class Meta:
         managed = False
         db_table = 'TestResultControl'
+
+
+class LegacyPatientTestResult(models.Model):
+    """PatientTestResult from the legacy database OpalDB."""
+
+    patient_test_result_ser_num = models.AutoField(db_column='PatientTestResultSerNum', primary_key=True)
+    test_group_expression_ser_num = models.ForeignKey(
+        'LegacyTestGroupExpression',
+        models.DO_NOTHING,
+        db_column='TestGroupExpressionSerNum',
+    )
+    test_expression_ser_num = models.ForeignKey(
+        'LegacyTestExpression',
+        models.DO_NOTHING,
+        db_column='TestExpressionSerNum',
+    )
+    patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    abnormal_flag = models.CharField(db_column='AbnormalFlag', max_length=5)
+    sequence_num = models.IntegerField(db_column='SequenceNum')
+    collected_date_time = models.DateTimeField(db_column='CollectedDateTime')
+    result_date_time = models.DateTimeField(db_column='ResultDateTime')
+    normal_range_min = models.FloatField(db_column='NormalRangeMin')
+    normal_range_max = models.FloatField(db_column='NormalRangeMax')
+    normal_range = models.CharField(db_column='NormalRange', max_length=30)
+    test_value_numeric = models.FloatField(db_column='TestValueNumeric')
+    test_value_string = models.CharField(db_column='TestValue', max_length=255)
+    unit_description = models.CharField(db_column='UnitDescription', max_length=40)
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    read_status = models.IntegerField(db_column='ReadStatus', default=0)
+    read_by = models.TextField(db_column='ReadBy', blank=True)
+    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+
+    objects: managers.LegacyPatientTestResultManager = managers.LegacyPatientTestResultManager()
+
+    class Meta:
+        managed = False
+        db_table = 'PatientTestResult'
+
+
+class LegacyTestExpression(models.Model):
+    """TestExpression from the legacy database OpalDB."""
+
+    test_expression_ser_num = models.AutoField(db_column='TestExpressionSerNum', primary_key=True)
+    test_control_ser_num = models.ForeignKey(
+        'LegacyTestControl',
+        models.DO_NOTHING,
+        db_column='TestControlSerNum',
+    )
+    test_code = models.CharField(db_column='TestCode', max_length=30)
+    expression_name = models.CharField(db_column='ExpressionName', max_length=100)
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    last_published = models.DateTimeField(db_column='LastPublished', null=True, blank=True)
+    last_updated_by = models.IntegerField(db_column='LastUpdatedBy', null=True, blank=True)
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
+    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+
+    class Meta:
+        managed = False
+        db_table = 'TestExpression'
+
+
+class LegacyTestGroupExpression(models.Model):
+    """TestGroupExpression from the legacy database OpalDB."""
+
+    test_group_expression_ser_num = models.AutoField(db_column='TestGroupExpressionSerNum', primary_key=True)
+    test_code = models.CharField(db_column='TestCode', max_length=30)
+    expression_name = models.CharField(db_column='ExpressionName', max_length=100)
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    last_published = models.DateTimeField(db_column='LastPublished', null=True, blank=True)
+    last_updated_by = models.IntegerField(db_column='LastUpdatedBy', null=True, blank=True)
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
+    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+
+    class Meta:
+        managed = False
+        db_table = 'TestGroupExpression'
+
+
+class LegacyTestControl(models.Model):
+    """TextControl from the legacy database OpalDB."""
+
+    test_control_ser_num = models.AutoField(db_column='TestControlSerNum', primary_key=True)
+    name_en = models.CharField(db_column='Name_EN', max_length=200)
+    name_fr = models.CharField(db_column='Name_FR', max_length=200)
+    description_en = models.TextField(db_column='Description_EN')
+    description_fr = models.TextField(db_column='Description_FR')
+    group_en = models.CharField(db_column='Group_EN', max_length=200)
+    group_fr = models.CharField(db_column='Group_FR', max_length=200)
+    source_database = models.ForeignKey(
+        LegacySourceDatabase,
+        models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
+    educational_material_control_ser_num = models.ForeignKey(
+        'LegacyEducationalMaterialControl',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialControlSerNum',
+    )
+    publish_flag = models.IntegerField(db_column='PublishFlag')
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    last_published = models.DateTimeField(db_column='LastPublished', null=True, blank=True)
+    last_updated_by = models.IntegerField(db_column='LastUpdatedBy', null=True, blank=True)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    url_en = models.CharField(db_column='URL_EN', max_length=2000)
+    url_fr = models.CharField(db_column='URL_FR', max_length=2000)
+
+    class Meta:
+        managed = False
+        db_table = 'TestControl'
