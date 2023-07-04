@@ -16,13 +16,13 @@ from ..models import SecurityAnswer, SecurityQuestion
 from . import serializers
 
 
-class SecurityQuestionViewSet(ListModelMixin, viewsets.GenericViewSet):
+class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """
-    This viewset provides an list model view for `SecurityQuestion`.
+    This viewset provides a list model view for `SecurityQuestion`, and inherits retrieve mixin to get a specific question.
 
     It uses the `SecurityQuestionSerializer` to serialize a `SecurityQuestion`.
     It allows to filter by SecurityQuestion 'title'.
-    """
+    """  # noqa: E501
 
     queryset = SecurityQuestion.objects.filter(is_active=True).order_by('pk')
     serializer_class = serializers.SecurityQuestionSerializer
