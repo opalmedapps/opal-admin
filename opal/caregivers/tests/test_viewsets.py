@@ -24,6 +24,20 @@ def test_get_all_active_security_questions(api_client: APIClient, admin_user: Ab
     assert response.data['results'][0]['title_en'] == security_question.title
 
 
+def test_get_specific_active_security_question(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test get a specific active security question."""
+    api_client.force_login(user=admin_user)
+    security_question = factories.SecurityQuestion()
+    response = api_client.get(
+        reverse(
+            'api:security-questions-detail',
+            kwargs={'pk': security_question.id},
+        ),
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['title_en'] == security_question.title
+
+
 def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get answer list could return all answer records."""
     api_client.force_login(user=admin_user)
