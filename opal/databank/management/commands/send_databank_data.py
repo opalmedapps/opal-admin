@@ -51,6 +51,9 @@ class Command(BaseCommand):
         Args:
             databank_patient: Patient consenting for this databank module
             module: databank data module enum type
+
+        Raises:
+            ValueError: If an invalid DateModuleType value is provided
         """
         match module:
             case 'APPT':
@@ -74,19 +77,20 @@ class Command(BaseCommand):
                     last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
                 )
             case 'QSTN':
+                # TODO: Because the questionnaires are retrieved using raw sql, the return type
+                #       here is a list of dicts instead of a QuerySet. Should a model be made
+                #       specifically to store the results of this query?
                 databank_data = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
                     patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
                     last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
                 )
             case _:
-                self.stderr.write(
-                    f'{module} not a valid databank data type.',
-                )
+                raise ValueError(f'{module} not a valid databank data type.')
 
         if databank_data:
             # TODO: QSCCD-1095: Serialize data to JSON and send to OIE
             self.stdout.write(
-                f'{databank_data.count()} instances of {DataModuleType(module).label} data found,'
+                f'{len(databank_data)} instances of {DataModuleType(module).label} data found,'
                 + ' [Temporary print out for test coverage in pipeline]',
             )
         else:
