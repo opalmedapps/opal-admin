@@ -1,4 +1,4 @@
-"""Command for Patients migration."""
+"""Command for sending data to the Databank."""
 from typing import Any
 
 from django.core.management.base import BaseCommand
