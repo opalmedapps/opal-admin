@@ -20,7 +20,13 @@ from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermi
 
 from ..api.serializers import CaregiverRelationshipSerializer, HospitalPatientSerializer, PatientDemographicSerializer
 from ..models import Patient, Relationship
-from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
+from ..utils import (
+    insert_security_answers,
+    update_caregiver,
+    update_caregiver_profile,
+    update_patient_legacy_id,
+    update_registration_code_status,
+)
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -29,7 +35,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     queryset = (
         caregiver_models.RegistrationCode.objects.select_related(
             'relationship',
+            'relationship__type',
             'relationship__patient',
+            'relationship__caregiver',
         ).prefetch_related(
             'relationship__patient__hospital_patients',
         ).filter(
@@ -119,6 +127,12 @@ class RegistrationCompletionView(APIView):
                 registration_code.relationship.caregiver.user,
                 register_data['relationship']['caregiver'],
             )
+
+            update_caregiver_profile(
+                registration_code.relationship.caregiver,
+                register_data['relationship']['caregiver'],
+            )
+
             caregiver_profile = registration_code.relationship.caregiver
             insert_security_answers(
                 caregiver_profile,
