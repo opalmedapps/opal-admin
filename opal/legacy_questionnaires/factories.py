@@ -25,7 +25,7 @@ class LegacyDictionaryFactory(DjangoModelFactory):
         model = models.LegacyDictionary
 
     content = 'Edmonton Symptom Assessment Survey'
-    content_id = 10
+    content_id = 999999999
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
     creation_date = timezone.make_aware(datetime(2022, 9, 27))

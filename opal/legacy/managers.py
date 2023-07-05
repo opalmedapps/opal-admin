@@ -10,7 +10,8 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
-from typing import TYPE_CHECKING, Optional, TypeVar
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 from django.db import models
 from django.utils import timezone
@@ -20,12 +21,15 @@ from opal.patients.models import Relationship, RelationshipStatus
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
-    from opal.legacy.models import (  # noqa: F401
+    from opal.legacy.models import (  # noqa: F401, WPS235
         LegacyAnnouncement,
         LegacyAppointment,
+        LegacyDiagnosis,
         LegacyDocument,
         LegacyEducationalMaterial,
         LegacyNotification,
+        LegacyPatient,
+        LegacyPatientTestResult,
         LegacyQuestionnaire,
         LegacyTxTeamMessage,
     )
@@ -34,7 +38,7 @@ _Model = TypeVar('_Model', bound=models.Model)
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
-    """legacy models unread count mixin."""
+    """LegacyModels unread count mixin."""
 
     def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet[_Model]:
         """
@@ -64,11 +68,11 @@ class UnreadQuerySetMixin(models.Manager[_Model]):
 
 
 class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], models.Manager['LegacyNotification']):
-    """legacy notification manager."""
+    """LegacyNotification manager."""
 
 
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
-    """legacy appointment manager."""
+    """LegacyAppointment manager."""
 
     def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet['LegacyAppointment']:
         """
@@ -141,28 +145,74 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             'scheduledstarttime',
         ).first()
 
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> models.QuerySet:
+        """
+        Retrieve the latest de-identified appointment data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Appointment data
+
+        """
+        return self.select_related(
+            'aliasexpressionsernum__aliassernum',
+            'source_database',
+            'patientsernum',
+        ).filter(
+            checkin=1,
+            patientsernum__patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            appointment_id=models.F('appointmentsernum'),
+            date_created=models.F('date_added'),
+            source_db_name=models.F('source_database__source_database_name'),
+            source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
+            source_db_alias_description=models.F('aliasexpressionsernum__description'),
+            source_db_appointment_id=models.F('appointment_aria_ser'),
+            alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
+            scheduled_start_time=models.F('scheduledstarttime'),
+        ).values(
+            'appointment_id',
+            'date_created',
+            'source_db_name',
+            'source_db_alias_code',
+            'source_db_alias_description',
+            'source_db_appointment_id',
+            'alias_name',
+            'scheduled_start_time',
+            'scheduled_end_time',
+            'last_updated',
+        )
+
 
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
-    """legacy document manager."""
+    """LegacyDocument manager."""
 
 
 class LegacyTxTeamMessageManager(UnreadQuerySetMixin['LegacyTxTeamMessage'], models.Manager['LegacyTxTeamMessage']):
-    """legacy txteammessage manager."""
+    """LegacyTxTeamMessage manager."""
 
 
 class LegacyEducationalMaterialManager(
     UnreadQuerySetMixin['LegacyEducationalMaterial'],
     models.Manager['LegacyEducationalMaterial'],
 ):
-    """legacy educational material manager."""
+    """LegacyEducationalMaterial manager."""
 
 
 class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
-    """legacy questionnaire manager."""
+    """LegacyQuestionnaire manager."""
 
 
 class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
-    """legacy announcement manager."""
+    """LegacyAnnouncement manager."""
 
     def get_unread_queryset(self, patient_sernum_list: list[int], user_name: str) -> int:
         """
@@ -182,3 +232,151 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         ).values(
             'postcontrolsernum',
         ).distinct().count() or 0
+
+
+class LegacyPatientManager(models.Manager['LegacyPatient']):
+    """LegacyPatient model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified demographics data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Demographics data
+
+        """
+        return self.filter(
+            patientsernum=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            patient_id=models.F('patientsernum'),
+            opal_registration_date=models.F('registrationdate'),
+            patient_sex=models.F('sex'),
+            patient_dob=models.F('dateofbirth'),
+            patient_primary_language=models.F('language'),
+            patient_death_date=models.F('death_date'),
+        ).values(
+            'patient_id',
+            'opal_registration_date',
+            'patient_sex',
+            'patient_dob',
+            'patient_primary_language',
+            'patient_death_date',
+            'last_updated',
+        )
+
+
+class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
+    """LegacyDiagnosis model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
+
+        Due to the pre-existing structure in OpalDB, we unfortunately can't make a join between
+        LegacyDiagnosis, LegacyDiagnosisCode, and subsequently LegacyDiagnosisTranslation. The reason
+        for this is that Diagnosis and DiagnosisCode do not have a foreign key constraint between them in OpalDB, even
+        though that is the only field where a link could exist. Django mandates uniqueness in ForeignKeys so we could
+        'ignore' the actual db schema for DiagnosisCode, but in our current test data we actually do have duplicate
+        diagnosis codes in both OpalDB.Diagnosis and OpalDB.DiagnosisCode. It's possible to make this join directly
+        in MySQL which doesn't throw errors when duplicate keys get returned, but it isn't possible to do in Django ORM.
+        Using the `unique_together` trick also won't work because the Legacy models are unmanaged.
+        For now, we can only return Diagnosis data directly accesible from LegacyDiagnosis.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Diagnosis data
+        """
+        return self.filter(
+            patient_ser_num=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            diagnosis_id=models.F('diagnosis_ser_num'),
+            date_created=models.F('creation_date'),
+            source_system=models.F('source_database__source_database_name'),
+            source_system_id=models.F('diagnosis_aria_ser'),
+            source_system_code=models.F('diagnosis_code'),
+            source_system_code_description=models.F('description_en'),
+        ).values(
+            'diagnosis_id',
+            'date_created',
+            'source_system',
+            'source_system_id',
+            'source_system_code',
+            'source_system_code_description',
+            'stage',
+            'stage_criteria',
+            'last_updated',
+        )
+
+
+class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
+    """LegacyPatientTestResult model manager."""
+
+    def get_databank_data_for_patient(
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified labs data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy OpalDB patient ser num
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Lab data
+        """
+        return self.select_related(
+            'test_expression_ser_num',
+            'test_group_expression_ser_num',
+            'patient_ser_num',
+            'test_expression_ser_num__source_database',
+        ).filter(
+            patient_ser_num=patient_ser_num,
+            last_updated__gt=last_synchronized,
+        ).annotate(
+            test_result_id=models.F('patient_test_result_ser_num'),
+            specimen_collected_date=models.F('collected_date_time'),
+            component_result_date=models.F('result_date_time'),
+            test_group_name=models.F('test_group_expression_ser_num__expression_name'),
+            test_group_indicator=models.F('test_group_expression_ser_num__test_group_expression_ser_num'),
+            test_component_sequence=models.F('sequence_num'),
+            test_component_name=models.F('test_expression_ser_num__expression_name'),
+            test_value=models.F('test_value_numeric'),
+            test_units=models.F('unit_description'),
+            max_norm_range=models.F('normal_range_max'),
+            min_norm_range=models.F('normal_range_min'),
+            source_system=models.F('test_expression_ser_num__source_database__source_database_name'),
+        ).values(
+            'test_result_id',
+            'specimen_collected_date',
+            'component_result_date',
+            'test_group_name',
+            'test_group_indicator',
+            'test_component_sequence',
+            'test_component_name',
+            'test_value',
+            'test_units',
+            'max_norm_range',
+            'min_norm_range',
+            'abnormal_flag',
+            'source_system',
+            'last_updated',
+        ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
