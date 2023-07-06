@@ -330,38 +330,6 @@ class TestApiRegistrationCompletion:
 class TestPatientDemographicView:
     """Class wrapper for patient demographic endpoint tests."""
 
-    def get_valid_input_data(self) -> dict:
-        """Generate valid JSON data for the patient demographic update.
-
-        Returns:
-            dict: valid JSON data
-        """
-        return {
-            'mrns': [
-                {'site_code': 'RVH', 'mrn': '9999996', 'is_active': True},
-                {'site_code': 'MGH', 'mrn': '9999997', 'is_active': True},
-            ],
-            'ramq': 'TEST01161972',
-            'first_name': 'Lisa',
-            'last_name': 'Phillips',
-            'date_of_birth': '1973-01-16',
-            'date_of_death': None,
-            'sex': 'F',
-        }
-
-    def get_client_with_permissions(self, api_client: APIClient) -> APIClient:
-        """
-        Add permissions to a user and authorize it.
-
-        Returns:
-            Authorized API client.
-        """
-        user = Caregiver(username='lisaphillips')
-        permission = Permission.objects.get(name='Can change Patient')
-        user.user_permissions.add(permission)
-        api_client.force_login(user=user)
-        return api_client
-
     def test_demographic_update_unauthorized(
         self,
         api_client: APIClient,
@@ -370,7 +338,7 @@ class TestPatientDemographicView:
         # Make a `PUT` request without proper permissions.
         response = api_client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -383,7 +351,7 @@ class TestPatientDemographicView:
         # Make a `PATCH` request without proper permissions.
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -398,8 +366,8 @@ class TestPatientDemographicView:
         api_client: APIClient,
     ) -> None:
         """Ensure the endpoint returns an error if the MRNs list is empty."""
-        client = self.get_client_with_permissions(api_client)
-        data = self.get_valid_input_data()
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
         data['mrns'] = []
 
         response = client.put(
@@ -431,8 +399,8 @@ class TestPatientDemographicView:
         api_client: APIClient,
     ) -> None:
         """Ensure the endpoint returns an error if the MRNs list dictionaries are invalid."""
-        client = self.get_client_with_permissions(api_client)
-        data = self.get_valid_input_data()
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
         data['mrns'] = [
             {'site': 'RVH', 'mrn_error': '9999996', 'is_active_erorr': True},
         ]
@@ -478,11 +446,11 @@ class TestPatientDemographicView:
         api_client: APIClient,
     ) -> None:
         """Ensure the endpoint returns an error if provided sites do not exist."""
-        client = self.get_client_with_permissions(api_client)
+        client = self._get_client_with_permissions(api_client)
 
         response = client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -502,7 +470,7 @@ class TestPatientDemographicView:
 
         response = client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -528,11 +496,11 @@ class TestPatientDemographicView:
         Site(code='RVH')
         Site(code='MGH')
 
-        client = self.get_client_with_permissions(api_client)
+        client = self._get_client_with_permissions(api_client)
 
         response = client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -548,7 +516,7 @@ class TestPatientDemographicView:
 
         response = client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -581,11 +549,11 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self.get_client_with_permissions(api_client)
+        client = self._get_client_with_permissions(api_client)
 
         response = client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -601,7 +569,7 @@ class TestPatientDemographicView:
 
         response = client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -638,10 +606,10 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self.get_client_with_permissions(api_client)
+        client = self._get_client_with_permissions(api_client)
         response = client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -649,12 +617,12 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=self.get_valid_input_data(),
+            expected_data=self._get_valid_input_data(),
         )
 
         response = client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -662,7 +630,7 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=self.get_valid_input_data(),
+            expected_data=self._get_valid_input_data(),
         )
 
     def test_demographic_update_no_relationship(
@@ -685,10 +653,10 @@ class TestPatientDemographicView:
             site=mgh_site,
         )
 
-        client = self.get_client_with_permissions(api_client)
+        client = self._get_client_with_permissions(api_client)
         response = client.put(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -696,12 +664,12 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=self.get_valid_input_data(),
+            expected_data=self._get_valid_input_data(),
         )
 
         response = client.patch(
             reverse('api:patient-demographic-update'),
-            data=self.get_valid_input_data(),
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -709,7 +677,7 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=self.get_valid_input_data(),
+            expected_data=self._get_valid_input_data(),
         )
 
     def test_demographic_update_deceased_patient(
@@ -740,8 +708,8 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self.get_client_with_permissions(api_client)
-        payload = self.get_valid_input_data()
+        client = self._get_client_with_permissions(api_client)
+        payload = self._get_valid_input_data()
         payload['date_of_death'] = datetime.now().replace(
             microsecond=0,
         ).astimezone().isoformat()
@@ -798,8 +766,8 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self.get_client_with_permissions(api_client)
-        payload = self.get_valid_input_data()
+        client = self._get_client_with_permissions(api_client)
+        payload = self._get_valid_input_data()
         payload['date_of_death'] = datetime.now().replace(
             microsecond=0,
         ).astimezone().isoformat()
@@ -824,6 +792,38 @@ class TestPatientDemographicView:
         assert relationships[1].end_date
         assert relationships[0].reason == 'Date of death submitted from ADT'
         assert relationships[1].reason == 'Opal Account Deactivated'
+
+    def _get_valid_input_data(self) -> dict:
+        """Generate valid JSON data for the patient demographic update.
+
+        Returns:
+            dict: valid JSON data
+        """
+        return {
+            'mrns': [
+                {'site_code': 'RVH', 'mrn': '9999996', 'is_active': True},
+                {'site_code': 'MGH', 'mrn': '9999997', 'is_active': True},
+            ],
+            'ramq': 'TEST01161972',
+            'first_name': 'Lisa',
+            'last_name': 'Phillips',
+            'date_of_birth': '1973-01-16',
+            'date_of_death': None,
+            'sex': 'F',
+        }
+
+    def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
+        """
+        Add permissions to a user and authorize it.
+
+        Returns:
+            Authorized API client.
+        """
+        user = Caregiver(username='lisaphillips')
+        permission = Permission.objects.get(codename='change_patient')
+        user.user_permissions.add(permission)
+        api_client.force_login(user=user)
+        return api_client
 
 
 class TestPatientCaregiversView:
