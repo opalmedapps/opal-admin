@@ -1,5 +1,5 @@
 """
-Django default settings for digitalprint project.
+Django default settings for the Opal backend project.
 
 Used for local dev and tests.
 
@@ -421,6 +421,7 @@ EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: WPS432
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-use-ssl
 EMAIL_USE_SSL = not EMAIL_USE_TLS
+EMAIL_FROM_REGISTRATION = 'Opal Registration <registration@opalmedapps.ca>'
 
 # Legacy OpalAdmin related settings
 #

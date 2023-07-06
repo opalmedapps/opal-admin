@@ -35,7 +35,7 @@ def test_health_data_ui_template_used(user_client: Client, admin_user: AbstractU
     patient_identifiers = soup.find_all('h4')
 
     assert response.status_code == HTTPStatus.OK
-    assertTemplateUsed(response, 'health_data_display.html')
+    assertTemplateUsed(response, 'chart_display.html')
     assert len(patient_identifiers) == 1
     assert hd_patient.first_name in str(patient_identifiers[0])
     assert hd_patient.last_name in str(patient_identifiers[0])
