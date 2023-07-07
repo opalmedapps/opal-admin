@@ -1,8 +1,12 @@
 """Command for sending data to the Databank."""
+import json
+from collections import defaultdict
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from django.core.serializers import serialize
 from django.db import transaction
+from django.db.models.query import QuerySet
 
 from opal.databank.models import DatabankConsent, DataModuleType
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
@@ -77,9 +81,6 @@ class Command(BaseCommand):
                     last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
                 )
             case 'QSTN':
-                # TODO: Because the questionnaires are retrieved using raw sql, the return type
-                #       here is a list of dicts instead of a QuerySet. Should a model be made
-                #       specifically to store the results of this query?
                 databank_data = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
                     patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
                     last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
@@ -88,12 +89,53 @@ class Command(BaseCommand):
                 raise ValueError(f'{module} not a valid databank data type.')
 
         if databank_data:
-            # TODO: QSCCD-1095: Serialize data to JSON and send to OIE
+            json_data = self._nest_and_serialize_queryset(databank_patient.guid, databank_data, module)
+            print(json_data)
+            # # Send to OIE and note what was sent to stdout
+
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} data found,'
-                + ' [Temporary print out for test coverage in pipeline]',
+                f'{len(databank_data)} instances of {DataModuleType(module).label} successfully data sent',
             )
         else:
             self.stdout.write(
                 f'No {DataModuleType(module).label} data found for {databank_patient.patient}',
             )
+
+    def _nest_and_serialize_queryset(self, guid: str, queryset: QuerySet, nesting_key: str) -> str:
+        """Pull the GUID to the top element and nest the rest of the qs records into a single JSON object.
+
+        Args:
+            queryset: Databank queryset with one or many rows
+            guid: GUID for this databank patient, used as the parent element of the nested JSON
+            nesting_key: name of key for the nested data
+
+        Returns:
+            JSON str for API sender
+        """
+        data = list(queryset)
+        nested_data: dict = {'GUID': guid, nesting_key: data}
+        if nesting_key == 'LABS':
+            nested_data = {'GUID': guid}
+            grouped_data = defaultdict(list)
+            # Define keys for grouping
+            group_keys = ['test_group_name', 'test_group_indicator']
+
+            for record in data:
+                # Create a tuple of group values
+                group_values = tuple(record[key] for key in group_keys)
+
+                # Prepare component dictionary by excluding group keys from the record
+                component = {k: v for k, v in record.items() if k not in group_keys}
+
+                # Append the component to the corresponding group in grouped_data
+                grouped_data[group_values].append(component)
+
+            # Prepare the final result
+            result = []
+
+            for group_values, components in grouped_data.items():
+                group_dict = dict(zip(group_keys, group_values))
+                group_dict['components'] = components
+                result.append(group_dict)
+            return result
+        return json.dumps(nested_data, indent=4, sort_keys=True, default=str)

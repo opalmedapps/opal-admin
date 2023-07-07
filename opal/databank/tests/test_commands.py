@@ -102,13 +102,15 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=1, patientsernum=legacy_pat1)
         legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         message, error = self._call_command('send_databank_data')
-
-        assert '2 instances of Appointments data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Diagnoses data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Labs data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Demographics data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '7 instances of Questionnaires data found, [Temporary print out for test coverage in pipeline]' in message  # noqa: E501
+        assert 1 == 0
+        assert '2 instances of Appointments data successfully sent' in message
+        assert '1 instances of Diagnoses data successfully sent' in message
+        assert '3 instances of Labs data successfully sent' in message
+        assert '1 instances of Demographics data successfully sent' in message
+        assert '7 instances of Questionnaires data successfully sent' in message
         assert not error
 
     def test_invalid_databank_module(self) -> None:

@@ -1,8 +1,11 @@
 """Module providing model factories for databank app models."""
+import string
+
 from django.utils import timezone
 
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 
 from opal.patients.factories import Patient
 
@@ -13,6 +16,7 @@ class DatabankConsent(DjangoModelFactory):
     """Model factory to create [opal.databank.models.DatabankConsent][] models."""
 
     patient = factory.SubFactory(Patient)
+    guid = FuzzyText(length=64, chars=string.ascii_uppercase + string.digits)
     has_appointments = factory.Faker('boolean')
     has_diagnoses = factory.Faker('boolean')
     has_demographics = factory.Faker('boolean')
