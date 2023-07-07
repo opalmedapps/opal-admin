@@ -20,7 +20,7 @@ from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.users.factories import User
+from opal.users.factories import Caregiver
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -131,7 +131,8 @@ class TestApiRetrieveRegistrationDetails:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        relationship = Relationship(patient=patient)
+        caregiver = CaregiverProfile()
+        relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
 
         # Build relationships: hospital_patient -> site -> institution
@@ -150,14 +151,20 @@ class TestApiRetrieveRegistrationDetails:
         )
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
+            'caregiver': {
+                'uuid': str(caregiver.uuid),
+                'first_name': caregiver.user.first_name,
+                'last_name': caregiver.user.last_name,
+                'legacy_id': caregiver.legacy_id,
+            },
             'patient': {
-                'legacy_id': patient.legacy_id,
+                'uuid': str(patient.uuid),
                 'first_name': patient.first_name,
                 'last_name': patient.last_name,
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
-                'sex': patient.sex,
+                'sex': patient.sex.value,
                 'ramq': patient.ramq,
-                'uuid': str(patient.uuid),
+                'legacy_id': patient.legacy_id,
             },
             'hospital_patients': [
                 {
@@ -165,6 +172,10 @@ class TestApiRetrieveRegistrationDetails:
                     'site_code': site.code,
                 },
             ],
+            'relationship_type': {
+                'name': relationship.type.name,
+                'role_type': relationship.type.role_type.value,
+            },
         }
 
 
@@ -179,6 +190,7 @@ class TestApiRegistrationCompletion:
             'language': 'fr',
             'phone_number': '+15141112222',
             'username': 'test-username',
+            'legacy_id': 9,
         },
         'security_answers': [
             {
@@ -197,8 +209,7 @@ class TestApiRegistrationCompletion:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        user = User()
-        caregiver = CaregiverProfile(user=user)
+        caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
         valid_input_data = copy.deepcopy(self.valid_input_data)
@@ -221,8 +232,7 @@ class TestApiRegistrationCompletion:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        user = User()
-        caregiver = CaregiverProfile(user=user)
+        caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         RegistrationCode(relationship=relationship)
         valid_input_data = copy.deepcopy(self.valid_input_data)
@@ -241,8 +251,7 @@ class TestApiRegistrationCompletion:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        user = User()
-        caregiver = CaregiverProfile(user=user)
+        caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(
             relationship=relationship,
@@ -264,8 +273,7 @@ class TestApiRegistrationCompletion:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        user = User()
-        caregiver = CaregiverProfile(user=user)
+        caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
         invalid_data: dict = copy.deepcopy(self.valid_input_data)
@@ -294,8 +302,7 @@ class TestApiRegistrationCompletion:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        user = User()
-        caregiver = CaregiverProfile(user=user)
+        caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
         invalid_data: dict = copy.deepcopy(self.valid_input_data)
@@ -349,7 +356,7 @@ class TestPatientDemographicView:
         Returns:
             Authorized API client.
         """
-        user = User(username='lisaphillips')
+        user = Caregiver(username='lisaphillips')
         permission = Permission.objects.get(name='Can change Patient')
         user.user_permissions.add(permission)
         api_client.force_login(user=user)
@@ -829,8 +836,8 @@ class TestPatientCaregiversView:
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id)
 
-        user1 = User(language='en', phone_number='+11234567890')
-        user2 = User(language='fr', phone_number='+11234567891')
+        user1 = Caregiver(language='en', phone_number='+11234567890')
+        user2 = Caregiver(language='fr', phone_number='+11234567891')
         caregiver1 = CaregiverProfile(user=user1)
         caregiver2 = CaregiverProfile(user=user2)
         Relationship(caregiver=caregiver1, patient=patient)
