@@ -230,9 +230,9 @@ class TestApiRegistrationCompletion:
     def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test non-existent registration code."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
         patient = Patient()
-        caregiver = CaregiverProfile()
+        # pretend that the caregiver is not registered yet
+        caregiver = CaregiverProfile(legacy_id=None)
         relationship = Relationship(patient=patient, caregiver=caregiver)
         RegistrationCode(relationship=relationship)
         valid_input_data = copy.deepcopy(self.valid_input_data)
@@ -684,12 +684,13 @@ class TestPatientDemographicView:
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint prevents caregiver and self access to the deceased patient's data."""
+        """Ensure the endpoint keeps the relationships as is."""
         patient = Patient(ramq='TEST01161972')
 
         Relationship(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
+            status=patient_models.RelationshipStatus.CONFIRMED,
         ).save()
         Relationship(
             patient=patient,
@@ -728,70 +729,13 @@ class TestPatientDemographicView:
         )
 
         relationships = patient_models.Relationship.objects.all()
-        assert relationships[0].status == patient_models.RelationshipStatus.EXPIRED
-        assert relationships[1].status == patient_models.RelationshipStatus.EXPIRED
-        assert relationships[0].end_date
-        assert relationships[1].end_date
-        assert relationships[0].reason == 'Date of death submitted from ADT'
-        assert relationships[1].reason == 'Opal Account Deactivated'
-
-    def test_demographic_update_deceased_patient_with_care_receiver(
-        self,
-        api_client: APIClient,
-    ) -> None:
-        """Ensure the endpoint prevents self access and access to the care receivers in case of the patient's death."""
-        deceased_patient = Patient(ramq='TEST01161972')
-        patinet_in_care = Patient(ramq='TEST01161973')
-        deceased_patient_caregiver = CaregiverProfile()
-
-        Relationship(
-            patient=deceased_patient,
-            caregiver=deceased_patient_caregiver,
-            type=patient_models.RelationshipType.objects.self_type(),
-        ).save()
-        Relationship(
-            patient=patinet_in_care,
-            caregiver=deceased_patient_caregiver,
-            type=patient_models.RelationshipType.objects.guardian_caregiver(),
-        ).save()
-
-        HospitalPatient(
-            patient=deceased_patient,
-            mrn='9999996',
-            site=Site(code='RVH'),
-        )
-        HospitalPatient(
-            patient=deceased_patient,
-            mrn='9999997',
-            site=Site(code='MGH'),
-        )
-
-        client = self._get_client_with_permissions(api_client)
-        payload = self._get_valid_input_data()
-        payload['date_of_death'] = datetime.now().replace(
-            microsecond=0,
-        ).astimezone().isoformat()
-
-        response = client.put(
-            reverse('api:patient-demographic-update'),
-            data=payload,
-            format='json',
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-
-        assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data=payload,
-        )
-
-        relationships = patient_models.Relationship.objects.all()
-        assert relationships[0].status == patient_models.RelationshipStatus.EXPIRED
-        assert relationships[1].status == patient_models.RelationshipStatus.EXPIRED
-        assert relationships[0].end_date
-        assert relationships[1].end_date
-        assert relationships[0].reason == 'Date of death submitted from ADT'
-        assert relationships[1].reason == 'Opal Account Deactivated'
+        # the relationship status stays untouched
+        assert relationships[0].status == patient_models.RelationshipStatus.CONFIRMED
+        assert relationships[1].status == patient_models.RelationshipStatus.PENDING
+        assert relationships[0].end_date is not None
+        assert relationships[0].end_date > datetime.now().date()
+        assert relationships[1].end_date is not None
+        assert relationships[1].end_date > datetime.now().date()
 
     def _get_valid_input_data(self) -> dict:
         """Generate valid JSON data for the patient demographic update.
