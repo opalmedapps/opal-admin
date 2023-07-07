@@ -163,7 +163,7 @@ coverage:
     - coverage report
   needs:
     - job: test
-  coverage: '/^TOTAL.+?(\d+\%)$/'
+  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   # min coverage is set to 100, allow job to fail in order to signal that the coverage dropped
   # it does not mean it always has to be fixed
   allow_failure: true

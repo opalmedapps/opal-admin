@@ -1,7 +1,6 @@
 import json
 from http import HTTPStatus
 from typing import Optional
-from unittest.mock import MagicMock
 
 from django.contrib.auth import authenticate
 from django.test import Client
@@ -11,6 +10,8 @@ from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
 from requests.exceptions import ConnectionError
+
+from opal.core.test_utils import RequestMockerTest
 
 from ..auth import AUTHENTICATION_FAILURE, AUTHENTICATION_SUCCESS, FedAuthBackend, UserData, UserModel
 
@@ -26,18 +27,6 @@ def _create_auth_data(success: str) -> dict[str, str]:
         'givenName': 'First',
         'sn': 'Last',
     }
-
-
-def _mock_requests_post(mocker: MockerFixture, auth_data: dict[str, str]) -> MagicMock:
-    # mock actual web API call
-    mock_post = mocker.patch('requests.post')
-    response = Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(auth_data).encode(ENCODING)
-    mock_post.return_value = response
-
-    return mock_post
 
 
 @pytest.mark.parametrize(('success', 'expected'), [
@@ -76,7 +65,7 @@ def test_parse_response_response_code_not_ok() -> None:
 def test_authenticate_fedauth(mocker: MockerFixture) -> None:
     """Ensure authenticating against fed auth returns the proper user data."""
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
-    mock_post = _mock_requests_post(mocker, auth_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, auth_data)
 
     user_data = auth_backend._authenticate_fedauth('user', 'pass')
     assert user_data == ('user@example.com', 'First', 'Last')
@@ -215,7 +204,7 @@ def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
 def test_authenticate_integration(mocker: MockerFixture) -> None:
     """Authenticate should return new user if fed auth is successful."""
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
-    _mock_requests_post(mocker, auth_data)
+    RequestMockerTest.mock_requests_post(mocker, auth_data)
 
     authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
 
@@ -232,7 +221,7 @@ def test_authenticate_integration_error(mocker: MockerFixture) -> None:
         'givenName': 'Hans',
         'sn': 'Wurst',
     }
-    _mock_requests_post(mocker, auth_data)
+    RequestMockerTest.mock_requests_post(mocker, auth_data)
     mock_logger = mocker.patch('logging.Logger.error')
 
     authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
@@ -248,7 +237,7 @@ def test_django_authentication_integration(client: Client, mocker: MockerFixture
 
     # assume incomplete data is returned
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
-    _mock_requests_post(mocker, auth_data)
+    RequestMockerTest.mock_requests_post(mocker, auth_data)
     # spy on FedAuthBackend.authenticate to ensure it was called
     mock_fedauth = mocker.spy(FedAuthBackend, 'authenticate')
 

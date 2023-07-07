@@ -1,14 +1,14 @@
 import json
 from http import HTTPStatus
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
-from requests import Response
 from requests.exceptions import RequestException
 
+from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
 from opal.services.reports import QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
@@ -48,29 +48,6 @@ def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str
             'base64EncodedReport': BASE64_ENCODED_REPORT,
         },
     }
-
-
-def _mock_requests_post(
-    mocker: MockerFixture,
-    generated_report_data: dict[str, dict[str, str]],
-) -> MagicMock:
-    """Mock actual HTTP POST web API call to the legacy PHP report service.
-
-    Args:
-        mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        generated_report_data (dict[str, dict[str, str]]): generated mock response data
-
-    Returns:
-        MagicMock: object that mocks HTTP post request to the legacy PHP report service
-    """
-    mock_post = mocker.patch('requests.post')
-    response = Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(generated_report_data).encode(ENCODING)
-    mock_post.return_value = response
-
-    return mock_post
 
 
 # _is_questionnaire_report_request_data_valid
@@ -117,7 +94,7 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
         site=patient_factories.Site(code='RVH'),
     )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     response_base64_report = reports_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
@@ -143,7 +120,7 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual web API call to raise a request error
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.side_effect = RequestException('request failed')
 
     base64_report = reports_service._request_base64_report(
@@ -158,7 +135,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     """Ensure request failure (bad request response) is handled and does not result in an error."""
     # mock actual web API call to raise a request error
     generated_report_data = _create_generated_report_data(HTTPStatus.BAD_REQUEST)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service._request_base64_report(
@@ -172,7 +149,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
 def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     """Ensure response json key failure is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = json.dumps({}).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
@@ -186,7 +163,7 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
 def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure response json decode failure is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
@@ -200,7 +177,7 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
 def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     """Ensure returned base64EncodedReport value is a string."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
@@ -216,7 +193,7 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
         site=patient_factories.Site(code='RVH'),
     )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     data = _create_generated_report_data(HTTPStatus.OK)
     data['data']['base64EncodedReport'] = NON_STRING_VALUE  # type: ignore[assignment]
     mock_post.return_value._content = json.dumps(data).encode(ENCODING)
@@ -235,7 +212,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 
     # mock actual web API call
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.OK
 
     reports_service._request_base64_report(
@@ -266,7 +243,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 def test_questionnaire_report(mocker: MockerFixture) -> None:
     """Ensure the returned value is base64 encoded pdf report."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
@@ -280,7 +257,7 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
 def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     """Ensure function failure is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.BAD_REQUEST)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service.generate_questionnaire_report(
@@ -296,7 +273,7 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
 def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     """Ensure invalid patient id is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
@@ -311,7 +288,7 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
 def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     """Ensure invalid logo path is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
@@ -326,7 +303,7 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
 def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     """Ensure invalid language is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
-    mock_post = _mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
@@ -336,3 +313,23 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report is None
+
+
+def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptureFixture) -> None:
+    """Ensure that when the report is not base64 an error is logged."""
+    mock_post = RequestMockerTest.mock_requests_post(mocker, {
+        'data': {
+            'status': 'Success: {0}'.format(HTTPStatus.OK),
+            'base64EncodedReport': 'not-base64',
+        },
+    })
+
+    base64_report = reports_service.generate_questionnaire_report(
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
+    )
+
+    assert mock_post.return_value.status_code == HTTPStatus.OK
+    assert base64_report is None
+
+    assert caplog.records[0].message == 'The generated questionnaire PDF report is not in the base64 format.'
+    assert caplog.records[0].levelname == 'ERROR'
