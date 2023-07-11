@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     """Add globally unique identifier field to DatabankConsent."""
 
     dependencies = [
-        ('databank', '0002_shared_data'),
+        ('databank', '0003_alter_databankconsent_last_synchronized'),
     ]
 
     operations = [

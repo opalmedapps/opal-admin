@@ -105,12 +105,11 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         message, error = self._call_command('send_databank_data')
-        assert 1 == 0
-        assert '2 instances of Appointments data successfully sent' in message
-        assert '1 instances of Diagnoses data successfully sent' in message
-        assert '3 instances of Labs data successfully sent' in message
-        assert '1 instances of Demographics data successfully sent' in message
-        assert '7 instances of Questionnaires data successfully sent' in message
+        assert '2 instances of Appointments successfully serialized' in message
+        assert '1 instances of Diagnoses successfully serialized' in message
+        assert '3 instances of Labs successfully serialized' in message
+        assert '1 instances of Demographics successfully serialized' in message
+        assert '7 instances of Questionnaires successfully serialized' in message
         assert not error
 
     def test_invalid_databank_module(self) -> None:
@@ -149,3 +148,39 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         message = 'Legacy ID missing from Databank Patient.'
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
+
+    def test_data_found_for_multiple_patient(self) -> None:
+        """Test fetching the existing data of patients who have consented."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        # Must set the last sync date to before the hardcoded last_updated date in our test_QuestionnaireDB.sql data
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat2)
+        legacy_factories.LegacyAppointmentFactory(checkin=0, patientsernum=legacy_pat2)
+        message, error = self._call_command('send_databank_data')
+        assert 1 == 0
+        assert '3 instances of Appointments data successfully serialized' in message
+
+        assert not error
