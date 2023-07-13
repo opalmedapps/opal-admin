@@ -143,6 +143,13 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'devices',
             'legacy_id',
         ]
+        # enforce proper value for legacy_id
+        extra_kwargs = {
+            'legacy_id': {
+                'allow_null': False,
+                'required': True,
+            },
+        }
 
 
 class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
