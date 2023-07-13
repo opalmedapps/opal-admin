@@ -128,7 +128,7 @@ def test_quantitysample_create_no_patient(user_api_client: APIClient) -> None:
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.skip('list currently not supported')
+@pytest.mark.xfail(condition=True, reason='list currently not supported', strict=True)
 def test_quantitysample_list_no_patient(user_api_client: APIClient) -> None:
     """Ensure a non-existent patient raises a 404."""
     response = user_api_client.get(reverse('api:patients-data-quantity-create', kwargs={'patient_id': 1}))

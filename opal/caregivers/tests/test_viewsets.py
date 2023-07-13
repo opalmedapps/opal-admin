@@ -229,8 +229,11 @@ def test_device_put_update(api_client: APIClient, admin_user: AbstractUser) -> N
     assert device.modified > last_modified
 
 
-# TODO: unskip this test once QSCCD-250 is taken care of
-@pytest.mark.skip()
+@pytest.mark.xfail(
+    condition=True,
+    reason='bug that prevents the same device to be used by multiple caregivers',
+    strict=True,
+)
 def test_device_put_two_caregivers(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test updating a device model."""
     api_client.force_login(admin_user)
