@@ -1,5 +1,5 @@
 """This module provides Django REST framework serializers for Caregiver apis."""
-from typing import Dict
+from typing import Any
 
 from rest_framework import serializers
 
@@ -58,7 +58,7 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     )
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: RegistrationCode) -> Dict:  # noqa: WPS615
+    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:  # noqa: WPS615
         """
         Get a single institution data.
 
@@ -144,7 +144,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'legacy_id',
         ]
         # enforce proper value for legacy_id
-        extra_kwargs = {
+        extra_kwargs: dict[str, dict[str, Any]] = {
             'legacy_id': {
                 'allow_null': False,
                 'required': True,
@@ -184,19 +184,51 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
         fields = ['caregiver', 'patient', 'hospital_patients', 'relationship_type']
 
 
+class UpdateCaregiverSerializer(CaregiverSerializer):
+    """
+    Caregiver profile serializer that supports nested updates.
+
+    The unique validator on legacy_id otherwise fails when the legacy_id already exists.
+
+    See: https://github.com/encode/django-rest-framework/issues/2996
+    See: https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
+    """
+
+    class Meta(CaregiverSerializer.Meta):
+        extra_kwargs = {
+            'legacy_id': dict(CaregiverSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
+        }
+
+
+class UpdatePatientSerializer(PatientSerializer):
+    """
+    Patient serializer that supports nested updates.
+
+    The unique validator on legacy_id otherwise fails when the legacy_id already exists.
+
+    See: https://github.com/encode/django-rest-framework/issues/2996
+    See: https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
+    """
+
+    class Meta(PatientSerializer.Meta):
+        extra_kwargs = {
+            'legacy_id': dict(PatientSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
+        }
+
+
 class RegistrationRegisterSerializer(DynamicFieldsSerializer):
     """RegistrationCode serializer used to get patient and caregiver information.
 
     The information include Patient and Caregiver data.
     """
 
-    patient = PatientSerializer(
+    patient = UpdatePatientSerializer(
         source='relationship.patient',
         fields=('legacy_id',),
         many=False,
     )
 
-    caregiver = CaregiverSerializer(
+    caregiver = UpdateCaregiverSerializer(
         source='relationship.caregiver',
         fields=('language', 'phone_number', 'username', 'legacy_id'),
         many=False,

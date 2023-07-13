@@ -33,7 +33,7 @@ class PatientSerializer(DynamicFieldsSerializer):
             'uuid',
         ]
         # enforce proper value for legacy_id
-        extra_kwargs = {
+        extra_kwargs: dict[str, dict[str, Any]] = {
             'legacy_id': {
                 'allow_null': False,
                 'required': True,

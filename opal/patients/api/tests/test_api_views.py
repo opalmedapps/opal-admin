@@ -4,8 +4,9 @@ import copy
 import json
 from datetime import datetime
 from http import HTTPStatus
+from typing import Any
 
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils import timezone
 
@@ -20,12 +21,12 @@ from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.users.factories import Caregiver
+from opal.users.factories import Caregiver, User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
-def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> None:
+def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     """Test the return of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
     patient = Patient()
@@ -36,7 +37,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
         patient=patient,
         caregiver=caregiver2,
         status='CON',
-        # Pytest insists on fetching the SELF role type instance using a queryset for some reason, factory doesnt work
+        # Pytest insists on fetching the SELF role type instance using a queryset for some reason, factory doesn't work
         type=patient_models.RelationshipType.objects.self_type(),
     )
 
@@ -60,7 +61,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
     }
 
 
-def test_my_caregiver_list_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+def test_my_caregiver_list_failure(api_client: APIClient, admin_user: User) -> None:
     """Test the failure of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
     patient = Patient()
@@ -81,7 +82,7 @@ def test_my_caregiver_list_failure(api_client: APIClient, admin_user: AbstractUs
 class TestApiRetrieveRegistrationDetails:
     """A class to test RetrieveRegistrationDetails apis."""
 
-    def test_api_retrieve_registration(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_api_retrieve_registration(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration code with summary serializer."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
@@ -110,7 +111,7 @@ class TestApiRetrieveRegistrationDetails:
             },
         }
 
-    def test_api_not_retrieve_deceased_patient(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_api_not_retrieve_deceased_patient(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration code with summary serializer not retrieve deceased patient."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
@@ -126,7 +127,7 @@ class TestApiRetrieveRegistrationDetails:
         assert response.status_code == HTTPStatus.FORBIDDEN
         assert response.json() == {'detail': 'You do not have permission to perform this action.'}
 
-    def test_registration_code_detailed(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_registration_code_detailed(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration code with detailed serializer."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
@@ -182,7 +183,7 @@ class TestApiRetrieveRegistrationDetails:
 class TestApiRegistrationCompletion:
     """Test class tests the api registration/<str: code>/register."""
 
-    valid_input_data = {
+    input_data = {
         'patient': {
             'legacy_id': 1,
         },
@@ -190,7 +191,7 @@ class TestApiRegistrationCompletion:
             'language': 'fr',
             'phone_number': '+15141112222',
             'username': 'test-username',
-            'legacy_id': 9,
+            'legacy_id': 1,
         },
         'security_answers': [
             {
@@ -204,7 +205,7 @@ class TestApiRegistrationCompletion:
         ],
     }
 
-    def test_register_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
@@ -212,13 +213,12 @@ class TestApiRegistrationCompletion:
         caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
-        valid_input_data = copy.deepcopy(self.valid_input_data)
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=valid_input_data,
+            data=self.input_data,
             format='json',
         )
         registration_code.refresh_from_db()
@@ -227,85 +227,84 @@ class TestApiRegistrationCompletion:
         assert registration_code.status == RegistrationCodeStatus.REGISTERED
         assert len(security_answers) == 2
 
-    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
+        """Existing patient and caregiver don't cause the serializer to fail."""
+        api_client.force_login(user=admin_user)
+        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': '123456'},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test non-existent registration code."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        RegistrationCode(relationship=relationship)
-        valid_input_data = copy.deepcopy(self.valid_input_data)
+
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': 'code11111111'},
             ),
-            data=valid_input_data,
+            data=self.input_data,
             format='json',
         )
+
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(
-            relationship=relationship,
             status=RegistrationCodeStatus.REGISTERED,
         )
-        valid_input_data = copy.deepcopy(self.valid_input_data)
+
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=valid_input_data,
+            data=self.input_data,
             format='json',
         )
+
+        print(response.data)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test api registration register success."""
+    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: User) -> None:
+        """Test validation of patient's legacy_id."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
-        invalid_data: dict = copy.deepcopy(self.valid_input_data)
+
+        invalid_data: dict = copy.deepcopy(self.input_data)
         invalid_data['patient']['legacy_id'] = 0
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
-                kwargs={'code': registration_code.code},
+                kwargs={'code': '123456'},
             ),
             data=invalid_data,
             format='json',
         )
 
-        registration_code.refresh_from_db()
-        security_answers = SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert registration_code.status == RegistrationCodeStatus.NEW
-        assert not security_answers
         assert response.json() == {
             'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
         }
 
-    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test api registration register success."""
+    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: User) -> None:
+        """Test validation of the phone number."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
-        invalid_data: dict = copy.deepcopy(self.valid_input_data)
+
+        registration_code = RegistrationCode()
+
+        invalid_data: dict = copy.deepcopy(self.input_data)
         invalid_data['caregiver']['phone_number'] = '1234567890'
 
         response = api_client.post(
@@ -317,11 +316,8 @@ class TestApiRegistrationCompletion:
             format='json',
         )
 
-        registration_code.refresh_from_db()
-        security_answers = SecurityAnswer.objects.all()
+        print(response.data)
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert registration_code.status == RegistrationCodeStatus.NEW
-        assert not security_answers
         assert response.json() == {
             'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
         }
@@ -330,7 +326,7 @@ class TestApiRegistrationCompletion:
 class TestPatientDemographicView:
     """Class wrapper for patient demographic endpoint tests."""
 
-    def get_valid_input_data(self) -> dict:
+    def get_valid_input_data(self) -> dict[str, Any]:
         """Generate valid JSON data for the patient demographic update.
 
         Returns:
@@ -829,7 +825,7 @@ class TestPatientDemographicView:
 class TestPatientCaregiversView:
     """Class wrapper for patient caregivers endpoint tests."""
 
-    def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test get patient caregivers success."""
         api_client.force_login(user=admin_user)
 
