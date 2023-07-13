@@ -207,7 +207,7 @@ def test_patient_ramq_format() -> None:
 def test_patient_ramq_default_value() -> None:
     """Ensure patient ramq default value is NULL."""
     patient = Patient(
-        date_of_birth='2022-09-02',
+        date_of_birth=date.fromisoformat('2022-09-02'),
         sex='m',
     )
     patient.save()
@@ -277,7 +277,10 @@ def test_relationship_default_status() -> None:
 
 def test_relationship_clean_no_end_date() -> None:
     """Ensure that the relationship with start date but without end date."""
-    relationship = factories.Relationship(start_date='2022-05-04', end_date=None)
+    relationship = factories.Relationship(
+        start_date=date.fromisoformat('2022-05-04'),
+        end_date=None,
+    )
 
     relationship.clean_fields()
     relationship.clean()
@@ -304,7 +307,10 @@ def test_relationship_clean_no_patient_caregiver() -> None:
 
 def test_relationship_clean_valid_dates() -> None:
     """Ensure that the date is valid if start date is earlier than end date."""
-    relationship = factories.Relationship(start_date='2022-05-01', end_date='2022-05-04')
+    relationship = factories.Relationship(
+        start_date=date.fromisoformat('2022-05-01'),
+        end_date=date.fromisoformat('2022-05-04'),
+    )
 
     relationship.clean_fields()
     relationship.clean()

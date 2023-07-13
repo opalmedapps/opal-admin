@@ -517,7 +517,7 @@ def test_institution_permission_required_success(user_client: Client, django_use
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
+@pytest.mark.xfail(condition=True, reason='the sidebar menus are removed', strict=True)
 def test_institution_response_contains_menu(user_client: Client, django_user_model: User) -> None:
     """Ensures that institution menu is displayed for users with permission."""
     user = django_user_model.objects.create(username='test_institution_user')
@@ -582,7 +582,7 @@ def test_site_permission_required_success(user_client: Client, django_user_model
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
+@pytest.mark.xfail(condition=True, reason='the sidebar menus are removed', strict=True)
 def test_site_response_contains_menu(user_client: Client, django_user_model: User) -> None:
     """Ensures that site menu is displayed for users with permission."""
     user = django_user_model.objects.create(username='test_site_user')
