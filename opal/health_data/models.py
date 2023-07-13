@@ -98,6 +98,7 @@ class QuantitySampleType(models.TextChoices):
     HEART_RATE = 'HR', _('Heart Rate (bpm)')
     HEART_RATE_VARIABILITY = 'HRV', _('Heart Rate Variability (ms)')
     OXYGEN_SATURATION = 'SPO2', _('Oxygen Saturation (%)')
+    BLOOD_PRESSURE = 'BP', _('Blood Pressure (mmHg)')
 
 
 class Unit(Enum):
@@ -108,6 +109,7 @@ class Unit(Enum):
     KILOGRAM = 'kg'
     MILLISECONDS = 'ms'
     PERCENT = '%'
+    MILLIMETERS_OF_MERCURY = 'mmHg'
 
 
 class QuantitySample(AbstractSample):
