@@ -1,6 +1,6 @@
 """This module provides models for hospital-specific settings."""
 
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -38,6 +38,37 @@ class Institution(Location):  # type: ignore[django-manager-missing]
     )
     support_email = models.EmailField(
         verbose_name=_('Support email'),
+    )
+    adulthood_age = models.PositiveIntegerField(
+        verbose_name=_('Adulthood Age'),
+        help_text=_('Age setting used to control pediatric functionality which delays sharing of lab results.'),
+        default=18,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(99),
+        ],
+    )
+    non_interpretable_lab_result_delay = models.PositiveIntegerField(
+        verbose_name=_('Non-Interpretable Lab Result Delay'),
+        help_text=_(
+            'Lab result delay for pediatric patients when clinician interpretation is recommended in lab setting.',
+        ),
+        default=0,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(99),
+        ],
+    )
+    interpretable_lab_result_delay = models.PositiveIntegerField(
+        verbose_name=_('Interpretable Lab Result Delay'),
+        help_text=_(
+            'Lab result delay for pediatric patients when clinician interpretation is not specified in lab setting.',
+        ),
+        default=0,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(99),
+        ],
     )
 
     class Meta:

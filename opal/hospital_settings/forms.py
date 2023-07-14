@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit
+from crispy_forms.layout import Column, Layout, Submit
 
 from opal.core.forms.layouts import CancelButton, FileField, FormActions
 
@@ -24,6 +24,9 @@ class InstitutionForm(forms.ModelForm[Institution]):
             'name_fr',
             'code',
             'support_email',
+            'adulthood_age',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
             'logo_en',
             'logo_fr',
             'terms_of_use_en',
@@ -51,6 +54,9 @@ class InstitutionForm(forms.ModelForm[Institution]):
             FileField('logo_fr'),
             FileField('terms_of_use_en'),
             FileField('terms_of_use_fr'),
+            Column('adulthood_age', css_class='col-3'),
+            Column('non_interpretable_lab_result_delay', css_class='col-3'),
+            Column('interpretable_lab_result_delay', css_class='col-3'),
             FormActions(
                 CancelButton(reverse('hospital-settings:institution-list')),
                 Submit('submit', _('Save')),
