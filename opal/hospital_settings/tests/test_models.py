@@ -81,13 +81,13 @@ def test_institution_adulthood_age_required() -> None:
 
 def test_institution_adulthood_age_min_value() -> None:
     """Make sure the institution adulthood age is greater than 0."""
-    with assertRaisesMessage(IntegrityError, "Column 'adulthood_age' cannot be null"):
+    with assertRaisesMessage(DataError, "Out of range value for column 'adulthood_age' at row 1"):
         factories.Institution(adulthood_age=-1)
 
 
 def test_institution_adulthood_age_max_value() -> None:
     """Make sure the institution adulthood age is less than 99."""
-    with assertRaisesMessage(IntegrityError, "Column 'adulthood_age' cannot be null"):
+    with assertRaisesMessage(ValidationError, 'adulthood age should be less than 100.'):
         factories.Institution(adulthood_age=100)
 
 
