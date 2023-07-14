@@ -73,6 +73,24 @@ def test_institution_ordered() -> None:
     assert first.name == 'ATest Institution'
 
 
+def test_institution_adulthood_age_required() -> None:
+    """Make sure the institution adulthood age is required."""
+    with assertRaisesMessage(IntegrityError, "Column 'adulthood_age' cannot be null"):
+        factories.Institution(adulthood_age=None)
+
+
+def test_institution_adulthood_age_min_value() -> None:
+    """Make sure the institution adulthood age is greater than 0."""
+    with assertRaisesMessage(IntegrityError, "Column 'adulthood_age' cannot be null"):
+        factories.Institution(adulthood_age=-1)
+
+
+def test_institution_adulthood_age_max_value() -> None:
+    """Make sure the institution adulthood age is less than 99."""
+    with assertRaisesMessage(IntegrityError, "Column 'adulthood_age' cannot be null"):
+        factories.Institution(adulthood_age=100)
+
+
 # Site tests
 
 def test_site_factory() -> None:
