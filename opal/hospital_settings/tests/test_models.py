@@ -87,8 +87,10 @@ def test_institution_adulthood_age_min_value() -> None:
 
 def test_institution_adulthood_age_max_value() -> None:
     """Make sure the institution adulthood age is less than 99."""
+    institution = factories.Institution(adulthood_age=100)
+
     with assertRaisesMessage(ValidationError, 'adulthood age should be less than 100.'):
-        factories.Institution(adulthood_age=100)
+        institution.full_clean()
 
 
 # Site tests
