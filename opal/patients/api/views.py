@@ -168,7 +168,7 @@ class CaregiverRelationshipView(ListAPIView):
 class PatientDemographicView(UpdateAPIView):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
-    permission_classes = [IsAuthenticated, UpdateModelPermissions]
+    permission_classes = [UpdateModelPermissions]
     queryset = Patient.objects.prefetch_related(
         'hospital_patients__site',
         'relationships__type',
