@@ -27,7 +27,7 @@ from opal.patients.models import (
 )
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users import models as user_models
-from opal.users.factories import User
+from opal.users.factories import Caregiver, User
 
 from .. import utils
 
@@ -90,6 +90,24 @@ def test_update_patient_legacy_id_invalid() -> None:
         utils.update_patient_legacy_id(patient, legacy_id)
 
 
+def test_find_caregiver_success() -> None:
+    """Test get caregiver information success."""
+    username1 = 'username-1'
+    Caregiver(username=username1)
+    caregiver = utils.find_caregiver(username1)
+    assert caregiver is not None
+    assert caregiver.username == username1
+
+
+def test_find_caregiver_failure() -> None:
+    """Test find caregiver information failure."""
+    username1 = 'username-1'
+    username2 = 'username-2'
+    Caregiver(username=username1)
+    caregiver = utils.find_caregiver(username2)
+    assert not caregiver
+
+
 def test_update_caregiver_success() -> None:
     """Test update caregiver information success."""
     phone_number1 = '+15141112222'
@@ -135,6 +153,26 @@ def test_update_caregiver_failure() -> None:
         expected_message,
     ):
         utils.update_caregiver(user, info)
+
+
+def test_replace_caregiver() -> None:
+    """Test rebuild relationship and remove the skeleton user."""
+    phone_number1 = '+15141112222'
+    phone_number2 = '+15141112223'
+    language1 = 'en'
+    language2 = 'fr'
+    username1 = 'username-1'
+    username2 = 'username-2'
+    caregiver = Caregiver(phone_number=phone_number1, language=language1, username=username1)
+    CaregiverProfile(user=caregiver)
+    skeleton = Caregiver(phone_number=phone_number2, language=language2, username=username2)
+    skeleton_profile = CaregiverProfile(user=skeleton)
+    relationship = patient_factories.Relationship(
+        caregiver=skeleton_profile,
+    )
+    utils.replace_caregiver(caregiver, relationship)
+    assert relationship.caregiver.user.username == username1
+    assert not user_models.Caregiver.objects.filter(username=username2).exists()
 
 
 def test_update_caregiver_profile_success() -> None:
