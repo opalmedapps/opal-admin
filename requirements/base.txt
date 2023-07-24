@@ -46,4 +46,4 @@ plotly==5.15.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
-twilio==8.4.0  # https://github.com/twilio/twilio-python
+twilio==8.5.0  # https://github.com/twilio/twilio-python
