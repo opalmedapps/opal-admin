@@ -277,6 +277,60 @@ def test_institution_with_no_terms_of_use_create(
     assert Institution.objects.count() == 0
 
 
+def test_institution_with_no_adulthood_age_create(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that new incomplete institution (with missing adulthood age) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+    form_data = dict(institution_form.data)
+    form_data.pop('adulthood_age')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
+def test_institution_with_no_labs_non_interpretable_create(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that the institution (with missing non interpretable labs) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+    form_data = dict(institution_form.data)
+    form_data.pop('non_interpretable_lab_result_delay')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
+def test_institution_with_no_labs_interpretable_create(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that the institution (with missing interpretable labs) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+    form_data = dict(institution_form.data)
+    form_data.pop('interpretable_lab_result_delay')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
 def test_institution_successful_create_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that after a successful creation of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-create')
@@ -376,6 +430,78 @@ def test_institution_with_no_terms_of_use_update(
     assertRedirects(response, reverse('hospital-settings:institution-list'))
     assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
     assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
+
+
+def test_institution_with_no_adulthood_age_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that incomplete institution (with missing adulthood age) form cannot update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = dict(institution_form.data)
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('adulthood_age')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
+
+
+def test_institution_with_no_labs_non_interpretable_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that institution (with missing non interpretable labs) form cannot update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = dict(institution_form.data)
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('non_interpretable_lab_result_delay')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
+
+
+def test_institution_with_no_labs_interpretable_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that institution (with missing interpretable labs) form cannot update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = dict(institution_form.data)
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('interpretable_lab_result_delay')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
