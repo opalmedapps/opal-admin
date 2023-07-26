@@ -19,7 +19,7 @@ django-crispy-forms==2.0  # https://github.com/django-crispy-forms/django-crispy
 crispy-bootstrap5==0.7  # https://pypi.org/project/crispy-bootstrap5/
 qrcode==7.4.2  # https://pypi.org/project/qrcode/
 fontawesomefree==6.4.0  # https://fontawesome.com/docs/web/use-with/python-django
-slippers==0.5.0  # https://github.com/mixxorz/slippers
+slippers==0.6.0  # https://github.com/mixxorz/slippers
 
 # MySQL/MariaDB
 #
