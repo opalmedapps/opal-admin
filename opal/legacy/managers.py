@@ -136,9 +136,10 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         Returns:
             Closest appointment for the patient in care (including SELF) and their legacy_id
         """
+        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name, 'confirmed')
         return self.filter(
             scheduledstarttime__gte=timezone.localtime(timezone.now()),
-            patientsernum__in=Relationship.objects.get_patient_id_list_for_caregiver(user_name),
+            patientsernum__in=patient_ids,
             state='Active',
             status='Open',
         ).order_by(
