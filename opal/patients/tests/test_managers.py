@@ -28,8 +28,8 @@ def test_relationshiptype_manager_guardian_caregiver_type() -> None:
 def test_relationshiptype_manager_mandatary_type() -> None:
     """Ensure the RelationshipTypeManager returns the mandatary type."""
     assert RelationshipType.objects.mandatary().role_type == RoleType.MANDATARY
-    
-    
+
+
 def test_get_patient_id_list_for_any_caregiver() -> None:
     """Get Patient is list from caregivers with any relationship status."""
     caregiver = user_factories.Caregiver
@@ -39,20 +39,18 @@ def test_get_patient_id_list_for_any_caregiver() -> None:
         patient=patient1,
         caregiver=profile,
         status=patient_models.RelationshipStatus.REVOKED,
-        
     )
     patient2 = patient_factories.Patient()
     patient_factories.Relationship(
         patient=patient2,
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,
-        
     )
     patient_ids = Relationship.get_patient_id_list_for_caregiver(caregiver.username)
-    
-    assert len(patient_ids) == 2 
-    
-    
+
+    assert len(patient_ids) == 2
+
+
 def test_get_patient_id_list_for_confirmed_caregiver() -> None:
     """Get Patient is list from caregivers with confirmed relationship status only."""
     caregiver = user_factories.Caregiver
@@ -62,15 +60,13 @@ def test_get_patient_id_list_for_confirmed_caregiver() -> None:
         patient=patient1,
         caregiver=profile,
         status=patient_models.RelationshipStatus.REVOKED,
-        
     )
     patient2 = patient_factories.Patient()
     patient_factories.Relationship(
         patient=patient2,
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,
-        
     )
     patient_ids = Relationship.get_patient_id_list_for_caregiver(caregiver.username, 'confirmed')
-    
-    assert len(patient_ids) == 1 
+
+    assert len(patient_ids) == 1
