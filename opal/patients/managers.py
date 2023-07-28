@@ -36,17 +36,21 @@ class RelationshipManager(models.Manager['Relationship']):
             caregiver__user__username=user_name,
         )
 
-    def get_patient_id_list_for_caregiver(self, user_name: str) -> list[int]:
+    def get_patient_id_list_for_caregiver(self, user_name: str, status: str = '') -> list[int]:
         """
         Get an array of patients' legacy IDs for a given caregiver.
 
         Args:
             user_name: User id making the request
+            status: string of RelationshipStatus
 
         Returns:
             Return list of patients' legacy IDs
         """
         relationships = self.get_patient_list_for_caregiver(user_name=user_name)
+        relationships = relationships.filter(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        ) if status == 'confirmed' else relationships
         # filter out legacy_id=None to avoid typing problems when doing at the DB-level
         # the result type is otherwise ValuesQuerySet[Relationship, Optional[int]]
         return [
