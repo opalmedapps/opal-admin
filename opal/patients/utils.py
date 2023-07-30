@@ -83,6 +83,19 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
+def find_caregiver(username: str) -> Optional[User]:
+    """
+    Find the user if it exists.
+
+    Args:
+        username: caregiver username
+
+    Returns:
+        return caregiver if the caregiver eixsts otherwise return None
+    """
+    return Caregiver.objects.filter(username=username).first()
+
+
 def update_caregiver(user: User, info: dict[str, Any]) -> None:
     """
     Update User information.
@@ -98,6 +111,26 @@ def update_caregiver(user: User, info: dict[str, Any]) -> None:
     user.is_active = True
     user.full_clean()
     user.save()
+
+
+def replace_caregiver(existing_caregiver: User, relationship: Relationship) -> None:
+    """
+    Re-link the relationship to the existing caregiver_profile.
+
+    And delete the skeleton caregiver_profile and skeleton caregiver
+
+    Args:
+        existing_caregiver: Caregiver object
+        relationship: Relationship object
+    """
+    old_skeleton_user = relationship.caregiver.user
+    old_skeleton_profile = relationship.caregiver
+    existing_profile = caregiver_models.CaregiverProfile.objects.get(user=existing_caregiver)
+    relationship.caregiver = existing_profile
+    relationship.full_clean()
+    relationship.save()
+    old_skeleton_profile.delete()
+    old_skeleton_user.delete()
 
 
 def update_caregiver_profile(profile: caregiver_models.CaregiverProfile, info: dict[str, Any]) -> None:
