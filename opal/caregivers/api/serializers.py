@@ -274,6 +274,7 @@ class PatientCaregiversSerializer(DynamicFieldsSerializer):
         fields = [
             'first_name',
             'last_name',
+            'data_access',
             'institution_code',
             'caregivers',
         ]
