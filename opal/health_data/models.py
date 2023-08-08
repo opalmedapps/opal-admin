@@ -21,6 +21,8 @@ from django.utils.translation import gettext_lazy as _
 
 from opal.patients.models import Patient
 
+from .managers import QuantitySampleManager
+
 
 class SampleSourceType(models.TextChoices):
     """The source a sample was provided by."""
@@ -138,6 +140,8 @@ class QuantitySample(AbstractSample):
         choices=QuantitySampleType.choices,
         max_length=4,
     )
+
+    objects: QuantitySampleManager = QuantitySampleManager()
 
     # inherit Meta from super class to retain the existing constraints
     # see: https://docs.djangoproject.com/en/dev/topics/db/models/#meta-inheritance
