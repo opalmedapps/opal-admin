@@ -862,3 +862,87 @@ class TestPatientCaregiversView:
                 },
             ],
         }
+
+
+class TestApiPatientExists:
+    """Test class tests the api patient/exists."""
+
+    input_data_cases = {
+        'valid': [{'site_code': 'RVH', 'mrn': '9999996'}, {'site_code': 'LAC', 'mrn': '0765324'}],
+        'invalid_site': [{'site_code': 'XXX', 'mrn': '9999996'}],
+        'patient_not_found': [{'site_code': 'RVH', 'mrn': '1111111'}],
+        'multiple_patients_found': [{'site_code': 'RVH', 'mrn': '9999996'}, {'site_code': 'RVH', 'mrn': '9999993'}],
+        'invalid_mrn': [{'site_code': 'RVH', 'mrn': '111111111111111111'}],
+    }
+
+    def test_patient_exists_success(self, api_client: APIClient, admin_user: User) -> None:
+        """Test api patient exists success."""
+        api_client.force_login(user=admin_user)
+        self._create_patient_identifiers()
+        response = api_client.post(
+            reverse('api:patient-exists'),
+            data=self.input_data_cases['valid'],
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.data['uuid']
+        assert response.data['legacy_id']
+        assert len(response.data) == 2
+
+    def test_patient_exists_invalid_site(self, api_client: APIClient, admin_user: User) -> None:
+        """Test api patient exists invalid site error."""
+        api_client.force_login(user=admin_user)
+        self._create_patient_identifiers()
+        response = api_client.post(
+            reverse('api:patient-exists'),
+            data=self.input_data_cases['invalid_site'],
+            format='json',
+        )
+        print(response.data[0])
+        print(response.status_code)
+        assert 'Provided "XXX" site code does not exist.' in response.data
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    # def test_patient_exists_patient_not_found(self, api_client: APIClient, admin_user: User) -> None:
+    #     """Test api patient exists patient_not_found error."""
+    #     api_client.force_login(user=admin_user)
+    #     self._create_patient_identifiers()
+    #     response = api_client.post(
+    #         reverse('api:patient-exists'),
+    #         data=self.input_data_cases['patient_not_found'],
+    #         format='json',
+    #     )
+    #     assertContains(
+    #         response=response.data,
+    #         text='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
+    #     )
+
+    # def test_patient_exists_multiple_patients_found(self, api_client: APIClient, admin_user: User) -> None:
+    #     """Test api patient exists multiple_patients_foundd error."""
+    #     api_client.force_login(user=admin_user)
+    #     self._create_patient_identifiers()
+    #     response = api_client.post(
+    #         reverse('api:patient-exists'),
+    #         data=self.input_data_cases['multiple_patients_found'],
+    #         format='json',
+    #     )
+    #     assertContains(
+    #         response=response.data,
+    #         text='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
+    #     )
+
+    def _create_patient_identifiers(self) -> None:
+        """Set up patients with required identifiers."""
+        site = Site(code='RVH')
+        Site(code='LAC')
+        HospitalPatient(
+            patient=Patient(),
+            mrn='9999996',
+            site=site,
+        )
+        HospitalPatient(
+            patient=Patient(ramq='OTES12345678'),
+            mrn='9999993',
+            site=site,
+        )
