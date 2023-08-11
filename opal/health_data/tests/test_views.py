@@ -23,8 +23,7 @@ MISSING_DATA_WARNINGS = (
     'No data found for Heart Rate',
     'No data found for Heart Rate Variability',
     'No data found for Oxygen Saturation',
-    'No data found for Blood Pressure Systolic',
-    'No data found for Blood Pressure Diastolic',
+    'No data found for Blood Pressure',
 )
 
 
