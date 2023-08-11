@@ -613,7 +613,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             option_descriptions[value['id']] = '{description}, Age: {start_age}-{end_age}'.format(
                 description=value['description'],
                 start_age=value['start_age'],
-                end_age=value['end_age'] if value['end_age'] else 'and older',
+                end_age=value['end_age'] if value['end_age'] else 'older',
             )
         return option_descriptions
 
