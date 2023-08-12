@@ -948,7 +948,7 @@ def test_accessrequestrequestorform_relationship_type_descrition() -> None:
 
     options = form.fields['relationship_type'].widget.option_descriptions
     assert options[1] == '{0}'.format(
-        'The patient is the requestor and is caring for themselves, Age: 14-older',
+        'The patient is the requestor and is caring for themselves, Age: 14 and older',
     )
     assert options[3] == '{0}{1}'.format(
         'A parent or guardian of a minor who is considered',
