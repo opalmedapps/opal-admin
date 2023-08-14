@@ -79,6 +79,7 @@ LOCAL_APPS = [
     'opal.questionnaires',
     'opal.health_data',
     'opal.databank',
+    'opal.test_results',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
