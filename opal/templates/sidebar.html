@@ -4,11 +4,11 @@
 <nav class="d-flex flex-column flex-shrink-0 p-3 border-end" style="width: 300px;">
   <a href="{% url 'start' %}" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
     <img src="{% static 'images/logo_opal.png' %}" alt="opal ADMIN logo" class="bi pe-none me-2 align-middle" width="32" height="32" style="opacity: .8" />
-    <span class="fs-4 fw-semibold text-body">OpalAdmin</span>
+    <span class="fs-4 fw-semibold text-body">opal ADMIN</span>
   </a>
   <p>
     <a href="{{ OPAL_ADMIN_URL }}/#!/home" class="text-secondary">
-      {% translate "Go back to OpalAdmin menu" %}
+      {% translate "Go back to opalADMIN menu" %}
     </a>
   </p>
 
@@ -18,7 +18,7 @@
     The new Django pages (e.g., registration) are accessible through the legacy OpalAdmin.
     Uncomment the line below if you need the menus during the development.
   {% endcomment %}
-  {% comment %} {% include "sidebar_menu.html" %} {% endcomment %}
+  {% include "sidebar_menu.html" %}
   {# while the sidebar menu is disabled, ensure the profile is at the page bottom #}
   <div class="mb-auto"></div>
 
