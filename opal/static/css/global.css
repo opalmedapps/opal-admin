@@ -12,7 +12,7 @@
 */
 :root {
   --opal-purple: #6f5499;
-  --sidebar-bg-color: var(--bs-gray-100);
+  --sidebar-bg-color: #e6edfa;
   --sidebar-accent-bg-color: #f0e9ff;
   --sidebar-active-bg-color: var(--opal-purple);
   --table-accent-bg-color: var(--bs-table-accent-bg);
@@ -30,6 +30,8 @@ html {
 body {
   height: 100vh;
   min-height: -webkit-fill-available;
+  background-color: #e6edfa;
+  color: var(--opal-purple);
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */
@@ -59,4 +61,8 @@ table thead a {
 /* Remove the bold font-weight to make the titles consistent with legend definition */
 h4 {
   font-weight: var(--bs-body-font-weight);
+}
+
+border{
+  background-color: white;
 }

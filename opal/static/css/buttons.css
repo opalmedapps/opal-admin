@@ -1,11 +1,19 @@
 /* Opal Purple for the primary button */
 .btn-primary {
-  --bs-btn-bg: var(--opal-purple);
-  --bs-btn-border-color: var(--opal-purple);
+  /*--bs-btn-bg: var(--opal-purple);
+  --bs-btn-border-color: var(--opal-purple);*/
+  --bs-btn-bg: #337ab7;
+  --bs-btn-border-color: #2e6da4;
   --bs-btn-hover-bg: #604887;
   --bs-btn-hover-border-color: #553f77;
   --bs-btn-active-bg: #553f77;
   --bs-btn-active-border-color: #4a3667;
   --bs-btn-disabled-bg: var(--opal-purple);
   --bs-btn-disabled-border-color: var(--opal-purple);
+}
+
+.btn-secondary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #d9534f;
+    --bs-btn-border-color: #d43f3a;
 }

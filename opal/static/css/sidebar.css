@@ -54,3 +54,8 @@
 nav {
   background-color: var(--sidebar-bg-color);
 }
+
+.fs-4 {
+  font-size: 1.5rem!important;
+  color: var(--opal-purple)!important;
+}
