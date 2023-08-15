@@ -1,0 +1,190 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-08-08 16:28-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/test_results/models.py
+msgid "Pathology"
+msgstr "Pathologie"
+
+#: opal/test_results/models.py
+msgid "Lab"
+msgstr "Laboratoire"
+
+#: opal/test_results/models.py
+msgid "Patient"
+msgstr "Patient"
+
+#: opal/test_results/models.py
+msgid "Type"
+msgstr "Type"
+
+#: opal/test_results/models.py
+msgid "The test type, for example pathlogy or regular lab."
+msgstr "Le type de test, par exemple pathologie ou laboratoire ordinaire."
+
+#: opal/test_results/models.py
+msgid "Sending facility"
+msgstr "Facilité d'envoi"
+
+#: opal/test_results/models.py
+msgid "Receiving facility"
+msgstr "Facilité de réception"
+
+#: opal/test_results/models.py
+msgid "Collected At"
+msgstr "Recueilli à"
+
+#: opal/test_results/models.py
+msgid "When the specimen was collected from the patient."
+msgstr "Date à laquelle l'échantillon a été prélevé sur le patient."
+
+#: opal/test_results/models.py
+msgid "Received At"
+msgstr "Reçu à"
+
+#: opal/test_results/models.py
+msgid "When the test result was entered into the source system."
+msgstr "Date à laquelle le résultat du test a été saisi dans le système source."
+
+#: opal/test_results/models.py
+msgid "Message Type"
+msgstr "Type de message"
+
+#: opal/test_results/models.py
+msgid "HL7 message type indicator."
+msgstr "Indicateur de type de message HL7."
+
+#: opal/test_results/models.py
+msgid "Message Event"
+msgstr "Événement de message"
+
+#: opal/test_results/models.py
+msgid "HL7 message trigger event indicator."
+msgstr "Indicateur d'événement déclencheur de message HL7."
+
+#: opal/test_results/models.py
+msgid "Test Group Code"
+msgstr "Code du groupe d'essai"
+
+#: opal/test_results/models.py
+msgid "Test Group Code Description"
+msgstr "Code du groupe d'essai Description"
+
+#: opal/test_results/models.py
+msgid "Legacy Document ID"
+msgstr "ID du document hérité"
+
+#: opal/test_results/models.py
+msgid ""
+"OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to "
+"patients."
+msgstr "OpalDB.Document.DocumentSerNum, utilisé pour afficher les pdf de pathologie aux patients"
+
+#: opal/test_results/models.py
+msgid "General Test"
+msgstr "Test général"
+
+#: opal/test_results/models.py
+msgid "General Tests"
+msgstr "Tests généraux"
+
+#: opal/test_results/models.py
+msgid "Low"
+msgstr "Bas"
+
+#: opal/test_results/models.py
+msgid "Normal"
+msgstr "Normale"
+
+#: opal/test_results/models.py
+msgid "High"
+msgstr "Haut"
+
+#: opal/test_results/models.py
+msgid "Observation Identifier"
+msgstr "Identificateur d'observation"
+
+#: opal/test_results/models.py
+msgid "Test component code."
+msgstr "Tester le code du composant."
+
+#: opal/test_results/models.py
+msgid "Observation Identifier Text"
+msgstr "Texte d'identification de l'observation"
+
+#: opal/test_results/models.py
+msgid "Test component text."
+msgstr "Texte de l'élément de test."
+
+#: opal/test_results/models.py
+msgid "Value"
+msgstr "Le valeur"
+
+#: opal/test_results/models.py
+msgid "Value Units"
+msgstr "Valeur unités"
+
+#: opal/test_results/models.py
+msgid "Minimum Value Range"
+msgstr "Valeur minimale plage"
+
+#: opal/test_results/models.py
+msgid "Maximum Value Range"
+msgstr "Valeur maximale plage"
+
+#: opal/test_results/models.py
+msgid "Abormal Flag"
+msgstr "Indicateur d'anomalie"
+
+#: opal/test_results/models.py
+msgid "Observed At"
+msgstr "Observé à"
+
+#: opal/test_results/models.py
+msgid ""
+"When this specific observation segment was entered into the source system."
+msgstr "Date à laquelle ce segment d'observation spécifique a été saisi dans le système source."
+
+#: opal/test_results/models.py
+msgid "Updated At"
+msgstr "Mis à jour le"
+
+#: opal/test_results/models.py
+msgid "Observation"
+msgstr "Observation"
+
+#: opal/test_results/models.py
+msgid "Observations"
+msgstr "Observations"
+
+#: opal/test_results/models.py
+msgid "Note Source"
+msgstr "Note Source"
+
+#: opal/test_results/models.py
+msgid "Note Text"
+msgstr "Texte de la note"
+
+#: opal/test_results/models.py
+msgid "Note"
+msgstr "Remarque"
+
+#: opal/test_results/models.py
+msgid "Notes"
+msgstr "Remarques"
