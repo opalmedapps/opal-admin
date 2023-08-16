@@ -1,5 +1,0 @@
-/* Customize borders */
-.rounded-1 {
-    border-radius: var(--bs-border-radius-sm)!important;
-    background-color: white;
-}
