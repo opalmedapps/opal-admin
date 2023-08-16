@@ -16,7 +16,7 @@ from requests.exceptions import RequestException
 from opal.core.test_utils import RequestMockerTest
 from opal.services.hospital.hospital import OIEMRNData, OIEPatientData, OIEReportExportData, OIEService
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.hospital.hospital_error import OIEErrorHandler
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'
@@ -66,7 +66,7 @@ def _create_report_export_response_data() -> dict[str, str]:
 def test_init_types() -> None:
     """Ensure init function creates helper services of certain types."""
     assert isinstance(oie_service.communication_manager, OIEHTTPCommunicationManager)
-    assert isinstance(oie_service.error_handler, OIEErrorHandler)
+    assert isinstance(oie_service.error_handler, ServiceErrorHandler)
     assert isinstance(oie_service.validator, OIEValidator)
 
 

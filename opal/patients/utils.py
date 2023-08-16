@@ -12,6 +12,8 @@ from opal.core.utils import generate_random_registration_code, generate_random_u
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
+from ..services.hospital.hospital import OIEService
+from ..services.orms.orms import ORMSService
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
@@ -21,6 +23,10 @@ RAMQ_FEMALE_INDICATOR: Final = 50
 RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
+
+# Initialize services to communicate with external components
+oie_service: OIEService = OIEService()
+orms_service: ORMSService = ORMSService()
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -365,6 +371,12 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
+def initialize_new_opal_patient(mrns: list[tuple[Site, str, bool]], patient_uuid: int):
+    # TODO finish function
+    # TODO error handling on set_opal_patient
+    orms_service.set_opal_patient(mrns, patient_uuid)
+
+
 @transaction.atomic
 def create_access_request(  # noqa: WPS210 (too many local variables)
     patient: Patient | OIEPatientData,
@@ -387,7 +399,10 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         the newly created relationship (which provides access to patient and caregiver)
         and the registration code (in the case of a new caregiver, otherwise None)
     """
+    is_new_patient = False
+    mrns = []
     if isinstance(patient, OIEPatientData):
+        is_new_patient = True
         mrns = [
             (Site.objects.get(code=mrn_data.site), mrn_data.mrn, mrn_data.active)
             for mrn_data in patient.mrns
@@ -419,5 +434,9 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
     # TODO: check whether we want to default start_date to patient's date of birth here
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
     registration_code = create_registration_code(relationship) if is_new_user else None
+
+    # Initialize new patient data if the user already exists and won't be going through the registration website
+    if is_new_patient and not is_new_user:
+        initialize_new_opal_patient(mrns, patient.uuid)
 
     return relationship, registration_code
