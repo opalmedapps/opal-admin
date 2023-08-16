@@ -66,13 +66,16 @@ h4 {
   font-weight: var(--bs-body-font-weight);
 }
 
-/* label font size. */
-label{
+/* Label font size. */
+label {
   font-size: var(--overall-font-size);
 }
-
 /* For the footer. */
 .small, small {
     font-size: .875em;
     color: var(--opal-purple);
+}
+/* For opalADMIN logo title. */
+.fs-4 {
+  color: var(--opal-purple) !important;
 }
