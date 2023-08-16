@@ -5,4 +5,5 @@
 
 .rounded-user-defined {
     border-radius: var(--bs-border-radius-sm)!important;
+    color: var(--opal-purple);
 }
