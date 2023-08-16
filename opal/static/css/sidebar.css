@@ -54,8 +54,14 @@
 nav {
   background-color: var(--sidebar-bg-color);
 }
-
-.fs-4 {
-  font-size: 1.5rem!important;
-  color: var(--opal-purple)!important;
+/* To make the side menu font purple in all situations except when active. */
+[type=button]:not(:disabled), [type=reset]:not(:disabled), button:not(:disabled) {
+    cursor: pointer;
+    color: var(--opal-purple);
+}
+.btn-toggle-nav a {
+    color: var(--opal-purple)!important;
+}
+.btn-toggle[aria-expanded="true"] {
+    color: var(--opal-purple);
 }
