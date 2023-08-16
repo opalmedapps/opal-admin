@@ -28,7 +28,7 @@
     --bs-btn-disabled-border-color: #6c757d;
 }
 
-/* This button is used when there is a selector/filter button is used to indicate active status */
+/* This button is used when there is a `selector/filter button` to indicate active status */
 .btn-selected{
   --bs-btn-color: #fff;
   --bs-btn-bg: var(--opal-purple);
@@ -43,7 +43,7 @@
   --bs-btn-disabled-border-color: var(--opal-purple);
 }
 
-/* This button is used when there is a selector/filter button is used to indicate inactive status */
+/* This button is used when there is a `selector/filter button` to indicate inactive status */
 .btn-unselected{
     --bs-btn-color: #fff;
     --bs-btn-bg: #6c757d;
