@@ -59,7 +59,7 @@ nav {
     color: var(--opal-purple);
 }
 .btn-toggle-nav a {
-    color: var(--opal-purple)!important;
+    color: var(--opal-purple) !important;
 }
 .btn-toggle[aria-expanded="true"] {
     color: var(--opal-purple);
