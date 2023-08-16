@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:32-0400\n"
+"POT-Creation-Date: 2023-08-15 22:00-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,6 +132,14 @@ msgid ""
 "A self-relationship was selected but the caregiver appears to be someone "
 "other than the patient."
 msgstr ""
+
+#: opal/patients/forms.py
+msgid "Age"
+msgstr "âge"
+
+#: opal/patients/forms.py
+msgid " and older"
+msgstr " et plus"
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
