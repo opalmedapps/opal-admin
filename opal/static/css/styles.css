@@ -1,8 +1,8 @@
+/* File that includes all css files, if css file is not imported here, it won't take effect. */
 @import url(global.css);
 @import url(sidebar.css);
 @import url(nav-pills.css);
 @import url(buttons.css);
 @import url(forms.css);
-@import url(borders.css);
 @import url(cards.css);
 @import url(tables.css);
