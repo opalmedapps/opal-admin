@@ -16,6 +16,7 @@
   background-color: var(--opal-purple-light);
 }
 
+/* Change breadcrumb colors */
 .breadcrumb{
   --bs-breadcrumb-bg: #e6edfa;
   color: var(--opal-purple);
