@@ -71,6 +71,14 @@ class GeneralTest(models.Model):
         null=True,
         help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
     )
+    case_number = models.CharField(
+        verbose_name=_('Filler Field 1'),
+        max_length=60,
+        blank=True,
+    )
+    reported_at = models.DateTimeField(
+        verbose_name=_('Reported At'),
+    )
 
     class Meta:
         ordering = ('patient', '-collected_at')
