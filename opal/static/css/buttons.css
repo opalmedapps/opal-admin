@@ -12,6 +12,10 @@
 }
 
 /* This button is used for cancel/back buttons */
+.btn-danger{
+  --bs-btn-bg: #d9534f;
+}
+
 .btn-secondary {
     --bs-btn-color: #fff;
     --bs-btn-bg: #d9534f;
