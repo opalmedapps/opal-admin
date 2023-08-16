@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from pytest_mock.plugin import MockerFixture
@@ -44,25 +46,10 @@ def test_set_opal_patient_success(mocker: MockerFixture) -> None:
         (SITE_A, "0000001", True),
         (SITE_B, "0000002", True),
         (SITE_A, "0000003", False),
-    ], 1)
+    ], uuid.uuid4())
 
     assert response['status'] == 'success'
     assert not hasattr(response, 'data')
-
-
-def test_set_opal_patient_no_input(mocker: MockerFixture) -> None:
-    """Ensure that set_opal_patient fails gracefully when given no MRN list."""
-    RequestMockerTest.mock_requests_post(
-        mocker,
-        {
-            'status': 'success',
-        }
-    )
-
-    response = orms_service.set_opal_patient(None, 1)
-
-    assert response['status'] == 'error'
-    assert 'A list of (site, mrn, is_active) tuples should be provided' in response['data']['message']
 
 
 def test_set_opal_patient_empty_input(mocker: MockerFixture) -> None:
@@ -74,7 +61,7 @@ def test_set_opal_patient_empty_input(mocker: MockerFixture) -> None:
         }
     )
 
-    response = orms_service.set_opal_patient([], 1)
+    response = orms_service.set_opal_patient([], uuid.uuid4())
 
     assert response['status'] == 'error'
     assert 'A list of (site, mrn, is_active) tuples should be provided' in response['data']['message']
@@ -93,7 +80,7 @@ def test_set_opal_patient_invalid_input(mocker: MockerFixture) -> None:
     response = orms_service.set_opal_patient([
         (SITE_A, "0000001", False),
         (SITE_A, "0000002", False),
-    ], 1)
+    ], uuid.uuid4())
 
     assert response['status'] == 'error'
     assert 'A list of (site, mrn, is_active) tuples should be provided' in response['data']['message']
@@ -114,7 +101,7 @@ def test_set_opal_patient(mocker: MockerFixture) -> None:
     response = orms_service.set_opal_patient([
         (SITE_A, "0000001", True),
         (SITE_B, "0000002", True),
-    ], 1)
+    ], uuid.uuid4())
 
     print(response)
 

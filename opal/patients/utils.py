@@ -1,6 +1,7 @@
 """App patients util functions."""
 from datetime import date
 from typing import Any, Final, Optional
+from uuid import UUID
 
 from django.conf import settings
 from django.db import transaction
@@ -371,7 +372,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(mrns: list[tuple[Site, str, bool]], patient_uuid: int):
+def initialize_new_opal_patient(mrns: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
     # TODO finish function
     # TODO error handling on set_opal_patient
     orms_service.set_opal_patient(mrns, patient_uuid)

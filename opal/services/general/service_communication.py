@@ -20,6 +20,7 @@ class ServiceHTTPCommunicationManager:
 
     The manager is not responsible for the data content being transferred.
     """
+
     base_url = ''
     display_name = ''
     user = ''
