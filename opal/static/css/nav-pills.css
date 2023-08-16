@@ -17,7 +17,7 @@
 }
 
 /* Change breadcrumb colors */
-.breadcrumb{
+.breadcrumb {
   --bs-breadcrumb-bg: var(--sidebar-bg-color);
   color: var(--opal-purple);
 }
