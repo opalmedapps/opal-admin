@@ -13,18 +13,14 @@
 {% endblock %}
 
 {% block content %}
-  <div class="card mb-3">
-    <div class="card-body">
-      <form method="POST" novalidate>
-        {% csrf_token %}
-        {{ form|crispy }}
+  <form method="POST" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
 
-        {% url 'patients:relationshiptype-list' as cancel_url %}
-        {% #form_actions %}
-        {% form_cancel href=cancel_url %}
-        {% form_submit type="save" %}
-        {% /form_actions %}
-      </form>
-    </div>
-  </div>
+    {% url 'patients:relationshiptype-list' as cancel_url %}
+    {% #form_actions %}
+    {% form_cancel href=cancel_url %}
+    {% form_submit type="save" %}
+    {% /form_actions %}
+  </form>
 {% endblock %}
