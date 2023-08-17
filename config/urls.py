@@ -47,7 +47,7 @@ urlpatterns = [
     path('hospital-settings/', include('opal.hospital_settings.urls')),
     path('patients/', include('opal.patients.urls')),
     path('questionnaires/', include('opal.questionnaires.urls')),
-    path('usage-statistics/', include('opal.usage_statistics.urls')),
+    path('users/', include('opal.users.urls')),
     # global config
     path(settings.ADMIN_URL, admin.site.urls),
     # define simple login view reusing the admin template

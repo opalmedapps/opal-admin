@@ -33,7 +33,7 @@ from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
 from opal.services.integration.schemas import PatientSchema
 
-from .filters import ManageCaregiverAccessFilter
+from .filters import ManageCaregiverAccessFilter, PatientFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
 from .utils import create_access_request
@@ -665,6 +665,35 @@ class AccessRequestView(
         next_index = keys.index(current_step) + 1
 
         return keys[next_index] if len(keys) > next_index else None
+
+
+class EmptyByDefaultFilterView(FilterView):
+    def get(self, request, *args, **kwargs):
+        filterset_class = self.get_filterset_class()
+        self.filterset = self.get_filterset(filterset_class)
+
+        if (
+            # not self.filterset.is_bound
+            self.filterset.is_valid()
+            or not self.get_strict()
+        ):
+            self.object_list = self.filterset.qs
+        else:
+            self.object_list = self.filterset.queryset.none()
+
+        context = self.get_context_data(
+            filter=self.filterset, object_list=self.object_list,
+        )
+        return self.render_to_response(context)
+
+
+class PatientListView(PermissionRequiredMixin, SingleTableMixin, EmptyByDefaultFilterView):
+    model = Patient
+    permission_required = ('patients.view_patients',)
+    table_class = tables.PatientTable
+    template_name = 'patients/patients/list.html'
+    queryset = Patient.objects.prefetch_related('hospital_patients', 'hospital_patients__site')
+    filterset_class = PatientFilter
 
 
 class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, FilterView):

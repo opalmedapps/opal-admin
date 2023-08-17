@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+
+{% block heading %}
+    {% translate "Update Caregiver" %}
+{% endblock %}
+
+{% block content %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    {% url 'users:caregivers-list' as cancel_url %}
+    {% #form_actions %}
+      {% form_cancel href=cancel_url %}
+      {% form_submit type="save" %}
+    {% /form_actions %}
+  </form>
+{% endblock %}
