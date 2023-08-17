@@ -48,6 +48,8 @@ urlpatterns = [
 
     # AUTH ENDPOINTS
     path('auth/', include('dj_rest_auth.urls')),
+    # authentication endpoint for the ORMS
+    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
 
     # CAREGIVERS ENDPOINTS
     path(
@@ -97,9 +99,6 @@ urlpatterns = [
 
     # LANGUAGES ENDPOINTS
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
-
-    # ORMS ENDPOINTS
-    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
 
     # PATIENTS ENDPOINTS
     path(
