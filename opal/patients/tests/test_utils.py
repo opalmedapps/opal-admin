@@ -29,6 +29,7 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
+from ...core.test_utils import RequestMockerTest
 from .. import utils
 
 pytestmark = pytest.mark.django_db
@@ -599,8 +600,9 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     assert Relationship.objects.count() == 0
 
 
-def test_create_access_request_new_patient_mrns() -> None:
+def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     """A new relationship and patient are created along with associated hospital patient instances."""
+    RequestMockerTest.mock_requests_post(mocker, {})
     Site(code='RVH')
     Site(code='MGH')
     caregiver_profile = CaregiverProfile()
