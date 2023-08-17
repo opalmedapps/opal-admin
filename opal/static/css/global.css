@@ -20,6 +20,10 @@
   --overall-font-size: 17px;
 }
 
+/* This class is used when showing user data. */
+.user-data {
+  color: black;
+}
 /*
   Make the content fill the page completely.
 
@@ -34,7 +38,6 @@ body {
   height: 100vh;
   min-height: -webkit-fill-available;
   background-color: var(--sidebar-bg-color);
-  color: var(--opal-purple);
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */
