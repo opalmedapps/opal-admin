@@ -14,9 +14,9 @@ from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital import OIEMRNData, OIEPatientData, OIEReportExportData, OIEService
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'

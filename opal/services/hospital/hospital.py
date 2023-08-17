@@ -2,9 +2,9 @@
 from datetime import datetime
 from typing import Any
 
+from ..general.service_error import ServiceErrorHandler
 from .hospital_communication import OIEHTTPCommunicationManager
 from .hospital_data import OIEMRNData, OIEPatientData, OIEReportExportData
-from ..general.service_error import ServiceErrorHandler
 from .hospital_validation import OIEValidator
 
 

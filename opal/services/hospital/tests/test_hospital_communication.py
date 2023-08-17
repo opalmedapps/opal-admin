@@ -4,8 +4,8 @@ import requests
 from pytest_mock.plugin import MockerFixture
 
 from opal.core.test_utils import RequestMockerTest
-from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
 from opal.services.general.service_error import ServiceErrorHandler
+from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
 
 ENCODING = 'utf-8'
 

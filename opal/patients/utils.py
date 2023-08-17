@@ -13,9 +13,9 @@ from opal.core.utils import generate_random_registration_code, generate_random_u
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
+
 from ..services.hospital.hospital import OIEService
 from ..services.orms.orms import ORMSService
-
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)

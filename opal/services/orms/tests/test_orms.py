@@ -1,15 +1,14 @@
 import uuid
 
 import pytest
-
 from pytest_mock.plugin import MockerFixture
 
 from opal.core.test_utils import RequestMockerTest
+from opal.hospital_settings.factories import Site
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.orms.orms import ORMSService
 from opal.services.orms.orms_communication import ORMSHTTPCommunicationManager
-from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.orms.orms_validation import ORMSValidator
-from opal.hospital_settings.factories import Site
 
 pytestmark = pytest.mark.django_db
 
