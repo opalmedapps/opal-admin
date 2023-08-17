@@ -62,7 +62,11 @@ def _create_report_export_response_data() -> dict[str, str]:
 
 
 def _create_oie_service_mock_settings() -> OIEService:
-    """Create a mock OIEService with specific parameters different from the default ones in settings."""
+    """Create a mock OIEService with specific parameters different from the default ones in settings.
+
+    Returns:
+        A mock OIEService
+    """
     # Create a communication manager with mock settings
     oie_communication_mock = OIEHTTPCommunicationManager()
     oie_communication_mock.base_url = OIE_HOST
