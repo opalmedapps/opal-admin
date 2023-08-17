@@ -24,7 +24,8 @@ class ServiceHTTPCommunicationManager:
     base_url = ''
     display_name = ''
     user = ''
-    password = ''
+    # Password is not hardcoded; stored in config file
+    password = ''  # noqa: S105
 
     def __init__(self) -> None:
         """Initialize helper services."""
@@ -81,7 +82,7 @@ class ServiceHTTPCommunicationManager:
         """Retrieve data from the external component by making HTTP GET request.
 
         Args:
-            endpoint (str): communication endpoint exposed by the external component for communication with it through the network
+            endpoint (str): communication endpoint exposed by the external component
             params (dict[str, Any]): URL parameters (a.k.a query string)
             metadata (dict[str, Any]): auxiliary data transmitted to the external component (e.g., HTTP language header)
 

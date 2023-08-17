@@ -12,6 +12,7 @@ class OIEHTTPCommunicationManager(ServiceHTTPCommunicationManager):
 
     The manager is not responsible for the data content being transferred.
     """
+
     base_url = settings.OIE_HOST
     display_name = 'OIE'
     user = settings.OIE_USER

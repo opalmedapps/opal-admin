@@ -12,6 +12,7 @@ class ORMSHTTPCommunicationManager(ServiceHTTPCommunicationManager):
 
     The manager is not responsible for the data content being transferred.
     """
+
     base_url = settings.ORMS_HOST
     display_name = 'ORMS'
     user = settings.ORMS_USER

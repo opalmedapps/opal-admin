@@ -1,5 +1,5 @@
 """Module providing validation rules for the data being sent/received to/from ORMS."""
-from typing import Any, List, Tuple
+from typing import Any
 
 
 class ORMSValidator:

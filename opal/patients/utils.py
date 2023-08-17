@@ -372,10 +372,11 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(mrns: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
+def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
     # TODO finish function
     # TODO error handling on set_opal_patient
-    orms_service.set_opal_patient(mrns, patient_uuid)
+    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in (mrn_list or []) if is_active]
+    orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
 
 @transaction.atomic
