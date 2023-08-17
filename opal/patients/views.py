@@ -32,6 +32,7 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
+from .tables import PatientTable
 from .utils import create_access_request
 
 # TODO: consider changing this to a TypedDict
@@ -732,7 +733,7 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
         return context_data
 
 
-class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]]):
+class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin, UpdateView[Relationship, ModelForm[Relationship]]):
     """
     This view is to handle relationship updates and view only requests.
 
@@ -742,6 +743,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
     """
 
     model = Relationship
+    table_class= PatientTable
     permission_required = ('patients.can_manage_relationships',)
     template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
@@ -767,6 +769,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         """
         context_data = super().get_context_data(**kwargs)
         default_success_url = reverse('patients:relationships-list')
+        context_data['table'] = tables.PatientTable(Patient.objects.filter(id=self.get_object().patient.pk))
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
         elif self.request.META.get('HTTP_REFERER'):
@@ -809,6 +812,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 request,
                 'patients/relationships/view_relationship.html',
                 {
+                    'table': tables.PatientTable(Patient.objects.filter(id=relationship_record.patient.pk)),
                     'relationship': relationship_record,
                     'cancel_url': cancel_url,
                 },

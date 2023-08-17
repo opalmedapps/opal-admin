@@ -1,12 +1,14 @@
 <!-- This file is to reuse the patient's details section in edit and view relationships forms. -->
 {% load l10n %}
 {% load i18n %}
+{% load render_table from django_tables2 %}
+
 <div class="card mb-3">
   <div class="card-body">
     <div class="row">
 
       <h4 class="card-title">{% translate "Patient Details" %}</h4>
-
+      {% render_table table %}
       <div class="col-lg-3 col-md-3">
         <div class="row h-25 mb-1">
           <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
