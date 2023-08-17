@@ -373,6 +373,15 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
 
 
 def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
+    """
+    Execute all the steps necessary to set up a new patient in the system after registration.
+
+    This includes notifying ORMS and the OIE of the new patient.
+
+    Args:
+        mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
+        patient_uuid: The new patient's Patient UUID.
+    """
     # TODO finish function
     # TODO error handling on set_opal_patient
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in (mrn_list or []) if is_active]
