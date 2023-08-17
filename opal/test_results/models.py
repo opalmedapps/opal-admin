@@ -71,6 +71,15 @@ class GeneralTest(models.Model):
         null=True,
         help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
     )
+    case_number = models.CharField(
+        verbose_name=_('Case Number'),
+        help_text=_('HL7 Filler Field 1 identifier'),
+        max_length=60,
+        blank=True,
+    )
+    reported_at = models.DateTimeField(
+        verbose_name=_('Reported At'),
+    )
 
     class Meta:
         ordering = ('patient', '-collected_at')
@@ -143,7 +152,7 @@ class Observation(models.Model):
         null=True,
     )
     value_abnormal = models.CharField(
-        verbose_name=_('Abormal Flag'),
+        verbose_name=_('Abnormal Flag'),
         max_length=1,
         choices=AbnormalFlag.choices,
         default=AbnormalFlag.NORMAL,
