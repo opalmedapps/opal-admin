@@ -75,7 +75,7 @@ class InlineSubmit(Layout):
         if extra_css:
             submit.field_classes = f'{self.default_css_class} {extra_css}'
         else:
-            submit.field_classes = f'{self.default_css_class} btn-primary'
+            submit.field_classes = f'{self.default_css_class} btn-selected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
@@ -96,7 +96,7 @@ class InlineReset(Layout):
     """
 
     default_label = _('Reset')
-    default_css_class = 'btn btn-secondary d-table'
+    default_css_class = 'btn d-table'
 
     def __init__(  # noqa: WPS210
         self,
@@ -123,6 +123,8 @@ class InlineReset(Layout):
 
         if extra_css:
             css_class = f'{self.default_css_class} {extra_css}'
+        else:
+            css_class = f'{self.default_css_class} btn-unselected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),

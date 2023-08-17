@@ -1,0 +1,7 @@
+/* This is to use for display-only tables otherwise the standard table configuration will be used. */
+.table>thead {
+  --bs-table-color-type: var(--opal-purple);
+}
+.table {
+  font-size: var(--overall-font-size);
+}

@@ -12,10 +12,12 @@
 */
 :root {
   --opal-purple: #6f5499;
-  --sidebar-bg-color: var(--bs-gray-100);
+  --sidebar-bg-color: #e6edfa;
   --sidebar-accent-bg-color: #f0e9ff;
   --sidebar-active-bg-color: var(--opal-purple);
   --table-accent-bg-color: var(--bs-table-accent-bg);
+  --input-bg-color: #f3f4ff;
+  --overall-font-size: 17px;
 }
 
 /*
@@ -25,11 +27,14 @@
 */
 html {
   height: -webkit-fill-available;
+  font-size: 17px;
 }
 
 body {
   height: 100vh;
   min-height: -webkit-fill-available;
+  background-color: var(--sidebar-bg-color);
+  color: var(--opal-purple);
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */
@@ -59,4 +64,18 @@ table thead a {
 /* Remove the bold font-weight to make the titles consistent with legend definition */
 h4 {
   font-weight: var(--bs-body-font-weight);
+}
+
+/* Label font size. */
+label {
+  font-size: var(--overall-font-size);
+}
+/* For the footer. */
+.small, small {
+    font-size: .875em;
+    color: var(--opal-purple);
+}
+/* For opalADMIN logo title. */
+.fs-4 {
+  color: var(--opal-purple) !important;
 }

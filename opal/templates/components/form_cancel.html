@@ -2,7 +2,7 @@
 {% load extra_filters %}
 
 {% var type=type|default:"cancel" %}
-{% var button_type=type|match:"done:primary,back:primary"|default:"secondary" %}
+{% var button_type=type|match:"done:primary"|default:"secondary" %}
 
 {% fragment as label %}
   {% if type == "back" %}
