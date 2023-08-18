@@ -119,6 +119,8 @@ class InlineReset(Layout):
 
         url = '{{request.path}}'
 
+        css_class = f'{self.default_css_class}'
+
         if extra_css:
             css_class = f'{self.default_css_class} {extra_css}'
         else:
