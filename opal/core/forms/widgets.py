@@ -100,5 +100,7 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         )
         if value not in self.available_choices:
             option_dict['attrs']['disabled'] = 'disabled'
-        option_dict['attrs']['data-title'] = self.option_descriptions[value]
+        # option_dict['attrs']['data-title'] = self.option_descriptions[value]
+        option_dict['attrs']['data-bs-title'] = self.option_descriptions[value]
+        option_dict['attrs']['data-bs-toggle'] = 'tooltip'
         return option_dict
