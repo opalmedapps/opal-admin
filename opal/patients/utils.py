@@ -11,6 +11,7 @@ from django.utils import timezone
 from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.hospital_settings.models import Site
+from opal.legacy import utils as legacy_utils
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
 
@@ -384,8 +385,13 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
     """
     # TODO finish function
     # TODO error handling on set_opal_patient
+
+    # Call ORMS to notify it of the existence of the new patient
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in (mrn_list or []) if is_active]
     orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+
+    # Call the OIE to notify it of the existence of the new patient
+    # TODO
 
 
 @transaction.atomic
@@ -445,6 +451,10 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
     # TODO: check whether we want to default start_date to patient's date of birth here
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
     registration_code = create_registration_code(relationship) if is_new_user else None
+
+    # Update the caregiver's legacy UserType if the user is registering as a "self" patient
+    if not is_new_user and relationship.type.role_type == RoleType.SELF:
+        legacy_utils.update_legacy_user_type(caregiver.legacy_id, 'Patient')
 
     # Initialize new patient data if the user already exists and won't be going through the registration website
     if is_new_patient and not is_new_user:
