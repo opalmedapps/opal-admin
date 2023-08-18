@@ -1,9 +1,27 @@
 /*
-  Customise form appearance, fonts, and colors.
+  Customise form appearance, fonts, colors, and inputs.
 
   All details related to form styling should be added here.
 */
-
+/* Label font size. */
+label {
+  font-size: var(--overall-font-size);
+  color: var(--opal-purple);
+}
 .form-label {
   font-weight: 600;
+}
+/* For textarea and textbox fields. */
+.form-control {
+  background-color: var(--input-bg-color);
+  font-size:var(--overall-font-size);
+}
+/* For radiobuttons and checkbox fields. */
+.form-check-input {
+  background-color: var(--input-bg-color);
+}
+/* For select field. */
+.form-select {
+  font-size: var(--overall-font-size);
+  background-color: var(--input-bg-color);
 }
