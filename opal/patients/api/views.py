@@ -258,6 +258,7 @@ class PatientExistsView(APIView):
 
     permission_classes = [IsAuthenticated]
     pagination_class = None
+    http_method_names = ['post', 'head', 'options', 'trace']
 
     def post(self, request: Request) -> Response:
         """
