@@ -101,14 +101,12 @@ class PathologySerializer(GeneralTestSerializer):
         many=True,
         allow_empty=False,
         required=True,
-        source='observation',
     )
     notes = NoteSerializer(
         fields=('note_source', 'note_text', 'updated_at'),
         many=True,
         allow_empty=False,
         required=True,
-        source='note',
     )
 
     @transaction.atomic
@@ -122,8 +120,8 @@ class PathologySerializer(GeneralTestSerializer):
         Returns:
             the created `GeneralTest` record
         """
-        validated_observations = validated_data.pop('observation')
-        validated_notes = validated_data.pop('note')
+        validated_observations = validated_data.pop('observations')
+        validated_notes = validated_data.pop('notes')
 
         general_test = GeneralTest.objects.create(**validated_data)
         Observation.objects.bulk_create(

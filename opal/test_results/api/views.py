@@ -14,7 +14,8 @@ class CreatePathologyView(generics.CreateAPIView):
     """
 
     serializer_class = PathologySerializer
-    permission_classes = [IsAuthenticated]   # CreateModelPermissions
+    # TODO: Implement CreateModelPermissions
+    permission_classes = [IsAuthenticated]
     pagination_class = None
 
     def perform_create(self, serializer: serializers.BaseSerializer[GeneralTest]) -> None:
