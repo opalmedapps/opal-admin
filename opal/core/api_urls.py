@@ -22,7 +22,7 @@ from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
-from opal.test_results.api.views import CreateGeneralTestView
+from opal.test_results.api.views import CreatePathologyView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -134,8 +134,8 @@ urlpatterns = [
         name='patient-exists',
     ),
     path(
-        'patients/<uuid:uuid>/pathology/',
-        CreateGeneralTestView.as_view(),
+        'patients/pathology/',
+        CreatePathologyView.as_view(),
         name='patient-pathology-create',
     ),
 
