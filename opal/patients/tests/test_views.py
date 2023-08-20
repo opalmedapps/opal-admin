@@ -251,7 +251,10 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # test in case of EXPIRED status, readonly view
-    assertContains(response, '<p>{0}</p>'.format(str(relationship_record.patient)))
+    # the table shows the correct patient
+    table: tables.PatientTable = response.context['table']
+
+    assert table.data.data[0] == relationship_record.patient
     assertContains(response, '{0}: {1}'.format(hospital_patient.site.code, hospital_patient.mrn))
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
@@ -404,10 +407,7 @@ def test_caregiver_access_update_form_fail(relationship_user: Client) -> None:
 
     url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
 
-    response_post = relationship_user.post(
-        path=url,
-        data=form_data,
-    )
+    response_post = relationship_user.post(path=url, data=form_data)
     err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
     assert err_msg in response_post.context['form'].errors['__all__']
 
@@ -632,7 +632,6 @@ def test_relationship_update_up_validate(relationship_user: Client) -> None:
 
     assert not form.is_bound
     assert not form.data
-    assert 'relationship' in response.context
     assert 'cancel_url' in response.context
 
 
@@ -696,7 +695,6 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assertContains(response, patient)
     assertContains(response, relationship.caregiver.user.first_name)
     assertContains(response, relationship.caregiver.user.last_name)
     assertContains(response, relationship.patient.ramq)

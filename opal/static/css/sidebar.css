@@ -16,7 +16,6 @@
 }
 .btn-toggle:hover,
 .btn-toggle:focus {
-  color: rgba(0, 0, 0, .85);
   background-color: var(--sidebar-accent-bg-color);
 }
 
@@ -53,4 +52,15 @@
 
 nav {
   background-color: var(--sidebar-bg-color);
+}
+/* To make the side menu font purple in all situations except when active. */
+[type=button]:not(:disabled), [type=reset]:not(:disabled), button:not(:disabled) {
+    cursor: pointer;
+    color: var(--opal-purple);
+}
+.btn-toggle-nav a {
+    color: var(--opal-purple) !important;
+}
+.btn-toggle[aria-expanded="true"] {
+    color: var(--opal-purple);
 }

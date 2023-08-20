@@ -12,12 +12,18 @@
 */
 :root {
   --opal-purple: #6f5499;
-  --sidebar-bg-color: var(--bs-gray-100);
+  --sidebar-bg-color: #e6edfa;
   --sidebar-accent-bg-color: #f0e9ff;
   --sidebar-active-bg-color: var(--opal-purple);
   --table-accent-bg-color: var(--bs-table-accent-bg);
+  --input-bg-color: #f3f4ff;
+  --overall-font-size: 17px;
 }
 
+/* This class is used when showing user data. */
+.user-data {
+  color: black;
+}
 /*
   Make the content fill the page completely.
 
@@ -25,17 +31,20 @@
 */
 html {
   height: -webkit-fill-available;
+  font-size: 17px;
 }
 
 body {
   height: 100vh;
   min-height: -webkit-fill-available;
+  background-color: var(--sidebar-bg-color);
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */
 body > div > nav {
   overflow-y: auto;
   height: 100vh;
+  color: var(--opal-purple);
 }
 /* make only the main content scroll so that the sidebar stays fixed */
 main {
@@ -59,4 +68,20 @@ table thead a {
 /* Remove the bold font-weight to make the titles consistent with legend definition */
 h4 {
   font-weight: var(--bs-body-font-weight);
+  color: var(--opal-purple);
+}
+h1 {
+  color: var(--opal-purple);
+}
+/* For the footer. */
+footer {
+    color: var(--opal-purple);
+}
+/* For opalADMIN logo title. */
+.text-purple {
+  color: var(--opal-purple) !important;
+}
+/* for content class style configurations */
+.content {
+    background-color: white;
 }
