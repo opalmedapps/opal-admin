@@ -191,11 +191,26 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
 
 
+class CreateModelPermissions(permissions.DjangoModelPermissions):
+    """
+    Custom DRF `DjangoModelPermissions` permission for adding/creating a model's data.
+
+    Restricts POST operations to require the `add` permission on the model.
+
+    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
+    """
+
+    # taken from DjangoModelPermissions and added the permission for POST
+    perms_map = {
+        'POST': ['%(app_label)s.add_%(model_name)s'],
+    }
+
+
 class UpdateModelPermissions(permissions.DjangoModelPermissions):
     """
     Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
 
-    Restricts PUT and PATCH operations to require the `view` permission on the model.
+    Restricts PUT and PATCH operations to require the `change` permission on the model.
 
     See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
     """

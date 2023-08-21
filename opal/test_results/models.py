@@ -19,7 +19,7 @@ class GeneralTest(models.Model):
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
-        related_name='general_test',
+        related_name='general_tests',
     )
     type = models.CharField(  # noqa: A003
         verbose_name=_('Type'),
@@ -120,7 +120,7 @@ class Observation(models.Model):
         verbose_name=_('General Test'),
         to=GeneralTest,
         on_delete=models.CASCADE,
-        related_name='observation',
+        related_name='observations',
     )
     identifier_code = models.CharField(
         verbose_name=_('Observation Identifier'),
@@ -192,7 +192,7 @@ class Note(models.Model):
         verbose_name=_('General Test'),
         to=GeneralTest,
         on_delete=models.CASCADE,
-        related_name='note',
+        related_name='notes',
     )
     note_source = models.CharField(
         verbose_name=_('Note Source'),
