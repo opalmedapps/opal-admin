@@ -1,6 +1,7 @@
 """This module provides `APIViews` for the `test-results` app REST APIs."""
 from rest_framework import generics, serializers
-from rest_framework.permissions import IsAuthenticated
+
+from opal.core.drf_permissions import CreateModelPermissions
 
 from ..models import GeneralTest
 from .serializers import PathologySerializer
@@ -14,8 +15,7 @@ class CreatePathologyView(generics.CreateAPIView):
     """
 
     serializer_class = PathologySerializer
-    # TODO: Implement CreateModelPermissions
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CreateModelPermissions]
     pagination_class = None
 
     def perform_create(self, serializer: serializers.BaseSerializer[GeneralTest]) -> None:
