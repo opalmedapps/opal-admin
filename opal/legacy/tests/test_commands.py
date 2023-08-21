@@ -444,7 +444,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
     def test_deviations_no_patients(self) -> None:
         """Ensure the command does not fail if there are no patient records."""
         message, error = self._call_command('find_patients_deviations')
-        assert 'No deviations has been found in the "Patient" tables/models.' in message
+        assert 'No deviations have been found in the "Patient" tables/models.' in message
 
     def test_deviations_uneven_patient_records(self) -> None:
         """Ensure the command handles the cases when "Patient" model/tables have uneven number of records."""
@@ -469,8 +469,10 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
-        assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None)" in error
-        assert "(51, '123456', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
+        assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None, 'ALL')" in error
+        assert (
+            "(51, '123456', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+        ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
     def test_deviations_uneven_hospi_patient_records(self) -> None:
@@ -588,7 +590,46 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_patients_deviations')
-        assert 'No deviations has been found in the "Patient" tables/models.' in message
+        assert 'No deviations have been found in the "Patient" tables/models.' in message
+
+    def test_patient_records_deviations_access_level(self) -> None:
+        """Ensure the command returns an error if the access level does not match."""
+        # create legacy patient
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ssn='RAMQ12345678',
+            firstname='First Name',
+            lastname='Last Name',
+            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            sex='Male',
+            telnum='5149995555',
+            email='opal@example.com',
+            language='en',
+            accesslevel='1',
+        )
+        caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='opal@example.com',
+                language='en',
+                phone_number='5149995555',
+            ),
+            legacy_id=99,
+        )
+        # create patient
+        patient: Patient = patient_factories.Patient(
+            legacy_id=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+
+        assert patient.data_access == Patient.DataAccessType.ALL
+        assert legacy_patient.accesslevel == '1'
+
+        message, error = self._call_command('find_patients_deviations')
+
+        assert 'found deviations in the "Patient" tables/models!!!' in error
 
 
 class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
