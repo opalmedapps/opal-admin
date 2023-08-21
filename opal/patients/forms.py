@@ -22,7 +22,7 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
@@ -433,7 +433,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         self.helper.layout = Layout(
             Row(
                 Column(
-                    'relationship_type',
+                    RadioSelect('relationship_type'),
                 ),
                 Column(
                     # make it appear like a label

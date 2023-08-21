@@ -180,3 +180,14 @@ class EnterSuppressedLayout(Layout):
             HTML('<button type="submit" disabled style="display: none" aria-hidden="true"></button>'),
             *fields,
         )
+
+
+class RadioSelect(Field):
+    """
+    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
+
+    Triggers validation via `up-validate` on selection to let the form react to the selection.
+    Supports option tooltip on the radion select label.
+    """
+
+    template = 'patients/radioselect.html'
