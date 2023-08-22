@@ -35,22 +35,23 @@ class QuestionnaireReportRequestData(NamedTuple):
 
 
 class ReportService():
-    """Service that provides functionality for generating questionnaire pdf reports."""
+    """Service that provides functionality for generating PDF reports."""
 
     content_type = 'application/json'
     logger = logging.getLogger(__name__)
 
+    # TODO: use fpdf2 instead of the legacy PDF-generator (PHP service)
     def generate_questionnaire_report(
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> Optional[str]:
-        """Create PDF report in encoded base64 string format.
+        """Create a questionnaire PDF report in encoded base64 string format.
 
         Args:
-            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
+            report_data: questionnaire data required to call the legacy PHP report service
 
         Returns:
-            str: encoded base64 string of the generated PDF report
+            encoded base64 string of the generated questionnaire PDF report
         """
         # return a `None` if questionnaire report request data are not valid
         if not self._is_questionnaire_report_request_data_valid(report_data):
@@ -69,6 +70,20 @@ class ReportService():
 
         self.logger.error('The generated questionnaire PDF report is not in the base64 format.')
         return None
+
+    def generate_pathology_report(
+        self,
+        report_data: QuestionnaireReportRequestData,
+    ) -> str:
+        """Create a pathology PDF report.
+
+        Args:
+            report_data: pathology data required generate the PDF report
+
+        Returns:
+            path to the generated pathology report
+        """
+        return ''
 
     def _request_base64_report(
         self,
