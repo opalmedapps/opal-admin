@@ -697,7 +697,7 @@ class AccessRequestSendSMSForm(forms.Form):
         self.helper.layout = Layout(
             Div(
                 'language',
-                CrispyField('phone_number', wrapper_class='col-4'),
+                CrispyField('phone_number', wrapper_class='col-5'),
                 # wrap the submit button to not make it increase in size if the form has field errors
                 Div(
                     InlineSubmit('send_sms', 'Send'),
