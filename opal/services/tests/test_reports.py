@@ -238,14 +238,14 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     )
 
 
-# generate_questionnaire_report function tests
+# generate_base64_questionnaire_report function tests
 
 def test_questionnaire_report(mocker: MockerFixture) -> None:
     """Ensure the returned value is base64 encoded pdf report."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -260,7 +260,7 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             patient_id=-1,
         ),
@@ -275,7 +275,7 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             patient_id=-1,
         ),
@@ -290,7 +290,7 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             logo_path=Path('invalid/logo/path'),
         ),
@@ -305,7 +305,7 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             language='invalid language',
         ),
@@ -324,7 +324,7 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
         },
     })
 
-    base64_report = reports_service.generate_questionnaire_report(
+    base64_report = reports_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 

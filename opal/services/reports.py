@@ -41,7 +41,7 @@ class ReportService():
     logger = logging.getLogger(__name__)
 
     # TODO: use fpdf2 instead of the legacy PDF-generator (PHP service)
-    def generate_questionnaire_report(
+    def generate_base64_questionnaire_report(
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> Optional[str]:

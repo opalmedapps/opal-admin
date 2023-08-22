@@ -71,7 +71,7 @@ class QuestionnairesReportView(views.APIView):
         lang = translation.get_language() or settings.LANGUAGES[0][0]
 
         # Generate questionnaire report
-        encoded_report = self.report_service.generate_questionnaire_report(
+        encoded_report = self.report_service.generate_base64_questionnaire_report(
             QuestionnaireReportRequestData(
                 patient_id=patient.legacy_id if patient.legacy_id else -1,
                 patient_name=f'{patient.first_name} {patient.last_name}',
