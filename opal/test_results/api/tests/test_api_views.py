@@ -1,18 +1,18 @@
 """Test module for the REST API endpoints of the `test_results` app."""
 
+import json
 from typing import Any
 
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains
+from pytest_django.asserts import assertContains, assertJSONEqual
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from opal.hospital_settings.factories import Site
 from opal.patients import models as patient_models
-from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.patients.factories import Patient, Relationship
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -39,6 +39,83 @@ class TestCreatePathologyView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
+    def test_pathology_create_with_empty_uuid(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if the patient's UUID field is empty."""
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
+        data['patient'] = ''
+
+        response = client.post(
+            reverse('api:patient-pathology-create'),
+            data=data,
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='This field may not be null.',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_pathology_create_empty_patient_queryset(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if the patient queryset is empty."""
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
+        data['patient'] = '11111111-1111-1111-1111-111111111111'
+
+        response = client.post(
+            reverse('api:patient-pathology-create'),
+            data=data,
+            format='json',
+        )
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data={
+                'patient': ['Empty queryset. Expected a `QuerySet[Patient]`.'],
+            },
+        )
+
+    def test_pathology_create_patient_uuid_does_not_exist(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=self._get_valid_input_data()['patient'],
+        )
+
+        Relationship(
+            patient=patient,
+            type=patient_models.RelationshipType.objects.self_type(),
+        )
+
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
+        data['patient'] = '11111111-1111-1111-1111-111111111111'
+
+        response = client.post(
+            reverse('api:patient-pathology-create'),
+            data=data,
+            format='json',
+        )
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data={
+                'patient': ['Invalid UUID \"11111111-1111-1111-1111-111111111111\" - patient does not exist.'],
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_pathology_create_success(
         self,
         api_client: APIClient,
@@ -52,17 +129,6 @@ class TestCreatePathologyView:
         Relationship(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
-        )
-
-        HospitalPatient(
-            patient=patient,
-            mrn='9999996',
-            site=Site(code='RVH'),
-        )
-        HospitalPatient(
-            patient=patient,
-            mrn='9999997',
-            site=Site(code='MGH'),
         )
 
         client = self._get_client_with_permissions(api_client)
