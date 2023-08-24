@@ -8,11 +8,13 @@ from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
+from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.patients import models as patient_models
-from opal.patients.factories import Patient, Relationship
+from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.test_results.api.serializers import PatientUUIDRelatedField
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -111,6 +113,52 @@ class TestCreatePathologyView:
             raw=json.dumps(response.json()),
             expected_data={
                 'patient': ['Invalid UUID \"11111111-1111-1111-1111-111111111111\" - patient does not exist.'],
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_pathology_create_incorrect_queryset_type(
+        self,
+        api_client: APIClient,
+        mocker: MockerFixture,
+    ) -> None:
+        """Ensure the endpoint returns an error if the `PatientUUIDRelatedField` uses incorrect queryset type."""
+        HospitalPatient()
+        mocker.patch.dict(
+            'opal.test_results.api.serializers.PathologySerializer._declared_fields',
+            {'patient': PatientUUIDRelatedField(queryset=patient_models.HospitalPatient.objects.all())},
+        )
+
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=self._get_valid_input_data()['patient'],
+        )
+
+        Relationship(
+            patient=patient,
+            type=patient_models.RelationshipType.objects.self_type(),
+        )
+
+        client = self._get_client_with_permissions(api_client)
+        data = self._get_valid_input_data()
+
+        response = client.post(
+            reverse('api:patient-pathology-create'),
+            data=data,
+            format='json',
+        )
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data={
+                'patient': [
+                    '{0} {1} {2}'.format(
+                        'Incorrect queryset type.',
+                        'Expected a `QuerySet[Patient]`,',
+                        "but got <class 'opal.patients.models.HospitalPatient'>",
+                    ),
+                ],
             },
         )
 
