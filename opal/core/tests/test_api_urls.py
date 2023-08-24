@@ -251,7 +251,7 @@ def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
 def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     """Ensure that the endpoint for creating/adding pathology records is defined."""
     patient_uuid = uuid4()
-    url_path = '/{api_root}/patients/{patient_uuid}/pathology/'.format(
+    url_path = '/{api_root}/patients/{patient_uuid}/pathology-reports/'.format(
         api_root=settings.API_ROOT,
         patient_uuid=patient_uuid,
     )
