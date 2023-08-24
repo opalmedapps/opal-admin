@@ -802,7 +802,11 @@ class TestPatientDemographicView:
         Returns:
             Authorized API client.
         """
-        user = caregiver_factories.Caregiver(username='lisaphillips')
+        user = caregiver_factories.User(
+            username='nonhumanuser',
+            first_name='',
+            last_name='',
+        )
         permission = Permission.objects.get(codename='change_patient')
         user.user_permissions.add(permission)
         api_client.force_login(user=user)
