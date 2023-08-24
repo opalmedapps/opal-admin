@@ -78,7 +78,7 @@ class ReportService():
         """Create a pathology PDF report.
 
         Args:
-            report_data: pathology data required generate the PDF report
+            report_data: pathology data required to generate the PDF report
 
         Returns:
             path to the generated pathology report
