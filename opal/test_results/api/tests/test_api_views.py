@@ -2,6 +2,7 @@
 
 import json
 from typing import Any
+from uuid import uuid4
 
 from django.contrib.auth.models import Permission
 from django.urls import reverse
@@ -19,6 +20,8 @@ from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
+PATIENT_UUID = uuid4()
+
 
 class TestCreatePathologyView:
     """Class wrapper for pathology reports endpoint tests."""
@@ -30,7 +33,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint returns a 403 error if the user is unauthorized."""
         # Make a `POST` request without proper permissions.
         response = api_client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
             format='json',
         )
@@ -51,7 +54,7 @@ class TestCreatePathologyView:
         data['patient'] = ''
 
         response = client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
             format='json',
         )
@@ -69,10 +72,10 @@ class TestCreatePathologyView:
         """Ensure the endpoint returns an error if the patient queryset is empty."""
         client = self._get_client_with_permissions(api_client)
         data = self._get_valid_input_data()
-        data['patient'] = '11111111-1111-1111-1111-111111111111'
+        data['patient'] = PATIENT_UUID
 
         response = client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
             format='json',
         )
@@ -101,10 +104,10 @@ class TestCreatePathologyView:
 
         client = self._get_client_with_permissions(api_client)
         data = self._get_valid_input_data()
-        data['patient'] = '11111111-1111-1111-1111-111111111111'
+        data['patient'] = PATIENT_UUID
 
         response = client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
             format='json',
         )
@@ -112,7 +115,7 @@ class TestCreatePathologyView:
         assertJSONEqual(
             raw=json.dumps(response.json()),
             expected_data={
-                'patient': ['Invalid UUID \"11111111-1111-1111-1111-111111111111\" - patient does not exist.'],
+                'patient': [f'Invalid UUID \"{PATIENT_UUID}\" - patient does not exist.'],
             },
         )
 
@@ -144,7 +147,7 @@ class TestCreatePathologyView:
         data = self._get_valid_input_data()
 
         response = client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=data,
             format='json',
         )
@@ -181,7 +184,7 @@ class TestCreatePathologyView:
 
         client = self._get_client_with_permissions(api_client)
         response = client.post(
-            reverse('api:patient-pathology-create'),
+            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
             format='json',
         )

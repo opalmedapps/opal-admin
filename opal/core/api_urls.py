@@ -134,7 +134,7 @@ urlpatterns = [
         name='patient-exists',
     ),
     path(
-        'patients/pathology/',
+        'patients/<uuid:uuid>/pathology/',
         CreatePathologyView.as_view(),
         name='patient-pathology-create',
     ),

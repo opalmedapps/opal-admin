@@ -1,5 +1,6 @@
 import sys
 from importlib import reload
+from uuid import uuid4
 
 from django.urls import NoReverseMatch, Resolver404, resolve, reverse
 
@@ -249,6 +250,10 @@ def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
 
 def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     """Ensure that the endpoint for creating/adding pathology records is defined."""
-    url_path = '/{api_root}/patients/pathology/'.format(api_root=settings.API_ROOT)
-    assert reverse('api:patient-pathology-create') == url_path
+    patient_uuid = uuid4()
+    url_path = '/{api_root}/patients/{patient_uuid}/pathology/'.format(
+        api_root=settings.API_ROOT,
+        patient_uuid=patient_uuid,
+    )
+    assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
