@@ -23,7 +23,7 @@
             <div class="form-check{% if inline_class %} form-check-inline{% endif %}">
               <input type="{{option.type}}" class="form-check-input{% if field.errors %} is-invalid{% endif %}"  name="{{ field.html_name }}" value="{{ option.value|unlocalize }}" {% include "bootstrap5/layout/attrs.html" with widget=option %}>
               <label for="{{ option.attrs.id }}" class="form-check-label" 
-              data-bs-toggle="tooltip" data-bs-title="{{ option.attrs.title|unlocalize }}" data-bs-custom-class="custom-tooltip">
+              data-bs-toggle="tooltip" data-bs-title="{{ option.attrs.title|unlocalize }}">
                   {{ option.label|unlocalize }}
               </label>
               {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
