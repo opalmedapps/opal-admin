@@ -453,7 +453,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
     registration_code = create_registration_code(relationship) if is_new_user else None
 
-    # Update the caregiver's legacy UserType if the user is registering as a "self" patient
+    # Update the caregiver's legacy UserType if an existing user is registering as a "self" patient
     if not is_new_user and relationship.type.role_type == RoleType.SELF:
         legacy_utils.update_legacy_user_type(caregiver.legacy_id, 'Patient')
 

@@ -15,6 +15,7 @@ from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Site
+from opal.legacy.factories import LegacyUserFactory as LegacyUser
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     HospitalPatient,
@@ -32,7 +33,7 @@ from opal.users.factories import Caregiver, User
 from ...core.test_utils import RequestMockerTest
 from .. import utils
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 PATIENT_DATA = OIEPatientData(
@@ -517,7 +518,8 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
 def test_create_access_request_existing() -> None:
     """A new self relationship is created for an existing patient and caregiver."""
     patient = patient_factories.Patient()
-    caregiver_profile = CaregiverProfile()
+    legacy_user = LegacyUser(usertype='Caregiver')
+    caregiver_profile = CaregiverProfile(legacy_id=legacy_user.usersernum)
     self_type = RelationshipType.objects.self_type()
 
     relationship, registration_code = utils.create_access_request(
@@ -525,6 +527,7 @@ def test_create_access_request_existing() -> None:
         caregiver_profile,
         self_type,
     )
+    legacy_user.refresh_from_db()
 
     assert registration_code is None
     assert relationship.patient == patient
@@ -534,6 +537,7 @@ def test_create_access_request_existing() -> None:
     assert relationship.request_date == date.today()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date is None
+    assert legacy_user.usertype == 'Patient'
 
 
 def test_create_access_request_non_self() -> None:
