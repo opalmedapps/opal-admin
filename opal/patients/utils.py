@@ -413,12 +413,20 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
         relationship_type: the type of relationship between the caregiver and patient
 
+    Raises:
+        ValueError: if an existing user registering as self is missing their legacy_id value
+
     Returns:
         the newly created relationship (which provides access to patient and caregiver)
         and the registration code (in the case of a new caregiver, otherwise None)
     """
     is_new_patient = False
     mrns = []
+    status = (
+        RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
+    )
+
+    # New patient
     if isinstance(patient, OIEPatientData):
         is_new_patient = True
         mrns = [
@@ -435,24 +443,12 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             mrns=mrns,
         )
 
-    if isinstance(caregiver, tuple):
-        # create caregiver and caregiver profile
-        caregiver_profile = create_caregiver_profile(
-            first_name=caregiver[0],
-            last_name=caregiver[1],
-        )
-    else:
-        caregiver_profile = caregiver
-
-    status = (
-        RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
-    )
-
-    # TODO: check whether we want to default start_date to patient's date of birth here
-    relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
+    # TODO: check whether we want to default start_date to patient's date of birth when calling create_relationship
 
     # Existing user
     if isinstance(caregiver, caregiver_models.CaregiverProfile):
+        caregiver_profile = caregiver
+        relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
 
         registration_code = create_registration_code(relationship)
 
@@ -468,6 +464,12 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             initialize_new_opal_patient(mrns, patient.uuid)
     else:
         # New user
+        # Create caregiver and caregiver profile
+        caregiver_profile = create_caregiver_profile(
+            first_name=caregiver[0],
+            last_name=caregiver[1],
+        )
+        relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
         registration_code = None
 
     return relationship, registration_code
