@@ -39,10 +39,6 @@ class SampleForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(*fields)
 
-    def set_radio_select_hidden(self) -> None:
-        """Set radio_select hidden."""
-        self.fields['radio_select'].widget = forms.HiddenInput()
-
 
 def test_cancelbutton_url() -> None:
     """Ensure the CancelButton contains the URL."""
