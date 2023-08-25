@@ -450,7 +450,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         caregiver_profile = caregiver
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
 
-        registration_code = create_registration_code(relationship)
+        registration_code = None
 
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
         if relationship.type.role_type == RoleType.SELF:
@@ -470,6 +470,6 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             last_name=caregiver[1],
         )
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
-        registration_code = None
+        registration_code = create_registration_code(relationship)
 
     return relationship, registration_code
