@@ -387,7 +387,8 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
     # TODO error handling on set_opal_patient
 
     # Call ORMS to notify it of the existence of the new patient
-    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in (mrn_list or []) if is_active]
+    mrn_list = mrn_list or []
+    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
     orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
     # Call the OIE to notify it of the existence of the new patient

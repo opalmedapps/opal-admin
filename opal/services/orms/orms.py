@@ -23,7 +23,11 @@ class ORMSService:
         self.error_handler = ServiceErrorHandler()
         self.validator = ORMSValidator()
 
-    def set_opal_patient(self, active_mrn_list: list[tuple[str, str]], patient_uuid: UUID) -> dict[str, Any]:
+    def set_opal_patient(
+        self,
+        active_mrn_list: list[tuple[str, str]],
+        patient_uuid: UUID,
+    ) -> dict[str, Any]:
         """Mark a patient as an Opal patient in ORMS.
 
         Tries calling ORMS using each of the patient's MRNs until one succeeds.
@@ -45,15 +49,14 @@ class ORMSService:
             )
 
         for site_code, mrn in active_mrn_list:
-            payload = {
-                'mrn': mrn,
-                'site': site_code,
-                'opalStatus': 1,  # 1 => registered/active patient; 0 => unregistered/inactive patient
-                'opalUUID': patient_uuid.hex,
-            }
             response_data = self.communication_manager.submit(
                 endpoint='/php/api/public/v2/patient/updateOpalStatus.php',
-                payload=payload,
+                payload={
+                    'mrn': mrn,
+                    'site': site_code,
+                    'opalStatus': 1,  # 1 => registered/active patient; 0 => unregistered/inactive patient
+                    'opalUUID': patient_uuid.hex,
+                },
             )
 
             success, errors = self.validator.is_patient_response_valid(response_data)
