@@ -1,7 +1,10 @@
 """This module provides `APIViews` for the `test-results` app REST APIs."""
+from django.shortcuts import get_object_or_404
+
 from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import CreateModelPermissions
+from opal.patients.models import Patient
 
 from ..models import GeneralTest
 from .serializers import PathologySerializer
@@ -33,4 +36,7 @@ class CreatePathologyView(generics.CreateAPIView):
         # TODO: Add legacy_document_id value to the `GeneralTest` instance
         # TODO: Run serializer.validate() due to added legacy_document_id field? (TBD)
 
-        serializer.save()
+        serializer.save(
+            patient=get_object_or_404(Patient, uuid=self.kwargs['uuid']),
+            legacy_document_id=1,
+        )
