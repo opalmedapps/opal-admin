@@ -6,7 +6,7 @@ from rest_framework import generics, serializers
 from opal.core.drf_permissions import CreateModelPermissions
 from opal.patients.models import Patient
 
-from ..models import GeneralTest
+from ..models import GeneralTest, TestType
 from .serializers import PathologySerializer
 
 
@@ -17,6 +17,7 @@ class CreatePathologyView(generics.CreateAPIView):
     Supports the creation of one or more instances of the nested `observations` and `notes` records.
     """
 
+    # DjangoModelPermission requires a queryset to determine the model
     queryset = GeneralTest.objects.none()
     serializer_class = PathologySerializer
     permission_classes = [CreateModelPermissions]
@@ -37,5 +38,6 @@ class CreatePathologyView(generics.CreateAPIView):
         # TODO: Use DocumentSerNum field of the OpalDB.Documents table as legacy_document_id
         serializer.save(
             patient=get_object_or_404(Patient, uuid=self.kwargs['uuid']),
+            type=TestType.PATHOLOGY,
             legacy_document_id=1,
         )

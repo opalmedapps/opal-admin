@@ -116,7 +116,6 @@ class TestCreatePathologyView:
                 'note_source': 'test',
                 'note_text': 'test',
             }],
-            'type': 'P',
             'sending_facility': '',
             'receiving_facility': '',
             'collected_at': '1985-10-01 12:30:30',
