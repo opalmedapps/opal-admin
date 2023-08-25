@@ -448,17 +448,26 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
     )
 
-    is_new_user = not isinstance(caregiver, caregiver_models.CaregiverProfile)
     # TODO: check whether we want to default start_date to patient's date of birth here
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
-    registration_code = create_registration_code(relationship) if is_new_user else None
 
-    # Update the caregiver's legacy UserType if an existing user is registering as a "self" patient
-    if not is_new_user and relationship.type.role_type == RoleType.SELF:
-        legacy_utils.update_legacy_user_type(caregiver.legacy_id, 'Patient')
+    # Existing user
+    if isinstance(caregiver, caregiver_models.CaregiverProfile):
 
-    # Initialize new patient data if the user already exists and won't be going through the registration website
-    if is_new_patient and not is_new_user:
-        initialize_new_opal_patient(mrns, patient.uuid)
+        registration_code = create_registration_code(relationship)
+
+        # For existing users registering as self, upgrade their legacy UserType to 'Patient'
+        if relationship.type.role_type == RoleType.SELF:
+            if not caregiver.legacy_id:
+                raise ValueError('Legacy ID is missing from Caregiver Profile')
+
+            legacy_utils.update_legacy_user_type(caregiver.legacy_id, 'Patient')
+
+        # For existing users (who won't be going through the registration site), init patient data if needed
+        if is_new_patient:
+            initialize_new_opal_patient(mrns, patient.uuid)
+    else:
+        # New user
+        registration_code = None
 
     return relationship, registration_code
