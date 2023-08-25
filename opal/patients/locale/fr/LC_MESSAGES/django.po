@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-18 03:03+0300\n"
+"POT-Creation-Date: 2023-08-22 17:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,11 +72,11 @@ msgstr "Aucun patient n'a pu être retrouvé."
 
 #: opal/patients/forms.py
 msgid "Could not establish a connection to the hospital interface."
-msgstr ""
+msgstr "Impossible d'établir une connexion à l'interface de l'hôpital."
 
 #: opal/patients/forms.py
 msgid "Patient is not a test patient."
-msgstr ""
+msgstr "Le patient n'est pas un patient test."
 
 #: opal/patients/forms.py
 msgid ""
@@ -95,11 +95,15 @@ msgstr ""
 
 #: opal/patients/forms.py
 msgid "Relationship to the patient"
-msgstr ""
+msgstr "Relation avec le patient"
 
 #: opal/patients/forms.py
 msgid "The requestor filled out the request form"
-msgstr ""
+msgstr "Le demandeur a rempli le formulaire de demande"
+
+#: opal/patients/forms.py
+msgid "Requestor ID checked"
+msgstr "Cartes d'identité du demandeur vérifiées"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
@@ -121,7 +125,11 @@ msgstr "Numéro de téléphone"
 
 #: opal/patients/forms.py
 msgid "Validation"
-msgstr ""
+msgstr "Validation"
+
+#: opal/patients/forms.py
+msgid "Find User"
+msgstr "Rechercher un utilisateur"
 
 #: opal/patients/forms.py opal/patients/tables.py
 msgid "No existing user could be found."
@@ -132,6 +140,8 @@ msgid ""
 "A self-relationship was selected but the caregiver appears to be someone "
 "other than the patient."
 msgstr ""
+"Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
+"être quelqu'un d'autre que le patient."
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
@@ -144,6 +154,14 @@ msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
 
 #: opal/patients/forms.py
+msgid "Language"
+msgstr "Langue"
+
+#: opal/patients/forms.py
+msgid "Send"
+msgstr "Envoyer"
+
+#: opal/patients/forms.py
 #, python-brace-format
 msgid "Your Opal registration code is: {code}. Please go to: {url}"
 msgstr ""
@@ -151,7 +169,7 @@ msgstr ""
 
 #: opal/patients/forms.py
 msgid "An error occurred while sending the SMS"
-msgstr ""
+msgstr "Une erreur s'est produite lors de l'envoi du SMS"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
@@ -435,6 +453,7 @@ msgid ""
 "There already exists an active relationship between the patient and "
 "caregiver."
 msgstr ""
+"Il existe déjà une relation active entre le patient et le proche aidant."
 
 #: opal/patients/models.py
 msgid "Site"
@@ -485,7 +504,7 @@ msgstr "Aucun aidant n'a pu être retrouvé."
 
 #: opal/patients/templates/patients/access_request/access_request.html
 msgid "Opal Registration"
-msgstr ""
+msgstr "Inscription à Opal"
 
 #: opal/patients/templates/patients/access_request/access_request.html
 #: opal/patients/templates/patients/relationships/patient_details.html
@@ -499,13 +518,15 @@ msgstr "Détails du demandeur"
 
 #: opal/patients/templates/patients/access_request/confirmation.html
 msgid "Opal Registration: Confirmation"
-msgstr ""
+msgstr "Inscription à Opal : Confirmation"
 
 #: opal/patients/templates/patients/access_request/confirmation.html
 msgid ""
 "The following access request has been created for the following patient and "
 "caregiver:"
 msgstr ""
+"La demande d'accès suivante a été créée pour le patient et le proche aidant "
+"suivants :"
 
 #: opal/patients/templates/patients/access_request/confirmation.html
 #: opal/patients/templates/patients/access_request/confirmation_code.html
@@ -530,7 +551,7 @@ msgstr ""
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Opal Registration: Code"
-msgstr ""
+msgstr "Inscription à Opal : Code"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
@@ -542,19 +563,19 @@ msgstr ""
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Registration Code"
-msgstr ""
+msgstr "Code d'inscription"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "QR Code"
-msgstr ""
+msgstr "Code QR"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Send code via SMS"
-msgstr ""
+msgstr "Envoyer le code par SMS"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "SMS sent successfully"
-msgstr ""
+msgstr "SMS envoyé avec succès"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Instructions"
@@ -562,7 +583,7 @@ msgstr "Instructions"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Do not print this page!"
-msgstr ""
+msgstr "N'imprimez pas cette page !"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Inform the requestor that the code is valid for 72 hours."
@@ -625,18 +646,24 @@ msgid ""
 "This screen allows you to confirm, revoke or deny a caregiver's access to a "
 "patient's data."
 msgstr ""
+"Cet écran vous permet de confirmer, révoquer ou refuser l'accès d'un proche "
+"aidant aux données d'un patient."
 
 #: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid ""
 "Changes to the data fields are validated against the caregiver type and "
 "patient's age."
 msgstr ""
+"Les modifications apportées aux champs de données sont validées par rapport "
+"au type du proche aidant et à l'âge du patient."
 
 #: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid ""
 "Caregivers will only have access to the data of their patient once the "
 "relationship has been confirmed."
 msgstr ""
+"Les proches aidants n'auront accès aux données de leur patient qu'une fois "
+"la relation confirmée."
 
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
@@ -652,29 +679,31 @@ msgstr "En attendant"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "View Caregiver Access"
-msgstr "Afficher l'accès des soignants"
+msgstr "Afficher l'accès des proches aidants"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "This screen allows you to view an access that has expired."
-msgstr ""
+msgstr "Cet écran vous permet de visualiser un accès expiré."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid ""
 "Caregiver accesses that have expired cannot be changed, they can only be "
 "viewed."
 msgstr ""
+"Les accès de proches aidants expirés ne peuvent pas être "
+"modifiés, ils peuvent seulement être consultés."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided"
-msgstr ""
+msgstr "Aucune explication fournie"
 
 #: opal/patients/views.py
 msgid "Find Patient"
-msgstr ""
+msgstr "Trouver un patient"
 
 #: opal/patients/views.py
 msgid "Confirm Patient Data"
-msgstr ""
+msgstr "Confirmer les données du patient"
 
 #: opal/patients/views.py
 msgid "Continue"
