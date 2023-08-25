@@ -1,0 +1,46 @@
+{% load crispy_forms_field %}
+{% load crispy_forms_filters %}
+{% load l10n %}
+
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+  <{% if tag %}{{ tag }}{% else %}div{% endif %} id="div_{{ field.auto_id }}" class="mb-3{% if field|is_checkbox and form_show_labels %} form-check{% else %}{% if 'form-horizontal' in form_class %} row{% endif %}{% endif %}{% if wrapper_class %} {{ wrapper_class }}{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
+    {% if field.label and not field|is_checkbox and form_show_labels %}
+      {# not field|is_radioselect in row below can be removed once Django 3.2 is no longer supported #}
+        <label {% if field.id_for_label and not field|is_radioselect %}for="{{ field.id_for_label }}"{% endif %} class="{% if 'form-horizontal' in form_class %}col-form-label{% else %}form-label{% endif %}{% if label_class %} {{ label_class }}{% endif %}{% if field.field.required %} requiredField{% endif %}">
+            {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+        </label>
+    {% endif %}
+
+    {% if field|is_checkboxselectmultiple or field|is_radioselect %}
+
+      <div {% if field_class %}class="{{ field_class }}"{% endif %}{% if flat_attrs %} {{ flat_attrs }}{% endif %}>
+          <label class="form-label requiredField"> {{ field.label }}{{field.required}}<span class="asteriskField">*</span></label>
+          {% for group, options, index in field|optgroups %}
+          {% if group %}<strong>{{ group }}</strong>{% endif %}
+          {% for option in options %}
+            <div class="form-check{% if inline_class %} form-check-inline{% endif %}">
+              <input type="{{option.type}}" class="form-check-input{% if field.errors %} is-invalid{% endif %}"  name="{{ field.html_name }}" value="{{ option.value|unlocalize }}" {% include "bootstrap5/layout/attrs.html" with widget=option %}>
+              <label for="{{ option.attrs.id }}" class="form-check-label" 
+              data-bs-toggle="tooltip" data-bs-title="{{ option.attrs.title|unlocalize }}">
+                  {{ option.label|unlocalize }}
+              </label>
+              {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
+                  {% include 'bootstrap5/layout/field_errors_block.html' %}
+              {% endif %}
+          </div>
+          {% endfor %}
+          {% endfor %}
+
+      </div>
+      {% if field.errors %}
+                {% for error in field.errors %}
+                    <p id="error_{{ forloop.counter }}_{{ field.auto_id }}" class="text-danger mb-0"><small><strong>{{ error }}</strong></small></p>
+                {% endfor %}
+            {% endif %}
+            {% include 'bootstrap5/layout/help_text.html' %}
+        {% endif %}
+    </{% if tag %}{{ tag }}{% else %}div{% endif %}>
+{% endif %}
+
