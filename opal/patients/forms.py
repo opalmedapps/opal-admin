@@ -352,7 +352,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form._form_required(),  # noqa: WPS437
     )
 
-    id_checked = forms.BooleanField(label='Requestor ID checked')
+    id_checked = forms.BooleanField(label=_('Requestor ID checked'))
 
     user_type = forms.ChoiceField(
         choices=constants.USER_TYPES,
@@ -455,7 +455,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 Row(
                     Column('user_email', css_class='col-4'),
                     Column('user_phone', css_class='col-4'),
-                    Column(InlineSubmit('search_user', 'Find User')),
+                    Column(InlineSubmit('search_user', label=gettext('Find User'))),
                 ),
                 HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
             ))
@@ -670,6 +670,7 @@ class AccessRequestSendSMSForm(forms.Form):
     """This form provides the ability to send SMS with a registration code."""
 
     language = forms.ChoiceField(
+        label=_('Language'),
         choices=Language,
     )
 
@@ -700,7 +701,7 @@ class AccessRequestSendSMSForm(forms.Form):
                 CrispyField('phone_number', wrapper_class='col-5'),
                 # wrap the submit button to not make it increase in size if the form has field errors
                 Div(
-                    InlineSubmit('send_sms', 'Send'),
+                    InlineSubmit('send_sms', label=gettext('Send')),
                 ),
                 # make form inline
                 css_class='d-md-flex flex-row justify-content-start gap-3',
