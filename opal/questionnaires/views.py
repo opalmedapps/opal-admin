@@ -205,12 +205,12 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest) -> HttpResponse:
         """Grab existing backend report and convert to csv.
 
         This code first generates the desired csv by writing it to media folder within
         the questionnaires app.
-        After this, that file is served to the clientside with Openfile functionality.
+        After this, that file is served to the client side with Openfile functionality.
 
         Args:
             request: post request data.
@@ -222,8 +222,9 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         qid = request.POST.get('questionnaireid')
         datesuffix = datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        report_dict = get_temp_table()
-        df = pd.DataFrame.from_dict(report_dict)
+        df = pd.DataFrame.from_dict(
+            get_temp_table(),
+        )
 
         buffer = StringIO()
         df.to_csv(buffer, index=False, header=True)
