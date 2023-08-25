@@ -33,9 +33,8 @@ class CreatePathologyView(generics.CreateAPIView):
         """
         # TODO: Generate PDF pathology report
         # TODO: Insert record to the OpalDB.Documents
-        # TODO: Add legacy_document_id value to the `GeneralTest` instance
-        # TODO: Run serializer.validate() due to added legacy_document_id field? (TBD)
 
+        # TODO: Use DocumentSerNum field of the OpalDB.Documents table as legacy_document_id
         serializer.save(
             patient=get_object_or_404(Patient, uuid=self.kwargs['uuid']),
             legacy_document_id=1,

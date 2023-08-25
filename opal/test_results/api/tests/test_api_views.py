@@ -49,7 +49,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
         patient = Patient(
             ramq='TEST01161972',
-            uuid=self._get_valid_input_data()['patient'],
+            uuid=uuid4(),
         )
 
         Relationship(
@@ -82,7 +82,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint can update patient info with no errors."""
         patient = Patient(
             ramq='TEST01161972',
-            uuid=self._get_valid_input_data()['patient'],
+            uuid=PATIENT_UUID,
         )
 
         Relationship(
