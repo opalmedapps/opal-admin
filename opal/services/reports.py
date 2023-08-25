@@ -8,10 +8,13 @@ from typing import NamedTuple, Optional
 from django.conf import settings
 
 import requests
+from fpdf import FPDF, FlexTemplate
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
 from opal.utils.base64 import Base64Util
+
+from .pdf_generator import PDFGenerator
 
 
 class QuestionnaireReportRequestData(NamedTuple):
@@ -73,16 +76,34 @@ class ReportService():
 
     def generate_pathology_report(
         self,
-        report_data: QuestionnaireReportRequestData,
+        # pathology_data: PathologyData,
     ) -> str:
         """Create a pathology PDF report.
 
         Args:
-            report_data: pathology data required to generate the PDF report
+            pathology_data: pathology data required to generate the PDF report
 
         Returns:
             path to the generated pathology report
         """
+        elements = [
+            {"name":"box", "type":"B", "x1":0, "y1":0, "x2":50, "y2":50,},
+            {"name":"d1", "type":"L", "x1":0, "y1":0, "x2":50, "y2":50,},
+            {"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
+            {"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
+        ]
+        pdf = PDFGenerator()
+        pdf.add_page()
+        templ = FlexTemplate(pdf, elements)
+        templ["label"] = "Offset: 50 / 50 mm"
+        templ.render(offsetx=50, offsety=50)
+        templ["label"] = "Offset: 50 / 120 mm"
+        templ.render(offsetx=50, offsety=120)
+        templ["label"] = "Offset: 120 / 50 mm, Scale: 0.5"
+        templ.render(offsetx=120, offsety=50, scale=0.5)
+        templ["label"] = "Offset: 120 / 120 mm, Rotate: 30°, Scale=0.5"
+        templ.render(offsetx=120, offsety=120, rotate=30.0, scale=0.5)
+        pdf.output("example.pdf")
         return ''
 
     def _request_base64_report(

@@ -5,6 +5,7 @@ from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import CreateModelPermissions
 from opal.patients.models import Patient
+from opal.services.reports import ReportService
 
 from ..models import GeneralTest, TestType
 from .serializers import PathologySerializer
@@ -22,6 +23,8 @@ class CreatePathologyView(generics.CreateAPIView):
     serializer_class = PathologySerializer
     permission_classes = [CreateModelPermissions]
     pagination_class = None
+    # Report service
+    report_service = ReportService()
 
     def perform_create(self, serializer: serializers.BaseSerializer[GeneralTest]) -> None:
         """
@@ -32,12 +35,14 @@ class CreatePathologyView(generics.CreateAPIView):
         Args:
             serializer: the serializer instance to use
         """
-        # TODO: Generate PDF pathology report
+        patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
+        self.report_service.generate_pathology_report()
+
         # TODO: Insert record to the OpalDB.Documents
 
         # TODO: Use DocumentSerNum field of the OpalDB.Documents table as legacy_document_id
         serializer.save(
-            patient=get_object_or_404(Patient, uuid=self.kwargs['uuid']),
+            patient=patient,
             type=TestType.PATHOLOGY,
             legacy_document_id=1,
         )
