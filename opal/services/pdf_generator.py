@@ -27,6 +27,12 @@ class PDFGenerator(FPDF):
         # Setting font: helvetica italic 8
         self.set_font('arial', 'B', 12)
         # Printing page number:
-        self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', align='R')
+        self.cell(
+            w=0,
+            h=10,
+            txt=f'Page {self.page_no()}/{{nb}}',
+            border='B',
+            align='R',
+        )
         # Line break; 50mm from each edge
         # self.line(50, 45, 210-50, 45)
