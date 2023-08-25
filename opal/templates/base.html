@@ -18,7 +18,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-      {{ page_heading }} · OpalAdmin
+      {{ page_heading }} · opalADMIN
     </title>
 
     <link href="{% static 'thirdparty/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
@@ -68,12 +68,14 @@
             </ol>
           </nav>
           <h1 class="mb-3">{{ page_heading }}</h1>
+          {% block working_area %}
             <div class="content px-3 py-3 mb-3 border rounded-1">
               {% block content %}empty block <code>content</code>{% endblock %}
             </div>
+          {% endblock %}
         </div>
         <footer class="py-2 pt-3 mt-2 border-top">
-          <p class="text-center text-body-secondary mb-2"><small>&copy; {% translate "Opal Health Informatics Group" %}</small></p>
+          <p class="text-center mb-2"><small>&copy; {% translate "Opal Health Informatics Group" %}</small></p>
         </footer>
       </main>
     </div>

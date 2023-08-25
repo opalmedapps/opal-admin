@@ -48,12 +48,12 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
 
     site_code = serializers.CharField(source='site.code')
-    # make the is_active field required
-    is_active = serializers.BooleanField(required=True)
 
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
+        # make the is_active field required
+        extra_kwargs = {'is_active': {'required': True}}
 
     def validate_site_code(self, value: str) -> str:
         """Check that `site_code` exists in the database (e.g., RVH).

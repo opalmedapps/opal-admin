@@ -9,8 +9,23 @@
 
 .nav-link, .nav-link:hover, .nav-link:focus {
   color: #000;
+  background-color: var(--sidebar-bg-color);
 }
 
 .nav-link:hover {
   background-color: var(--opal-purple-light);
+}
+
+/* Change breadcrumb colors */
+.breadcrumb {
+  --bs-breadcrumb-bg: var(--sidebar-bg-color);
+  color: var(--opal-purple);
+}
+
+.breadcrumb-item.active {
+    color: var(--opal-purple);
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    color: var(--opal-purple);
 }

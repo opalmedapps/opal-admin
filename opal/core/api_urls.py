@@ -128,6 +128,11 @@ urlpatterns = [
         data_views.CreateQuantitySampleView.as_view(),
         name='patients-data-quantity-create',
     ),
+    path(
+        'patients/exists',
+        patient_views.PatientExistsView.as_view(),
+        name='patient-exists',
+    ),
 
     # QUESTIONNAIRES ENDPOINTS
     path(

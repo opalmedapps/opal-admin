@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-19 11:45-0400\n"
+"POT-Creation-Date: 2023-08-16 19:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/core/forms/layouts.py
 msgid "Submit"
-msgstr ""
+msgstr "Soumettre"
 
 #: opal/core/forms/layouts.py
 msgid "Reset"
@@ -63,11 +63,11 @@ msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
 
 #: opal/templates/components/form_cancel.html
 msgid "Back"
-msgstr ""
+msgstr "Retour"
 
 #: opal/templates/components/form_cancel.html
 msgid "Done"
-msgstr ""
+msgstr "Terminer"
 
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"
@@ -134,10 +134,8 @@ msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
 #: opal/templates/sidebar.html
-#, fuzzy
-#| msgid "Go back to OpalAdmin menu"
-msgid "Go back to OpalAdmin menu"
-msgstr "Retourner au menu d'OpalAdmin"
+msgid "Go back to opalADMIN menu"
+msgstr "Retourner au menu d'opalADMIN"
 
 #: opal/templates/sidebar.html
 msgid "Log Out"
@@ -153,7 +151,7 @@ msgstr "Page d'accueil"
 
 #: opal/templates/sidebar_menu.html
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
+msgstr "Paramètres Hospitaliers"
 
 #: opal/templates/sidebar_menu.html
 msgid "Institutions"

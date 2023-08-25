@@ -25,7 +25,14 @@ LEGACY_PATIENT_QUERY = """
         ) AS Sex,
         CONVERT(TelNum, CHAR) AS Phone,
         LOWER(Email) AS Email,
-        LOWER(Language) AS Language
+        LOWER(Language) AS Language,
+        (
+        CASE
+            WHEN AccessLevel = "1" THEN "NTK"
+            WHEN AccessLevel = "3" THEN "ALL"
+            ELSE "UNDEFINED"
+        END
+        ) As AccessLevel
     FROM Patient;
 """  # noqa: WPS323
 
@@ -48,7 +55,8 @@ DJANGO_PATIENT_QUERY = """
         UPPER(PP.sex) AS Sex,
         UU.phone_number AS Phone,
         LOWER(UU.email) AS Email,
-        LOWER(UU.language) AS Language
+        LOWER(UU.language) AS Language,
+        PP.data_access As AccessLevel
     FROM patients_patient PP
     LEFT JOIN caregivers_caregiverprofile CC ON PP.legacy_id = CC.legacy_id
     LEFT JOIN users_user UU ON CC.user_id = UU.id;
@@ -109,19 +117,19 @@ class Command(BaseCommand):
             legacy_db.execute(LEGACY_HOSPITAL_PATIENT_QUERY)
             legacy_hospital_patients = legacy_db.fetchall()
 
-        patinets_err_str = self._get_patient_deviations_err(
+        patients_err_str = self._get_patient_deviations_err(
             django_patients,
             django_hospital_patients,
             legacy_patients,
             legacy_hospital_patients,
         )
 
-        if patinets_err_str:
+        if patients_err_str:
             self.stderr.write(
-                patinets_err_str,
+                patients_err_str,
             )
         else:
-            self.stdout.write('No deviations has been found in the "Patient" tables/models.')
+            self.stdout.write('No deviations have been found in the "Patient" tables/models.')
 
     def _get_patient_deviations_err(  # noqa: WPS210
         self,
