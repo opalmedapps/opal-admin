@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-22 17:51+0000\n"
+"POT-Creation-Date: 2023-08-25 14:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -142,6 +142,14 @@ msgid ""
 msgstr ""
 "Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
 "être quelqu'un d'autre que le patient."
+
+#: opal/patients/forms.py
+msgid "Age"
+msgstr "Âge"
+
+#: opal/patients/forms.py
+msgid " and older"
+msgstr " et plus"
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
