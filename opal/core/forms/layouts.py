@@ -126,7 +126,9 @@ class InlineReset(Layout):
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
-            HTML(f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>'),  # noqa: WPS221
+            HTML(
+                f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>',
+            ),
         )
         super().__init__(*fields)
 
