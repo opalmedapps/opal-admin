@@ -472,7 +472,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         available_choices = relationship_types.values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = list(available_choices)
-        self.fields['relationship_type'].widget.option_descriptions = self._get_option_description()
+        self.fields['relationship_type'].widget.option_descriptions = self._build_tooltips()
 
     def is_patient_requestor(self) -> bool:
         """
@@ -601,12 +601,12 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return True
 
-    def _get_option_description(self) -> dict[int, str]:
+    def _build_tooltips(self) -> dict[int, str]:
         """
-        Get the description and patient age info from relationship type queryset.
+        Build a dict with option id and tooltip content.
 
         Returns:
-            a dict of relationship type description and patient age
+            a dict of tooltips with relationship type description and patient age
         """
         option_descriptions = {}
         age_tile = _('Age')

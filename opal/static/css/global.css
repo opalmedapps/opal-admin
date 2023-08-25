@@ -60,3 +60,9 @@ table thead a {
 h4 {
   font-weight: var(--bs-body-font-weight);
 }
+
+/* Set tooltip background and text colors */
+.custom-tooltip {
+  --bs-tooltip-bg: #000000;
+  --bs-tooltip-color: #ffffff;
+}

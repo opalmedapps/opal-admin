@@ -184,10 +184,10 @@ class EnterSuppressedLayout(Layout):
 
 class RadioSelect(Field):
     """
-    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
+    Custom radio select widget to be used for radio buttion tooltip, help_text, errors.
 
     Triggers validation via `up-validate` on selection to let the form react to the selection.
     Supports option tooltip on the radion select label.
     """
 
-    template = 'patients/radioselect.html'
+    template = 'forms/radioselect.html'
