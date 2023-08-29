@@ -507,23 +507,33 @@ DJANGO_TABLES2_TABLE_ATTRS = {
     },
 }
 
+# TWILIO AND SMS MESSAGE SETTINGS
+# ------------------------------------------------------------------------------
+# Twilio credentials
+TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
+# SMS sender
+SMS_FROM = env.str('SMS_FROM')
+
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 
-# ORMS settings
+# ORMS SETTINGS
 # ------------------------------------------------------------------------------
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_USER_GROUP = 'orms'
-# base URL to ORMS (no trailing slash)
+# Base URL to ORMS (no trailing slash)
 ORMS_HOST = env.url('ORMS_HOST').geturl()
 
+# REGISTRATION SETTINGS
+# ------------------------------------------------------------------------------
 # Institution code for registration
 INSTITUTION_CODE = env.str('INSTITUTION_CODE')
 
-# Sending SMS message settings
-TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
-SMS_FROM = env.str('SMS_FROM')
+# PATHOLOGY REPORTS SETTINGS
+# ------------------------------------------------------------------------------
+# Path to the pathology reports folder
+PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))

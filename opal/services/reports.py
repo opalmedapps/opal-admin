@@ -2,19 +2,18 @@
 
 import json
 import logging
+from datetime import date, datetime
 from pathlib import Path
 from typing import NamedTuple, Optional
 
 from django.conf import settings
 
 import requests
-from fpdf import FPDF, FlexTemplate
+from fpdf import FPDF
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
 from opal.utils.base64 import Base64Util
-
-from .pdf_generator import PDFGenerator
 
 
 class QuestionnaireReportRequestData(NamedTuple):
@@ -35,6 +34,88 @@ class QuestionnaireReportRequestData(NamedTuple):
     patient_mrn: str
     logo_path: Path
     language: str
+
+
+class PathologyData(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
+
+    Attributes:
+        site_logo_path: file path of the site's logo image
+        site_name: the name of the site (e.g., Royal Victoria Hospital)
+        site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
+        site_city: the name of the city that is specified in the address (e.g., Montréal)
+        site_province: the name of the province that is specified in the address (e.g., Québec)
+        site_postal_code: the postal code that specified in the address (e.g., H4A 3J1)
+        site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
+        patient_name: patient's last name and first name separated by comma (e.g., SIMPSON, MARGE)
+        patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
+        patient_ramq: patient's RAMQ number (SIMM99999999)
+        patient_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}, {'mrn_site': 'Y', 'site_code': '2'}]
+        test_number: the report number (e.g., AS-2021-62605)
+        test_collected_at: date and time when the specimen was collected (e.g., 2021-Nov-25 09:55)
+        test_reported_at: date and time when the specimen was reported (e.g., 2021-Nov-28 11:52)
+        observation_clinical_info: list of clinical information recrods (e.g., ['first record', 'second record'])
+        observation_specimens: list of specimen records (e.g, ['specimen one', 'specimen two'])
+        observation_descriptions: list of observation descriptions (e.g., ['description one', 'description two'])
+        observation_diagnosis: list of observation diagnosis (e.g., ['diagnosis one', 'diagnosis two'])
+        prepared_by: the name of the person who prepared the report (e.g., Atilla Omeroglu, MD)
+        prepared_at: the date and time when the report was prepared (e.g., 28-Nov-2021 11:52am)
+    """
+
+    site_logo_path: Path
+    site_name: str
+    site_building_address: str
+    site_city: str
+    site_province: str
+    site_postal_code: str
+    site_phone: str
+    patient_name: str
+    patient_date_of_birth: date
+    patient_ramq: str
+    patient_mrns: list[dict[str, str]]
+    test_number: str
+    test_collected_at: str
+    test_reported_at: datetime
+    observation_clinical_info: list[str]
+    observation_specimens: list[str]
+    observation_descriptions: list[str]
+    observation_diagnosis: list[str]
+    prepared_by: str
+    prepared_at: datetime
+
+
+class PathologyPDF(FPDF):
+    """Class that provides a base setup for the pathology PDF generation."""
+
+    def header(self) -> None:
+        """Set PDF header."""
+        # Setting font: helvetica bold 15
+        self.set_font('helvetica', 'B', 15)  # noqa: WPS432
+        # Moving cursor to the right:
+        self.cell(w=80)  # noqa: WPS432
+        # Printing title:
+        self.cell(30, 10, 'Title', border=1, align='C')  # noqa: WPS432
+        # Performing a line break:
+        self.ln(h=20)  # noqa: WPS432
+
+    def footer(self) -> None:
+        """Set PDF footer."""
+        # Position cursor at 1.5 cm from bottom:
+        self.set_y(y=-15)  # noqa: WPS432
+        # Setting font: helvetica italic 8
+        self.set_font(
+            family='arial',
+            style='B',
+            size=12,  # noqa: WPS432
+        )
+        # Printing page number:
+        self.cell(
+            w=0,
+            h=10,
+            txt=f'Page {self.page_no()}/{{nb}}',
+            border='B',
+            align='R',
+        )
 
 
 class ReportService():
@@ -76,8 +157,8 @@ class ReportService():
 
     def generate_pathology_report(
         self,
-        # pathology_data: PathologyData,
-    ) -> str:
+        pathology_data: PathologyData,
+    ) -> Path:
         """Create a pathology PDF report.
 
         Args:
@@ -86,25 +167,13 @@ class ReportService():
         Returns:
             path to the generated pathology report
         """
-        elements = [
-            {'name':'box', 'type':'B', 'x1':0, 'y1':0, 'x2':50, 'y2':50,},
-            {'name':'d1', 'type':'L', 'x1':0, 'y1':0, 'x2':50, 'y2':50,},
-            {'name':'d2', 'type':'L', 'x1':0, 'y1':50, 'x2':50, 'y2':0,},
-            {'name':'label', 'type':'T', 'x1':0, 'y1':52, 'x2':50, 'y2':57, 'text':'Label',},
-        ]
-        pdf = PDFGenerator()
+        pdf = PathologyPDF()
         pdf.add_page()
-        templ = FlexTemplate(pdf, elements)
-        templ['label'] = 'Offset: 50 / 50 mm'
-        templ.render(offsetx=50, offsety=50)
-        templ['label'] = 'Offset: 50 / 120 mm'
-        templ.render(offsetx=50, offsety=120)
-        templ['label'] = 'Offset: 120 / 50 mm, Scale: 0.5'
-        templ.render(offsetx=120, offsety=50, scale=0.5)
-        templ['label'] = 'Offset: 120 / 120 mm, Rotate: 30°, Scale=0.5'
-        templ.render(offsetx=120, offsety=120, rotate=30.0, scale=0.5)
-        pdf.output('example.pdf')
-        return ''
+        # TODO: fix file name
+        generated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        report_path = settings.PATHOLOGY_REPORTS_PATH / f'{str(generated_at)}.pdf'
+        pdf.output(str(report_path))
+        return report_path
 
     def _request_base64_report(
         self,
