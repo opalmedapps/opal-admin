@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LanguagesSerializer
+from .serializers import LanguageSerializer
 
 
 class LanguagesView(APIView):
@@ -26,5 +26,5 @@ class LanguagesView(APIView):
             Http response with the data needed to return the languages.
         """
         data = [{'code': code, 'name': name} for (code, name) in settings.LANGUAGES]
-        response = LanguagesSerializer(data, many=True).data
+        response = LanguageSerializer(data, many=True).data
         return Response(response)
