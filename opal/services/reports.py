@@ -47,10 +47,11 @@ class PathologyData(NamedTuple):
         site_province: the name of the province that is specified in the address (e.g., Québec)
         site_postal_code: the postal code that specified in the address (e.g., H4A 3J1)
         site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
-        patient_name: patient's last name and first name separated by comma (e.g., SIMPSON, MARGE)
+        patient_first_name: patient's first name (e.g., Marge)
+        patient_last_name: patient's last name (e.g., Simpson)
         patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
         patient_ramq: patient's RAMQ number (SIMM99999999)
-        patient_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}, {'mrn_site': 'Y', 'site_code': '2'}]
+        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
         test_number: the report number (e.g., AS-2021-62605)
         test_collected_at: date and time when the specimen was collected (e.g., 2021-Nov-25 09:55)
         test_reported_at: date and time when the specimen was reported (e.g., 2021-Nov-28 11:52)
@@ -69,12 +70,13 @@ class PathologyData(NamedTuple):
     site_province: str
     site_postal_code: str
     site_phone: str
-    patient_name: str
+    patient_first_name: str
+    patient_last_name: str
     patient_date_of_birth: date
     patient_ramq: str
-    patient_mrns: list[dict[str, str]]
+    patient_sites_and_mrns: list[dict[str, str]]
     test_number: str
-    test_collected_at: str
+    test_collected_at: datetime
     test_reported_at: datetime
     observation_clinical_info: list[str]
     observation_specimens: list[str]

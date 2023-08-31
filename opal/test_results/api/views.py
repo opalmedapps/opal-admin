@@ -3,13 +3,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from django.db import models
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import CreateModelPermissions
 from opal.hospital_settings.models import Institution
-from opal.patients.api.serializers import HospitalPatientSerializer
 from opal.patients.models import Patient
 from opal.services.reports import PathologyData, ReportService
 
@@ -49,13 +49,11 @@ class CreatePathologyView(generics.CreateAPIView):
             uuid=self.kwargs['uuid'],
         )
 
-        # Patient's sites and MRNs
-        mrn_site_records = HospitalPatientSerializer(
-            patient.hospital_patients,
-            many=True,
-            fields=('mrn', 'site_code'),
-        ).data
-        sites_mrns = [dict(mrn) for mrn in mrn_site_records]
+        patient_sites_and_mrns = list(
+            patient.hospital_patients.all().annotate(
+                site_code=models.F('site__code'),
+            ).values('mrn', 'site_code'),
+        )
 
         # Parsed observations that contain SPCI, SPSPECI, SPGROS, and SPDX values
         observations = self._parse_observations(serializer.validated_data['observations'])
@@ -73,10 +71,11 @@ class CreatePathologyView(generics.CreateAPIView):
                 site_province='',  # TODO: decide what site we should use for the address (QSCCD-1438)
                 site_postal_code='',  # TODO: decide what site we should use for the address (QSCCD-1438)
                 site_phone='',  # TODO: decide what site we should use for the address (QSCCD-1438)
-                patient_name=f'{patient.last_name}, {patient.first_name}'.upper(),
+                patient_first_name=patient.first_name,
+                patient_last_name=patient.last_name,
                 patient_date_of_birth=patient.date_of_birth,
                 patient_ramq=patient.ramq if patient.ramq else '',
-                patient_mrns=sites_mrns,
+                patient_sites_and_mrns=patient_sites_and_mrns,
                 test_number=serializer.validated_data['case_number'],  # TODO: confirm if case_number required
                 test_collected_at=serializer.validated_data['collected_at'],
                 test_reported_at=serializer.validated_data['reported_at'],
