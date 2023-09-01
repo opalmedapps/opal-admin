@@ -1623,6 +1623,7 @@ def test_access_request_confirm_password_existing_user(
     assert session == {
         'patient': 'Simpson, Marge',
         'requestor': 'Simpson, Marge',
+        'registration_code': None,
     }
 
 

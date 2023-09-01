@@ -21,7 +21,7 @@ msgstr ""
 #: opal/hospital_settings/apps.py
 #: opal/hospital_settings/templates/hospital_settings/index.html
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
+msgstr "Paramètres Hospitaliers"
 
 #: opal/hospital_settings/forms.py
 msgid "years"

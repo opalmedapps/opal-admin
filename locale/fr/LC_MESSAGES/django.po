@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/core/forms/layouts.py
 msgid "Submit"
-msgstr ""
+msgstr "Soumettre"
 
 #: opal/core/forms/layouts.py
 msgid "Reset"
@@ -63,11 +63,11 @@ msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
 
 #: opal/templates/components/form_cancel.html
 msgid "Back"
-msgstr ""
+msgstr "Retour"
 
 #: opal/templates/components/form_cancel.html
 msgid "Done"
-msgstr ""
+msgstr "Terminer"
 
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"
@@ -151,7 +151,7 @@ msgstr "Page d'accueil"
 
 #: opal/templates/sidebar_menu.html
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
+msgstr "Paramètres Hospitaliers"
 
 #: opal/templates/sidebar_menu.html
 msgid "Institutions"

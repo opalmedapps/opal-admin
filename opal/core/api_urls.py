@@ -22,6 +22,7 @@ from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
+from opal.test_results.api.views import CreatePathologyView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -48,6 +49,8 @@ urlpatterns = [
 
     # AUTH ENDPOINTS
     path('auth/', include('dj_rest_auth.urls')),
+    # authentication endpoint for the ORMS
+    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
 
     # CAREGIVERS ENDPOINTS
     path(
@@ -98,9 +101,6 @@ urlpatterns = [
     # LANGUAGES ENDPOINTS
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
 
-    # ORMS ENDPOINTS
-    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
-
     # PATIENTS ENDPOINTS
     path(
         'patients/legacy/<int:legacy_id>/check-permissions/',
@@ -133,6 +133,12 @@ urlpatterns = [
         patient_views.PatientExistsView.as_view(),
         name='patient-exists',
     ),
+    path(
+        'patients/<uuid:uuid>/pathology-reports/',
+        CreatePathologyView.as_view(),
+        name='patient-pathology-create',
+    ),
+
 
     # QUESTIONNAIRES ENDPOINTS
     path(

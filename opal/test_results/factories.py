@@ -11,7 +11,7 @@ from opal.patients.factories import Patient
 from . import models
 
 
-class GeneralTestFactory(DjangoModelFactory):
+class GeneralTest(DjangoModelFactory):
     """Model factory to create [opal.test_results.models.GeneralTest][] models.
 
     Test group code and description depend on the test type.
@@ -42,7 +42,7 @@ class GeneralTestFactory(DjangoModelFactory):
         model = models.GeneralTest
 
 
-class ObservationFactory(DjangoModelFactory):
+class Observation(DjangoModelFactory):
     """Model factory to create [opal.test_results.models.Observation][] models.
 
     The identifiers, value, & value_units fields depend on the parent GeneralTest type.
@@ -50,7 +50,7 @@ class ObservationFactory(DjangoModelFactory):
     If type=Labs, value is an integer value for this observation component, in our case a White Blood Cell Count.
     """
 
-    general_test = factory.SubFactory(GeneralTestFactory)
+    general_test = factory.SubFactory(GeneralTest)
     identifier_code: str = factory.LazyAttribute(
         lambda obx: 'SPSPECI'
         if obx.general_test.type == models.TestType.PATHOLOGY
@@ -79,10 +79,10 @@ class ObservationFactory(DjangoModelFactory):
         model = models.Observation
 
 
-class NoteFactory(DjangoModelFactory):
+class Note(DjangoModelFactory):
     """Model factory to create [opal.test_results.models.Note][] models."""
 
-    general_test = factory.SubFactory(GeneralTestFactory)
+    general_test = factory.SubFactory(GeneralTest)
     note_source = 'Signature Line'
     note_text = factory.Faker('paragraph', nb_sentences=3)
 
