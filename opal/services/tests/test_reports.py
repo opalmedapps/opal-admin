@@ -1,3 +1,4 @@
+import datetime
 import json
 from http import HTTPStatus
 from pathlib import Path
@@ -10,7 +11,7 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import QuestionnaireReportRequestData, ReportService
+from opal.services.reports import PathologyData, QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -21,7 +22,7 @@ LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
-reports_service = ReportService()
+report_service = ReportService()
 
 QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     patient_id=51,
@@ -30,6 +31,33 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     patient_mrn='9999996',
     logo_path=LOGO_PATH,
     language='en',
+)
+
+PATHOLOGY_REPORT_DATA = PathologyData(
+    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    site_name='',  # TODO: decide what site name we should include (QSCCD-1438)
+    site_building_address='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+    site_city='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+    site_province='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+    site_postal_code='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+    site_phone='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+    patient_first_name='Bart',
+    patient_last_name='Simpson',
+    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_ramq='SIMM99999999',
+    patient_sites_and_mrns=[
+        {'mrn': '22222443', 'site_code': 'MGH'},
+        {'mrn': '1111728', 'site_code': 'RVH'},
+    ],
+    test_number='AS-2021-62605',  # TODO: confirm if case_number required
+    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
+    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
+    observation_clinical_info=['Clinical Information'],
+    observation_specimens=['Specimen'],
+    observation_descriptions=['Gross Description'],
+    observation_diagnosis=['Diagnosis'],
+    prepared_by='Atilla Omeroglu, MD',
+    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
 )
 
 
@@ -49,12 +77,14 @@ def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str
         },
     }
 
+# QUESTIONNAIRE PDF REPORTS TESTS
+
 
 # _is_questionnaire_report_request_data_valid
 
 def test_is_questionnaire_report_data_valid() -> None:
     """Ensure `QuestionnaireReportRequestData` successfully validates."""
-    assert reports_service._is_questionnaire_report_request_data_valid(
+    assert report_service._is_questionnaire_report_request_data_valid(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -65,7 +95,7 @@ def test_is_questionnaire_report_invalid_patient() -> None:
         patient_id=-1,
     )
 
-    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
+    assert report_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
 def test_is_questionnaire_report_invalid_logo() -> None:
@@ -74,7 +104,7 @@ def test_is_questionnaire_report_invalid_logo() -> None:
         logo_path=Path('invalid/logo/path'),
     )
 
-    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
+    assert report_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
 def test_is_questionnaire_report_invalid_language() -> None:
@@ -83,20 +113,20 @@ def test_is_questionnaire_report_invalid_language() -> None:
         language='invalid_language',
     )
 
-    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
+    assert report_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
 # _request_base64_report function tests
 
 def test_request_base64_report(mocker: MockerFixture) -> None:
-    """Ensure successful report request returns base64 encoded pdf report."""
+    """Ensure successful report request returns base64 encoded PDF report."""
     patient_factories.HospitalPatient(
         site=patient_factories.Site(code='RVH'),
     )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    response_base64_report = reports_service._request_base64_report(
+    response_base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -123,7 +153,7 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.side_effect = RequestException('request failed')
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -138,7 +168,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -152,7 +182,7 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = json.dumps({}).encode(ENCODING)
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -166,7 +196,7 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -179,7 +209,7 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -198,7 +228,7 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     data['data']['base64EncodedReport'] = NON_STRING_VALUE  # type: ignore[assignment]
     mock_post.return_value._content = json.dumps(data).encode(ENCODING)
 
-    base64_report = reports_service._request_base64_report(
+    base64_report = report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -215,7 +245,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.OK
 
-    reports_service._request_base64_report(
+    report_service._request_base64_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -241,11 +271,11 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 # generate_base64_questionnaire_report function tests
 
 def test_questionnaire_report(mocker: MockerFixture) -> None:
-    """Ensure the returned value is base64 encoded pdf report."""
+    """Ensure the returned value is base64 encoded PDF report."""
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -260,7 +290,7 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             patient_id=-1,
         ),
@@ -275,7 +305,7 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             patient_id=-1,
         ),
@@ -290,7 +320,7 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             logo_path=Path('invalid/logo/path'),
         ),
@@ -305,7 +335,7 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             language='invalid language',
         ),
@@ -324,7 +354,7 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
         },
     })
 
-    base64_report = reports_service.generate_base64_questionnaire_report(
+    base64_report = report_service.generate_base64_questionnaire_report(
         QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
@@ -333,3 +363,22 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
     assert caplog.records[0].message == 'The generated questionnaire PDF report is not in the base64 format.'
     assert caplog.records[0].levelname == 'ERROR'
+
+
+# PATHOLOGY PDF REPORTS TESTS
+
+def test_generate_pathology_report_uses_settings(
+    tmp_path: Path,
+    settings: SettingsWrapper,
+) -> None:
+    """Ensure generate_pathology_report() method successfully generates a pathology report."""
+    settings.PATHOLOGY_REPORTS_PATH = tmp_path
+
+    # Generate the pathology report
+    pathology_report = report_service.generate_pathology_report(
+        pathology_data=PATHOLOGY_REPORT_DATA,
+    )
+
+    assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
+    assert pathology_report.exists()
+    assert pathology_report.is_file()
