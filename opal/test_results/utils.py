@@ -6,7 +6,7 @@ from typing import Any
 
 def parse_observations(
     observations: list[dict[str, Any]],
-) -> dict[str, Any]:
+) -> dict[str, list]:
     """Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
 
     Args:
@@ -15,7 +15,7 @@ def parse_observations(
     Returns:
         dictionary of the observations' SPCI, SPSPECI, SPGROS, SPDX values
     """
-    parsed_observations: dict[str, Any] = {
+    parsed_observations: dict[str, list] = {
         'SPCI': [],
         'SPSPECI': [],
         'SPGROS': [],
@@ -23,6 +23,9 @@ def parse_observations(
     }
 
     for obs in observations:
+        if not set({'identifier_code', 'value'}).issubset(obs):
+            continue
+
         match obs['identifier_code']:
             case 'SPCI':
                 parsed_observations['SPCI'].append(obs['value'])
@@ -50,7 +53,11 @@ def parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
         'prepared_at': datetime(1, 1, 1),
     }
     doctor_names = []
+
     for note in notes:
+        if 'note_text' not in note:
+            continue
+
         doctor_name = find_doctor_name(note['note_text'])
 
         if doctor_name:
