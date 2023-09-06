@@ -378,17 +378,18 @@ class ReportService():
             pdf.add_page()
 
 
+        pdf.set_y(30)
         report_prepared_by = [
             {
                 'name': 'prepared_by_box',
                 'type': 'B',
                 'x1': 15.0,
-                'y1': pdf.get_y() + 50,
+                'y1': pdf.get_y(),
                 'x2': 195.0,
-                'y2': pdf.get_y() + 88,
+                'y2': pdf.get_y() + 38,
                 'font': 'helvetica',
-                'size': 0,
-                'bold': 0,
+                'size': 0.2,
+                'bold': 1,
                 'italic': 0,
                 'underline': 0,
                 'align': 'C',
@@ -396,19 +397,19 @@ class ReportService():
                 'priority': 0,
                 'multiline': False,
             },
-            { 'name': 'prepare_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 56, 'x2': 50.0, 'y2': pdf.get_y() + 60, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Préparé par', 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_by', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 58, 'x2': 50.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': 'Prepared by', 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_by_vertical_separator', 'type': 'L', 'x1': 50.0, 'y1': pdf.get_y() + 50, 'x2': 50.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_by_placeholder', 'type': 'T', 'x1': 51, 'y1': pdf.get_y() + 50, 'x2': 125.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_by_placeholder_vertical_separator', 'type': 'L', 'x1': 125.0, 'y1': pdf.get_y() + 50, 'x2': 125.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'empty_field_vertical_separator', 'type': 'L', 'x1': 160.0, 'y1': pdf.get_y() + 50, 'x2': 160.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_at', 'type': 'T', 'x1': 161, 'y1': pdf.get_y() + 50, 'x2': 195.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y"), 'priority': 0, 'multiline': False},
-            { 'name': 'prepared_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 65, 'x2': 195, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'signe_electroniquement_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 65, 'x2': 57.0, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Signé électroniquement par', 'priority': 0, 'multiline': False},
-            { 'name': 'electronically_signed_by', 'type': 'T', 'x1': 57.0, 'y1': pdf.get_y() + 65, 'x2': 195.0, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': '/ Electronically signed by', 'priority': 0, 'multiline': False},
-            { 'name': 'electronically_signed_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 80, 'x2': 195, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'electronically_signed_by_placeholder', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 80, 'x2': 160.0, 'y2': pdf.get_y() + 88, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
-            { 'name': 'electronically_signed_at_placeholder', 'type': 'T', 'x1': 161, 'y1': pdf.get_y() + 80, 'x2': 195.0, 'y2': pdf.get_y() + 88, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y %I:%M %p"), 'priority': 0, 'multiline': False},
+            { 'name': 'prepare_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 6, 'x2': 50.0, 'y2': pdf.get_y() + 10, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Préparé par', 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 8, 'x2': 50.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': 'Prepared by', 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_vertical_separator', 'type': 'L', 'x1': 50.0, 'y1': pdf.get_y(), 'x2': 50.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 0.2, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_placeholder', 'type': 'T', 'x1': 51, 'y1': pdf.get_y(), 'x2': 125.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_placeholder_vertical_separator', 'type': 'L', 'x1': 125.0, 'y1': pdf.get_y(), 'x2': 125.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 0.2, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'empty_field_vertical_separator', 'type': 'L', 'x1': 160.0, 'y1': pdf.get_y(), 'x2': 160.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 0.2, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_at', 'type': 'T', 'x1': 161, 'y1': pdf.get_y(), 'x2': 195.0, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y"), 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 15, 'x2': 195, 'y2': pdf.get_y() + 15, 'font': 'helvetica', 'size': 0.2, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'signe_electroniquement_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 15, 'x2': 57.0, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Signé électroniquement par', 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by', 'type': 'T', 'x1': 57.0, 'y1': pdf.get_y() + 15, 'x2': 195.0, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': '/ Electronically signed by', 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 30, 'x2': 195, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 0.2, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by_placeholder', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 30, 'x2': 160.0, 'y2': pdf.get_y() + 38, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_at_placeholder', 'type': 'T', 'x1': 161, 'y1': pdf.get_y() + 30, 'x2': 195.0, 'y2': pdf.get_y() + 38, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y %I:%M %p"), 'priority': 0, 'multiline': False},
         ]
         templ = FlexTemplate(pdf, report_prepared_by)
         templ.render()
