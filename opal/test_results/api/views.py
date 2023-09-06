@@ -83,7 +83,7 @@ class CreatePathologyView(generics.CreateAPIView):
                 observation_specimens=observations['SPSPECI'],
                 observation_descriptions=observations['SPGROS'],
                 observation_diagnosis=observations['SPDX'],
-                prepared_by=note_comment['prepared_by'],
+                prepared_by='Atilla Omeroglu, MD',
                 prepared_at=note_comment['prepared_at'],
             ),
         )

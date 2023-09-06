@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 
 from django.conf import settings
 
@@ -91,11 +91,13 @@ class PathologyPDF(FPDF):
 
     def __init__(
         self,
-        patient_name: str,
-        patient_mrns: list[dict[str, str]],
+        pathology_data: PathologyData,
     ) -> None:
-        self.patient_name = patient_name
-        self.patient_mrns = patient_mrns
+        self.pathology_data = pathology_data
+        self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
+        self.patient_sites_and_mrns = ''.join(
+            [f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in pathology_data.patient_sites_and_mrns],
+        )
         super().__init__()
 
 
@@ -120,11 +122,10 @@ class PathologyPDF(FPDF):
 
             self.ln(7)
             self.set_font(family='helvetica', style='B', size=8)
-            sites_mrns = ''.join([f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.patient_mrns])
             self.cell(
                 w=0,
                 align='L',
-                txt=f'Patient : {self.patient_name} [{sites_mrns}]',
+                txt=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns}]',
             )
 
 
@@ -161,11 +162,13 @@ class PathologyPDF(FPDF):
             align='R',
         )
 
-    def add_page(self) -> None:
+    def add_page(self, *args: Any, **kwargs: Any) -> None:
         """Add new page to the document."""
-        super().add_page()
+        super().add_page(*args, **kwargs)
         if self.page != 1:
             self.rect(15, 30, 180, 220, 'D')
+            self.set_y(40)
+
 
 
 class ReportService():
@@ -217,27 +220,29 @@ class ReportService():
         Returns:
             path to the generated pathology report
         """
+        mrns_and_sites_multiline = '\n'.join(
+            [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in pathology_data.patient_sites_and_mrns],
+        )
         # This will define the elements that will compose the template.
         elements = [
-            { 'name': 'site_patient_box', 'type': 'B', 'x1': 15.0, 'y1': 15.0, 'x2': 195.0, 'y2': 50.0, 'font': 'helvetica', 'size': 0.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
-            { 'name': 'site_patient_box_separator', 'type': 'L', 'x1': 135.0, 'y1': 15.0, 'x2': 135.0, 'y2': 50.0, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 3, 'multiline': False},
-            { 'name': 'site_logo', 'type': 'I', 'x1': 45.0, 'y1': 17.0, 'x2': 105.0, 'y2': 30.0, 'font': None, 'size': 0.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': 'logo', 'priority': 2, 'multiline': False},
-            { 'name': 'site_name', 'type': 'T', 'x1': 20.0, 'y1': 30.0, 'x2': 125.0, 'y2': 35.0, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            { 'name': 'site_building_address', 'type': 'T', 'x1': 20.0, 'y1': 35.0, 'x2': 125.0, 'y2': 40.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            { 'name': 'site_city', 'type': 'T', 'x1': 20.0, 'y1': 39.0, 'x2': 125.0, 'y2': 44.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            { 'name': 'site_phone', 'type': 'T', 'x1': 20.0, 'y1': 43.0, 'x2': 125.0, 'y2': 48.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            # TODO: use get_x() and get_y()
+            { 'name': 'site_logo', 'type': 'I', 'x1': 45.0, 'y1': 17.0, 'x2': 105.0, 'y2': 30.0, 'font': None, 'size': 0.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': 'logo', 'priority': 0, 'multiline': False},
+            # TODO: update hardcoded "Royal Victoria Hospital"
+            { 'name': 'site_name', 'type': 'T', 'x1': 20.0, 'y1': 30.0, 'x2': 125.0, 'y2': 35.0, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Royal Victoria Hospital', 'priority': 0, 'multiline': False},
+            { 'name': 'site_building_address', 'type': 'T', 'x1': 20.0, 'y1': 35.0, 'x2': 125.0, 'y2': 40.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '1001, boulevard Décarie', 'priority': 0, 'multiline': False},
+            { 'name': 'site_city', 'type': 'T', 'x1': 20.0, 'y1': 39.0, 'x2': 125.0, 'y2': 44.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Montréal (Québec) H4A 3J1', 'priority': 0, 'multiline': False},
+            { 'name': 'site_phone', 'type': 'T', 'x1': 20.0, 'y1': 43.0, 'x2': 125.0, 'y2': 48.0, 'font': 'helvetica', 'size': 8.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Tél. : 514 934 4400', 'priority': 0, 'multiline': False},
             # TODO: handle long patient names, this might affect the starting position of the patient_date_of_birth
-            { 'name': 'patient_name', 'type': 'T', 'x1': 138, 'y1': 30.0, 'x2': 190.0, 'y2': 34.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            { 'name': 'patient_date_of_birth', 'type': 'T', 'x1': 138, 'y1': 34.0, 'x2': 190.0, 'y2': 38.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            { 'name': 'patient_ramq', 'type': 'T', 'x1': 138, 'y1': 38.0, 'x2': 190.0, 'y2': 42.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 2, 'multiline': False},
-            # { 'name': 'multline_text', 'type': 'T', 'x1': 20, 'y1': 100, 'x2': 40, 'y2': 105, 'font': 'helvetica', 'size': 12, 'bold': 0, 'italic': 0, 'underline': 0, 'background': 0x88ff00, 'align': 'C', 'text': 'Lorem ipsum dolor sit amet, consectetur adipisici elit', 'priority': 2, 'multiline': True},
+            { 'name': 'patient_name', 'type': 'T', 'x1': 138, 'y1': 30.0, 'x2': 190.0, 'y2': 34.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '', 'priority': 0, 'multiline': False},
+            { 'name': 'patient_date_of_birth', 'type': 'T', 'x1': 138, 'y1': 34.0, 'x2': 190.0, 'y2': 38.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': f'DDN/DOB: {pathology_data.patient_date_of_birth.strftime("%m/%d/%Y")}', 'priority': 0, 'multiline': False},
+            { 'name': 'patient_ramq', 'type': 'T', 'x1': 138, 'y1': 38.0, 'x2': 190.0, 'y2': 42.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': f'NAM/RAMQ: {pathology_data.patient_ramq}', 'priority': 0, 'multiline': False},
+            { 'name': 'patient_sites_and_mrns', 'type': 'T', 'x1': 138, 'y1': 42.0, 'x2': 190, 'y2': 46.0, 'font': 'helvetica', 'size': 9.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': mrns_and_sites_multiline, 'priority': 0, 'multiline': True},
         ]
+
         # TODO: use will_page_break()
         pdf = PathologyPDF(
-            patient_name=pathology_data.patient_name,
-            patient_mrns=pathology_data.patient_mrns,
+            pathology_data=pathology_data,
         )
+        pdf.set_auto_page_break(auto=True, margin=50)
         # Set PDF's metadata
         pdf.set_author('Opal Health Informatics Group')
         pdf.set_creation_date(datetime.now())
@@ -245,23 +250,173 @@ class ReportService():
         pdf.set_keywords(
             'Pathology Report, Pathologie Chirurgicale Rapport Final, Surgical Pathology Final Report, Opal, Opal Health Informatics Group',
         )
-        pdf.set_subject(f'Pathology report for {pathology_data.patient_name}')
+        pdf.set_subject(f'Pathology report for {pdf.patient_name}')
         pdf.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
         pdf.set_producer('fpdf2 2.7.5')  # TODO: get the version automatically
         pdf.add_page()
         templ = FlexTemplate(pdf, elements)
-        templ['site_name'] = 'Royal Victoria Hospital'
         templ['site_logo'] = pathology_data.site_logo_path
-        templ['site_building_address'] = '1001, boulevard Décarie'
-        templ['site_city'] = 'Montréal (Québec) H4A 3J1'
-        templ['site_phone'] = 'Tél. : 514 934 4400'
-        templ['patient_name'] = f'Nom/Name: {pathology_data.patient_name}'
-        templ['patient_date_of_birth'] = f'DDN/DOB: {pathology_data.patient_date_of_birth.strftime("%m/%d/%Y")}'
-        templ['patient_ramq'] = f'NAM/RAMQ: {pathology_data.patient_ramq}'
+        templ['patient_name'] = f'Nom/Name: {pdf.patient_name}'
         templ.render()
-        pdf.add_page()
+        pdf.rect(15, 15, 180, pdf.get_y() - 10, 'D')
+        pdf.line(135, 15, 135, pdf.get_y() + 5)
 
-        # # TODO: fix file name
+        pdf.ln(12)
+        pdf.set_font(family='helvetica', style='B', size=12)
+        pdf.cell(
+            w=0,
+            h=10,
+            txt='PATHOLOGIE CHIRURGICALE RAPORT FINAL',
+            align='C',
+        )
+        pdf.ln(6)
+        pdf.cell(
+            w=0,
+            h=10,
+            txt='SURGICAL PATHOLOGY FINAL REPORT',
+            align='C',
+        )
+
+        pdf.set_fill_color(211, 211, 211)
+        pdf.rect(15, pdf.get_y() + 10, 180, 5, 'DF')
+        pdf.rect(15, pdf.get_y() + 10, 180, 297 - (pdf.get_y() + 40 + 15), 'D')
+        report_number_and_date = [
+            {
+                'name': 'report_number_and_date_box',
+                'type': 'B',
+                'x1': 28.0,
+                'y1': pdf.get_y() + 22,
+                'x2': 165.0,
+                'y2': pdf.get_y() + 44,
+                'font': 'helvetica',
+                'size': 0,
+                'bold': 0,
+                'italic': 0,
+                'underline': 0,
+                'align': 'C',
+                'text': None,
+                'priority': 0,
+                'multiline': False,
+            },
+            { 'name': 'box_vertical_separator', 'type': 'L', 'x1': 110.0, 'y1': pdf.get_y() + 22, 'x2': 110.0, 'y2': pdf.get_y() + 44, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'numero_du_rapport', 'type': 'T', 'x1': 30.0, 'y1': pdf.get_y() + 23, 'x2': 64, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Numéro du rapport', 'priority': 0, 'multiline': False},
+            { 'name': 'report_number', 'type': 'T', 'x1': 63, 'y1': pdf.get_y() + 23, 'x2': 108.0, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '/Report number:', 'priority': 0, 'multiline': False},
+            { 'name': 'report_number_placeholder', 'type': 'T', 'x1': 111, 'y1': pdf.get_y() + 23, 'x2': 163.0, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.test_number, 'priority': 0, 'multiline': False},
+            { 'name': 'numero_du_rapport_separator', 'type': 'L', 'x1': 28.0, 'y1': pdf.get_y() + 30, 'x2': 165, 'y2': pdf.get_y() + 30, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'echantillon_preleve', 'type': 'T', 'x1': 30.0, 'y1': pdf.get_y() + 30, 'x2': 66, 'y2': pdf.get_y() + 37, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Échantillon prélevé', 'priority': 0, 'multiline': False},
+            { 'name': 'specimen_collected', 'type': 'T', 'x1': 63, 'y1': pdf.get_y() + 30, 'x2': 120.0, 'y2': pdf.get_y() + 37, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '/Specimen collected:', 'priority': 0, 'multiline': False},
+            { 'name': 'specimen_collected_placeholder', 'type': 'T', 'x1': 111, 'y1': pdf.get_y() + 30, 'x2': 163.0, 'y2': pdf.get_y() + 37, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.test_collected_at.strftime('%Y-%b-%d %H:%M'), 'priority': 0, 'multiline': False},
+            { 'name': 'specimen_collected_separator', 'type': 'L', 'x1': 28.0, 'y1': pdf.get_y() + 37, 'x2': 165, 'y2': pdf.get_y() + 37, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'rapport_sur_lechantillon', 'type': 'T', 'x1': 30.0, 'y1': pdf.get_y() + 37, 'x2': 74, 'y2': pdf.get_y() + 44, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': "Rapport sur l'échantillon", 'priority': 0, 'multiline': False},
+            { 'name': 'specimen_report', 'type': 'T', 'x1': 72, 'y1': pdf.get_y() + 37, 'x2': 120.0, 'y2': pdf.get_y() + 44, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': '/Specimen report:', 'priority': 0, 'multiline': False},
+            { 'name': 'specimen_report_placeholder', 'type': 'T', 'x1': 111, 'y1': pdf.get_y() + 37, 'x2': 163.0, 'y2': pdf.get_y() + 44, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.test_reported_at.strftime('%Y-%b-%d %H:%M'), 'priority': 0, 'multiline': False},
+        ]
+
+        templ = FlexTemplate(pdf, report_number_and_date)
+        templ.render()
+
+        pdf.ln(15)
+        pdf.set_x(28.0)
+        pdf.cell(w=0, h=10, txt='CLINICAL INFORMATION')
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.set_font(family='helvetica', size=10)
+        pdf.multi_cell(
+            w=155,
+            align='J',
+            txt='\n\n\n\n'.join(pathology_data.observation_clinical_info),
+        )
+
+
+        pdf.set_font(family='helvetica', style='B', size=12)
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.cell(w=0, h=10, txt='SPECIMEN')
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.set_font(family='helvetica', size=10)
+        pdf.multi_cell(
+            w=155,
+            align='J',
+            txt='\n\n\n\n'.join(pathology_data.observation_specimens),
+        )
+
+
+        pdf.set_font(family='helvetica', style='B', size=12)
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.cell(w=0, h=10, txt='GROSS DESCRIPTION')
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.set_font(family='helvetica', size=10)
+        pdf.multi_cell(
+            w=155,
+            align='J',
+            txt='\n\n\n\n'.join(pathology_data.observation_descriptions),
+        )
+
+
+
+        pdf.set_font(family='helvetica', style='B', size=12)
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.cell(w=0, h=10, txt='DIAGNOSIS')
+        pdf.ln(10)
+        pdf.set_x(28.0)
+        pdf.set_font(family='helvetica', size=10)
+        pdf.multi_cell(
+            w=155,
+            align='J',
+            txt='\n\n\n\n'.join(pathology_data.observation_diagnosis),
+        )
+
+
+        pdf.ln(20)
+
+        # Add new page if the prepared-by-box will not fit the current page
+        if pdf.will_page_break(40):
+            pdf.add_page()
+
+
+        report_prepared_by = [
+            {
+                'name': 'prepared_by_box',
+                'type': 'B',
+                'x1': 15.0,
+                'y1': pdf.get_y() + 50,
+                'x2': 195.0,
+                'y2': pdf.get_y() + 88,
+                'font': 'helvetica',
+                'size': 0,
+                'bold': 0,
+                'italic': 0,
+                'underline': 0,
+                'align': 'C',
+                'text': None,
+                'priority': 0,
+                'multiline': False,
+            },
+            { 'name': 'prepare_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 56, 'x2': 50.0, 'y2': pdf.get_y() + 60, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Préparé par', 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 58, 'x2': 50.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': 'Prepared by', 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_vertical_separator', 'type': 'L', 'x1': 50.0, 'y1': pdf.get_y() + 50, 'x2': 50.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_placeholder', 'type': 'T', 'x1': 51, 'y1': pdf.get_y() + 50, 'x2': 125.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_placeholder_vertical_separator', 'type': 'L', 'x1': 125.0, 'y1': pdf.get_y() + 50, 'x2': 125.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'empty_field_vertical_separator', 'type': 'L', 'x1': 160.0, 'y1': pdf.get_y() + 50, 'x2': 160.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_at', 'type': 'T', 'x1': 161, 'y1': pdf.get_y() + 50, 'x2': 195.0, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y"), 'priority': 0, 'multiline': False},
+            { 'name': 'prepared_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 65, 'x2': 195, 'y2': pdf.get_y() + 65, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'signe_electroniquement_par', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 65, 'x2': 57.0, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 10.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'L', 'text': 'Signé électroniquement par', 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by', 'type': 'T', 'x1': 57.0, 'y1': pdf.get_y() + 65, 'x2': 195.0, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 1, 'underline': 0, 'align': 'L', 'text': '/ Electronically signed by', 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by_separator', 'type': 'L', 'x1': 15.0, 'y1': pdf.get_y() + 80, 'x2': 195, 'y2': pdf.get_y() + 80, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_by_placeholder', 'type': 'T', 'x1': 15.0, 'y1': pdf.get_y() + 80, 'x2': 160.0, 'y2': pdf.get_y() + 88, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_by, 'priority': 0, 'multiline': False},
+            { 'name': 'electronically_signed_at_placeholder', 'type': 'T', 'x1': 161, 'y1': pdf.get_y() + 80, 'x2': 195.0, 'y2': pdf.get_y() + 88, 'font': 'helvetica', 'size': 10.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'L', 'text': pathology_data.prepared_at.strftime("%d-%b-%Y %I:%M %p"), 'priority': 0, 'multiline': False},
+        ]
+        templ = FlexTemplate(pdf, report_prepared_by)
+        templ.render()
+
+
+        # pdf.rect(15, 30, 180, 220, 'D')
+
+        # TODO: fix file name
         generated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{str(generated_at)}.pdf'
         pdf.output('report.pdf')
