@@ -81,7 +81,9 @@ class Command(BaseCommand):
             language=legacy_patient.language.lower(),
             phone_number=phone_number,
         )
-        caregiver_user.full_clean(exclude=['password'])
+        # User passwords aren't currently saved in Django
+        caregiver_user.set_unusable_password()
+        caregiver_user.full_clean()
         caregiver_user.save()
 
         caregiver_profile = CaregiverProfile(
