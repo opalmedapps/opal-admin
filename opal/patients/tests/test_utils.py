@@ -420,11 +420,12 @@ def test_create_caregiver_profile() -> None:
     assert caregiver_profile.legacy_id is None
 
     caregiver = caregiver_profile.user
-    caregiver.full_clean(exclude=['password', 'username'])
+    caregiver.full_clean()
 
     assert caregiver.first_name == 'Hans'
     assert caregiver.last_name == 'Wurst'
     assert not caregiver.is_active
+    assert not caregiver.has_usable_password()
     assert caregiver.username != ''
     assert len(caregiver.username) == utils.RANDOM_USERNAME_LENGTH
 
