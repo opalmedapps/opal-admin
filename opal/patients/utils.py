@@ -242,6 +242,7 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     # User passwords aren't currently saved in Django
     caregiver.set_unusable_password()
     caregiver.full_clean()
+    caregiver.save()
 
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
