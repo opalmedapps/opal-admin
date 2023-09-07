@@ -653,6 +653,7 @@ def test_create_access_request_new_caregiver() -> None:
     assert caregiver.first_name == 'Marge'
     assert caregiver.last_name == 'Simpson'
     assert not caregiver.is_active
+    assert not caregiver.has_usable_password()
 
 
 def test_create_access_request_new_caregiver_registration_code(settings: SettingsWrapper) -> None:
