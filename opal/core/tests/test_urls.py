@@ -4,6 +4,7 @@ from typing import Type
 from django.contrib.auth.views import LogoutView
 from django.test.client import Client
 from django.urls import resolve, reverse
+from django.utils import translation
 
 import pytest
 from pytest_django.fixtures import SettingsWrapper
@@ -59,3 +60,16 @@ def test_logout_defined() -> None:
     path = reverse('logout')
     assert reverse('logout') is not None
     assert_path_uses_view(path, LogoutView)
+
+
+def test_i18n_urls_defined() -> None:
+    """i18n URL patterns are defined."""
+    translation.activate('en')
+    path_en = reverse('login')
+
+    translation.activate('fr')
+    path_fr = reverse('login')
+
+    assert path_en != path_fr
+    assert '/en/' in path_en
+    assert '/fr/' in path_fr
