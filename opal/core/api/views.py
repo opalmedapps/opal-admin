@@ -7,24 +7,24 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LanguagesSerializer
+from .serializers import LanguageSerializer
 
 
 class LanguagesView(APIView):
-    """Class to return languages."""
+    """View that returns the list of supported languages."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request: HttpRequest) -> Response:
         """
-        Handle GET requests for supported languages.
+        Handle GET requests to list the supported languages.
 
         Args:
-            request: Http request.
+            request: the HTTP request
 
         Returns:
-            Http response with the data needed to return the languages.
+            HTTP response with a list of languages
         """
         data = [{'code': code, 'name': name} for (code, name) in settings.LANGUAGES]
-        response = LanguagesSerializer(data, many=True).data
+        response = LanguageSerializer(data, many=True).data
         return Response(response)
