@@ -376,9 +376,8 @@ class ReportService():
         # Add new page if the prepared-by-box will not fit the current page
         if pdf.will_page_break(40):
             pdf.add_page()
+            pdf.set_y(30)
 
-
-        pdf.set_y(30)
         report_prepared_by = [
             {
                 'name': 'prepared_by_box',

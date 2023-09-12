@@ -75,7 +75,8 @@ class CreatePathologyView(generics.CreateAPIView):
                 patient_last_name=patient.last_name,
                 patient_date_of_birth=patient.date_of_birth,
                 patient_ramq=patient.ramq if patient.ramq else '',
-                patient_sites_and_mrns=patient_sites_and_mrns,
+                # patient_sites_and_mrns=patient_sites_and_mrns,
+                patient_sites_and_mrns=[{'mrn': '9999996', 'site_code': 'RVH'}, {'mrn': '9999997', 'site_code': 'MGH'}, {'mrn': '1234567', 'site_code': 'VRY'}, {'mrn': '7654321', 'site_code': 'LNG'}, {'mrn': '1324354657', 'site_code': 'LST'}],
                 test_number=serializer.validated_data['case_number'],  # TODO: confirm if case_number required
                 test_collected_at=serializer.validated_data['collected_at'],
                 test_reported_at=serializer.validated_data['reported_at'],
