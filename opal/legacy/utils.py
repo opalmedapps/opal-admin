@@ -24,7 +24,7 @@ def get_patient_sernum(username: str) -> int:
 
 def update_legacy_user_type(caregiver_legacy_id: int, new_type: str) -> None:
     """
-    Update the user's UserType in the legacy Users table.
+    Update a user's UserType in the legacy Users table.
 
     Args:
         caregiver_legacy_id: The user's UserSerNum in the legacy Users table.

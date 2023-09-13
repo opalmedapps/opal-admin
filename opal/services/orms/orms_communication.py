@@ -1,5 +1,4 @@
 """Module providing business logic for communication with ORMS."""
-
 from django.conf import settings
 
 from ..general.service_communication import ServiceHTTPCommunicationManager
