@@ -1,5 +1,6 @@
 """App patient utils test functions."""
 import datetime as dt
+import uuid
 from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
@@ -13,6 +14,7 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Site
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
@@ -30,7 +32,6 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
-from ...core.test_utils import RequestMockerTest
 from .. import utils
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -514,6 +515,19 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
     assert registration_code.code.startswith('XY')
     assert registration_code.created_at == current_time
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
+
+
+def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to ORMS to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(mrn_list, patient_uuid)
+
+    mock_error_logger.assert_called_with('Failed to initialize patient via ORMS', mocker.ANY, mocker.ANY, mocker.ANY)
 
 
 def test_create_access_request_existing() -> None:

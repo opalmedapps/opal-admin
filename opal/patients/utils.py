@@ -1,4 +1,5 @@
 """App patients util functions."""
+import logging
 from datetime import date
 from typing import Any, Final, Optional
 from uuid import UUID
@@ -12,11 +13,11 @@ from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.hospital_settings.models import Site
 from opal.legacy import utils as legacy_utils
+from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
-from ..services.hospital.hospital import OIEService
-from ..services.orms.orms import ORMSService
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
@@ -29,6 +30,8 @@ REGISTRATION_CODE_LENGTH: Final = 10
 # Initialize services to communicate with external components
 oie_service: OIEService = OIEService()
 orms_service: ORMSService = ORMSService()
+
+logger = logging.getLogger(__name__)
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -386,13 +389,12 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
         patient_uuid: The new patient's Patient UUID.
     """
-    # TODO finish function
-    # TODO error handling on set_opal_patient
-
     # Call ORMS to notify it of the existence of the new patient
-    mrn_list = mrn_list or []
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
-    orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+
+    if orms_response['status'] == 'error':
+        logger.error('Failed to initialize patient via ORMS', mrn_list, patient_uuid, orms_response)
 
     # Call the OIE to notify it of the existence of the new patient
     # TODO
