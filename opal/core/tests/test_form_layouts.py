@@ -13,6 +13,19 @@ from ..forms import layouts
 class SampleForm(forms.Form):
     """A sample form."""
 
+    radio_select = forms.ChoiceField(
+        choices=(
+            ('1', 'test1'),
+            ('2', 'test2'),
+        ),
+        initial='1',
+        widget=forms.RadioSelect(attrs={'up-validate': ''}),
+        error_messages={
+            'error1': 'error_test1',
+            'error2': 'error_test2',
+        },
+    )
+
     def __init__(self, *fields: Any, **kwargs: Any):
         """
         Initialize the form with a layout.
@@ -65,7 +78,7 @@ def test_inlinesubmit_default_css() -> None:
 
     html = render_crispy_form(form)
 
-    assert f'class="{layouts.InlineSubmit.default_css_class} btn-primary"' in html
+    assert f'class="{layouts.InlineSubmit.default_css_class} btn-selected"' in html
 
 
 def test_inlinesubmit_extra_css() -> None:
@@ -162,3 +175,19 @@ def test_formactions_extra_css_class() -> None:
     html = render_crispy_form(form)
 
     assert '<div class="mb-3 d-flex justify-content-end gap-2 extra"' in html
+
+
+def test_radioselect_hidden() -> None:
+    """Test radioselect hidden."""
+    form = SampleForm(layouts.RadioSelect('radio_select'))
+    form.fields['radio_select'].widget = forms.HiddenInput()
+    html = render_crispy_form(form)
+
+    assert '<input type="hidden"' in html
+
+
+def test_radioselect_errors() -> None:
+    """Test radioselect error message."""
+    form = SampleForm(layouts.RadioSelect('radio_select'))
+    form.fields['radio_select'].error_messages = {'required': 'This is required.'}
+    assert not form.is_valid()

@@ -22,7 +22,7 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
@@ -339,9 +339,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
     relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all().reverse(),
-        # TODO: provide a custom template that can show a tooltip
-        # when hovering over the relationship type with the details of the relationship type
-        # can be done as a completely separate MR at the end
         widget=AvailableRadioSelect(attrs={'up-validate': ''}),
         label=_('Relationship to the patient'),
     )
@@ -352,7 +349,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form._form_required(),  # noqa: WPS437
     )
 
-    id_checked = forms.BooleanField(label='Requestor ID checked')
+    id_checked = forms.BooleanField(label=_('Requestor ID checked'))
 
     user_type = forms.ChoiceField(
         choices=constants.USER_TYPES,
@@ -436,7 +433,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         self.helper.layout = Layout(
             Row(
                 Column(
-                    'relationship_type',
+                    RadioSelect('relationship_type'),
                 ),
                 Column(
                     # make it appear like a label
@@ -455,7 +452,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 Row(
                     Column('user_email', css_class='col-4'),
                     Column('user_phone', css_class='col-4'),
-                    Column(InlineSubmit('search_user', 'Find User')),
+                    Column(InlineSubmit('search_user', label=gettext('Find User'))),
                 ),
                 HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
             ))
@@ -475,6 +472,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         available_choices = relationship_types.values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = list(available_choices)
+        self.fields['relationship_type'].widget.option_descriptions = self._build_tooltips()
 
     def is_patient_requestor(self) -> bool:
         """
@@ -603,6 +601,25 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return True
 
+    def _build_tooltips(self) -> dict[int, str]:
+        """
+        Build a dict with option id and tooltip content.
+
+        Returns:
+            a dict of tooltips with relationship type description and patient age
+        """
+        option_descriptions = {}
+        age_tile = _('Age')
+        older_age = _(' and older')
+        for value in RelationshipType.objects.all().values():
+            option_descriptions[value['id']] = '{description}, {age_title}: {start_age}{end_age}'.format(
+                description=value['description'],
+                age_title=age_tile,
+                start_age=value['start_age'],
+                end_age='-{age}'.format(age=value['end_age']) if value['end_age'] else older_age,
+            )
+        return option_descriptions
+
 
 # TODO: move this to the core app
 class AccessRequestConfirmForm(forms.Form):
@@ -670,6 +687,7 @@ class AccessRequestSendSMSForm(forms.Form):
     """This form provides the ability to send SMS with a registration code."""
 
     language = forms.ChoiceField(
+        label=_('Language'),
         choices=Language,
     )
 
@@ -697,10 +715,10 @@ class AccessRequestSendSMSForm(forms.Form):
         self.helper.layout = Layout(
             Div(
                 'language',
-                CrispyField('phone_number', wrapper_class='col-4'),
+                CrispyField('phone_number', wrapper_class='col-5'),
                 # wrap the submit button to not make it increase in size if the form has field errors
                 Div(
-                    InlineSubmit('send_sms', 'Send'),
+                    InlineSubmit('send_sms', label=gettext('Send')),
                 ),
                 # make form inline
                 css_class='d-md-flex flex-row justify-content-start gap-3',
@@ -723,10 +741,10 @@ class AccessRequestSendSMSForm(forms.Form):
         if language and phone_number:
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
-                message = gettext('Your Opal registration code is: {code}. Please go to: {url}'.format(
+                message = gettext('Your Opal registration code is: {code}. Please go to: {url}').format(
                     code=registration_code,
                     url=url,
-                ))
+                )
 
             twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
 
@@ -863,8 +881,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             Hidden('cancel_url', '{{cancel_url}}'),
             Row(
                 FormActions(
-                    CancelButton('{{cancel_url}}'),
                     Submit('submit', _('Save'), css_class='btn btn-primary me-2'),
+                    CancelButton('{{cancel_url}}'),
                 ),
             ),
         )

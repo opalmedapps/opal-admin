@@ -19,7 +19,7 @@ class GeneralTest(models.Model):
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
-        related_name='general_test',
+        related_name='general_tests',
     )
     type = models.CharField(  # noqa: A003
         verbose_name=_('Type'),
@@ -71,6 +71,15 @@ class GeneralTest(models.Model):
         null=True,
         help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
     )
+    case_number = models.CharField(
+        verbose_name=_('Case Number'),
+        help_text=_('HL7 Filler Field 1 identifier'),
+        max_length=60,
+        blank=True,
+    )
+    reported_at = models.DateTimeField(
+        verbose_name=_('Reported At'),
+    )
 
     class Meta:
         ordering = ('patient', '-collected_at')
@@ -111,7 +120,7 @@ class Observation(models.Model):
         verbose_name=_('General Test'),
         to=GeneralTest,
         on_delete=models.CASCADE,
-        related_name='observation',
+        related_name='observations',
     )
     identifier_code = models.CharField(
         verbose_name=_('Observation Identifier'),
@@ -123,9 +132,8 @@ class Observation(models.Model):
         max_length=199,
         help_text=_('Test component text.'),
     )
-    value = models.CharField(
+    value = models.TextField(
         verbose_name=_('Value'),
-        max_length=512,
     )
     value_units = models.CharField(
         verbose_name=_('Value Units'),
@@ -143,7 +151,7 @@ class Observation(models.Model):
         null=True,
     )
     value_abnormal = models.CharField(
-        verbose_name=_('Abormal Flag'),
+        verbose_name=_('Abnormal Flag'),
         max_length=1,
         choices=AbnormalFlag.choices,
         default=AbnormalFlag.NORMAL,
@@ -183,7 +191,7 @@ class Note(models.Model):
         verbose_name=_('General Test'),
         to=GeneralTest,
         on_delete=models.CASCADE,
-        related_name='note',
+        related_name='notes',
     )
     note_source = models.CharField(
         verbose_name=_('Note Source'),

@@ -47,6 +47,8 @@ class SecurityAnswer(DjangoModelFactory):
 class DeviceProvider(BaseProvider):
     """Faker Provider class that generates random values for the Device factory."""
 
+    hexadecimal_chars = ['a', 'b', 'c', 'd', 'e', 'f']
+
     def device_id(self) -> str:
         """
         Generate a random device_id.
@@ -56,7 +58,7 @@ class DeviceProvider(BaseProvider):
         """
         length = random.randint(16, 100)
         # 0-9 digits and letters up to 'f'
-        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']  # noqa: WPS221
+        char_choices = [str(digit) for digit in range(9)] + self.hexadecimal_chars
         chars = [random.choice(char_choices) for _ in range(length)]
         return ''.join(chars)
 
@@ -68,7 +70,7 @@ class DeviceProvider(BaseProvider):
         """
         length = random.randint(16, 100)
         # 0-9 digits and letters up to 'f'
-        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']   # noqa: WPS221
+        char_choices = [str(digit) for digit in range(9)] + self.hexadecimal_chars
         chars = [random.choice(char_choices) for _ in range(length)]
         return ''.join(chars)
 

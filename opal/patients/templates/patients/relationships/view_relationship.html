@@ -8,7 +8,7 @@
   {% translate "View Caregiver Access" %}
 {% endblock %}
 
-{% block content %}
+{% block working_area %}
   <!-- reused file in both edit and view templates -->
   {% include "patients/relationships/patient_details.html" %}
   <div class="card">
@@ -26,7 +26,7 @@
             <p><span class="fw-bold">{% translate "First Name" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.caregiver.user.first_name }}</p>
+            <p class="user-data">{{ relationship.caregiver.user.first_name }}</p>
           </div>
         </div>
 
@@ -35,7 +35,7 @@
             <p><span class="fw-bold">{% translate "Last Name" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.caregiver.user.last_name }}</p>
+            <p class="user-data">{{ relationship.caregiver.user.last_name }}</p>
           </div>
         </div>
 
@@ -47,7 +47,7 @@
             <p><span class="fw-bold">{% translate "Relationship" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.type }}</p>
+            <p class="user-data">{{ relationship.type }}</p>
           </div>
         </div>
 
@@ -56,7 +56,7 @@
             <p><span class="fw-bold">{% translate "Status" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.get_status_display }}</p>
+            <p class="user-data">{{ relationship.get_status_display }}</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@
             <p><span class="fw-bold">{% translate "Access Start" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.start_date }}</p>
+            <p class="user-data">{{ relationship.start_date }}</p>
           </div>
         </div>
 
@@ -74,7 +74,7 @@
             <p><span class="fw-bold">{% translate "Access End" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{{ relationship.end_date }}</p>
+            <p class="user-data">{{ relationship.end_date }}</p>
           </div>
         </div>
 
@@ -86,7 +86,7 @@
             <p><span class="fw-bold">{% translate "Explanation for Change(s)" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{% if relationship.reason %}{{relationship.reason}}{% else %} {% translate "No explanation provided"%}{% endif %}.</p>
+            <p class="user-data">{% if relationship.reason %}{{relationship.reason}}</p>{% else %} <p>{% translate "No explanation provided"%}{% endif %}.</p>
           </div>
         </div>
         <div class="col">
@@ -94,7 +94,7 @@
       </div>
 
       {% #form_actions %}
-      {% form_cancel href=cancel_url type="back" %}
+        {% form_cancel href=cancel_url type="back" %}
       {% /form_actions %}
 
     </div>

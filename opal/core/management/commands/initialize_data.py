@@ -59,18 +59,21 @@ class Command(BaseCommand):
 
         # groups
         # TODO: if we need French names for groups as well we will create our own Group model
+        # or an extra Group model (with a OneToOneField) with translated names
         # maybe this can be done later
-        # TODO: TBD: are administrators and superusers the same?
-        # then an Administrators group is unnecessary
         medical_records = Group.objects.create(name='Medical Records')
-        Group.objects.create(name='Clinicians')
-        receptionists = Group.objects.create(name='Receptionists')
-        Group.objects.create(name=settings.ORMS_USER_GROUP)
+        registrants = Group.objects.create(name='Registrants')
+        hospital_managers = Group.objects.create(name='Hospital Settings Managers')
+        data_exporters = Group.objects.create(name='Questionnaire Data Exporters')
+        user_managers = Group.objects.create(name=settings.USER_MANAGER_GROUP_NAME)
+        Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        Group.objects.create(name=settings.ADMIN_GROUP_NAME)
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
         listener = User.objects.create(username='Listener')
         interface_engine = User.objects.create(username='Interface Engine')
+        legacy_backend = User.objects.create(username='Legacy OpalAdmin Backend')
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
@@ -100,18 +103,36 @@ class Command(BaseCommand):
         # Medical Records
         medical_records.permissions.add(_find_permission('patients', 'can_manage_relationships'))
 
-        # Receptionists
-        receptionists.permissions.add(_find_permission('patients', 'can_perform_registration'))
+        # Registrants
+        registrants.permissions.add(_find_permission('patients', 'can_perform_registration'))
 
-        # Clinicians
-        # TODO: determine which permissions are specifically needed
+        # Hospital Settings Managers
+        hospital_managers.permissions.set([
+            _find_permission('patients', 'can_manage_relationshiptypes'),
+            _find_permission('hospital_settings', 'can_manage_institutions'),
+            _find_permission('hospital_settings', 'can_manage_sites'),
+        ])
+
+        # Questionnaire Data Exporters
+        data_exporters.permissions.set([
+            _find_permission('questionnaires', 'export_report'),
+        ])
+
+        # User Managers
+        user_managers.permissions.set([
+            _find_permission('users', 'view_clinicalstaff'),
+            _find_permission('users', 'add_clinicalstaff'),
+            _find_permission('users', 'change_clinicalstaff'),
+        ])
 
         # create tokens for the API users
         token_listener = Token.objects.create(user=listener)
         token_interface_engine = Token.objects.create(user=interface_engine)
+        token_legacy_backend = Token.objects.create(user=legacy_backend)
 
-        self.stdout.write(f'Listener token: {token_listener}')
-        self.stdout.write(f'Interface Engine token: {token_interface_engine}')
+        self.stdout.write(f'{listener.username} token: {token_listener}')
+        self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
+        self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
 
 
 def _create_security_questions() -> None:

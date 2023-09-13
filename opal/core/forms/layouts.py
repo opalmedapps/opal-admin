@@ -75,7 +75,7 @@ class InlineSubmit(Layout):
         if extra_css:
             submit.field_classes = f'{self.default_css_class} {extra_css}'
         else:
-            submit.field_classes = f'{self.default_css_class} btn-primary'
+            submit.field_classes = f'{self.default_css_class} btn-selected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
@@ -96,7 +96,7 @@ class InlineReset(Layout):
     """
 
     default_label = _('Reset')
-    default_css_class = 'btn btn-secondary d-table'
+    default_css_class = 'btn d-table'
 
     def __init__(  # noqa: WPS210
         self,
@@ -119,14 +119,16 @@ class InlineReset(Layout):
 
         url = '{{request.path}}'
 
-        css_class = f'{self.default_css_class}'
-
         if extra_css:
             css_class = f'{self.default_css_class} {extra_css}'
+        else:
+            css_class = f'{self.default_css_class} btn-unselected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
-            HTML(f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>'),  # noqa: WPS221
+            HTML(
+                f'<a class="{css_class}" href="{url}" {flat_attrs}>{the_label}</a>',
+            ),
         )
         super().__init__(*fields)
 
@@ -180,3 +182,14 @@ class EnterSuppressedLayout(Layout):
             HTML('<button type="submit" disabled style="display: none" aria-hidden="true"></button>'),
             *fields,
         )
+
+
+class RadioSelect(Field):
+    """
+    Custom radio select widget to be used for radio buttion tooltip, help_text, errors.
+
+    Triggers validation via `up-validate` on selection to let the form react to the selection.
+    Supports option tooltip on the radio select label.
+    """
+
+    template = 'forms/radioselect.html'
