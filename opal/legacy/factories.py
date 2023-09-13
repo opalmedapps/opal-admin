@@ -15,7 +15,7 @@ class LegacyUserFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyUsers
 
-    usersernum = 1
+    usersernum = Sequence(lambda number: number + 1)
     usertypesernum = 51
     username = 'username'
     usertype = 'Patient'
