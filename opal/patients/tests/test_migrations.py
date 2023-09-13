@@ -156,7 +156,8 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
 
 
 def _create_patient(model: Type[Model], ramq: str = '') -> Model:
-    return model.objects.create(
+    # see: https://docs.djangoproject.com/en/dev/topics/db/managers/#django.db.models.Model._default_manager
+    return model._default_manager.create(  # noqa: WPS437
         first_name='Marge',
         last_name='Simpson',
         date_of_birth='1987-03-19',

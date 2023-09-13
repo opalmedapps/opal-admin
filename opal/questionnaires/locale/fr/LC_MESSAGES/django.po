@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 15:55+0000\n"
+"POT-Creation-Date: 2023-08-30 16:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,22 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/questionnaires/apps.py
+#: opal/questionnaires/apps.py opal/questionnaires/models.py
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/models.py
-msgid "Export Report"
-msgstr "Exportation du rapport"
-
-#: opal/questionnaires/models.py
-#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
-#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
-#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
-msgid "Export Reports"
-msgstr "Exportation de Rapports"
+msgid "Questionnaire"
+msgstr "Questionnaire"
 
 #: opal/questionnaires/models.py
 msgid "User"
@@ -89,6 +82,13 @@ msgstr "Date de mise à jour"
 #: opal/questionnaires/tables.py
 msgid "No responses found."
 msgstr "Aucune réponse trouvée."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
+msgid "Export Reports"
+msgstr "Exportation de Rapports"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
 msgid "My questionnaires"
@@ -153,10 +153,6 @@ msgstr "Aucun (onglet unique)"
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 msgid "Cancel"
 msgstr "Annuler"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
-msgid "Questionnaire"
-msgstr "Questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Follow in my dashboard"
