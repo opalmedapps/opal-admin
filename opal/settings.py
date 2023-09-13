@@ -442,12 +442,6 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
 
-# Opal Room Management System (ORMS)
-ORMS_HOST = env.url('ORMS_HOST').geturl()
-# ORMS Credentials
-ORMS_USER = env('ORMS_USER')
-ORMS_PASSWORD = env('ORMS_PASSWORD')
-
 # Opal User Registration URL
 OPAL_USER_REGISTRATION_URL = env.url('OPAL_USER_REGISTRATION_URL').geturl()
 
@@ -525,6 +519,9 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 ORMS_GROUP_NAME = 'ORMS Users'
 # base URL to ORMS (no trailing slash)
 ORMS_HOST = env.url('ORMS_HOST').geturl()
+# ORMS Credentials
+ORMS_USER = env('ORMS_USER')
+ORMS_PASSWORD = env('ORMS_PASSWORD')
 
 # OTHER
 # ------------------------------------------------------------------------------
