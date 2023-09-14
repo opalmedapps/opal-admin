@@ -55,11 +55,14 @@ class CreatePathologyView(generics.CreateAPIView):
             ).values('mrn', 'site_code'),
         )
 
+        # Validate pathology data
+        pathology_data = serializer.validated_data
+
         # Parsed observations that contain SPCI, SPSPECI, SPGROS, and SPDX values
-        observations = parse_observations(serializer.validated_data['observations'])
+        observations = parse_observations(pathology_data['observations'])
 
         # Note containing doctors' names and time that show by whom and when the report was created
-        note_comment = parse_notes(serializer.validated_data['notes'])
+        note_comment = parse_notes(pathology_data['notes'])
 
         # Generate the pathology report
         self.report_service.generate_pathology_report(
@@ -76,9 +79,9 @@ class CreatePathologyView(generics.CreateAPIView):
                 patient_date_of_birth=patient.date_of_birth,
                 patient_ramq=patient.ramq if patient.ramq else '',
                 patient_sites_and_mrns=patient_sites_and_mrns,
-                test_number=serializer.validated_data['case_number'],  # TODO: confirm if case_number required
-                test_collected_at=serializer.validated_data['collected_at'],
-                test_reported_at=serializer.validated_data['reported_at'],
+                test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
+                test_collected_at=pathology_data['collected_at'],
+                test_reported_at=pathology_data['reported_at'],
                 observation_clinical_info=observations['SPCI'],
                 observation_specimens=observations['SPSPECI'],
                 observation_descriptions=observations['SPGROS'],

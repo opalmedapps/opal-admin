@@ -141,9 +141,13 @@ class ReportService():
         """
         pdf = PathologyPDF()
         pdf.add_page()
-        # TODO: fix file name
         generated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        report_path = settings.PATHOLOGY_REPORTS_PATH / f'{str(generated_at)}.pdf'
+        report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
+            first_name=pathology_data.patient_first_name,
+            last_name=pathology_data.patient_last_name,
+            date=str(generated_at),
+        )
+        report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
         pdf.output(str(report_path))
         return report_path
 
