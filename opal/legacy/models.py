@@ -638,3 +638,40 @@ class LegacyTestControl(models.Model):
     class Meta:
         managed = False
         db_table = 'TestControl'
+
+
+class LegacyOAUser(models.Model):
+    """OAUser from the legacy database OpalDB."""
+
+    oauser_sernum = models.AutoField(db_column='OAUserSerNum', primary_key=True)
+    username = models.CharField(db_column='Username', max_length=1000)
+    password = models.CharField(db_column='Password', max_length=1000)
+    onroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
+    # value 1 for human user, 2 for system user
+    usertype = models.IntegerField(db_column='type', default=1)
+    language = models.CharField(db_column='Language', max_length=2, default='EN')
+    userdeleted = models.IntegerField(db_column='deleted', default=0)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'OAUser'
+
+
+class LegacyOARole(models.Model):
+    """oaRole from the legacy database OpalDB."""
+
+    roleid = models.AutoField(db_column='ID', primary_key=True)
+    name_en = models.CharField(db_column='name_EN', max_length=64)
+    name_fr = models.CharField(db_column='name_FR', max_length=64)
+    roledeleted = models.IntegerField(db_column='deleted', default=0)
+    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    creationdate = models.DateTimeField(db_column='creationDate')
+    createdby = models.CharField(db_column='createdBy', max_length=255)
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
+    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'oaRole'
