@@ -1,7 +1,7 @@
 {% load static %}
 {% load i18n %}
 
-<h4 style="position: sticky; top: 0; z-index: 999;">
+<h4 style="position: sticky; top: 0; z-index: 999; background-color: white; padding: 5px 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
   {% translate "Smart Devices Data" %} <br>
   {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ: {{ patient.ramq | default:'' }})
 </h4>

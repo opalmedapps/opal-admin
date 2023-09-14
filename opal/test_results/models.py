@@ -132,9 +132,8 @@ class Observation(models.Model):
         max_length=199,
         help_text=_('Test component text.'),
     )
-    value = models.CharField(
+    value = models.TextField(
         verbose_name=_('Value'),
-        max_length=512,
     )
     value_units = models.CharField(
         verbose_name=_('Value Units'),

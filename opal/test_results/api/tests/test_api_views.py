@@ -82,7 +82,7 @@ class TestCreatePathologyView:
         api_client: APIClient,
         mocker: MockerFixture,
     ) -> None:
-        """Ensure the endpoint can update patient info with no errors."""
+        """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
         # Mock the ReportService.generate_pathology_report() method
         mock_pdf_generator = mocker.patch(
             'opal.services.reports.ReportService.generate_pathology_report',
