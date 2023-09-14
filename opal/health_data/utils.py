@@ -88,6 +88,8 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str
                 label_legend=gettext('Device'),
                 data=df,
             ),
+            label_error_min=gettext('Diastolic'),
+            label_error_max=gettext('Systolic'),
         )
 
     return charts
