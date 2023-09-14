@@ -32,7 +32,17 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicField
 
     class Meta:
         model = Institution
-        fields = ['id', 'url', 'name', 'code', 'support_email', 'sites']
+        fields = [
+            'id',
+            'url',
+            'name',
+            'code',
+            'support_email',
+            'adulthood_age',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
+            'sites',
+        ]
 
 
 class TermsOfUseSerializer(serializers.HyperlinkedModelSerializer):
