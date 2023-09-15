@@ -31,11 +31,8 @@ class ORMSValidator:
             errors.append('Error response from ORMS')
 
             # Specific case for the patient not being found
-            try:
-                if response_data['error'] == "Patient not found":
-                    errors.append('Skipping patient initialization in ORMS because the patient was not found there')
-            except KeyError:
-                pass
+            if response_data.get('error') == 'Patient not found':
+                errors.append('Skipping patient initialization in ORMS because the patient was not found there')
         else:
             errors.append('Patient response data is in an unexpected format')
 
