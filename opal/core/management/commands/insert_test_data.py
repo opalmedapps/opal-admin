@@ -659,8 +659,9 @@ def _create_caregiver(
         is_active=is_active,
     )
 
-    # don't expect a password
-    user.full_clean(exclude=('password',))
+    # User passwords aren't currently saved in Django
+    user.set_unusable_password()
+    user.full_clean()
     user.save()
 
     profile = CaregiverProfile(

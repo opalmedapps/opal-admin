@@ -193,11 +193,28 @@ def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
 
+    user = UserModel.objects.create(username='testuser', email='user@example.com', first_name='First', last_name='Last')
+
+    authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
+    assert UserModel.objects.count() == 1
+    assert authenticated_user == user
+
+
+@pytest.mark.django_db()
+def test_authenticate_user_already_exists_updated_data(mocker: MockerFixture) -> None:
+    """Ensure the existing user instance is returned if the user already exists and missing data updated."""
+    # mock authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
+
     user = UserModel.objects.create(username='testuser')
 
     authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
     assert UserModel.objects.count() == 1
     assert authenticated_user == user
+    assert authenticated_user.email == 'user@example.com'
+    assert authenticated_user.first_name == 'First'
+    assert authenticated_user.last_name == 'Last'
 
 
 @pytest.mark.django_db()
@@ -213,8 +230,8 @@ def test_authenticate_integration(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.django_db()
-def test_authenticate_integration_error(mocker: MockerFixture) -> None:
-    """Incomplete response should not fail and return `None`."""
+def test_authenticate_integration_incomplete_data(mocker: MockerFixture) -> None:
+    """A missing email in the response should still authenticate the user."""
     # assume incomplete data is returned
     auth_data = {
         'authenticate': AUTHENTICATION_SUCCESS,
@@ -222,12 +239,11 @@ def test_authenticate_integration_error(mocker: MockerFixture) -> None:
         'sn': 'Wurst',
     }
     RequestMockerTest.mock_requests_post(mocker, auth_data)
-    mock_logger = mocker.patch('logging.Logger.error')
 
     authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
 
-    assert authenticated_user is None
-    mock_logger.assert_called_once_with(f'incomplete response data received from fed auth API: {auth_data}')
+    assert authenticated_user is not None
+    assert authenticated_user.username == 'testuser'
 
 
 @pytest.mark.django_db()
