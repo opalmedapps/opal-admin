@@ -745,7 +745,7 @@ def test_create_access_request_new_patient_caregiver() -> None:
 
 
 def test_create_access_request_missing_legacy_id() -> None:
-    """An error occurs if an existing user registers as self but is missing their legacy_id"""
+    """An error occurs if an existing user registers as self but is missing their legacy_id."""
     caregiver_profile = CaregiverProfile(legacy_id=None)
     patient = patient_factories.Patient()
     self_type = RelationshipType.objects.self_type()
