@@ -26,6 +26,7 @@ class ServiceHTTPCommunicationManager:
     user = ''
     # Password is not hardcoded; stored in config file
     password = ''  # noqa: S105
+    dump_json_payload = False
 
     def __init__(self) -> None:
         """Initialize helper services."""
@@ -56,7 +57,7 @@ class ServiceHTTPCommunicationManager:
                 url='{0}{1}'.format(self.base_url, endpoint),
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
-                json=json.dumps(payload),
+                json=json.dumps(payload) if self.dump_json_payload else payload,
                 timeout=5,
             ).json()
         except requests.exceptions.RequestException as req_exp:

@@ -16,3 +16,4 @@ class ORMSHTTPCommunicationManager(ServiceHTTPCommunicationManager):
     display_name = 'ORMS'
     user = settings.ORMS_USER
     password = settings.ORMS_PASSWORD
+    dump_json_payload = False

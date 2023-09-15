@@ -17,3 +17,4 @@ class OIEHTTPCommunicationManager(ServiceHTTPCommunicationManager):
     display_name = 'OIE'
     user = settings.OIE_USER
     password = settings.OIE_PASSWORD
+    dump_json_payload = True
