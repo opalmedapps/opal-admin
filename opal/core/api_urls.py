@@ -96,7 +96,7 @@ urlpatterns = [
     path(
         'institution/',
         settings_views.RetrieveInstitutionView.as_view(),
-        name='institutions-retrieve',
+        name='institution-retrieve',
     ),
     path(
         'institutions/<int:pk>/terms-of-use/',
