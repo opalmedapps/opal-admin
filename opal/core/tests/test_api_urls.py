@@ -105,9 +105,9 @@ def test_retrieve_terms_of_use() -> None:
 
 def test_institution() -> None:
     """Ensure the singleton institution retrieval is defined."""
-    path = '/api/institution'
-    assert reverse('api:institution-retrieve') == path
-    assert resolve(path).view_name == 'api:institution-retrieve'
+    path = '/api/institution/'
+    assert reverse('api:institution-detail') == path
+    assert resolve(path).view_name == 'api:institution-detail'
 
 
 def test_sites_list() -> None:
