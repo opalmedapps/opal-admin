@@ -393,7 +393,9 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
-    if orms_response['status'] == 'error':
+    if orms_response['status'] == 'success':
+        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
+    else:
         logger.error('Failed to initialize patient via ORMS')
         logger.error(
             'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),

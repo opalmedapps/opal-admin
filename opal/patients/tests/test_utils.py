@@ -517,9 +517,24 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
 
 
+def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None:
+    """An error is logged when the call to ORMS to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(mrn_list, patient_uuid)
+
+    mock_error_logger.assert_called_with(
+        'Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
 def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     """An error is logged when the call to ORMS to initialize a patient fails."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Error'})
     mock_error_logger = mocker.patch('logging.Logger.error')
 
     rvh_site: hospital_models.Site = Site(code='RVH')
@@ -727,3 +742,17 @@ def test_create_access_request_new_patient_caregiver() -> None:
     assert user_models.Caregiver.objects.count() == 1
     assert Relationship.objects.count() == 1
     assert Patient.objects.count() == 1
+
+
+def test_create_access_request_missing_legacy_id() -> None:
+    """An error occurs if an existing user registers as self but is missing their legacy_id"""
+    caregiver_profile = CaregiverProfile(legacy_id=None)
+    patient = patient_factories.Patient()
+    self_type = RelationshipType.objects.self_type()
+
+    with assertRaisesMessage(ValueError, 'Legacy ID is missing'):
+        utils.create_access_request(
+            patient,
+            caregiver_profile,
+            self_type,
+        )
