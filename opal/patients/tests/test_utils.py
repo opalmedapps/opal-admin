@@ -518,7 +518,7 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
 
 
 def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None:
-    """An error is logged when the call to ORMS to initialize a patient fails."""
+    """An info message is logged when the call to ORMS to initialize a patient succeeds."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
