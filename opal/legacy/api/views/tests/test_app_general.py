@@ -44,7 +44,7 @@ class TestGeneralAppView:
         """Test the return of announcements for multiple patient without dupicate 'postcontrolsernum'."""
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
-        post_control = factories.LegacyPostcontrolFactory()
+        post_control = factories.LegacyPostcontrolFactory(posttype='Announcement')
         user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)
@@ -57,7 +57,7 @@ class TestGeneralAppView:
         """Test the return of zero announcements when nothing is available."""
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
-        post_control = factories.LegacyPostcontrolFactory()
+        post_control = factories.LegacyPostcontrolFactory(posttype='Announcement')
         user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)

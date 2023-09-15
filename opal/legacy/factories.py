@@ -212,7 +212,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
         model = models.LegacyAnnouncement
 
     patientsernum = SubFactory(LegacyPatientFactory)
-    postcontrolsernum = SubFactory(LegacyPostcontrolFactory)
+    postcontrolsernum = SubFactory(LegacyPostcontrolFactory(posttype='Announcement'))
     readstatus = 0
     readby = '[]'
 
