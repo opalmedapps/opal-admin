@@ -21,6 +21,7 @@ from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
+from opal.databank.api.views import DatabankConsentView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
 
@@ -89,6 +90,13 @@ urlpatterns = [
         'caregivers/devices/<str:device_id>/',
         caregivers_views.UpdateDeviceView.as_view(),
         name='devices-update-or-create',
+    ),
+
+    # DATABANK ENDPOINTS
+    path(
+        'api/databank/<int:patient_id>/consent',
+        DatabankConsentView.as_view(),
+        name='databank-consent-update-or-create',
     ),
 
     # INSTITUTIONS ENDPOINTS
