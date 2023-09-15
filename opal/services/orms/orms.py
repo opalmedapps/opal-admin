@@ -55,7 +55,7 @@ class ORMSService:
                     'mrn': mrn,
                     'site': site_code,
                     'opalStatus': 1,  # 1 => registered/active patient; 0 => unregistered/inactive patient
-                    'opalUUID': patient_uuid.hex,
+                    'opalUUID': str(patient_uuid),
                 },
             )
 

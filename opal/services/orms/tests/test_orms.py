@@ -30,7 +30,7 @@ def test_set_opal_patient_success(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(
         mocker,
         {
-            'status': 'success',
+            'status': 'Success',
         },
     )
 
@@ -51,7 +51,7 @@ def test_set_opal_patient_empty_input(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(
         mocker,
         {
-            'status': 'success',
+            'status': 'Success',
         },
     )
 
@@ -66,7 +66,7 @@ def test_set_opal_patient(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(
         mocker,
         {
-            'status': 'error',
+            'status': 'Error',
             'error': 'Some error message',
         },
     )

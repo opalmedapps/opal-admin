@@ -25,9 +25,9 @@ class ORMSValidator:
         except KeyError:
             errors.append('Patient response data does not have the attribute "status"')
 
-        if not errors and status == 'success':
+        if not errors and status == 'Success':
             success = True
-        elif status == 'error':
+        elif status == 'Error':
             errors.append('Error response from ORMS')
         else:
             errors.append('Patient response data is in an unexpected format')
