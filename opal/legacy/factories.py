@@ -445,5 +445,35 @@ class LegacyOAUserFactory(DjangoModelFactory):
 
     username = Faker('name')
     password = Faker('name')
-    onroleid = SubFactory(LegacyOARoleFactory)
+    oaroleid = SubFactory(LegacyOARoleFactory)
     date_added = timezone.make_aware(datetime(2018, 1, 1))
+
+
+class LegacyOAUserRoleFactory(DjangoModelFactory):
+    """LegacyOAUserRole factory."""
+
+    class Meta:
+        model = models.LegacyOAUserRole
+
+    oausersernum = Faker('random_int')
+    rolesernum = Faker('random_int')
+
+
+class LegacyModuleFactory(DjangoModelFactory):
+    """LegacyModule factory."""
+
+    class Meta:
+        model = models.LegacyModule
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+
+
+class LegacyOARoleModuleFactory(DjangoModelFactory):
+    """LegacyOARoleModule factory."""
+
+    class Meta:
+        model = models.LegacyOARoleModule
+
+    moduleid = SubFactory(LegacyModuleFactory)
+    oaroleid = SubFactory(LegacyOARoleFactory)
