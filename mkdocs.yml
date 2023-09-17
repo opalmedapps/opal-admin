@@ -68,6 +68,7 @@ theme:
 # Plugins
 plugins:
   - search
+  - autorefs
   # generate code reference documents from code base
   - gen-files:
       scripts:
@@ -81,7 +82,7 @@ plugins:
         python:
           setup_commands:
             - import os
-            - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opal.settings")
+            - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
             - import django
             - django.setup()
             # mock pytkdocs to workaround Django and Django REST framework issues
@@ -129,3 +130,4 @@ watch:
   - README.md
   - CHANGELOG.md
   - opal/
+  - config/

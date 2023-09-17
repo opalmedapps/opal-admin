@@ -10,13 +10,13 @@ from opal.users.models import Caregiver
 
 
 class Command(BaseCommand):
-    """Command to migrate Users from legacy DB to Caregivers in New Backend."""
+    """Command to migrate Caregivers from legacy DB to Caregivers in New Backend."""
 
-    help = 'migrate Users from legacy DB to New backend DB'  # noqa: A003
+    help = 'migrate Caregivers from legacy DB to New backend DB'  # noqa: A003
 
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
-        Handle migrate Users from legacy DB to New backend DB.
+        Handle migrate Caregivers from legacy DB to New backend DB.
 
         Args:
             args: input arguments.
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 else:
                     legacy_patient = LegacyPatient.objects.get(patientsernum=legacy_user.usertypesernum)
                     caregiver_profile = self._create_caregiver_and_profile(legacy_patient, legacy_user)
-                    # count number of migrated users
+                    # count number of migrated caregivers
                     migrated_users_count += 1
 
                 self._create_relationship(patient, caregiver_profile, relationship_type)
@@ -50,7 +50,7 @@ class Command(BaseCommand):
                     ),
                 )
         self.stdout.write(
-            f'Number of imported users is: {migrated_users_count}',
+            f'Number of imported caregivers is: {migrated_users_count}',
         )
 
     def _create_caregiver_and_profile(
@@ -94,7 +94,7 @@ class Command(BaseCommand):
         caregiver_profile.save()
 
         self.stdout.write(
-            'Legacy user with sernum: {legacy_id} has been migrated'.format(
+            'Legacy caregiver with sernum: {legacy_id} has been migrated'.format(
                 legacy_id=legacy_user.usersernum,
             ),
         )

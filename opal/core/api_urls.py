@@ -3,6 +3,7 @@ URL configuration for the project-wide REST API.
 
 Inspired by Two Scoops of Django Section 17.3.
 """
+# TODO: determine whether to move API Urls to config module (and support versioning)
 from django.conf import settings
 from django.urls import path
 from django.urls.conf import include
