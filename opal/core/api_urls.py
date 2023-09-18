@@ -24,6 +24,7 @@ from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
+from opal.users.api import views as users_views
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -173,6 +174,13 @@ urlpatterns = [
         'registration/<str:code>/register/',
         patient_views.RegistrationCompletionView.as_view(),
         name='registration-register',
+    ),
+
+    # USERS ENDPOINTS
+    path(
+        'users/caregivers/<username>/',
+        users_views.UserCaregiverUpdateView.as_view(),
+        name='users-caregivers',
     ),
 
     path('', include(router.urls)),
