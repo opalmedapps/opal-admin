@@ -57,7 +57,6 @@ class Command(BaseCommand):
                     admin_users_counter += 1
                     all_users_counter += 1
             else:
-                print('LEGACY ROLEID', legacy_user.oaroleid)
                 role_module = LegacyOARoleModule.objects.get(
                     oaroleid=legacy_user.oaroleid,
                     moduleid=patient_module,
