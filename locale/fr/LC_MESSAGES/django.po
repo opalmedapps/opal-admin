@@ -18,6 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: config/settings/base.py
+msgid "English"
+msgstr "Anglais"
+
+#: config/settings/base.py
+msgid "French"
+msgstr "Français"
+
+#: config/urls.py
+msgid "Opal Management"
+msgstr "Administration d'Opal"
+
+#: config/urls.py
+msgid "Opal Backend Admin"
+msgstr "Administrateur principal d'Opal"
+
 #: opal/core/forms/layouts.py
 msgid "Submit"
 msgstr "Soumettre"
@@ -43,14 +59,6 @@ msgstr ""
 #: opal/core/views.py
 msgid "OpalAdmin v2"
 msgstr "OpalAdmin v2"
-
-#: opal/settings.py
-msgid "English"
-msgstr "Anglais"
-
-#: opal/settings.py
-msgid "French"
-msgstr "Français"
 
 #: opal/templates/base.html
 msgid "Opal Health Informatics Group"
@@ -196,11 +204,3 @@ msgstr "Modifier"
 #: opal/templates/tables/action_column.html
 msgid "Delete"
 msgstr "Supprimer"
-
-#: opal/urls.py
-msgid "Opal Management"
-msgstr "Administration d'Opal"
-
-#: opal/urls.py
-msgid "Opal Backend Admin"
-msgstr "Administrateur principal d'Opal"

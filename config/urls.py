@@ -48,7 +48,7 @@ urlpatterns = [
     # define start URL as this might be expected by certain packages to exist
     # (e.g., DRF auth/login without a ?next parameter)
     path('', RedirectView.as_view(url='/hospital-settings/'), name='start'),
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',
