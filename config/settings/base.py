@@ -41,7 +41,7 @@ DEBUG: bool = env.bool('DEBUG', default=False)
 # In Windows, this must be set to your system time zone.
 TIME_ZONE = 'America/Toronto'
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
-LANGUAGE_CODE = 'en-ca'
+LANGUAGE_CODE = 'en'
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 # Provide a type hint to avoid mypy import cycle errors
 # see: https://github.com/typeddjango/django-stubs/issues/1346

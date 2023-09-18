@@ -171,4 +171,6 @@ def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) 
 @pytest.fixture(autouse=True)
 def _set_default_language() -> None:
     """Activate default language."""
+    # make the activated language match the language code (settings.LANGUAGE_CODE)
+    # only "en" will consider return /en/... URLs for the default language
     activate('en')
