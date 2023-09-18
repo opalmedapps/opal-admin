@@ -4,7 +4,7 @@ from typing import Any
 from django.db import transaction
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.test_results.models import GeneralTest, Note, Observation
+from opal.test_results.models import GeneralTest, Note, PathologyObservation
 
 
 class GeneralTestSerializer(DynamicFieldsSerializer):
@@ -29,20 +29,16 @@ class GeneralTestSerializer(DynamicFieldsSerializer):
         )
 
 
-class ObservationSerializer(DynamicFieldsSerializer):
-    """Serializer for the `Observation` model."""
+class PathologyObservationSerializer(DynamicFieldsSerializer):
+    """Serializer for the `PathologyObservation` model."""
 
     class Meta:
-        model = Observation
+        model = PathologyObservation
         fields = (
             'general_test',
             'identifier_code',
             'identifier_text',
             'value',
-            'value_units',
-            'value_min_range',
-            'value_max_range',
-            'value_abnormal',
             'observed_at',
             'updated_at',
         )
@@ -64,15 +60,11 @@ class NoteSerializer(DynamicFieldsSerializer):
 class PathologySerializer(GeneralTestSerializer):
     """Serializer for the `GeneralTest` (a.k.a. pathology) data received from the `pathology create` endpoint."""
 
-    observations = ObservationSerializer(
+    observations = PathologyObservationSerializer(
         fields=(
             'identifier_code',
             'identifier_text',
             'value',
-            'value_units',
-            'value_min_range',
-            'value_max_range',
-            'value_abnormal',
             'observed_at',
             'updated_at',
         ),
@@ -119,8 +111,8 @@ class PathologySerializer(GeneralTestSerializer):
         validated_notes = validated_data.pop('notes')
 
         general_test = GeneralTest.objects.create(**validated_data)
-        Observation.objects.bulk_create(
-            Observation(**data, general_test=general_test) for data in validated_observations
+        PathologyObservation.objects.bulk_create(
+            PathologyObservation(**data, general_test=general_test) for data in validated_observations
         )
         Note.objects.bulk_create(
             Note(**data, general_test=general_test) for data in validated_notes

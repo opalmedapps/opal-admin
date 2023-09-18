@@ -25,11 +25,8 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from .core.views import LoginView
+from opal.core.views import LoginView
 
-# This approach for serving static files is only for development!
-# Please see: https://docs.djangoproject.com/en/dev/howto/static-files/deployment/
-# TODO: Serving static files in production
 urlpatterns = [
     # REST API
     path('api/', include('opal.core.api_urls', namespace='api')),
@@ -41,7 +38,7 @@ urlpatterns = [
     path('health-data/', include('opal.health_data.urls')),
 
     # global config
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     # define simple login view reusing the admin template
     path('login', LoginView.as_view(), name='login'),
     path('logout', LogoutView.as_view(), name='logout'),
@@ -54,9 +51,7 @@ urlpatterns = [
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
         name='favicon.ico',
     ),
-]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')
