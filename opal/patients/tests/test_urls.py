@@ -1,4 +1,5 @@
 from django.urls import resolve, reverse
+from django.utils import translation
 
 
 def test_relationshiptype_list() -> None:
@@ -31,6 +32,7 @@ def test_relationshiptype_delete() -> None:
 
 def test_access_request() -> None:
     """A URL for the access request view."""
+    print(translation.get_language())
     url = '/patients/access-request/'
     assert reverse('patients:access-request') == url
     assert resolve(url).view_name == 'patients:access-request'
