@@ -8,6 +8,7 @@ from django.contrib.auth.models import Permission
 from django.db import connections
 from django.db.models import Model
 from django.test import Client
+from django.utils.translation import activate
 
 import pytest
 from _pytest.config import Config
@@ -165,3 +166,9 @@ def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) 
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
             conn.close()
+
+
+@pytest.fixture(autouse=True)
+def _set_default_language() -> None:
+    """Activate default language."""
+    activate('en')
