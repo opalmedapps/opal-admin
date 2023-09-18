@@ -34,6 +34,15 @@ class LegacyUsers(models.Model):
         db_table = 'Users'
 
 
+class LegacySexType(models.TextChoices):
+    """The possible sex values for a patient."""
+
+    MALE = 'Male'
+    FEMALE = 'Female'
+    OTHER = 'Other'
+    UNKNOWN = 'Unknown'
+
+
 class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
@@ -48,7 +57,7 @@ class LegacyPatient(models.Model):
     death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
     ssn = models.CharField(db_column='SSN', max_length=16)
     accesslevel = models.CharField(db_column='AccessLevel', max_length=1, default='1')
-    sex = models.CharField(db_column='Sex', max_length=25)
+    sex = models.CharField(db_column='Sex', max_length=25, choices=LegacySexType.choices)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
 
@@ -354,20 +363,20 @@ class LegacyPatientHospitalIdentifier(models.Model):
     """Patient_Hospital_Identifier model from the legacy database OpalDB."""
 
     patienthospitalidentifierid = models.AutoField(db_column='Patient_Hospital_Identifier_Id', primary_key=True)
-    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    hospitalidentifiertypecode = models.ForeignKey(
+    patient = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    hospital = models.ForeignKey(
         'LegacyHospitalIdentifierType',
         models.DO_NOTHING,
         db_column='Hospital_Identifier_Type_Code',
         to_field='code',
     )
     mrn = models.CharField(db_column='MRN', max_length=20)
-    isactive = models.BooleanField(db_column='is_Active')
+    is_active = models.BooleanField(db_column='is_Active')
 
     class Meta:
         managed = False
         db_table = 'Patient_Hospital_Identifier'
-        unique_together = (('patientsernum', 'hospitalidentifiertypecode', 'mrn'),)
+        unique_together = (('patient', 'hospital', 'mrn'),)
 
 
 class LegacyHospitalMap(models.Model):
