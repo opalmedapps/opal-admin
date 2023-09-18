@@ -467,6 +467,19 @@ class LegacyModuleFactory(DjangoModelFactory):
 
     name_en = Faker('name')
     name_fr = Faker('name')
+    description_en = Faker('sentence')
+    description_fr = Faker('sentence')
+    tablename = Faker('name')
+    controltablename = Faker('name')
+    primarykey = Faker('name')
+    iconclass = Faker('name')
+    url = Faker('url')
+    sqlpublicationlist = Faker('paragraph')
+    sqldetails = Faker('paragraph')
+    sqlpublocationcharlog = Faker('paragraph')
+    sqlpublicationlistlog = Faker('paragraph')
+    sqlpublicationmultiple = Faker('paragraph')
+    sqlpublicationunique = Faker('paragraph')
 
 
 class LegacyOARoleModuleFactory(DjangoModelFactory):
