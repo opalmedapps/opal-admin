@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.utils import timezone, translation
 
@@ -66,9 +65,7 @@ class QuestionnairesReportView(views.APIView):
                 'Could not find `Patient` record with the provided MRN and site code.',
             )
 
-        # the language used in the current thread
-        # if the language is not set (e.g., translations are temporarily deactivated), use the default language
-        lang = translation.get_language() or settings.LANGUAGES[0][0]
+        lang = translation.get_language_from_request(request)
 
         # Generate questionnaire report
         encoded_report = self.report_service.generate_questionnaire_report(
