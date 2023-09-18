@@ -95,9 +95,6 @@ class PathologyPDF(FPDF):
     ) -> None:
         self.pathology_data = pathology_data
         self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
-        self.patient_sites_and_mrns = ', '.join(
-            [f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in pathology_data.patient_sites_and_mrns],
-        )
 
         super().__init__()
         self.set_auto_page_break(auto=True, margin=50)
@@ -117,6 +114,13 @@ class PathologyPDF(FPDF):
 
     def header(self) -> None:
         """Set PDF header."""
+        sites_and_mrns_list = [
+            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
+        ]
+        sites_and_mrns_str = ', '.join(
+            sites_and_mrns_list,
+        )
+
         self.set_font(family='helvetica', size=12)
         if self.page != 1:
             self.set_font(family='helvetica', style='B', size=6)
@@ -139,7 +143,7 @@ class PathologyPDF(FPDF):
             self.cell(
                 w=0,
                 align='L',
-                txt=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns}]',
+                txt=f'Patient : {self.patient_name} [{sites_and_mrns_str}]',
             )
 
 
@@ -191,10 +195,8 @@ class PathologyPDF(FPDF):
         """
         self.add_page()
         site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
-        site_patient_box['site_logo'] = self.pathology_data.site_logo_path
-        site_patient_box['patient_name'] = f'Nom/Name: {self.patient_name}'
         site_patient_box.render()
-        # Draw the the frame is shown at the top of the first page.
+        # Draw the the frame that is shown at the top of the first page.
         # TODO: move to the template
         self.rect(15, 15, 180, self.get_y() - 10, 'D')
         self.line(135, 15, 135, self.get_y() + 5)
@@ -316,7 +318,7 @@ class PathologyPDF(FPDF):
                 'italic': 0,
                 'underline': 0,
                 'align': 'C',
-                'text': 'logo',
+                'text': str(self.pathology_data.site_logo_path),
                 'priority': 0,
                 'multiline': False,
             },
@@ -403,7 +405,7 @@ class PathologyPDF(FPDF):
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': '',
+                'text': f'Nom/Name: {self.patient_name}',
                 'priority': 0,
                 'multiline': False,
             },
