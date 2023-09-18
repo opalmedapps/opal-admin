@@ -173,6 +173,7 @@ THIRD_PARTY_APPS = [
     'formtools',
     'slippers',
     'fontawesomefree',
+    'phonenumber_field',
 ]
 
 LOCAL_APPS = [
@@ -463,11 +464,16 @@ CORS_URLS_REGEX = '^/api/.*$'
 
 # django-easy-audit
 # ------------------------------------------------------------------------------
-# See https://github.com/soynatan/django-easy-audit#settings
+# See: https://github.com/soynatan/django-easy-audit#settings
 # Remove /admin to log requests to the admin site
 DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+
+# django-phonenumber-field
+# ------------------------------------------------------------------------------
+# See: https://django-phonenumber-field.readthedocs.io/en/latest/reference.html#settings
+PHONENUMBER_DEFAULT_REGION = 'CA'
 
 # django-tables2
 # ------------------------------------------------------------------------------
