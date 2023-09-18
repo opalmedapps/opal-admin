@@ -37,7 +37,7 @@ urlpatterns_i18n = i18n_patterns(
     # define simple login view reusing the admin template
     path('login', LoginView.as_view(), name='login'),
     path('logout', LogoutView.as_view(), name='logout'),
-    prefix_default_language=False,
+    prefix_default_language=True,
 )
 
 urlpatterns = [
