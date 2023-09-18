@@ -57,9 +57,10 @@ class Command(BaseCommand):
                     admin_users_counter += 1
                     all_users_counter += 1
             else:
-                role_module = LegacyOARoleModule.objects.get(
+                role_module = LegacyOARoleModule.objects.filter(
                     oaroleid=legacy_user.oaroleid,
                     moduleid=patient_module,
+                    access=Access.WRITE.value,
                 )
 
                 clinical_staff_user = ClinicalStaff(
@@ -70,7 +71,7 @@ class Command(BaseCommand):
 
                 if self._save_clinical_staff_user(clinical_staff_user):
                     # access codes 0-7
-                    if role_module.access == Access.WRITE.value:
+                    if role_module:
                         registrant_group.user_set.add(clinical_staff_user)  # noqa: WPS220
                         staff_users_counter += 1
 
