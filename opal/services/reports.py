@@ -133,6 +133,8 @@ class ReportService():
     ) -> Path:
         """Create a pathology PDF report.
 
+        The generated report is saved in the directory specified in the PATHOLOGY_REPORTS_PATH environment variable.
+
         Args:
             pathology_data: pathology data required to generate the PDF report
 
@@ -145,10 +147,10 @@ class ReportService():
         report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
             first_name=pathology_data.patient_first_name,
             last_name=pathology_data.patient_last_name,
-            date=str(generated_at),
+            date=generated_at,
         )
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        pdf.output(str(report_path))
+        pdf.output(report_path)
         return report_path
 
     def _request_base64_report(

@@ -55,6 +55,6 @@ def detect_field_model(loader: Loader, attr_name: str, direct_members: Any, all_
 
 
 # mock in order to avoid missing metadata error caused by Django REST framework
-Loader.get_marshmallow_field_documentation = MagicMock()  # type: ignore[assignment]
+Loader.get_marshmallow_field_documentation = MagicMock()  # type: ignore[method-assign]
 Loader.add_fields = add_fields  # type: ignore[assignment]
 Loader.detect_field_model = detect_field_model  # type: ignore[assignment]
