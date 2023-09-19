@@ -1,7 +1,7 @@
 """This module provides admin options for test result models."""
 from django.contrib import admin
 
-from .models import GeneralTest, Note, Observation
+from .models import GeneralTest, Note, PathologyObservation
 
 
 @admin.register(GeneralTest)
@@ -18,7 +18,7 @@ class GeneralTestAdmin(admin.ModelAdmin):
     ordering = ('patient', '-collected_at')
 
 
-@admin.register(Observation)
+@admin.register(PathologyObservation)
 class ObservationAdmin(admin.ModelAdmin):
     """The admin class for `Observation` models."""
 
