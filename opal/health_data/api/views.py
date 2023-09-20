@@ -46,7 +46,7 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         """
         Create one or more new quantity samples.
 
-        Ensures that the patient with the pk as part of the URL exists.
+        Ensures that the patient with the uuid as part of the URL exists.
         Raises a 404 if the patient does not exist.
 
         Args:
@@ -57,8 +57,8 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         Returns:
             the response
         """
-        patient_id = self.kwargs['patient_id']
-        self.patient = generics.get_object_or_404(Patient.objects.all(), pk=patient_id)
+        uuid = self.kwargs['uuid']
+        self.patient = generics.get_object_or_404(Patient.objects.all(), uuid=uuid)
 
         return super().create(request, *args, **kwargs)
 
