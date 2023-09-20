@@ -125,7 +125,7 @@ urlpatterns = [
     ),
     # patients (by new ID) for the health data quantity samples
     path(
-        'patients/<int:patient_id>/health-data/quantity-samples/',
+        'patients/<uuid:uuid>/health-data/quantity-samples/',
         data_views.CreateQuantitySampleView.as_view(),
         name='patients-data-quantity-create',
     ),
