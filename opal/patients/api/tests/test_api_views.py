@@ -814,10 +814,10 @@ class TestPatientDemographicView:
 
 
 class TestPatientCaregiversView:
-    """Class wrapper for patient caregivers endpoint tests."""
+    """Class wrapper for patient caregiver devices endpoint tests."""
 
     def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: User) -> None:
-        """Test get patient caregivers success."""
+        """Test get patient caregiver devices success."""
         api_client.force_login(user=admin_user)
 
         legacy_id = 1
@@ -834,7 +834,7 @@ class TestPatientCaregiversView:
 
         institution = Institution()
         response = api_client.get(reverse(
-            'api:patient-caregivers',
+            'api:patient-caregiver-devices',
             kwargs={'legacy_id': legacy_id},
         ))
         assert response.status_code == HTTPStatus.OK
