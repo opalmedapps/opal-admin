@@ -196,9 +196,42 @@ class LegacyDocument(models.Model):
     """Document model from the legacy database OpalDB."""
 
     documentsernum = models.AutoField(db_column='DocumentSerNum', primary_key=True)
+    # TODO: add cronlogsernum
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    readstatus = models.IntegerField(db_column='ReadStatus')
+    sourcedatabasesernum = models.ForeignKey(
+        to=LegacySourceDatabase,
+        on_delete=models.DO_NOTHING,
+        db_column='SourceDatabaseSerNum',
+        to_field='source_database',
+    )
+    documentid = models.CharField(db_column='DocumentId', max_length=100)
+    aliasexpressionsernum = models.ForeignKey(
+        to=LegacyAliasExpression,
+        on_delete=models.DO_NOTHING,
+        db_column='AliasExpressionSerNum',
+        to_field='aliasexpressionsernum',
+    )
+    approvedby = models.IntegerField(db_column='ApprovedBySerNum')
+    approvedtimestamp = models.DateTimeField(db_column='ApprovedTimeStamp')
+    authoredbysernum = models.IntegerField(db_column='AuthoredBySerNum')
+    dateofservice = models.DateTimeField(db_column='DateOfService')
+    revised = models.CharField(db_column='Revised', blank=True, max_length=5)
+    validentry = models.CharField(db_column='ValidEntry', max_length=5)
+    errorreasontext = models.TextField(db_column='ErrorReasonText', blank=True)
+    originalfilename = models.CharField(db_column='OriginalFileName', max_length=500)
+    finalfilename = models.CharField(db_column='FinalFileName', max_length=500)
+    createdbysernum = models.IntegerField(db_column='CreatedBySerNum')
+    createdtimestamp = models.DateTimeField(db_column='CreatedTimeStamp')
+    transferstatus = models.CharField(db_column='TransferStatus', max_length=10)
+    transferlog = models.CharField(db_column='TransferLog', max_length=1000)
+    sessionid = models.TextField(db_column='SessionId', blank=True)
+    dateadded = models.DateTimeField(db_column='DateAdded')
+    readstatus = models.IntegerField(
+        db_column='ReadStatus',
+        help_text='Deprecated',
+    )
     readby = models.JSONField(db_column='ReadBy', default=list)
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyDocumentManager = managers.LegacyDocumentManager()
 
     class Meta:
