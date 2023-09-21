@@ -13,6 +13,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api import views as caregivers_views
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
+from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_appointments import AppAppointmentsView
@@ -139,6 +140,12 @@ urlpatterns = [
         'patients/<uuid:uuid>/pathology-reports/',
         CreatePathologyView.as_view(),
         name='patient-pathology-create',
+    ),
+    # databank consent instances for patients
+    path(
+        'patients/<uuid:uuid>/databank/consent/',
+        CreateDatabankConsentView.as_view(),
+        name='databank-consent-create',
     ),
 
 

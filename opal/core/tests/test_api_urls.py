@@ -257,3 +257,12 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
+
+
+def test_databank_consent_create(settings: SettingsWrapper) -> None:
+    """Ensure the create DatabanKConsent endpoint is defined for a specific patient."""
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/databank/consent/'
+
+    assert reverse('api:databank-consent-create', kwargs={'uuid': patient_uuid}) == url_path
+    assert resolve(url_path).view_name == 'api:databank-consent-create'
