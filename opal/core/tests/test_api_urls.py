@@ -184,7 +184,7 @@ def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:caregivers-list'
 
 
-def test_patient_caregivers(settings: SettingsWrapper) -> None:
+def test_patient_caregiver_devices(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/caregiver-devices/` is defined."""
     patient_id = 52
     url_path = '/{api_root}/patients/legacy/{legacy_id}/caregiver-devices/'.format(
@@ -193,6 +193,17 @@ def test_patient_caregivers(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:patient-caregiver-devices', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:patient-caregiver-devices'
+
+
+def test_patient_caregivers(settings: SettingsWrapper) -> None:
+    """Ensure `patients/legacy/<int:legacy_id>/` is defined."""
+    patient_id = 52
+    url_path = '/{api_root}/patients/legacy/{legacy_id}/'.format(
+        api_root=settings.API_ROOT,
+        legacy_id=patient_id,
+    )
+    assert reverse('api:patient-update', kwargs={'legacy_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patient-update'
 
 
 def test_verify_email(settings: SettingsWrapper) -> None:

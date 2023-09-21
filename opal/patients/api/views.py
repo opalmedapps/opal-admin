@@ -233,6 +233,35 @@ class PatientCaregiversView(RetrieveAPIView):
     lookup_field = 'legacy_id'
 
 
+class PatientUpdateView(UpdateAPIView):
+    """Class handling PUT requests for patient access level update."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = PatientSerializer
+    lookup_url_kwarg = 'legacy_id'
+    lookup_field = 'legacy_id'
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Update the patient data_access.
+
+        Args:
+            request: request object with parameters to update or create
+            args: varied amount of non-keyword arguments
+            kwargs: varied amount of keyword arguments
+
+        Returns:
+            HTTP `Response` success or failure
+        """
+        serializer = self.serializer_class(fields=('data_access',), data=request.data)
+        serializer.is_valid(raise_exception=True)
+        patient_data = serializer.validated_data
+        patient = get_object_or_404(Patient.objects.filter(legacy_id=kwargs['legacy_id']))
+        patient.data_access = patient_data['data_access']
+        patient.save()
+
+        return Response()
+
+
 class PatientExistsView(APIView):
     """Class to return the Patient uuid & legacy_id given an input list of mrns and site codes.
 
