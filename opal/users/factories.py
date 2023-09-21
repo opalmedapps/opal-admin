@@ -7,6 +7,7 @@ Inspired by:
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Group
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
@@ -34,3 +35,12 @@ class Caregiver(User):
 
     class Meta:
         model = models.Caregiver
+
+
+class GroupFactory(DjangoModelFactory):
+    """Model factory to Groups."""
+
+    class Meta:
+        model = Group
+
+    name = 'System Administrators'
