@@ -426,6 +426,7 @@ ORMS_HOST = env.url('ORMS_HOST').geturl()
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
 USER_MANAGER_GROUP_NAME = 'User Managers'
+REGISTRANTS_GROUP_NAME = 'Registrants'
 
 # Sending SMS message settings
 TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')

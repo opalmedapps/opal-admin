@@ -671,3 +671,92 @@ class LegacyTestControl(models.Model):
     class Meta:
         managed = False
         db_table = 'TestControl'
+
+
+class LegacyOAUser(models.Model):
+    """OAUser from the legacy database OpalDB."""
+
+    oauser_sernum = models.AutoField(db_column='OAUserSerNum', primary_key=True)
+    username = models.CharField(db_column='Username', max_length=1000)
+    password = models.CharField(db_column='Password', max_length=1000)
+    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
+    # value 1 for human user, 2 for system user
+    usertype = models.IntegerField(db_column='type', default=1)
+    language = models.CharField(db_column='Language', max_length=2, default='EN')
+    userdeleted = models.IntegerField(db_column='deleted', default=0)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'OAUser'
+
+
+class LegacyOARole(models.Model):
+    """oaRole from the legacy database OpalDB."""
+
+    roleid = models.AutoField(db_column='ID', primary_key=True)
+    name_en = models.CharField(db_column='name_EN', max_length=64)
+    name_fr = models.CharField(db_column='name_FR', max_length=64)
+    roledeleted = models.IntegerField(db_column='deleted', default=0)
+    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    creationdate = models.DateTimeField(db_column='creationDate')
+    createdby = models.CharField(db_column='createdBy', max_length=255)
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
+    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'oaRole'
+
+
+class LegacyOAUserRole(models.Model):
+    """oaUserRole from the legacy database OpalDB."""
+
+    oausersernum = models.IntegerField(db_column='OAUserSerNum')
+    rolesernum = models.IntegerField(db_column='RoleSerNum')
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'OAUserRole'
+
+
+class LegacyModule(models.Model):
+    """Module from the legacy database OpalDB."""
+
+    moduleid = models.BigAutoField(db_column='ID', primary_key=True)
+    operation = models.IntegerField(db_column='operation', default=7)
+    name_en = models.CharField(db_column='name_EN', max_length=512)
+    name_fr = models.CharField(db_column='name_FR', max_length=512)
+    description_en = models.CharField(db_column='description_EN', max_length=512)
+    description_fr = models.CharField(db_column='description_FR', max_length=512)
+    tablename = models.CharField(db_column='tableName', max_length=256)
+    controltablename = models.CharField(db_column='controlTableName', max_length=256)
+    primarykey = models.CharField(db_column='primaryKey', max_length=256)
+    iconclass = models.CharField(db_column='iconClass', max_length=512)
+    url = models.CharField(db_column='url', max_length=255)
+    sqlpublicationlist = models.TextField(db_column='sqlPublicationList')
+    sqldetails = models.TextField(db_column='sqlDetails')
+    sqlpublocationcharlog = models.TextField(db_column='sqlPublicationChartLog')
+    sqlpublicationlistlog = models.TextField(db_column='sqlPublicationListLog')
+    sqlpublicationmultiple = models.TextField(db_column='sqlPublicationMultiple')
+    sqlpublicationunique = models.TextField(db_column='sqlPublicationUnique')
+
+    class Meta:
+        managed = False
+        db_table = 'module'
+
+
+class LegacyOARoleModule(models.Model):
+    """oaRoleModule from the legacy database OpalDB."""
+
+    rolemoduleid = models.BigAutoField(db_column='ID', primary_key=True)
+    moduleid = models.ForeignKey('LegacyModule', models.DO_NOTHING, db_column='moduleId')
+    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId')
+    # Access level level (0-7) for this role on this module.
+    access = models.IntegerField(db_column='access', default=0)
+
+    class Meta:
+        managed = False
+        db_table = 'oaRoleModule'
