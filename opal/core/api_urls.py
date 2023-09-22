@@ -188,6 +188,11 @@ urlpatterns = [
         user_views.ListGroupView.as_view(),
         name='groups-list',
     ),
+    path(
+        'users/caregivers/<str:username>/',
+        user_views.UserCaregiverUpdateView.as_view(),
+        name='users-caregivers-update',
+    ),
 
     path('', include(router.urls)),
 ]
