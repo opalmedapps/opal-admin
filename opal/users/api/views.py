@@ -1,10 +1,12 @@
-"""Module providing API views for the `users` app."""
+"""This module provides `UpdateAPIViews` for the `users` app REST APIs."""
 from django.contrib.auth.models import Group
 
 from rest_framework import generics
 
-from ...core.drf_permissions import CustomDjangoModelPermissions
-from .serializers import GroupSerializer
+from opal.core.drf_permissions import CustomDjangoModelPermissions
+
+from ..models import Caregiver
+from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
 
 
 class ListGroupView(generics.ListAPIView):
@@ -15,3 +17,13 @@ class ListGroupView(generics.ListAPIView):
     serializer_class = GroupSerializer
     pagination_class = None
     permission_classes = [CustomDjangoModelPermissions]
+
+
+class UserCaregiverUpdateView(generics.UpdateAPIView):
+    """Class handling update the user's caregiver."""
+
+    permission_classes = [CustomDjangoModelPermissions]
+    serializer_class = UserCaregiverUpdateSerializer
+    queryset = Caregiver.objects.filter(is_active=True)
+    lookup_url_kwarg = 'username'
+    lookup_field = 'username'

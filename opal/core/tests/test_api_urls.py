@@ -259,6 +259,19 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
 
 
+def test_user_caregiver_update(settings: SettingsWrapper) -> None:
+    """Ensure that the endpoint for users/caregivers/<str:username> is defined."""
+    url_path = '/{api_root}/users/caregivers/{username}/'.format(
+        api_root=settings.API_ROOT,
+        username='username',
+    )
+    assert reverse(
+        'api:users-caregivers-update',
+        kwargs={'username': 'username'},
+    ) == url_path
+    assert resolve(url_path).view_name == 'api:users-caregivers-update'
+
+
 def test_databank_consent_create(settings: SettingsWrapper) -> None:
     """Ensure the create DatabanKConsent endpoint is defined for a specific patient."""
     patient_uuid = uuid4()
