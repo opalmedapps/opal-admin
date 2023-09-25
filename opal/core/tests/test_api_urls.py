@@ -83,6 +83,46 @@ def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'
 
 
+def test_institutions_list() -> None:
+    """Ensure institutions list is defined."""
+    assert reverse('api:institutions-list') == '/api/institutions/'
+    assert resolve('/api/institutions/').view_name == 'api:institutions-list'
+
+
+def test_institutions_detail() -> None:
+    """Ensure institutions detail is defined."""
+    path = '/api/institutions/123/'
+    assert reverse('api:institutions-detail', kwargs={'pk': 123}) == path
+    assert resolve(path).view_name == 'api:institutions-detail'
+
+
+def test_retrieve_terms_of_use() -> None:
+    """Ensure retrieve terms of use is defined."""
+    path = '/api/institutions/123/terms-of-use/'
+    assert reverse('api:institutions-terms-of-use', kwargs={'pk': 123}) == path
+    assert resolve(path).view_name == 'api:institutions-terms-of-use'
+
+
+def test_institution() -> None:
+    """Ensure the singleton institution retrieval is defined."""
+    path = '/api/institution/'
+    assert reverse('api:institution-detail') == path
+    assert resolve(path).view_name == 'api:institution-detail'
+
+
+def test_sites_list() -> None:
+    """Ensure sites list is defined."""
+    assert reverse('api:sites-list') == '/api/sites/'
+    assert resolve('/api/sites/').view_name == 'api:sites-list'
+
+
+def test_sites_detail() -> None:
+    """Ensure sites detail is defined."""
+    path = '/api/sites/321/'
+    assert reverse('api:sites-detail', kwargs={'pk': 321}) == path
+    assert resolve(path).view_name == 'api:sites-detail'
+
+
 def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API security questions endpoints are defined."""
     question_path = '/{api_root}/security-questions/'.format(api_root=settings.API_ROOT)

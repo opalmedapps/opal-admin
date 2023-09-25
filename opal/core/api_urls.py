@@ -15,7 +15,8 @@ from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestion
 from opal.core.api import views as core_views
 from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
-from opal.hospital_settings.api import viewsets as settings_views
+from opal.hospital_settings.api import views as settings_views
+from opal.hospital_settings.api import viewsets as settings_viewsets
 from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
@@ -36,8 +37,8 @@ else:
     router = SimpleRouter()
 
 
-router.register('institutions', settings_views.InstitutionViewSet, basename='institutions')
-router.register('sites', settings_views.SiteViewSet, basename='sites')
+router.register('institutions', settings_viewsets.InstitutionViewSet, basename='institutions')
+router.register('sites', settings_viewsets.SiteViewSet, basename='sites')
 router.register('security-questions', SecurityQuestionViewSet, basename='security-questions')
 
 
@@ -96,8 +97,13 @@ urlpatterns = [
 
     # INSTITUTIONS ENDPOINTS
     path(
+        'institution/',
+        settings_views.RetrieveInstitutionView.as_view(),
+        name='institution-detail',
+    ),
+    path(
         'institutions/<int:pk>/terms-of-use/',
-        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        settings_viewsets.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
         name='institutions-terms-of-use',
     ),
 
