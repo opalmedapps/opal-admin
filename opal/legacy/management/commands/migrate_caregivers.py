@@ -71,13 +71,13 @@ class Command(BaseCommand):
             CaregiverProfile: the created `CaregiverProfile` instance
         """
         # convert phone number in int to str
-        phone_number = '+1{0}'.format(legacy_patient.telnum) if legacy_patient.telnum else ''
+        phone_number = '+1{0}'.format(legacy_patient.tel_num) if legacy_patient.tel_num else ''
         caregiver_user = Caregiver(
             username=legacy_user.username,
-            first_name=legacy_patient.firstname,
-            last_name=legacy_patient.lastname,
+            first_name=legacy_patient.first_name,
+            last_name=legacy_patient.last_name,
             email=legacy_patient.email,
-            date_joined=legacy_patient.registrationdate,
+            date_joined=legacy_patient.registration_date,
             language=legacy_patient.language.lower(),
             phone_number=phone_number,
         )

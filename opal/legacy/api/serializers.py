@@ -35,7 +35,7 @@ class LegacyPatientSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = LegacyPatient
-        fields = ['patientsernum', 'firstname', 'lastname', 'email', 'ssn']
+        fields = ['patientsernum', 'first_name', 'last_name', 'email', 'ramq']
 
 
 class LegacyAppointmentSerializer(serializers.ModelSerializer):
@@ -67,7 +67,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
 
     patient = LegacyPatientSerializer(
         source='patientsernum',
-        fields=('patientsernum', 'firstname', 'lastname'),
+        fields=('patientsernum', 'first_name', 'last_name'),
         many=False,
         read_only=True,
     )
