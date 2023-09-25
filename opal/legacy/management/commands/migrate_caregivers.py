@@ -4,7 +4,7 @@ from typing import Any
 from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import CaregiverProfile
-from opal.legacy.models import LegacyPatient, LegacyUsers
+from opal.legacy.models import LegacyPatient, LegacyUsers, LegacyUserType
 from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType
 from opal.users.models import Caregiver
 
@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         migrated_users_count = 0
 
-        for legacy_user in LegacyUsers.objects.filter(usertype='Patient'):
+        for legacy_user in LegacyUsers.objects.filter(usertype=LegacyUserType.PATIENT):
             patient = Patient.objects.filter(legacy_id=legacy_user.usertypesernum).first()
             if patient:
                 caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usersernum).first()
