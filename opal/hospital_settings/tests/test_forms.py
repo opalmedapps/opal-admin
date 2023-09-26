@@ -83,6 +83,13 @@ def test_site_create() -> None:
         'institution': institution.id,
         'longitude': '35.4340000000000000',
         'latitude': '42.4340000000000000',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -101,6 +108,13 @@ def test_site_create_with_missing_field() -> None:
         'code': 'TEST1',
         'longitude': '35.4340000000000000',
         'latitude': '42.4340000000000000',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -121,6 +135,13 @@ def test_site_create_nonnumeric_location_fields() -> None:
         'institution': institution.id,
         'longitude': 'eee',
         'latitude': 'ddd',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -141,6 +162,13 @@ def test_site_create_with_large_long_lat_fields() -> None:
         'institution': institution.id,
         'longitude': '43435434.455664546456456',
         'latitude': '45645645.5645645645645645645',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -163,6 +191,13 @@ def test_site_update() -> None:
         'institution': site.institution.id,
         'longitude': '35.4340000000000000',
         'latitude': '42.4340000000000000',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -189,6 +224,13 @@ def test_site_update_with_missing_field() -> None:
         'direction_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
         'longitude': '35.4340000000000000',
         'latitude': '42.4340000000000000',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -217,6 +259,13 @@ def test_site_update_nonnumeric_location_fields() -> None:
         'institution': site.institution.id,
         'longitude': '4343rre',
         'latitude': '42ere',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
@@ -239,6 +288,13 @@ def test_site_update_with_large_long_lat_field() -> None:
         'institution': site.institution.id,
         'longitude': '35.434000000000003455',
         'latitude': '42.43400000005555545445',
+        'street_name': 'TEST Boulevard',
+        'street_number': '0001',
+        'postal_code': 'A1A9Z9',
+        'city': 'Montreal',
+        'province_code': 'QC',
+        'contact_telephone': '5149341934',
+        'contact_fax': '5149341934',
     }
 
     view = SiteCreateUpdateView()
