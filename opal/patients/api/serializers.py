@@ -26,6 +26,7 @@ class PatientSerializer(DynamicFieldsSerializer):
             'last_name',
             'date_of_birth',
             'date_of_death',
+            'data_access',
             'sex',
             'ramq',
             'uuid',
@@ -34,6 +35,9 @@ class PatientSerializer(DynamicFieldsSerializer):
         extra_kwargs: dict[str, dict[str, Any]] = {
             'legacy_id': {
                 'allow_null': False,
+                'required': True,
+            },
+            'data_access': {
                 'required': True,
             },
         }

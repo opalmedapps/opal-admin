@@ -122,9 +122,14 @@ urlpatterns = [
         name='caregivers-list',
     ),
     path(
+        'patients/legacy/<int:legacy_id>/caregiver-devices/',
+        patient_views.PatientCaregiverDevicesView.as_view(),
+        name='patient-caregiver-devices',
+    ),
+    path(
         'patients/legacy/<int:legacy_id>/',
-        patient_views.PatientCaregiversView.as_view(),
-        name='patient-caregivers',
+        patient_views.PatientUpdateView.as_view(),
+        name='patient-update',
     ),
     path(
         'patients/demographic/',
