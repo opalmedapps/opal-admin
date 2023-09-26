@@ -113,7 +113,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.503426'),
             Decimal('-73.624549'),
-            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T 1C5', 'Montréal', 'QC', '5143454931', '5143454931'),
+            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T1C5', 'Montréal', 'QC', '5143454931', '5143454931'),
         ),
     ],
 })
