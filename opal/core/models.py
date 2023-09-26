@@ -1,0 +1,34 @@
+"""This module provides models for core settings."""
+
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+
+class Address(models.Model):
+    """Abstract class representing a generalized address with details."""
+
+    street_name = models.CharField(_('Street Name'), max_length=100)
+    street_number = models.CharField(_('Street Number'), max_length=100)
+    postal_code = models.CharField(_('Postal Code'), max_length=6)
+    city = models.CharField(_('City'), max_length=100)
+    province_code = models.CharField(_('Province Code'), max_length=2)
+    contact_telephone = models.CharField(_('Contact Telephone'), max_length=100)
+    contact_fax = models.CharField(_('Contact Fax'), max_length=100, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the address.
+
+        Returns:
+            the name of the location
+        """
+        return ', '.join([
+            self.street_number,
+            self.street_name,
+            self.postal_code,
+            self.city,
+            self.province_code,
+        ])
