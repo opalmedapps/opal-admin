@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import CaregiverSelfPermissions, CustomDjangoModelPermissions, UpdateModelPermissions
 
 from .. import utils
 from ..api.serializers import (
@@ -218,7 +218,7 @@ class PatientDemographicView(UpdateAPIView):
         return patient
 
 
-class PatientCaregiversView(RetrieveAPIView):
+class PatientCaregiverDevicesView(RetrieveAPIView):
     """Class handling GET requests for patient caregivers."""
 
     queryset = (
@@ -227,10 +227,37 @@ class PatientCaregiversView(RetrieveAPIView):
             'relationships__caregiver__devices',
         )
     )
-    serializer_class = caregiver_serializers.PatientCaregiversSerializer
+    serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
+
+
+class PatientUpdateView(UpdateAPIView):
+    """Class handling PUT requests for patient access level update."""
+
+    permission_classes = [CustomDjangoModelPermissions]
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
+    lookup_url_kwarg = 'legacy_id'
+    lookup_field = 'legacy_id'
+
+    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer:
+        """Return the serializer instance that should be used for validating.
+
+        And deserializing input, and for serializing output.
+
+        Args:
+            args: varied amount of non-keyword arguments
+            kwargs: varied amount of keyword arguments
+
+        Returns:
+            BaseSerializer
+        """
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        kwargs['fields'] = ['data_access']
+        return serializer_class(*args, **kwargs)
 
 
 class PatientExistsView(APIView):
