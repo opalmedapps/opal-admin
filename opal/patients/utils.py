@@ -390,11 +390,12 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
         patient_uuid: The new patient's Patient UUID.
     """
+    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
+
     # Initialize the patient's data in the legacy database
     # TODO
 
     # Call ORMS to notify it of the existence of the new patient
-    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
     if orms_response['status'] == 'success':
@@ -406,8 +407,15 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         )
 
     # Call the OIE to notify it of the existence of the new patient
-    # TODO
+    oie_response = oie_service.new_opal_patient(active_mrn_list)
 
+    if oie_response['status'] == 'success':
+        logger.info('Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid))
+    else:
+        logger.error('Failed to initialize patient via the OIE')
+        logger.error(
+            'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
+        )
 
 @transaction.atomic
 def create_access_request(  # noqa: WPS210 (too many local variables)

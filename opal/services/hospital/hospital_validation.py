@@ -253,3 +253,31 @@ class OIEValidator:
             errors.append('Patient MRN data active is not bool')
 
         return errors
+
+    def is_new_patient_response_valid(
+        self,
+        response_data: Any,
+    ) -> tuple[bool, list[str]]:
+        """Check if the OIE's new patient response data is valid.
+
+        Args:
+            response_data: OIE new patient response data
+
+        Return: A boolean indicating validity (true if valid, false otherwise) and an errors list
+        """
+        errors = []
+        success = False
+        try:
+            status = response_data['status']
+        except KeyError:
+            errors.append('Patient response data does not have the attribute "status"')
+            return success, errors
+
+        if status == 'success':
+            success = True
+        elif status == 'error':
+            errors.append('Error response from the OIE')
+        else:
+            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+
+        return success, errors

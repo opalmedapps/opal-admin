@@ -615,3 +615,47 @@ def test_check_patient_mrn_active_invalid() -> None:
     }
     errors = oie_validator.check_patient_data(patient_data)
     assert errors == ['Patient MRN data active is not bool']
+
+
+def test_new_patient_response_no_status() -> None:
+    """An error message is returned when the patient response has no status."""
+    response = {
+        'error': 'Message',
+    }
+
+    valid, errors = oie_validator.is_patient_response_valid(response)
+    assert not valid
+    assert errors == ['Patient response data does not have the attribute "status"']
+
+
+def test_new_patient_response_success() -> None:
+    """The response is considered valid if the status is 'Success'."""
+    response = {
+        'status': 'Success',
+    }
+
+    valid, errors = oie_validator.is_patient_response_valid(response)
+    assert valid
+    assert not errors
+
+
+def test_new_patient_response_error() -> None:
+    """The response is considered invalid if the status is 'Error'."""
+    response = {
+        'status': 'Error',
+    }
+
+    valid, errors = oie_validator.is_patient_response_valid(response)
+    assert not valid
+    assert errors == ['Error response from ORMS']
+
+
+def test_new_patient_response_unexpected_status() -> None:
+    """An error message is returned when the patient response contains an unexpected status value."""
+    response = {
+        'status': 'Other',
+    }
+
+    valid, errors = oie_validator.is_patient_response_valid(response)
+    assert not valid
+    assert errors == ['Patient response data has an unexpected "status" value: Other']

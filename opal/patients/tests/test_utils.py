@@ -528,7 +528,7 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(mrn_list, patient_uuid)
 
-    mock_error_logger.assert_called_with(
+    mock_error_logger.assert_any_call(
         'Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid),
     )
 
@@ -544,6 +544,34 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     utils.initialize_new_opal_patient(mrn_list, patient_uuid)
 
     mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
+
+
+def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to the OIE to initialize a patient succeeds."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(mrn_list, patient_uuid)
+
+    mock_error_logger.assert_any_call(
+        'Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
+def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to the OIE to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(mrn_list, patient_uuid)
+
+    mock_error_logger.assert_any_call('Failed to initialize patient via the OIE')
 
 
 def test_create_access_request_existing() -> None:
