@@ -4,7 +4,7 @@ from typing import Any, Optional
 from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
-from opal.legacy.models import LegacySecurityAnswer, LegacyUsers
+from opal.legacy.models import LegacySecurityAnswer, LegacyUsers, LegacyUserType
 from opal.users.models import User
 
 
@@ -93,7 +93,7 @@ class Command(BaseCommand):
         legacy_user = None
         user = None
         try:
-            legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum, usertype='Patient')
+            legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum, usertype=LegacyUserType.PATIENT)
         except LegacyUsers.DoesNotExist:
             self.stderr.write(
                 'Legacy user does not exist, usertypesernum: {usertypesernum}'.format(
