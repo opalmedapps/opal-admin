@@ -160,6 +160,15 @@ class RelationshipType(models.Model):
 
         return super().delete(*args, **kwargs)
 
+    def is_self(self) -> bool:
+        """
+        Checks whether the RelationshipType is a "Self" role type.
+
+        Returns:
+            True if the role type is SELF.
+        """
+        return self.role_type == RoleType.SELF
+
 
 class SexType(models.TextChoices):
     """
