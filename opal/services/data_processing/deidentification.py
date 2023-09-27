@@ -4,6 +4,8 @@ import logging
 import re
 from typing import Final
 
+from unidecode import unidecode
+
 from opal.patients.models import SexType
 
 LOGGER = logging.getLogger(__name__)
@@ -16,6 +18,8 @@ class OpenScienceIdentity():  # noqa: WPS230
     and feeding them into a one way hash. This allows each ID to be unique to a subject while
     also allowing other organizations to arrive at the same signature for a particular patient,
     ensuring proper data ownership per patient.
+
+    OSI Git: https://github.com/aces/open_science_identity/tree/master
     """
 
     pbkdf2_iterations: Final[int] = 10000
@@ -77,17 +81,25 @@ class OpenScienceIdentity():  # noqa: WPS230
         return self._cache[attr_name]
 
     def _plain_alpha(self, string: str) -> str:
-        """Clean the input string by lowercasing and filtering by alphanumerics.
+        """Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
+
+        The goal of transliterating is to unify special Unicode characters
+        with their nearest 'normal' ASCII representation.
+        So for example, an input string `Côté-LeBœuf` should become `coteleboeuf` after cleaning.
 
         Args:
             string: candidate string to be cleaned
 
         Returns:
-            Lowercase and filtered string, or empty string
+            Cleaned string, or empty string
         """
         if not string or string.strip() == '':
             return ''
-        return ''.join(char.lower() for char in string if char.isalnum())
+
+        # Transliterate the string to its closest ASCII representation
+        transliterated_string = unidecode(string)
+
+        return ''.join(char.lower() for char in transliterated_string if char.isalnum())
 
     def _valid(self) -> bool:
         """Implement the validity functions for each class attribute.

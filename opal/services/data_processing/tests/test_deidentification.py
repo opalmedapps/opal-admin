@@ -1,3 +1,7 @@
+import csv
+import os
+from pathlib import Path
+
 import pytest
 
 from opal.services.data_processing.deidentification import OpenScienceIdentity
@@ -5,18 +9,65 @@ from opal.services.data_processing.deidentification import OpenScienceIdentity
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
-def test_signature_generation() -> None:
-    """Test the successful generation of signatures/guids for patients."""
-    attributes = {
-        'gender': 'Male',
-        'first_name': 'Pierre',
-        'middle_name': 'Tiberius',
-        'last_name': 'Rioux',
-        'date_of_birth': '1901-01-02',
-        'city_of_birth': 'Longueuil',
-    }
-    expected_signature = '99e391f4efeb041a03f310e159ffaa36583d9ee91691333def6b387048868343'
+# Define the path to the CSV file
+csv_file_path = os.path.join(
+    Path(__file__).resolve(strict=True).parents[3] / 'tests' / 'csv',
+    'attributes_expected_signatures.csv',
+)
 
-    identity = OpenScienceIdentity(attributes)
-    generated_signature = identity.to_signature()
-    assert generated_signature == expected_signature
+# Reading the CSV file and creating a list of test cases
+test_cases = []
+with open(csv_file_path, 'r') as csv_file:
+    reader = csv.reader(csv_file)
+    for row in reader:
+        attributes = {
+            'gender': row[0],
+            'first_name': row[1],
+            'middle_name': row[2],
+            'last_name': row[3],
+            'date_of_birth': row[4],
+            'city_of_birth': row[5],
+        }
+        expected_signature = row[6]
+        test_cases.append((attributes, expected_signature))
+
+
+class TestOpenScienceIdentity:
+    """Tests for the OpenScienceIdentity a.k.a GUID algorithm."""
+
+    @pytest.mark.parametrize(('attributes', 'expected_signature'), test_cases)
+    def test_signature_generation(self, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442
+        """Test the successful generation of signatures/guids for patients."""
+        identity = OpenScienceIdentity(attributes)
+        if expected_signature == 'invalid':
+            with pytest.raises(ValueError, match='Invalid identity components'):
+                identity.to_signature()
+        else:
+            generated_signature = identity.to_signature()
+            assert generated_signature == expected_signature
+
+    def test_empty_attributes(self) -> None:
+        """Test the handling of empty attributes."""
+        empty_attributes = {
+            'gender': '',
+            'first_name': '',
+            'middle_name': '',
+            'last_name': '',
+            'date_of_birth': '',
+            'city_of_birth': '',
+        }
+        with pytest.raises(ValueError, match='Invalid identity components'):
+            OpenScienceIdentity(empty_attributes).to_signature()
+
+    def test_none_attributes(self) -> None:
+        """Test the handling of None attributes."""
+        none_attributes = {
+            'gender': None,
+            'first_name': None,
+            'middle_name': None,
+            'last_name': None,
+            'date_of_birth': None,
+            'city_of_birth': None,
+        }
+        with pytest.raises(ValueError, match='Invalid identity components'):
+            OpenScienceIdentity(none_attributes).to_signature()
