@@ -631,7 +631,7 @@ def test_new_patient_response_no_status() -> None:
 def test_new_patient_response_success() -> None:
     """The response is considered valid if the status is 'Success'."""
     response = {
-        'status': 'Success',
+        'status': 'success',
     }
 
     valid, errors = oie_validator.is_new_patient_response_valid(response)
@@ -642,7 +642,7 @@ def test_new_patient_response_success() -> None:
 def test_new_patient_response_error() -> None:
     """The response is considered invalid if the status is 'Error'."""
     response = {
-        'status': 'Error',
+        'status': 'error',
     }
 
     valid, errors = oie_validator.is_new_patient_response_valid(response)
@@ -653,9 +653,9 @@ def test_new_patient_response_error() -> None:
 def test_new_patient_response_unexpected_status() -> None:
     """An error message is returned when the patient response contains an unexpected status value."""
     response = {
-        'status': 'Other',
+        'status': 'other',
     }
 
     valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert not valid
-    assert errors == ['Patient response data has an unexpected "status" value: Other']
+    assert errors == ['New patient response data has an unexpected "status" value: other']
