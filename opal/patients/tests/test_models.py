@@ -122,7 +122,7 @@ def test_relationshiptype_is_self_true() -> None:
     assert relationship_type.is_self()
 
 
-@pytest.mark.parametrize('role_type', RoleType.values.remove(RoleType.SELF))
+@pytest.mark.parametrize('role_type', [role for role in RoleType.values if role != RoleType.SELF])
 def test_relationshiptype_is_self_false(role_type: RoleType) -> None:
     """Ensure the RelationshipType correctly identifies non-SELF role types."""
     relationship_type = factories.RelationshipType(role_type=role_type)
