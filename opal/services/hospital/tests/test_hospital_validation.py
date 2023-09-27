@@ -623,7 +623,7 @@ def test_new_patient_response_no_status() -> None:
         'error': 'Message',
     }
 
-    valid, errors = oie_validator.is_patient_response_valid(response)
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert not valid
     assert errors == ['Patient response data does not have the attribute "status"']
 
@@ -634,7 +634,7 @@ def test_new_patient_response_success() -> None:
         'status': 'Success',
     }
 
-    valid, errors = oie_validator.is_patient_response_valid(response)
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert valid
     assert not errors
 
@@ -645,7 +645,7 @@ def test_new_patient_response_error() -> None:
         'status': 'Error',
     }
 
-    valid, errors = oie_validator.is_patient_response_valid(response)
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert not valid
     assert errors == ['Error response from ORMS']
 
@@ -656,6 +656,6 @@ def test_new_patient_response_unexpected_status() -> None:
         'status': 'Other',
     }
 
-    valid, errors = oie_validator.is_patient_response_valid(response)
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert not valid
     assert errors == ['Patient response data has an unexpected "status" value: Other']

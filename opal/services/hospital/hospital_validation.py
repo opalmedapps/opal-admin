@@ -13,7 +13,7 @@ from .hospital_data import OIEReportExportData
 # TODO: translate error messages add _(message) that will be shown to the user.
 
 
-class OIEValidator:
+class OIEValidator:  # noqa: WPS214
     """OIE helper service that validates OIE request and response data."""
 
     def is_report_export_request_valid(
@@ -122,6 +122,35 @@ class OIEValidator:
                 )
                 errors.append(friendly_message)
         return errors
+
+    def is_new_patient_response_valid(
+        self,
+        response_data: Any,
+    ) -> tuple[bool, list[str]]:
+        """Check if the OIE's new patient response data is valid.
+
+        Args:
+            response_data: OIE new patient response data
+
+        Returns:
+            A boolean indicating validity (true if valid, false otherwise) and an errors list
+        """
+        errors = []
+        success = False
+        try:
+            status = response_data['status']
+        except KeyError:
+            errors.append('Patient response data does not have the attribute "status"')
+            return success, errors
+
+        if status == 'success':
+            success = True
+        elif status == 'error':
+            errors.append('Error response from the OIE')
+        else:
+            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+
+        return success, errors
 
     def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231
         """Check if the patient data is valid.
@@ -253,31 +282,3 @@ class OIEValidator:
             errors.append('Patient MRN data active is not bool')
 
         return errors
-
-    def is_new_patient_response_valid(
-        self,
-        response_data: Any,
-    ) -> tuple[bool, list[str]]:
-        """Check if the OIE's new patient response data is valid.
-
-        Args:
-            response_data: OIE new patient response data
-
-        Return: A boolean indicating validity (true if valid, false otherwise) and an errors list
-        """
-        errors = []
-        success = False
-        try:
-            status = response_data['status']
-        except KeyError:
-            errors.append('Patient response data does not have the attribute "status"')
-            return success, errors
-
-        if status == 'success':
-            success = True
-        elif status == 'error':
-            errors.append('Error response from the OIE')
-        else:
-            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
-
-        return success, errors

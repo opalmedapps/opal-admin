@@ -380,7 +380,8 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
+# TODO temp
+def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:  # noqa: WPS210
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
@@ -416,6 +417,7 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         logger.error(
             'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
         )
+
 
 @transaction.atomic
 def create_access_request(  # noqa: WPS210 (too many local variables)

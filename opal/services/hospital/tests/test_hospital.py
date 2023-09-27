@@ -667,4 +667,3 @@ def test_new_opal_patient_error(mocker: MockerFixture) -> None:
 
     assert response['status'] == 'error'
     assert response['data']['responseData']['error'] == 'Some error message'
-
