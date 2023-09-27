@@ -69,11 +69,11 @@ class CreatePathologyView(generics.CreateAPIView):
             pathology_data=PathologyData(
                 site_logo_path=Path(Institution.objects.get().logo.path),
                 site_name='',  # TODO: decide what site name we should include (QSCCD-1438)
-                site_building_address='',  # TODO: decide what site we should use for the address (QSCCD-1438)
-                site_city='',  # TODO: decide what site we should use for the address (QSCCD-1438)
-                site_province='',  # TODO: decide what site we should use for the address (QSCCD-1438)
-                site_postal_code='',  # TODO: decide what site we should use for the address (QSCCD-1438)
-                site_phone='',  # TODO: decide what site we should use for the address (QSCCD-1438)
+                site_building_address='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_city='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_province='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_postal_code='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_phone='',  # TODO: decide what site name we should include (QSCCD-1438)
                 patient_first_name=patient.first_name,
                 patient_last_name=patient.last_name,
                 patient_date_of_birth=patient.date_of_birth,

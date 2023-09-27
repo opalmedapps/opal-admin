@@ -45,7 +45,7 @@ class PathologyData(NamedTuple):
         site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
         site_city: the name of the city that is specified in the address (e.g., Montréal)
         site_province: the name of the province that is specified in the address (e.g., Québec)
-        site_postal_code: the postal code that specified in the address (e.g., H4A 3J1)
+        site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
         site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
         patient_first_name: patient's first name (e.g., Marge)
         patient_last_name: patient's last name (e.g., Simpson)

@@ -48,3 +48,10 @@ class Site(DjangoModelFactory):
     # function such as (lambda: ('%.16f' % 32))() can be used instead
     longitude = '43.3242143546534465'
     latitude = '32.3242143546534465'
+    street_name = 'TEST Boulevard'
+    street_number = '0001'
+    postal_code = 'A1A9Z9'
+    city = 'Montreal'
+    province_code = 'QC'
+    contact_telephone = '5149341934'
+    contact_fax = '5149341934'
