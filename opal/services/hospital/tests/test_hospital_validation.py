@@ -647,7 +647,7 @@ def test_new_patient_response_error() -> None:
 
     valid, errors = oie_validator.is_new_patient_response_valid(response)
     assert not valid
-    assert errors == ['Error response from ORMS']
+    assert errors == ['Error response from the OIE']
 
 
 def test_new_patient_response_unexpected_status() -> None:

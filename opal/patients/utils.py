@@ -380,21 +380,28 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-# TODO temp
-def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:  # noqa: WPS210
+def initialize_new_opal_patient(
+    patient: Patient,
+    mrn_list: list[tuple[Site, str, bool]],
+    patient_uuid: UUID,
+    self_caregiver: caregiver_models.CaregiverProfile | None,
+) -> None:  # noqa: WPS210
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
     This includes notifying ORMS and the OIE of the new patient.
 
     Args:
+        patient: the patient to initialize in the legacy DB.
         mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
         patient_uuid: The new patient's Patient UUID.
+        self_caregiver: the caregiver profile of the patient if they are their own caregiver, otherwise None.
     """
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
 
     # Initialize the patient's data in the legacy database
-    # TODO
+    legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
+    logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
 
     # Call ORMS to notify it of the existence of the new patient
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
@@ -478,7 +485,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
 
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
-        if relationship_type.role_type == RoleType.SELF:
+        if relationship_type.is_self():
             if not caregiver.legacy_id:
                 raise ValueError('Legacy ID is missing from Caregiver Profile')
 
@@ -486,7 +493,12 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
 
         # For existing users (who won't be going through the registration site), init patient data if needed
         if is_new_patient:
-            initialize_new_opal_patient(mrns, patient.uuid)
+            initialize_new_opal_patient(
+                patient,
+                mrns,
+                patient.uuid,
+                caregiver_profile if relationship_type.is_self() else None,
+            )
     else:
         # New user
         # Create caregiver and caregiver profile
