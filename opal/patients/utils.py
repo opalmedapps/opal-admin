@@ -400,7 +400,9 @@ def initialize_new_opal_patient(  # noqa: WPS210
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
 
     # Initialize the patient's data in the legacy database
-    legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
+    legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
+    patient.legacy_id = legacy_patient.patientsernum
+    patient.save()
     logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
 
     # Call ORMS to notify it of the existence of the new patient

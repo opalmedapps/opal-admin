@@ -819,8 +819,10 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     )
 
     legacy_patient = LegacyPatient.objects.get(ramq=patient_data['ramq'])
+    patient = Patient.objects.get(ramq=patient_data['ramq'])
     legacy_mrn_list = LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient)
 
+    assert patient.legacy_id == legacy_patient.patientsernum
     assert legacy_patient.first_name == patient_data['first_name']
     assert legacy_patient.last_name == patient_data['last_name']
     assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
