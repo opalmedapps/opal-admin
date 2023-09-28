@@ -22,6 +22,7 @@ from opal.legacy.factories import LegacyUserFactory as LegacyUser
 from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
+    PREDEFINED_ROLE_TYPES,
     HospitalPatient,
     Patient,
     Relationship,
@@ -29,7 +30,6 @@ from opal.patients.models import (
     RelationshipType,
     RoleType,
     SexType,
-    PREDEFINED_ROLE_TYPES,
 )
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users import models as user_models
@@ -823,7 +823,7 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
 
     assert legacy_patient.first_name == patient_data['first_name']
     assert legacy_patient.last_name == patient_data['last_name']
-    assert legacy_patient.date_of_birth.strftime("%Y-%m-%d") == "1986-10-01"
+    assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
     assert legacy_patient.sex == 'Female'
     assert legacy_patient.death_date is None
     assert legacy_patient.access_level == '3'

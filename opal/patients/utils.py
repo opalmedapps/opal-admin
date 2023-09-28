@@ -380,12 +380,12 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(
+def initialize_new_opal_patient(  # noqa: WPS210
     patient: Patient,
     mrn_list: list[tuple[Site, str, bool]],
     patient_uuid: UUID,
     self_caregiver: caregiver_models.CaregiverProfile | None,
-) -> None:  # noqa: WPS210
+) -> None:
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
@@ -427,7 +427,7 @@ def initialize_new_opal_patient(
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210 (too many local variables)
+def create_access_request(  # noqa: WPS210, WPS231
     patient: Patient | OIEPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,

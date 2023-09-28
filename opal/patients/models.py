@@ -162,7 +162,7 @@ class RelationshipType(models.Model):
 
     def is_self(self) -> bool:
         """
-        Checks whether the RelationshipType is a "Self" role type.
+        Check whether the RelationshipType is a "Self" role type.
 
         Returns:
             True if the role type is SELF.
