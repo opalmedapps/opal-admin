@@ -14,9 +14,9 @@ from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital import OIEMRNData, OIEPatientData, OIEReportExportData, OIEService
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.hospital.hospital_error import OIEErrorHandler
 from opal.services.hospital.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'
@@ -61,12 +61,30 @@ def _create_report_export_response_data() -> dict[str, str]:
     return {'status': 'success'}
 
 
+def _create_oie_service_mock_settings() -> OIEService:
+    """Create a mock OIEService with specific parameters different from the default ones in settings.
+
+    Returns:
+        A mock OIEService
+    """
+    # Create a communication manager with mock settings
+    oie_communication_mock = OIEHTTPCommunicationManager()
+    oie_communication_mock.base_url = OIE_HOST
+    oie_communication_mock.user = OIE_CREDENTIALS_USER
+    oie_communication_mock.password = OIE_CREDENTIALS
+
+    # Assign the communication manager to a new oie_service
+    oie_service_mock = OIEService()
+    oie_service_mock.communication_manager = oie_communication_mock
+    return oie_service_mock
+
+
 # __init__
 
 def test_init_types() -> None:
     """Ensure init function creates helper services of certain types."""
     assert isinstance(oie_service.communication_manager, OIEHTTPCommunicationManager)
-    assert isinstance(oie_service.error_handler, OIEErrorHandler)
+    assert isinstance(oie_service.error_handler, ServiceErrorHandler)
     assert isinstance(oie_service.validator, OIEValidator)
 
 
@@ -186,15 +204,14 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
 
 def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
     """Ensure OIE export report request uses report settings."""
-    settings.OIE_USER = OIE_CREDENTIALS_USER
-    settings.OIE_PASSWORD = OIE_CREDENTIALS
-    settings.OIE_HOST = OIE_HOST
+    # Create a new OIE service that uses the mocked settings
+    oie_service_mock = _create_oie_service_mock_settings()
 
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    report_data = oie_service.export_pdf_report(
+    report_data = oie_service_mock.export_pdf_report(
         OIEReportExportData(
             mrn=MRN,
             site=SITE_CODE,

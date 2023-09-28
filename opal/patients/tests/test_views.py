@@ -6,7 +6,7 @@ from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any
 
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import Permission
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
@@ -63,19 +63,17 @@ test_url_template_data: list[tuple[str, str]] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_patients_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_patients_urls_exist(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page exists at each URL address."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_views_use_correct_template(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page uses appropriate templates."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assertTemplateUsed(response, template)
 
