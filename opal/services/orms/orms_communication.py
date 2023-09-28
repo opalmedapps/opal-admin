@@ -17,7 +17,7 @@ class ORMSHTTPCommunicationManager(ServiceHTTPCommunicationManager):
         super().__init__(
             base_url=settings.ORMS_HOST,
             display_name='ORMS',
-            user=settings.ORMS_USER,
-            password=settings.ORMS_PASSWORD,
+            user='',
+            password='',
             dump_json_payload=False,
         )
