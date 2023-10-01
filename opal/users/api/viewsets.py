@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.serializers import BaseSerializer
 
+from ...core.drf_permissions import CustomDjangoModelPermissions
 from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
 
@@ -30,6 +31,7 @@ class UserViewSet(
         'retrieve': UpdateClinicalStaffUserSerializer,
         'update': UpdateClinicalStaffUserSerializer,
     }
+    permission_classes = [CustomDjangoModelPermissions]
 
     default_serializer_class = UserClinicalStaffSerializer
 
