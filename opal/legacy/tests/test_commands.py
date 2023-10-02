@@ -894,7 +894,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_admins_legacyoauser_pass(self) -> None:
         """Test import pass for multiple `Administrators` Legacy OAUsers."""
-        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
         admingroup = user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
         role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
@@ -914,7 +914,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_registrants_legacyoauser_pass(self) -> None:
         """Test import pass for multiple `Registrants` Legacy OAUsers."""
-        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
         registrant_group = user_factories.GroupFactory(name='Registrants')
@@ -934,7 +934,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_nonadmins_legacyoauser_pass(self) -> None:
         """Test import pass for multiple non-admins and no write access on `Patient` module, from Legacy OAUsers."""
-        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
@@ -952,7 +952,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_duplicate_legacyoauser_fail(self) -> None:
         """Test import fail for re-entering same OAUser of type Administration."""
-        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
         role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
@@ -977,7 +977,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:  # noqa: WPS213
         """Test import pass for mixed type of users from Legacy OAUsers."""
-        patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patients')
         anymodule = legacy_factories.LegacyModuleFactory(name_en='AnyModule')
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
@@ -1006,7 +1006,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_migrate_users_duplicate_registrants_legacyoauser_fail(self) -> None:
         """Test import fail for re-entering same OAUser of type registrant."""
-        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
         legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
         user = legacy_factories.LegacyOAUserFactory(oaroleid=role)
