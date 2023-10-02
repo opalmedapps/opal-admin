@@ -35,7 +35,7 @@ class Command(BaseCommand):
             args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
-        patient_module = LegacyModule.objects.get(name_en='Patient')
+        patient_module = LegacyModule.objects.get(name_en='Patients')
         admin_role = LegacyOARole.objects.get(name_en='System Administrator')
 
         admin_group = Group.objects.get(name=settings.ADMIN_GROUP_NAME)
