@@ -3,13 +3,15 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
 from opal.users.models import User
+
+from .insert_test_data import InstitutionOption, create_institution, create_sites
 
 
 class Command(BaseCommand):
@@ -24,8 +26,22 @@ class Command(BaseCommand):
         + ' Can only be run at the beginning of setting up a project.'
     )
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
+        parser.add_argument(
+            '--muhc-deployment',
+            action='store_true',
+            default=False,
+            help='Add MUHC deployment-specific data such as the MUHC institution, sites',
+        )
+
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle execution of the command.
 
@@ -34,7 +50,7 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            kwargs: additional keyword arguments
+            options: additional keyword arguments
         """
         if any([
             Group.objects.all().exists(),
@@ -42,18 +58,23 @@ class Command(BaseCommand):
         ]):
             self.stderr.write(self.style.ERROR('There already exists data'))
         else:
-            self._create_data()
+            muhc_deployment: bool = options['muhc_deployment']
+            self._create_data(muhc_deployment)
             self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
-    def _create_data(self) -> None:  # noqa: WPS210, WPS213 (local variables, too many expressions)
+    def _create_data(self, muhc_deployment: bool) -> None:  # noqa: WPS210, WPS213
         """
-        Create all test data.
+        Create all initial data.
 
         Takes care of:
             * default security questions
             * groups and their permissions
             * users
             * tokens for system users
+            * institution and sites for muhc if flag set
+
+        Args:
+            muhc_deployment: whether to insert MUHC specific deployment data
         """
         _create_security_questions()
 
@@ -135,6 +156,11 @@ class Command(BaseCommand):
             _find_permission('users', 'add_clinicalstaff'),
             _find_permission('users', 'change_clinicalstaff'),
         ])
+
+        # Institution and Sites
+        if muhc_deployment:
+            institution = create_institution(InstitutionOption.muhc)
+            create_sites(InstitutionOption.muhc, institution)
 
         # create tokens for the API users
         token_listener = Token.objects.create(user=listener)
