@@ -14,10 +14,10 @@ class ORMSHTTPCommunicationManager(ServiceHTTPCommunicationManager):
 
     def __init__(self) -> None:
         """Initialize an ORMS-specific ServiceHTTPCommunicationManager."""
-        super().__init__(
+        super().__init__(  # noqa: S106 (password is not hardcoded)
             base_url=settings.ORMS_HOST,
             display_name='ORMS',
-            user=settings.ORMS_USER,
-            password=settings.ORMS_PASSWORD,
+            user='',
+            password='',
             dump_json_payload=False,
         )
