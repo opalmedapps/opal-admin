@@ -418,7 +418,7 @@ def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'message': 'Patient 00000000null not found',
+            'message': 'Patient not found',
         },
     )
 
@@ -450,7 +450,7 @@ def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'message': 'Patient 00000000null not found',
+            'message': 'Patient not found',
         },
     )
 
