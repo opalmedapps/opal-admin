@@ -87,8 +87,8 @@ def test_api_site_list(api_client: APIClient, admin_user: User) -> None:
     response = api_client.get(reverse('api:sites-list'))
 
     assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 1
-    assert response.data['results'][0]['id'] == site.pk
+    assert len(response.data) == 1
+    assert response.data[0]['id'] == site.pk
 
 
 def test_api_site_retrieve(api_client: APIClient, admin_user: User) -> None:
