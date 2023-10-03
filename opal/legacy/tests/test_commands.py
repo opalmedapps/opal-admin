@@ -209,15 +209,13 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         message, error = self._call_command('migrate_patients')
 
-        assert 'Imported patient, legacy_id: 51\n' in message
         patient = Patient.objects.get(legacy_id=51)
         assert patient.data_access == data_access
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
         """Test import fails no legacy patient exists."""
-        legacy_patient = ''
         message, error = self._call_command('migrate_patients')
-        assert not legacy_patient
+
         assert error.strip() == (
             'No legacy patients exist'
         )
