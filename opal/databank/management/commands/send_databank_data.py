@@ -139,14 +139,19 @@ class Command(BaseCommand):
         if nesting_key == 'LABS':
             groups = defaultdict(list)
             for item in data:
-                # Group by test_group_name and test_group_indicator
-                key = (item.pop('test_group_name', None), item.pop('test_group_indicator', None))
+                # Group by test_group_name, test_group_indicator, and collection date
+                key = (
+                    item.pop('test_group_name', None),
+                    item.pop('test_group_indicator', None),
+                    item.pop('specimen_collected_date', None),
+                )
                 groups[key].append(item)
             # Convert the defaultdict to the final format
             data = [
                 {
                     'test_group_name': key[0],
                     'test_group_indicator': key[1],
+                    'specimen_collected_date': key[2],
                     'components': value,
                 }
                 for key, value in groups.items()
