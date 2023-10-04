@@ -139,7 +139,7 @@ class TestSecurityAnswersMigration(CommandTestMixin):
         answers = SecurityAnswer.objects.all()
         assert len(answers) == 1
         assert 'Security answer already exists, sernum: 1' in message
-        assert 'Migrated 1 out of 2 security answers' in message
+        assert 'Migrated 0 out of 1 security answers' in message
         assert error == ''
 
     def test_import_succeeds(self) -> None:
@@ -880,6 +880,10 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         assert 'Updated {0} out of {1}'.format(patients_num, patients_num) in message
         assert 'The following patients were not updated:' not in error
 
+
+class TestMigrateUsersCommand(CommandTestMixin):
+    """Tests for the migrate_users command."""
+
     def test_migrate_users_admins_legacyoauser_pass(self) -> None:
         """Test import pass for multiple `Administrators` Legacy OAUsers."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patients')
@@ -893,7 +897,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module)
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 2 of which 2 Admins and 0 Registrants.\n' in message
+        assert 'Migrated 2 of 2 users (2 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
         clincal_staff_user = ClinicalStaff.objects.all()[0]
         assert clincal_staff_user.is_staff
@@ -915,7 +919,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module, access=3)
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 2 of which 0 Admins and 2 Registrants.\n' in message
+        assert 'Migrated 2 of 2 users (0 system administrators and 2 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
         clincal_staff_user = ClinicalStaff.objects.all()[0]
         assert clincal_staff_user.groups.get() == registrant_group
@@ -935,7 +939,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module)
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 2 of which 0 Admins and 0 Registrants.\n' in message
+        assert 'Migrated 2 of 2 users (0 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
 
     def test_migrate_users_duplicate_legacyoauser_fail(self) -> None:
@@ -950,7 +954,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module)
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 1 of which 1 Admins and 0 Registrants.\n' in message
+        assert 'Migrated 1 of 1 users (1 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 1
 
         message, error = self._call_command('migrate_users')
@@ -960,8 +964,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
             user.username,
             '\n',
         )
-
         assert errormsg in error
+        assert 'Migrated 0 of 1 users (0 system administrators and 0 registrants)' in message
 
     def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:  # noqa: WPS213
         """Test import pass for mixed type of users from Legacy OAUsers."""
@@ -989,7 +993,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 6 of which 2 Admins and 2 Registrants.\n' in message
+        assert 'Migrated 6 of 6 users (2 system administrators and 2 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 6
 
     def test_migrate_users_duplicate_registrants_legacyoauser_fail(self) -> None:
@@ -1005,15 +1009,15 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         user_factories.GroupFactory(name='Registrants')
         message, error = self._call_command('migrate_users')
 
-        assert 'Total migrated users: 1 of which 0 Admins and 1 Registrants.\n' in message
+        assert 'Migrated 1 of 1 users (0 system administrators and 1 registrants' in message
         assert ClinicalStaff.objects.all().count() == 1
 
         message, error = self._call_command('migrate_users')
+
         errormsg = '{0} {1} {2}{3}'.format(
             "Error: {'username': ['A user with that username already exists.']}",
             'when saving username:',
             user.username,
             '\n',
         )
-
         assert errormsg in error
