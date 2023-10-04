@@ -336,7 +336,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
 
     def test_import_user_caregiver_exists_relation(self) -> None:
         """Test import relation fails, relation already exists."""
@@ -354,7 +354,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
 
     def test_import_user_caregiver_no_relation(self) -> None:
@@ -371,8 +371,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
 
     def test_import_new_user_caregiver_no_relation(self) -> None:
         """Test import pass for caregiver profile and relationship."""
@@ -385,9 +384,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         )
         message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
-        assert 'Number of imported caregivers is: 1\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+        assert 'Number of imported caregivers is: 1 (out of 1)\n' in message
 
     def test_import_new_user_caregiver_with_relation(self) -> None:
         """Test import pass for multiple caregiver profiles and their relations."""
@@ -408,11 +405,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         )
         message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
-        assert 'Legacy caregiver with sernum: 56 has been migrated\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
-        assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
-        assert 'Number of imported caregivers is: 2\n' in message
+        assert 'Number of imported caregivers is: 2 (out of 2)\n' in message
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
