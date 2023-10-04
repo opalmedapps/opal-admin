@@ -45,6 +45,7 @@ class Command(BaseCommand):
         all_users_counter = 0
         staff_users_counter = 0
 
+        # TODO: filter out deleted users
         legacy_users = LegacyOAUser.objects.all()
         for legacy_user in legacy_users:
             # create a clinicalstaff user
