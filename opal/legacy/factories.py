@@ -258,7 +258,7 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
 
     securityanswersernum = 1
     securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
-    patientsernum = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyPatientFactory)
     answertext = 'bird'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     lastupdated = timezone.make_aware(datetime(2022, 9, 27))

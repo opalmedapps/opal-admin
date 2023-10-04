@@ -23,10 +23,12 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
+        migrated_answers = 0
         legacy_answers = LegacySecurityAnswer.objects.all()
+
         for legacy_answer in legacy_answers:
 
-            legacy_patient = legacy_answer.patientsernum
+            legacy_patient = legacy_answer.patient
             user = self._find_user(legacy_patient.patientsernum)
             if user is None:
                 self.stderr.write(self.style.ERROR(
@@ -64,13 +66,17 @@ class Command(BaseCommand):
                     question=question,
                     answer=legacy_answer.answertext,
                 )
-                continue
+                migrated_answers += 1
+            else:
+                self.stdout.write(self.style.WARNING(
+                    'Security answer already exists, sernum: {answersernum}'.format(
+                        answersernum=legacy_answer.securityanswersernum,
+                    ),
+                ))
 
-            self.stdout.write(self.style.WARNING(
-                'Security answer already exists, sernum: {answersernum}'.format(
-                    answersernum=legacy_answer.securityanswersernum,
-                ),
-            ))
+        self.stdout.write(self.style.SUCCESS(
+            f'Migrated {migrated_answers} out of {legacy_answers.count()} security answers',
+        ))
 
     def _find_user(self, patientsernum: int) -> Optional[User]:  # noqa: C901
         """
