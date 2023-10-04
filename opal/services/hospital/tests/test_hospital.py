@@ -31,7 +31,7 @@ OIE_CREDENTIALS = '12345Opal!!'
 OIE_HOST = 'https://localhost'
 
 OIE_PATIENT_DATA = MappingProxyType({
-    'dateOfBirth': '1953-01-01 00:00:00',
+    'dateOfBirth': '1953-01-01',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
     'sex': 'F',
@@ -39,7 +39,7 @@ OIE_PATIENT_DATA = MappingProxyType({
     'deceased': True,
     'deathDateTime': '2023-01-01 00:00:00',
     'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
+    'ramqExpiration': '201801',
     'mrns': [
         {
             'site': 'MGH',
@@ -347,7 +347,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -361,7 +361,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y%m',
         ),
         mrns=[
             OIEMRNData(
@@ -391,7 +391,7 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -519,7 +519,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -533,7 +533,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y%m',
         ),
         mrns=[
             OIEMRNData(
@@ -563,7 +563,7 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),

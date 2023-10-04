@@ -111,7 +111,7 @@ class OIEService:
                 'data': OIEPatientData(
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d %H:%M:%S',
+                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
@@ -127,7 +127,7 @@ class OIEService:
                     ramq_expiration=None if patient_data['ramqExpiration'] == ''
                     else datetime.strptime(
                         str(patient_data['ramqExpiration']),
-                        '%Y-%m-%d %H:%M:%S',
+                        '%Y%m',
                     ),
                     mrns=mrns,
                 ),
@@ -181,7 +181,7 @@ class OIEService:
                 'data': OIEPatientData(
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d %H:%M:%S',
+                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
@@ -197,7 +197,7 @@ class OIEService:
                     ramq_expiration=None if patient_data['ramqExpiration'] == ''
                     else datetime.strptime(
                         str(patient_data['ramqExpiration']),
-                        '%Y-%m-%d %H:%M:%S',
+                        '%Y%m',
                     ),
                     mrns=mrns,
                 ),
