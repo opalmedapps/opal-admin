@@ -16,7 +16,6 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Institution.objects.all()
     serializer_class = InstitutionSerializer
-    pagination_class = None
     filterset_fields = ['code']
 
     def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:

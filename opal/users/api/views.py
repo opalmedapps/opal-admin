@@ -15,7 +15,6 @@ class ListGroupView(generics.ListAPIView):
     model = Group
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    pagination_class = None
     permission_classes = [CustomDjangoModelPermissions]
 
 

@@ -380,21 +380,32 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
+def initialize_new_opal_patient(  # noqa: WPS210
+    patient: Patient,
+    mrn_list: list[tuple[Site, str, bool]],
+    patient_uuid: UUID,
+    self_caregiver: caregiver_models.CaregiverProfile | None,
+) -> None:
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
     This includes notifying ORMS and the OIE of the new patient.
 
     Args:
+        patient: the patient to initialize in the legacy DB.
         mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
         patient_uuid: The new patient's Patient UUID.
+        self_caregiver: the caregiver profile of the patient if they are their own caregiver, otherwise None.
     """
+    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
+
     # Initialize the patient's data in the legacy database
-    # TODO
+    legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
+    patient.legacy_id = legacy_patient.patientsernum
+    patient.save()
+    logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
 
     # Call ORMS to notify it of the existence of the new patient
-    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
     if orms_response['status'] == 'success':
@@ -406,11 +417,19 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         )
 
     # Call the OIE to notify it of the existence of the new patient
-    # TODO
+    oie_response = oie_service.new_opal_patient(active_mrn_list)
+
+    if oie_response['status'] == 'success':
+        logger.info('Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid))
+    else:
+        logger.error('Failed to initialize patient via the OIE')
+        logger.error(
+            'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
+        )
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210 (too many local variables)
+def create_access_request(  # noqa: WPS210, WPS231
     patient: Patient | OIEPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
@@ -468,7 +487,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
 
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
-        if relationship_type.role_type == RoleType.SELF:
+        if relationship_type.is_self:
             if not caregiver.legacy_id:
                 raise ValueError('Legacy ID is missing from Caregiver Profile')
 
@@ -476,7 +495,12 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
 
         # For existing users (who won't be going through the registration site), init patient data if needed
         if is_new_patient:
-            initialize_new_opal_patient(mrns, patient.uuid)
+            initialize_new_opal_patient(
+                patient,
+                mrns,
+                patient.uuid,
+                caregiver_profile if relationship_type.is_self else None,
+            )
     else:
         # New user
         # Create caregiver and caregiver profile

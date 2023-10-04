@@ -20,7 +20,6 @@ class CreateQuantitySampleView(generics.CreateAPIView):
 
     serializer_class = QuantitySampleSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = None
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[QuantitySample]:
         """
