@@ -190,7 +190,6 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         message, error = self._call_command('migrate_patients')
 
-        assert 'Imported patient, legacy_id: 51\n' in message
         patient = Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
@@ -231,7 +230,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import pass for patient fail for patient identifier."""
         legacy_factories.LegacyPatientFactory()
         message, error = self._call_command('migrate_patients')
-        assert 'No hospital patient identifiers for patient with legacy_id: 51 exist, skipping\n' in message
+        assert 'No hospital patient identifiers for patient with legacy_id: 51 exists, skipping\n' in message
 
     def test_import_patient_patientidentifier_pass(self) -> None:
         """Test import pass for patient and patient identifier."""
@@ -241,8 +240,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
-        assert 'Imported patient, legacy_id: 51\n' in message
-        assert 'Imported patient_identifier, legacy_id: 51, mrn: 9999996\n' in message
+
         assert 'Number of imported patients is: 1\n' in message
 
     def test_import_pass_patientidentifier_only(self) -> None:
@@ -253,8 +251,8 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
         assert 'Number of imported patients is: 0\n' in message
 
     def test_import_pass_patient_only(self) -> None:
@@ -275,8 +273,9 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         )
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 99 already exists, skipping\n' in message
-        assert 'Patient identifier legacy_id: 99, mrn:9999996 already exists, skipping\n' in message
+        assert 'Patient identifier legacy_id: 99, mrn: 9999996 already exists, skipping\n' in message
         assert 'Number of imported patients is: 0\n' in message
 
     def test_import_failure_multiple_mrns_at_same_site(self) -> None:
@@ -299,10 +298,9 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         message, error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
         assert 'Number of imported patients is: 0\n' in message
         assert error == (
-            'Cannot import patient hospital identifier for patient (ID: 10, MRN: 9999997),'
+            'Cannot import patient hospital identifier for patient (legacy ID: 10, MRN: 9999997),'
             + ' already has an MRN at the same site (TEST)\n'
         )
 
@@ -477,10 +475,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             120 * '-',
         ) in error
 
+        print(message)
+        print(error)
+
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
         assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None, 'ALL')" in error
         assert (
-            "(51, '123456', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 

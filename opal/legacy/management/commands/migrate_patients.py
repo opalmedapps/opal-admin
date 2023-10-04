@@ -139,10 +139,10 @@ class Command(BaseCommand):
         except IntegrityError:
             self.stderr.write(
                 (
-                    'Cannot import patient hospital identifier for patient (ID: {patient_id}, MRN: {mrn}),'
+                    'Cannot import patient hospital identifier for patient (legacy ID: {patient_id}, MRN: {mrn}),'
                     + ' already has an MRN at the same site ({site})'
                 ).format(
-                    patient_id=migrated_patient.pk,
+                    patient_id=legacy_patient.patientsernum,
                     mrn=legacy_patient_identifier.mrn,
                     site=legacy_patient_identifier.hospital.code,
                 ))
