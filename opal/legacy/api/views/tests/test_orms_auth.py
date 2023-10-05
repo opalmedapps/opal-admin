@@ -7,6 +7,8 @@ from pytest_django.fixtures import SettingsWrapper
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from opal.users.models import User
+
 pytestmark = pytest.mark.django_db
 
 
@@ -142,6 +144,45 @@ class TestORMSLoginView:
         assertContains(orms_user_response, 'key')
         assertContains(
             user_response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+
+class TestORMSValidateView:
+    """Class wrapper for ORMS auth/validate session tests."""
+
+    def test_orms_validate_session_success(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Ensure the session is validated successfully."""
+        orms_group = Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        api_client.force_login(user=admin_user)
+        admin_user.groups.add(orms_group)
+        admin_user.first_name = 'firstname'
+        admin_user.last_name = 'lastname'
+        admin_user.save()
+
+        response = api_client.get(reverse('api:orms-validate'), format='json')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == {'username': 'admin', 'first_name': 'firstname', 'last_name': 'lastname'}
+
+    def test_orms_validate_session_no_permission(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+    ) -> None:
+        """Ensure the validate endpoint raise an exception if user is not part of the 'ORMS_GROUP_NAME'."""
+        api_client.force_login(user=admin_user)
+        admin_user.save()
+
+        response = api_client.get(reverse('api:orms-validate'))
+
+        assertContains(
+            response=response,
             text='You do not have permission to perform this action.',
             status_code=status.HTTP_403_FORBIDDEN,
         )
