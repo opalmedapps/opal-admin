@@ -45,7 +45,9 @@ class Command(BaseCommand):
         all_users_counter = 0
         staff_users_counter = 0
 
-        for legacy_user in LegacyOAUser.objects.all():
+        # TODO: filter out deleted users
+        legacy_users = LegacyOAUser.objects.all()
+        for legacy_user in legacy_users:
             # create a clinicalstaff user
             clinical_staff_user = ClinicalStaff(
                 username=legacy_user.username,
@@ -75,12 +77,13 @@ class Command(BaseCommand):
                         staff_users_counter += 1
 
                     all_users_counter += 1
-        self.stdout.write('Total migrated users: {total} of which {admins} Admins and {staff} Registrants.'.format(
+        message = 'Migrated {total} of {total_legacy} users ({admins} system administrators and {staff} registrants)'
+        self.stdout.write(message.format(
             total=all_users_counter,
+            total_legacy=legacy_users.count(),
             admins=admin_users_counter,
             staff=staff_users_counter,
-        ),
-        )
+        ))
 
     def _save_clinical_staff_user(self, clinical_staff_user: ClinicalStaff) -> bool:
         """
@@ -98,12 +101,12 @@ class Command(BaseCommand):
             clinical_staff_user.full_clean()
 
         except ValidationError as exception:
-            self.stderr.write(
+            self.stderr.write(self.style.ERROR(
                 'Error: {msg} when saving username: {username}'.format(
                     msg=exception,
                     username=clinical_staff_user.username,
                 ),
-            )
+            ))
             return False
 
         clinical_staff_user.save()

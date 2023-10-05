@@ -34,7 +34,7 @@ class LegacyPatientFactory(DjangoModelFactory):
     tel_num = '5149995555'
     date_of_birth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
-    ramq = '123456'
+    ramq = 'SIMM18510198'
     registration_date = timezone.make_aware(datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
@@ -258,7 +258,7 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
 
     securityanswersernum = 1
     securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
-    patientsernum = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyPatientFactory)
     answertext = 'bird'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     lastupdated = timezone.make_aware(datetime(2022, 9, 27))
