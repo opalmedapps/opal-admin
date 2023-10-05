@@ -23,61 +23,60 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
+        migrated_answers = 0
         legacy_answers = LegacySecurityAnswer.objects.all()
+
         for legacy_answer in legacy_answers:
 
-            legacy_patient = legacy_answer.patientsernum
+            legacy_patient = legacy_answer.patient
             user = self._find_user(legacy_patient.patientsernum)
             if user is None:
-                self.stderr.write(
+                self.stderr.write(self.style.ERROR(
                     'Security answer import failed, sernum: {answersernum}, details: {details}'.format(
                         answersernum=legacy_answer.securityanswersernum,
                         details='User does not exist',
                     ),
-                )
+                ))
                 continue
 
             # Check caregiver according to the user, skip import if not found.
             try:
                 caregiver = CaregiverProfile.objects.get(user_id=user.id)
             except CaregiverProfile.DoesNotExist:
-                self.stderr.write(
+                self.stderr.write(self.style.ERROR(
                     'Security answer import failed, sernum: {answersernum}, details: {details}'.format(
                         answersernum=legacy_answer.securityanswersernum,
                         details='Caregiver does not exist',
                     ),
-                )
+                ))
                 continue
 
             legacy_question = legacy_answer.securityquestionsernum
-            question_text = legacy_question.questiontext_en  # English
-            if user.language == 'fr':  # French
-                question_text = legacy_question.questiontext_fr
+            question = legacy_question.questiontext_fr if user.language == 'fr' else legacy_question.questiontext_en
 
-            # Import SecurityAnwser or create if it does not exist.
             try:
                 SecurityAnswer.objects.get(
                     user_id=caregiver.id,
-                    question=question_text,
+                    question=question,
                     answer=legacy_answer.answertext,
                 )
             except SecurityAnswer.DoesNotExist:
                 SecurityAnswer.objects.create(
                     user=caregiver,
-                    question=question_text,
+                    question=question,
                     answer=legacy_answer.answertext,
                 )
-                self.stdout.write(
-                    'Security answer import succeeded, sernum: {answersernum}'.format(
+                migrated_answers += 1
+            else:
+                self.stdout.write(self.style.WARNING(
+                    'Security answer already exists, sernum: {answersernum}'.format(
                         answersernum=legacy_answer.securityanswersernum,
                     ),
-                )
-                continue
-            self.stdout.write(
-                'Security answer already exists, sernum: {answersernum}'.format(
-                    answersernum=legacy_answer.securityanswersernum,
-                ),
-            )
+                ))
+
+        self.stdout.write(self.style.SUCCESS(
+            f'Migrated {migrated_answers} out of {legacy_answers.count()} security answers',
+        ))
 
     def _find_user(self, patientsernum: int) -> Optional[User]:  # noqa: C901
         """
@@ -95,26 +94,26 @@ class Command(BaseCommand):
         try:
             legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum, usertype=LegacyUserType.PATIENT)
         except LegacyUsers.DoesNotExist:
-            self.stderr.write(
+            self.stderr.write(self.style.ERROR(
                 'Legacy user does not exist, usertypesernum: {usertypesernum}'.format(
                     usertypesernum=patientsernum,
                 ),
-            )
+            ))
         except LegacyUsers.MultipleObjectsReturned:
-            self.stderr.write(
+            self.stderr.write(self.style.ERROR(
                 'Found more than one related legacy users, usertypesernum: {usertypesernum}'.format(
                     usertypesernum=patientsernum,
                 ),
-            )
+            ))
 
         if legacy_user:
-            # Skip anwer import if related user not found
+            # Skip answer import if related user not found
             try:
                 user = User.objects.get(username=legacy_user.username)
             except User.DoesNotExist:
-                self.stderr.write(
+                self.stderr.write(self.style.ERROR(
                     'User does not exist, username: {username}'.format(
                         username=legacy_user.username,
                     ),
-                )
+                ))
         return user

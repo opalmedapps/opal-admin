@@ -154,7 +154,7 @@ def test_initialize_new_patient() -> None:
 
 def test_initialize_new_patient_no_ramq() -> None:
     """A legacy patient is initialized from an existing patient that has no RAMQ."""
-    patient = patient_factories.Patient(ramq=None)
+    patient = patient_factories.Patient(ramq='')
 
     legacy_patient = legacy_utils.initialize_new_patient(patient, [], None)
 
