@@ -11,7 +11,8 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertRedirects, assertTemplateUsed
 
-from ...users.factories import User
+from opal.users.models import User
+
 from .. import factories
 from ..forms import InstitutionForm
 from ..models import Institution, Site
@@ -59,40 +60,42 @@ test_institution_url_template_data: list[Tuple] = [
 
 @pytest.mark.parametrize(('url_name', 'template'), test_institution_url_template_data)
 def test_institution_urls_exist(
-    user_client: Client,
-    institution: Institution,
+    client: Client,
+    institution_user: User,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Institution` pages exists at desired URL address."""
+    institution = factories.Institution()
     url = reverse(url_name, args=(institution.id,))
-    response = user_client.get(url)
+    response = client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_institution_url_template_data)
 def test_institution_urls_use_correct_template(
-    user_client: Client,
-    institution: Institution,
+    client: Client,
+    institution_user: User,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Institution` pages exists at desired URL address."""
+    institution = factories.Institution()
     url = reverse(url_name, args=(institution.id,))
-    response = user_client.get(url)
+    response = client.get(url)
 
     assertTemplateUsed(response, template)
 
 
-def test_institution_list_displays_all(user_client: Client) -> None:
+def test_institution_list_displays_all(client: Client, institution_user: User) -> None:
     """Ensure that the institution list page template displays all the institutions."""
     factories.Institution(name='INS1')
     factories.Institution(name='INS2')
     factories.Institution(name='INS3')
 
     url = reverse('hospital-settings:institution-list')
-    response = user_client.get(url)
+    response = client.get(url)
 
     # determine how many institutions are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -100,11 +103,11 @@ def test_institution_list_displays_all(user_client: Client) -> None:
     assert len(returned_institutions) == Institution.objects.count()
 
 
-def test_institution_list_create_shown(user_client: Client) -> None:
+def test_institution_list_create_shown(client: Client, institution_user: User) -> None:
     """Ensure that the institution list page displays the create button when there are no institutions."""
     url = reverse('hospital-settings:institution-list')
 
-    response = user_client.get(url)
+    response = client.get(url)
 
     soup = BeautifulSoup(response.content, 'html.parser')
     create_link = soup.find('a', attrs={'href': reverse('hospital-settings:institution-create')})
@@ -123,12 +126,12 @@ def test_institution_list_create_not_shown(user_client: Client) -> None:
     assert create_link is None
 
 
-def test_institution_update_object_displayed(user_client: Client) -> None:
+def test_institution_update_object_displayed(client: Client, institution_user: User) -> None:
     """Ensure that the institution detail page displays all fields."""
     institution = factories.Institution(name='TEST1_EN', name_fr='TEST1_FR')
 
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    response = user_client.get(url)
+    response = client.get(url)
 
     assertContains(response, 'TEST1_EN')
     assertContains(response, 'TEST1_FR')
@@ -147,11 +150,11 @@ test_site_url_template_data: list[Tuple] = [
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
 def test_site_urls_exist(
     site_user: Client,
-    site: Site,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Site` pages exist at desired URL address."""
+    site = factories.Site()
     url = reverse(url_name, args=(site.id,))
     response = site_user.get(url)
 
@@ -161,11 +164,11 @@ def test_site_urls_exist(
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
 def test_site_urls_use_correct_template(
     site_user: Client,
-    site: Site,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Site` pages uses appropriate templates."""
+    site = factories.Site()
     url = reverse(url_name, args=(site.id,))
     response = site_user.get(url)
     assertTemplateUsed(response, template)
@@ -209,26 +212,27 @@ def test_site_update_object_displayed(site_user: Client) -> None:
     assertContains(response, site.institution.name)
 
 
-def test_institution_created(user_client: Client, institution_form: InstitutionForm) -> None:
+def test_institution_created(client: Client, institution_user: User, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully created."""
     url = reverse('hospital-settings:institution-create')
 
     assert institution_form.is_valid()
 
-    user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
+    client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assert Institution.objects.count() == 1
     assert Institution.objects.all()[0].name == institution_form.cleaned_data['name_en']
 
 
 def test_incomplete_institution_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     incomplete_institution_form: InstitutionForm,
 ) -> None:
     """Ensure that new incomplete institution (with missing institution code) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=incomplete_institution_form.data,
         files=incomplete_institution_form.files,
@@ -239,7 +243,8 @@ def test_incomplete_institution_create(
 
 
 def test_institution_with_no_logos_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that new incomplete institution (with missing logo images) form cannot be posted to the server."""
@@ -249,7 +254,7 @@ def test_institution_with_no_logos_create(
     form_data.pop('logo_fr')
     form_data.pop('logo_en')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -259,7 +264,8 @@ def test_institution_with_no_logos_create(
 
 
 def test_institution_with_no_terms_of_use_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that new incomplete institution (with missing terms of use file) form cannot be posted to the server."""
@@ -268,7 +274,7 @@ def test_institution_with_no_terms_of_use_create(
     form_data.pop('terms_of_use_fr')
     form_data.pop('terms_of_use_en')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -278,7 +284,8 @@ def test_institution_with_no_terms_of_use_create(
 
 
 def test_institution_with_no_adulthood_age_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that new incomplete institution (with missing adulthood age) form cannot be posted to the server."""
@@ -286,7 +293,7 @@ def test_institution_with_no_adulthood_age_create(
     form_data = dict(institution_form.data)
     form_data.pop('adulthood_age')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -296,7 +303,8 @@ def test_institution_with_no_adulthood_age_create(
 
 
 def test_institution_with_no_labs_non_interpretable_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that the institution (with missing non interpretable labs) form cannot be posted to the server."""
@@ -304,7 +312,7 @@ def test_institution_with_no_labs_non_interpretable_create(
     form_data = dict(institution_form.data)
     form_data.pop('non_interpretable_lab_result_delay')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -314,7 +322,8 @@ def test_institution_with_no_labs_non_interpretable_create(
 
 
 def test_institution_with_no_labs_interpretable_create(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that the institution (with missing interpretable labs) form cannot be posted to the server."""
@@ -322,7 +331,7 @@ def test_institution_with_no_labs_interpretable_create(
     form_data = dict(institution_form.data)
     form_data.pop('interpretable_lab_result_delay')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -331,16 +340,20 @@ def test_institution_with_no_labs_interpretable_create(
     assert Institution.objects.count() == 0
 
 
-def test_institution_successful_create_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
+def test_institution_successful_create_redirects(
+    client: Client,
+    institution_user: User,
+    institution_form: InstitutionForm,
+) -> None:
     """Ensure that after a successful creation of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-create')
     assert institution_form.is_valid()
-    response = user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
+    response = client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
-def test_institution_updated(user_client: Client, institution_form: InstitutionForm) -> None:
+def test_institution_updated(client: Client, institution_user: User, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully updated."""
     assert institution_form.is_valid()
 
@@ -351,14 +364,15 @@ def test_institution_updated(user_client: Client, institution_form: InstitutionF
     form_data['name_fr'] = 'updated name_fr'
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    user_client.post(path=url, data=form_data, files=institution_form.files)
+    client.post(path=url, data=form_data, files=institution_form.files)
 
     assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
     assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_incomplete_institution_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that incomplete institution (with missing institution code) form cannot update an existing institution."""
@@ -371,7 +385,7 @@ def test_incomplete_institution_update(
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('code')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
         files=institution_form.files,
@@ -383,7 +397,8 @@ def test_incomplete_institution_update(
 
 
 def test_institution_with_no_logos_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that institution form (with missing logo images) can update an existing institution."""
@@ -397,7 +412,7 @@ def test_institution_with_no_logos_update(
     form_data.pop('logo_fr')
     form_data.pop('logo_en')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -408,7 +423,8 @@ def test_institution_with_no_logos_update(
 
 
 def test_institution_with_no_terms_of_use_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that institution form (with missing terms of use file) can update an existing institution."""
@@ -422,7 +438,7 @@ def test_institution_with_no_terms_of_use_update(
     form_data.pop('terms_of_use_fr')
     form_data.pop('terms_of_use_en')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -433,7 +449,8 @@ def test_institution_with_no_terms_of_use_update(
 
 
 def test_institution_with_no_adulthood_age_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that incomplete institution (with missing adulthood age) form cannot update an existing institution."""
@@ -446,7 +463,7 @@ def test_institution_with_no_adulthood_age_update(
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('adulthood_age')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -457,7 +474,8 @@ def test_institution_with_no_adulthood_age_update(
 
 
 def test_institution_with_no_labs_non_interpretable_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that institution (with missing non interpretable labs) form cannot update an existing institution."""
@@ -470,7 +488,7 @@ def test_institution_with_no_labs_non_interpretable_update(
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('non_interpretable_lab_result_delay')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -481,7 +499,8 @@ def test_institution_with_no_labs_non_interpretable_update(
 
 
 def test_institution_with_no_labs_interpretable_update(
-    user_client: Client,
+    client: Client,
+    institution_user: User,
     institution_form: InstitutionForm,
 ) -> None:
     """Ensure that institution (with missing interpretable labs) form cannot update an existing institution."""
@@ -494,7 +513,7 @@ def test_institution_with_no_labs_interpretable_update(
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('interpretable_lab_result_delay')
 
-    response = user_client.post(
+    response = client.post(
         url,
         data=form_data,
     )
@@ -504,7 +523,11 @@ def test_institution_with_no_labs_interpretable_update(
     assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
 
 
-def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
+def test_institution_successful_update_redirects(
+    client: Client,
+    institution_user: User,
+    institution_form: InstitutionForm,
+) -> None:
     """Ensure that after a successful update of an institution, the page is redirected to the list page."""
     assert institution_form.is_valid()
     institution_form.save()
@@ -514,29 +537,32 @@ def test_institution_successful_update_redirects(user_client: Client, institutio
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
 
-    response = user_client.post(url, data=form_data, files=institution_form.files)
+    response = client.post(url, data=form_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
-def test_institution_successful_delete_redirects(user_client: Client, institution: Institution) -> None:
+def test_institution_successful_delete_redirects(client: Client, institution_user: User) -> None:
     """Ensure that after a successful delete of an institution, the page is redirected to the list page."""
+    institution = factories.Institution()
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
-    response = user_client.delete(url)
+    response = client.delete(url)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
-def test_institution_deleted(user_client: Client, institution: Institution) -> None:
+def test_institution_deleted(client: Client, institution_user: User) -> None:
     """Ensure that an institution is deleted from the database."""
+    institution = factories.Institution()
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
-    user_client.delete(url)
+    client.delete(url)
 
     assert Institution.objects.count() == 0
 
 
-def test_site_created(site_user: Client, institution: Institution) -> None:
+def test_site_created(site_user: Client) -> None:
     """Ensure that a site can be successfully created."""
+    institution = factories.Institution()
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
@@ -547,8 +573,9 @@ def test_site_created(site_user: Client, institution: Institution) -> None:
     assert Site.objects.all()[0].name == site.name
 
 
-def test_site_successful_create_redirects(site_user: Client, institution: Institution) -> None:
+def test_site_successful_create_redirects(site_user: Client) -> None:
     """Ensure that after a successful creation of a site, the page is redirected to the list page."""
+    institution = factories.Institution()
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
@@ -572,9 +599,9 @@ def test_site_updated(site_user: Client) -> None:
 
 def test_site_successful_update_redirects(
     site_user: Client,
-    site: Site,
 ) -> None:
     """Ensure that after a successful update of a site, the page is redirected to the list page."""
+    site = factories.Site()
     url = reverse('hospital-settings:site-update', args=(site.id,))
     form_data = model_to_dict(site)
 
@@ -583,8 +610,9 @@ def test_site_successful_update_redirects(
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
-def test_site_successful_delete_redirects(site_user: Client, site: Site) -> None:
+def test_site_successful_delete_redirects(site_user: Client) -> None:
     """Ensure that after a successful delete of a site, the page is redirected to the list page."""
+    site = factories.Site()
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
     response = site_user.delete(url)
@@ -592,8 +620,9 @@ def test_site_successful_delete_redirects(site_user: Client, site: Site) -> None
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
-def test_site_deleted(site_user: Client, site: Site) -> None:
+def test_site_deleted(site_user: Client) -> None:
     """Ensure that a site is deleted from the database."""
+    site = factories.Site()
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
     site_user.delete(url)

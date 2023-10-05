@@ -17,23 +17,27 @@ def test_get_all_active_security_questions(api_client: APIClient, admin_user: Ab
     api_client.force_login(user=admin_user)
     security_question = factories.SecurityQuestion()
     security_question2 = factories.SecurityQuestion(is_active=False)
+
     response = api_client.get(reverse('api:security-questions-list'))
+
     assert response.status_code == HTTPStatus.OK
     assert security_question2.is_active is False
-    assert response.data['count'] == 1
-    assert response.data['results'][0]['title_en'] == security_question.title
+    assert len(response.data) == 1
+    assert response.data[0]['title_en'] == security_question.title
 
 
 def test_get_specific_active_security_question(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get a specific active security question."""
     api_client.force_login(user=admin_user)
     security_question = factories.SecurityQuestion()
+
     response = api_client.get(
         reverse(
             'api:security-questions-detail',
             kwargs={'pk': security_question.id},
         ),
     )
+
     assert response.status_code == HTTPStatus.OK
     assert response.data['title_en'] == security_question.title
 
@@ -46,16 +50,18 @@ def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> Non
     security_answer1 = factories.SecurityAnswer(user=caregiver1)
     security_answer2 = factories.SecurityAnswer(user=caregiver1, answer='test')
     factories.SecurityAnswer(user=caregiver2)
+
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-list',
             kwargs={'username': admin_user.username},
         ),
     )
+
     assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 2
-    assert response.data['results'][0]['question'] == security_answer1.question
-    assert response.data['results'][1]['question'] == security_answer2.question
+    assert len(response.data) == 2
+    assert response.data[0]['question'] == security_answer1.question
+    assert response.data[1]['question'] == security_answer2.question
 
 
 def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> None:

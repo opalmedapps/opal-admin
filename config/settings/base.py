@@ -57,6 +57,9 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
+# https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
+# allow definition of PAGE_SIZE globally while having pagination opt-in
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
 
 # DATABASES
@@ -426,6 +429,7 @@ ORMS_HOST = env.url('ORMS_HOST').geturl()
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
 USER_MANAGER_GROUP_NAME = 'User Managers'
+REGISTRANTS_GROUP_NAME = 'Registrants'
 
 # Sending SMS message settings
 TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
@@ -451,7 +455,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'opal.core.drf_permissions.CustomDjangoModelPermissions',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # disabled pagination by default
+    # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }

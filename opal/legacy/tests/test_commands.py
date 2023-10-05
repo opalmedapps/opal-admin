@@ -2,6 +2,7 @@ import uuid
 from datetime import date, datetime
 from http import HTTPStatus
 
+from django.conf import settings
 from django.db import connections
 from django.utils import timezone
 
@@ -18,6 +19,7 @@ from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
+from opal.users.models import ClinicalStaff
 
 from ..management.commands import migrate_caregivers
 
@@ -58,14 +60,14 @@ class TestSecurityAnswersMigration(CommandTestMixin):
 
     def test_import_fails_legacy_user_not_exists(self) -> None:
         """Test import fails due to legacy user not exists."""
-        patientsernum = 99
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
+        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert not answer
-        assert message == ''
+
+        answers = SecurityAnswer.objects.all()
+        assert not answers
+        assert message == 'Migrated 0 out of 1 security answers\n'
         assert error == (
             'Legacy user does not exist, usertypesernum: 99\n'
             + 'Security answer import failed, sernum: 1, details: User does not exist\n'
@@ -73,16 +75,16 @@ class TestSecurityAnswersMigration(CommandTestMixin):
 
     def test_import_fails_multiple_legacy_user(self) -> None:
         """Test import fails due to multiple legacy users."""
-        patientsernum = 99
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
+        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum)
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum)
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert not answer
-        assert message == ''
+
+        answers = SecurityAnswer.objects.all()
+        assert not answers
+        assert message == 'Migrated 0 out of 1 security answers\n'
         assert error == (
             'Found more than one related legacy users, usertypesernum: 99\n'
             + 'Security answer import failed, sernum: 1, details: User does not exist\n'
@@ -90,16 +92,15 @@ class TestSecurityAnswersMigration(CommandTestMixin):
 
     def test_import_fails_user_not_exists(self) -> None:
         """Test import fails due to user not exists."""
-        patientsernum = 99
-        username = 'no_name'
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum, username=username)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum, username='no_name')
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert not answer
-        assert message == ''
+
+        answers = SecurityAnswer.objects.all()
+        assert not answers
+        assert message == 'Migrated 0 out of 1 security answers\n'
         assert error == (
             'User does not exist, username: no_name\n'
             + 'Security answer import failed, sernum: 1, details: User does not exist\n'
@@ -107,29 +108,26 @@ class TestSecurityAnswersMigration(CommandTestMixin):
 
     def test_import_fails_no_caregiver_profile(self) -> None:
         """Test import fails due to caregiver profile not exists."""
-        patientsernum = 99
-        username = 'no_name'
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum, username=username)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
-        user_factories.User(username=username)
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum, username='username')
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
+        user_factories.User(username='username')
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert not answer
-        assert message == ''
+
+        answers = SecurityAnswer.objects.all()
+        assert not answers
+        assert message == 'Migrated 0 out of 1 security answers\n'
         assert error == (
             'Security answer import failed, sernum: 1, details: Caregiver does not exist\n'
         )
 
     def test_import_fails_security_answer_exists(self) -> None:
         """Test import fails due to security answer already exists."""
-        patientsernum = 99
-        username = 'no_name'
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum, username=username)
-        legacy_answer = legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
-        user = user_factories.User(username=username)
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum, username='username')
+        legacy_answer = legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
+        user = user_factories.User(username='username')
         caregiver = caregiver_factories.CaregiverProfile(user=user)
         caregiver_factories.SecurityAnswer(
             user=caregiver,
@@ -138,45 +136,45 @@ class TestSecurityAnswersMigration(CommandTestMixin):
         )
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert len(answer) != 2
-        assert message == 'Security answer already exists, sernum: 1\n'
+
+        answers = SecurityAnswer.objects.all()
+        assert len(answers) == 1
+        assert 'Security answer already exists, sernum: 1' in message
+        assert 'Migrated 0 out of 1 security answers' in message
         assert error == ''
 
     def test_import_succeeds(self) -> None:
         """Test import succeeds."""
-        patientsernum = 99
-        username = 'no_name'
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum, username=username)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
-        user = user_factories.User(username=username, language='en')
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum, username='username')
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
+        user = user_factories.User(username='username', language='en')
         caregiver_factories.CaregiverProfile(user=user)
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert len(answer) == 1
-        assert answer[0].question == 'What is the name of your first pet?'
-        assert answer[0].answer == 'bird'
-        assert message == 'Security answer import succeeded, sernum: 1\n'
+
+        answers = SecurityAnswer.objects.all()
+        assert len(answers) == 1
+        assert answers[0].question == 'What is the name of your first pet?'
+        assert answers[0].answer == 'bird'
+        assert message == 'Migrated 1 out of 1 security answers\n'
         assert error == ''
 
     def test_import_question_fr_by_user_language(self) -> None:
         """Test import question language by user language."""
-        patientsernum = 99
-        username = 'no_name'
-        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=patientsernum)
-        legacy_factories.LegacyUserFactory(usertypesernum=patientsernum, username=username)
-        legacy_factories.LegacySecurityAnswerFactory(patientsernum=legacy_patient)
-        user = user_factories.User(username=username, language='fr')
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_factories.LegacyUserFactory(usertypesernum=legacy_patient.patientsernum, username='username')
+        legacy_factories.LegacySecurityAnswerFactory(patient=legacy_patient)
+        user = user_factories.User(username='username', language='fr')
         caregiver_factories.CaregiverProfile(user=user)
 
         message, error = self._call_command('migrate_securityanswers')
-        answer = SecurityAnswer.objects.all()
-        assert len(answer) == 1
-        assert answer[0].question == 'Quel est le nom de votre premier animal de compagnie?'
-        assert answer[0].answer == 'bird'
-        assert message == 'Security answer import succeeded, sernum: 1\n'
+
+        answers = SecurityAnswer.objects.all()
+        assert len(answers) == 1
+        assert answers[0].question == 'Quel est le nom de votre premier animal de compagnie?'
+        assert answers[0].answer == 'bird'
+        assert message == 'Migrated 1 out of 1 security answers\n'
         assert error == ''
 
 
@@ -189,14 +187,13 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         message, error = self._call_command('migrate_patients')
 
-        assert 'Imported patient, legacy_id: 51\n' in message
         patient = Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
         assert patient.sex == Patient.SexType.MALE
-        assert patient.first_name == legacy_patient.firstname
-        assert patient.last_name == legacy_patient.lastname
-        assert patient.ramq == legacy_patient.ssn
+        assert patient.first_name == legacy_patient.first_name
+        assert patient.last_name == legacy_patient.last_name
+        assert patient.ramq == legacy_patient.ramq
 
     @pytest.mark.parametrize(('data_access', 'legacy_data_access'), [
         (Patient.DataAccessType.ALL, '3'),
@@ -204,19 +201,17 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     ])
     def test_import_patient_data_access(self, data_access: Patient.DataAccessType, legacy_data_access: str) -> None:
         """The patient is imported with the data access level."""
-        legacy_factories.LegacyPatientFactory(accesslevel=legacy_data_access)
+        legacy_factories.LegacyPatientFactory(access_level=legacy_data_access)
 
         message, error = self._call_command('migrate_patients')
 
-        assert 'Imported patient, legacy_id: 51\n' in message
         patient = Patient.objects.get(legacy_id=51)
         assert patient.data_access == data_access
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
         """Test import fails no legacy patient exists."""
-        legacy_patient = ''
         message, error = self._call_command('migrate_patients')
-        assert not legacy_patient
+
         assert error.strip() == (
             'No legacy patients exist'
         )
@@ -232,7 +227,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import pass for patient fail for patient identifier."""
         legacy_factories.LegacyPatientFactory()
         message, error = self._call_command('migrate_patients')
-        assert 'No hospital patient identifiers for patient with legacy_id: 51 exist, skipping\n' in message
+        assert 'No hospital patient identifiers for patient with legacy_id: 51 exists, skipping\n' in message
 
     def test_import_patient_patientidentifier_pass(self) -> None:
         """Test import pass for patient and patient identifier."""
@@ -242,30 +237,29 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
-        assert 'Imported patient, legacy_id: 51\n' in message
-        assert 'Imported patient_identifier, legacy_id: 51, mrn: 9999996\n' in message
-        assert 'Number of imported patients is: 1\n' in message
+
+        assert 'Number of imported patients is: 1 (out of 1)\n' in message
 
     def test_import_pass_patientidentifier_only(self) -> None:
         """Test import fail for patient and pass patient identifier."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
-        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
         hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
 
     def test_import_pass_patient_only(self) -> None:
         """Test import pass for patient and fail patient identifier already exists."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
+        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999996',
         )
         site = hospital_settings_factories.Site(code='TEST')
@@ -276,23 +270,24 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         )
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 99 already exists, skipping\n' in message
-        assert 'Patient identifier legacy_id: 99, mrn:9999996 already exists, skipping\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Patient identifier legacy_id: 99, mrn: 9999996 already exists, skipping\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
 
     def test_import_failure_multiple_mrns_at_same_site(self) -> None:
         """Test import fail for patient with multiple MRNs at the same site."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
-        code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
+        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999996',
         )
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999997',
         )
         hospital_settings_factories.Site(code='TEST')
@@ -300,10 +295,9 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         message, error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
         assert error == (
-            'Cannot import patient hospital identifier for patient (ID: 10, MRN: 9999997),'
+            'Cannot import patient hospital identifier for patient (legacy ID: 10, MRN: 9999997),'
             + ' already has an MRN at the same site (TEST)\n'
         )
 
@@ -339,7 +333,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
 
     def test_import_user_caregiver_exists_relation(self) -> None:
         """Test import relation fails, relation already exists."""
@@ -357,7 +351,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
 
     def test_import_user_caregiver_no_relation(self) -> None:
@@ -374,8 +368,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported caregivers is: 0\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+        assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
 
     def test_import_new_user_caregiver_no_relation(self) -> None:
         """Test import pass for caregiver profile and relationship."""
@@ -383,43 +376,37 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(
             legacy_id=99,
-            first_name=legacy_patient.firstname,
-            last_name=legacy_patient.lastname,
+            first_name=legacy_patient.first_name,
+            last_name=legacy_patient.last_name,
         )
         message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
-        assert 'Number of imported caregivers is: 1\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
+        assert 'Number of imported caregivers is: 1 (out of 1)\n' in message
 
     def test_import_new_user_caregiver_with_relation(self) -> None:
         """Test import pass for multiple caregiver profiles and their relations."""
         legacy_patient1 = legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_patient2 = legacy_factories.LegacyPatientFactory(patientsernum=100)
-        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, usertype='Patient', username='test1')
-        legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, username='test1')
+        legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, username='test2')
         patient_factories.Patient(
             legacy_id=99,
-            first_name=legacy_patient1.firstname,
-            last_name=legacy_patient1.lastname,
+            first_name=legacy_patient1.first_name,
+            last_name=legacy_patient1.last_name,
             ramq='RAMQ12345678',
         )
         patient_factories.Patient(
             legacy_id=100,
-            first_name=legacy_patient2.firstname,
-            last_name=legacy_patient2.lastname,
+            first_name=legacy_patient2.first_name,
+            last_name=legacy_patient2.last_name,
         )
         message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
-        assert 'Legacy caregiver with sernum: 56 has been migrated\n' in message
-        assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
-        assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
-        assert 'Number of imported caregivers is: 2\n' in message
+        assert 'Number of imported caregivers is: 2 (out of 2)\n' in message
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
-        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=514123456789)
+        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=514123456789)
         legacy_user = legacy_factories.LegacyUserFactory()
 
         command = migrate_caregivers.Command()
@@ -429,7 +416,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_phone_number_missing(self) -> None:
         """Ensure that a legacy patient without a phone number is correctly migrated."""
-        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=None)
+        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=None)
         legacy_user = legacy_factories.LegacyUserFactory()
 
         command = migrate_caregivers.Command()
@@ -478,10 +465,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             120 * '-',
         ) in error
 
+        print(message)
+        print(error)
+
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
         assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None, 'ALL')" in error
         assert (
-            "(51, '123456', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
@@ -518,17 +508,17 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
         )
         # create legacy HospitalPatient identifier
-        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
         caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(
                 email='opal@example.com',
@@ -556,20 +546,20 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create a second legacy patient
         second_legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=98,
-            ssn='RAMQ87654321',
-            firstname='Second First Name',
-            lastname='Second Last Name',
-            dateofbirth=timezone.make_aware(datetime(1950, 2, 3)),
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
             sex='Female',
-            telnum='5149991111',
+            tel_num='5149991111',
             email='second.opal@example.com',
             language='fr',
         )
         # create second legacy HospitalPatient identifier
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            patientsernum=second_legacy_patient,
+            patient=second_legacy_patient,
             mrn='9999997',
-            hospitalidentifiertypecode=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
+            hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
         )
 
         # create second CaregiverProfile record
@@ -607,15 +597,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
-            accesslevel='1',
+            access_level='1',
         )
         caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(
@@ -635,7 +625,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         assert patient.data_access == Patient.DataAccessType.ALL
-        assert legacy_patient.accesslevel == '1'
+        assert legacy_patient.access_level == '1'
 
         message, error = self._call_command('find_patients_deviations')
 
@@ -890,3 +880,163 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         assert "An error occurred during patients' UUID update!" not in error
         assert 'Updated {0} out of {1}'.format(patients_num, patients_num) in message
         assert 'The following patients were not updated:' not in error
+
+
+class TestMigrateUsersCommand(CommandTestMixin):
+    """Tests for the migrate_users command."""
+
+    def test_migrate_users_admins_legacyoauser_pass(self) -> None:
+        """Test import pass for multiple `Administrators` Legacy OAUsers."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        admingroup = user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module)
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 2 of 2 users (2 system administrators and 0 registrants)' in message
+        assert ClinicalStaff.objects.all().count() == 2
+        clincal_staff_user = ClinicalStaff.objects.all()[0]
+        assert clincal_staff_user.is_staff
+        assert clincal_staff_user.is_superuser
+        assert clincal_staff_user.groups.get() == admingroup
+
+    def test_migrate_users_registrants_legacyoauser_pass(self) -> None:
+        """Test import pass for multiple `Registrants` Legacy OAUsers."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        # Creating needed groups
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        registrant_group = user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+        role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module, access=3)
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 2 of 2 users (0 system administrators and 2 registrants)' in message
+        assert ClinicalStaff.objects.all().count() == 2
+        clincal_staff_user = ClinicalStaff.objects.all()[0]
+        assert clincal_staff_user.groups.get() == registrant_group
+
+    def test_migrate_users_nonadmins_legacyoauser_pass(self) -> None:
+        """Test import pass for multiple non-admins and no write access on `Patient` module, from Legacy OAUsers."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        # Creating needed groups
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+        role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+        legacy_factories.LegacyOAUserFactory(oa_role=role)
+
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module)
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 2 of 2 users (0 system administrators and 0 registrants)' in message
+        assert ClinicalStaff.objects.all().count() == 2
+
+    def test_migrate_users_duplicate_legacyoauser_fail(self) -> None:
+        """Test import fail for re-entering same OAUser of type Administration."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+
+        user = legacy_factories.LegacyOAUserFactory(oa_role=role)
+
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module)
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 1 of 1 users (1 system administrators and 0 registrants)' in message
+        assert ClinicalStaff.objects.all().count() == 1
+
+        message, error = self._call_command('migrate_users')
+        errormsg = '{0} {1} {2}{3}'.format(
+            "Error: {'username': ['A user with that username already exists.']}",
+            'when saving username:',
+            user.username,
+            '\n',
+        )
+        assert errormsg in error
+        assert 'Migrated 0 of 1 users (0 system administrators and 0 registrants)' in message
+
+    def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:  # noqa: WPS213
+        """Test import pass for mixed type of users from Legacy OAUsers."""
+        patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        anymodule = legacy_factories.LegacyModuleFactory(name_en='AnyModule')
+        # Creating needed groups
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        adminrole = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+        nonadminrole_patient = legacy_factories.LegacyOARoleFactory(name_en='PatientRole')
+        nonadminrole_nonpatient = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+
+        # administrators
+        legacy_factories.LegacyOAUserFactory(oa_role=adminrole)
+        legacy_factories.LegacyOAUserFactory(oa_role=adminrole)
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=adminrole, module=anymodule)
+        # registrants
+        legacy_factories.LegacyOAUserFactory(oa_role=nonadminrole_patient)
+        legacy_factories.LegacyOAUserFactory(oa_role=nonadminrole_patient)
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=nonadminrole_patient, module=patientmodule, access=3)
+        # other users
+        legacy_factories.LegacyOAUserFactory(oa_role=nonadminrole_nonpatient)
+        legacy_factories.LegacyOAUserFactory(oa_role=nonadminrole_nonpatient)
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=nonadminrole_nonpatient, module=anymodule)
+
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 6 of 6 users (2 system administrators and 2 registrants)' in message
+        assert ClinicalStaff.objects.all().count() == 6
+
+    def test_migrate_users_duplicate_registrants_legacyoauser_fail(self) -> None:
+        """Test import fail for re-entering same OAUser of type registrant."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patients')
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+        role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+        user = legacy_factories.LegacyOAUserFactory(oa_role=role)
+        legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module, access=3)
+
+        # Creating needed groups
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 1 of 1 users (0 system administrators and 1 registrants' in message
+        assert ClinicalStaff.objects.all().count() == 1
+
+        message, error = self._call_command('migrate_users')
+
+        errormsg = '{0} {1} {2}{3}'.format(
+            "Error: {'username': ['A user with that username already exists.']}",
+            'when saving username:',
+            user.username,
+            '\n',
+        )
+        assert errormsg in error
+
+    def test_deleted_user_not_migrated(self) -> None:
+        """Ensure that deleted users are not migrated."""
+        legacy_factories.LegacyModuleFactory(name_en='Patients')
+        user_factories.GroupFactory(name=settings.ADMIN_GROUP_NAME)
+        user_factories.GroupFactory(name=settings.REGISTRANTS_GROUP_NAME)
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
+        role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+
+        deleted_user = legacy_factories.LegacyOAUserFactory(oa_role=role, is_deleted=True)
+        actual_user = legacy_factories.LegacyOAUserFactory(oa_role=role)
+
+        message, error = self._call_command('migrate_users')
+
+        assert 'Migrated 1 of 1 users (0 system administrators and 0 registrants)' in message
+        assert ClinicalStaff.objects.count() == 1
+        assert ClinicalStaff.objects.filter(username=actual_user.username).exists()
+        assert not ClinicalStaff.objects.filter(username=deleted_user.username).exists()

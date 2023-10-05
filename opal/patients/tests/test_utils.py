@@ -1,5 +1,6 @@
 """App patient utils test functions."""
 import datetime as dt
+import uuid
 from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
@@ -13,10 +14,15 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Site
+from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
+from opal.legacy.factories import LegacyUserFactory as LegacyUser
+from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
+    PREDEFINED_ROLE_TYPES,
     HospitalPatient,
     Patient,
     Relationship,
@@ -31,7 +37,7 @@ from opal.users.factories import Caregiver, User
 
 from .. import utils
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 PATIENT_DATA = OIEPatientData(
@@ -514,10 +520,75 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
 
 
+def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to ORMS to initialize a patient succeeds."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call(
+        'Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
+def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to ORMS to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
+
+
+def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to the OIE to initialize a patient succeeds."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call(
+        'Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
+def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to the OIE to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(code='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call('Failed to initialize patient via the OIE')
+
+
 def test_create_access_request_existing() -> None:
     """A new self relationship is created for an existing patient and caregiver."""
     patient = patient_factories.Patient()
-    caregiver_profile = CaregiverProfile()
+    legacy_user = LegacyUser(usertype=LegacyUserType.CAREGIVER)
+    caregiver_profile = CaregiverProfile(legacy_id=legacy_user.usersernum)
     self_type = RelationshipType.objects.self_type()
 
     relationship, registration_code = utils.create_access_request(
@@ -525,6 +596,7 @@ def test_create_access_request_existing() -> None:
         caregiver_profile,
         self_type,
     )
+    legacy_user.refresh_from_db()
 
     assert registration_code is None
     assert relationship.patient == patient
@@ -534,6 +606,7 @@ def test_create_access_request_existing() -> None:
     assert relationship.request_date == date.today()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date is None
+    assert legacy_user.usertype == LegacyUserType.PATIENT
 
 
 def test_create_access_request_non_self() -> None:
@@ -600,10 +673,13 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     assert Relationship.objects.count() == 0
 
 
-def test_create_access_request_new_patient_mrns() -> None:
+def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     """A new relationship and patient are created along with associated hospital patient instances."""
+    RequestMockerTest.mock_requests_post(mocker, {})
     Site(code='RVH')
     Site(code='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
 
@@ -707,3 +783,62 @@ def test_create_access_request_new_patient_caregiver() -> None:
     assert user_models.Caregiver.objects.count() == 1
     assert Relationship.objects.count() == 1
     assert Patient.objects.count() == 1
+
+
+def test_create_access_request_missing_legacy_id() -> None:
+    """An error occurs if an existing user registers as self but is missing their legacy_id."""
+    caregiver_profile = CaregiverProfile(legacy_id=None)
+    patient = patient_factories.Patient()
+    self_type = RelationshipType.objects.self_type()
+
+    with assertRaisesMessage(ValueError, 'Legacy ID is missing'):
+        utils.create_access_request(
+            patient,
+            caregiver_profile,
+            self_type,
+        )
+
+
+@pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
+def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type: RoleType) -> None:
+    """Legacy data is saved when requesting access to a new patient for an existing caregiver (as self)."""
+    RequestMockerTest.mock_requests_post(mocker, {})
+    Site(code='RVH')
+    Site(code='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
+    caregiver_profile = CaregiverProfile()
+    relationship_type = RelationshipType.objects.get(role_type=role_type)
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+
+    utils.create_access_request(
+        OIEPatientData(**patient_data),
+        caregiver_profile,
+        relationship_type,
+    )
+
+    legacy_patient = LegacyPatient.objects.get(ramq=patient_data['ramq'])
+    patient = Patient.objects.get(ramq=patient_data['ramq'])
+    legacy_mrn_list = LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient)
+
+    assert patient.legacy_id == legacy_patient.patientsernum
+    assert legacy_patient.first_name == patient_data['first_name']
+    assert legacy_patient.last_name == patient_data['last_name']
+    assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
+    assert legacy_patient.sex == 'Female'
+    assert legacy_patient.death_date is None
+    assert legacy_patient.access_level == '3'
+
+    # Two categories of parametrized test cases: self vs non-self
+    if relationship_type.is_self:
+        assert legacy_patient.email == caregiver_profile.user.email
+        assert legacy_patient.language == caregiver_profile.user.language.upper()
+    else:
+        assert legacy_patient.email == ''
+        assert legacy_patient.language == 'FR'
+
+    assert legacy_mrn_list.filter(mrn='9999993', hospital__code='RVH', is_active=True).count() == 1
+    assert legacy_mrn_list.filter(mrn='9999996', hospital__code='MGH', is_active=False).count() == 1
+
+    assert LegacyPatientControl.objects.filter(patient=legacy_patient).count() == 1

@@ -243,7 +243,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
         fields = ['patient', 'caregiver', 'security_answers']
 
 
-class PatientCaregiversSerializer(DynamicFieldsSerializer):
+class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
     """
     Serializer for patient and caregiver information.
 
