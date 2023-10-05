@@ -735,14 +735,14 @@ class LegacyTestControl(models.Model):
 class LegacyOAUser(models.Model):
     """OAUser from the legacy database OpalDB."""
 
-    oauser_sernum = models.AutoField(db_column='OAUserSerNum', primary_key=True)
+    sernum = models.AutoField(db_column='OAUserSerNum', primary_key=True)
     username = models.CharField(db_column='Username', max_length=1000)
     password = models.CharField(db_column='Password', max_length=1000)
-    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
+    oa_role = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
     # value 1 for human user, 2 for system user
-    usertype = models.IntegerField(db_column='type', default=1)
+    user_type = models.IntegerField(db_column='type', default=1)
     language = models.CharField(db_column='Language', max_length=2, default='EN')
-    userdeleted = models.IntegerField(db_column='deleted', default=0)
+    is_deleted = models.IntegerField(db_column='deleted', default=0)
     date_added = models.DateTimeField(db_column='DateAdded')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
@@ -754,15 +754,15 @@ class LegacyOAUser(models.Model):
 class LegacyOARole(models.Model):
     """oaRole from the legacy database OpalDB."""
 
-    roleid = models.AutoField(db_column='ID', primary_key=True)
+    role_id = models.AutoField(db_column='ID', primary_key=True)
     name_en = models.CharField(db_column='name_EN', max_length=64)
     name_fr = models.CharField(db_column='name_FR', max_length=64)
-    roledeleted = models.IntegerField(db_column='deleted', default=0)
-    deletedby = models.CharField(db_column='deletedBy', max_length=255)
-    creationdate = models.DateTimeField(db_column='creationDate')
-    createdby = models.CharField(db_column='createdBy', max_length=255)
+    is_deleted = models.IntegerField(db_column='deleted', default=0)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255)
+    creation_date = models.DateTimeField(db_column='creationDate')
+    created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
-    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+    updated_by = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False
@@ -811,8 +811,8 @@ class LegacyOARoleModule(models.Model):
     """oaRoleModule from the legacy database OpalDB."""
 
     rolemoduleid = models.BigAutoField(db_column='ID', primary_key=True)
-    moduleid = models.ForeignKey('LegacyModule', models.DO_NOTHING, db_column='moduleId')
-    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId')
+    module = models.ForeignKey('LegacyModule', models.DO_NOTHING, db_column='moduleId')
+    oa_role = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId')
     # Access level level (0-7) for this role on this module.
     access = models.IntegerField(db_column='access', default=0)
 
