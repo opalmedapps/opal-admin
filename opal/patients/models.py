@@ -235,9 +235,7 @@ class Patient(models.Model):
             MinLengthValidator(12),
             validate_ramq,
         ],
-        unique=True,
         blank=True,
-        null=True,
     )
     data_access = models.CharField(
         verbose_name=_('Data Access Level'),
