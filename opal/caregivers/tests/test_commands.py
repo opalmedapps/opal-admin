@@ -9,8 +9,6 @@ from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings import factories as hospital_factories
 
-from ..constants import REGISTRATION_CODE_EXPIRY
-
 pytestmark = pytest.mark.django_db
 
 
@@ -76,7 +74,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         institution = hospital_factories.Institution()
 
         # update creation date to be overdue the expiration date
-        longer_expiry = REGISTRATION_CODE_EXPIRY + 10
+        longer_expiry = institution.registration_code_valid_period + 10
         reg_code1.created_at = timezone.now() - timedelta(hours=longer_expiry)
         reg_code2.created_at = timezone.now() - timedelta(hours=institution.registration_code_valid_period)
         reg_code1.save()
