@@ -27,10 +27,12 @@ from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
 from opal.users.api import views as user_views
+from opal.users.api import viewsets as user_viewsets
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
 # see: https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
+
 if settings.DEBUG:
     router: SimpleRouter = DefaultRouter()
 else:
@@ -40,7 +42,7 @@ else:
 router.register('institutions', settings_viewsets.InstitutionViewSet, basename='institutions')
 router.register('sites', settings_viewsets.SiteViewSet, basename='sites')
 router.register('security-questions', SecurityQuestionViewSet, basename='security-questions')
-
+router.register('users', user_viewsets.UserViewSet, basename='users')
 
 app_name = 'core'
 

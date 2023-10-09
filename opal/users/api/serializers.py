@@ -50,3 +50,23 @@ class ClinicalStaffDetailSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
         ]
+
+
+class UserClinicalStaffSerializer(serializers.ModelSerializer):
+    """
+    User ClinicalStaff serializer.
+
+    The serializer is used to create new clinical staff user and assigned them to group(s).
+    """
+
+    class Meta:
+        model = ClinicalStaff
+        fields = ('username', 'groups')
+
+
+class UpdateClinicalStaffUserSerializer(serializers.ModelSerializer):
+    """Serializer to retrieve and update the clinical staff users' groups."""
+
+    class Meta:
+        model = ClinicalStaff
+        fields = ('groups',)
