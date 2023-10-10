@@ -12,13 +12,17 @@ This is based on Two Scoops of Django, Section 22.3.
 If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """  # noqa: E501
-from typing import Any, ClassVar, TypeAlias
+from typing import Any, ClassVar, Set, TypeAlias
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser, Group, UserManager
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+
+from config.settings.base import ADMIN_GROUP_NAME
 
 
 class UserType(models.TextChoices):
@@ -156,3 +160,41 @@ class Caregiver(User):
         proxy = True
         verbose_name = _('Caregiver')
         verbose_name_plural = _('Caregivers')
+
+
+@receiver(signal=m2m_changed, sender=ClinicalStaff.groups.through)
+def post_save_user_signal_handler(  # noqa: WPS211
+    instance: ClinicalStaff,
+    action: str,
+    model: type[models.Model],
+    pk_set: Set[int],
+    *args: Any,
+    **kwargs: Any,
+) -> None:
+    """
+    Post save function that is triggered by a signal once a change in the `users.groups` relationship is performed.
+
+    The goal of this function is to set `is_staff` and `is_superuser` to True when a user is added to admin_group.
+
+    Args:
+        instance: the user object that underwent the change
+        action: the action name that triggers the signal `post_add`, `post_remove`
+        model: the model that triggers the signal
+        pk_set: the pk of the record that was added/removed to the model
+        args: argument sent with the request
+        kwargs: extra keyword arguments
+    """
+    actions_map = {
+        'post_add': (True, True),
+        'post_remove': (False, False),
+    }
+
+    if model == Group and instance.type == UserType.CLINICAL_STAFF:
+        administrators_group = Group.objects.filter(name=ADMIN_GROUP_NAME).first()
+        privileges = actions_map.get(action)
+        if administrators_group and administrators_group.pk in pk_set and privileges:
+            is_superuser, is_staff = privileges
+            instance.is_superuser = is_superuser
+            instance.is_staff = is_staff
+
+    instance.save()
