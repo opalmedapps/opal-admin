@@ -1,11 +1,15 @@
 from datetime import datetime
 
+from django.db import DatabaseError
 from django.utils import timezone
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
+
+from opal.legacy.factories import LegacyAliasExpressionFactory, LegacyPatientFactory, LegacySourceDatabaseFactory
 
 from .. import factories
-from ..models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
+from ..models import LegacyAppointment, LegacyDiagnosis, LegacyDocument, LegacyPatient, LegacyPatientTestResult
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -148,3 +152,42 @@ def test_get_labs_databank_data() -> None:
         assert not (set(expected_returned_fields) - set(lab.keys()))
 
     assert databank_data.count() == 3
+
+
+def test_create_pathology_document_success() -> None:
+    """Ensure a new pathology PDF document record inserted successfully to the OpalDB.Document table."""
+    legacy_patient = LegacyPatientFactory()
+
+    LegacySourceDatabaseFactory(source_database_name='OACIS')
+
+    LegacyAliasExpressionFactory(
+        expression_name='Pathology',
+        description='Pathology',
+    )
+
+    LegacyDocument.objects.create_pathology_document(
+        legacy_patient_id=legacy_patient.patientsernum,
+        prepared_by=1,  # TODO: add LegacyStaff model;
+        received_at=timezone.now(),
+        report_file_name='test-pathology-pdf-name',
+    )
+
+    assert LegacyDocument.objects.count() == 1
+
+
+def test_create_pathology_document_raises_exception() -> None:
+    """Ensure that create_pathology_document method raises exception in case of unsuccessful insertion."""
+    legacy_patient = LegacyPatientFactory()
+
+    with assertRaisesMessage(
+        DatabaseError,
+        'Failed to insert a new pathology PDF document record to the OpalDB.Document table:',
+    ):
+        LegacyDocument.objects.create_pathology_document(
+            legacy_patient_id=legacy_patient.patientsernum,
+            prepared_by=1,  # TODO: add LegacyStaff model;
+            received_at=timezone.now(),
+            report_file_name='test-pathology-pdf-name',
+        )
+
+    assert LegacyDocument.objects.count() == 0
