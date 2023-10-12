@@ -3,7 +3,7 @@ from typing import Any
 
 from pytest_mock.plugin import MockerFixture
 
-from ..utils import find_doctor_name, find_note_date, parse_notes, parse_observations
+from ..utils import _find_doctor_name, _find_note_date, _parse_notes, _parse_observations  # noqa: WPS450
 
 
 def _create_empty_parsed_observations() -> dict[str, list]:
@@ -35,24 +35,24 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
 def test_find_doctor_name_success() -> None:
     """Ensure find_doctor() successfully finds doctor name in a string."""
     # TODO: update the unit test once find_doctor() is finalized
-    assert find_doctor_name('Lorem ipsum dolor sit amet...') == ''
+    assert _find_doctor_name('Lorem ipsum dolor sit amet...') == ''
 
 
 def test_find_note_date_success() -> None:
     """Ensure find_note_date() successfully finds date and time of doctor's comment/note."""
-    # TODO: update the unit test once find_note_date() is finalized
-    assert find_note_date('Lorem ipsum dolor sit amet...') == datetime(1, 1, 1)
+    # TODO: update the unit test once _find_note_date() is finalized
+    assert _find_note_date('Lorem ipsum dolor sit amet...') == datetime(1, 1, 1)
 
 
 def test_parse_notes_with_empty_array() -> None:
     """Ensure that parse_notes() does not fail with no notes provided."""
-    parsed_notes = parse_notes([])
+    parsed_notes = _parse_notes([])
     assert parsed_notes == _create_empty_parsed_notes()
 
 
 def test_parse_notes_with_no_note_text() -> None:
     """Ensure that parse_notes() does not fail with no note_text field provided."""
-    parsed_notes = parse_notes([
+    parsed_notes = _parse_notes([
         {
             'note_source': 'test',
             'updated_at': '2023-08-31T16:03:25.805971-04:00',
@@ -63,18 +63,18 @@ def test_parse_notes_with_no_note_text() -> None:
 
 def test_parse_notes_success(mocker: MockerFixture) -> None:
     """Ensure that parse_notes() successfully parses notes list of dictionaries."""
-    # TODO: update the unit test once parse_notes() is finalized
+    # TODO: update the unit test once _parse_notes() is finalized
     prepared_at = datetime.now()
     mocker.patch(
-        'opal.test_results.utils.find_doctor_name',
+        'opal.test_results.utils._find_doctor_name',
         return_value='Atilla Omeroglu, MD',
     )
     mocker.patch(
-        'opal.test_results.utils.find_note_date',
+        'opal.test_results.utils._find_note_date',
         return_value=prepared_at,
     )
 
-    parsed_notes = parse_notes([
+    parsed_notes = _parse_notes([
         {
             'note_source': 'test_1',
             'note_text': 'test_1',
@@ -93,14 +93,14 @@ def test_parse_notes_success(mocker: MockerFixture) -> None:
 
 
 def test_parse_observations_with_empty_array() -> None:
-    """Ensure that parse_observations() does not fail with no observations provided."""
-    parsed_observations = parse_observations([])
+    """Ensure that _parse_observations() does not fail with no observations provided."""
+    parsed_observations = _parse_observations([])
     assert parsed_observations == _create_empty_parsed_observations()
 
 
 def test_parse_observations_with_no_identifier_code() -> None:
     """Ensure that parse_observations() does not fail with no identifier_code provided."""
-    parsed_observations = parse_observations([
+    parsed_observations = _parse_observations([
         {
             'identifier_text': 'identifier_text_1',
             'value': 'value_1',
@@ -115,7 +115,7 @@ def test_parse_observations_with_no_identifier_code() -> None:
 
 def test_parse_observations_with_no_value() -> None:
     """Ensure that parse_observations() does not fail with no value field provided."""
-    parsed_observations = parse_observations([
+    parsed_observations = _parse_observations([
         {
             'identifier_code': 'SPCI',
             'identifier_text': 'identifier_text_1',
@@ -130,7 +130,7 @@ def test_parse_observations_with_no_value() -> None:
 
 def test_parse_observations_success() -> None:
     """Ensure that parse_observations() successfully parses observations list of dictionaries."""
-    parsed_observations = parse_observations([
+    parsed_observations = _parse_observations([
         {
             'identifier_code': 'SPCI',
             'identifier_text': 'identifier_text_1',
