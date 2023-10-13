@@ -29,6 +29,12 @@ CACHES = {
     },
 }
 
+# AUTHENTICATION
+# ------------------------------------------------------------------------------
+# Redirect after logout to legacy OpalAdmin's login page
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = '{base_url}'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
+
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
