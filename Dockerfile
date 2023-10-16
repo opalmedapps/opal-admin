@@ -1,4 +1,3 @@
-# syntax = docker/dockerfile:1.0-experimental
 FROM python:3.11.6-slim-bookworm
 
 # for which environment the build is done: development or production
@@ -28,9 +27,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install pip requirements
-RUN python -m pip install --upgrade pip
 COPY ./requirements /tmp/
-RUN python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+RUN python -m pip install --upgrade pip \
+  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
 
 EXPOSE 8000
 
@@ -38,12 +37,15 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /app
 
-ADD . /app
+COPY . /app
 
 # Set up the cron jobs
 COPY ./scripts/cron/* /etc/cron.d/
 
-# Add new cron jobs to the cron tab
-RUN crontab /etc/cron.d/crontab
+# Add new cron jobs to the cron tab and compile languages
+RUN crontab /etc/cron.d/crontab \
+  && cp .env.sample .env \
+  && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
+  && rm .env
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
