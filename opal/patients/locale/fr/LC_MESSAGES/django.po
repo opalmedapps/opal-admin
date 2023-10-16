@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-25 14:50-0400\n"
+"POT-Creation-Date: 2023-10-06 17:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,9 +171,12 @@ msgstr "Envoyer"
 
 #: opal/patients/forms.py
 #, python-brace-format
-msgid "Your Opal registration code is: {code}. Please go to: {url}"
+msgid ""
+"Your Opal registration code is: {code}.Please go to: {url}. Your code will "
+"be expire in {period} hours."
 msgstr ""
-"Votre code d'inscription Opal est: {code}. Veuillez vous rendre à: {url}"
+"Votre code d'inscription Opal est: {code}. Veuillez vous rendre à: {url}. "
+"Votre code sera être expiré dans {period} heures."
 
 #: opal/patients/forms.py
 msgid "An error occurred while sending the SMS"
@@ -594,8 +597,12 @@ msgid "Do not print this page!"
 msgstr "N'imprimez pas cette page !"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
-msgid "Inform the requestor that the code is valid for 72 hours."
-msgstr "Informez le demandeur que le code est valable pour 72 heures."
+msgid "Inform the requestor that the code is valid for "
+msgstr "Informez le demandeur que le code est valable pour "
+
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid " hours."
+msgstr " heures."
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
@@ -698,8 +705,8 @@ msgid ""
 "Caregiver accesses that have expired cannot be changed, they can only be "
 "viewed."
 msgstr ""
-"Les accès de proches aidants expirés ne peuvent pas être "
-"modifiés, ils peuvent seulement être consultés."
+"Les accès de proches aidants expirés ne peuvent pas être modifiés, ils "
+"peuvent seulement être consultés."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided"
