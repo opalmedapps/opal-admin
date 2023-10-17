@@ -44,20 +44,20 @@ class TestGeneralAppView:
         """Test the return of announcements for multiple patient without dupicate 'postcontrolsernum'."""
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
-        post_control = factories.LegacyPostcontrolFactory()
+        post_control = factories.LegacyPostcontrolFactory(posttype='Announcement')
         user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient1)
         factories.LegacyAnnouncementFactory(patientsernum=patient1, readby=[user.username])
         announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient1.patientsernum], user.username)
-        assert announcements == 2
+        assert announcements == 3
 
     def test_get_unread_announcement_nothing(self) -> None:
         """Test the return of zero announcements when nothing is available."""
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
-        post_control = factories.LegacyPostcontrolFactory()
+        post_control = factories.LegacyPostcontrolFactory(posttype='Announcement')
         user = factories.LegacyUserFactory()
         factories.LegacyAnnouncementFactory(patientsernum=patient1, postcontrolsernum=post_control)
         factories.LegacyAnnouncementFactory(patientsernum=patient2, postcontrolsernum=post_control)
