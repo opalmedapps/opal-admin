@@ -2,6 +2,7 @@
 import datetime as dt
 import uuid
 from datetime import date, datetime
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
@@ -231,7 +232,7 @@ def test_insert_security_answers_success() -> None:
 def test_insert_security_answers_failure() -> None:
     """Test insert security answers failure."""
     caregiver = CaregiverProfile()
-    security_answers = [
+    security_answers: list[dict[str, Any]] = [
         {
             'question': None,
             'answer': 'yes',
