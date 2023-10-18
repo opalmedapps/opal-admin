@@ -10,7 +10,7 @@ from opal.hospital_settings.models import Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
-class PatientSerializer(DynamicFieldsSerializer):
+class PatientSerializer(DynamicFieldsSerializer[Patient]):
     """
     Patient serializer.
 
@@ -43,7 +43,7 @@ class PatientSerializer(DynamicFieldsSerializer):
         }
 
 
-class HospitalPatientSerializer(DynamicFieldsSerializer):
+class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.
 
@@ -78,7 +78,7 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
         return value
 
 
-class RelationshipTypeSerializer(DynamicFieldsSerializer):
+class RelationshipTypeSerializer(DynamicFieldsSerializer[RelationshipType]):
     """Serializer for the RelationshipType model."""
 
     class Meta:
@@ -134,7 +134,7 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer[Relationship])
         fields = ['caregiver_id', 'first_name', 'last_name', 'status']
 
 
-class PatientDemographicSerializer(DynamicFieldsSerializer):
+class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
     """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
 
     mrns = HospitalPatientSerializer(many=True, allow_empty=False, required=True)
