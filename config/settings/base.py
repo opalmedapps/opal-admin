@@ -173,7 +173,6 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
-    'formtools',
     'slippers',
     'fontawesomefree',
 ]
