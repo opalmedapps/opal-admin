@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 
 from rest_framework import generics
 
-from opal.core.drf_permissions import CustomDjangoModelPermissions
+from opal.core.drf_permissions import FullDjangoModelPermissions
 
 from ..models import Caregiver
 from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
@@ -15,13 +15,13 @@ class ListGroupView(generics.ListAPIView):
     model = Group
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [CustomDjangoModelPermissions]
+    permission_classes = [FullDjangoModelPermissions]
 
 
 class UserCaregiverUpdateView(generics.UpdateAPIView):
     """Class handling update the user's caregiver."""
 
-    permission_classes = [CustomDjangoModelPermissions]
+    permission_classes = [FullDjangoModelPermissions]
     serializer_class = UserCaregiverUpdateSerializer
     queryset = Caregiver.objects.filter(is_active=True)
     lookup_url_kwarg = 'username'

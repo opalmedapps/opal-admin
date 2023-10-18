@@ -22,7 +22,7 @@ Copy the `.env.sample` to `.env` and adjust the values as necessary. You need to
 These configuration parameters are read by `docker compose` and by `settings.py` (via [`django-environ`](https://github.com/joke2k/django-environ)).
 
 !!! note
-    The legacy database is currently provided by the [`db-docker`](https://gitlab.com/opalmedapps/db-docker/). For information on the legacy database, please see the [Legacy DB Connection](legacy_db) page.
+    The legacy database is currently provided by the [`db-docker`](https://gitlab.com/opalmedapps/db-docker/). For information on the legacy database, please see the [Legacy DB Connection](database/legacy_db.md) page.
     Make sure the configuration of the legacy database in your `.env` file matches the value of the one in your `db-docker` setup.
 
 ### Docker
