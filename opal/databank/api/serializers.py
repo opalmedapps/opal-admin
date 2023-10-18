@@ -4,7 +4,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from ..models import DatabankConsent
 
 
-class DatabankConsentSerializer(DynamicFieldsSerializer):
+class DatabankConsentSerializer(DynamicFieldsSerializer[DatabankConsent]):
     """Serializer for DatabankConsents."""
 
     class Meta:

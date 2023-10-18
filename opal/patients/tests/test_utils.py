@@ -123,7 +123,7 @@ def test_update_caregiver_success() -> None:
     username1 = 'username-1'
     username2 = 'username-2'
     user = User(phone_number=phone_number1, language=language1, username=username1)
-    info: dict = {
+    info = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
@@ -146,7 +146,7 @@ def test_update_caregiver_failure() -> None:
     username1 = 'username-1'
     username2 = 'username-2'
     user = User(phone_number=phone_number1, language=language1, username=username1)
-    info: dict = {
+    info = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
@@ -186,7 +186,7 @@ def test_update_caregiver_profile_success() -> None:
     legacy_id1 = 1
     legacy_id2 = 2
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info: dict = {
+    info = {
         'legacy_id': legacy_id2,
     }
     utils.update_caregiver_profile(profile, info)
@@ -199,7 +199,7 @@ def test_update_caregiver_profile_failure() -> None:
     legacy_id1 = 1
     legacy_id2 = 'Two'
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info: dict = {
+    info = {
         'legacy_id': legacy_id2,
     }
     expected_message = "{'legacy_id': ['“Two” value must be an integer.']}"

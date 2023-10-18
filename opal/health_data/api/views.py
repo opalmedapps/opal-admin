@@ -11,7 +11,7 @@ from ..models import QuantitySample
 from .serializers import QuantitySampleSerializer
 
 
-class CreateQuantitySampleView(generics.CreateAPIView):
+class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
     """
     Create view for `QuantitySample`.
 

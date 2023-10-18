@@ -1,5 +1,4 @@
 """Collection of API views used to handle ORMS authentication."""
-
 from django.conf import settings
 
 from dj_rest_auth.views import LoginView
@@ -10,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.users.models import ClinicalStaff
 from opal.users.api.serializers import ClinicalStaffDetailSerializer
 
 
@@ -64,11 +64,9 @@ class ORMSValidateView(APIView):
         Returns:
             Http response with caregiver username and status code.
         """
-        user = request.user
+        user: ClinicalStaff = request.user  # type: ignore[assignment]
 
-        if user.is_authenticated and not user.groups.filter(
-            name=settings.ORMS_GROUP_NAME,
-        ).exists():
+        if not user.groups.filter(name=settings.ORMS_GROUP_NAME).exists():
             raise PermissionDenied()
 
         return Response(

@@ -33,7 +33,7 @@ from opal.users.models import Caregiver, User
 from .. import constants
 
 
-class GetRegistrationEncryptionInfoView(RetrieveAPIView):
+class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
     """Class handling gets requests for registration encryption values."""
 
     queryset = (
@@ -49,7 +49,7 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     lookup_field = 'code_sha512'
 
 
-class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
+class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
     """Class handling requests for updates or creations of device ids."""
 
     permission_classes = [IsAuthenticated]
@@ -98,7 +98,7 @@ class GetCaregiverPatientsList(APIView):
         )
 
 
-class CaregiverProfileView(RetrieveAPIView):
+class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
     """Retrieve the profile of the current caregiver."""
 
     permission_classes = [IsAuthenticated]

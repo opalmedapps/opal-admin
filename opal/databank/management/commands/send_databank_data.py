@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 )
 
                 # Retrieve patient data for each module type and send all at once
-                combined_module_data: dict = {}
+                combined_module_data: dict[int, dict] = {}
                 for idx, databank_patient in enumerate(patients_list):
                     databank_data = self._retrieve_databank_data_for_patient(databank_patient, module)
                     if databank_data:

@@ -8,6 +8,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 
 from rest_framework import exceptions, permissions
+from rest_framework.request import Request
 
 from opal.caregivers.models import CaregiverProfile
 from opal.patients.models import Patient, Relationship, RelationshipStatus, RoleType
@@ -36,6 +37,11 @@ class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
         'PATCH': ['%(app_label)s.change_%(model_name)s'],
         'DELETE': ['%(app_label)s.delete_%(model_name)s'],
     }
+
+
+# class IsListener(permissions.IsAuthenticated):
+#     def has_permission(self, request: Request, view: APIView) -> bool:
+#         return super().has_permission(request, view) and request.user.username == 'listener'
 
 
 class CaregiverPatientPermissions(permissions.BasePermission):

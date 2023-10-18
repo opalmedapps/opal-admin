@@ -1,6 +1,5 @@
 from datetime import date
 from http import HTTPStatus
-from typing import Tuple
 
 from django.test import Client
 from django.urls.base import reverse
@@ -18,7 +17,7 @@ pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
 # Add any future GET-requestable questionnaire pages here for faster test writing
-test_url_template_data: list[Tuple] = [
+test_url_template_data: list[tuple[str, str]] = [
     (reverse('questionnaires:index'), 'questionnaires/index.html'),
 ]
 

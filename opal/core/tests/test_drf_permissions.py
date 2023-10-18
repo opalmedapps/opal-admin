@@ -187,7 +187,7 @@ class TestCaregiverSelfPermissions:
         self.view = APIView()
 
 
-class _ModelView(generics.ListAPIView):
+class _ModelView(generics.ListAPIView[User]):
     model = User
     queryset = User.objects.none()
     permission_classes = [FullDjangoModelPermissions]

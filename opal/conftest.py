@@ -1,6 +1,5 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
 from pathlib import Path
-from typing import Type
 
 from django.apps import apps
 from django.conf import LazySettings
@@ -131,7 +130,7 @@ def user_client(client: Client, user: User) -> Client:
     return client
 
 
-def is_legacy_model(model: Type[Model]) -> bool:
+def is_legacy_model(model: type[Model]) -> bool:
     """
     Determine whether the given model is a legacy model.
 

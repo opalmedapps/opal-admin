@@ -281,7 +281,7 @@ class TestApiRegistrationCompletion:
         """Test validation of patient's legacy_id."""
         api_client.force_login(user=admin_user)
 
-        invalid_data: dict = copy.deepcopy(self.input_data)
+        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
         invalid_data['patient']['legacy_id'] = 0
 
         response = api_client.post(
@@ -304,7 +304,7 @@ class TestApiRegistrationCompletion:
 
         registration_code = RegistrationCode()
 
-        invalid_data: dict = copy.deepcopy(self.input_data)
+        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
         invalid_data['caregiver']['phone_number'] = '1234567890'
 
         response = api_client.post(

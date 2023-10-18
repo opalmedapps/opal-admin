@@ -1,6 +1,6 @@
 """This module provides `APIViews` for the `patients` app REST APIs."""
 
-from typing import Any, Type
+from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db import transaction
@@ -28,7 +28,7 @@ from ..api.serializers import (
 from ..models import Patient, Relationship
 
 
-class RetrieveRegistrationDetailsView(RetrieveAPIView):
+class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
     """Class handling GET requests for registration code values."""
 
     queryset = (
@@ -47,7 +47,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
-    def get_object(self) -> Any:
+    def get_object(self) -> caregiver_models.RegistrationCode:
         """
         Override get_object to filter RegistrationCode by patient date_of_death.
 
@@ -62,7 +62,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
+    def get_serializer_class(
+        self, *args: Any, **kwargs: Any
+    ) -> type[serializers.BaseSerializer[caregiver_models.RegistrationCode]]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
@@ -147,7 +149,7 @@ class RegistrationCompletionView(APIView):
         return Response()
 
 
-class CaregiverRelationshipView(ListAPIView):
+class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
@@ -166,7 +168,7 @@ class CaregiverRelationshipView(ListAPIView):
         )
 
 
-class PatientDemographicView(UpdateAPIView):
+class PatientDemographicView(UpdateAPIView[Patient]):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
     permission_classes = [UpdateModelPermissions]
@@ -216,14 +218,12 @@ class PatientDemographicView(UpdateAPIView):
         return patient
 
 
-class PatientCaregiverDevicesView(RetrieveAPIView):
+class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     """Class handling GET requests for patient caregivers."""
 
-    queryset = (
-        Patient.objects.prefetch_related(
-            'relationships__caregiver__user',
-            'relationships__caregiver__devices',
-        )
+    queryset = Patient.objects.prefetch_related(
+        'relationships__caregiver__user',
+        'relationships__caregiver__devices',
     )
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
@@ -231,7 +231,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
     lookup_field = 'legacy_id'
 
 
-class PatientUpdateView(UpdateAPIView):
+class PatientUpdateView(UpdateAPIView[Patient]):
     """Class handling PUT requests for patient access level update."""
 
     permission_classes = [FullDjangoModelPermissions]
@@ -240,7 +240,7 @@ class PatientUpdateView(UpdateAPIView):
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
-    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer:
+    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[Patient]:
         """Return the serializer instance that should be used for validating.
 
         And deserializing input, and for serializing output.

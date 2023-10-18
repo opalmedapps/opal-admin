@@ -1,5 +1,5 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.db import transaction
 
@@ -95,7 +95,7 @@ class RelationshipTypeSerializer(DynamicFieldsSerializer):
         ]
 
 
-class CaregiverPatientSerializer(serializers.ModelSerializer):
+class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of patients for a given caregiver."""
 
     patient_uuid = serializers.UUIDField(source='patient.uuid')
@@ -122,7 +122,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         ]
 
 
-class CaregiverRelationshipSerializer(serializers.ModelSerializer):
+class CaregiverRelationshipSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of caregivers for a given patient."""
 
     caregiver_id = serializers.IntegerField(source='caregiver.user.id')
@@ -155,7 +155,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
     def update(
         self,
         instance: Patient,
-        validated_data: Dict[str, Any],
+        validated_data: dict[str, Any],
     ) -> Optional[Patient]:
         """Update `Patient` instance during patient demographic update call.
 

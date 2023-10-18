@@ -1,5 +1,5 @@
 """Command for detecting deviations between MariaDB and Django `Patient` model tables."""
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
@@ -133,10 +133,10 @@ class Command(BaseCommand):
 
     def _get_patient_deviations_err(  # noqa: WPS210
         self,
-        django_patients: List[Tuple],
-        django_hospital_patients: List[Tuple],
-        legacy_patients: List[Tuple],
-        legacy_hospital_patients: List[Tuple],
+        django_patients: list[tuple],
+        django_hospital_patients: list[tuple],
+        legacy_patients: list[tuple],
+        legacy_hospital_patients: list[tuple],
     ) -> Optional[str]:
         """Build error string based on the `Patient` table/model records deviations.
 
@@ -211,7 +211,7 @@ class Command(BaseCommand):
 
     def _get_unmatched_records_str(
         self,
-        unmatched_records: set[Tuple],
+        unmatched_records: set[tuple],
         block_name: str,
     ) -> str:
         """Create string that lists all the unmatched records.

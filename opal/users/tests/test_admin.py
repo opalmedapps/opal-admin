@@ -1,14 +1,14 @@
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User as DjangoUser
 
 from ..admin import UserAdmin
-from ..models import User
 
 site = AdminSite()
 
 
 def test_useradmin_extra_fieldsets() -> None:
     """The custom user model fields are added to the UserAdmin's fieldsets."""
-    admin = UserAdmin(User, site)
+    admin = UserAdmin(DjangoUser, site)
 
     assert admin.fieldsets is not None
     last_fieldset = admin.fieldsets[-1]

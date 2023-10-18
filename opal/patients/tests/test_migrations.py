@@ -1,5 +1,3 @@
-from typing import Type
-
 from django.db.models import Model
 
 import pytest
@@ -155,7 +153,7 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
     assert RelationshipType.objects.count() == 3
 
 
-def _create_patient(model: Type[Model], ramq: str = '') -> Model:
+def _create_patient(model: type[Model], ramq: str = '') -> Model:
     # see: https://docs.djangoproject.com/en/dev/topics/db/managers/#django.db.models.Model._default_manager
     return model._default_manager.create(  # noqa: WPS437
         first_name='Marge',

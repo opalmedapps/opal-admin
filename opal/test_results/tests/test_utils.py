@@ -6,7 +6,7 @@ from pytest_mock.plugin import MockerFixture
 from ..utils import _find_doctor_name, _find_note_date, _parse_notes, _parse_observations  # noqa: WPS450
 
 
-def _create_empty_parsed_observations() -> dict[str, list]:
+def _create_empty_parsed_observations() -> dict[str, list[str]]:
     """Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
 
     Returns:

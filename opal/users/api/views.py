@@ -9,7 +9,7 @@ from ..models import Caregiver
 from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
 
 
-class ListGroupView(generics.ListAPIView):
+class ListGroupView(generics.ListAPIView[Group]):
     """REST API `ListAPIView` returning list of available groups."""
 
     model = Group
@@ -18,7 +18,7 @@ class ListGroupView(generics.ListAPIView):
     permission_classes = [FullDjangoModelPermissions]
 
 
-class UserCaregiverUpdateView(generics.UpdateAPIView):
+class UserCaregiverUpdateView(generics.UpdateAPIView[Caregiver]):
     """Class handling update the user's caregiver."""
 
     permission_classes = [FullDjangoModelPermissions]
