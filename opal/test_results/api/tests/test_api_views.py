@@ -174,7 +174,7 @@ class TestCreatePathologyView:
         report_file_name = '{first_name}_{last_name}_{date}_pathology.pdf'.format(
             first_name=patient.first_name,
             last_name=patient.last_name,
-            date=generated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            date=generated_at.strftime('%Y-%b-%d_%H-%M-%S'),
         )
 
         assert response.status_code == status.HTTP_201_CREATED
