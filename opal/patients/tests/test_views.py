@@ -20,6 +20,7 @@ from pytest_django.asserts import assertContains, assertNotContains, assertQuery
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
+from opal.hospital_settings import factories as hospital_factories
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
@@ -1728,6 +1729,7 @@ def test_access_request_confirmation_no_code(client: Client, registration_user: 
         'registration_code': None,
     }
     session.save()
+    hospital_factories.Institution()
 
     # initialize the session storage
     response = client.get(reverse('patients:access-request-confirmation'))
@@ -1750,6 +1752,7 @@ def test_access_request_confirmation_code(client: Client, registration_user: Use
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1795,6 +1798,7 @@ def test_access_request_confirmation_post_no_data(client: Client, registration_u
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1820,6 +1824,7 @@ def test_access_request_confirmation_post_success(
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()

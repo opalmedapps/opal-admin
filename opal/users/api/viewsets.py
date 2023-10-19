@@ -16,7 +16,7 @@ from rest_framework.serializers import BaseSerializer
 
 from config.settings.base import USER_MANAGER_GROUP_NAME
 
-from ...core.drf_permissions import CustomDjangoModelPermissions
+from ...core.drf_permissions import FullDjangoModelPermissions
 from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
 
@@ -43,7 +43,7 @@ class UserViewSet(
         'set_manager_user': UpdateClinicalStaffUserSerializer,
         'unset_manager_user': UpdateClinicalStaffUserSerializer,
     }
-    permission_classes = [CustomDjangoModelPermissions]
+    permission_classes = [FullDjangoModelPermissions]
 
     default_serializer_class = UserClinicalStaffSerializer
 

@@ -220,6 +220,8 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 class LegacyPostcontrolFactory(DjangoModelFactory):
     """Post Controle factory for announcement from the legacy database."""
 
+    posttype = 'Announcement'
+
     class Meta:
         model = models.LegacyPostcontrol
 

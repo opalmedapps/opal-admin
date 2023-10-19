@@ -33,7 +33,7 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     language='en',
 )
 
-PATHOLOGY_REPORT_DATA = PathologyData(
+PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
     site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
     site_name='Decarie Boulevard',
     site_building_address='1001',
@@ -52,10 +52,55 @@ PATHOLOGY_REPORT_DATA = PathologyData(
     test_number='AS-2021-62605',
     test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
     test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
-    observation_clinical_info=['Clinical Information'],
-    observation_specimens=['Specimen'],
-    observation_descriptions=['Gross Description'],
+    observation_clinical_info=['Clinical Information', 'Clinical Information'],
+    observation_specimens=['Specimen', 'Specimen', 'Specimen', 'Specimen'],
+    observation_descriptions=['Gross Description', 'Gross Description', 'Gross Description'],
     observation_diagnosis=['Diagnosis'],
+    prepared_by='Atilla Omeroglu, MD',
+    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
+)
+
+observation_clinical_info = """Left breast mass at 3 o'clock (previously collagenous stroma,
+ discordant with imaging).\nRebiopsy under ultrasound was done today."""
+observation_specimens = "LEFT BREAST AT 3 O'CLOCK, BIOPSY:"
+observation_descriptions = """The specimen is received in formalin in 1 container labelled
+ with patient's name. It consists of fragments of core needle biopsy tissue measuring
+ 0.5 to 2.0 cm in length. The specimen is submitted in toto in cassettes A1 and A2.\n
+Time to fixation: 0\nTotal time of fixation: 9h 5m"""
+observation_diagnosis = """LEFT BREAST AT 3 O'CLOCK, BIOPSY\n - BENIGN BREAST TISSUE
+ WITH DENSE COLLAGENOUS STROMA AND ADENOSIS.\n - CALCIFICATIONS PRESENT\nCODE 1
+"""
+
+PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
+    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    site_name='Decarie Boulevard',
+    site_building_address='1001',
+    site_city='Montreal',
+    site_province='QC',
+    site_postal_code='H4A3J1',
+    site_phone='5149341934',
+    patient_first_name='Bart',
+    patient_last_name='Simpson',
+    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_ramq='SIMM99999999',
+    patient_sites_and_mrns=[
+        {'mrn': '22222443', 'site_code': 'MGH'},
+        {'mrn': '1111728', 'site_code': 'RVH'},
+    ],
+    test_number='AS-2021-62605',
+    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
+    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
+    observation_clinical_info=[observation_clinical_info],
+    observation_specimens=[observation_specimens],
+    observation_descriptions=[
+        observation_descriptions,
+        observation_descriptions,
+        observation_descriptions,
+        observation_descriptions,
+        observation_descriptions,
+        observation_descriptions,
+    ],
+    observation_diagnosis=[observation_diagnosis],
     prepared_by='Atilla Omeroglu, MD',
     prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
 )
@@ -367,7 +412,7 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
 # PATHOLOGY PDF REPORTS TESTS
 
-def test_generate_pathology_report_uses_settings(
+def test_generate_pathology_report_success_with_no_page_break(
     tmp_path: Path,
     settings: SettingsWrapper,
 ) -> None:
@@ -376,7 +421,24 @@ def test_generate_pathology_report_uses_settings(
 
     # Generate the pathology report
     pathology_report = report_service.generate_pathology_report(
-        pathology_data=PATHOLOGY_REPORT_DATA,
+        pathology_data=PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK,
+    )
+
+    assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
+    assert pathology_report.exists()
+    assert pathology_report.is_file()
+
+
+def test_generate_pathology_report_success_with_page_break(
+    tmp_path: Path,
+    settings: SettingsWrapper,
+) -> None:
+    """Ensure generate_pathology_report() method successfully generates a pathology report with a page break."""
+    settings.PATHOLOGY_REPORTS_PATH = tmp_path
+
+    # Generate the pathology report
+    pathology_report = report_service.generate_pathology_report(
+        pathology_data=PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK,
     )
 
     assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
