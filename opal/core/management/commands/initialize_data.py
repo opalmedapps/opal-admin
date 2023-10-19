@@ -9,6 +9,7 @@ from django.db import transaction
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
+from opal.core import constants
 from opal.users.models import User
 
 from .insert_test_data import InstitutionOption, create_institution, create_sites
@@ -71,7 +72,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Deleting existing data'))
 
             # keep system users
-            User.objects.exclude(username__in=['listener', 'interface-engine', 'opaladmin-backend-legacy']).delete()
+            User.objects.exclude(
+                username__in=[
+                    constants.USERNAME_LISTENER,
+                    constants.USERNAME_INTERFACE_ENGINE,
+                    constants.USERNAME_BACKEND_LEGACY,
+                ],
+            ).delete()
             Group.objects.all().delete()
             SecurityQuestion.objects.all().delete()
 
