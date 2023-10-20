@@ -75,6 +75,7 @@ class Command(BaseCommand):
             User.objects.exclude(
                 username__in=[
                     constants.USERNAME_LISTENER,
+                    constants.USERNAME_LISTENER_REGISTRATION,
                     constants.USERNAME_INTERFACE_ENGINE,
                     constants.USERNAME_BACKEND_LEGACY,
                 ],
@@ -119,13 +120,16 @@ class Command(BaseCommand):
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-        listener, _ = User.objects.get_or_create(username='listener')
+        listener, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
         listener.set_unusable_password()
         listener.save()
-        interface_engine, _ = User.objects.get_or_create(username='interface-engine')
+        listener_registration, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
+        listener_registration.set_unusable_password()
+        listener.save()
+        interface_engine, _ = User.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
-        legacy_backend, _ = User.objects.get_or_create(username='opaladmin-backend-legacy')
+        legacy_backend, _ = User.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
 

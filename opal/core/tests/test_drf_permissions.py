@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
 from django.test import RequestFactory
 from django.utils import timezone
@@ -230,12 +231,14 @@ class _InvalidUsernameRequired(drf_permissions.UsernameRequired):
 
 def test_username_required_missing_attribute() -> None:
     """The UserNameRequired permission asserts that the required_username attribute is set."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ImproperlyConfigured):
         _InvalidUsernameRequired().has_permission(Request(HttpRequest()), APIView())
 
 
 @pytest.mark.parametrize('permission_class', [
     drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
 ])
 def test_username_required_unauthenticated(permission_class: type[drf_permissions.UsernameRequired]) -> None:
     """The permissions require the user to be authenticated."""
@@ -246,6 +249,8 @@ def test_username_required_unauthenticated(permission_class: type[drf_permission
 
 @pytest.mark.parametrize('permission_class', [
     drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
 ])
 def test_username_required_wrong_username(permission_class: type[drf_permissions.UsernameRequired]) -> None:
     """The permissions fail if the user does not have the expected username."""
@@ -257,6 +262,8 @@ def test_username_required_wrong_username(permission_class: type[drf_permissions
 
 @pytest.mark.parametrize(('permission_class', 'username'), [
     (drf_permissions.IsListener, 'listener'),
+    (drf_permissions.IsRegistrationListener, 'listener-registration'),
+    (drf_permissions.IsInterfaceEngine, 'interface-engine'),
 ])
 def test_username_required_correct_username(
     permission_class: type[drf_permissions.UsernameRequired],

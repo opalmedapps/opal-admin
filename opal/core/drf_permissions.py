@@ -4,6 +4,7 @@ These permissions are provided for the project and intended to be reused.
 """
 from typing import TYPE_CHECKING, Optional
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import QuerySet
 
 from rest_framework import exceptions, permissions
@@ -61,10 +62,10 @@ class UsernameRequired(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
 
         Raises:
-            AssertionError: if the `required_username` attribute is not defined in the subclass
+            ImproperlyConfigured: if the `required_username` attribute is not defined in the subclass
         """
         if not hasattr(self, 'required_username') or not self.required_username:
-            raise AssertionError(
+            raise ImproperlyConfigured(
                 'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
                     class_=self.__class__.__name__,
                 ),
@@ -80,6 +81,18 @@ class IsListener(UsernameRequired):
     """Allows access only to the listener user."""
 
     required_username = constants.USERNAME_LISTENER
+
+
+class IsRegistrationListener(UsernameRequired):
+    """Allows access only to the registration listener user."""
+
+    required_username = constants.USERNAME_LISTENER_REGISTRATION
+
+
+class IsInterfaceEngine(UsernameRequired):
+    """Allows access only to the interface engine user."""
+
+    required_username = constants.USERNAME_INTERFACE_ENGINE
 
 
 class CaregiverPatientPermissions(permissions.BasePermission):
