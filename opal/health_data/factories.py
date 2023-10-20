@@ -18,6 +18,8 @@ class QuantitySample(DjangoModelFactory):
     source = models.SampleSourceType.PATIENT
     type = factory.Iterator(models.QuantitySampleType.values)  # noqa: A003
     value = factory.Faker('pydecimal', left_digits=2, right_digits=2, min_value=0)
+    viewed_at = None
+    viewed_by = ''
 
     class Meta:
         model = models.QuantitySample
