@@ -51,7 +51,7 @@ def test_quantitysample_create_data_dict(user_api_client: APIClient) -> None:
     sample = QuantitySample.objects.get(patient=patient)
 
     data.update({'value': Decimal('12.34')})
-    assert model_to_dict(sample, exclude=('id', 'patient')) == data
+    assert model_to_dict(sample, exclude=('id', 'patient', 'viewed_at', 'viewed_by')) == data
 
 
 def test_quantitysample_create_data_list(user_api_client: APIClient) -> None:

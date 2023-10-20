@@ -58,4 +58,6 @@ class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin):
         'source',
         'device',
         'added_at',
+        'viewed_at',
+        'viewed_by',
     ]
