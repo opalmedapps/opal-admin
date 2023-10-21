@@ -141,6 +141,12 @@ class QuantitySample(AbstractSample):
         max_length=4,
     )
 
+    # Date and time when the data was viewed
+    viewed_at = models.DateTimeField(_('Viewed At'), null=True, blank=True)
+
+    # ORMS user who viewed this QuantitySample, taken from the request.user
+    viewed_by = models.CharField(_('Viewed By'), max_length=150, blank=True)
+
     objects: QuantitySampleManager = QuantitySampleManager()
 
     # inherit Meta from super class to retain the existing constraints
