@@ -382,7 +382,7 @@ def test_incomplete_institution_update(
     form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
-    form_data.pop('code')
+    form_data.pop('acronym')
 
     response = client.post(
         url,

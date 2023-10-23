@@ -52,7 +52,7 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicField
             'id',
             'url',
             'name',
-            'code',
+            'acronym',
             'support_email',
             'adulthood_age',
             'non_interpretable_lab_result_delay',

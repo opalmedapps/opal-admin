@@ -12,7 +12,7 @@ from .models import Institution, Site
 class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
     """This class provides admin options for `Institution`."""
 
-    list_display = ['__str__', 'code']
+    list_display = ['__str__', 'acronym']
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         """

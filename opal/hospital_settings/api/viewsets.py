@@ -11,12 +11,12 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset provides an API view for `Institution`.
 
-    It uses the `InstitutionSerializer` and allows to filter by institution `code`.
+    It uses the `InstitutionSerializer` and allows to filter by institution `acronym`.
     """
 
     queryset = Institution.objects.all()
     serializer_class = InstitutionSerializer
-    filterset_fields = ['code']
+    filterset_fields = ['acronym']
 
     def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:
         """

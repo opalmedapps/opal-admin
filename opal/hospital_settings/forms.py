@@ -23,7 +23,7 @@ class InstitutionForm(forms.ModelForm[Institution]):
         fields = (
             'name_en',
             'name_fr',
-            'code',
+            'acronym',
             'support_email',
             'adulthood_age',
             'non_interpretable_lab_result_delay',
@@ -49,7 +49,7 @@ class InstitutionForm(forms.ModelForm[Institution]):
         self.helper.layout = Layout(
             'name_en',
             'name_fr',
-            'code',
+            'acronym',
             'support_email',
             FileField('logo_en'),
             FileField('logo_fr'),

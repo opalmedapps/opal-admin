@@ -507,6 +507,7 @@ def create_institution(institution_option: InstitutionOption) -> Institution:
         name=data['name'],
         name_fr=data['name_fr'],
         code=institution_option.value,
+        acronym=institution_option.value,
         support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
         terms_of_use_fr=terms_of_use_fr,

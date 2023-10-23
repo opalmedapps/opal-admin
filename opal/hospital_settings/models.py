@@ -38,6 +38,7 @@ class Institution(Location):  # type: ignore[django-manager-missing]
         _('Logo'),
         upload_to='uploads/institution-logo/',
     )
+    acronym = models.CharField(_('Acronym'), max_length=10, unique=True, default='')
     support_email = models.EmailField(
         verbose_name=_('Support email'),
     )
