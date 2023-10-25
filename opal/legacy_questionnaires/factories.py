@@ -36,7 +36,9 @@ class LegacyPurposeFactory(DjangoModelFactory):
 
     class Meta:
         model = models.LegacyPurpose
+        django_get_or_create = ('id',)
 
+    id = Sequence((lambda number: number + 1))  # noqa: A003
     title = SubFactory(LegacyDictionaryFactory)
     description = SubFactory(LegacyDictionaryFactory)
 

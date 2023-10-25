@@ -16,3 +16,4 @@ class DatabankConsentSerializer(DynamicFieldsSerializer):
             'has_labs',
             'has_questionnaires',
         ]
+        read_only_fields = ['patient']

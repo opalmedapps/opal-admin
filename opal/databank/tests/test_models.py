@@ -62,3 +62,10 @@ def test_shareddata_multiple_per_patient() -> None:
     factories.SharedData(databank_consent=databank_consent)
 
     assert SharedData.objects.count() == 3
+
+
+def test_valid_guid_generation() -> None:
+    """Test the GUID is correctly generated before saving the DatabankConsent model."""
+    consenting_patient = Patient(legacy_id=51)
+    databank_consent = factories.DatabankConsent(patient=consenting_patient)
+    databank_consent.full_clean()
