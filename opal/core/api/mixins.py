@@ -1,5 +1,7 @@
 """
-Custom mixin allows for creation, update, and partial update from a single class mixin.
+Custom mixins for the Django REST framework.
+
+`AllowPUTAsCreateMixin` allows for creation, update, and partial update from a single class mixin.
 
 In general, a view inheriting this mixin should specify:
     permission_classes
