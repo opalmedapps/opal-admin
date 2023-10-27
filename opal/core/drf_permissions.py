@@ -4,12 +4,14 @@ These permissions are provided for the project and intended to be reused.
 """
 from typing import TYPE_CHECKING, Optional
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import QuerySet
-from django.http import HttpRequest
 
 from rest_framework import exceptions, permissions
+from rest_framework.request import Request
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core import constants
 from opal.patients.models import Patient, Relationship, RelationshipStatus, RoleType
 
 if TYPE_CHECKING:
@@ -38,6 +40,90 @@ class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     }
 
 
+class IsSuperUser(permissions.IsAuthenticated):
+    """
+    Allows access only to super users.
+
+    This is an improvement over DRF's `IsAdminUser` which only checks for the user's `is_staff` field.
+    """
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and is a superuser.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+        """
+        return (
+            super().has_permission(request, view)
+            and request.user.is_superuser
+        )
+
+
+class _UsernameRequired(permissions.IsAuthenticated):
+    """
+    Allows access only to authenticated user with a given username.
+
+    Additionally, allows access to super users.
+
+    Do not use this permission class directly. Instead, use one of the subclasses.
+    Subclasses need to define the `required_username` attribute.
+    """
+
+    required_username: str
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and has the required username.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+
+        Raises:
+            ImproperlyConfigured: if the `required_username` attribute is not defined in the subclass
+        """
+        if not hasattr(self, 'required_username') or not self.required_username:
+            raise ImproperlyConfigured(
+                'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
+                    class_=self.__class__.__name__,
+                ),
+            )
+
+        return (
+            super().has_permission(request, view)
+            and (
+                str(request.user.username) == self.required_username
+                or request.user.is_superuser
+            )
+        )
+
+
+class IsListener(_UsernameRequired):
+    """Allows access only to the listener user and superusers."""
+
+    required_username = constants.USERNAME_LISTENER
+
+
+class IsRegistrationListener(_UsernameRequired):
+    """Allows access only to the registration listener user and superusers."""
+
+    required_username = constants.USERNAME_LISTENER_REGISTRATION
+
+
+class IsInterfaceEngine(_UsernameRequired):
+    """Allows access only to the interface engine user and superusers."""
+
+    required_username = constants.USERNAME_INTERFACE_ENGINE
+
+
 class CaregiverPatientPermissions(permissions.BasePermission):
     """
     Global permission check that validates the permission of a caregiver trying to access a patient's data.
@@ -47,7 +133,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -73,7 +159,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
 
         return True
 
-    def _get_caregiver_username(self, request: HttpRequest) -> str:
+    def _get_caregiver_username(self, request: Request) -> str:
         """
         Validate the existence of a caregiver username provided as input, and return it if provided.
 
@@ -234,7 +320,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed self relationship between a caregiver and a patient.
 
