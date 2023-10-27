@@ -9,6 +9,7 @@ from django.db import transaction
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
+from opal.core import constants
 from opal.users.models import User
 
 from .insert_test_data import InstitutionOption, create_institution, create_sites
@@ -71,7 +72,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Deleting existing data'))
 
             # keep system users
-            User.objects.exclude(username__in=['listener', 'interface-engine', 'opaladmin-backend-legacy']).delete()
+            User.objects.exclude(
+                username__in=[
+                    constants.USERNAME_LISTENER,
+                    constants.USERNAME_LISTENER_REGISTRATION,
+                    constants.USERNAME_INTERFACE_ENGINE,
+                    constants.USERNAME_BACKEND_LEGACY,
+                ],
+            ).delete()
             Group.objects.all().delete()
             SecurityQuestion.objects.all().delete()
 
@@ -112,13 +120,16 @@ class Command(BaseCommand):
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-        listener, _ = User.objects.get_or_create(username='listener')
+        listener, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
         listener.set_unusable_password()
         listener.save()
-        interface_engine, _ = User.objects.get_or_create(username='interface-engine')
+        listener_registration, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER_REGISTRATION)
+        listener_registration.set_unusable_password()
+        listener_registration.save()
+        interface_engine, _ = User.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
-        legacy_backend, _ = User.objects.get_or_create(username='opaladmin-backend-legacy')
+        legacy_backend, _ = User.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
 
@@ -183,10 +194,12 @@ class Command(BaseCommand):
 
         # get existing or create new tokens for the API users
         token_listener, _ = Token.objects.get_or_create(user=listener)
+        token_listener_registration, _ = Token.objects.get_or_create(user=listener_registration)
         token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
         token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
+        self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
 
