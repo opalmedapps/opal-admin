@@ -531,6 +531,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
+            self._validate_existing_relationship(cleaned_data)
 
             existing_user = self.existing_user
             patient = self.patient
@@ -627,6 +628,35 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 end_age='-{age}'.format(age=value['end_age']) if value['end_age'] else older_age,
             )
         return option_descriptions
+
+    def _validate_existing_relationship(self, cleaned_data: dict[str, Any]) -> None:
+        """
+        Validate the existing relationship selection by looking up the caregiver.
+
+        Look up the relationship by first **and** last name.
+        Add an error to the form if no user was found.
+
+        Args:
+            cleaned_data: the form's cleaned data, None if not available
+        """
+        cleaned_data = self.cleaned_data
+        # at the beginning (empty form) they are not in the cleaned data
+        if 'first_name' in cleaned_data and 'last_name' in cleaned_data and 'relationship_type' in cleaned_data:
+            first_name = cleaned_data['first_name']
+            last_name = cleaned_data['last_name']
+            relationship_type = cleaned_data['relationship_type']
+
+            self.existing_relationship = Relationship.objects.filter(
+                first_name=first_name,
+                last_name=last_name,
+                type=relationship_type,
+            ).first()
+
+            if not self.existing_relationship:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('No existing relationship could be found.'),
+                )
 
 
 # TODO: move this to the core app
