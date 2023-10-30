@@ -1479,6 +1479,37 @@ def test_accessrequestrequestorform_disable_fields() -> None:
         assert field.disabled
 
 
+def test_accessrequestrequestorform_existing_relationship() -> None:
+    """Ensure the `clean()` handles an existing caregiver already having a relationship."""
+    caregiver = Caregiver(
+        first_name='Test',
+        last_name='Caregiver',
+        email='test@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.mandatory(),
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.NEW.name,
+            'relationship_type': RelationshipType.objects.mandatory(),
+            'id_checked': True,
+            'first_name': 'Test',
+            'last_name': 'Caregiver',
+        },
+    )
+
+    # assert all fields are disabled
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == 'This Opal user already exists.'
+
+
 def test_accessrequestconfirmform() -> None:
     """Ensure the confirm form is invalid by default."""
     form = forms.AccessRequestConfirmForm(username='noone')

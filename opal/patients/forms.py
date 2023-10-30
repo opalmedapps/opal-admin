@@ -528,10 +528,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         super().clean()
         cleaned_data = self.cleaned_data
-
+        print('check\n')
+        print('hello\n')
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
-            self._validate_existing_relationship(cleaned_data)
 
             existing_user = self.existing_user
             patient = self.patient
@@ -544,6 +544,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 if relationship_type:
                     patient_instance = patient if isinstance(patient, Patient) else None
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
+        else:
+            self._validate_existing_relationship(cleaned_data)
 
         return cleaned_data
 
@@ -641,21 +643,19 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         cleaned_data = self.cleaned_data
         # at the beginning (empty form) they are not in the cleaned data
-        if 'first_name' in cleaned_data and 'last_name' in cleaned_data and 'relationship_type' in cleaned_data:
+        if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
             first_name = cleaned_data['first_name']
             last_name = cleaned_data['last_name']
-            relationship_type = cleaned_data['relationship_type']
 
-            self.existing_relationship = Relationship.objects.filter(
-                first_name=first_name,
-                last_name=last_name,
-                type=relationship_type,
+            existing_relationship = Relationship.objects.filter(
+                caregiver__user__first_name=first_name,
+                caregiver__user__last_name=last_name,
             ).first()
 
-            if not self.existing_relationship:
+            if existing_relationship:
                 self.add_error(
                     NON_FIELD_ERRORS,
-                    _('No existing relationship could be found.'),
+                    _('This Opal user already exists.'),
                 )
 
 
