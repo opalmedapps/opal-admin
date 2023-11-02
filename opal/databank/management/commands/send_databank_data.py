@@ -50,8 +50,8 @@ class Command(BaseCommand):
                 )
 
                 # Retrieve patient data for each module type and send all at once
-                combined_module_data: dict = {}
-                for idx, databank_patient in enumerate(patients_list):
+                combined_module_data: list = []
+                for databank_patient in patients_list:
                     databank_data = self._retrieve_databank_data_for_patient(databank_patient, module)
                     if databank_data:
                         nested_databank_data = self._nest_and_serialize_queryset(
@@ -59,9 +59,9 @@ class Command(BaseCommand):
                             databank_data,
                             module,
                         )
-                        combined_module_data[idx] = nested_databank_data
+                        combined_module_data.append(nested_databank_data)
                 if combined_module_data:
-                    self._send_to_oie_and_handle_response(combined_module_data)
+                    self._send_to_oie_and_handle_response({'patientList': combined_module_data})
             else:
                 self.stderr.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
@@ -165,6 +165,7 @@ class Command(BaseCommand):
             data: Databank dictionary of one of the five module types.
         """
         try:
+            print(json.dumps(data, default=str))
             requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
