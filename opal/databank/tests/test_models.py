@@ -9,7 +9,7 @@ from opal.patients.factories import Patient
 from .. import factories
 from ..models import SharedData
 
-pytestmark = pytest.mark.django_db()
+pytestmark = pytest.mark.django_db(databases=['default'])
 
 
 def test_databankconsent_factory() -> None:
