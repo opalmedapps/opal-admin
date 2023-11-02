@@ -44,6 +44,20 @@ class LegacyPatientFactory(DjangoModelFactory):
     patient_aria_ser = Sequence(lambda number: number + 1)
 
 
+class LegacyPatientControlFactory(DjangoModelFactory):
+    """Model factory for Legacy PatientControl."""
+
+    class Meta:
+        model = models.LegacyPatientControl
+        django_get_or_create = ('patient',)
+
+    patient = 51
+    patientupdate = 1
+    lasttransferred = timezone.now()
+    lastupdated = timezone.now()
+    transferflag = 0
+
+
 class LegacyNotificationFactory(DjangoModelFactory):
     """Model factory for Legacy notifications."""
 
