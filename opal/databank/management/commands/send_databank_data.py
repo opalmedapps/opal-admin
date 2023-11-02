@@ -165,9 +165,8 @@ class Command(BaseCommand):
             data: Databank dictionary of one of the five module types.
         """
         try:
-            print(json.dumps(data, default=str))
             requests.post(
-                url=f'{settings.OIE_HOST}/databank/post',
+                url=f'{settings.OIE_HOST}/databank',
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 json=json.dumps(data, default=str),
                 timeout=5,
