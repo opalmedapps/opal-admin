@@ -28,6 +28,7 @@ class User(DjangoModelFactory):
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
+    phone_number = ''
 
 
 class Caregiver(User):
