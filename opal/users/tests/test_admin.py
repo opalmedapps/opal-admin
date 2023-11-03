@@ -1,7 +1,7 @@
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
 
 from ..admin import UserAdmin
-from ..models import User
 
 site = AdminSite()
 
