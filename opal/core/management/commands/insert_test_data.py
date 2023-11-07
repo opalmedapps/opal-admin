@@ -142,6 +142,8 @@ MRN_DATA = MappingProxyType({
         'Bart Simpson': [('MCH', '9999996')],
         'Lisa Simpson': [('MCH', '9999993')],
         'Mona Simpson': [('RVH', '9999993')],
+        'Fred Flintstone': [('RVH', '9999991')],
+        'Pebbles Flintstone': [('MCH', '9999999')],
     },
     InstitutionOption.chusj: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -294,6 +296,26 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             date_of_death=_relative_date(today, -2),
         )
 
+        fred = _create_patient(
+            first_name='Fred',
+            last_name='Flintstone',
+            date_of_birth=date(1960, 8, 1),
+            sex=Patient.SexType.MALE,
+            ramq='FLIF60080199',
+            legacy_id=56,
+            mrns=mrn_data['Fred Flintstone'],
+        )
+
+        pebbles = _create_patient(
+            first_name='Pebbles',
+            last_name='Flintstone',
+            date_of_birth=_create_date(9, 2, 1),
+            sex=Patient.SexType.FEMALE,
+            ramq='FLIP15022299',
+            legacy_id=57,
+            mrns=mrn_data['Pebbles Flintstone'],
+        )
+
     bart = _create_patient(
         first_name='Bart',
         last_name='Simpson',
@@ -358,6 +380,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             phone_number='+15144758941',
             legacy_id=4,
             is_active=False,
+        )
+
+        user_fred = _create_caregiver(
+            first_name='Fred',
+            last_name='Flintstone',
+            username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
+            email='fred@opalmedapps.ca',
+            language='en',
+            phone_number='+15144758941',
+            legacy_id=5,
         )
 
     # get relationship types
@@ -436,6 +468,27 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             end_date=date_bart_fourteen,
         )
 
+        # Fred --> Fred: Self
+        _create_relationship(
+            patient=fred,
+            caregiver=user_fred,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -2),
+            start_date=_relative_date(today, -8),
+        )
+
+        # Fred --> Pebbles: Guardian/Parent
+        _create_relationship(
+            patient=pebbles,
+            caregiver=user_fred,
+            relationship_type=type_parent,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(pebbles.date_of_birth, 14),
+        )
+
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
         patient=bart,
@@ -471,6 +524,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     # create the same security question and answers for the caregivers
     if not is_pediatric:
         _create_security_answers(user_homer)
+        _create_security_answers(user_fred)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
