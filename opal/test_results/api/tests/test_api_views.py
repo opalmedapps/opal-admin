@@ -1,15 +1,12 @@
 """Test module for the REST API endpoints of the `test_results` app."""
-
 import json
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils import timezone
 
-import py
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
 from pytest_django.fixtures import SettingsWrapper
@@ -23,7 +20,7 @@ from opal.legacy.factories import LegacyAliasExpressionFactory, LegacyPatientFac
 from opal.patients import models as patient_models
 from opal.patients.factories import Patient, Relationship
 from opal.test_results import models as test_results_models
-from opal.users import factories as user_factories
+from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -33,12 +30,11 @@ PATIENT_UUID = uuid4()
 class TestCreatePathologyView:
     """Class wrapper for pathology reports endpoint tests."""
 
-    def test_pathology_create_unauthorized(
+    def test_pathology_create_unauthenticated(
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
-        # Make a `POST` request without proper permissions.
+        """Ensure the endpoint returns a 403 error if the user is unauthenticated."""
         response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
@@ -51,27 +47,34 @@ class TestCreatePathologyView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
+    def test_pathology_create_unauthorized(
+        self,
+        user_api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        response = user_api_client.post(
+            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
+            data=self._get_valid_input_data(),
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
     def test_pathology_create_patient_uuid_does_not_exist(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
-        patient = Patient(
-            ramq='TEST01161972',
-            uuid=uuid4(),
-        )
+        api_client.force_login(interface_engine_user)
 
-        Relationship(
-            patient=patient,
-            type=patient_models.RelationshipType.objects.self_type(),
-        )
-
-        client = self._get_client_with_permissions(api_client)
-        data = self._get_valid_input_data()
-
-        response = client.post(
+        response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
-            data=data,
+            data=self._get_valid_input_data(),
             format='json',
         )
 
@@ -87,13 +90,14 @@ class TestCreatePathologyView:
     def test_pathology_create_raises_exception(
         self,
         api_client: APIClient,
-        tmpdir: py.path.local,
+        tmp_path: Path,
         mocker: MockerFixture,
         settings: SettingsWrapper,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises exception in case of unsuccessful insertion to the OpalDB.Documents table."""
-        settings.PATHOLOGY_REPORTS_PATH = Path(str(tmpdir))
-        Institution(pk=1)
+        settings.PATHOLOGY_REPORTS_PATH = tmp_path
+        Institution()
 
         patient = Patient(
             ramq='TEST01161972',
@@ -113,9 +117,9 @@ class TestCreatePathologyView:
         generated_at = timezone.localtime(timezone.now())
         mocker.patch.object(timezone, 'now', return_value=generated_at)
 
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
 
-        response = client.post(
+        response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
             format='json',
@@ -131,13 +135,14 @@ class TestCreatePathologyView:
     def test_pathology_create_success(
         self,
         api_client: APIClient,
-        tmpdir: py.path.local,
+        tmp_path: Path,
         mocker: MockerFixture,
         settings: SettingsWrapper,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
-        settings.PATHOLOGY_REPORTS_PATH = Path(str(tmpdir))
-        Institution(pk=1)
+        settings.PATHOLOGY_REPORTS_PATH = tmp_path
+        Institution()
 
         patient = Patient(
             ramq='TEST01161972',
@@ -164,9 +169,9 @@ class TestCreatePathologyView:
         # mock the current timezone to simulate the local time
         generated_at = timezone.localtime(timezone.now())
         mocker.patch.object(timezone, 'now', return_value=generated_at)
+        api_client.force_login(interface_engine_user)
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
             format='json',
@@ -213,24 +218,3 @@ class TestCreatePathologyView:
             'reported_at': '1985-12-01 10:30:30',
             'case_number': 'test-case-number',
         }
-
-    def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
-        """
-        Add permissions to a user and authorize it.
-
-        Returns:
-            Authorized API client.
-        """
-        user = user_factories.User(
-            username='nonhumanuser',
-            first_name='nonhumanuser',
-            last_name='nonhumanuser',
-        )
-        user.user_permissions.add(
-            Permission.objects.get(codename='add_generaltest'),
-            Permission.objects.get(codename='add_pathologyobservation'),
-            Permission.objects.get(codename='add_note'),
-            Permission.objects.get(codename='change_patient'),
-        )
-        api_client.force_login(user=user)
-        return api_client

@@ -1,11 +1,13 @@
 from typing import Any, Optional
 
+from django.contrib.auth.models import Group
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
 from django.test import RequestFactory
 from django.utils import timezone
 
 import pytest
+from pytest_django.fixtures import SettingsWrapper
 from rest_framework import exceptions, generics
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -191,7 +193,7 @@ class TestCaregiverSelfPermissions:
 class _ModelView(generics.ListAPIView):
     model = User
     queryset = User.objects.none()
-    permission_classes = [drf_permissions.FullDjangoModelPermissions]
+    permission_classes = (drf_permissions.FullDjangoModelPermissions,)
 
 
 class TestFullDjangoModelPermissions:
@@ -249,6 +251,39 @@ def test_issuperuser_authorized() -> None:
     assert drf_permissions.IsSuperUser().has_permission(request, APIView())
 
 
+def test_isormsuser_unauthenticated() -> None:
+    """The `IsORMSUser` permission requires an authenticated user."""
+    request = Request(RequestFactory().get('/'))
+
+    assert not drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_unauthorized() -> None:
+    """The `IsSuperUser` permission rejects users that are not an ORMS user."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_staff=True)
+
+    assert not drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_superuser() -> None:
+    """The `IsORMSUser` permission allows access to a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_orms_user(settings: SettingsWrapper) -> None:
+    """The `IsORMSUser` permission grants access to an ORMS user."""
+    request = Request(RequestFactory().get('/'))
+    user = User.objects.create(username='testuser')
+    user.groups.add(Group.objects.create(name=settings.ORMS_GROUP_NAME))
+    request.user = user
+
+    assert drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
 def test_username_required_missing_attribute() -> None:
     """The UserNameRequired permission asserts that the required_username attribute is set."""
     with pytest.raises(ImproperlyConfigured):
@@ -259,6 +294,7 @@ def test_username_required_missing_attribute() -> None:
     drf_permissions.IsListener,
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
 ])
 def test_username_required_unauthenticated(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions require the user to be authenticated."""
@@ -271,6 +307,7 @@ def test_username_required_unauthenticated(permission_class: type[drf_permission
     drf_permissions.IsListener,
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
 ])
 def test_username_required_admin_permitted(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions succeed if the user is an admin (superuser)."""
@@ -284,6 +321,7 @@ def test_username_required_admin_permitted(permission_class: type[drf_permission
     drf_permissions.IsListener,
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
 ])
 def test_username_required_wrong_username(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions fail if the user does not have the expected username."""
@@ -297,6 +335,7 @@ def test_username_required_wrong_username(permission_class: type[drf_permissions
     (drf_permissions.IsListener, constants.USERNAME_LISTENER),
     (drf_permissions.IsRegistrationListener, constants.USERNAME_LISTENER_REGISTRATION),
     (drf_permissions.IsInterfaceEngine, constants.USERNAME_INTERFACE_ENGINE),
+    (drf_permissions.IsLegacyBackend, constants.USERNAME_BACKEND_LEGACY),
 ])
 def test_username_required_correct_username(
     permission_class: type[drf_permissions._UsernameRequired],

@@ -43,19 +43,26 @@ class TestQuestionnairesReportView:
         url = reverse('api:questionnaires-reviewed')
         return api_client.post(url, data={'mrn': mrn, 'site': site}, format='json')
 
-    def test_unauthenticated(self, api_client: APIClient, admin_user: User) -> None:
+    def test_unauthenticated_unauthorized(self, api_client: APIClient, user: User, orms_user: User) -> None:
         """Test the request while unauthenticated."""
-        hospital_patient = patient_factories.HospitalPatient()
-
         url = reverse('api:questionnaires-reviewed')
-        response = api_client.post(
-            url,
-            data={'mrn': '9999996', 'site': hospital_patient.site.code},
-            format='json',
-        )
+        response = api_client.post(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert 'Authentication' in str(response.data['detail'])
+
+        api_client.force_login(user)
+
+        response = api_client.post(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        api_client.force_login(orms_user)
+
+        response = api_client.post(url)
+
+        # input validation failed
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_invalid_mrn_length(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an MRN that has more than 10 characters."""

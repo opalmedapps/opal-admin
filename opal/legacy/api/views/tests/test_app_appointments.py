@@ -1,5 +1,6 @@
 import datetime as dt
 from datetime import datetime
+from http import HTTPStatus
 
 from django.urls import reverse
 from django.utils import timezone
@@ -9,7 +10,6 @@ from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
-from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.patients import factories as patient_factories
 from opal.users.models import User
 
@@ -21,12 +21,23 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 class TestAppAppointmentsView:
     """Class wrapper for appointments request tests."""
 
-    class_instance = AppAppointmentsView()
+    def test_unauthenticated(self, api_client: APIClient) -> None:
+        """Unauthenticated requests are forbidden."""
+        response = api_client.get(reverse('api:app-appointments'))
 
-    def test_get_appointment_data_request(self, api_client: APIClient, admin_user: User) -> None:
+        assert response.status_code == HTTPStatus.FORBIDDEN
+
+    def test_no_permission(self, api_client: APIClient, user: User) -> None:
+        """Requests from an unauthorized user are forbidden."""
+        api_client.force_login(user)
+        response = api_client.get(reverse('api:app-appointments'))
+
+        assert response.status_code == HTTPStatus.FORBIDDEN
+
+    def test_get_appointment_data_request(self, api_client: APIClient, listener_user: User) -> None:
         """Test if the response as the required keys."""
         user = factories.LegacyUserFactory()
-        api_client.force_login(user=admin_user)
+        api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
         response = api_client.get(reverse('api:app-appointments'))
 
@@ -35,7 +46,7 @@ class TestAppAppointmentsView:
     def test_get_appointment_data_return_value(
         self,
         api_client: APIClient,
-        admin_user: User,
+        listener_user: User,
         mocker: MockerFixture,
     ) -> None:
         """Test the return value of get appointment data."""
@@ -46,7 +57,7 @@ class TestAppAppointmentsView:
 
         relationship = patient_factories.Relationship(status='CON')
         user_name = relationship.caregiver.user.username
-        api_client.force_login(user=admin_user)
+        api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user_name)
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)

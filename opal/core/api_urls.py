@@ -71,7 +71,7 @@ urlpatterns = [
         caregivers_views.CaregiverProfileView.as_view(),
         name='caregivers-profile',
     ),
-    path(  # Only use this endpoint between the Listener and the backend
+    path(
         'caregivers/<str:username>/security-questions/',
         SecurityAnswerViewSet.as_view({'get': 'list'}),
         name='caregivers-securityquestions-list',
@@ -82,8 +82,6 @@ urlpatterns = [
         name='caregivers-securityquestions-detail',
     ),
     path(
-        # Security: this endpoint exposes security answers, and should only be called by the listener
-        # TODO: Use permissions (e.g. group permissions) to restrict access of this endpoint only to the listener
         'caregivers/<str:username>/security-questions/random/',
         SecurityAnswerViewSet.as_view({'get': 'random'}),
         name='caregivers-securityquestions-random',
@@ -164,7 +162,7 @@ urlpatterns = [
     ),
     path(
         'patients/<uuid:uuid>/health-data/viewed/',
-        data_views.ViewedQuantitySampleView.as_view(),
+        data_views.MarkQuantitySampleAsViewedView.as_view(),
         name='patient-viewed-health-data-update',
     ),
 

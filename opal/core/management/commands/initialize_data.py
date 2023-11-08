@@ -136,31 +136,17 @@ class Command(BaseCommand):
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
         view_site = _find_permission('hospital_settings', 'view_site')
-        view_caregiver_profile = _find_permission('caregivers', 'view_caregiverprofile')
-        view_registration_code = _find_permission('caregivers', 'view_registrationcode')
-        view_hospital_patient = _find_permission('patients', 'view_hospitalpatient')
-        view_patient = _find_permission('patients', 'view_patient')
-        view_relationship = _find_permission('patients', 'view_relationship')
-        change_patient = _find_permission('patients', 'change_patient')
+        view_securityquestion = _find_permission('caregivers', 'view_securityquestion')
 
         listener.user_permissions.set([
             view_institution,
             view_site,
-            view_caregiver_profile,
-            view_hospital_patient,
-            view_registration_code,
-            view_patient,
-            view_relationship,
+            view_securityquestion,
         ])
 
-        # OIE
-        interface_engine.user_permissions.set([
-            change_patient,
-        ])
-
-        # Legacy OpalAdmin Backend
-        legacy_backend.user_permissions.set([
-            view_patient,
+        listener_registration.user_permissions.set([
+            view_institution,
+            view_securityquestion,
         ])
 
         # Medical Records
