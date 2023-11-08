@@ -1,9 +1,9 @@
 """Collection of api views used to get appointment details."""
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import IsListener
 from opal.legacy import models
 
 from ..serializers import LegacyAppointmentDetailedSerializer
@@ -12,7 +12,7 @@ from ..serializers import LegacyAppointmentDetailedSerializer
 class AppAppointmentsView(APIView):
     """Class to return appointments detail data."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
 
     def get(self, request: Request) -> Response:
         """

@@ -1,10 +1,8 @@
 """Test module for the REST API endpoints of the `databank` app."""
-
 import json
 from typing import Any
 from uuid import uuid4
 
-from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
@@ -12,8 +10,9 @@ from pytest_django.asserts import assertContains, assertJSONEqual
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
 from opal.patients.factories import Patient
-from opal.users import factories as user_factories
+from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
@@ -23,22 +22,23 @@ PATIENT_UUID = uuid4()
 class TestCreateDatabankConsentView:
     """Class wrapper for databank endpoint tests."""
 
-    def test_databank_consent_form_fixture(self, databank_consent_questionnaire_and_response: dict) -> None:
+    def test_databank_consent_form_fixture(
+        self,
+        databank_consent_questionnaire_and_response: tuple[LegacyPatient, LegacyQuestionnaire],
+    ) -> None:
         """Test the fixture from conftest creates a proper consent questionnaire."""
-        consenting_patient = databank_consent_questionnaire_and_response['patient']
-        consent_questionnaire = databank_consent_questionnaire_and_response['questionnaire']
-        assert consenting_patient
-        assert consent_questionnaire
+        consenting_patient = databank_consent_questionnaire_and_response[0]
+        consent_questionnaire = databank_consent_questionnaire_and_response[1]
+
         assert consenting_patient.external_id == 51
         assert consent_questionnaire.title.content == 'Databank Consent Questionnaire'
         assert consent_questionnaire.purpose.title.content == 'Consent'
 
-    def test_databank_consent_create_unauthorized(
+    def test_databank_consent_create_unauthenticated(
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
-        # Make a `POST` request without proper permissions.
+        """Ensure the endpoint returns a 403 error if the user is unauthenticated."""
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
@@ -51,15 +51,33 @@ class TestCreateDatabankConsentView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
+    def test_databank_consent_create_unauthorized(
+        self,
+        user_api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        response = user_api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
+            data=self._get_valid_input_data(),
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
     def test_databank_consent_create_patient_uuid_does_not_exist(
         self,
         api_client: APIClient,
+        listener_user: User,
     ) -> None:
         """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(listener_user)
         data = self._get_valid_input_data()
 
-        response = client.post(
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
             format='json',
@@ -77,6 +95,7 @@ class TestCreateDatabankConsentView:
     def test_databank_consent_create_missing_data(
         self,
         api_client: APIClient,
+        listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept partial data."""
         patient = Patient(
@@ -84,8 +103,8 @@ class TestCreateDatabankConsentView:
             uuid=PATIENT_UUID,
         )
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        api_client.force_login(listener_user)
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data={
                 'has_appointments': True,
@@ -107,6 +126,7 @@ class TestCreateDatabankConsentView:
     def test_databank_consent_create_blank_city_of_birth(
         self,
         api_client: APIClient,
+        listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept a blank city of birth."""
         patient = Patient(
@@ -114,8 +134,8 @@ class TestCreateDatabankConsentView:
             uuid=PATIENT_UUID,
         )
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        api_client.force_login(listener_user)
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data={
                 'has_appointments': True,
@@ -138,6 +158,7 @@ class TestCreateDatabankConsentView:
     def test_databank_consent_create_blank_middle_name(
         self,
         api_client: APIClient,
+        listener_user: User,
     ) -> None:
         """Ensure the endpoint allows blank middle name (middle name not required for GUID)."""
         patient = Patient(
@@ -145,8 +166,8 @@ class TestCreateDatabankConsentView:
             uuid=PATIENT_UUID,
         )
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        api_client.force_login(listener_user)
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data={
                 'has_appointments': True,
@@ -165,15 +186,16 @@ class TestCreateDatabankConsentView:
     def test_databank_consent_create_success(
         self,
         api_client: APIClient,
+        listener_user: User,
     ) -> None:
         """Ensure the endpoint can create databank consent for a full input with no errors."""
         patient = Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
+        api_client.force_login(listener_user)
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data=self._get_valid_input_data(),
             format='json',
@@ -196,22 +218,3 @@ class TestCreateDatabankConsentView:
             'middle_name': 'Juliet',
             'city_of_birth': 'Springfield',
         }
-
-    def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
-        """
-        Add permissions to a user and authorize it.
-
-        Returns:
-            Authorized API client.
-        """
-        user = user_factories.User(
-            username='nonhumanuser',
-            first_name='nonhumanuser',
-            last_name='nonhumanuser',
-        )
-        user.user_permissions.add(
-            Permission.objects.get(codename='add_databankconsent'),
-            Permission.objects.get(codename='change_patient'),
-        )
-        api_client.force_login(user=user)
-        return api_client

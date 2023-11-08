@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from http import HTTPStatus
 
 from django.urls.base import reverse
@@ -5,23 +6,33 @@ from django.urls.base import reverse
 import pytest
 from rest_framework.test import APIClient
 
+from opal.users.models import User
+
 from .. import factories
 
 pytestmark = pytest.mark.django_db
 
 
-def test_api_institution_unauthenticated(api_client: APIClient) -> None:
+def test_api_institution_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    user_with_permission: Callable[[str], User],
+) -> None:
     """Ensure that the API to retrieve the singleton institution requires an authenticated user."""
     response = api_client.get(reverse('api:institution-detail'))
 
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
 
+    api_client.force_login(user)
+    response = api_client.get(reverse('api:institution-detail'))
 
-def test_api_institution_no_permission(user_api_client: APIClient) -> None:
-    """Ensure that the API to retrieve the singleton institution requires a permission."""
-    response = user_api_client.get(reverse('api:institution-detail'))
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
 
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    factories.Institution(name='Test', code='TST')
+    api_client.force_login(user_with_permission('hospital_settings.view_institution'))
+    response = api_client.get(reverse('api:institution-detail'))
+
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_api_institution_not_found(admin_api_client: APIClient) -> None:

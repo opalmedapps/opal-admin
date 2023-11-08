@@ -1,12 +1,11 @@
 """Test module for the `patients` app REST API endpoints."""
-
 import copy
 import json
+from collections.abc import Callable
 from datetime import datetime
 from http import HTTPStatus
 from typing import Any
 
-from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils import timezone
 
@@ -27,6 +26,33 @@ from opal.users.models import Caregiver, User
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
+def test_my_caregiver_list_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    listener_user: User,
+) -> None:
+    """Ensure that the API to create quantity samples requires an authenticated user."""
+    patient = Patient()
+    url = reverse('api:caregivers-list', kwargs={'legacy_id': patient.legacy_id})
+
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(listener_user)
+
+    response = api_client.options(url)
+
+    # the CaregiverSelfPermissions permission is reporting the missing header
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert 'Appuserid' in response.content.decode()
+
+
 def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     """Test the return of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
@@ -38,15 +64,15 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
         patient=patient,
         caregiver=caregiver2,
         status='CON',
-        # Pytest insists on fetching the SELF role type instance using a queryset for some reason, factory doesn't work
         type=patient_models.RelationshipType.objects.self_type(),
     )
-
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
+
     response = api_client.get(reverse(
         'api:caregivers-list',
         kwargs={'legacy_id': patient.legacy_id},
     ))
+
     assert response.status_code == HTTPStatus.OK
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,
@@ -80,8 +106,31 @@ def test_my_caregiver_list_failure(api_client: APIClient, admin_user: User) -> N
     assert response.status_code == HTTPStatus.FORBIDDEN
 
 
-class TestApiRetrieveRegistrationDetails:
+class TestRetrieveRegistrationDetailsView:
     """A class to test RetrieveRegistrationDetails apis."""
+
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        registration_listener_user: User,
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:registration-code', kwargs={'code': '123456'})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(registration_listener_user)
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
 
     def test_api_retrieve_registration(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration code with summary serializer."""
@@ -181,7 +230,7 @@ class TestApiRetrieveRegistrationDetails:
         }
 
 
-class TestApiRegistrationCompletion:
+class TestRegistrationCompletionView:
     """Test class tests the api registration/<str: code>/register."""
 
     input_data = {
@@ -206,6 +255,29 @@ class TestApiRegistrationCompletion:
         ],
     }
 
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        registration_listener_user: User,
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:registration-register', kwargs={'code': '123456'})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(registration_listener_user)
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
+
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
@@ -214,6 +286,7 @@ class TestApiRegistrationCompletion:
         caregiver = CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
+
         response = api_client.post(
             reverse(
                 'api:registration-register',
@@ -222,6 +295,7 @@ class TestApiRegistrationCompletion:
             data=self.input_data,
             format='json',
         )
+
         registration_code.refresh_from_db()
         security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.OK
@@ -369,17 +443,12 @@ class TestApiRegistrationCompletion:
 class TestPatientDemographicView:
     """Class wrapper for patient demographic endpoint tests."""
 
-    def test_demographic_update_unauthorized(
+    def test_demographic_update_unauthenticated(
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
-        # Make a `PUT` request without proper permissions.
-        response = api_client.put(
-            reverse('api:patient-demographic-update'),
-            data=self._get_valid_input_data(),
-            format='json',
-        )
+        """Ensure the endpoint returns a 403 error if the user is unauthenticated."""
+        response = api_client.put(reverse('api:patient-demographic-update'))
 
         assertContains(
             response=response,
@@ -387,29 +456,46 @@ class TestPatientDemographicView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
-        # Make a `PATCH` request without proper permissions.
-        response = api_client.patch(
-            reverse('api:patient-demographic-update'),
-            data=self._get_valid_input_data(),
-            format='json',
-        )
+        response = api_client.patch(reverse('api:patient-demographic-update'))
 
         assertContains(
             response=response,
             text='Authentication credentials were not provided.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_demographic_update_unauthorized(
+        self,
+        user_api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        response = user_api_client.put(reverse('api:patient-demographic-update'))
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+        response = user_api_client.patch(reverse('api:patient-demographic-update'))
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
     def test_demographic_update_with_empty_mrns(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint returns an error if the MRNs list is empty."""
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
         data = self._get_valid_input_data()
         data['mrns'] = []
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
             format='json',
@@ -436,15 +522,16 @@ class TestPatientDemographicView:
     def test_demographic_update_invalid_mrns(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint returns an error if the MRNs list dictionaries are invalid."""
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
         data = self._get_valid_input_data()
         data['mrns'] = [
             {'site': 'RVH', 'mrn_error': '9999996', 'is_active_erorr': True},
         ]
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
             format='json',
@@ -465,7 +552,7 @@ class TestPatientDemographicView:
             {'mrn': '9999996', 'is_active': True},
         ]
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=data,
             format='json',
@@ -483,11 +570,12 @@ class TestPatientDemographicView:
     def test_demographic_update_with_invalid_sites(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint returns an error if provided sites do not exist."""
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -507,7 +595,7 @@ class TestPatientDemographicView:
             ],
         )
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -530,14 +618,15 @@ class TestPatientDemographicView:
     def test_demographic_update_mrn_site_pairs_do_not_exist(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if provided MRN/site pairs do not exist."""
         Site(code='RVH')
         Site(code='MGH')
 
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -553,7 +642,7 @@ class TestPatientDemographicView:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -572,6 +661,7 @@ class TestPatientDemographicView:
     def test_demographic_update_different_patients_error(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if MRNs referring to different patients."""
         patient_one = Patient()
@@ -588,9 +678,9 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -606,7 +696,7 @@ class TestPatientDemographicView:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -625,6 +715,7 @@ class TestPatientDemographicView:
     def test_demographic_update_success(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info with no errors."""
         patient = Patient(ramq='TEST01161972')
@@ -645,8 +736,8 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.put(
+        api_client.force_login(interface_engine_user)
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -659,7 +750,7 @@ class TestPatientDemographicView:
             expected_data=self._get_valid_input_data(),
         )
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -675,6 +766,7 @@ class TestPatientDemographicView:
     def test_demographic_update_no_relationship(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info when the patient does not have a self relationship (no user)."""
         rvh_site = Site(code='RVH')
@@ -692,8 +784,8 @@ class TestPatientDemographicView:
             site=mgh_site,
         )
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.put(
+        api_client.force_login(interface_engine_user)
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -706,7 +798,7 @@ class TestPatientDemographicView:
             expected_data=self._get_valid_input_data(),
         )
 
-        response = client.patch(
+        response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
             format='json',
@@ -722,6 +814,7 @@ class TestPatientDemographicView:
     def test_demographic_update_deceased_patient(
         self,
         api_client: APIClient,
+        interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint keeps the relationships as is."""
         patient = Patient(ramq='TEST01161972')
@@ -748,13 +841,13 @@ class TestPatientDemographicView:
             site=Site(code='MGH'),
         )
 
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(interface_engine_user)
         payload = self._get_valid_input_data()
         payload['date_of_death'] = datetime.now().replace(
             microsecond=0,
         ).astimezone().isoformat()
 
-        response = client.put(
+        response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=payload,
             format='json',
@@ -795,26 +888,32 @@ class TestPatientDemographicView:
             'sex': 'F',
         }
 
-    def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
-        """
-        Add permissions to a user and authorize it.
-
-        Returns:
-            Authorized API client.
-        """
-        user = caregiver_factories.User(
-            username='nonhumanuser',
-            first_name='',
-            last_name='',
-        )
-        permission = Permission.objects.get(codename='change_patient')
-        user.user_permissions.add(permission)
-        api_client.force_login(user=user)
-        return api_client
-
 
 class TestPatientCaregiverDevicesView:
     """Class wrapper for patient caregiver devices endpoint tests."""
+
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        legacy_backend_user: User,
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:patient-caregiver-devices', kwargs={'legacy_id': 1})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(legacy_backend_user)
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
 
     def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test get patient caregiver devices success."""
@@ -871,12 +970,35 @@ class TestPatientCaregiverDevicesView:
 class TestPatientUpdateView:
     """Class wrapper for patient update endpoint tests."""
 
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        user_with_permission: Callable[[str], User],
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:patient-update', kwargs={'legacy_id': 42})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(user_with_permission('patients.view_patient'))
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
+
     def test_get_patient_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
         """Test patient updates data access success with superuser."""
         api_client.force_login(user=admin_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -886,7 +1008,7 @@ class TestPatientUpdateView:
         )
 
         patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
@@ -895,7 +1017,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -905,27 +1027,8 @@ class TestPatientUpdateView:
         )
 
         patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK
         assert patient.data_access == 'ALL'
-
-    def test_get_patient_update_no_permission(self, api_client: APIClient) -> None:
-        """Test patient updates data access failure without permission."""
-        user = caregiver_factories.User()
-        api_client.force_login(user=user)
-        legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
-            reverse(
-                'api:patient-update',
-                kwargs={'legacy_id': 1},
-            ),
-            data={'data_access': 'ALL'},
-            format='json',
-        )
-
-        patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.FORBIDDEN
-        assert patient.data_access != 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
     def test_get_patient_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
@@ -933,7 +1036,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -942,9 +1045,9 @@ class TestPatientUpdateView:
             format='json',
         )
 
-        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert patient.data_access == 'NTK'
-        assert str(res.data['data_access']) == '{0}'.format(
+        assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='\"\" is not a valid choice.', code='invalid_choice')]",
         )
 
@@ -954,7 +1057,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -963,14 +1066,14 @@ class TestPatientUpdateView:
             format='json',
         )
 
-        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert patient.data_access == 'NTK'
-        assert str(res.data['data_access']) == '{0}'.format(
+        assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='This field is required.', code='required')]",
         )
 
 
-class TestApiPatientExists:
+class TestPatientExistsView:
     """Test class tests the api patients/exists."""
 
     input_data_cases = {
@@ -980,6 +1083,29 @@ class TestApiPatientExists:
         'multiple_patients': [{'site_code': 'RVH', 'mrn': '9999996'}, {'site_code': 'RVH', 'mrn': '9999993'}],
         'invalid_mrn': [{'site_code': 'RVH', 'mrn': '111111111111111111'}],
     }
+
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        interface_engine_user: User,
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:patient-exists')
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(interface_engine_user)
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
 
     def test_patient_exists_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api patient exists success."""

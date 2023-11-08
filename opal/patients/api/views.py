@@ -1,6 +1,5 @@
 """This module provides `APIViews` for the `patients` app REST APIs."""
-
-from typing import Any, Type
+from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db import transaction
@@ -9,14 +8,20 @@ from django.db.models.query import QuerySet
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions, FullDjangoModelPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import (
+    CaregiverSelfPermissions,
+    FullDjangoModelPermissions,
+    IsInterfaceEngine,
+    IsLegacyBackend,
+    IsListener,
+    IsRegistrationListener,
+)
 
 from .. import utils
 from ..api.serializers import (
@@ -43,7 +48,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             status=caregiver_models.RegistrationCodeStatus.NEW,
         )
     )
-
+    permission_classes = (IsRegistrationListener,)
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
@@ -62,12 +67,12 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
+    def get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
-            args (list): request parameters
-            kwargs (dict): request parameters
+            args: request parameters
+            kwargs: request parameters
 
         Returns:
             The expected serializer according to the request parameter.
@@ -81,9 +86,7 @@ class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
     serializer_class = caregiver_serializers.RegistrationRegisterSerializer
-
-    # TODO Remove or keep permission here
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
     def post(self, request: Request, code: str) -> Response:
@@ -151,7 +154,7 @@ class CaregiverRelationshipView(ListAPIView):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
-    permission_classes = [IsAuthenticated, CaregiverSelfPermissions]
+    permission_classes = (IsListener, CaregiverSelfPermissions)
 
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.
@@ -169,7 +172,7 @@ class CaregiverRelationshipView(ListAPIView):
 class PatientDemographicView(UpdateAPIView):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
-    permission_classes = [UpdateModelPermissions]
+    permission_classes = (IsInterfaceEngine,)
     queryset = Patient.objects.prefetch_related(
         'hospital_patients__site',
         'relationships__type',
@@ -225,6 +228,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
             'relationships__caregiver__devices',
         )
     )
+    permission_classes = (IsLegacyBackend,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'
@@ -234,7 +238,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
 class PatientUpdateView(UpdateAPIView):
     """Class handling PUT requests for patient access level update."""
 
-    permission_classes = [FullDjangoModelPermissions]
+    permission_classes = (FullDjangoModelPermissions,)
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'
@@ -280,7 +284,7 @@ class PatientExistsView(APIView):
     ```
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsInterfaceEngine,)
 
     def post(self, request: Request) -> Response:
         """

@@ -1,10 +1,9 @@
 """Module providing API views for the `databank` app."""
-
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers
 
-from opal.core.drf_permissions import CreateModelPermissions
+from opal.core.drf_permissions import IsListener
 from opal.patients.models import Patient
 from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
@@ -16,7 +15,9 @@ class CreateDatabankConsentView(generics.CreateAPIView):
     """`CreateAPIView` for handling POST requests for the `DatabankConsent` instances."""
 
     queryset = DatabankConsent.objects.none()
-    permission_classes = [CreateModelPermissions]
+    # TODO: enforce user having access to this patient only
+    # TODO: add CaregiverPermissions?
+    permission_classes = (IsListener,)
     serializer_class = DatabankConsentSerializer
 
     def perform_create(self, serializer: serializers.BaseSerializer[DatabankConsent]) -> None:

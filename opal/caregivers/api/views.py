@@ -12,7 +12,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
 from rest_framework import serializers as drf_serializers
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,6 +24,7 @@ from opal.caregivers.api.serializers import (
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.api.mixins import AllowPUTAsCreateMixin
+from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -44,6 +44,7 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
             'relationship__patient__hospital_patients',
         ).annotate(code_sha512=SHA512('code')).filter(status=RegistrationCodeStatus.NEW)
     )
+    permission_classes = (IsRegistrationListener,)
     serializer_class = RegistrationEncryptionInfoSerializer
     lookup_url_kwarg = 'hash'
     lookup_field = 'code_sha512'
@@ -52,7 +53,7 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
 class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
     """Class handling requests for updates or creations of device ids."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
     serializer_class = DeviceSerializer
     lookup_url_kwarg = 'device_id'
     lookup_field = 'device_id'
@@ -64,13 +65,14 @@ class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
             Device object or 404.
         """
         # TODO: filter also by current user (once QSCCD-250 is done)
+        # or use Appuserid header
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 
 class GetCaregiverPatientsList(APIView):
     """Class to return a list of patients for a given caregiver."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
 
     def get(self, request: Request) -> Response:
         """
@@ -101,7 +103,7 @@ class GetCaregiverPatientsList(APIView):
 class CaregiverProfileView(RetrieveAPIView):
     """Retrieve the profile of the current caregiver."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
     serializer_class = CaregiverSerializer
     queryset = CaregiverProfile.objects.all().select_related('user')
     lookup_field = 'user__username'
@@ -135,8 +137,10 @@ class CaregiverProfileView(RetrieveAPIView):
         return super().retrieve(request, *args, **kwargs)
 
 
-class RetrieveRegistrationCodeMixin(APIView):
+class RetrieveRegistrationCodeMixin:
     """Mixin class that provides `get_queryset()` to lookup a `RegistrationCode` based on a given `code`."""
+
+    kwargs: dict[str, Any]
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -154,13 +158,14 @@ class RetrieveRegistrationCodeMixin(APIView):
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
 
+# TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
     """View that initiates email verification for a given email address.
 
     And send email to the user with the verification code.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsRegistrationListener,)
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
@@ -261,10 +266,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         )
 
 
+# TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
     """View that verifies the user-provided verification code with the actual one."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsRegistrationListener,)
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """

@@ -1,7 +1,7 @@
 """Test module for the `users` app REST API viewsets endpoints."""
+from collections.abc import Callable
 from http import HTTPStatus
 
-from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
@@ -14,9 +14,51 @@ from opal.users.models import ClinicalStaff, User
 pytestmark = pytest.mark.django_db
 
 
-def test_api_retrieve_user_in_group_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    user_with_permission: Callable[[str], User],
+) -> None:
+    """Test that unauthenticated and unauthorized users cannot access the API."""
+    url = reverse('api:users-detail', kwargs={'username': 'test'})
+
+    response = api_client.get(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.get(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(user_with_permission('users.view_clinicalstaff'))
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_userviewset_create_user_in_group_no_permission(user_api_client: APIClient) -> None:
+    """Test the fail of the creating a new user in a group(s) when user does not have permission."""
+    response = user_api_client.post(reverse('api:users-list'))
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.data['detail'] == 'You do not have permission to perform this action.'
+
+
+def test_userviewset_update_user_in_group_no_permission(user_api_client: APIClient) -> None:
+    """Test the fail of the updating a user group(s) when user does not have permission."""
+    response = user_api_client.put(reverse('api:users-detail', kwargs={'username': 'foo'}))
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.data['detail'] == 'You do not have permission to perform this action.'
+
+
+def test_userviewset_retrieve_user_in_group_pass(
+    api_client: APIClient,
+    user_with_permission: Callable[[str], User],
+) -> None:
     """Test the pass of the retrieving user and their group(s)."""
-    api_client.force_login(user=admin_user)
+    api_client.force_login(user_with_permission('users.view_clinicalstaff'))
     # add two groups to add a user to one of them
     user_factories.GroupFactory()
     group = user_factories.GroupFactory(name='group')
@@ -29,21 +71,20 @@ def test_api_retrieve_user_in_group_pass(api_client: APIClient, admin_user: User
         kwargs={'username': user.username},
     ))
 
-    # assertions
     assert response.status_code == HTTPStatus.OK
     assert response.data == {'groups': [group.pk]}
     assert len(response.data['groups']) == 1
 
 
-def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of the updating a user and add to a group."""
     api_client.force_login(user=admin_user)
     # add two groups
-    group_1 = user_factories.GroupFactory(name='group1')
-    group_2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory(name='group1')
+    group2 = user_factories.GroupFactory(name='group2')
     # add one user and add it to one group
     user = user_factories.ClinicalStaff(username='test_clinical_user')
-    group_2.user_set.add(user)
+    group2.user_set.add(user)
 
     # test retrieve
     response = api_client.get(reverse(
@@ -53,11 +94,11 @@ def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User)
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data == {'groups': [group_2.pk]}
+    assert response.data == {'groups': [group2.pk]}
     assert len(response.data['groups']) == 1
 
     # change the groups and the name of the user
-    response.data['groups'].append(group_1.pk)
+    response.data['groups'].append(group1.pk)
     data = {
         'groups': response.data['groups'],
         'username': 'new_clinical_user',
@@ -74,7 +115,7 @@ def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User)
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 2
     assert response_put.data == {
-        'groups': [group_1.pk, group_2.pk],
+        'groups': [group1.pk, group2.pk],
         'username': 'new_clinical_user',
     }
     # assert the user and groups are updated in the database
@@ -83,17 +124,16 @@ def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User)
     assert clinical_user.groups.count() == 2
 
 
-def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of editing a user and add to multiple groups."""
     api_client.force_login(user=admin_user)
-    # add two groups
-    group_1 = user_factories.GroupFactory(name='group1')
-    group_2 = user_factories.GroupFactory(name='group2')
-    group_3 = user_factories.GroupFactory(name='group3')
+    group1 = user_factories.GroupFactory(name='group1')
+    group2 = user_factories.GroupFactory(name='group2')
+    group3 = user_factories.GroupFactory(name='group3')
 
     # add one user and add it to one group
     user = user_factories.ClinicalStaff()
-    group_2.user_set.add(user)
+    group2.user_set.add(user)
 
     # test retrieve
     response = api_client.get(reverse(
@@ -103,12 +143,12 @@ def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user:
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data == {'groups': [group_2.pk]}
+    assert response.data == {'groups': [group2.pk]}
     assert len(response.data['groups']) == 1
 
     # change the groups of the user by adding one more group
-    response.data['groups'].append(group_1.pk)
-    response.data['groups'].append(group_3.pk)
+    response.data['groups'].append(group1.pk)
+    response.data['groups'].append(group3.pk)
 
     data = {
         'groups': response.data['groups'],
@@ -126,7 +166,7 @@ def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user:
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 3
     assert response_put.data == {
-        'groups': [group_1.pk, group_2.pk, group_3.pk],
+        'groups': [group1.pk, group2.pk, group3.pk],
         'username': 'new_clinical_user',
     }
     # assert the user and groups are updated in the database
@@ -139,12 +179,12 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
     """Test the pass of removing a user from a group."""
     api_client.force_login(user=admin_user)
     # add two groups
-    group_1 = user_factories.GroupFactory(name='group1')
-    group_2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory(name='group1')
+    group2 = user_factories.GroupFactory(name='group2')
     # add one user and add it to one group
     user = user_factories.ClinicalStaff()
-    group_1.user_set.add(user)
-    group_2.user_set.add(user)
+    group1.user_set.add(user)
+    group2.user_set.add(user)
 
     # test retrieve
     response = api_client.get(reverse(
@@ -154,11 +194,11 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data == {'groups': [group_1.pk, group_2.pk]}
+    assert response.data == {'groups': [group1.pk, group2.pk]}
     assert len(response.data['groups']) == 2
 
     # change the groups of the user by adding one more group
-    response.data['groups'].remove(group_1.pk)
+    response.data['groups'].remove(group1.pk)
     data = {
         'groups': response.data['groups'],
         'username': user.username,
@@ -175,14 +215,17 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 1
     assert response_put.data == {
-        'groups': [group_2.pk],
+        'groups': [group2.pk],
         'username': user.username,
     }
 
 
-def test_api_create_user_in_group_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_create_user_in_group_pass(
+    api_client: APIClient,
+    user_with_permission: Callable[[str], User],
+) -> None:
     """Test the pass of the creation of a new user and adding it to a group."""
-    api_client.force_login(user=admin_user)
+    api_client.force_login(user_with_permission('users.add_clinicalstaff'))
     group = user_factories.GroupFactory(name='group1')
     # new user
     data = {
@@ -197,6 +240,7 @@ def test_api_create_user_in_group_pass(api_client: APIClient, admin_user: User) 
         data=data,
         format='json',
     )
+
     created_user = User.objects.get(username='test_user')
 
     # assert that new user is created and assigned to the group as per the post request
@@ -205,16 +249,16 @@ def test_api_create_user_in_group_pass(api_client: APIClient, admin_user: User) 
     assert created_user.groups.first() == group
 
 
-def test_api_create_user_in_multiple_groups_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_create_user_in_multiple_groups_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of the creation of a new user and adding it to multiple groups."""
     api_client.force_login(user=admin_user)
-    group_1 = user_factories.GroupFactory(name='group1')
-    group_2 = user_factories.GroupFactory(name='Group2')
+    group1 = user_factories.GroupFactory(name='group1')
+    group2 = user_factories.GroupFactory(name='Group2')
 
     # new user
     data = {
         'username': 'test_user',
-        'groups': [group_1.pk, group_2.pk],
+        'groups': [group1.pk, group2.pk],
     }
 
     response_post = api_client.post(
@@ -232,183 +276,23 @@ def test_api_create_user_in_multiple_groups_pass(api_client: APIClient, admin_us
     assert created_user.groups.count() == 2
 
 
-def test_api_retrieve_user_in_group_no_permission(api_client: APIClient, django_user_model: User) -> None:
-    """Test the fail of the retrieving user and their group(s) when user does not have permission."""
-    user = django_user_model.objects.create(username='test_user')
-    api_client.force_login(user=user)
-
-    user_factories.GroupFactory()
-    group = user_factories.GroupFactory(name='group')
-    # add clinical staff user
-    clinical_user = user_factories.ClinicalStaff()
-    group.user_set.add(clinical_user)
-
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': user.username},
-    ))
-
-    # assertions
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.data['detail'] == 'You do not have permission to perform this action.'
-
-    # when given the right permission it passes
-    view_permission = Permission.objects.get(codename='view_clinicalstaff')
-    user.user_permissions.add(view_permission)
-
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': clinical_user.username},
-    ))
-
-    # assert retrieved info
-    assert response.status_code == HTTPStatus.OK
-    assert response.data == {'groups': [group.pk]}
-    assert len(response.data['groups']) == 1
-
-
-def test_api_create_user_in_group_no_permission(api_client: APIClient, django_user_model: User) -> None:
-    """Test the fail of the creating a new user in a group(s) when user does not have permission."""
-    user = django_user_model.objects.create(username='test_user')
-    api_client.force_login(user=user)
-
-    group = user_factories.GroupFactory(name='group1')
-    # new user
-    data = {
-        'username': 'api_test_user',
-        'groups': [group.pk],
-    }
-
-    response_post = api_client.post(
-        reverse(
-            'api:users-list',
-        ),
-        data=data,
-        format='json',
-    )
-
-    # assertions
-    assert response_post.status_code == HTTPStatus.FORBIDDEN
-    assert response_post.data['detail'] == 'You do not have permission to perform this action.'
-
-    # when given the right permission it passes
-    add_permission = Permission.objects.get(codename='add_clinicalstaff')
-    user.user_permissions.add(add_permission)
-
-    response_post = api_client.post(
-        reverse(
-            'api:users-list',
-        ),
-        data=data,
-        format='json',
-    )
-    created_user = User.objects.get(username='api_test_user')
-    # assert that new user is created and assigned to the group as per the post request
-    assert response_post.status_code == HTTPStatus.CREATED
-    assert created_user.username == 'api_test_user'
-    assert created_user.groups.first() == group
-
-
-def test_api_update_user_in_group_no_permission(api_client: APIClient, django_user_model: User) -> None:
-    """Test the fail of the updating a user group(s) when user does not have permission."""
-    user = django_user_model.objects.create(username='test_user')
-    api_client.force_login(user=user)
-
-    # add group
-    group = user_factories.GroupFactory(name='group')
-
-    # add one user and add it to one group
-    user = user_factories.ClinicalStaff()
-    group.user_set.add(user)
-
-    groups = {'groups': [group.pk]}
-    response_put = api_client.put(
-        reverse(
-            'api:users-detail',
-            kwargs={'username': user.username},
-        ),
-        data=groups,
-        format='json',
-    )
-    # assertions
-    assert response_put.status_code == HTTPStatus.FORBIDDEN
-    assert response_put.data['detail'] == 'You do not have permission to perform this action.'
-
-
-def test_api_get_user_group_with_permission(api_client: APIClient, django_user_model: User) -> None:
-    """Test the pass of the retrieving user and their group(s) when user has the right permission."""
-    user = django_user_model.objects.create(username='test_user')
-    api_client.force_login(user=user)
-
-    user_factories.GroupFactory()
-    group = user_factories.GroupFactory(name='group')
-    # add clinical staff user
-    clinical_user = user_factories.ClinicalStaff()
-    group.user_set.add(clinical_user)
-
-    # when given the right permission it passes
-    view_permission = Permission.objects.get(codename='view_clinicalstaff')
-    user.user_permissions.add(view_permission)
-
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': clinical_user.username},
-    ))
-
-    # assert retrieved info
-    assert response.status_code == HTTPStatus.OK
-    assert response.data == {'groups': [group.pk]}
-    assert len(response.data['groups']) == 1
-
-
-def test_api_create_user_in_group_with_permission(api_client: APIClient, django_user_model: User) -> None:
-    """Test the pass of the creating a new user in a group(s) when user has the right permission."""
-    user = django_user_model.objects.create(username='test_user')
-    # granting the right permission
-    add_permission = Permission.objects.get(codename='add_clinicalstaff')
-    user.user_permissions.add(add_permission)
-    api_client.force_login(user=user)
-
-    group = user_factories.GroupFactory(name='group1')
-    # preparing data for new user and assign a group to it
-    data = {
-        'username': 'api_test_user',
-        'groups': [group.pk],
-    }
-
-    response_post = api_client.post(
-        reverse(
-            'api:users-list',
-        ),
-        data=data,
-        format='json',
-    )
-    created_user = User.objects.get(username='api_test_user')
-    # assert that new user is created and assigned to the group as per the post request
-    assert response_post.status_code == HTTPStatus.CREATED
-    assert created_user.username == 'api_test_user'
-    assert created_user.groups.first() == group
-
-
-def test_api_update_user_in_group_with_permission(api_client: APIClient, django_user_model: User) -> None:
+def test_userviewset_update_user_in_group_with_permission(
+    api_client: APIClient,
+    user_with_permission: Callable[[str], User],
+) -> None:
     """Test the pass of the updating a user group(s) when user has the right permission."""
-    user = django_user_model.objects.create(username='test_user')
-    # giving the right permission
-    change_permission = Permission.objects.get(codename='change_clinicalstaff')
-    user.user_permissions.add(change_permission)
-
-    api_client.force_login(user=user)
+    api_client.force_login(user_with_permission('users.change_clinicalstaff'))
 
     # add two groups
-    group_1 = user_factories.GroupFactory(name='group1')
-    group_2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory(name='group1')
+    group2 = user_factories.GroupFactory(name='group2')
 
     # add one user
     clinical_user = user_factories.ClinicalStaff()
 
     # adding clinical user to another group
     data = {
-        'groups': [group_1.pk, group_2.pk],
+        'groups': [group1.pk, group2.pk],
         'username': clinical_user.username,
     }
     response_put = api_client.put(
@@ -424,19 +308,13 @@ def test_api_update_user_in_group_with_permission(api_client: APIClient, django_
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 2
     assert response_put.data == {
-        'groups': [group_1.pk, group_2.pk],
+        'groups': [group1.pk, group2.pk],
         'username': clinical_user.username,
     }
 
 
-def test_api_create_user_in_group_existing_user(api_client: APIClient, django_user_model: User) -> None:
+def test_userviewset_create_user_in_group_existing_user(admin_api_client: APIClient) -> None:
     """Test the fail of the creating when user already exists."""
-    user = django_user_model.objects.create(username='test_user')
-    # granting the right permission
-    add_permission = Permission.objects.get(codename='add_clinicalstaff')
-    user.user_permissions.add(add_permission)
-    api_client.force_login(user=user)
-
     # add one user
     clinical_user = user_factories.ClinicalStaff()
 
@@ -448,7 +326,7 @@ def test_api_create_user_in_group_existing_user(api_client: APIClient, django_us
         'groups': [group.pk],
     }
 
-    response_post = api_client.post(
+    response_post = admin_api_client.post(
         reverse(
             'api:users-list',
         ),
@@ -460,7 +338,7 @@ def test_api_create_user_in_group_existing_user(api_client: APIClient, django_us
     assert response_post.data['username'][0] == 'A user with that username already exists.'
 
 
-def test_api_set_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_set_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of setting a user group using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
@@ -484,7 +362,7 @@ def test_api_set_manager_user_action_pass(api_client: APIClient, admin_user: Use
     assert clinical_user.groups.get(pk=manager_group.pk)
 
 
-def test_api_unset_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_unset_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of unsetting a user group using the action `unset_manager_user`."""
     api_client.force_login(user=admin_user)
 
@@ -506,7 +384,7 @@ def test_api_unset_manager_user_action_pass(api_client: APIClient, admin_user: U
     assert not clinical_user.groups.all()
 
 
-def test_api_set_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_set_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
     """Test the fail of setting manager group of a wrong user using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
@@ -523,7 +401,7 @@ def test_api_set_manager_wrong_user_action_fail(api_client: APIClient, admin_use
     assert str(response.data['detail']) == 'Not found.'
 
 
-def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
     """Test the fail of unsetting manager group of a wrong user using the action `unset_manager_user`."""
     api_client.force_login(user=admin_user)
 
@@ -540,7 +418,7 @@ def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_u
     assert str(response.data['detail']) == 'Not found.'
 
 
-def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_set_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
     """Test the fail of setting a user group when manager group does not exist using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
@@ -557,7 +435,7 @@ def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user:
     assert str(response.data['detail']) == 'Manager group not found.'
 
 
-def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
+def test_userviewset_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
     """Test the fail of unsetting a user group when manager group does not exist using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
