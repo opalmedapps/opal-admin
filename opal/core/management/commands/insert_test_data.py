@@ -16,6 +16,7 @@ from dateutil.relativedelta import relativedelta
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
+from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
 from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
@@ -142,6 +143,8 @@ MRN_DATA = MappingProxyType({
         'Bart Simpson': [('MCH', '9999996')],
         'Lisa Simpson': [('MCH', '9999993')],
         'Mona Simpson': [('RVH', '9999993')],
+        'Fred Flintstone': [('RVH', '9999998')],
+        'Pebbles Flintstone': [('MCH', '9999999')],
     },
     InstitutionOption.chusj: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -230,6 +233,9 @@ def _delete_existing_data() -> None:
     Caregiver.objects.all().delete()
     # also deletes Sites
     Institution.objects.all().delete()
+    Note.objects.all().delete()
+    PathologyObservation.objects.all().delete()
+    GeneralTest.objects.all().delete()
 
 
 def _create_test_data(institution_option: InstitutionOption) -> None:
@@ -242,6 +248,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         * patients
         * caregivers
         * relationships between the patients and caregivers
+        * pathology reports matching test data setup in legacy db
 
 
     Args:
@@ -294,6 +301,26 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             date_of_death=_relative_date(today, -2),
         )
 
+        fred = _create_patient(
+            first_name='Fred',
+            last_name='Flintstone',
+            date_of_birth=date(1960, 8, 1),
+            sex=Patient.SexType.MALE,
+            ramq='FLIF60080199',
+            legacy_id=56,
+            mrns=mrn_data['Fred Flintstone'],
+        )
+
+        pebbles = _create_patient(
+            first_name='Pebbles',
+            last_name='Flintstone',
+            date_of_birth=_create_date(9, 2, 1),
+            sex=Patient.SexType.FEMALE,
+            ramq='FLIP15022299',
+            legacy_id=57,
+            mrns=mrn_data['Pebbles Flintstone'],
+        )
+
     bart = _create_patient(
         first_name='Bart',
         last_name='Simpson',
@@ -334,6 +361,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         language='en',
         phone_number='+498999998123',
         legacy_id=3,
+    )
+
+    user_fred = _create_caregiver(
+        first_name='Fred',
+        last_name='Flintstone',
+        username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
+        email='fred@opalmedapps.ca',
+        language='en',
+        phone_number='+15144758941',
+        legacy_id=5,
     )
 
     if not is_pediatric:
@@ -436,6 +473,27 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             end_date=date_bart_fourteen,
         )
 
+        # Fred --> Fred: Self
+        _create_relationship(
+            patient=fred,
+            caregiver=user_fred,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -2),
+            start_date=_relative_date(today, -8),
+        )
+
+        # Fred --> Pebbles: Guardian/Parent
+        _create_relationship(
+            patient=pebbles,
+            caregiver=user_fred,
+            relationship_type=type_parent,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(pebbles.date_of_birth, 14),
+        )
+
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
         patient=bart,
@@ -471,9 +529,53 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     # create the same security question and answers for the caregivers
     if not is_pediatric:
         _create_security_answers(user_homer)
+        _create_security_answers(user_fred)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
+
+    # Pathology reports for Marge, Bart, Homer, Fred, and Pebbles
+    if not is_pediatric:
+        _create_pathology_result(
+            patient=marge,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            legacy_document_id=7,
+        )
+        _create_pathology_result(
+            patient=homer,
+            site=sites['MGH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            legacy_document_id=6,
+        )
+        _create_pathology_result(
+            patient=fred,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            legacy_document_id=12,
+        )
+        _create_pathology_result(
+            patient=bart,
+            site=sites['MCH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            legacy_document_id=5,
+        )
+        _create_pathology_result(
+            patient=pebbles,
+            site=sites['MCH'],
+            collected_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            legacy_document_id=13,
+        )
 
 
 def create_institution(institution_option: InstitutionOption) -> Institution:
@@ -819,3 +921,60 @@ def _relative_date(base_date: date, years: int) -> date:
         the relative date calculated via `base_date + years`
     """
     return base_date + relativedelta(years=years)
+
+
+def _create_pathology_result(
+    patient: Patient,
+    site: Site,
+    collected_at: datetime,
+    received_at: datetime,
+    reported_at: datetime,
+    legacy_document_id: int,
+) -> None:
+    """
+    Generate a Test Result instance for a patient and site.
+
+    Args:
+        patient: subject patient described in the pathology report
+        site: facility where the sample was collected and pathology report was generated
+        collected_at: datetime of biopsy
+        received_at: datetime of sample received by pathologist
+        reported_at: datetime of report
+        legacy_document_id: OpalDB.Document entry serial number
+    """
+    general_test = GeneralTest(
+        patient=patient,
+        type=TestType.PATHOLOGY,
+        sending_facility=site.code,
+        receiving_facility=site.code,
+        collected_at=collected_at,
+        received_at=received_at,
+        reported_at=reported_at,
+        message_type='ORU',
+        message_event='R01',
+        test_group_code='RQSTPTISS',
+        test_group_code_description='Request Pathology Tissue',
+        legacy_document_id=legacy_document_id,
+    )
+
+    general_test.full_clean()
+    general_test.save()
+
+    specimen_observation = PathologyObservation(
+        general_test=general_test,
+        identifier_code='SPSPECI',
+        identifier_text='SPECIMEN',
+        value='Aliquam tincidunt mauris eu risus.',
+        observed_at=collected_at,
+    )
+    specimen_observation.full_clean()
+    specimen_observation.save()
+
+    note = Note(
+        general_test=general_test,
+        note_source='Signature Line',
+        note_text='Morbi in sem quis dui placerat ornare.',
+    )
+
+    note.full_clean()
+    note.save()
