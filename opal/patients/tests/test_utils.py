@@ -16,7 +16,7 @@ from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
-from opal.hospital_settings.factories import Site
+from opal.hospital_settings.factories import Institution, Site
 from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
 from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
@@ -633,6 +633,7 @@ def test_create_access_request_new_patient() -> None:
     """A new relationship and new patient are created."""
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
+    Institution()
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
@@ -771,6 +772,7 @@ def test_create_access_request_self_relationship_already_exists() -> None:
 def test_create_access_request_new_patient_caregiver() -> None:
     """A new relationship, patient, caregiver and registration code are created."""
     self_type = RelationshipType.objects.self_type()
+    Institution()
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
@@ -797,6 +799,35 @@ def test_create_access_request_missing_legacy_id() -> None:
             caregiver_profile,
             self_type,
         )
+
+
+def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture) -> None:
+    """A new pediatric set delay values following corresponding institution field values."""
+    RequestMockerTest.mock_requests_post(mocker, {})
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Site(code='RVH')
+    Site(code='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
+    institution = Institution(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
+
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data['date_of_birth'] = date(2008, 10, 23)
+
+    relationship, registration_code = utils.create_access_request(
+        OIEPatientData(**patient_data),
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = relationship.patient
+
+    assert Patient.calculate_age(patient.date_of_birth) < institution.adulthood_age
+    assert patient.non_interpretable_lab_result_delay == institution.non_interpretable_lab_result_delay
+    assert patient.interpretable_lab_result_delay == institution.interpretable_lab_result_delay
 
 
 @pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
