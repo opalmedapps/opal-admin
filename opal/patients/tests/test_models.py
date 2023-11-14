@@ -235,6 +235,22 @@ def test_patient_access_level_default() -> None:
     assert patient.data_access == Patient.DataAccessType.ALL
 
 
+def test_patient_non_interpretable_delay_field_max_value() -> None:
+    """Make sure that non interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(non_interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
+
+
+def test_patient_interpretable_delay_field_max_value() -> None:
+    """Make sure that interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
