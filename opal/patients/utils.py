@@ -479,7 +479,7 @@ def create_access_request(  # noqa: WPS210, WPS231
 
         # set the two fields according to the institution’s field values if the patient is a pediatric patient
         institution = Institution.objects.get()
-        if Patient.calculate_age(patient.date_of_birth) < institution.adulthood_age:
+        if patient.age < institution.adulthood_age:
             patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay
             patient.interpretable_lab_result_delay = institution.interpretable_lab_result_delay
             patient.save()
