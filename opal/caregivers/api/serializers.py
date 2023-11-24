@@ -255,19 +255,19 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
         many=True,
     )
 
-    institution_code = serializers.SerializerMethodField()
+    institution = serializers.SerializerMethodField()
 
-    def get_institution_code(self, obj: Patient) -> str:  # noqa: WPS615
+    def get_institution(self, obj: Patient) -> dict[str, str]:  # noqa: WPS615
         """
-        Get a single institution code.
+        Get a single institution acronym.
 
         Args:
             obj: Object of Patient.
 
         Returns:
-            code of the singleton institution
+            acronym of the singleton institution
         """
-        return Institution.objects.get().code
+        return Institution.objects.values('acronym_en', 'acronym_fr').get()
 
     class Meta:
         model = Patient
@@ -275,6 +275,6 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
             'first_name',
             'last_name',
             'data_access',
-            'institution_code',
+            'institution',
             'caregivers',
         ]

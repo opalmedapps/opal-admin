@@ -54,10 +54,10 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
     Serializer for converting and validating `HospitalPatient` objects/data.
 
     The serializer inherits from `core.api.serializers.DynamicFieldsSerializer`,
-    and also provides `HospitalPatient` info and the site code according to the 'fields' arguments.
+    and also provides `HospitalPatient` info and the site acronym according to the 'fields' arguments.
     """
 
-    site_code = serializers.CharField(source='site.code')
+    site_code = serializers.CharField(source='site.acronym')
 
     class Meta:
         model = HospitalPatient
@@ -69,17 +69,17 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
         """Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
-            value: site code to be validated
+            value: site acronym to be validated
 
         Returns:
-            validated site code value
+            validated site acronym value
 
         Raises:
-            ValidationError: if provided site code does not exist in the database
+            ValidationError: if provided site acronym does not exist in the database
         """
-        if not Site.objects.filter(code=value).exists():
+        if not Site.objects.filter(acronym=value).exists():
             raise serializers.ValidationError(
-                '{0}{1}{2}'.format('Provided "', value, '" site code does not exist.'),
+                '{0}{1}{2}'.format('Provided "', value, '" site acronym does not exist.'),
             )
         return value
 
@@ -189,7 +189,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             # https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.update_or_create
             HospitalPatient.objects.update_or_create(
                 mrn=hospital_patient['mrn'],
-                site=Site.objects.filter(code=hospital_patient['site']['code']).first(),
+                site=Site.objects.filter(acronym=hospital_patient['site']['acronym']).first(),
                 patient=instance,
                 defaults={
                     'is_active': hospital_patient['is_active'],

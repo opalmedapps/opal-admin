@@ -28,7 +28,7 @@ def test_api_institution_unauthenticated_unauthorized(
 
     assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
 
-    factories.Institution(name='Test', code='TST')
+    factories.Institution(name='Test', acronym='TST')
     api_client.force_login(user_with_permission('hospital_settings.view_institution'))
     response = api_client.get(reverse('api:institution-detail'))
 
@@ -44,7 +44,7 @@ def test_api_institution_not_found(admin_api_client: APIClient) -> None:
 
 def test_api_institution(admin_api_client: APIClient) -> None:
     """Ensure that the singleton institution is returned."""
-    institution = factories.Institution(name='Test', code='TST')
+    institution = factories.Institution(name='Test', acronym='TST')
 
     response = admin_api_client.get(reverse('api:institution-detail'))
 
@@ -53,13 +53,13 @@ def test_api_institution(admin_api_client: APIClient) -> None:
     data = response.json()
     assert data['id'] == institution.pk
     assert data['name'] == 'Test'
-    assert data['code'] == 'TST'
+    assert data['acronym'] == 'TST'
 
 
 def test_api_institution_multiple_institutions(admin_api_client: APIClient) -> None:
     """Ensure that the singleton institution is returned."""
     factories.Institution()
-    factories.Institution(name='Test', code='TST')
+    factories.Institution(name='Test', acronym='TST')
 
     response = admin_api_client.get(reverse('api:institution-detail'))
 

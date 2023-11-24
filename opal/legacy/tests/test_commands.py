@@ -255,7 +255,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         legacy_factories.LegacyPatientFactory()
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
         patient_factories.Patient()
-        hospital_settings_factories.Site(code='RVH')
+        hospital_settings_factories.Site(acronym='RVH')
 
         message, error = self._call_command('migrate_patients')
 
@@ -266,7 +266,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
         legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
-        hospital_settings_factories.Site(code='RVH')
+        hospital_settings_factories.Site(acronym='RVH')
 
         message, error = self._call_command('migrate_patients')
 
@@ -283,7 +283,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
             patient=legacy_patient,
             mrn='9999996',
         )
-        site = hospital_settings_factories.Site(code='TEST')
+        site = hospital_settings_factories.Site(acronym='TEST')
         patient_factories.HospitalPatient(
             site=site,
             patient=patient,
@@ -311,7 +311,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
             patient=legacy_patient,
             mrn='9999997',
         )
-        hospital_settings_factories.Site(code='TEST')
+        hospital_settings_factories.Site(acronym='TEST')
 
         message, error = self._call_command('migrate_patients')
 
@@ -547,7 +547,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
         patient_factories.HospitalPatient(
             patient=patient_factories.Patient(legacy_id=1),
-            site=hospital_settings_factories.Site(code='TST'),
+            site=hospital_settings_factories.Site(acronym='TST'),
         )
 
         message, error = self._call_command('find_deviations')
@@ -565,7 +565,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         self._create_two_fully_registered_patients()
 
         message, error = self._call_command('find_deviations')
-
         assert patient_models.Patient.objects.count() == 2
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -596,7 +595,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_deviations')
-
         assert patient_models.Patient.objects.count() == 3
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -630,7 +628,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create hospital patient
         patient_factories.HospitalPatient(
             patient=patient,
-            site=hospital_settings_factories.Site(code='RVH'),
+            site=hospital_settings_factories.Site(acronym='RVH'),
         )
 
         # create another patient record
@@ -668,7 +666,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         patient_factories.HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=hospital_settings_factories.Site(code='MGH'),
+            site=hospital_settings_factories.Site(acronym='MGH'),
         )
 
         message, error = self._call_command('find_deviations')
@@ -849,7 +847,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create hospital patient
         patient_factories.HospitalPatient(
             patient=patient,
-            site=hospital_settings_factories.Site(code='RVH'),
+            site=hospital_settings_factories.Site(acronym='RVH'),
         )
 
         # create another patient record
@@ -908,7 +906,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         patient_factories.HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=hospital_settings_factories.Site(code='MGH'),
+            site=hospital_settings_factories.Site(acronym='MGH'),
         )
 
     def _create_two_fully_registered_caregivers(self) -> None:
@@ -1134,7 +1132,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_orms_patients_update_with_request_exception(self, mocker: MockerFixture) -> None:
         """Ensure the command handles exceptions during POST requests to the ORMS."""
         # Create test data
-        site = patient_factories.Site(code='RVH')
+        site = patient_factories.Site(acronym='RVH')
         patient_factories.HospitalPatient(
             site=site,
             patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
@@ -1168,7 +1166,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_orms_patients_update_unsuccessful_response(self, mocker: MockerFixture) -> None:
         """Ensure the command handles unsuccessful responses during POST requests to the ORMS."""
         # Create test data
-        site = patient_factories.Site(code='RVH')
+        site = patient_factories.Site(acronym='RVH')
         patient_factories.HospitalPatient(
             site=site,
             patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
@@ -1202,7 +1200,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_orms_patients_successful_update(self, mocker: MockerFixture) -> None:
         """Ensure the command does not have any errors during successful ORMS patients update."""
         # Create test data
-        site = patient_factories.Site(code='RVH')
+        site = patient_factories.Site(acronym='RVH')
         patient_factories.HospitalPatient(
             site=site,
             patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
