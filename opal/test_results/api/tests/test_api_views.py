@@ -98,7 +98,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint raises exception in case of unsuccessful insertion to the OpalDB.Documents table."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
         Institution()
-        Site(code=self._get_valid_input_data().get('receiving_facility'))
+        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
 
         patient = Patient(
             ramq='TEST01161972',
@@ -144,7 +144,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
         Institution()
-        Site(code=self._get_valid_input_data().get('receiving_facility'))
+        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
 
         patient = Patient(
             ramq='TEST01161972',

@@ -72,7 +72,7 @@ class OIEService:
 
         Args:
             mrn: Medical Record Number (MRN) code (e.g., 9999993)
-            site: site code (e.g., MGH)
+            site: site acronym (e.g., MGH)
 
         Returns:
             patient info or an error in JSON format

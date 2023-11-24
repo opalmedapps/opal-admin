@@ -251,7 +251,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
+                response = self.oie_service.find_patient_by_mrn(medical_number, site.acronym)
 
         if response:
             self._handle_response(response)

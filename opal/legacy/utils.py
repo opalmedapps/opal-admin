@@ -131,7 +131,7 @@ def insert_hospital_identifiers(patient: LegacyPatient, mrns: list[tuple[Site, s
             patient=patient,
             mrn=hospital_patient[1],
             is_active=hospital_patient[2],
-            hospital_id=hospital_patient[0].code,
+            hospital_id=hospital_patient[0].acronym,
         )
         for hospital_patient in mrns
     ]

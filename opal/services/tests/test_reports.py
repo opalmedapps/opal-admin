@@ -166,7 +166,7 @@ def test_is_questionnaire_report_invalid_language() -> None:
 def test_request_base64_report(mocker: MockerFixture) -> None:
     """Ensure successful report request returns base64 encoded PDF report."""
     patient_factories.HospitalPatient(
-        site=patient_factories.Site(code='RVH'),
+        site=patient_factories.Site(acronym='RVH'),
     )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
@@ -265,7 +265,7 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
 def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     """Ensure returned base64EncodedReport non-string value is handled and does not result in an error."""
     patient_factories.HospitalPatient(
-        site=patient_factories.Site(code='RVH'),
+        site=patient_factories.Site(acronym='RVH'),
     )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)

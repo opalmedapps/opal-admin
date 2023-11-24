@@ -136,7 +136,7 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
         'logo',
         'logo_en',
         'logo_fr',
-        'code',
+        'acronym',
         'terms_of_use',
         'terms_of_use_en',
         'terms_of_use_fr',

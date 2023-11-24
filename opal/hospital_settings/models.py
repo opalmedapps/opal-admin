@@ -11,7 +11,7 @@ class Location(models.Model):
     """Abstract class representing a hospital location with a name and code."""
 
     name = models.CharField(_('Name'), max_length=100)
-    code = models.CharField(_('Code'), max_length=10, unique=True)
+    acronym = models.CharField(_('Acronym'), max_length=10, unique=True)
 
     class Meta:
         abstract = True
