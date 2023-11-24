@@ -1,5 +1,6 @@
 """Utility functions used by the test results app."""
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -178,8 +179,12 @@ def _find_doctor_name(note_text: str) -> str:
     Returns:
         doctor's name found in the pathology note
     """
-    # TODO: implement regex
-    return ''
+    # Regular expression pattern
+    pattern = r'Electronically signed on [\d\-A-Z]+ \d{1,2}:\d{2} [apm]{2}\\.br\\By (.+?)(?:,,|$)'
+    match = re.search(pattern, note_text)
+
+    # Extract and return doctor's full name
+    return match.group(1).strip() if match else ''
 
 
 def _find_note_date(note_text: str) -> datetime:
