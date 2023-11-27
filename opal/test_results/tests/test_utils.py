@@ -69,8 +69,22 @@ def test_find_doctor_name_fail() -> None:
 
 def test_find_note_date_success() -> None:
     """Ensure find_note_date() successfully finds date and time of doctor's comment/note."""
-    # TODO: update the unit test once _find_note_date() is finalized
-    assert _find_note_date('Lorem ipsum dolor sit amet...') == datetime(1, 1, 1)
+    note_text_before_midday = r'Electronically signed on 23-NOV-2023 09:21 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_after_midday = r'Electronically signed on 23-NOV-2023 09:21 pm\.br\By doctor_fname doctor_lname, MD'
+
+    assert _find_note_date(note_text_before_midday) == datetime(2023, 11, 23, 9, 21, 0)
+    assert _find_note_date(note_text_after_midday) == datetime(2023, 11, 23, 21, 21, 0)
+
+
+def test_find_note_date_fail() -> None:
+    """Ensure find_note_date() does not find date and time of doctor's comment/note."""
+    note_text_miss_date = r'Electronically signed on 09:21 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_miss_time = r'Electronically signed on 23-NOV-2023 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_miss_am = r'Electronically signed on 23-NOV-2023 09:21 \.br\By doctor_fname doctor_lname, MD'
+
+    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1)
+    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1)
+    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1)
 
 
 def test_parse_notes_with_empty_array() -> None:
