@@ -24,17 +24,17 @@ class AppHomeView(APIView):
         Returns:
             Http response with the data needed to display the home view.
         """
-        user_name = request.headers['Appuserid']
+        username = request.headers['Appuserid']
 
         return Response({
             'unread_notification_count': models.LegacyNotification.objects.get_unread_multiple_patients_queryset(
-                user_name,
+                username,
             ).count(),
             'daily_appointments': LegacyAppointmentSerializer(
-                models.LegacyAppointment.objects.get_daily_appointments(user_name),
+                models.LegacyAppointment.objects.get_daily_appointments(username),
                 many=True,
             ).data,
             'closest_appointment': LegacyAppointmentSerializer(
-                models.LegacyAppointment.objects.get_closest_appointment(user_name),
+                models.LegacyAppointment.objects.get_closest_appointment(username),
             ).data,
         })

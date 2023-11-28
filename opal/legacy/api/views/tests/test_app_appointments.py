@@ -11,6 +11,7 @@ from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
 from opal.patients import factories as patient_factories
+from opal.patients import models as patient_models
 from opal.users.models import User
 
 from ...serializers import LegacyAppointmentDetailedSerializer
@@ -55,14 +56,16 @@ class TestAppAppointmentsView:
         mock_timezone = mocker.patch('django.utils.timezone.now')
         mock_timezone.return_value = now
 
-        relationship = patient_factories.Relationship(status='CON')
-        user_name = relationship.caregiver.user.username
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
+        username = relationship.caregiver.user.username
         api_client.force_login(user=listener_user)
-        api_client.credentials(HTTP_APPUSERID=user_name)
+        api_client.credentials(HTTP_APPUSERID=username)
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=user_name)
+        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
         appointment_time = timezone.now() + dt.timedelta(hours=2)
         factories.LegacyAppointmentFactory(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
         response = api_client.get(reverse('api:app-appointments'))
@@ -71,7 +74,9 @@ class TestAppAppointmentsView:
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
         """Test daily appointment according to their dates."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
         alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
@@ -99,7 +104,9 @@ class TestAppAppointmentsView:
 
     def test_get_appointment_data_from_not_confirmed_patient(self, mocker: MockerFixture) -> None:
         """Test get daily appointment fails from not confirmed patient."""
-        relationship = patient_factories.Relationship(status='PEN')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.PENDING,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
         alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
@@ -126,7 +133,9 @@ class TestAppAppointmentsView:
 
     def test_get_daily_appointments_details(self, mocker: MockerFixture) -> None:
         """Test daily appointment details."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         hospital_map = factories.LegacyHospitalMapFactory()
         alias = factories.LegacyAliasFactory(hospitalmapsernum=hospital_map)
