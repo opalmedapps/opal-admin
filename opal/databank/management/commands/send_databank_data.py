@@ -1,8 +1,8 @@
 """Command for sending data to the Databank."""
 import json
 from collections import defaultdict
-from typing import Any
-
+from typing import Any, Optional
+import re
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -61,7 +61,10 @@ class Command(BaseCommand):
                         )
                         combined_module_data.append(nested_databank_data)
                 if combined_module_data:
-                    self._send_to_oie_and_handle_response({'patientList': combined_module_data})
+                    aggregate_response = self._send_to_oie_and_handle_response({'patientList': combined_module_data})
+                    if aggregate_response:
+                        print('DEBUG: Got aggregate response')
+                        self._parse_aggregate_databank_response(aggregate_response, combined_module_data)
             else:
                 self.stderr.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
@@ -159,24 +162,70 @@ class Command(BaseCommand):
         return {'GUID': guid, nesting_key: data}
 
     def _send_to_oie_and_handle_response(self, data: dict) -> Any:
-        """Send databank dataset to the OIE and handle response.
+        """Send databank dataset to the OIE and handle immediate OIE response.
 
         Args:
             data: Databank dictionary of one of the five module types.
+
+        Returns:
+            Any: json object containing response for each individual patient message, or empty if send failed
         """
         try:
-            requests.post(
+            response = requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=5,
+                timeout=30,
             )
-            # TODO: QSCCD-1096 Handle response_data / partial sender errors
             # 403 Unauth: Possibly need to check reverse proxy allow list and endpoint pass-throughs
             # 400 data failed to send
         except requests.exceptions.RequestException as exc:
             # log OIE errors
             self.stderr.write(
-                f'OIE Error: {exc}',
+                f'Databank sender OIE Error: {exc}',
             )
+        if response.status_code == 200:
+            # Data sent to OIE successfully, parse aggregate response from databank and update models
+            return response.json()
+        elif response.json()['status'] == 502:
+            # Bad gateway, issue with connection to OIE
+            self.stderr.write(
+                f"Bad gateway error, check OIE instance to ensure channels are enabled: {response.json()['message']}",
+            )
+            return {}
+        # Reverse proxy config error or resource not found
+        self.stderr.write(
+            f"Missing endpoint allowance for databank or other reverse proxy error: {response.json()['message']}",
+        )
+        return {}
+
+    def _parse_aggregate_databank_response(self, aggregate_response: json, original_data_sent: list) -> None:
+        """Parse the aggregated response message from the databank and update databank models.
+
+        Args:
+            aggregate_response: JSON object with a response code & message for each patient data
+            original_data_sent: list of data originally sent to OIE
+        """
+        for identifier, response_object in aggregate_response.items():
+            status_code, message = response_object
+            patient_guid = identifier[5:]
+            if status_code in {200, 201}:
+                # Call auxiliary method to update the PatientDatabankConsent model
+                synced_patient_data = next((item for item in original_data_sent if item['GUID'] == patient_guid), None)
+                self._update_patient_databank_metadata(
+                    DatabankConsent.objects.filter(guid=patient_guid).first(),
+                    synced_patient_data,
+                    message.strip('[]"'),
+                )
+            elif status_code == 405:
+                # Bearer token was missing or invalid
+                self.stderr.write('Databank unauthorized error, check OIE for error log and verify API token valid.')
+            elif status_code == 400:
+                # Extract just the error text from the message
+                error_message = message.strip('[]"')
+                self.stderr.write(f'Databank sender error for patient {patient_guid}: {error_message}')
+
+    def _update_patient_databank_metadata(self, databank_patient: DatabankConsent, synced_data: Any, message: Optional[str] = None) -> None:
+        """Update DatabankConsent last synchronization time, sent data ids."""
+        print('DEBUG: ')
