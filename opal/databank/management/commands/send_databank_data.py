@@ -33,9 +33,9 @@ class Command(BaseCommand):
             kwargs: variable keyword input arguments.
         """
         consenting_patients_querysets = {
+            DataModuleType.DEMOGRAPHICS: DatabankConsent.objects.filter(has_demographics=True),
             DataModuleType.APPOINTMENTS: DatabankConsent.objects.filter(has_appointments=True),
             DataModuleType.DIAGNOSES: DatabankConsent.objects.filter(has_diagnoses=True),
-            DataModuleType.DEMOGRAPHICS: DatabankConsent.objects.filter(has_demographics=True),
             DataModuleType.LABS: DatabankConsent.objects.filter(has_labs=True),
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
@@ -170,7 +170,7 @@ class Command(BaseCommand):
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=5,
+                timeout=30,  # noqa: WPS432
             )
             # TODO: QSCCD-1096 Handle response_data / partial sender errors
             # 403 Unauth: Possibly need to check reverse proxy allow list and endpoint pass-throughs
