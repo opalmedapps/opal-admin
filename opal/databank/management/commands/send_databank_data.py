@@ -46,9 +46,9 @@ class Command(BaseCommand):
             kwargs: variable keyword input arguments.
         """
         consenting_patients_querysets = {
+            DataModuleType.DEMOGRAPHICS: DatabankConsent.objects.filter(has_demographics=True),
             DataModuleType.APPOINTMENTS: DatabankConsent.objects.filter(has_appointments=True),
             DataModuleType.DIAGNOSES: DatabankConsent.objects.filter(has_diagnoses=True),
-            DataModuleType.DEMOGRAPHICS: DatabankConsent.objects.filter(has_demographics=True),
             DataModuleType.LABS: DatabankConsent.objects.filter(has_labs=True),
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }

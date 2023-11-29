@@ -26,7 +26,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
     def new_questionnaires(
         self,
         patient_sernum: int,
-        user_name: str,
+        username: str,
         purpose_id: int,
     ) -> models.QuerySet['LegacyQuestionnaire']:
         """Get the queryset of new questionnaires for a given user.
@@ -40,7 +40,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 
         Args:
             patient_sernum: OpalDB.Patient.PatientSerNum
-            user_name: loggin user name
+            username: loggin user name
             purpose_id: 1 = CLINICAL, 2 = RESEARCH, 3 = QUALITY, 4 = CONSENT, 5 = CLERICAL, 6 = OPAL
 
         Returns:
@@ -48,7 +48,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         """
         respondent_contents = []
         relationship_types = RelationshipType.objects.filter(
-            relationship__caregiver__user__username=user_name,
+            relationship__caregiver__user__username=username,
             relationship__patient__legacy_id=patient_sernum,
         )
 

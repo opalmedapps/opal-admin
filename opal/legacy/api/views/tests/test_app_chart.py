@@ -8,6 +8,7 @@ from opal.legacy import factories, models
 from opal.legacy_questionnaires import factories as questionnaires_factories
 from opal.legacy_questionnaires import models as questionnaires_models
 from opal.patients import factories as patient_factories
+from opal.patients import models as patient_models
 from opal.users import factories as user_factories
 from opal.users.models import User
 
@@ -37,7 +38,9 @@ class TestChartAppView:
 
     def test_get_unread_appointment_count(self) -> None:
         """Test if function returns number of unread appointments."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         user = relationship.caregiver.user
         alias = factories.LegacyAliasFactory()
@@ -65,7 +68,9 @@ class TestChartAppView:
 
     def test_get_unread_txteammessage_count(self) -> None:
         """Test if function returns number of unread txteammessages."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         user = relationship.caregiver.user
         factories.LegacyTxTeamMessageFactory(patientsernum=patient)
@@ -79,7 +84,9 @@ class TestChartAppView:
 
     def test_get_unread_edumaterial_count(self) -> None:
         """Test if function returns number of unread educational materials."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         user = relationship.caregiver.user
         factories.LegacyEducationalMaterialFactory(patientsernum=patient)
@@ -126,7 +133,7 @@ class TestChartAppView:
             caregiver=caregiver_profile,
             patient=patient,
             type=relationship_type,
-            status='CON',
+            status=patient_models.RelationshipStatus.CONFIRMED,
         )
         relationship.refresh_from_db()
 
@@ -155,19 +162,19 @@ class TestChartAppView:
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=1,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=2,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=4,
         ).count()
         assert new_questionnaires == 1

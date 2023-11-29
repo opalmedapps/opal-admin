@@ -135,6 +135,7 @@ class Command(BaseCommand):
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
+        view_patient = _find_permission('patients', 'view_patient')
         view_site = _find_permission('hospital_settings', 'view_site')
         view_securityquestion = _find_permission('caregivers', 'view_securityquestion')
 
@@ -147,6 +148,10 @@ class Command(BaseCommand):
         listener_registration.user_permissions.set([
             view_institution,
             view_securityquestion,
+        ])
+
+        legacy_backend.user_permissions.set([
+            view_patient,
         ])
 
         # Medical Records

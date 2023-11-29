@@ -63,7 +63,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     relationship2 = Relationship(
         patient=patient,
         caregiver=caregiver2,
-        status='CON',
+        status=patient_models.RelationshipStatus.CONFIRMED,
         type=patient_models.RelationshipType.objects.self_type(),
     )
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
@@ -970,8 +970,8 @@ class TestPatientCaregiverDevicesView:
         }
 
 
-class TestPatientUpdateView:
-    """Class wrapper for patient update endpoint tests."""
+class TestPatientView:
+    """Class wrapper for patient view tests."""
 
     def test_unauthenticated_unauthorized(
         self,
@@ -980,7 +980,7 @@ class TestPatientUpdateView:
         user_with_permission: Callable[[str], User],
     ) -> None:
         """Test that unauthenticated and unauthorized users cannot access the API."""
-        url = reverse('api:patient-update', kwargs={'legacy_id': 42})
+        url = reverse('api:patients-legacy', kwargs={'legacy_id': 42})
 
         response = api_client.get(url)
 
@@ -996,14 +996,33 @@ class TestPatientUpdateView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_get_patient_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
+    def test_not_found(self, admin_api_client: APIClient) -> None:
+        """Test that a 404 is returned if the patient does not exist."""
+        response = admin_api_client.get(reverse('api:patients-legacy', kwargs={'legacy_id': 42}))
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_retrieve(self, admin_api_client: APIClient) -> None:
+        """Test that patient data is returned."""
+        legacy_id = 42
+        patient = Patient(legacy_id=legacy_id)
+
+        response = admin_api_client.get(reverse('api:patients-legacy', kwargs={'legacy_id': legacy_id}))
+
+        assert response.status_code == HTTPStatus.OK
+        data = response.json()
+        assert data['legacy_id'] == legacy_id
+        assert data['first_name'] == patient.first_name
+        assert data['date_of_birth'] == patient.date_of_birth.isoformat()
+
+    def test_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
         """Test patient updates data access success with superuser."""
         api_client.force_login(user=admin_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
@@ -1015,14 +1034,14 @@ class TestPatientUpdateView:
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_with_permission(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_with_permission(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
@@ -1034,14 +1053,36 @@ class TestPatientUpdateView:
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_other_data(self, api_client: APIClient, permission_user: User) -> None:
+        """Test patient updates only updates data access even if extra data is supplied."""
+        api_client.force_login(user=permission_user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        response = api_client.put(
+            reverse(
+                'api:patients-legacy',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': 'ALL', 'ramq': 'SIMM86101799', 'first_name': 'Marge'},
+            format='json',
+        )
+
+        patient.refresh_from_db()
+
+        assert response.status_code == HTTPStatus.OK
+        assert patient.data_access == 'ALL'
+        assert patient.ramq == ''
+        assert patient.first_name == 'Marge'
+
+    @pytest.mark.parametrize('permission_name', ['change_patient'])
+    def test_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': ''},
@@ -1055,21 +1096,22 @@ class TestPatientUpdateView:
         )
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_without_data_access(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_without_data_access(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
-            data={'': 'ALL'},
+            data={},
             format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
+        patient.refresh_from_db()
         assert patient.data_access == 'NTK'
         assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='This field is required.', code='required')]",

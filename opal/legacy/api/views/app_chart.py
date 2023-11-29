@@ -33,39 +33,39 @@ class AppChartView(APIView):
             Http response with the data needed to display the chart view.
         """
         legacy_id = kwargs['legacy_id']
-        user_name = request.headers['Appuserid']
+        username = request.headers['Appuserid']
         unread_count = {
             'unread_appointment_count': models.LegacyAppointment.objects.get_unread_queryset(
                 legacy_id,
-                user_name,
+                username,
             ).count(),
             'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(
                 legacy_id,
-                user_name,
+                username,
             ).count(),
             'unread_txteammessage_count': models.LegacyTxTeamMessage.objects.get_unread_queryset(
                 legacy_id,
-                user_name,
+                username,
             ).count(),
             'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
                 legacy_id,
-                user_name,
+                username,
             ).filter(
                 educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
             ).count(),
             'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
-                user_name,
+                username,
                 1,
             ).count(),
             'unread_research_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
-                user_name,
+                username,
                 2,
             ).count(),
             'unread_consent_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
-                user_name,
+                username,
                 4,
             ).count(),
         }
