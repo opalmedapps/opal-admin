@@ -130,8 +130,8 @@ urlpatterns = [
     ),
     path(
         'patients/legacy/<int:legacy_id>/',
-        patient_views.PatientUpdateView.as_view(),
-        name='patient-update',
+        patient_views.PatientView.as_view(),
+        name='patients-legacy',
     ),
     path(
         'patients/demographic/',
