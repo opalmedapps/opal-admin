@@ -27,7 +27,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
     def test_command_initialize_fields(self) -> None:
         """Verify the command fields are created upon initializing command."""
         command = send_databank_data.Command()
-        assert command.command_called
+        assert isinstance(command.command_called, datetime)
         assert isinstance(command.patient_data_success_tracker, defaultdict)
 
     def test_no_consenting_patients_found_error(self) -> None:
@@ -378,12 +378,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         command.handle()
 
-        databank_patient1 = databank_models.DatabankConsent.objects.filter(
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
-        ).first()
-        databank_patient2 = databank_models.DatabankConsent.objects.filter(
+        )
+        databank_patient2 = databank_models.DatabankConsent.objects.get(
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
-        ).first()
+        )
 
         assert databank_models.SharedData.objects.all().count() == 1
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
