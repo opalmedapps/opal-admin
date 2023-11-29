@@ -2,7 +2,7 @@
 import json
 from collections import defaultdict
 from typing import Any, Optional
-
+from datetime import datetime
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     help = "send consenting Patients' data to the databank"  # noqa: A003
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Prepare some class level fields to help with last_syncrhonization tracking.
 
         command_called is the time when this command was called
@@ -31,8 +31,10 @@ class Command(BaseCommand):
         This is required to know when we have to re-send failed data in the next cron run.
         """
         super().__init__()
-        self.patient_data_success_tracker = defaultdict(lambda: {module: True for module in DataModuleType.choices})
-        self.command_called = timezone.now()
+        self.patient_data_success_tracker: defaultdict = defaultdict(
+            lambda: {module: True for module in DataModuleType.choices},
+        )
+        self.command_called: datetime = timezone.now()
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS231
@@ -185,7 +187,7 @@ class Command(BaseCommand):
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
         """
-        response = {}
+        response = None
         try:
             response = requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',
@@ -205,7 +207,7 @@ class Command(BaseCommand):
             return response.json()
         # TODO: QSCCD-1097 handle all error codes
 
-    def _parse_aggregate_databank_response(self, aggregate_response: json, original_data_sent: list) -> None:
+    def _parse_aggregate_databank_response(self, aggregate_response: dict, original_data_sent: list) -> None:
         """Parse the aggregated response message from the databank and update databank models.
 
         Args:
@@ -231,8 +233,8 @@ class Command(BaseCommand):
             if status_code in {200, 201}:
                 # Grab the data for this specific patient using a list comprehension and matching on the patient GUID
                 synced_patient_data = next((item for item in original_data_sent if item['GUID'] == patient_guid), None)
-                self._update_patient_databank_metadata(
-                    DatabankConsent.objects.filter(guid=patient_guid).first(),
+                self._update_databank_patient_metadata(
+                    DatabankConsent.objects.get(guid=patient_guid),
                     synced_patient_data,
                     message.strip('[]"'),
                 )
@@ -241,7 +243,7 @@ class Command(BaseCommand):
                 # Update the data success tracker to false for this patient & data type
                 self.patient_data_success_tracker[patient_guid][data_module] = False
 
-    def _update_patient_databank_metadata(
+    def _update_databank_patient_metadata(
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
