@@ -482,3 +482,35 @@ def test_api_deactivate_user_action_fail(api_client: APIClient, admin_user: User
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.data['detail'] == 'Not found.'
+
+
+def test_api_reactivate_user_action_pass(api_client: APIClient, admin_user: User) -> None:
+    """Test the pass of reactivating a user the action `reactivate-user`."""
+    api_client.force_login(user=admin_user)
+
+    # add one user
+    clinical_user = user_factories.ClinicalStaff(is_active=False)
+
+    response = api_client.put(reverse(
+        'api:users-reactivate-user',
+        kwargs={'username': clinical_user.username},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['detail'] == 'User was reactivated successfully.'
+    assert User.objects.get(username=clinical_user.username).is_active
+
+
+def test_api_reactivate_user_action_fail(api_client: APIClient, admin_user: User) -> None:
+    """Test the fail case of reactivating a non-exist user using the action `reactivate-user`."""
+    api_client.force_login(user=admin_user)
+
+    response = api_client.put(reverse(
+        'api:users-reactivate-user',
+        kwargs={'username': 'not_exist_user'},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.data['detail'] == 'Not found.'
