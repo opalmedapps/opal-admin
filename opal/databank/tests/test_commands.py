@@ -29,20 +29,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         assert isinstance(command.command_called, datetime)
         assert isinstance(command.patient_data_success_tracker, defaultdict)
+        assert command.command_called is not None
 
     def test_no_consenting_patients_found_error(self) -> None:
         """Verify correct errors show in stderr for no patients found."""
-        pat1 = patient_factories.Patient(ramq='SIMM87654321')
-        yesterday = datetime.now() - timedelta(days=1)
-        databank_factories.DatabankConsent(
-            patient=pat1,
-            has_appointments=False,
-            has_diagnoses=False,
-            has_demographics=False,
-            has_questionnaires=False,
-            has_labs=False,
-            last_synchronized=timezone.make_aware(yesterday),
-        )
         message, error = self._call_command('send_databank_data')
         assert not error
         assert 'No patients found consenting to Appointments data donation.' in message
@@ -388,6 +378,128 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 1
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
         assert databank_patient2.last_synchronized == command.command_called
+
+    def test_parse_aggregate_databank_response_with_new_patient(self) -> None:
+        """Test that an unknown guid from the databank is still intiialized."""
+        new_patient_response = {'demo_new_guid': [200, '[]']}
+        command = send_databank_data.Command()
+        command._parse_aggregate_databank_response(new_patient_response, original_data_sent=[])
+        assert 'new_guid' in command.patient_data_success_tracker
+
+    def test_update_databank_patient_metadata_call(self, mocker: MockerFixture) -> None:
+        """Test specific behaviour of the metadata updates."""
+        response_data = self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS)
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+
+        command = send_databank_data.Command()
+        mock_update_method = mocker.patch.object(
+            command,
+            '_update_databank_patient_metadata',
+        )
+        command._parse_aggregate_databank_response(response_data, original_data_sent=[])
+        mock_update_method.assert_called()
+        assert mock_update_method.call_count == len(response_data)
+        # To assert that it was called with specific arguments, you can check the call arguments
+        call_args = mock_update_method.call_args_list[0]
+        databank_patient, synced_data, message = call_args.args
+        assert isinstance(databank_patient, databank_models.DatabankConsent)
+        assert isinstance(synced_data, dict)
+        assert isinstance(message, str)
+
+    def test_not_all_successful_check_in_update_metadata(self):
+        """Test partial sender error handled correctly in metadata function."""
+        partial_failure_response = {
+            'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+            'labs_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [400, 'Error'],
+        }
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+
+        command = send_databank_data.Command()
+        command._parse_aggregate_databank_response(partial_failure_response, original_data_sent=[])
+
+        databank_patient = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        # Check if 'last_synchronized' is not updated due to the failure in one of the modules
+        assert databank_patient.last_synchronized != command.command_called
+
+    def test_update_metadata_with_labs_data(self):
+        """Test creation of SharedData for labs data."""
+        lab_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                'LABS': [{'test_result_id': 123}],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+
+        command = send_databank_data.Command()
+        mock_databank_patient = databank_models.DatabankConsent.objects.get(guid='test_guid')
+
+        command._update_databank_patient_metadata(databank_patient=mock_databank_patient, synced_data=lab_data)
+        # Check if SharedData instance is created for lab data
+        shared_data_count = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient,
+            data_type=databank_models.DataModuleType.LABS,
+        ).count()
+        assert shared_data_count > 0
+
+        # Additionally, check if the SharedData instance has the correct test_result_id
+        shared_data = databank_models.SharedData.objects.get(
+            databank_consent=mock_databank_patient,
+            data_type=databank_models.DataModuleType.LABS,
+        )
+        assert shared_data.data_id == 123
 
     def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list]:
         """Prepare a response message according to module and success/failure.
