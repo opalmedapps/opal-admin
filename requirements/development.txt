@@ -2,7 +2,7 @@
 
 # Testing
 #
-mypy==1.7.0  # https://github.com/python/mypy
+mypy==1.7.1  # https://github.com/python/mypy
 pytest==7.4.3  # https://github.com/pytest-dev/pytest
 pytest-mock==3.12.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.6.0  # https://github.com/miketheman/pytest-socket
