@@ -63,7 +63,7 @@ def site_user(client: Client, django_user_model: User) -> Client:
 
 
 @pytest.fixture(name='institution_form_files')
-def fixture_institution_form_files() -> dict:
+def fixture_institution_form_files() -> dict[str, SimpleUploadedFile]:
     """Fixture providing logo images for the InstitutionForm.
 
     Returns:
@@ -97,7 +97,7 @@ def fixture_institution_form_files() -> dict:
 
 
 @pytest.fixture()
-def institution_form(institution_form_files: dict) -> InstitutionForm:
+def institution_form(institution_form_files: dict[str, SimpleUploadedFile]) -> InstitutionForm:
     """Fixture providing data for the `InstitutionForm`.
 
     Args:
@@ -121,7 +121,9 @@ def institution_form(institution_form_files: dict) -> InstitutionForm:
 
 
 @pytest.fixture()
-def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm:
+def incomplete_institution_form(
+    institution_form_files: dict[str, SimpleUploadedFile],
+) -> InstitutionForm:
     """Fixture providing data for the incomplete `InstitutionForm`.
 
     Args:
@@ -150,7 +152,9 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
 
 
 @pytest.fixture()
-def institution_form_no_delay_fields(institution_form_files: dict) -> InstitutionForm:
+def institution_form_no_delay_fields(
+    institution_form_files: dict[str, SimpleUploadedFile],
+) -> InstitutionForm:
     """Fixture providing data for the `InstitutionForm` without delay fields.
 
     Args:

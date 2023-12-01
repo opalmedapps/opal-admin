@@ -6,7 +6,7 @@ from rest_framework import serializers
 from ..models import Caregiver, ClinicalStaff
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer[Group]):
     """
     Group serializer.
 
@@ -18,7 +18,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ('pk', 'name')
 
 
-class UserCaregiverUpdateSerializer(serializers.ModelSerializer):
+class UserCaregiverUpdateSerializer(serializers.ModelSerializer[Caregiver]):
     """
     User caregiver serializer.
 
@@ -36,7 +36,7 @@ class UserCaregiverUpdateSerializer(serializers.ModelSerializer):
         }
 
 
-class ClinicalStaffDetailSerializer(serializers.ModelSerializer):
+class ClinicalStaffDetailSerializer(serializers.ModelSerializer[ClinicalStaff]):
     """
     ClinicalStaff data serializer.
 
@@ -52,7 +52,7 @@ class ClinicalStaffDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserClinicalStaffSerializer(serializers.ModelSerializer):
+class UserClinicalStaffSerializer(serializers.ModelSerializer[ClinicalStaff]):
     """
     User ClinicalStaff serializer.
 
@@ -64,7 +64,7 @@ class UserClinicalStaffSerializer(serializers.ModelSerializer):
         fields = ('username', 'groups')
 
 
-class UpdateClinicalStaffUserSerializer(serializers.ModelSerializer):
+class UpdateClinicalStaffUserSerializer(serializers.ModelSerializer[ClinicalStaff]):
     """Serializer to retrieve and update the clinical staff users' groups."""
 
     class Meta:

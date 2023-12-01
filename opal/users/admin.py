@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import Caregiver, ClinicalStaff, User
 
 
+@admin.register(User)
 class UserAdmin(DjangoUserAdmin):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
@@ -22,6 +23,5 @@ class UserAdmin(DjangoUserAdmin):
 
 
 # use Django's default UserAdmin for now (until the User is actually customized)
-admin.site.register(User, UserAdmin)
 admin.site.register(Caregiver, UserAdmin)
 admin.site.register(ClinicalStaff, UserAdmin)

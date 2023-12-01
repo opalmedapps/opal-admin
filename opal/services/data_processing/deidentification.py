@@ -50,7 +50,7 @@ class OpenScienceIdentity():
         """
         self.patient_data = patient_data
         self._cache: dict[str, str] = {}  # Keep a dictionary of cleaned attributes for efficiency
-        self.invalid_attributes: list = []  # Easier debugging by tracking invalid inputs
+        self.invalid_attributes: list[str] = []  # Easier debugging by tracking invalid inputs
 
     def to_signature(self) -> str:
         """Validate input attributes, generate the signature (password), and produce the hash.

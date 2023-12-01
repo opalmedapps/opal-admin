@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING, Any
 from django.db import connections, models, transaction
 from django.db.backends.utils import CursorWrapper
 
+from opal.patients.models import RelationshipType
+
 if TYPE_CHECKING:
     from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
-
-from opal.patients.models import RelationshipType
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve the latest de-identified questionnaire data for a consenting DataBank patient.
 
@@ -102,7 +102,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
             conn.execute(self._read_local_sql(query_dir_answer))
             return self._fetch_all_as_dict(conn)
 
-    def _fetch_all_as_dict(self, cursor: CursorWrapper) -> list[dict]:
+    def _fetch_all_as_dict(self, cursor: CursorWrapper) -> list[dict[str, Any]]:
         """Return all rows from a cursor as a dict.
 
         Args:
