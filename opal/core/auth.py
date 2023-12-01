@@ -2,7 +2,7 @@
 import logging
 from collections import namedtuple
 from http import HTTPStatus
-from typing import Optional, Type
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -14,7 +14,7 @@ from requests.exceptions import RequestException
 
 from opal.users.models import User
 
-UserModel: Type[User] = get_user_model()
+UserModel: type[User] = get_user_model()
 UserData = namedtuple('UserData', ['email', 'first_name', 'last_name'])
 
 #: Representation in API response when authentication was successful.

@@ -9,7 +9,8 @@ from modeltranslation.admin import TranslationAdmin
 from . import models
 
 
-class HospitalPatientAdmin(admin.ModelAdmin):
+@admin.register(models.HospitalPatient)
+class HospitalPatientAdmin(admin.ModelAdmin[models.HospitalPatient]):
     """Admin options for the `HospitalPatient` model."""
 
     list_display = ['__str__', 'mrn', 'site', 'is_active', 'patient']
@@ -17,7 +18,8 @@ class HospitalPatientAdmin(admin.ModelAdmin):
     list_filter = ['site']
 
 
-class PatientAdmin(admin.ModelAdmin):
+@admin.register(models.Patient)
+class PatientAdmin(admin.ModelAdmin[models.Patient]):
     """Admin options for the `Patient` model."""
 
     list_display = ['__str__', 'date_of_birth', 'date_of_death', 'sex', 'ramq', 'data_access', 'legacy_id', 'uuid']
@@ -26,7 +28,8 @@ class PatientAdmin(admin.ModelAdmin):
     search_fields = ['first_name', 'last_name', 'ramq']
 
 
-class RelationshipTypeAdmin(TranslationAdmin):
+@admin.register(models.RelationshipType)
+class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
     """This class provides admin options for `RelationshipType`."""
 
     list_display = [
@@ -58,16 +61,11 @@ class RelationshipTypeAdmin(TranslationAdmin):
         return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
 
 
-class RelationshipAdmin(admin.ModelAdmin):
+@admin.register(models.Relationship)
+class RelationshipAdmin(admin.ModelAdmin[models.Relationship]):
     """Admin options for the `Relationship` model."""
 
     date_hierarchy = 'request_date'
     list_display = ['__str__', 'patient', 'caregiver', 'type', 'status', 'request_date', 'start_date', 'end_date']
     list_select_related = ['patient', 'caregiver', 'caregiver__user', 'type']
     list_filter = ['type', 'status']
-
-
-admin.site.register(models.HospitalPatient, HospitalPatientAdmin)
-admin.site.register(models.Patient, PatientAdmin)
-admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
-admin.site.register(models.Relationship, RelationshipAdmin)

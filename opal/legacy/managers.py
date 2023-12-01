@@ -19,6 +19,8 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import DatabaseError, models
 from django.utils import timezone
 
+from django_stubs_ext.aliases import ValuesQuerySet
+
 from opal.patients.models import Relationship, RelationshipStatus
 
 if TYPE_CHECKING:
@@ -161,7 +163,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet:
+    ) -> ValuesQuerySet['LegacyAppointment', dict[str, Any]]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -320,7 +322,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatient', dict[str, Any]]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -360,7 +362,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyDiagnosis', dict[str, Any]]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -411,7 +413,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatientTestResult', dict[str, Any]]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 

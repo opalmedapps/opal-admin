@@ -1,5 +1,5 @@
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
@@ -204,8 +204,8 @@ class Command(BaseCommand):
 
     def _get_deviations_err(
         self,
-        django_model_records: List[Tuple],
-        legacy_table_records: List[Tuple],
+        django_model_records: list[tuple[str, ...]],
+        legacy_table_records: list[tuple[str, ...]],
         django_model_name: str,
         legacy_table_name: str,
     ) -> Optional[str]:
@@ -266,7 +266,7 @@ class Command(BaseCommand):
 
     def _get_unmatched_records_str(
         self,
-        unmatched_records: set[Tuple],
+        unmatched_records: set[tuple[str, ...]],
         block_name: str,
     ) -> str:
         """Create string that lists all the unmatched records.

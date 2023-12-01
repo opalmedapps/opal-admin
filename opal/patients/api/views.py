@@ -34,7 +34,7 @@ from ..api.serializers import (
 from ..models import Patient, Relationship
 
 
-class RetrieveRegistrationDetailsView(RetrieveAPIView):
+class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
     """Class handling GET requests for registration code values."""
 
     queryset = (
@@ -53,7 +53,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
-    def get_object(self) -> Any:
+    def get_object(self) -> caregiver_models.RegistrationCode:
         """
         Override get_object to filter RegistrationCode by patient date_of_death.
 
@@ -68,7 +68,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer]:
+    def get_serializer_class(
+        self, *args: Any, **kwargs: Any,
+    ) -> type[serializers.BaseSerializer[caregiver_models.RegistrationCode]]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
@@ -151,7 +153,7 @@ class RegistrationCompletionView(APIView):
         return Response()
 
 
-class CaregiverRelationshipView(ListAPIView):
+class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
@@ -170,7 +172,7 @@ class CaregiverRelationshipView(ListAPIView):
         )
 
 
-class PatientDemographicView(UpdateAPIView):
+class PatientDemographicView(UpdateAPIView[Patient]):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
     permission_classes = (IsInterfaceEngine,)
@@ -220,14 +222,12 @@ class PatientDemographicView(UpdateAPIView):
         return patient
 
 
-class PatientCaregiverDevicesView(RetrieveAPIView):
+class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     """Class handling GET requests for patient caregivers."""
 
-    queryset = (
-        Patient.objects.prefetch_related(
-            'relationships__caregiver__user',
-            'relationships__caregiver__devices',
-        )
+    queryset = Patient.objects.prefetch_related(
+        'relationships__caregiver__user',
+        'relationships__caregiver__devices',
     )
     permission_classes = (IsLegacyBackend,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
@@ -236,7 +236,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
     lookup_field = 'legacy_id'
 
 
-class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView):
+class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView[Patient]):
     """View supporting patient retrieval and (limited) update based on their legacy ID."""
 
     # clinical staff in OpalAdmin can update a patient (requires `change_patient`)

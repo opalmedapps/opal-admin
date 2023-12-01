@@ -191,7 +191,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
         assert not error
 
-    def test_partial_sender_error_oie(self, mocker: MockerFixture, capsys: pytest.CaptureFixture) -> None:
+    def test_partial_sender_error_oie(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Verify oie sender errors get properly handled."""
         django_pat1 = patient_factories.Patient()
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)

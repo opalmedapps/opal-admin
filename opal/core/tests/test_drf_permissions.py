@@ -29,7 +29,7 @@ class TestCaregiverPatientPermissions:
 
     class_instance = drf_permissions.CaregiverPatientPermissions()
 
-    def set_args(self, user_id: Optional[Any], patient_id: Optional[Any]) -> None:
+    def set_args(self, user_id: Optional[Any], patient_id: int | str | None) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
         if user_id:
             self.request.META['HTTP_Appuserid'] = user_id
@@ -190,7 +190,7 @@ class TestCaregiverSelfPermissions:
         self.view = APIView()
 
 
-class _ModelView(generics.ListAPIView):
+class _ModelView(generics.ListAPIView[User]):
     model = User
     queryset = User.objects.none()
     permission_classes = (drf_permissions.FullDjangoModelPermissions,)
