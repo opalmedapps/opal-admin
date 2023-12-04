@@ -435,7 +435,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(synced_data, dict)
         assert isinstance(message, str)
 
-    def test_update_metadata_with_labs_data(self):
+    def test_update_metadata_with_labs_data(self) -> None:
         """Test just the metadata update part of the labs data type."""
         sent_lab_data = [
             {
