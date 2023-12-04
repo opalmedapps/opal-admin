@@ -15,7 +15,7 @@ from ..utils import generate_pathology_report
 from .serializers import PathologySerializer
 
 
-class CreatePathologyView(generics.CreateAPIView):
+class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
     """
     `CreateAPIView` for handling POST requests for the `GeneralTest` and creating pathology reports.
 

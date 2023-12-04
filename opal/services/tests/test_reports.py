@@ -1,5 +1,6 @@
 import datetime
 import json
+import textwrap
 from http import HTTPStatus
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import PathologyData, QuestionnaireReportRequestData, ReportService
+from opal.services.reports import PathologyData, PathologyPDF, QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -444,3 +445,35 @@ def test_generate_pathology_report_success_with_page_break(
     assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
     assert pathology_report.exists()
     assert pathology_report.is_file()
+
+
+# tuple with patient first name and last name
+test_patient_names_data: list[tuple[str, str]] = [
+    ('Gertruda', 'Evaristo'),
+    ('Jean', 'Phillipe The Third of Canterbury'),
+    ('Jean-Phillipe-Burgundy-Long-First-Name', 'Jean-Phillipe-Burgundy-Long-Last-Name'),
+    ('Timothy John', 'Berners-Lee'),
+    ('Leonardo di ser', 'Piero da Vinci'),
+]
+
+
+@pytest.mark.parametrize(('first_name', 'last_name'), test_patient_names_data)
+def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> None:
+    """Ensure long patient names are formatted and no words splitted."""
+    pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
+        patient_first_name=first_name,
+        patient_last_name=last_name,
+    )
+    pathology_pdf = PathologyPDF(pathology_data)
+
+    patient_list = pathology_pdf._get_site_address_patient_info_box()
+
+    patient_info = next((elem for elem in patient_list if elem.get('name') == 'patient_name'))
+    # Wrap the text with the maximum characters can be filled in each line.
+    wrapper = textwrap.TextWrapper(
+        width=int((190 - 138) / 2) - 1,
+    )
+    patient_name = f'{last_name}, {first_name}'.upper()
+    expected_patient_name = wrapper.fill(text=f'Nom/Name: {patient_name}')
+
+    assert patient_info.get('text') == expected_patient_name

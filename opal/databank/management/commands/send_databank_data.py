@@ -2,20 +2,24 @@
 import json
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models.query import QuerySet
+from django.db.models import Model
 from django.utils import timezone
 
 import requests
+from django_stubs_ext.aliases import ValuesQuerySet
 from requests.auth import HTTPBasicAuth
 
 from opal.databank.models import DatabankConsent, DataModuleType, SharedData
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+
+CombinedModuleData: TypeAlias = list[dict[str, Any]]
+DatabankQuerySet: TypeAlias = ValuesQuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
 class Command(BaseCommand):
@@ -68,7 +72,7 @@ class Command(BaseCommand):
                 )
 
                 # Retrieve patient data for each module type and send all at once
-                combined_module_data: list = []
+                combined_module_data: CombinedModuleData = []
                 for databank_patient in patients_list:
                     databank_data = self._retrieve_databank_data_for_patient(databank_patient, module)
                     if databank_data:
@@ -87,7 +91,11 @@ class Command(BaseCommand):
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
                 )
 
-    def _retrieve_databank_data_for_patient(self, databank_patient: DatabankConsent, module: DataModuleType) -> Any:
+    def _retrieve_databank_data_for_patient(
+        self,
+        databank_patient: DatabankConsent,
+        module: DataModuleType,
+    ) -> DatabankQuerySet | None:
         """Use model managers to retrieve databank data for a consenting patient.
 
         Args:
@@ -100,6 +108,7 @@ class Command(BaseCommand):
         Returns:
             JSON string of the patient's databank information for this module
         """
+        databank_data: DatabankQuerySet | None = None
         if not databank_patient.patient.legacy_id:
             raise ValueError('Legacy ID missing from Databank Patient.')
         match module:
@@ -136,13 +145,19 @@ class Command(BaseCommand):
             self.stdout.write(
                 f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
             )
-            return databank_data
         else:
             self.stdout.write(
                 f'No {DataModuleType(module).label} data found for {databank_patient.patient}',
             )
 
-    def _nest_and_serialize_queryset(self, guid: str, queryset: QuerySet, nesting_key: str) -> dict:
+        return databank_data
+
+    def _nest_and_serialize_queryset(
+        self,
+        guid: str,
+        queryset: DatabankQuerySet,
+        nesting_key: str,
+    ) -> dict[str, str | CombinedModuleData]:
         """Pull the GUID to the top element and nest the rest of the qs records into a single dict.
 
         Args:
@@ -178,7 +193,7 @@ class Command(BaseCommand):
             ]
         return {'GUID': guid, nesting_key: data}
 
-    def _send_to_oie_and_handle_response(self, data: dict) -> Any:
+    def _send_to_oie_and_handle_response(self, data: dict[str, CombinedModuleData]) -> None:
         """Send databank dataset to the OIE and handle immediate OIE response.
 
         This function should handle status and errors between Django and OIE only.

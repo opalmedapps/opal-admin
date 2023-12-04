@@ -16,7 +16,7 @@ from rest_framework.serializers import BaseSerializer
 from config.settings.base import USER_MANAGER_GROUP_NAME
 
 from ...core.drf_permissions import FullDjangoModelPermissions
-from ..models import ClinicalStaff
+from ..models import ClinicalStaff, User
 from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
 
 
@@ -24,7 +24,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    viewsets.GenericViewSet,
+    viewsets.GenericViewSet[User],
 ):
     """
     A viewset that provides `create`, `retrieve`, and `update` actions to clinical staff and groups.
@@ -35,6 +35,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
     queryset = ClinicalStaff.objects.all()
     lookup_field = 'username'
     lookup_url_kwarg = 'username'
+    default_serializer_class = UserClinicalStaffSerializer
     serializer_classes = {
         'create': UserClinicalStaffSerializer,
         'retrieve': UpdateClinicalStaffUserSerializer,
@@ -43,8 +44,6 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         'unset_manager_user': UpdateClinicalStaffUserSerializer,
     }
     permission_classes = (FullDjangoModelPermissions,)
-
-    default_serializer_class = UserClinicalStaffSerializer
 
     @action(detail=True, methods=['put'], url_path='set-manager-user')
     def set_manager_user(self, request: Request, username: str) -> Response:
@@ -122,7 +121,27 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         clinicalstaff_user.save()
         return Response({'detail': _('User was deactivated successfully.')}, status=HTTPStatus.OK)
 
-    def get_serializer_class(self) -> type[BaseSerializer]:
+    @action(detail=True, methods=['put'], url_path='reactivate-user')
+    def reactivate_user(self, request: Request, username: str = '') -> Response:
+        """
+        Handle requests for reactivating a user.
+
+        Set the attribute `is_active` to true.
+
+        Args:
+            request: HTTP request.
+            username: user's username.
+
+        Returns:
+            HTTP response with response details.
+        """
+        clinicalstaff_user = self.get_object()
+
+        clinicalstaff_user.is_active = True
+        clinicalstaff_user.save()
+        return Response({'detail': _('User was reactivated successfully.')}, status=HTTPStatus.OK)
+
+    def get_serializer_class(self) -> type[BaseSerializer[User]]:
         """
         Override get_serializer_class to return the corresponding serializer for each action.
 

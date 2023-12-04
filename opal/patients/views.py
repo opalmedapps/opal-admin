@@ -108,7 +108,7 @@ class AccessRequestStorageMixin:
         self.request.session.modified = True
 
 
-class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorageMixin, generic.FormView):
+class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorageMixin, generic.FormView[Form]):
     """
     View that shows the confirmation page for a completed access request.
 

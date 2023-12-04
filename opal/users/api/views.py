@@ -5,11 +5,11 @@ from rest_framework import generics
 
 from opal.core.drf_permissions import FullDjangoModelPermissions
 
-from ..models import Caregiver
+from ..models import Caregiver, User
 from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
 
 
-class ListGroupView(generics.ListAPIView):
+class ListGroupView(generics.ListAPIView[Group]):
     """REST API `ListAPIView` returning list of available groups."""
 
     model = Group
@@ -18,7 +18,7 @@ class ListGroupView(generics.ListAPIView):
     permission_classes = (FullDjangoModelPermissions,)
 
 
-class UserCaregiverUpdateView(generics.UpdateAPIView):
+class UserCaregiverUpdateView(generics.UpdateAPIView[User]):
     """View to update a caregiver."""
 
     permission_classes = (FullDjangoModelPermissions,)

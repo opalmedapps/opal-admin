@@ -7,7 +7,7 @@ from ..models import Institution
 from .serializers import InstitutionSerializer
 
 
-class RetrieveInstitutionView(generics.RetrieveAPIView):
+class RetrieveInstitutionView(generics.RetrieveAPIView[Institution]):
     """
     This view provides an API view to retrieve the singleton `Institution`.
 

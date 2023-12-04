@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-28 06:11+0300\n"
+"POT-Creation-Date: 2023-12-01 03:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,6 +37,10 @@ msgstr "L'utilisateur a été supprimé du groupe de gestionnaires avec succès.
 #: opal/users/api/viewsets.py
 msgid "User was deactivated successfully."
 msgstr "L'utilisateur a été désactivé avec succès."
+
+#: opal/users/api/viewsets.py
+msgid "User was reactivated successfully."
+msgstr "L'utilisateur a été résactivé avec succès."
 
 #: opal/users/apps.py
 msgid "Users"

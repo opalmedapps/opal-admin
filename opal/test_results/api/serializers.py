@@ -7,7 +7,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
 
 
-class GeneralTestSerializer(DynamicFieldsSerializer):
+class GeneralTestSerializer(DynamicFieldsSerializer[GeneralTest]):
     """Serializer for the `GeneralTest` model."""
 
     class Meta:
@@ -29,7 +29,7 @@ class GeneralTestSerializer(DynamicFieldsSerializer):
         )
 
 
-class PathologyObservationSerializer(DynamicFieldsSerializer):
+class PathologyObservationSerializer(DynamicFieldsSerializer[PathologyObservation]):
     """Serializer for the `PathologyObservation` model."""
 
     class Meta:
@@ -44,7 +44,7 @@ class PathologyObservationSerializer(DynamicFieldsSerializer):
         )
 
 
-class NoteSerializer(DynamicFieldsSerializer):
+class NoteSerializer(DynamicFieldsSerializer[Note]):
     """Serializer for the `Note` model."""
 
     class Meta:

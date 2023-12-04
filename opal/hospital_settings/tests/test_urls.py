@@ -1,14 +1,15 @@
-from typing import Tuple, Type
-
 from django.urls import resolve, reverse
+from django.views.generic.base import View
 
 import pytest
 from pytest_django.asserts import assertURLEqual
 
 from .. import views
 
+TestData = tuple[type, str, str]
+
 # tuple with expected data (view class, url name, url path)
-testdata: list[Tuple] = [
+testdata: list[TestData] = [
     (views.IndexTemplateView, 'hospital-settings:index', '/hospital-settings/'),
     (views.InstitutionListView, 'hospital-settings:institution-list', '/hospital-settings/institutions/'),
     (
@@ -22,7 +23,7 @@ testdata: list[Tuple] = [
 
 
 @pytest.mark.parametrize(('view_class', 'url_name', 'url_path'), testdata)
-def test_hospital_settings_urls(view_class: Type, url_name: str, url_path: str) -> None:
+def test_hospital_settings_urls(view_class: type[View], url_name: str, url_path: str) -> None:
     """
     Ensure that an URL name resolves to the appropriate URL address.
 

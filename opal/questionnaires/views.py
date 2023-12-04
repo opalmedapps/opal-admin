@@ -36,7 +36,7 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
     permission_required = ('questionnaires.export_report')
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
-    def get_context_data(self, **kwargs: Any) -> Any:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Override class method and append user's followed questionnaires.
 
         Args:

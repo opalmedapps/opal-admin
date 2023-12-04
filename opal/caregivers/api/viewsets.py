@@ -15,7 +15,7 @@ from ..models import SecurityAnswer, SecurityQuestion
 from . import serializers
 
 
-class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet[SecurityQuestion]):
     """
     This viewset provides a list and retrieve actions for the  `SecurityQuestion` model.
 
@@ -33,7 +33,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    viewsets.GenericViewSet,
+    viewsets.GenericViewSet[SecurityAnswer],
 ):  # noqa: WPS215
     """
     This viewset provides an retrieve view and update view for `SecurityAnswer`.
@@ -53,7 +53,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
         username = self.kwargs['username']
         return SecurityAnswer.objects.filter(user__user__username=username).order_by('pk')
 
-    def get_serializer_class(self) -> type[drf_serializers.BaseSerializer]:
+    def get_serializer_class(self) -> type[drf_serializers.BaseSerializer[SecurityAnswer]]:
         """
         Override get_serializer_class to switch the serializer by the action.
 
