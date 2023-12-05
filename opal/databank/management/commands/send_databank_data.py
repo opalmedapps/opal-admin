@@ -38,9 +38,7 @@ class Command(BaseCommand):
         This is required to know when we have to re-send failed data in the next cron run.
         """
         super().__init__()
-        self.patient_data_success_tracker: defaultdict = defaultdict(
-            lambda: {module: True for module in DataModuleType.choices},
-        )
+        self.patient_data_success_tracker: dict[str, dict[DataModuleType, bool]] = {}
         self.command_called: datetime = timezone.now()
 
     @transaction.atomic
@@ -193,7 +191,7 @@ class Command(BaseCommand):
             ]
         return {'GUID': guid, nesting_key: data}
 
-    def _send_to_oie_and_handle_response(self, data: dict[str, CombinedModuleData]) -> None:
+    def _send_to_oie_and_handle_response(self, data: dict[str, CombinedModuleData]) -> Any:
         """Send databank dataset to the OIE and handle immediate OIE response.
 
         This function should handle status and errors between Django and OIE only.
@@ -225,7 +223,11 @@ class Command(BaseCommand):
             return response.json()
         # TODO: QSCCD-1097 handle all error codes
 
-    def _parse_aggregate_databank_response(self, aggregate_response: dict, original_data_sent: list) -> None:
+    def _parse_aggregate_databank_response(
+        self,
+        aggregate_response: dict[str, list[Any]],
+        original_data_sent: CombinedModuleData,
+    ) -> None:
         """Parse the aggregated response message from the databank and update databank models.
 
         Args:
@@ -245,7 +247,7 @@ class Command(BaseCommand):
 
             # Intialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
-                self.patient_data_success_tracker[patient_guid] = {module: True for module in DataModuleType.choices}
+                self.patient_data_success_tracker[patient_guid] = {module: True for module in DataModuleType}
 
             # Handle response codes
             if status_code in {200, 201}:

@@ -1,6 +1,6 @@
-from collections import defaultdict
 from datetime import datetime, timedelta
 from http import HTTPStatus
+from typing import Any
 
 from django.utils import timezone
 
@@ -28,7 +28,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         """Verify the command fields are created upon initializing command."""
         command = send_databank_data.Command()
         assert isinstance(command.command_called, datetime)
-        assert isinstance(command.patient_data_success_tracker, defaultdict)
+        assert isinstance(command.patient_data_success_tracker, dict)
         assert command.command_called is not None
 
     def test_no_consenting_patients_found_error(self) -> None:
@@ -83,7 +83,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert f'No Questionnaires data found for {pat1}' in message
         assert not error
 
-    def test_retrieve_databank_data_for_patient(self, capsys: pytest.CaptureFixture) -> None:  # noqa: WPS213
+    def test_retrieve_databank_data_for_patient(self, capsys: pytest.CaptureFixture[str]) -> None:  # noqa: WPS213
         """Test fetching the existing data of patients who have consented."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -158,7 +158,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
 
-    def test_send_to_oie_request_exception(self, mocker: MockerFixture, capsys: pytest.CaptureFixture) -> None:
+    def test_send_to_oie_request_exception(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Verify oie sender errors get properly handled."""
         django_pat1 = patient_factories.Patient()
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -482,7 +482,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         assert shared_data.data_id == 123
 
-    def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list]:
+    def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
         """Prepare a response message according to module and success/failure.
 
         Args:
