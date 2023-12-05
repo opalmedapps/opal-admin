@@ -398,9 +398,53 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             databank_models.DataModuleType.LABS: True,
             databank_models.DataModuleType.QUESTIONNAIRES: True,
         }
+        assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
         assert databank_models.SharedData.objects.all().count() == 1
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
         assert databank_patient2.last_synchronized == command.command_called
+
+    def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
+        """Test behaviour when synced_data contains unknown module."""
+        sent_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                'INVA': [
+                    {'components': [{'test_result_id': 123}]},
+                    {'components': [{'test_result_id': 124}]},
+                ],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        command = send_databank_data.Command()
+        mock_databank_patient = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command._parse_aggregate_databank_response(
+            aggregate_response={
+                'labs_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '["2 labs inserted"]'],
+            },
+            original_data_sent=sent_data,
+        )
+        # Check if SharedData instance is created for lab data
+        shared_data_count = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient,
+            data_type=databank_models.DataModuleType.LABS,
+        ).count()
+        assert shared_data_count == 0
 
     def test_update_databank_patient_metadata_call(self, mocker: MockerFixture) -> None:
         """Test correct calling of the metatdata update."""
