@@ -186,7 +186,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.add_page()
         self._generate()
 
-    def header(self) -> None:
+    def header(self) -> None:  # noqa: WPS213
         """Set the pathology PDF's header.
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
@@ -197,7 +197,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 h=None,
                 align='L',
                 border=0,
-                text='Pathologie Chirurgicale Raport (suite)',
+                text='Pathologie Chirurgicale Rapport (suite)',
             )
             header_text_en = FPDFCellDictType(
                 w=0,
@@ -213,15 +213,19 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 border=0,
                 text=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns_str}]',
             )
-            self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=6)
-            self.cell(**header_text_fr)
-            self.ln(3)
 
-            self.set_font(family=PATHOLOGY_REPORT_FONT, size=6)
+            self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=10)
+            self.cell(4)
+            self.cell(**header_text_fr)
+            self.ln(4)
+
+            self.set_font(family=PATHOLOGY_REPORT_FONT, size=10)
+            self.cell(4)
             self.cell(**header_text_en)
             self.ln(7)
 
-            self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=8)
+            self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=10)
+            self.cell(4)
             self.cell(**header_patient_info)
 
     def footer(self) -> None:
@@ -241,22 +245,22 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             + 'clinical use.'
         )
         footer_cursor_abscissa_position_in_mm: int = -40
-        footer_block = FPDFMultiCellDictType(w=0, h=None, align='L', text=footer_text)
+        footer_block = FPDFMultiCellDictType(w=180, h=None, align='L', text=footer_text)
         footer_page = FPDFCellDictType(
             w=0,
             h=10,
             text=f'Page {self.page_no()}/{{nb}}',
-            border='B',
+            border=0,
             align='R',
         )
-
         self.set_y(y=footer_cursor_abscissa_position_in_mm)
-        self.set_font(family=PATHOLOGY_REPORT_FONT, size=8)
+        self.set_font(family=PATHOLOGY_REPORT_FONT, size=9)
+        self.cell(4)
         self.multi_cell(**footer_block)
         self.ln(5)
 
         # Print page number:
-        self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=10)
+        self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=9)
         self.cell(**footer_page)
 
     def add_page(self, *args: Any, **kwargs: Any) -> None:
@@ -270,20 +274,27 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
         if self.page != FIRST_PAGE_NUMBER:
             header_cursor_abscissa_position_in_mm: int = 40
-            frame_size = FPDFRectDictType(
-                x=15,
-                y=30,
-                w=180,
-                h=220,
-                style='D',
-            )
-
-            self.rect(**frame_size)
             # Set the cursor at the top (e.g., 4 cm from the top).
             self.set_y(header_cursor_abscissa_position_in_mm)
 
+    def _draw_other_pages_frame(self, height_of_section: int) -> None:
+        """Draw the pathology section frame for the pages except the first page.
+
+        Args:
+            height_of_section: the height of the section to be added
+        """
+        frame_size = FPDFRectDictType(
+            x=15,
+            y=30,
+            w=180,
+            h=self.get_y() - height_of_section if self.get_y() > height_of_section else 0,
+            style='D',
+        )
+        self.rect(**frame_size)
+
     def _generate(self) -> None:
         """Generate a PDF pathology report."""
+        self._draw_site_logo()
         self._draw_site_address_and_patient_table()
         self._draw_pathology_table_title()
         self._draw_pathology_table_frame()
@@ -312,24 +323,35 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
         self.set_producer('fpdf2 v{0}'.format(FPDF_VERSION))
 
+    def _draw_site_logo(self) -> None:
+        """Draw the site logo that is shown at the top of the first page."""
+        self.image(
+            str(self.pathology_data.site_logo_path),
+            x=35,
+            y=15,
+            w=120,
+            h=30,
+        )
+
     def _draw_site_address_and_patient_table(self) -> None:
-        """Draw the site address and patient info table that is shown at the top of the first page."""
+        """Draw the site address and patient info table."""
         site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
         site_patient_box.render()
         # Draw the border/frame around the site address and patient info table.
         border_around_site = FPDFRectDictType(
             x=15,
-            y=15,
+            y=45,
             w=180,
-            h=self.get_y() - 10,
+            h=self.get_y() - 40,
             style='D',
         )
         bottom_line_of_the_border = {
-            'x1': 135,
-            'y1': 15,
-            'x2': 135,
+            'x1': 105,
+            'y1': 45,
+            'x2': 105,
             'y2': self.get_y() + 5,
         }
+        self.set_line_width(width=0.5)
         self.rect(**border_around_site)
         self.line(**bottom_line_of_the_border)
 
@@ -418,7 +440,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         section_content_font = FPDFFontDictType(
             family=PATHOLOGY_REPORT_FONT,
             style='',
-            size=10,
+            size=12,
         )
         new_abscissa_position: int = 20
         section_title_block = FPDFCellDictType(w=0, h=10, border=0, align='L', text=section_title)
@@ -445,6 +467,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         if self.will_page_break(height_of_section):
             self.add_page()
             self.set_y(new_ordinate_position)
+        self._draw_other_pages_frame(height_of_section)
 
     def _draw_report_prepared_by(self) -> None:
         """Draw the "report prepared by" table."""
@@ -477,36 +500,19 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
         # Wrap the text with the maximum characters can be filled in each line.
         wrapper = textwrap.TextWrapper(
-            width=int((190 - 138) / 2) - 1,
+            width=int((190 - 108) / 2) - 1,
         )
         patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
         # Calculate the number of the linse patient name will occupy
-        line = math.ceil(len(patient_name) * 2 / (190 - 138))
+        line = math.ceil(len(patient_name) * 2 / (190 - 108))
         return [
-            {
-                'name': 'site_logo',
-                'type': 'I',
-                'x1': 45,
-                'y1': 17,
-                'x2': 105,
-                'y2': 30,
-                'font': None,
-                'size': 0,
-                'bold': 0,
-                'italic': 0,
-                'underline': 0,
-                'align': 'C',
-                'text': str(self.pathology_data.site_logo_path),
-                'priority': 0,
-                'multiline': False,
-            },
             {
                 'name': 'site_name',
                 'type': 'T',
                 'x1': 20,
-                'y1': 30,
+                'y1': 47,
                 'x2': 125,
-                'y2': 35,
+                'y2': 52,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
                 'bold': 1,
@@ -521,11 +527,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'name': 'site_building_address',
                 'type': 'T',
                 'x1': 20,
-                'y1': 35,
+                'y1': 52,
                 'x2': 125,
-                'y2': 40,
+                'y2': 57,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 8,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -538,11 +544,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'name': 'site_city',
                 'type': 'T',
                 'x1': 20,
-                'y1': 39,
+                'y1': 56,
                 'x2': 125,
-                'y2': 44,
+                'y2': 61,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 8,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -555,11 +561,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'name': 'site_phone',
                 'type': 'T',
                 'x1': 20,
-                'y1': 43,
+                'y1': 60,
                 'x2': 125,
-                'y2': 48,
+                'y2': 65,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 8,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -571,12 +577,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_name',
                 'type': 'T',
-                'x1': 138,
-                'y1': 30,
+                'x1': 108,
+                'y1': 47,
                 'x2': 190,
-                'y2': 34,
+                'y2': 51,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -588,12 +594,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_date_of_birth',
                 'type': 'T',
-                'x1': 138,
-                'y1': 30 + 4 * line,
+                'x1': 108,
+                'y1': 47 + 4 * line,
                 'x2': 190,
-                'y2': 30 + 4 * (line + 1),
+                'y2': 47 + 4 * (line + 1),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -605,12 +611,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_ramq',
                 'type': 'T',
-                'x1': 138,
-                'y1': 30 + 4 * (line + 1),
+                'x1': 108,
+                'y1': 47 + 4 * (line + 1),
                 'x2': 190,
-                'y2': 30 + 4 * (line + 2),
+                'y2': 47 + 4 * (line + 2),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -622,12 +628,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_sites_and_mrns',
                 'type': 'T',
-                'x1': 138,
-                'y1': 30 + 4 * (line + 2),
+                'x1': 108,
+                'y1': 47 + 4 * (line + 2),
                 'x2': 190,
-                'y2': 30 + 4 * (line + 3),
+                'y2': 47 + 4 * (line + 3),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -656,7 +662,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 165,
                 'y2': y_position + 44,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0,
+                'size': 0.5,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -673,7 +679,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 110,
                 'y2': y_position + 44,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0,
+                'size': 0.5,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -741,7 +747,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 165,
                 'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0,
+                'size': 0.5,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -809,7 +815,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 165,
                 'y2': y_position + 37,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0,
+                'size': 0.5,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -887,9 +893,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x1': 15,
                 'y1': y_position,
                 'x2': 195,
-                'y2': y_position + 38,
+                'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
+                'size': 0.5,
                 'bold': 1,
                 'italic': 0,
                 'underline': 0,
@@ -911,7 +917,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Préparé par',
+                'text': 'Préparé par/',
                 'priority': 0,
                 'multiline': False,
             },
@@ -928,19 +934,19 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 1,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Prepared by',
+                'text': 'Prepared by:',
                 'priority': 0,
                 'multiline': False,
             },
             {
                 'name': 'prepared_by_vertical_separator',
                 'type': 'L',
-                'x1': 50,
+                'x1': 85,
                 'y1': y_position,
-                'x2': 50,
+                'x2': 85,
                 'y2': y_position + 15,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
+                'size': 0.5,
                 'bold': 1,
                 'italic': 0,
                 'underline': 0,
@@ -952,9 +958,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'prepared_by_placeholder',
                 'type': 'T',
-                'x1': 51,
+                'x1': 86,
                 'y1': y_position,
-                'x2': 125,
+                'x2': 155,
                 'y2': y_position + 15,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
@@ -969,29 +975,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'prepared_by_placeholder_vertical_separator',
                 'type': 'L',
-                'x1': 125,
+                'x1': 155,
                 'y1': y_position,
-                'x2': 125,
+                'x2': 155,
                 'y2': y_position + 15,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
-                'bold': 1,
-                'italic': 0,
-                'underline': 0,
-                'align': 'C',
-                'text': None,
-                'priority': 0,
-                'multiline': False,
-            },
-            {
-                'name': 'empty_field_vertical_separator',
-                'type': 'L',
-                'x1': 160,
-                'y1': y_position,
-                'x2': 160,
-                'y2': y_position + 15,
-                'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
+                'size': 0.5,
                 'bold': 1,
                 'italic': 0,
                 'underline': 0,
@@ -1003,7 +992,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'prepared_at',
                 'type': 'T',
-                'x1': 161,
+                'x1': 156,
                 'y1': y_position,
                 'x2': 195,
                 'y2': y_position + 15,
@@ -1025,7 +1014,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 195,
                 'y2': y_position + 15,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
+                'size': 0.5,
                 'bold': 1,
                 'italic': 0,
                 'underline': 0,
@@ -1039,7 +1028,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'type': 'T',
                 'x1': 15,
                 'y1': y_position + 15,
-                'x2': 57,
+                'x2': 60,
                 'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
@@ -1047,36 +1036,36 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Signé électroniquement par',
+                'text': 'Signé électroniquement par/',
                 'priority': 0,
                 'multiline': False,
             },
             {
                 'name': 'electronically_signed_by',
                 'type': 'T',
-                'x1': 57,
-                'y1': y_position + 15,
-                'x2': 195,
-                'y2': y_position + 30,
+                'x1': 15,
+                'y1': y_position + 17,
+                'x2': 60,
+                'y2': y_position + 35,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
                 'bold': 0,
                 'italic': 1,
                 'underline': 0,
                 'align': 'L',
-                'text': '/ Electronically signed by',
+                'text': 'Electronically signed by:',
                 'priority': 0,
                 'multiline': False,
             },
             {
-                'name': 'electronically_signed_by_separator',
+                'name': 'electronically_signed_by_vertical_separator',
                 'type': 'L',
-                'x1': 15,
-                'y1': y_position + 30,
-                'x2': 195,
+                'x1': 85,
+                'y1': y_position + 15,
+                'x2': 85,
                 'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 0.2,
+                'size': 0.5,
                 'bold': 1,
                 'italic': 0,
                 'underline': 0,
@@ -1088,10 +1077,10 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'electronically_signed_by_placeholder',
                 'type': 'T',
-                'x1': 15,
-                'y1': y_position + 30,
+                'x1': 86,
+                'y1': y_position + 15,
                 'x2': 155,
-                'y2': y_position + 38,
+                'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
                 'bold': 0,
@@ -1103,12 +1092,29 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'multiline': False,
             },
             {
+                'name': 'electronically_signed_by_placeholder_vertical_separator',
+                'type': 'L',
+                'x1': 155,
+                'y1': y_position + 15,
+                'x2': 155,
+                'y2': y_position + 30,
+                'font': PATHOLOGY_REPORT_FONT,
+                'size': 0.5,
+                'bold': 1,
+                'italic': 0,
+                'underline': 0,
+                'align': 'C',
+                'text': None,
+                'priority': 0,
+                'multiline': False,
+            },
+            {
                 'name': 'electronically_signed_at_placeholder',
                 'type': 'T',
                 'x1': 156,
-                'y1': y_position + 30,
+                'y1': y_position + 15,
                 'x2': 195,
-                'y2': y_position + 38,
+                'y2': y_position + 30,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
                 'bold': 0,
@@ -1116,6 +1122,23 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'underline': 0,
                 'align': 'L',
                 'text': self.pathology_data.prepared_at.strftime('%d-%b-%Y %I:%M %p'),
+                'priority': 0,
+                'multiline': True,
+            },
+            {
+                'name': 'electronically_signed_by_separator',
+                'type': 'L',
+                'x1': 15,
+                'y1': y_position + 30,
+                'x2': 195,
+                'y2': y_position + 30,
+                'font': PATHOLOGY_REPORT_FONT,
+                'size': 0.5,
+                'bold': 1,
+                'italic': 0,
+                'underline': 0,
+                'align': 'C',
+                'text': None,
                 'priority': 0,
                 'multiline': False,
             },
