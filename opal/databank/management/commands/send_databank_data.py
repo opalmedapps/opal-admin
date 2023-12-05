@@ -281,6 +281,7 @@ class Command(BaseCommand):
         # Update databank_patient.last_synchronized if patient_data_success_tracker true for all modules for the patient
         all_successful = all(self.patient_data_success_tracker[databank_patient.guid].values())
         if all_successful:
+            print('here')
             databank_patient.last_synchronized = self.command_called
             databank_patient.save()
 
