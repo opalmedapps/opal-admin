@@ -324,6 +324,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             response_data=self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS),
         )
         command = send_databank_data.Command()
+        # Pre-init one patients success tracker to test the pass over works correctly in parse_aggregate_response
+        command.patient_data_success_tracker['a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'] = {
+            module: True for module in databank_models.DataModuleType
+        }
         command.handle()
 
         assert databank_models.SharedData.objects.all().count() == 2
@@ -374,7 +378,20 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         databank_patient2 = databank_models.DatabankConsent.objects.get(
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
         )
-
+        assert command.patient_data_success_tracker[databank_patient1.guid] == {
+            databank_models.DataModuleType.APPOINTMENTS: True,
+            databank_models.DataModuleType.DIAGNOSES: True,
+            databank_models.DataModuleType.DEMOGRAPHICS: False,
+            databank_models.DataModuleType.LABS: True,
+            databank_models.DataModuleType.QUESTIONNAIRES: True,
+        }
+        assert command.patient_data_success_tracker[databank_patient2.guid] == {
+            databank_models.DataModuleType.APPOINTMENTS: True,
+            databank_models.DataModuleType.DIAGNOSES: True,
+            databank_models.DataModuleType.DEMOGRAPHICS: True,
+            databank_models.DataModuleType.LABS: True,
+            databank_models.DataModuleType.QUESTIONNAIRES: True,
+        }
         assert databank_models.SharedData.objects.all().count() == 1
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
         assert databank_patient2.last_synchronized == command.command_called
@@ -481,6 +498,42 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             data_type=databank_models.DataModuleType.LABS,
         )
         assert shared_data.data_id == 123
+
+    def test_empty_oie_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test that execution doesnt fail if oie response is empty."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        RequestMockerTest.mock_requests_post(
+            mocker,
+            response_data={},
+        )
+        command = send_databank_data.Command()
+        command.handle()
+        captured = capsys.readouterr()
+        assert not captured.err
 
     def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
         """Prepare a response message according to module and success/failure.
