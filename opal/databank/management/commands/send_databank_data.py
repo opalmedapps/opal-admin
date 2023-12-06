@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Optional, TypeAlias
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
@@ -275,6 +275,9 @@ class Command(BaseCommand):
             databank_patient: Consent instance to be updated
             synced_data: The dataset which was sent to the databank
             message: Optional return message from the databank with additional details
+
+        Raises:
+            CommandError: If a user manually calls this function with an un-initialized databank patient
         """
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
@@ -284,7 +287,12 @@ class Command(BaseCommand):
                 databank_patient.last_synchronized = self.command_called
                 databank_patient.save()
         except KeyError as err:
-            self.stderr.write(f'Tried to update metadata of an un-initialized databank patient: {err}')
+            raise CommandError(
+                '{0}{1}'.format(
+                    'Tried to call _update_databank_patient_metadata on an un-initialized databank patient:',
+                    err,
+                ),
+            )
         # Extract data ids depending on module and save to SharedData instances
         if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_data_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')

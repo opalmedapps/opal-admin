@@ -8,6 +8,7 @@ import pytest
 import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_mock.plugin import MockerFixture
+from django.core.management.base import CommandError
 
 from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.databank import factories as databank_factories
@@ -399,18 +400,17 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         mock_synced_data = {
             'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
-            databank_models.DataModuleType.DEMOGRAPHICS: [{'patient_id': 51}],
+            'fake_module': [{'patient_id': 51}],
         }
         command = send_databank_data.Command()
 
         message = '{0}{1}'.format(
-            'Tried to update metadata of an un-initialized databank patient:',
-            " 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'",
+            'Tried to call _update_databank_patient_metadata on an un-initialized databank patient:',
+            "'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'",
         )
-        command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
-        out, err = capsys.readouterr()
-        assert not out
-        assert message in err
+        with assertRaisesMessage(CommandError, message):
+            command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
+        assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
     def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
