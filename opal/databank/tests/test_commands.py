@@ -379,6 +379,40 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
+    def test_patient_data_success_tracker_check_uninitialized_patient(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test behaivour when an unknown patient is passed to the _update_databank_patient_metadata function."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        mock_synced_data = {
+            'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            databank_models.DataModuleType.DEMOGRAPHICS: [{'patient_id': 51}],
+        }
+        command = send_databank_data.Command()
+
+        message = '{0}{1}'.format(
+            'Tried to update metadata of an un-initialized databank patient:',
+            " 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'",
+        )
+        command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
+        out, err = capsys.readouterr()
+        assert not out
+        assert message in err
+        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
     def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
         """Test behaviour when synced_data contains unknown module."""
         sent_data = [

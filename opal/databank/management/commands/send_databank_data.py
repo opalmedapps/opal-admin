@@ -279,9 +279,12 @@ class Command(BaseCommand):
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Update databank_patient.last_synchronized if patient_data_success_tracker true for all modules for the patient
-        if all(self.patient_data_success_tracker[databank_patient.guid].values()):
-            databank_patient.last_synchronized = self.command_called
-            databank_patient.save()
+        try:
+            if all(self.patient_data_success_tracker[databank_patient.guid].values()):
+                databank_patient.last_synchronized = self.command_called
+                databank_patient.save()
+        except KeyError as err:
+            self.stderr.write(f'Tried to update metadata of an un-initialized databank patient: {err}')
         # Extract data ids depending on module and save to SharedData instances
         if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_data_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
