@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Any
 
+from django.core.management.base import CommandError
 from django.utils import timezone
 
 import pytest
 import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_mock.plugin import MockerFixture
-from django.core.management.base import CommandError
 
 from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.databank import factories as databank_factories
