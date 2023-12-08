@@ -28,9 +28,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
     def test_command_initialize_fields(self) -> None:
         """Verify the command fields are created upon initializing command."""
         command = send_databank_data.Command()
-        assert isinstance(command.command_called, datetime)
+        assert isinstance(command.called_at, datetime)
         assert isinstance(command.patient_data_success_tracker, dict)
-        assert command.command_called is not None
+        assert command.called_at is not None
 
     def test_no_consenting_patients_found_error(self) -> None:
         """Verify correct errors show in stderr for no patients found."""
@@ -339,7 +339,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 databank_models.DataModuleType.LABS: True,
                 databank_models.DataModuleType.QUESTIONNAIRES: True,
             }
-            assert databank_patient.last_synchronized == command.command_called
+            assert databank_patient.last_synchronized == command.called_at
 
     def test_last_synchronized_not_updated_failure(self, mocker: MockerFixture) -> None:
         """Ensure the last_synchro time is not updated if there was at least one sender error."""

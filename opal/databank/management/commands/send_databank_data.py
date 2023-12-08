@@ -30,7 +30,7 @@ class Command(BaseCommand):
     def __init__(self) -> None:
         """Prepare some class level fields to help with last_synchronized tracking.
 
-        - command_called is the time when this command was called
+        - called_at is the time when this command was called
         - patient_data_success_tracker will have an entry for each patient
           with the value being a dictionary of booleans for each DataModuleType
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         """
         super().__init__()
         self.patient_data_success_tracker: dict[str, dict[DataModuleType, bool]] = {}
-        self.command_called: datetime = timezone.now()
+        self.called_at: datetime = timezone.now()
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS231
@@ -251,7 +251,7 @@ class Command(BaseCommand):
 
             # Handle response codes
             if status_code in {200, 201}:
-                # Grab the data for this specific patient using a list comprehension and matching on the patient GUID
+                # Grab the data for this specific patient using a generator expression and matching on the patient GUID
                 synced_patient_data = next((item for item in original_data_sent if item['GUID'] == patient_guid), None)
                 self._update_databank_patient_metadata(
                     DatabankConsent.objects.get(guid=patient_guid),
@@ -284,7 +284,7 @@ class Command(BaseCommand):
         # Update databank_patient.last_synchronized if patient_data_success_tracker true for all modules for the patient
         try:
             if all(self.patient_data_success_tracker[databank_patient.guid].values()):
-                databank_patient.last_synchronized = self.command_called
+                databank_patient.last_synchronized = self.called_at
                 databank_patient.save()
         except KeyError as err:
             raise CommandError(
