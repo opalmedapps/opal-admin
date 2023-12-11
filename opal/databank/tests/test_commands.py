@@ -32,8 +32,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(command.patient_data_success_tracker, dict)
         assert command.called_at is not None
 
-    def test_no_consenting_patients_found_error(self) -> None:
-        """Verify correct errors show in stderr for no patients found."""
+    def test_no_consenting_patients_found_message(self) -> None:
+        """Verify correct notifications show in stdout for no patients found."""
         message, error = self._call_command('send_databank_data')
         assert not error
         assert 'No patients found consenting to Appointments data donation.' in message

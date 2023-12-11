@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Any, Optional, TypeAlias
-
+from http import HTTPStatus
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -210,7 +210,7 @@ class Command(BaseCommand):
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=30,
+                timeout=30,  # noqa: WPS432
             )
         except requests.exceptions.RequestException as exc:
             # log OIE errors
@@ -218,14 +218,14 @@ class Command(BaseCommand):
                 f'Databank sender OIE Error: {exc}',
             )
 
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             # Data sent to OIE successfully, parse aggregate response from databank and update models
             return response.json()
         # TODO: QSCCD-1097 handle all error codes
 
     def _parse_aggregate_databank_response(
         self,
-        aggregate_response: dict[str, list[Any]],
+        aggregate_response: dict[str, list[int | str]],
         original_data_sent: CombinedModuleData,
     ) -> None:
         """Parse the aggregated response message from the databank and update databank models.
@@ -250,7 +250,7 @@ class Command(BaseCommand):
                 self.patient_data_success_tracker[patient_guid] = {module: True for module in DataModuleType}
 
             # Handle response codes
-            if status_code in {200, 201}:
+            if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
                 # Grab the data for this specific patient using a generator expression and matching on the patient GUID
                 synced_patient_data = next((item for item in original_data_sent if item['GUID'] == patient_guid), None)
                 self._update_databank_patient_metadata(
