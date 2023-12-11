@@ -1,4 +1,4 @@
-FROM python:3.11.6-slim-bookworm
+FROM python:3.11.7-slim-bookworm
 
 # for which environment the build is done: development or production
 ARG ENV=development

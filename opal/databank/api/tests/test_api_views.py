@@ -86,7 +86,7 @@ class TestCreateDatabankConsentView:
         assertJSONEqual(
             raw=json.dumps(response.json()),
             expected_data={
-                'detail': 'Not found.',
+                'detail': 'No Patient matches the given query.',
             },
         )
 

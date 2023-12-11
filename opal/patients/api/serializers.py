@@ -4,6 +4,7 @@ from typing import Any
 from django.db import transaction
 
 from rest_framework import serializers
+from rest_framework.fields import empty
 
 from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.models import Site
@@ -47,6 +48,8 @@ class PatientUpdateSerializer(serializers.ModelSerializer[Patient]):
         extra_kwargs: dict[str, dict[str, Any]] = {
             'data_access': {
                 'required': True,
+                # remove empty since the field is required
+                'default': empty,
             },
         }
 
@@ -71,7 +74,8 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
         # make the is_active field required
-        extra_kwargs = {'is_active': {'required': True}}
+        # need to remove the derault in order to avoid the "May not set both `required` and `default" assertion error
+        extra_kwargs = {'is_active': {'required': True, 'default': empty}}
 
     def validate_site_code(self, value: str) -> str:
         """Check that `site_code` exists in the database (e.g., RVH).
