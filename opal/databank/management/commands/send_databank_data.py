@@ -2,8 +2,9 @@
 import json
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Optional, TypeAlias
 from http import HTTPStatus
+from typing import Any, Optional, TypeAlias
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -225,7 +226,7 @@ class Command(BaseCommand):
 
     def _parse_aggregate_databank_response(
         self,
-        aggregate_response: dict[str, list[int | str]],
+        aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
     ) -> None:
         """Parse the aggregated response message from the databank and update databank models.
