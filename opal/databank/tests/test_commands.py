@@ -672,8 +672,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
 
         # synced_data would be empty in this hypothetical situation
-        mock_synced_data = {}
-        command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
+        command._update_databank_patient_metadata(databank_patient1, {})
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
