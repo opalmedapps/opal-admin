@@ -214,15 +214,24 @@ class Command(BaseCommand):
                 timeout=30,  # noqa: WPS432
             )
         except requests.exceptions.RequestException as exc:
-            # log OIE errors
+            # Connection details for OIE might be misconfigured
             self.stderr.write(
-                f'Databank sender OIE Error: {exc}',
+                f'OIE connection Error: {exc}',
             )
+            return None
 
         if response and response.status_code == HTTPStatus.OK:
             # Data sent to OIE successfully, parse aggregate response from databank and update models
             return response.json()
-        # TODO: QSCCD-1097 handle all error codes
+        else:
+            # Specific error occured between Django, Nginx, and/or OIE communications
+            self.stderr.write(
+                '{0}{1}: {2}'.format(
+                    response.status_code,
+                    ' oie response error ',
+                    response.content,
+                ),
+            )
 
     def _parse_aggregate_databank_response(  # noqa: C901, WPS231
         self,
