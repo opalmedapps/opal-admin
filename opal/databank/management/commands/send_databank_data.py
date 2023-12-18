@@ -6,7 +6,7 @@ from http import HTTPStatus
 from typing import Any, Optional, TypeAlias
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
@@ -23,7 +23,7 @@ CombinedModuleData: TypeAlias = list[dict[str, Any]]
 DatabankQuerySet: TypeAlias = ValuesQuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
-class Command(BaseCommand):
+class Command(BaseCommand):  # noqa: WPS214
     """Command to send the data of consenting databank patients to the external databank."""
 
     help = "send consenting Patients' data to the databank"  # noqa: A003
@@ -89,6 +89,8 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
                 )
+        # Finally, update last_synchronization time for all patients
+        self._update_patients_last_synchronization()
 
     def _retrieve_databank_data_for_patient(
         self,
@@ -254,7 +256,7 @@ class Command(BaseCommand):
             if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
                 # Grab the data for this specific patient using a generator expression and matching on the patient GUID
                 synced_patient_data = next((item for item in original_data_sent if item['GUID'] == patient_guid), None)
-                self._update_databank_patient_metadata(
+                self._update_databank_patient_shared_data(
                     DatabankConsent.objects.get(guid=patient_guid),
                     synced_patient_data,
                     message.strip('[]"'),
@@ -264,36 +266,21 @@ class Command(BaseCommand):
                 # Update the data success tracker to false for this patient & data type
                 self.patient_data_success_tracker[patient_guid][data_module] = False
 
-    def _update_databank_patient_metadata(
+    def _update_databank_patient_shared_data(
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
         message: Optional[str] = None,
     ) -> None:
-        """Update `DatabankConsent.last_synchronized` and create `SharedData` instances.
+        """Create `SharedData` instances for a given patient.
 
         Args:
             databank_patient: Consent instance to be updated
             synced_data: The dataset which was sent to the databank
             message: Optional return message from the databank with additional details
-
-        Raises:
-            CommandError: If a user manually calls this function with an un-initialized databank patient
         """
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
-        # Update databank_patient.last_synchronized if patient_data_success_tracker true for all modules for the patient
-        try:
-            if all(self.patient_data_success_tracker[databank_patient.guid].values()):
-                databank_patient.last_synchronized = self.called_at
-                databank_patient.save()
-        except KeyError as err:
-            raise CommandError(
-                '{0}{1}'.format(
-                    'Tried to call _update_databank_patient_metadata on an un-initialized databank patient:',
-                    err,
-                ),
-            )
         # Extract data ids depending on module and save to SharedData instances
         if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_data_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
@@ -314,3 +301,11 @@ class Command(BaseCommand):
                 for test_result_id in sent_test_result_ids
             ]
             SharedData.objects.bulk_create(shared_data_instances)
+
+    def _update_patients_last_synchronization(self) -> None:
+        """Update the `databank_patient.last_synchronized` for all patients based on the success tracker."""
+        for guid, module_successes in self.patient_data_success_tracker.items():
+            consent_instance = DatabankConsent.objects.get(guid=guid)
+            if all(module_successes.values()):
+                consent_instance.last_synchronized = self.called_at
+                consent_instance.save()

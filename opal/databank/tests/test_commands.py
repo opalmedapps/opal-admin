@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Any
 
-from django.core.management.base import CommandError
 from django.utils import timezone
 
 import pytest
@@ -380,8 +379,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
-    def test_patient_data_success_tracker_check_uninitialized_patient(self, capsys: pytest.CaptureFixture[str]) -> None:
-        """Test behaivour when an unknown patient is passed to the _update_databank_patient_metadata function."""
+    def test_patient_data_success_tracker_update_success(self) -> None:
+        """Test updating last_syncrho times."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1)
@@ -398,19 +397,42 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
-        mock_synced_data = {
-            'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
-            'fake_module': [{'patient_id': 51}],
-        }
         command = send_databank_data.Command()
+        command.patient_data_success_tracker[databank_patient1.guid] = {
+            module: True for module in databank_models.DataModuleType
+        }
 
-        message = '{0}{1}'.format(
-            'Tried to call _update_databank_patient_metadata on an un-initialized databank patient:',
-            "'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'",
+        command._update_patients_last_synchronization()
+        databank_patient1.refresh_from_db()
+        assert databank_patient1.last_synchronized == command.called_at
+
+    def test_patient_data_success_tracker_update_failure(self) -> None:
+        """Test failure results in not updating last_syncrho time."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
         )
-        with assertRaisesMessage(CommandError, message):
-            command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
-        assert databank_models.SharedData.objects.all().count() == 0
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command = send_databank_data.Command()
+        command.patient_data_success_tracker[databank_patient1.guid] = {
+            module: True for module in databank_models.DataModuleType
+        }
+        # Simulate a partial sender error
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
+
+        command._update_patients_last_synchronization()
+        databank_patient1.refresh_from_db()
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
     def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
@@ -456,7 +478,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         ).count()
         assert shared_data_count == 0
 
-    def test_update_databank_patient_metadata_call(self, mocker: MockerFixture) -> None:
+    def test_update_databank_patient_shared_data_call(self, mocker: MockerFixture) -> None:
         """Test correct calling of the metatdata update."""
         response_data = self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS)
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
@@ -501,7 +523,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         mock_update_method = mocker.patch.object(
             command,
-            '_update_databank_patient_metadata',
+            '_update_databank_patient_shared_data',
         )
         command._parse_aggregate_databank_response(response_data, original_data_sent=original_data_sent)
         mock_update_method.assert_called()
@@ -541,7 +563,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         mock_update_method = mocker.patch.object(
             command,
-            '_update_databank_patient_metadata',
+            '_update_databank_patient_shared_data',
         )
         command._parse_aggregate_databank_response(response_data, original_data_sent=original_data_sent)
         mock_update_method.assert_called()
@@ -643,7 +665,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         captured = capsys.readouterr()
         assert not captured.err
 
-    def test_update_databank_patient_metadata_partial_sender_error(self, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_update_databank_patient_shared_data_partial_sender_error(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test behaviour when the update metadata function is called with partially failed patient data."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -672,7 +694,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
 
         # synced_data would be empty in this hypothetical situation
-        command._update_databank_patient_metadata(databank_patient1, {})
+        command._update_databank_patient_shared_data(databank_patient1, {})
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
