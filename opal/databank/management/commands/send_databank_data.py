@@ -224,7 +224,7 @@ class Command(BaseCommand):
             return response.json()
         # TODO: QSCCD-1097 handle all error codes
 
-    def _parse_aggregate_databank_response(
+    def _parse_aggregate_databank_response(  # noqa: C901, WPS231
         self,
         aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
@@ -259,10 +259,17 @@ class Command(BaseCommand):
                     synced_patient_data,
                     message.strip('[]"'),
                 )
-            # TODO: QSCCD-1097 handle all error codes
             else:
-                # Update the data success tracker to false for this patient & data type
+                error_message = message.strip('[]"')
                 self.patient_data_success_tracker[patient_guid][data_module] = False
+                self.stderr.write(
+                    '{0}{1}{2} : {3}'.format(
+                        status_code,
+                        ' error for patient ',
+                        patient_guid,
+                        error_message,
+                    ),
+                )
 
     def _update_databank_patient_metadata(
         self,

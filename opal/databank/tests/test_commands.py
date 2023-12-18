@@ -380,6 +380,57 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
 
+    def test_parse_aggregate_response_failure_unauthorized(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Ensure method not allowed/unauthorized error is correctly handled and SharedData not updated."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        # Make patient1 a failed response
+        RequestMockerTest.mock_requests_post(
+            mocker,
+            response_data={
+                'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [
+                    405,
+                    '["Method Not Allowed"]',
+                ],
+            },
+        )
+        command = send_databank_data.Command()
+        command.handle()
+        captured = capsys.readouterr()
+        err_message = '{0}{1}'.format(
+            '405 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : ',
+            'Method Not Allowed',
+        )
+        assert err_message in captured.err
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        assert command.patient_data_success_tracker[databank_patient1.guid] == {
+            databank_models.DataModuleType.APPOINTMENTS: True,
+            databank_models.DataModuleType.DIAGNOSES: True,
+            databank_models.DataModuleType.DEMOGRAPHICS: False,
+            databank_models.DataModuleType.LABS: True,
+            databank_models.DataModuleType.QUESTIONNAIRES: True,
+        }
+        assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
+        assert databank_models.SharedData.objects.all().count() == 0
+        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
     def test_patient_data_success_tracker_check_uninitialized_patient(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test behaivour when an unknown patient is passed to the _update_databank_patient_metadata function."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
