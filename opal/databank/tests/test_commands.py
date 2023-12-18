@@ -643,6 +643,40 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         captured = capsys.readouterr()
         assert not captured.err
 
+    def test_update_databank_patient_metadata_partial_sender_error(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test behaviour when the update metadata function is called with partially failed patient data."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+
+        command = send_databank_data.Command()
+        # Manually intialize the success tracker for this patient
+        command.patient_data_success_tracker[databank_patient1.guid] = {
+            module: True for module in databank_models.DataModuleType
+        }
+
+        # Set a failed module for the patient
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
+
+        # synced_data would be empty in this hypothetical situation
+        mock_synced_data = {}
+        command._update_databank_patient_metadata(databank_patient1, mock_synced_data)
+        assert databank_models.SharedData.objects.all().count() == 0
+        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
     def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
         """Prepare a response message according to module and success/failure.
 
