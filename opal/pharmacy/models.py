@@ -1,0 +1,223 @@
+"""Module providing models for pharmacy data."""
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+from opal.patients.models import Patient
+
+
+class AbstractQuantityTiming(models.Model):
+    """AbstractQuantityTiming."""
+
+    quantity = models.DecimalField(max_digits=8, decimal_places=3)
+    unit = models.CharField(max_length=20, blank=True)
+    interval = models.CharField(max_length=100)
+    duration = models.CharField(max_length=50, default='INDEF')
+    service_start = models.DateTimeField(blank=True)
+    service_end = models.DateTimeField(blank=True)
+    priority = models.CharField(max_length=10, default='R')
+
+    class Meta:
+        abstract = True
+
+
+class PhysicianPrescriptionOrder(AbstractQuantityTiming):
+    """PhysicianPrescriptionOrder."""
+
+    patient = models.ForeignKey(
+        verbose_name=_('Patient'),
+        to=Patient,
+        on_delete=models.CASCADE,
+        related_name='physician_prescriptions',
+    )
+    trigger_event = models.CharField(max_length=2)
+    filler_order_number = models.IntegerField()
+    order_status = models.CharField(max_length=2, default='SC')
+    entered_at = models.DateTimeField()
+    entered_by = models.CharField(max_length=75)
+    verified_by = models.CharField(max_length=75)
+    ordered_by = models.CharField(max_length=75)
+    #  entered_by = models.ManyToManyField('LegacyStaff', related_name='entered_prescriptions')  # noqa: E800
+    #  verified_by = models.ManyToManyField('LegacyStaff', related_name='verified_prescriptions')  # noqa: E800
+    #  ordered_by = models.ManyToManyField('LegacyStaff', related_name='ordered_prescriptions')  # noqa: E800
+    effective_at = models.DateTimeField()
+
+    class Meta:
+        verbose_name = _('Physician Prescription')
+        verbose_name_plural = _('Physician Prescriptions')
+
+    def __str__(self):
+        """Provide string representation.
+
+        Returns:
+            string representation
+        """
+        return f'Prescription Order {self.id} for Patient {self.patient.id}'
+
+
+class PharmacyEncodedOrder(AbstractQuantityTiming):
+    """PharmacyEncodedOrder."""
+
+    physician_prescription_order = models.ForeignKey('PhysicianPrescriptionOrder', on_delete=models.CASCADE)
+    give_code = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_encoded_order_give_code',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    give_amount_maximum = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=3)
+    give_amount_minimum = models.DecimalField(max_digits=8, decimal_places=3)
+    give_units = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_encoded_order_give_units',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    give_dosage_form = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_encoded_order_give_dosage_form',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    provider_administration_instruction = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_encoded_order_provider_administration_instruction',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    dispense_amount = models.DecimalField(max_digits=8, decimal_places=3)
+    dispense_units = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_encoded_order_dispense_units',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    refills = models.IntegerField(default=0)
+    refills_remaining = models.IntegerField(default=0)
+    last_refilled = models.DateTimeField(blank=True)
+
+    class Meta:
+        verbose_name = _('Pharmacy Encoding')
+        verbose_name_plural = _('Pharmacy Encodings')
+
+    def __str__(self):
+        """Provide string representation.
+
+        Returns:
+            string representation
+        """
+        return f'Encoded Order {self.id} for Prescription {self.physician_prescription_order_id}'
+
+
+class CodedElement(models.Model):
+    """CodedElement."""
+
+    identifier = models.CharField(max_length=50)
+    text = models.CharField(max_length=150)
+    coding_system = models.CharField(max_length=50)
+    alternate_identifier = models.CharField(max_length=50, blank=True)
+    alternate_text = models.CharField(max_length=150, blank=True)
+    alternate_coding_system = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        verbose_name = _('Coded Element')
+        verbose_name_plural = _('Coded Elements')
+        unique_together = (('identifier', 'coding_system'),)
+
+    def __str__(self):
+        """Provide string representation.
+
+        Returns:
+            string representation
+        """
+        return f'{self.text} ({self.identifier} - {self.coding_system})'
+
+
+class PharmacyRoute(models.Model):
+    """PharmacyRoute."""
+
+    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    route = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_route_route',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    site = models.ForeignKey(
+        'CodedElement',
+        null=True,
+        blank=True,
+        related_name='pharmacy_route_site',
+        on_delete=models.SET_NULL,
+    )
+    administration_device = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_route_administration_device',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    administration_method = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_route_administration_method',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
+    class Meta:
+        verbose_name = _('Pharmacy Route')
+        verbose_name_plural = _('Pharmacy Routes')
+
+    def __str__(self):
+        """Provide string representation.
+
+        Returns:
+            string representation
+        """
+        return f'Route for Order {self.pharmacy_encoded_order_id}'
+
+
+class PharmacyComponent(models.Model):
+    """PharmacyComponent."""
+
+    COMPONENT_TYPES = [
+        ('A', 'Additive'),
+        ('B', 'Base'),
+        ('T', 'Text/Instruction'),
+    ]
+
+    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    component_type = models.CharField(max_length=1, choices=COMPONENT_TYPES)
+    component_code = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_component_component_code',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    component_amount = models.DecimalField(max_digits=8, decimal_places=3)
+    component_units = models.ForeignKey(
+        'CodedElement',
+        related_name='pharmacy_component_component_units',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
+    class Meta:
+        verbose_name = _('Pharmacy Component')
+        verbose_name_plural = _('Pharmacy Components')
+
+    def __str__(self):
+        """Provide string representation.
+
+        Returns:
+            string representation
+        """
+        return f'{self.get_component_type_display()} Component for Order {self.pharmacy_encoded_order.id}'
