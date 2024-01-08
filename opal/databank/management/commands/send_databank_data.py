@@ -216,15 +216,24 @@ class Command(BaseCommand):  # noqa: WPS214
                 timeout=30,  # noqa: WPS432
             )
         except requests.exceptions.RequestException as exc:
-            # log OIE errors
+            # Connection details for OIE might be misconfigured
             self.stderr.write(
-                f'Databank sender OIE Error: {exc}',
+                f'OIE connection Error: {exc}',
             )
+            return None
 
         if response and response.status_code == HTTPStatus.OK:
             # Data sent to OIE successfully, parse aggregate response from databank and update models
             return response.json()
-        # TODO: QSCCD-1097 handle all error codes
+        else:
+            # Specific error occured between Django, Nginx, and/or OIE communications
+            self.stderr.write(
+                '{0}{1}: {2}'.format(
+                    response.status_code,
+                    ' oie response error ',
+                    response.content.decode(),
+                ),
+            )
 
     def _parse_aggregate_databank_response(
         self,
@@ -261,10 +270,16 @@ class Command(BaseCommand):  # noqa: WPS214
                     synced_patient_data,
                     message.strip('[]"'),
                 )
-            # TODO: QSCCD-1097 handle all error codes
             else:
-                # Update the data success tracker to false for this patient & data type
                 self.patient_data_success_tracker[patient_guid][data_module] = False
+                self.stderr.write(
+                    '{0}{1}{2} : {3}'.format(
+                        status_code,
+                        ' error for patient ',
+                        patient_guid,
+                        message.strip('[]"'),
+                    ),
+                )
 
     def _update_databank_patient_shared_data(
         self,
