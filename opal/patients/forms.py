@@ -265,6 +265,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
+        messages = []
         if response['status'] == 'success':
             self.patient = response['data']
         else:
@@ -274,6 +275,22 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
             elif 'no_test_patient' in messages:
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
+
+        errors = {
+            ' dateOfBirth': _('Patient Date of Birth is invalid.'),
+            ' firstName': _('Patient firstName is invalid.'),
+            ' lastName': _('Patient lastName is invalid.'),
+            ' sex': _('Patient sex is invalid.'),
+            ' alias': _('Patient alias is invalid.'),
+            ' ramq ': _('Patient ramq is invalid.'),
+            ' ramqExpiration': _('Patient ramq expiration is invalid.'),
+            'Patient MRN': _('Patient MRN is invalid.'),
+        }
+
+        for message in messages:
+            for error, text in errors.items():
+                if error in message:
+                    self.add_error(NON_FIELD_ERRORS, text)
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):

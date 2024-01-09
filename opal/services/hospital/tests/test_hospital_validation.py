@@ -257,7 +257,7 @@ def test_check_patient_ramq_non_exists() -> None:
 
     errors = oie_validator.check_patient_data(patient_data)
 
-    assert errors == ['Patient data does not have the attribute ramq']
+    assert errors == ['Patient ramq is missing']
 
 
 def test_check_patient_ramq_invalid() -> None:
@@ -267,7 +267,7 @@ def test_check_patient_ramq_invalid() -> None:
 
     errors = oie_validator.check_patient_data(patient_data)
 
-    assert errors == ['Patient data ramq is invalid']
+    assert errors == ['Patient ramq is invalid']
 
 
 def test_check_patient_ramq_expiration_non_exists() -> None:
