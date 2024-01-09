@@ -207,12 +207,12 @@ class OIEValidator:  # noqa: WPS214
         try:
             ramq = patient_data['ramq']
         except (KeyError):
-            errors.append('Patient data does not have the attribute ramq')
+            errors.append('Patient ramq is missing')
         if ramq:
             try:
                 validate_ramq(ramq)
             except ValidationError:
-                errors.append('Patient data ramq is invalid')
+                errors.append('Patient ramq is invalid')
 
         # check ramqExpiration
         ramq_expiration = None
