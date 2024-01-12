@@ -58,4 +58,4 @@ fpdf2==2.7.7
 
 # Unidecode for transliterating special characters during de-identification
 #
-unidecode==1.3.7  # https://pypi.org/project/Unidecode/
+unidecode==1.3.8  # https://pypi.org/project/Unidecode/
