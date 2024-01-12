@@ -9,7 +9,6 @@
 
 .nav-link, .nav-link:hover, .nav-link:focus {
   color: #000;
-  background-color: var(--sidebar-bg-color);
 }
 
 .nav-link:hover {
