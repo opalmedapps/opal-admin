@@ -57,4 +57,10 @@ urlpatterns = [
         views.AccessRequestConfirmationView.as_view(),
         name='access-request-confirmation',
     ),
+    # Patient pages
+    path(
+        'manage/',
+        views.PatientListView.as_view(),
+        name='patients',
+    ),
 ]
