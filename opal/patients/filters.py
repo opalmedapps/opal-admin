@@ -21,7 +21,7 @@ from .forms import ManageCaregiverAccessForm
 from .models import Patient, Relationship
 
 
-class PatientFilter(django_filters.FilterSet):
+class PatientManageFilter(django_filters.FilterSet):
     # This field does not perform queryset filtering but defines how the filter should work
     # E.g., defines if the queryset should be filtered by the patient's MRN or RAMQ number
     card_type = django_filters.ChoiceFilter(
@@ -77,7 +77,7 @@ class PatientFilter(django_filters.FilterSet):
         self.form.helper.form_class = 'form-inline row row-cols-lg-auto g-3 align-items-baseline'
         self.form.helper.attrs = {'novalidate': ''}
         self.form.helper.form_method = 'GET'
-        self.form.helper.disable_csrf = False
+        self.form.helper.disable_csrf = True
 
         self.form.helper.layout = Layout(
             Column('card_type'),
