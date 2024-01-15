@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+{% block heading %}
+  {% translate "Manage Patients" %}
+{% endblock %}
+
+{% block content %}
+  <div class="btn-toolbar-no-group mb-2">
+    {% if filter %}
+      <h4>{% translate "Patient Details" %}</h4>
+      <div class="mt-2">
+        {% crispy filter.form %}
+      </div>
+    {% endif %}
+    <div class="mt-4">
+      <h4>{% translate "Search Result" %}</h4>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}
