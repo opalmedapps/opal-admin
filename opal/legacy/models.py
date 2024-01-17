@@ -825,3 +825,22 @@ class LegacyOARoleModule(models.Model):
     class Meta:
         managed = False
         db_table = 'oaRoleModule'
+
+
+class LegacyPatientActivityLog(models.Model):
+    """PatientActivityLog from the legacy database OpalDB."""
+
+    ActivitySerNum = models.IntegerField(primary_key=True)
+    Request = models.CharField(max_length=255, null=False, db_index=True)
+    Parameters = models.CharField(max_length=2048, default='')
+    TargetPatientId = models.IntegerField(null=True)
+    Username = models.CharField(max_length=255, null=False, db_index=True)
+    DeviceId = models.CharField(max_length=255, null=False)
+    SessionId = models.TextField(default='')
+    DateTime = models.DateTimeField(null=False, db_index=True)
+    LastUpdated = models.DateTimeField(null=False)
+    AppVersion = models.CharField(max_length=50, null=False, db_index=True)
+
+    class Meta:
+        managed = False
+        db_table = 'PatientActivityLog'  # Set the actual table name here
