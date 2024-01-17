@@ -4,5 +4,11 @@
 */
 
 up.compiler('[data-bs-toggle="tooltip"]', (element) => {
-    new bootstrap.Tooltip(element)
+    let tooltip = new bootstrap.Tooltip(element)
+
+    // dispose the tooltip when the anchor element is removed
+    // see: https://github.com/unpoly/unpoly/discussions/576
+    up.destructor(element, () => {
+        tooltip.dispose()
+    })
 })
