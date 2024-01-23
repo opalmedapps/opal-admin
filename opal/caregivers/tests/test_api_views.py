@@ -524,7 +524,7 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
 
 
 class TestVerifyEmailCodeView:
-    """A test class to test the email code verification API."""
+    """A test class to test verifying an email with a code."""
 
     def test_unauthenticated_unauthorized(
         self,
@@ -675,7 +675,7 @@ class TestVerifyEmailView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_save_verify_verification_created(  # noqa: WPS218
+    def test_save_verify_verification_created(
         self,
         api_client: APIClient,
         admin_user: User,
@@ -687,9 +687,7 @@ class TestVerifyEmailView:
         mocker.patch.object(timezone, 'now', return_value=current_time)
 
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode()
         email = 'test@muhc.mcgill.ca'
 
         response = api_client.post(
@@ -708,10 +706,10 @@ class TestVerifyEmailView:
         assert not email_verification.is_verified
         assert email_verification.email == email
         assert email_verification.code
-        assert email_verification.caregiver == caregiver_profile
+        assert email_verification.caregiver == registration_code.relationship.caregiver
         assert email_verification.sent_at == current_time
 
-    def test_save_verify_email_sent(  # noqa: WPS218
+    def test_save_verify_email_sent(
         self,
         api_client: APIClient,
         admin_user: User,
@@ -719,9 +717,7 @@ class TestVerifyEmailView:
     ) -> None:
         """Test that the email is sent when verifying an email address."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode()
         email = 'test@muhc.mcgill.ca'
 
         api_client.post(
@@ -745,12 +741,10 @@ class TestVerifyEmailView:
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: User) -> None:
         """Test resend verify email within 10 sec."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode()
         email_verification = caregiver_factories.EmailVerification(
-            caregiver=caregiver_profile,
-            sent_at=timezone.now(),
+            caregiver=registration_code.relationship.caregiver,
+            sent_at=timezone.now() - dt.timedelta(seconds=9),
         )
 
         response = api_client.post(
@@ -761,6 +755,7 @@ class TestVerifyEmailView:
             data={'email': email_verification.email},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.data == [
             ErrorDetail(
@@ -769,18 +764,39 @@ class TestVerifyEmailView:
             ),
         ]
 
-    def test_registered_confirmation_email_sent(  # noqa: WPS218
+    def test_resend_verify_email_after_ten_sec(self, api_client: APIClient, admin_user: User) -> None:
+        """Test resending the code after 10 sec."""
+        api_client.force_login(user=admin_user)
+        registration_code = caregiver_factories.RegistrationCode()
+        email_verification = caregiver_factories.EmailVerification(
+            caregiver=registration_code.relationship.caregiver,
+            sent_at=timezone.now() - dt.timedelta(seconds=10),
+        )
+        current_code = email_verification.code
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email_verification.email},
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        email_verification.refresh_from_db()
+        assert email_verification.code != current_code
+
+    def test_email_registered(
         self,
         api_client: APIClient,
         admin_user: User,
     ) -> None:
-        """Test that the registered confirmation email is sent when verifying an email address."""
+        """Test that an existing email address is detected."""
         api_client.force_login(user=admin_user)
         email = 'test@muhc.mcgill.ca'
-        caregiver = Caregiver(email=email)
-        caregiver.save()
-        caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
+        caregiver = Caregiver.objects.create(email=email)
+        relationship = patient_factories.Relationship(caregiver__user=caregiver)
         registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
 
         response = api_client.post(
@@ -803,18 +819,17 @@ class TestVerifyEmailView:
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration code not exists."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        caregiver_factories.RegistrationCode(relationship=relationship)
-        email = 'test@muhc.mcgill.ca'
+        caregiver_factories.RegistrationCode()
+
         response = api_client.post(
             reverse(
                 'api:verify-email',
                 kwargs={'code': 'code12345677'},
             ),
-            data={'email': email},
+            data={'email': 'test@muhc.mcgill.ca'},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
@@ -826,21 +841,18 @@ class TestVerifyEmailView:
     def test_registration_code_registered(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration code is already registered."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factories.RegistrationCode(
-            relationship=relationship,
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         )
-        email = 'test@muhc.mcgill.ca'
         response = api_client.post(
             reverse(
                 'api:verify-email',
                 kwargs={'code': registration_code.code},
             ),
-            data={'email': email},
+            data={'email': 'test@muhc.mcgill.ca'},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
@@ -852,18 +864,17 @@ class TestVerifyEmailView:
     def test_input_email_format_incorrect(self, api_client: APIClient, admin_user: User) -> None:
         """Test input email format is incorrect."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
-        email = 'aaaaaaaa'
+        registration_code = caregiver_factories.RegistrationCode()
+
         response = api_client.post(
             reverse(
                 'api:verify-email',
                 kwargs={'code': registration_code.code},
             ),
-            data={'email': email},
+            data={'email': 'aaaaaaaa'},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.data == {
             'email': [
@@ -882,6 +893,7 @@ class TestVerifyEmailView:
         registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factories.EmailVerification(caregiver=caregiver_profile)
         old_verification_code = email_verification.code
+
         response = api_client.post(
             reverse(
                 'api:verify-email',
@@ -890,6 +902,98 @@ class TestVerifyEmailView:
             data={'email': email_verification.email},
             format='json',
         )
+
         email_verification.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert email_verification.code != old_verification_code
+
+
+class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be first)
+    """Test the email verification process."""
+
+    email = 'foo@bar.ca'
+    code = 'abcdef123456'
+
+    def _request_code(self, api_client: APIClient) -> None:
+        """Request a verification code."""
+        response = api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': self.code},
+            ),
+            data={'email': self.email},
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+    @pytest.fixture(autouse=True)
+    def _prepare(self, api_client: APIClient, admin_user: User) -> None:
+        """Prepare by requesting to verify an email address."""
+        api_client.force_login(user=admin_user)
+        self.registration_code = caregiver_factories.RegistrationCode(code=self.code)
+
+        self._request_code(api_client)
+
+    def test_email_verification_process(self, api_client: APIClient) -> None:
+        """Test the email verification process."""
+        email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': self.code},
+            ),
+            data={
+                'code': email_verification.code,
+                'email': self.email,
+            },
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        email_verification.refresh_from_db()
+        assert email_verification.is_verified
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': self.code},
+            ),
+            data={
+                'code': email_verification.code,
+                'email': self.email,
+            },
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_email_verification_process_resend(self, api_client: APIClient, mocker: MockerFixture) -> None:
+        """Test the email verification process with resending a verification code."""
+        email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': self.code},
+            ),
+            data={
+                'code': email_verification.code,
+                'email': self.email,
+            },
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        # mock the current timezone to simulate a later time
+        future = timezone.now() + dt.timedelta(minutes=10)
+        mocker.patch.object(timezone, 'now', return_value=future)
+
+        self._request_code(api_client)
+
+        email_verification.refresh_from_db()
+        assert email_verification.sent_at == future
+        assert not email_verification.is_verified
