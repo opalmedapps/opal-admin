@@ -1,4 +1,11 @@
-"""Daily command to update the Usage Statistics models."""
+"""Daily command to update the Usage Statistics models.
+
+TODO
+- Determine how to capture activity clicked via the Home tab Notifications menu.
+These are logged different in PAL than regular Chart activity.
+- Ticket to fix the PAL logging of Account language change, bug described in spike doc
+-
+"""
 
 import datetime as dt
 
@@ -14,9 +21,9 @@ from opal.users.models import User
 
 
 class Command(BaseCommand):
-    """Command to update the daily usage statistics tables."""
+    """Command to update the daily usage statistics and reporting tables."""
 
-    help = 'Populate UserAppActivity from PatientActivityLog'  # noqa: A003
+    help = 'Populate Usage statistics and reporting from PatientActivityLog'  # noqa: A003
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -38,7 +45,7 @@ class Command(BaseCommand):
             help='Calculate usage for today instead of the default yesterday',
         )
 
-    def handle(self, *args, **options):  # noqa: WPS210
+    def handle(self, *args, **options):
         """
         Handle daily calculation of statistics and append to reporting tables.
 
@@ -48,6 +55,7 @@ class Command(BaseCommand):
             args: input arguments.
             options:  additional keyword arguments.
         """
+        # TODO: Remove, convenience CL arg for testing
         force_delete: bool = options['force_delete']
         if force_delete:
             self.stdout.write(self.style.WARNING('Deleting existing UserAppActivity data'))
@@ -63,8 +71,8 @@ class Command(BaseCommand):
         ) - dt.timedelta(days=1)
         time_period_end = time_period_start + dt.timedelta(days=1) - dt.timedelta(microseconds=1)  # noqa: WPS221
 
-        # TODO: Remove
-        # Optionally use today as the query time period instead for easier testing (00:00:00-23:59:59)
+        # TODO: Remove?
+        # Optionally use today as the query time period instead of yesterday for easier testing (00:00:00-23:59:59)
         today: bool = options['today']
         if today:
             self.stdout.write(self.style.WARNING('Calculating statistics for today'))
@@ -75,12 +83,21 @@ class Command(BaseCommand):
                 microsecond=0,
             )
             time_period_end = current_datetime.replace(
-                hour=23,
-                minute=59,
-                second=59,
+                hour=23,  # noqa: WPS432
+                minute=59,  # noqa: WPS432
+                second=59,  # noqa: WPS432
                 microsecond=0,
             )
 
+        self._update_user_app_activity(time_period_start=time_period_start, time_period_end=time_period_end)
+
+    def _update_user_app_activity(self, time_period_start, time_period_end) -> None:  # noqa: WPS210
+        """Query from PatientActivityLog to generate daily user/patient app activity.
+
+        Args:
+            time_period_start: Datetime for the beginning of the query time period
+            time_period_end: Datetime for the end of the query time period
+        """
         # Aggregating data similar to the SQL query
         activities = LegacyPatientActivityLog.objects.filter(
             DateTime__gte=time_period_start,
@@ -129,7 +146,7 @@ class Command(BaseCommand):
             ),
             count_device_ios=Count('DeviceId', filter=Q(Parameters__contains='iOS'), distinct=True),
             count_device_android=Count('DeviceId', filter=Q(Parameters__contains='Android'), distinct=True),
-            count_device_browser=Count('DeviceId', filter=Q(Parameters__contains='Browser'), distinct=True),
+            count_device_browser=Count('DeviceId', filter=Q(Parameters__contains='browser'), distinct=True),
         )
         # NOTE: It seems like an activity triggered from the Notifications page is recorded differently from when
         #       the activity is initialized in the chart.
@@ -144,31 +161,76 @@ class Command(BaseCommand):
             user = User.objects.filter(username=activity['Username']).first()
             patient_data_owner = Patient.objects.filter(legacy_id=activity['TargetPatientId']).first()
             caregiver_profile = CaregiverProfile.objects.filter(user=user).first()
-            user_app_activity = UserAppActivity(
-                action_by_user=user,
-                # Feedback: It makes sense to filter only confirmed relationships... I think?
-                user_relationship_to_patient=Relationship.objects.filter(
+
+            # TODO: Decide if this final check is worth doing
+            # Since the original query returns each unique pairing of patient+user, we have the potential to have
+            #     several 'useless' records created here.
+            # For example, if Fred Flintstone logged in once, did nothing and logged out
+            #     in the query reference time period, then here we would create one row for
+            # Fred's user activity with count_login=1, and everything else 0/null.
+            #     PLUS another record for each Patient the user fred is associated with
+            #     (So one for Fred<-->Pebbles and one for Fred<-->Fred)
+            # These extra 2 empty rows will be created even if all of their values are 0/null,
+            #     because the Relationship itself is confirmed.
+            # That can potentially add a lot of bloat to this table.
+            # So one option is to just filter out these 'useless' records from being saved
+            conditions = [
+                activity['last_login'] is not None,
+                activity['count_logins'] > 0,
+                activity['count_checkins'] > 0,
+                activity['count_documents'] > 0,
+                activity['count_educational_materials'] > 0,
+                activity['count_feedback'] > 0,
+                activity['count_questionnaires_complete'] > 0,
+                activity['count_labs'] > 0,
+                activity['count_update_security_answers'] > 0,
+                activity['count_update_passwords'] > 0,
+                activity['count_update_language'] > 0,
+                activity['count_device_ios'] > 0,
+                activity['count_device_android'] > 0,
+                activity['count_device_browser'] > 0,
+            ]
+            # The other option to solve this problem would be to filter out these 0/null results in the original query
+            # using a secondary filter to mimic the MySQL `HAVING` clause, eg
+            # .filter(
+            #     Q(last_login__isnull=False) |
+            #     Q(count_logins__gt=0) |
+            #     Q(count_checkins__gt=0) |
+
+            if any(conditions):
+                user_app_activity = UserAppActivity(
+                    action_by_user=user,
+                    # Feedback: It makes sense to filter only confirmed relationships... I think?
+                    user_relationship_to_patient=Relationship.objects.filter(
+                        patient=patient_data_owner,
+                        caregiver=caregiver_profile,
+                        status=RelationshipStatus.CONFIRMED,
+                    ).first(),
                     patient=patient_data_owner,
-                    caregiver=caregiver_profile,
-                    status=RelationshipStatus.CONFIRMED,
-                ).first(),
-                patient=patient_data_owner,
-                last_login=activity['last_login'],
-                count_logins=activity['count_logins'],
-                count_checkins=activity['count_checkins'],
-                count_documents=activity['count_documents'],
-                count_educational_materials=activity['count_educational_materials'],
-                count_feedback=activity['count_feedback'],
-                count_questionnaires_complete=activity['count_questionnaires_complete'],
-                count_labs=activity['count_labs'],
-                count_update_security_answers=activity['count_update_security_answers'],
-                count_update_passwords=activity['count_update_passwords'],
-                count_update_language=activity['count_update_language'],
-                count_device_ios=activity['count_device_ios'],
-                count_device_android=activity['count_device_android'],
-                count_device_browser=activity['count_device_browser'],
-                date_added=current_datetime.date(),
-            )
-            user_app_activity.save()
+                    last_login=activity['last_login'],
+                    count_logins=activity['count_logins'],
+                    count_checkins=activity['count_checkins'],
+                    count_documents=activity['count_documents'],
+                    count_educational_materials=activity['count_educational_materials'],
+                    count_feedback=activity['count_feedback'],
+                    count_questionnaires_complete=activity['count_questionnaires_complete'],
+                    count_labs=activity['count_labs'],
+                    count_update_security_answers=activity['count_update_security_answers'],
+                    count_update_passwords=activity['count_update_passwords'],
+                    count_update_language=activity['count_update_language'],
+                    count_device_ios=activity['count_device_ios'],
+                    count_device_android=activity['count_device_android'],
+                    count_device_browser=activity['count_device_browser'],
+                    date_added=timezone.now().date(),
+                )
+                user_app_activity.save()
 
         self.stdout.write(self.style.SUCCESS('Successfully populated UserAppActivity'))
+
+    def _update_patient_data_received(self, time_period_start, time_period_end) -> None:  # noqa: WPS210
+        """Query from legacy tables to generate daily user/patient app activity.
+
+        Args:
+            time_period_start: Datetime for the beginning of the query time period
+            time_period_end: Datetime for the end of the query time period
+        """
