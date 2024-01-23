@@ -300,9 +300,7 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
             email=email,
         )
 
-        email_verification.delete()
-        user = registration_code.relationship.caregiver.user
-        user.email = email_verification.email
-        user.save()
+        email_verification.is_verified = True
+        email_verification.save()
 
         return Response()

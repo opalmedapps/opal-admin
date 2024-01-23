@@ -557,11 +557,11 @@ class TestVerifyEmailCodeView:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factories.CaregiverProfile()
-        user_email = caregiver_profile.user.email
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver_profile)
         email_verification = caregiver_factories.EmailVerification(caregiver=caregiver_profile)
-        assert caregiver_models.EmailVerification.objects.all().count() == 1
+        user_email = caregiver_profile.user.email
+
+        assert caregiver_models.EmailVerification.objects.count() == 1
 
         response = api_client.post(
             reverse(
@@ -576,17 +576,18 @@ class TestVerifyEmailCodeView:
         )
 
         caregiver_profile.user.refresh_from_db()
+        email_verification.refresh_from_db()
+
         assert response.status_code == HTTPStatus.OK
-        assert caregiver_profile.user.email != user_email
-        assert caregiver_profile.user.email == 'opal@muhc.mcgill.ca'
-        assert caregiver_models.EmailVerification.objects.all().count() == 0
+        assert caregiver_profile.user.email == user_email
+        assert caregiver_models.EmailVerification.objects.count() == 1
+        assert email_verification.is_verified
 
     def test_verify_code_format_incorrect(self, api_client: APIClient, admin_user: User) -> None:
         """Test verification code format is incorrect."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode()
+
         response = api_client.post(
             reverse(
                 'api:verify-email-code',
@@ -595,6 +596,7 @@ class TestVerifyEmailCodeView:
             data={'code': '1111', 'email': 'opal@muhc.mcgill.ca'},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.data == {
             'code': [
@@ -608,10 +610,8 @@ class TestVerifyEmailCodeView:
     def test_verify_code_invalid(self, api_client: APIClient, admin_user: User) -> None:
         """Test verification code invalid."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
-        caregiver_factories.EmailVerification(caregiver=caregiver_profile)
+        registration_code = caregiver_factories.RegistrationCode()
+
         response = api_client.post(
             reverse(
                 'api:verify-email-code',
@@ -620,10 +620,30 @@ class TestVerifyEmailCodeView:
             data={'code': '111666', 'email': 'opal@muhc.mcgill.ca'},
             format='json',
         )
+
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
                 string='No EmailVerification matches the given query.',
+                code='not_found',
+            ),
+        }
+
+    def test_registration_code_invalid(self, api_client: APIClient, admin_user: User) -> None:
+        """Test that an invalid registration code returns a not found error."""
+        api_client.force_login(user=admin_user)
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': '12345678'},
+            ),
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert response.data == {
+            'detail': ErrorDetail(
+                string='No RegistrationCode matches the given query.',
                 code='not_found',
             ),
         }
