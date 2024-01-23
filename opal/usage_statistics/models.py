@@ -24,11 +24,13 @@ class UserAppActivity(models.Model):
         verbose_name=_('Relationship between user and patient'),
         to=Relationship,
         on_delete=models.CASCADE,
+        null=True,
     )
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
+        null=True,
     )
     last_login = models.DateTimeField(verbose_name=_('Last Login'))
     count_logins = models.PositiveIntegerField(
@@ -51,8 +53,12 @@ class UserAppActivity(models.Model):
         verbose_name=_('Count Feedbacks'),
         validators=[MinValueValidator(0)],
     )
-    count_questionnaires = models.PositiveIntegerField(
+    count_questionnaires_complete = models.PositiveIntegerField(
         verbose_name=_('Count Questionnaires'),
+        validators=[MinValueValidator(0)],
+    )
+    count_labs = models.PositiveIntegerField(
+        verbose_name=_('Count Labs'),
         validators=[MinValueValidator(0)],
     )
     count_update_security_answers = models.PositiveIntegerField(
@@ -63,19 +69,19 @@ class UserAppActivity(models.Model):
         verbose_name=_('Count Password Updates'),
         validators=[MinValueValidator(0)],
     )
-    count_labs = models.PositiveIntegerField(
-        verbose_name=_('Count Labs'),
+    count_update_language = models.PositiveIntegerField(
+        verbose_name=_('Count Language Updates'),
         validators=[MinValueValidator(0)],
     )
-    device_ios = models.PositiveIntegerField(
+    count_device_ios = models.PositiveIntegerField(
         verbose_name=_('IOS Devices'),
         validators=[MinValueValidator(0)],
     )
-    device_android = models.PositiveIntegerField(
+    count_device_android = models.PositiveIntegerField(
         verbose_name=_('Android Devices'),
         validators=[MinValueValidator(0)],
     )
-    device_browser = models.PositiveIntegerField(
+    count_device_browser = models.PositiveIntegerField(
         verbose_name=_('Browser Devices'),
         validators=[MinValueValidator(0)],
     )
