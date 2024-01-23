@@ -10,7 +10,6 @@ class UserAppActivityAdmin(admin.ModelAdmin):
 
     list_display = [
         '__str__',
-        'action_by_user',
         'user_relationship_to_patient',
         'patient',
         'last_login',

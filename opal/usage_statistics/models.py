@@ -32,7 +32,10 @@ class UserAppActivity(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-    last_login = models.DateTimeField(verbose_name=_('Last Login'))
+    last_login = models.DateTimeField(
+        verbose_name=_('Last Login'),
+        null=True,
+    )
     count_logins = models.PositiveIntegerField(
         verbose_name=_('Count Logins'),
         validators=[MinValueValidator(0)],
@@ -98,10 +101,15 @@ class UserAppActivity(models.Model):
         """
         Return a string representation of the activity, including user and patient details.
 
+        If self.patient is null, then this activity was an account activity not occuring in a patient chart.
+
         Returns:
             String representing the activity.
         """
-        return f'Activity by {self.action_by_user} for Patient {self.patient}'
+        # TODO: Change the string to 'Daily activity by user XX in the chart of patient YY?' That might be more descriptive?  # noqa: E501
+        if self.patient:
+            return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name} for Patient {self.patient}'  # noqa: WPS221, E501
+        return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name}'
 
 
 class PatientDataReceived(models.Model):
