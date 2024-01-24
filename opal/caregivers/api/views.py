@@ -213,7 +213,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
-            if time_delta.total_seconds() >= constants.TIME_DELAY:
+            if time_delta.total_seconds() > constants.TIME_DELAY:
                 input_serializer.update(
                     email_verification,
                     {
@@ -298,11 +298,10 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
             registration_code.relationship.caregiver.email_verifications,
             code=verification_code,
             email=email,
+            is_verified=False,
         )
 
-        email_verification.delete()
-        user = registration_code.relationship.caregiver.user
-        user.email = email_verification.email
-        user.save()
+        email_verification.is_verified = True
+        email_verification.save()
 
         return Response()
