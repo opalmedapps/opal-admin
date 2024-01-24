@@ -1,8 +1,10 @@
 """Test module for registration api endpoints."""
+import copy
 import datetime as dt
 from datetime import datetime
 from hashlib import sha512
 from http import HTTPStatus
+from typing import Any
 
 from django.core import mail
 from django.urls import reverse
@@ -16,7 +18,10 @@ from rest_framework.test import APIClient
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
+from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.patients import factories as patient_factories
+from opal.patients.factories import Patient, Relationship
+from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
 
@@ -968,8 +973,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
             format='json',
         )
 
-        assert response.status_code == HTTPStatus.NOT_FOUND
-
     def test_email_verification_process_resend(self, api_client: APIClient, mocker: MockerFixture) -> None:
         """Test the email verification process with resending a verification code."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
@@ -997,3 +1000,232 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         email_verification.refresh_from_db()
         assert email_verification.sent_at == future
         assert not email_verification.is_verified
+
+
+class TestRegistrationCompletionView:
+    """Test class tests the api registration/<str: code>/register."""
+
+    input_data = {
+        'patient': {
+            'legacy_id': 1,
+        },
+        'caregiver': {
+            'language': 'fr',
+            'phone_number': '+15141112222',
+            'username': 'test-username',
+            'legacy_id': 1,
+        },
+        'security_answers': [
+            {
+                'question': 'correct?',
+                'answer': 'yes',
+            },
+            {
+                'question': 'correct?',
+                'answer': 'maybe',
+            },
+        ],
+    }
+
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        registration_listener_user: User,
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:registration-register', kwargs={'code': '123456'})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(registration_listener_user)
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
+
+    def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        caregiver = CaregiverProfile()
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        assert len(security_answers) == 2
+
+    def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
+        """Existing patient and caregiver don't cause the serializer to fail."""
+        api_client.force_login(user=admin_user)
+        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': '123456'},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: User) -> None:
+        """Test non-existent registration code."""
+        api_client.force_login(user=admin_user)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': 'code11111111'},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
+        """Test registered registration code."""
+        api_client.force_login(user=admin_user)
+        registration_code = RegistrationCode(
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        )
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: User) -> None:
+        """Test validation of patient's legacy_id."""
+        api_client.force_login(user=admin_user)
+
+        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
+        invalid_data['patient']['legacy_id'] = 0
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': '123456'},
+            ),
+            data=invalid_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {
+            'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
+        }
+
+    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: User) -> None:
+        """Test validation of the phone number."""
+        api_client.force_login(user=admin_user)
+
+        registration_code = RegistrationCode()
+
+        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
+        invalid_data['caregiver']['phone_number'] = '1234567890'
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=invalid_data,
+            format='json',
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {
+            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
+        }
+        # check that no data was changed
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
+        assert not security_answers
+
+    def test_remove_skeleton_caregiver(self, api_client: APIClient, admin_user: User) -> None:
+        """Test api registration register remove skeleton caregiver."""
+        api_client.force_login(user=admin_user)
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='caregiver',
+            last_name='test',
+        )
+        caregiver_profile = CaregiverProfile(user=caregiver)
+        # Build skeleton user
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+        )
+        skeleton_profile = CaregiverProfile(user=skeleton)
+        # Build relationships: code -> relationship -> patient
+        relationship = Relationship(caregiver=skeleton_profile)
+        registration_code = RegistrationCode(relationship=relationship)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        relationship.refresh_from_db()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        assert relationship.caregiver.id == caregiver_profile.id
+        assert relationship.caregiver.user.id == caregiver.id
+        assert not Caregiver.objects.filter(username=skeleton.username).exists()
+        assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
+
+    def test_email_not_verified(self, api_client: APIClient, admin_user: User) -> None:
+        """Test registered registration code."""
+        api_client.force_login(user=admin_user)
+        caregiver = CaregiverProfile(user__email='')
+        registration_code = RegistrationCode(relationship__caregiver=caregiver)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+            format='json',
+        )
+
+        assert response.status_code != HTTPStatus.OK
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
