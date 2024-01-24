@@ -5,8 +5,8 @@ from . import models
 
 
 @admin.register(models.UserAppActivity)
-class UserAppActivityAdmin(admin.ModelAdmin):
-    """The admin class for `UserAppActivity` models."""
+class DailyUserAppActivityAdmin(admin.ModelAdmin):
+    """The admin class for `DailyUserAppActivity` models."""
 
     list_display = [
         '__str__',
@@ -31,8 +31,8 @@ class UserAppActivityAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.PatientDataReceived)
-class PatientDataReceivedAdmin(admin.ModelAdmin):
-    """The admin class for `PatientDataReceived` models."""
+class DailyPatientDataReceivedAdmin(admin.ModelAdmin):
+    """The admin class for `DailyPatientDataReceived` models."""
 
     list_display = [
         '__str__',

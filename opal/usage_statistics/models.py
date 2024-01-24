@@ -12,7 +12,7 @@ from opal.users.models import User
 Language = settings.LANGUAGES
 
 
-class UserAppActivity(models.Model):
+class DailyUserAppActivity(models.Model):
     """Tracks daily app activity per user and patient. One record per user + patient per day (Maximum)."""
 
     action_by_user = models.ForeignKey(
@@ -112,7 +112,7 @@ class UserAppActivity(models.Model):
         return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name}'
 
 
-class PatientDataReceived(models.Model):
+class DailyPatientDataReceived(models.Model):
     """Tracks daily data sent to patient. One record per patient per day (Maximum)."""
 
     patient = models.ForeignKey(
@@ -125,27 +125,47 @@ class PatientDataReceived(models.Model):
         null=True,
         blank=False,
     )
-    last_appointment_received = models.DateTimeField(verbose_name=_('Last Appointment Received'))
+    last_appointment_received = models.DateTimeField(
+        verbose_name=_('Last Appointment Received'),
+        null=True,
+        blank=False,
+    )
     appointments_received = models.PositiveIntegerField(
         verbose_name=_('Appointments Received'),
         validators=[MinValueValidator(0)],
     )
-    last_document_received = models.DateTimeField(verbose_name=_('Last Document Received'))
+    last_document_received = models.DateTimeField(
+        verbose_name=_('Last Document Received'),
+        null=True,
+        blank=False,
+    )
     documents_received = models.PositiveIntegerField(
         verbose_name=_('Documents Received'),
         validators=[MinValueValidator(0)],
     )
-    last_educational_materials_received = models.DateTimeField(verbose_name=_('Last Educational Materials Received'))
+    last_educational_materials_received = models.DateTimeField(
+        verbose_name=_('Last Educational Materials Received'),
+        null=True,
+        blank=False,
+    )
     educational_materials_received = models.PositiveIntegerField(
         verbose_name=_('Educational Materials Received'),
         validators=[MinValueValidator(0)],
     )
-    last_questionnaire_received = models.DateTimeField(verbose_name=_('Last Questionnaire Received'))
+    last_questionnaire_received = models.DateTimeField(
+        verbose_name=_('Last Questionnaire Received'),
+        null=True,
+        blank=False,
+    )
     questionnaires_received = models.PositiveIntegerField(
         verbose_name=_('Questionnaires Received'),
         validators=[MinValueValidator(0)],
     )
-    last_lab_received = models.DateTimeField(verbose_name=_('Last Lab Received'))
+    last_lab_received = models.DateTimeField(
+        verbose_name=_('Last Lab Received'),
+        null=True,
+        blank=False,
+    )
     labs_received = models.PositiveIntegerField(
         verbose_name=_('Labs Received'),
         validators=[MinValueValidator(0)],
@@ -166,7 +186,7 @@ class PatientDataReceived(models.Model):
         Returns:
             String representing the patient data received.
         """
-        return f'{self.patient} received data at {self.date_added}'
+        return f'{self.patient} received data on {self.date_added.date()}'
 
 
 class PatientDemographic(models.Model):
