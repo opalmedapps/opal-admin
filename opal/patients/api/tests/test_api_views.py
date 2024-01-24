@@ -286,7 +286,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertContains(
@@ -298,7 +297,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertContains(
@@ -322,7 +320,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertJSONEqual(
@@ -343,7 +340,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertJSONEqual(
@@ -366,7 +362,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -386,7 +381,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -417,7 +411,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -433,7 +426,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -471,7 +463,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -487,7 +478,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -528,7 +518,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -541,7 +530,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -576,7 +564,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -589,7 +576,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -638,7 +624,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=payload,
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -814,7 +799,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -833,7 +817,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -852,7 +835,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL', 'ramq': 'SIMM86101799', 'first_name': 'Marge'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -874,7 +856,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': ''},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -895,7 +876,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -947,7 +927,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['valid'],
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -962,7 +941,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['invalid_site'],
-            format='json',
         )
         assert 'Provided "XXX" site acronym does not exist.' in response.data[0]['site_code']
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -974,7 +952,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['patient_not_found'],
-            format='json',
         )
         expected_error = '{0} {1}'.format(
             'Cannot find patient record with the provided MRNs and sites or',
@@ -990,7 +967,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['multiple_patients'],
-            format='json',
         )
         expected_error = '{0} {1}'.format(
             'Cannot find patient record with the provided MRNs and sites or',
@@ -1006,7 +982,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['invalid_mrn'],
-            format='json',
         )
         assert 'Ensure this field has no more than 10 characters.' in response.data[0]['mrn']
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1016,7 +991,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['valid'],
-            format='json',
         )
         assertContains(
             response=response,

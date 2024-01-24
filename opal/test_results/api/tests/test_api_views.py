@@ -38,7 +38,6 @@ class TestCreatePathologyView:
         response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertContains(
@@ -55,7 +54,6 @@ class TestCreatePathologyView:
         response = user_api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertContains(
@@ -75,7 +73,6 @@ class TestCreatePathologyView:
         response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertJSONEqual(
@@ -123,7 +120,6 @@ class TestCreatePathologyView:
         response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
-            format='json',
         )
         assertContains(
             response=response,
@@ -176,7 +172,6 @@ class TestCreatePathologyView:
         response = api_client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
-            format='json',
         )
         report_file_name = '{first_name}_{last_name}_{date}_pathology.pdf'.format(
             first_name=patient.first_name,

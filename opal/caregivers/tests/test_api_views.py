@@ -238,7 +238,6 @@ def test_device_put_create(api_client: APIClient, listener_user: User) -> None:
             kwargs={'device_id': device_id},
         ),
         data=data,
-        format='json',
     )
 
     assert response.status_code == HTTPStatus.CREATED
@@ -268,7 +267,6 @@ def test_device_put_update(api_client: APIClient, listener_user: User) -> None:
             kwargs={'device_id': device.device_id},
         ),
         data=data,
-        format='json',
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -310,7 +308,6 @@ def test_device_put_two_caregivers(api_client: APIClient, listener_user: User) -
             kwargs={'device_id': device.device_id},
         ),
         data=data,
-        format='json',
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -341,7 +338,6 @@ def test_create_device_failure(api_client: APIClient, listener_user: User) -> No
             kwargs={'device_id': device.device_id},
         ),
         data=data,
-        format='json',
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -369,7 +365,6 @@ def test_update_device_success(api_client: APIClient, listener_user: User) -> No
             kwargs={'device_id': device.device_id},
         ),
         data=data_one,
-        format='json',
     )
     # Change device data for full update action
     data_two = {
@@ -385,7 +380,6 @@ def test_update_device_success(api_client: APIClient, listener_user: User) -> No
             kwargs={'device_id': device.device_id},
         ),
         data=data_two,
-        format='json',
     )
     assert response_one.status_code == HTTPStatus.OK
     assert response_two.status_code == HTTPStatus.OK
@@ -414,7 +408,6 @@ def test_update_device_failure(api_client: APIClient, listener_user: User) -> No
             kwargs={'device_id': device.device_id},
         ),
         data=data_one,
-        format='json',
     )
     # Input invalid data
     data_two = {
@@ -430,7 +423,6 @@ def test_update_device_failure(api_client: APIClient, listener_user: User) -> No
             kwargs={'device_id': device.device_id},
         ),
         data=data_two,
-        format='json',
     )
     assert response_one.status_code == HTTPStatus.OK
     assert response_two.status_code == HTTPStatus.BAD_REQUEST
@@ -457,7 +449,6 @@ def test_partial_update_device_not_found(api_client: APIClient, listener_user: U
             kwargs={'device_id': device_id},
         ),
         data=data,
-        format='json',
     )
     assert response_one.status_code == HTTPStatus.NOT_FOUND
 
@@ -480,7 +471,6 @@ def test_partial_update_device_success(api_client: APIClient, listener_user: Use
             kwargs={'device_id': device.device_id},
         ),
         data=data_one,
-        format='json',
     )
     assert response_one.status_code == HTTPStatus.OK
 
@@ -508,7 +498,6 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
             kwargs={'device_id': device.device_id},
         ),
         data=data_one,
-        format='json',
     )
     # Input invalid data
     data_two = {
@@ -522,7 +511,6 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
             kwargs={'device_id': device.device_id},
         ),
         data=data_two,
-        format='json',
     )
     assert response_one.status_code == HTTPStatus.OK
     assert response_two.status_code == HTTPStatus.BAD_REQUEST
@@ -577,7 +565,6 @@ class TestVerifyEmailCodeView:
                 'code': email_verification.code,
                 'email': email_verification.email,
             },
-            format='json',
         )
 
         caregiver_profile.user.refresh_from_db()
@@ -599,7 +586,6 @@ class TestVerifyEmailCodeView:
                 kwargs={'code': registration_code.code},
             ),
             data={'code': '1111', 'email': 'opal@muhc.mcgill.ca'},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -623,7 +609,6 @@ class TestVerifyEmailCodeView:
                 kwargs={'code': registration_code.code},
             ),
             data={'code': '111666', 'email': 'opal@muhc.mcgill.ca'},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -701,7 +686,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -731,7 +715,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email},
-            format='json',
         )
 
         email_verification = caregiver_models.EmailVerification.objects.get(email=email)
@@ -758,7 +741,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email_verification.email},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -785,7 +767,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email_verification.email},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -810,7 +791,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -832,7 +812,6 @@ class TestVerifyEmailView:
                 kwargs={'code': 'code12345677'},
             ),
             data={'email': 'test@muhc.mcgill.ca'},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -855,7 +834,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': 'test@muhc.mcgill.ca'},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -877,7 +855,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': 'aaaaaaaa'},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -905,7 +882,6 @@ class TestVerifyEmailView:
                 kwargs={'code': registration_code.code},
             ),
             data={'email': email_verification.email},
-            format='json',
         )
 
         email_verification.refresh_from_db()
@@ -927,7 +903,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 kwargs={'code': self.code},
             ),
             data={'email': self.email},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -953,7 +928,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 'code': email_verification.code,
                 'email': self.email,
             },
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -970,7 +944,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 'code': email_verification.code,
                 'email': self.email,
             },
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -988,7 +961,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 'code': email_verification.code,
                 'email': self.email,
             },
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1067,7 +1039,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': registration_code.code},
             ),
             data=self.input_data,
-            format='json',
         )
 
         registration_code.refresh_from_db()
@@ -1087,7 +1058,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': '123456'},
             ),
             data=self.input_data,
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1102,7 +1072,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': 'code11111111'},
             ),
             data=self.input_data,
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1120,7 +1089,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': registration_code.code},
             ),
             data=self.input_data,
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1138,7 +1106,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': '123456'},
             ),
             data=invalid_data,
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1161,7 +1128,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': registration_code.code},
             ),
             data=invalid_data,
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1201,7 +1167,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': registration_code.code},
             ),
             data=self.input_data,
-            format='json',
         )
 
         registration_code.refresh_from_db()
@@ -1225,7 +1190,6 @@ class TestRegistrationCompletionView:
                 kwargs={'code': registration_code.code},
             ),
             data=self.input_data,
-            format='json',
         )
 
         assert response.status_code != HTTPStatus.OK

@@ -104,7 +104,6 @@ class TestUserCaregiverUpdateView:
                 kwargs={'username': username},
             ),
             data={'email': updated_email},
-            format='json',
         )
 
         caregiver.refresh_from_db()
@@ -130,7 +129,6 @@ class TestUserCaregiverUpdateView:
                 kwargs={'username': username},
             ),
             data={'email': updated_email},
-            format='json',
         )
 
         caregiver.refresh_from_db()
@@ -155,7 +153,6 @@ class TestUserCaregiverUpdateView:
                 kwargs={'username': username},
             ),
             data={'email': ''},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -182,7 +179,6 @@ class TestUserCaregiverUpdateView:
                 kwargs={'username': username},
             ),
             data={''},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
