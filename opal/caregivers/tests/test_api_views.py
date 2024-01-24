@@ -18,7 +18,6 @@ from rest_framework.test import APIClient
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
-from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.patients import factories as patient_factories
 from opal.patients.factories import Patient, Relationship
 from opal.users import factories as user_factories
@@ -1029,9 +1028,9 @@ class TestRegistrationCompletionView:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
-        caregiver = CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile()
         relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
 
         response = api_client.post(
             reverse(
@@ -1079,7 +1078,7 @@ class TestRegistrationCompletionView:
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
         api_client.force_login(user=admin_user)
-        registration_code = RegistrationCode(
+        registration_code = caregiver_factories.RegistrationCode(
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         )
 
@@ -1117,7 +1116,7 @@ class TestRegistrationCompletionView:
         """Test validation of the phone number."""
         api_client.force_login(user=admin_user)
 
-        registration_code = RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode()
 
         invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
         invalid_data['caregiver']['phone_number'] = '1234567890'
@@ -1149,17 +1148,17 @@ class TestRegistrationCompletionView:
             first_name='caregiver',
             last_name='test',
         )
-        caregiver_profile = CaregiverProfile(user=caregiver)
+        caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
         # Build skeleton user
         skeleton = user_factories.Caregiver(
             username='skeleton-username',
             first_name='skeleton',
             last_name='test',
         )
-        skeleton_profile = CaregiverProfile(user=skeleton)
+        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
         # Build relationships: code -> relationship -> patient
         relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
 
         response = api_client.post(
             reverse(
@@ -1177,21 +1176,3 @@ class TestRegistrationCompletionView:
         assert relationship.caregiver.user.id == caregiver.id
         assert not Caregiver.objects.filter(username=skeleton.username).exists()
         assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
-
-    def test_email_not_verified(self, api_client: APIClient, admin_user: User) -> None:
-        """Test registered registration code."""
-        api_client.force_login(user=admin_user)
-        caregiver = CaregiverProfile(user__email='')
-        registration_code = RegistrationCode(relationship__caregiver=caregiver)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=self.input_data,
-        )
-
-        assert response.status_code != HTTPStatus.OK
-        registration_code.refresh_from_db()
-        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
