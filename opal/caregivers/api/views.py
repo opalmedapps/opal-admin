@@ -386,13 +386,13 @@ class RegistrationCompletionView(APIView):
             email: the verified email
             caregiver_data: the validated data specific to the caregiver
         """
-        caregiver_data = caregiver_data['user']
+        user_data = caregiver_data['user']
         utils.update_caregiver(
             caregiver_profile.user,
             email,
-            caregiver_data['username'],
-            caregiver_data['language'],
-            caregiver_data['phone_number'],
+            user_data['username'],
+            user_data['language'],
+            user_data['phone_number'],
         )
         utils.update_caregiver_profile(
             caregiver_profile,
