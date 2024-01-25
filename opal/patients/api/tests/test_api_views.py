@@ -919,24 +919,28 @@ class TestPatientCaregiverDevicesView:
         """Test get patient caregiver devices success."""
         api_client.force_login(user=admin_user)
 
-        legacy_id = 1
-        patient = Patient(legacy_id=legacy_id)
+        patient = Patient()
 
         user1 = caregiver_factories.Caregiver(language='en', phone_number='+11234567890')
         user2 = caregiver_factories.Caregiver(language='fr', phone_number='+11234567891')
         caregiver1 = CaregiverProfile(user=user1)
         caregiver2 = CaregiverProfile(user=user2)
-        Relationship(caregiver=caregiver1, patient=patient)
-        Relationship(caregiver=caregiver2, patient=patient)
+        Relationship(caregiver=caregiver1, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship(caregiver=caregiver2, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship(patient=patient, caregiver=caregiver1, status=patient_models.RelationshipStatus.EXPIRED)
+        Relationship(patient=patient, status=patient_models.RelationshipStatus.PENDING)
         device1 = Device(caregiver=caregiver1)
         device2 = Device(caregiver=caregiver2)
-
         institution = Institution()
+
         response = api_client.get(reverse(
             'api:patient-caregiver-devices',
-            kwargs={'legacy_id': legacy_id},
+            kwargs={'legacy_id': patient.legacy_id},
         ))
+
         assert response.status_code == HTTPStatus.OK
+        # ensure only confirmed relationships are returned
+        assert len(response.json()['caregivers']) == 2
         assert response.json() == {
             'first_name': patient.first_name,
             'last_name': patient.last_name,
