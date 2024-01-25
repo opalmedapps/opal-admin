@@ -359,9 +359,7 @@ class RegistrationCompletionView(APIView):
                 email_verification = relationship.caregiver.email_verifications.filter(is_verified=True)
 
                 if email_verification.count() != 1:
-                    raise drf_serializers.ValidationError(
-                        _('Caregiver email is not verified.'),
-                    )
+                    raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
                 self._update_caregiver(relationship.caregiver, email_verification[0].email, caregiver_data)
 
