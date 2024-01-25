@@ -461,6 +461,8 @@ REST_FRAMEWORK = {
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # set default request format to JSON
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 # django-cors-headers
