@@ -4,7 +4,7 @@ from django.contrib import admin
 from . import models
 
 
-@admin.register(models.UserAppActivity)
+@admin.register(models.DailyUserAppActivity)
 class DailyUserAppActivityAdmin(admin.ModelAdmin):
     """The admin class for `DailyUserAppActivity` models."""
 
@@ -30,7 +30,7 @@ class DailyUserAppActivityAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(models.PatientDataReceived)
+@admin.register(models.DailyPatientDataReceived)
 class DailyPatientDataReceivedAdmin(admin.ModelAdmin):
     """The admin class for `DailyPatientDataReceived` models."""
 
@@ -48,22 +48,5 @@ class DailyPatientDataReceivedAdmin(admin.ModelAdmin):
         'questionnaires_received',
         'last_lab_received',
         'labs_received',
-        'date_added',
-    ]
-
-
-@admin.register(models.PatientDemographic)
-class PatientDemographicAdmin(admin.ModelAdmin):
-    """The admin class for `PatientDemographic` models."""
-
-    list_display = [
-        '__str__',
-        'patient',
-        'sex',
-        'language',
-        'access_level',
-        'blocked_status',
-        'status_reason',
-        'completed_registration',
         'date_added',
     ]

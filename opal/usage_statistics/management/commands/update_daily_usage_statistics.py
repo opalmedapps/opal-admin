@@ -237,7 +237,7 @@ class Command(BaseCommand):
                 )
                 user_app_activity.save()
 
-        self.stdout.write(self.style.SUCCESS('Successfully populated UserAppActivity'))
+        self.stdout.write(self.style.SUCCESS('Successfully populated DailyUserAppActivityAdmin'))
 
     def _update_patient_data_received(self, time_period_start, time_period_end) -> None:  # noqa: WPS210
         """Query from legacy tables to generate daily user/patient app activity.

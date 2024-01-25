@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from opal.patients.models import Patient, Relationship, SexType
+from opal.patients.models import Patient, Relationship
 from opal.users.models import User
 
 Language = settings.LANGUAGES
@@ -187,55 +187,3 @@ class DailyPatientDataReceived(models.Model):
             String representing the patient data received.
         """
         return f'{self.patient} received data on {self.date_added.date()}'
-
-
-class PatientDemographic(models.Model):
-    """Tracks daily demographic statistics. One record per patient per day.
-
-    This communicates a 'snapshot' of a patients demographic information every day.
-    """
-
-    patient = models.ForeignKey(
-        verbose_name=_('Subject Patient'),
-        to=Patient,
-        on_delete=models.CASCADE,
-    )
-    sex = models.CharField(
-        verbose_name=_('Sex'),
-        max_length=1,
-        choices=SexType.choices,
-    )
-    language = models.CharField(
-        verbose_name=_('Language'),
-        max_length=2,
-        choices=Language,
-        # use the language code of the first language
-        default=Language[0][0],
-    )
-    access_level = models.IntegerField(verbose_name=_('Access Level'))
-    blocked_status = models.BinaryField(verbose_name=_('Blocked Status'))
-    status_reason = models.CharField(
-        verbose_name=_('Status Reason'),
-        max_length=256,
-    )
-    completed_registration = models.CharField(
-        verbose_name=_('Completed Registration'),
-        max_length=3,
-    )
-    date_added = models.DateTimeField(
-        verbose_name=_('Date Added'),
-        default=timezone.now,
-    )
-
-    class Meta:
-        verbose_name = _('Patient Demographic')
-        verbose_name_plural = _('Patient Demographics')
-
-    def __str__(self) -> str:
-        """
-        Return a string representation of the daily demographic statistics for a patient.
-
-        Returns:
-            String representing the patient's daily demographics.
-        """
-        return f'{self.patient} demographic snapshot at {self.date_added}'
