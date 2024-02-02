@@ -30,7 +30,7 @@ class QuestionnaireProfile(models.Model):
     user = models.OneToOneField(
         verbose_name=_('User'),
         to=User,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     questionnaire_list = models.JSONField(
         verbose_name=_('Questionnaire List'),
