@@ -376,10 +376,6 @@ class RegistrationCompletionView(APIView):
         Raises:
             ValidationError: if the caregiver is already registered or there is no verified email
         """
-        # ensure that the user is a skeleton user
-        if relationship.caregiver.user.is_active:
-            raise drf_serializers.ValidationError('Caregiver already registered.')
-
         # a user can potentially verify multiple email address during the same process
         # use the last one
         email_verification = relationship.caregiver.email_verifications.filter(
