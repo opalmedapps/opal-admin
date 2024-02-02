@@ -389,19 +389,13 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         ).annotate(
             diagnosis_id=models.F('diagnosis_ser_num'),
             date_created=models.F('creation_date'),
-            source_system=models.F('source_database__source_database_name'),
-            source_system_id=models.F('diagnosis_aria_ser'),
             source_system_code=models.F('diagnosis_code'),
             source_system_code_description=models.F('description_en'),
         ).values(
             'diagnosis_id',
             'date_created',
-            'source_system',
-            'source_system_id',
             'source_system_code',
             'source_system_code_description',
-            'stage',
-            'stage_criteria',
             'last_updated',
         )
 

@@ -98,12 +98,8 @@ def test_get_diagnosis_databank_data() -> None:
     expected_returned_fields = {
         'diagnosis_id',
         'date_created',
-        'source_system',
-        'source_system_id',
         'source_system_code',
         'source_system_code_description',
-        'stage',
-        'stage_criteria',
         'last_updated',
     }
     for diagnosis in databank_data:
