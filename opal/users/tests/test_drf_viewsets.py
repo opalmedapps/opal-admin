@@ -109,7 +109,6 @@ def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_use
             kwargs={'username': user.username},
         ),
         data=data,
-        format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
@@ -160,7 +159,6 @@ def test_userviewset_add_multiple_groups_to_user_pass(api_client: APIClient, adm
             kwargs={'username': user.username},
         ),
         data=data,
-        format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
@@ -209,7 +207,6 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
             kwargs={'username': user.username},
         ),
         data=data,
-        format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
@@ -238,7 +235,6 @@ def test_userviewset_create_user_in_group_pass(
             'api:users-list',
         ),
         data=data,
-        format='json',
     )
 
     created_user = User.objects.get(username='test_user')
@@ -266,7 +262,6 @@ def test_userviewset_create_user_in_multiple_groups_pass(api_client: APIClient, 
             'api:users-list',
         ),
         data=data,
-        format='json',
     )
     created_user = User.objects.get(username='test_user')
 
@@ -301,7 +296,6 @@ def test_userviewset_update_user_in_group_with_permission(
             kwargs={'username': clinical_user.username},
         ),
         data=data,
-        format='json',
     )
 
     # test if retrieve gets all user groups and if the user groups are updated
@@ -331,7 +325,6 @@ def test_userviewset_create_user_in_group_existing_user(admin_api_client: APICli
             'api:users-list',
         ),
         data=data,
-        format='json',
     )
     # assertions
     assert response_post.status_code == HTTPStatus.BAD_REQUEST

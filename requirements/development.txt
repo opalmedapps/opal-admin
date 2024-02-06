@@ -2,26 +2,26 @@
 
 # Testing
 #
-mypy==1.7.1  # https://github.com/python/mypy
-pytest==7.4.3  # https://github.com/pytest-dev/pytest
+mypy==1.8.0  # https://github.com/python/mypy
+pytest==8.0.0  # https://github.com/pytest-dev/pytest
 pytest-mock==3.12.0  # https://github.com/pytest-dev/pytest-mock/
-pytest-socket==0.6.0  # https://github.com/miketheman/pytest-socket
-pytest-sugar==0.9.7  # https://github.com/Frozenball/pytest-sugar
+pytest-socket==0.7.0  # https://github.com/miketheman/pytest-socket
+pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.15.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.3.0  # https://github.com/wemake-services/django-test-migrations
-coverage==7.3.2  # https://github.com/nedbat/coveragepy
+coverage==7.4.1  # https://github.com/nedbat/coveragepy
 factory-boy==3.3.0  # https://github.com/FactoryBoy/factory_boy
-isort==5.12.0  # https://github.com/PyCQA/isort
+isort==5.13.2  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==4.2.6  # https://github.com/typeddjango/django-stubs
-djangorestframework-stubs==3.14.4  # https://github.com/typeddjango/djangorestframework-stubs
-pandas-stubs==2.1.1.230928
-types-beautifulsoup4==4.12.0.7
-types-fpdf2==2.7.6.1
-types-requests==2.31.0.10
-types-python-dateutil==2.8.19.14
+django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs
+djangorestframework-stubs==3.14.5  # https://github.com/typeddjango/djangorestframework-stubs
+pandas-stubs==2.1.4.231227
+types-beautifulsoup4==4.12.0.20240106
+types-fpdf2==2.7.7.20240106
+types-requests==2.31.0.20240125
+types-python-dateutil==2.8.19.20240106
 
 # Code quality
 #
@@ -61,8 +61,8 @@ git+https://github.com/pytest-dev/pytest-django.git@42b7db2f4f5dbe785e57652d1d4e
 
 # Pre-commit
 #
-pre-commit==3.5.0  # https://github.com/pre-commit/pre-commit
+pre-commit==3.6.0  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
-beautifulsoup4==4.12.2  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+beautifulsoup4==4.12.3  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/

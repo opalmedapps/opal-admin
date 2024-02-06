@@ -201,7 +201,7 @@ urlpatterns = [
     ),
     path(
         'registration/<str:code>/register/',
-        patient_views.RegistrationCompletionView.as_view(),
+        caregivers_views.RegistrationCompletionView.as_view(),
         name='registration-register',
     ),
     # USERS ENDPOINTS

@@ -2,7 +2,9 @@
 from typing import Any
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
@@ -10,12 +12,15 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions
+from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.caregivers import models as caregiver_models
+from opal.caregivers.api import serializers as caregiver_serializers
 from opal.caregivers.api.serializers import (
     CaregiverSerializer,
     DeviceSerializer,
@@ -26,6 +31,7 @@ from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, 
 from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
+from opal.patients import utils
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
 from opal.users.models import Caregiver, User
@@ -213,7 +219,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
-            if time_delta.total_seconds() >= constants.TIME_DELAY:
+            if time_delta.total_seconds() > constants.TIME_DELAY:
                 input_serializer.update(
                     email_verification,
                     {
@@ -298,11 +304,81 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
             registration_code.relationship.caregiver.email_verifications,
             code=verification_code,
             email=email,
+            is_verified=False,
         )
 
-        email_verification.delete()
-        user = registration_code.relationship.caregiver.user
-        user.email = email_verification.email
-        user.save()
+        email_verification.is_verified = True
+        email_verification.save()
+
+        return Response()
+
+
+class RegistrationCompletionView(APIView):
+    """Registration-register `APIView` class for handling "registration-completed" requests."""
+
+    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
+    permission_classes = (IsRegistrationListener,)
+
+    @transaction.atomic
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
+        """
+        Handle POST requests from `registration/<str:code>/register/`.
+
+        Args:
+            request: REST framework's request object.
+            code: registration code.
+
+        Raises:
+            ValidationError: validation error.
+
+        Returns:
+            HTTP response with the error or success status.
+        """
+        serializer = self.serializer_class(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        register_data = serializer.validated_data
+
+        registration_code = get_object_or_404(
+            caregiver_models.RegistrationCode.objects.select_related(
+                'relationship__patient',
+                'relationship__caregiver__user',
+            ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
+        )
+
+        try:  # noqa: WPS229
+            utils.update_registration_code_status(registration_code)
+
+            utils.update_patient_legacy_id(
+                registration_code.relationship.patient,
+                register_data['relationship']['patient']['legacy_id'],
+            )
+
+            existing_caregiver = utils.find_caregiver(register_data['relationship']['caregiver']['user']['username'])
+
+            if existing_caregiver:
+                utils.replace_caregiver(existing_caregiver, registration_code.relationship)
+            else:
+                caregiver_data = register_data['relationship']['caregiver']['user']
+                utils.update_caregiver(
+                    registration_code.relationship.caregiver.user,
+                    caregiver_data['username'],
+                    caregiver_data['language'],
+                    caregiver_data['phone_number'],
+                )
+                utils.update_caregiver_profile(
+                    registration_code.relationship.caregiver,
+                    register_data['relationship']['caregiver']['legacy_id'],
+                )
+
+            caregiver_profile = registration_code.relationship.caregiver
+            utils.insert_security_answers(
+                caregiver_profile,
+                register_data['security_answers'],
+            )
+        except ValidationError as exception:
+            transaction.set_rollback(True)
+            raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()

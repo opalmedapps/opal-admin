@@ -1,13 +1,12 @@
 """This module provides `APIViews` for the `patients` app REST APIs."""
 from typing import Any
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
-from django.db import transaction
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
 from rest_framework import mixins, serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,7 +22,6 @@ from opal.core.drf_permissions import (
     IsRegistrationListener,
 )
 
-from .. import utils
 from ..api.serializers import (
     CaregiverRelationshipSerializer,
     HospitalPatientSerializer,
@@ -83,74 +81,6 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
         if 'detailed' in self.request.query_params:
             return caregiver_serializers.RegistrationCodePatientDetailedSerializer
         return caregiver_serializers.RegistrationCodePatientSerializer
-
-
-class RegistrationCompletionView(APIView):
-    """Registration-register `APIView` class for handling "registration-completed" requests."""
-
-    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
-    permission_classes = (IsRegistrationListener,)
-
-    @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:
-        """
-        Handle POST requests from `registration/<str:code>/register/`.
-
-        Args:
-            request: REST framework's request object.
-            code: registration code.
-
-        Raises:
-            ValidationError: validation error.
-
-        Returns:
-            HTTP response with the error or success status.
-        """
-        serializer = self.serializer_class(
-            data=request.data,
-        )
-        serializer.is_valid(raise_exception=True)
-        register_data = serializer.validated_data
-
-        registration_code = get_object_or_404(
-            caregiver_models.RegistrationCode.objects.select_related(
-                'relationship__patient',
-                'relationship__caregiver__user',
-            ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
-        )
-
-        try:  # noqa: WPS229
-            utils.update_registration_code_status(registration_code)
-
-            utils.update_patient_legacy_id(
-                registration_code.relationship.patient,
-                register_data['relationship']['patient']['legacy_id'],
-            )
-
-            existing_caregiver = utils.find_caregiver(register_data['relationship']['caregiver']['user']['username'])
-
-            if existing_caregiver:
-                utils.replace_caregiver(existing_caregiver, registration_code.relationship)
-            else:
-                utils.update_caregiver(
-                    registration_code.relationship.caregiver.user,
-                    register_data['relationship']['caregiver'],
-                )
-                utils.update_caregiver_profile(
-                    registration_code.relationship.caregiver,
-                    register_data['relationship']['caregiver'],
-                )
-
-            caregiver_profile = registration_code.relationship.caregiver
-            utils.insert_security_answers(
-                caregiver_profile,
-                register_data['security_answers'],
-            )
-        except ValidationError as exception:
-            transaction.set_rollback(True)
-            raise serializers.ValidationError({'detail': str(exception.args)})
-
-        return Response()
 
 
 class CaregiverRelationshipView(ListAPIView[Relationship]):
@@ -226,8 +156,8 @@ class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     """Class handling GET requests for patient caregivers."""
 
     queryset = Patient.objects.prefetch_related(
-        'relationships__caregiver__user',
-        'relationships__caregiver__devices',
+        'caregivers__user',
+        'caregivers__devices',
     )
     permission_classes = (IsLegacyBackend,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer

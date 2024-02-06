@@ -919,6 +919,11 @@ def _create_date(relative_years: int, month: int, day: int) -> date:
     """
     current_year = date.today().year
 
+    # is the current date before the birth date
+    # if so, to have the correct age, we need to add an extra year
+    before_birth_date = date.today() < date(current_year, month, day)
+    relative_years += before_birth_date
+
     return date(current_year, month, day) - relativedelta(years=relative_years)
 
 
