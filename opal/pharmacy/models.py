@@ -36,9 +36,6 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
     entered_by = models.CharField(max_length=75)
     verified_by = models.CharField(max_length=75)
     ordered_by = models.CharField(max_length=75)
-    #  entered_by = models.ManyToManyField('LegacyStaff', related_name='entered_prescriptions')  # noqa: E800
-    #  verified_by = models.ManyToManyField('LegacyStaff', related_name='verified_prescriptions')  # noqa: E800
-    #  ordered_by = models.ManyToManyField('LegacyStaff', related_name='ordered_prescriptions')  # noqa: E800
     effective_at = models.DateTimeField()
 
     class Meta:
@@ -99,6 +96,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     refills = models.IntegerField(default=0)
     refills_remaining = models.IntegerField(default=0)
     last_refilled = models.DateTimeField(blank=True)
+    formulary_status = models.CharField(max_length=10)
 
     class Meta:
         verbose_name = _('Pharmacy Encoding')
@@ -183,17 +181,19 @@ class PharmacyRoute(models.Model):
         return f'Route for Order {self.pharmacy_encoded_order_id}'
 
 
+class ComponentType(models.TextChoices):
+    """Choices of component type for the [opal.pharmacy.models.PharmacyComponent][] model."""
+
+    ADDITIVE = 'A', _('Additive')
+    BASE = 'B', _('Base')
+    TEXT = 'T', _('Text')
+
+
 class PharmacyComponent(models.Model):
     """PharmacyComponent."""
 
-    COMPONENT_TYPES = [
-        ('A', 'Additive'),
-        ('B', 'Base'),
-        ('T', 'Text/Instruction'),
-    ]
-
     pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
-    component_type = models.CharField(max_length=1, choices=COMPONENT_TYPES)
+    component_type = models.CharField(max_length=1, choices=ComponentType.choices)
     component_code = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_component_component_code',

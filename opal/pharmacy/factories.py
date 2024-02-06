@@ -31,6 +31,8 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
     unit = 'mg'
     interval = 'PRN'  # Take as needed
     duration = 'INDEF'  # Indefinately
+    service_start = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+    service_end = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     priority = 'PRN'  # As needed
     trigger_event = 'NW'
     filler_order_number = factory.Sequence(lambda number: number + 1)
@@ -41,6 +43,9 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
     ordered_by = 'Dr. Doe Doe'
     effective_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
 
+    class Meta:
+        model = models.PhysicianPrescriptionOrder
+
 
 class PharmacyEncodedOrderFactory(DjangoModelFactory):
     """Model factory to create [opal.pharmacy.models.PharmacyEncodedOrder][] models."""
@@ -50,6 +55,8 @@ class PharmacyEncodedOrderFactory(DjangoModelFactory):
     unit = 'mg'
     interval = 'Q6H'   # Every 6 hours
     duration = 'D4'  # For a duration of 4 days
+    service_start = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+    service_end = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     priority = 'S'  # Stat priority
     give_code = factory.SubFactory(CodedElementFactory)
     give_amount_maximum = factory.Faker('pydecimal', left_digits=2, right_digits=2, min_value=20)
@@ -59,9 +66,13 @@ class PharmacyEncodedOrderFactory(DjangoModelFactory):
     provider_administration_instruction = factory.SubFactory(CodedElementFactory)
     dispense_amount = factory.Faker('pydecimal', left_digits=1, right_digits=0, min_value=0)
     dispense_units = factory.SubFactory(CodedElementFactory)
-    refills = factory.Faker('pyinteger')
-    refills_remaining = factory.Faker('pyinteger')
+    refills = factory.Faker('pyint')
+    refills_remaining = factory.Faker('pyint')
     last_refilled = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+    formulary_status = 'STD'  # standard
+
+    class Meta:
+        model = models.PharmacyEncodedOrder
 
 
 class PharmacyRouteFactory(DjangoModelFactory):
@@ -73,11 +84,18 @@ class PharmacyRouteFactory(DjangoModelFactory):
     administration_device = factory.SubFactory(CodedElementFactory)
     administration_method = factory.SubFactory(CodedElementFactory)
 
+    class Meta:
+        model = models.PharmacyRoute
+
+
 class PharmacyComponentFactory(DjangoModelFactory):
     """Model factory to create [opal.pharmacy.models.PharmacyComponent][] models."""
 
     pharmacy_encoded_order = factory.SubFactory(PharmacyEncodedOrderFactory)
-    component_type = models.PharmacyComponent.COMPONENT_TYPES[0]
+    component_type = models.ComponentType.ADDITIVE
     component_code = factory.SubFactory(CodedElementFactory)
     component_amount = factory.Faker('pydecimal', left_digits=2, right_digits=3, min_value=0)
     component_units = factory.SubFactory(CodedElementFactory)
+
+    class Meta:
+        model = models.PharmacyComponent
