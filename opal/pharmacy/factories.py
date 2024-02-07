@@ -27,6 +27,7 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
     """Model factory to create [opal.pharmacy.models.PhysicianPrescriptionOrder][] models."""
 
     patient = factory.SubFactory(Patient)
+    visit_number = factory.Sequence(lambda number: number + 1)
     quantity = factory.Faker('pydecimal', left_digits=2, right_digits=2, min_value=0)
     unit = 'mg'
     interval = 'PRN'  # Take as needed

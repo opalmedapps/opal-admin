@@ -20,7 +20,7 @@ class AbstractQuantityTiming(models.Model):
     duration = models.CharField(max_length=50, default='INDEF')
     service_start = models.DateTimeField(blank=True)
     service_end = models.DateTimeField(blank=True)
-    priority = models.CharField(max_length=10, default='R')
+    priority = models.CharField(max_length=8, default='R')
 
     class Meta:
         abstract = True
@@ -38,13 +38,14 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
         on_delete=models.CASCADE,
         related_name='physician_prescriptions',
     )
+    visit_number = models.IntegerField()
     trigger_event = models.CharField(max_length=2)
     filler_order_number = models.IntegerField()
     order_status = models.CharField(max_length=2, default='SC')
     entered_at = models.DateTimeField()
-    entered_by = models.CharField(max_length=75)
-    verified_by = models.CharField(max_length=75)
-    ordered_by = models.CharField(max_length=75)
+    entered_by = models.CharField(max_length=80)
+    verified_by = models.CharField(max_length=80)
+    ordered_by = models.CharField(max_length=80)
     effective_at = models.DateTimeField()
 
     class Meta:
