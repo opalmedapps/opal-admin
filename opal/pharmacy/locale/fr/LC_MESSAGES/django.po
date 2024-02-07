@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-06 16:47-0400\n"
+"POT-Creation-Date: 2024-02-07 13:05-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,42 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/pharmacy/models.py
+msgid "Patient"
+msgstr "Patient"
+
+#: opal/pharmacy/models.py
+msgid "Physician Prescription"
+msgstr "Prescription du médecin"
+
+#: opal/pharmacy/models.py
+msgid "Physician Prescriptions"
+msgstr "Prescriptions médicales"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Encoding"
+msgstr "Encodage de la pharmacie"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Encodings"
+msgstr "Encodages pour les pharmacies"
+
+#: opal/pharmacy/models.py
+msgid "Coded Element"
+msgstr "Élément codé"
+
+#: opal/pharmacy/models.py
+msgid "Coded Elements"
+msgstr "Éléments codés"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Route"
+msgstr "Route de la pharmacie"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Routes"
+msgstr "Itinéraires en pharmacie"
 
 #: opal/pharmacy/models.py
 msgid "Additive"
@@ -29,3 +65,11 @@ msgstr "base"
 #: opal/pharmacy/models.py
 msgid "Text"
 msgstr "texte"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Component"
+msgstr "Composante pharmacie"
+
+#: opal/pharmacy/models.py
+msgid "Pharmacy Components"
+msgstr "Composants de la pharmacie"

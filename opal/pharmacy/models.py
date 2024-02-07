@@ -51,13 +51,13 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
         verbose_name = _('Physician Prescription')
         verbose_name_plural = _('Physician Prescriptions')
 
-    def __str__(self):
-        """Provide string representation.
+    def __str__(self) -> str:
+        """Instance of a physician's order for a patient.
 
         Returns:
             string representation
         """
-        return f'Prescription Order {self.id} for Patient {self.patient.id}'
+        return f'Physician Order {self.id} for Patient {self.patient.id}'
 
 
 class PharmacyEncodedOrder(AbstractQuantityTiming):
@@ -114,13 +114,13 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
         verbose_name = _('Pharmacy Encoding')
         verbose_name_plural = _('Pharmacy Encodings')
 
-    def __str__(self):
-        """Provide string representation.
+    def __str__(self) -> str:
+        """Instance of pharmacy encoding of a physician's original order.
 
         Returns:
             string representation
         """
-        return f'Encoded Order {self.id} for Prescription {self.physician_prescription_order_id}'
+        return f'Pharmacy Order {self.id} for Prescription {self.physician_prescription_order_id}'
 
 
 class CodedElement(models.Model):
@@ -141,8 +141,8 @@ class CodedElement(models.Model):
         verbose_name_plural = _('Coded Elements')
         unique_together = (('identifier', 'coding_system'),)
 
-    def __str__(self):
-        """Provide string representation.
+    def __str__(self) -> str:
+        """Instance of the unique identifiers for a coded element.
 
         Returns:
             string representation
@@ -190,8 +190,8 @@ class PharmacyRoute(models.Model):
         verbose_name = _('Pharmacy Route')
         verbose_name_plural = _('Pharmacy Routes')
 
-    def __str__(self):
-        """Provide string representation.
+    def __str__(self) -> str:
+        """Instance of a pharmacy route id.
 
         Returns:
             string representation
@@ -235,8 +235,8 @@ class PharmacyComponent(models.Model):
         verbose_name = _('Pharmacy Component')
         verbose_name_plural = _('Pharmacy Components')
 
-    def __str__(self):
-        """Provide string representation.
+    def __str__(self) -> str:
+        """Instance of a pharmacy component type and id.
 
         Returns:
             string representation
