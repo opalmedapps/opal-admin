@@ -1,4 +1,4 @@
-mkdocs-material==9.5.7  # https://github.com/squidfunk/mkdocs-material
+mkdocs-material==9.5.8  # https://github.com/squidfunk/mkdocs-material
 mkdocstrings[python-legacy]==0.24.0  # https://github.com/mkdocstrings/mkdocstrings/
 mkdocs-autorefs==0.5.0  # https://github.com/mkdocstrings/autorefs
 mkdocs-gen-files==0.5.0  # https://github.com/oprypin/mkdocs-gen-files
