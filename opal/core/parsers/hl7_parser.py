@@ -1,5 +1,4 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
-import json
 from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, Mapping, TypedDict
@@ -69,7 +68,7 @@ class HL7Parser(BaseParser):
 
         return self.message_dict
 
-    def _parse_pid_segment(self, segment: Segment) -> json:
+    def _parse_pid_segment(self, segment: Segment) -> dict:
         """Extract patient data from an HL7v2 PID segment.
 
         Use the HL7 documentation to know which fields contain the correct data:
@@ -99,7 +98,7 @@ class HL7Parser(BaseParser):
             'marital_status': segment.pid_17.pid_17_1.to_er7(),
         }
 
-    def _parse_pv1_segment(self, segment: Segment):
+    def _parse_pv1_segment(self, segment: Segment) -> dict:
         """Extract patient visit data from an HL7v2 PV1 segment.
 
         Args:
@@ -116,7 +115,7 @@ class HL7Parser(BaseParser):
             'visit_number': segment.pv1_19.pv1_19_1.to_er7(),
         }
 
-    def _parse_orc_segment(self, segment: Segment):
+    def _parse_orc_segment(self, segment: Segment) -> dict:
         """Extract common order data from an HL7v2 ORC segment.
 
         Args:
@@ -150,7 +149,7 @@ class HL7Parser(BaseParser):
             'effective_at': segment.orc_15.orc_15_1.to_er7(),
         }
 
-    def _parse_rxe_segment(self, segment: Segment):
+    def _parse_rxe_segment(self, segment: Segment) -> dict:
         """Extract pharmacy encoding data from an HL7v2 RXE segment.
 
         Args:
@@ -195,7 +194,7 @@ class HL7Parser(BaseParser):
             'give_rate_units': segment.rxe_24.rxe_24_2.to_er7(),
         }
 
-    def _parse_rxc_segment(self, segment: Segment):
+    def _parse_rxc_segment(self, segment: Segment) -> dict:
         """Extract pharmacy component data from an HL7v2 RXC segment.
 
         Args:
@@ -216,7 +215,7 @@ class HL7Parser(BaseParser):
             'component_units': segment.rxc_4.rxc_4_1.to_er7(),
         }
 
-    def _parse_rxr_segment(self, segment: Segment):
+    def _parse_rxr_segment(self, segment: Segment) -> dict:
         """Extract pharmacy route data from an HL7v2 RXR segment.
 
         Args:
@@ -242,7 +241,7 @@ class HL7Parser(BaseParser):
             'route_administration_alt_coding_system': segment.rxr_4.rxr_4_6.to_er7(),
         }
 
-    def _parse_nte_segment(self, segment: Segment):
+    def _parse_nte_segment(self, segment: Segment) -> dict:
         """Extract pharmacy route data from an HL7v2 NTE segment.
 
         Args:
