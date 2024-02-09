@@ -359,8 +359,7 @@ class RegistrationCompletionView(APIView):
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
                 self._handle_new_caregiver(relationship, caregiver_data)
-
-            utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
+                utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})

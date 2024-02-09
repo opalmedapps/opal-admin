@@ -1242,6 +1242,39 @@ class TestRegistrationCompletionView:
         assert not Caregiver.objects.filter(username=skeleton.username).exists()
         assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
 
+    def test_existing_caregiver_keeps_securityanswers(self, api_client: APIClient, admin_user: User) -> None:
+        """When registering with an existing caregiver, the existing security answers are kept."""
+        api_client.force_login(user=admin_user)
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='caregiver',
+            last_name='test',
+        )
+        caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
+        caregiver_factories.SecurityAnswer(user=caregiver_profile, answer='anser1')
+        # Build skeleton user
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+        )
+        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
+        # Build relationships: code -> relationship -> patient
+        relationship = Relationship(caregiver=skeleton_profile)
+        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert caregiver_models.SecurityAnswer.objects.count() == 1
+
     def test_email_not_verified_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration fails if the email address wasn't verified when it is a new caregiver."""
         api_client.force_login(user=admin_user)
