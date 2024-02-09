@@ -2,7 +2,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, Mapping, TypedDict
-
+from django.utils import timezone
 from hl7apy.core import Segment
 from hl7apy.parser import parse_message
 from rest_framework.parsers import BaseParser
@@ -83,10 +83,10 @@ class HL7Parser(BaseParser):
         return {
             'first_name': segment.pid_5.pid_5_2.to_er7(),
             'last_name': segment.pid_5.pid_5_1.to_er7(),
-            'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date(),
+            'date_of_birth': timezone.make_aware(datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date()),
             'sex': segment.pid_8.to_er7(),
             'ramq': segment.pid_2.pid_2_1.to_er7(),
-            # TODO: Kill the mrn_sites which aren't in the 'approved list'
+            # TODO: Kill the mrn_sites which aren't in the 'approved/existing site list'
             'mrn_sites': [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
             'address_street': segment.pid_11.pid_11_1.to_er7(),
             'address_city': segment.pid_11.pid_11_3.to_er7(),
