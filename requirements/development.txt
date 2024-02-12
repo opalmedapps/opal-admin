@@ -61,7 +61,7 @@ git+https://github.com/pytest-dev/pytest-django.git@42b7db2f4f5dbe785e57652d1d4e
 
 # Pre-commit
 #
-pre-commit==3.6.0  # https://github.com/pre-commit/pre-commit
+pre-commit==3.6.1  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
