@@ -648,6 +648,21 @@ class Relationship(models.Model):  # noqa: WPS214
             reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
         return reference_date
 
+    @classmethod
+    def max_end_date(cls, date_of_birth: date) -> date:
+        """
+        Get the max end date for the relationship between a patient and a caregiver.
+
+        The max end date equals to start date plus RELATIONSHIP_MAX_AGE.
+
+        Args:
+            date_of_birth: patient's date of birth
+
+        Returns:
+            the max end date
+        """
+        return date_of_birth + relativedelta(years=constants.RELATIONSHIP_MAX_AGE)
+
 
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
