@@ -414,3 +414,28 @@ class RegistrationCompletionView(APIView):
             caregiver_profile,
             caregiver_data['legacy_id'],
         )
+
+
+class RetrieveCaregiverUsernameView(RetrieveAPIView[CaregiverProfile]):
+    """Registration-register `APIView` class for handling "registration-completed" requests."""
+
+    permission_classes = (IsRegistrationListener,)
+    queryset = CaregiverProfile.objects.all().select_related('user')
+    serializer_class = CaregiverSerializer
+    lookup_field = 'user__username'
+    lookup_url_kwarg = 'username'
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle retrieval of a caregiver profile.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        data = self.retrieve(request)
+        return Response(status=data.status_code)
