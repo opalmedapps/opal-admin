@@ -31,10 +31,17 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(command.patient_data_success_tracker, dict)
         assert command.called_at is not None
 
+    def test_pass_non_default_timeout(self) -> None:
+        """Verify the oie timeout argument is properly parsed."""
+        message, error = self._call_command('send_databank_data', '--oie-timeout', '90')
+        assert 'Sending databank data with 90 seconds timeout for OIE response.' in message
+        assert not error
+
     def test_no_consenting_patients_found_message(self) -> None:
         """Verify correct notifications show in stdout for no patients found."""
         message, error = self._call_command('send_databank_data')
         assert not error
+        assert 'Sending databank data with 120 seconds timeout for OIE response.' in message
         assert 'No patients found consenting to Appointments data donation.' in message
         assert 'No patients found consenting to Demographics data donation.' in message
         assert 'No patients found consenting to Diagnoses data donation.' in message
@@ -185,7 +192,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response({})
+        command._send_to_oie_and_handle_response({}, 60)
         captured = capsys.readouterr()
         assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
 
@@ -225,7 +232,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '502 oie response error' in captured.err
         assert 'Bad Gateway' in captured.err
@@ -270,7 +277,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.NOT_FOUND
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '404 oie response error' in captured.err
         assert 'Resource not found' in captured.err
