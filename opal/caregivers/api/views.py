@@ -414,3 +414,17 @@ class RegistrationCompletionView(APIView):
             caregiver_profile,
             caregiver_data['legacy_id'],
         )
+
+
+class RetrieveCaregiverView(RetrieveAPIView[User]):
+    """
+    View that looks up a caregiver by its username.
+
+    This view can be used to check whether caregiver exists.
+    """
+
+    permission_classes = (IsRegistrationListener,)
+    queryset = Caregiver.objects.all()
+    serializer_class = drf_serializers.Serializer
+    lookup_field = 'username'
+    lookup_url_kwarg = 'username'

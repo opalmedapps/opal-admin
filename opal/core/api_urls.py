@@ -96,6 +96,11 @@ urlpatterns = [
         caregivers_views.UpdateDeviceView.as_view(),
         name='devices-update-or-create',
     ),
+    path(
+        'caregivers/<str:username>/',
+        caregivers_views.RetrieveCaregiverView.as_view(),
+        name='caregivers-detail',
+    ),
 
     # INSTITUTIONS ENDPOINTS
     path(
@@ -204,6 +209,7 @@ urlpatterns = [
         caregivers_views.RegistrationCompletionView.as_view(),
         name='registration-register',
     ),
+
     # USERS ENDPOINTS
     path(
         'groups/',
