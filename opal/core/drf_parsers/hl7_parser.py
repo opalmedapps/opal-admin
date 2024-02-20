@@ -284,12 +284,18 @@ class HL7Parser(BaseParser):
 
         # Read the incoming stream into a string
         try:
-            raw_data = stream.read()
+            raw_data_bytes = stream.read()
         except AttributeError:
             raise exceptions.ParseError('Request data must be application/hl7v2+er7 string stream')
 
+        # Decode the bytes object to a string for further processing
+        try:
+            raw_data_str = raw_data_bytes.decode('utf-8')
+        except UnicodeDecodeError as err:
+            raise exceptions.ParseError(f'Error decoding HL7 message: {str(err)}')
+
         # Normalize line endings to CR
-        hl7_message = raw_data.replace('\r\n', '\r').replace('\n', '\r')
+        hl7_message = raw_data_str.replace('\r\n', '\r').replace('\n', '\r')
 
         # Check for a parser context which defines specific segments to be parsed
         segments_to_parse = parser_context.get('segments_to_parse') if parser_context else None

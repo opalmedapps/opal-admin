@@ -171,7 +171,11 @@ class PharmacyRoute(models.Model):
     Pharmacy Route specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
     """
 
-    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    pharmacy_encoded_order = models.ForeignKey(
+        'PharmacyEncodedOrder',
+        on_delete=models.CASCADE,
+        related_name='pharmacy_route',
+    )
     route = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_route_route',
@@ -228,7 +232,11 @@ class PharmacyComponent(models.Model):
     Pharmacy Component specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
     """
 
-    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    pharmacy_encoded_order = models.ForeignKey(
+        'PharmacyEncodedOrder',
+        on_delete=models.CASCADE,
+        related_name='pharmacy_components',
+    )
     component_type = models.CharField(max_length=1, choices=ComponentType.choices)
     component_code = models.ForeignKey(
         'CodedElement',
