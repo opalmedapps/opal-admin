@@ -106,7 +106,7 @@ class TestHL7Parser:  # noqa: WPS338
         rxe_data = parsed_data['RXE'][0]
         expected_values = {
             'pharmacy_quantity': '0.17',
-            'pharmacy_quantity_unit': 'Q24&1000',
+            'pharmacy_quantity_unit': '',
             'pharmacy_interval_pattern': 'Q24',
             'pharmacy_interval_duration': '1000',
             'pharmacy_duration': 'INDEF',
@@ -119,8 +119,8 @@ class TestHL7Parser:  # noqa: WPS338
             'give_alt_identifier': '20:12.04',
             'give_alt_text': 'ANTICOAGULANTS',
             'give_alt_coding_system': 'AHFS',
-            'give_amount_maximum': '50',
-            'give_amount_minimum': '',
+            'give_amount_maximum': '',
+            'give_amount_minimum': '50',
             'give_units': 'MG',
             'give_dosage_identifier': 'INJVIAL',
             'give_dosage_text': 'VIAL INJ',

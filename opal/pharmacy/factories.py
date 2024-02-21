@@ -69,7 +69,6 @@ class PharmacyEncodedOrderFactory(DjangoModelFactory):
     dispense_units = factory.SubFactory(CodedElementFactory)
     refills = factory.Faker('pyint')
     refills_remaining = factory.Faker('pyint')
-    last_refilled = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     formulary_status = 'STD'  # standard
 
     class Meta:
