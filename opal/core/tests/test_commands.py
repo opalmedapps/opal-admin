@@ -37,14 +37,14 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'MUHC'
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 9
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
-        assert GeneralTest.objects.count() == 5
-        assert PathologyObservation.objects.count() == 5
-        assert Note.objects.count() == 5
+        assert GeneralTest.objects.count() == 6
+        assert PathologyObservation.objects.count() == 6
+        assert Note.objects.count() == 6
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_chusj(self) -> None:
@@ -105,8 +105,8 @@ class TestInsertTestData(CommandTestMixin):
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 9
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
