@@ -1,22 +1,24 @@
 """Module providing API views for the `pharmacy` app."""
-from django.shortcuts import get_object_or_404
-from django.db import transaction
 from typing import Any
+
+from django.db import transaction
 from django.http import HttpRequest
-#from rest_framework import serializers
+from django.shortcuts import get_object_or_404
+
+from rest_framework import status
+from rest_framework.response import Response
+
 from opal.core.api.views import HL7CreateView
 from opal.core.drf_permissions import IsInterfaceEngine
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import PhysicianPrescriptionOrderSerializer
-
 from opal.patients.models import Patient
+
+from .serializers import PhysicianPrescriptionOrderSerializer
 
 
 class CreatePharmacyView(HL7CreateView):
     """`HL7CreateView` for handling POST requests to create pharmacy data."""
 
-    segments_to_parse = ('PID', 'PV1', 'ORC', 'RXE', 'RXR', 'RXC', 'NTE')
+    segments_to_parse = ('PV1', 'ORC', 'RXE', 'RXR', 'RXC', 'NTE')
     serializer_class = PhysicianPrescriptionOrderSerializer
     permission_classes = (IsInterfaceEngine,)
 
@@ -36,7 +38,6 @@ class CreatePharmacyView(HL7CreateView):
         patient: Patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         transformed_data['patient'] = patient.pk
         serializer = self.get_serializer(data=transformed_data)
-
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
