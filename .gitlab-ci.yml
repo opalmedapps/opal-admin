@@ -357,5 +357,5 @@ gemnasium-python-dependency_scanning:
   before_script:
     # install dependencies for mysqlclient
     - apt update && apt-get install -y libmariadb-dev pkg-config
-    - pip install -r requirements/development.txt -t deps/
-    - pip install -r requirements/production.txt -t deps/
+    - pip download -r requirements/development.txt --dest deps/
+    - pip download -r requirements/production.txt --dest deps/
