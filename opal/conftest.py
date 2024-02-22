@@ -13,7 +13,7 @@ import pytest
 from _pytest.config import Config
 from _pytest.main import Session
 from _pytest.python import Function, Module
-from pytest_django import DjangoDbBlocker
+from pytest_django.plugin import _DatabaseBlocker
 from rest_framework.test import APIClient
 
 from opal.core import constants
@@ -298,7 +298,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004, WPS442
+def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) -> None:  # noqa: PT004, WPS442
     """Add test_QuestionnaireDB setup by executing code in tests/sql.
 
     Args:

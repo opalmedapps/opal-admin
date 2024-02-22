@@ -8,7 +8,7 @@ from django.utils import timezone
 
 import pytest
 import requests
-from pytest_django import DjangoDbBlocker
+from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
@@ -986,7 +986,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
     """Test class for the custom command that detects `Questionnaire respondents` sync deviations."""
 
-    def test_deviations_no_respondents(self, django_db_blocker: DjangoDbBlocker) -> None:
+    def test_deviations_no_respondents(self, django_db_blocker: _DatabaseBlocker) -> None:
         """Ensure the command does not fail if there are no questionnaires with respondents."""
         with django_db_blocker.unblock():
             with connections['questionnaire'].cursor() as conn:
@@ -996,7 +996,7 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         message, error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
 
-    def test_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
+    def test_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
         with django_db_blocker.unblock():
             with connections['questionnaire'].cursor() as conn:
@@ -1059,7 +1059,7 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         assert "('firebase hashed user UID', 'TEST NAME RESPONDENT test3')" in error
         assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2')" in error
 
-    def test_no_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
+    def test_no_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
         """Ensure the command does not return an error if no sync deviations for respondents' names."""
         with django_db_blocker.unblock():
             with connections['questionnaire'].cursor() as conn:
