@@ -359,3 +359,4 @@ gemnasium-python-dependency_scanning:
     - apt update && apt-get install -y libmariadb-dev pkg-config
     - pip download -r requirements/development.txt --dest deps/
     - pip download -r requirements/production.txt --dest deps/ --exists-action i
+    - ls -la deps/
