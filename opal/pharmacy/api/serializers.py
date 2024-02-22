@@ -29,6 +29,8 @@ class _NestedCodedElementSerializer(CodedElementSerializer):
 
     Here we disable this validation manually, knowing that we will handle
     the situation correctly in the calling serializer's create method.
+
+    https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
     """
 
     class Meta(CodedElementSerializer.Meta):
