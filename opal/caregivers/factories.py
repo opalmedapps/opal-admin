@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from factory import Faker, Sequence, SubFactory
 from factory.django import DjangoModelFactory
-from faker.generator import random
 from faker.providers import BaseProvider
 
 from opal.users.factories import Caregiver
@@ -54,8 +53,7 @@ class TokenProvider(BaseProvider):
         Returns:
             A random hex token
         """
-        length = random.randint(16, 99)
-        return secrets.token_hex(length)
+        return secrets.token_hex(64)
 
 
 Faker.add_provider(TokenProvider)
