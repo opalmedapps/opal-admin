@@ -1,5 +1,6 @@
 """Module providing model factories for caregiver app models."""
 import datetime as dt
+import secrets
 
 from django.utils import timezone
 
@@ -44,38 +45,20 @@ class SecurityAnswer(DjangoModelFactory):
     answer = 'answer'
 
 
-class DeviceProvider(BaseProvider):
-    """Faker Provider class that generates random values for the Device factory."""
+class TokenProvider(BaseProvider):
+    """Faker Provider class that generates random values."""
 
-    hexadecimal_chars = ['a', 'b', 'c', 'd', 'e', 'f']
-
-    def device_id(self) -> str:
-        """
-        Generate a random device_id.
+    def token(self) -> str:
+        """Generate a random hex token.
 
         Returns:
-            A random device_id value between 16 and 100 characters in length.
+            A random hex token
         """
-        length = random.randint(16, 100)
-        # 0-9 digits and letters up to 'f'
-        char_choices = [str(digit) for digit in range(9)] + self.hexadecimal_chars
-        chars = [random.choice(char_choices) for _ in range(length)]
-        return ''.join(chars)
-
-    def push_token(self) -> str:
-        """Generate a random push_token.
-
-        Returns:
-            A random push_token value between 0 and 256 characters in length.
-        """
-        length = random.randint(16, 100)
-        # 0-9 digits and letters up to 'f'
-        char_choices = [str(digit) for digit in range(9)] + self.hexadecimal_chars
-        chars = [random.choice(char_choices) for _ in range(length)]
-        return ''.join(chars)
+        length = random.randint(16, 99)
+        return secrets.token_hex(length)
 
 
-Faker.add_provider(DeviceProvider)
+Faker.add_provider(TokenProvider)
 
 
 class Device(DjangoModelFactory):
@@ -86,8 +69,8 @@ class Device(DjangoModelFactory):
 
     caregiver = SubFactory(CaregiverProfile)
     type = models.DeviceType.IOS  # noqa: A003
-    device_id = Faker('device_id')
-    push_token = Faker('push_token')
+    device_id = Faker('token')
+    push_token = Faker('token')
     is_trusted = Faker('pybool')
 
 
