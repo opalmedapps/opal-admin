@@ -102,7 +102,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     )
     provider_administration_instruction = models.CharField(max_length=250, blank=True)
     dispense_amount = models.DecimalField(max_digits=8, decimal_places=3)
-    dispense_units = models.CharField(max_length=25)
+    dispense_units = models.CharField(max_length=25, blank=True)
     refills = models.IntegerField(default=0)
     refills_remaining = models.IntegerField(default=0)
     formulary_status = models.CharField(max_length=4, choices=FormularyStatus.choices)

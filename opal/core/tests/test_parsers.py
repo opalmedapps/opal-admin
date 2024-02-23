@@ -1,8 +1,8 @@
 from collections import defaultdict
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any
-
+import re
 import pytest
 from rest_framework import exceptions
 
@@ -236,8 +236,18 @@ class TestHL7Parser:  # noqa: WPS338
     def test_improper_request_data(self) -> None:
         """Test parsing a message with improper request data."""
         stream = {'PID': {'first_name': 'marge', 'last_name': 'simpson'}, 'MSH': {'header': 1}}
-        with pytest.raises(exceptions.ParseError):
+        with pytest.raises(
+            exceptions.ParseError,
+            match=re.escape('Request data must be application/hl7v2+er7 string stream'),
+        ):
             self.parser.parse(stream)  # type: ignore[arg-type]
+
+    def test_wrong_stream_type(self) -> None:
+        """Test passing the wrong stream type."""
+        with (FIXTURES_DIR / 'marge_pharmacy.hl7v2').open('r') as file:
+            stream = StringIO(file.read())
+            with pytest.raises(exceptions.ParseError, match='Error decoding HL7 message'):
+                self.parser.parse(stream)  # type: ignore[arg-type]
 
     def test_fix_breaking_characters(self) -> None:
         """Test parsing a message with breaking characters."""
@@ -263,11 +273,11 @@ class TestHL7Parser:  # noqa: WPS338
         unexpected_keys = set(segment_data.keys()) - set(expected_values.keys())
         assert not unexpected_keys, f'Unexpected keys present in {segment_name} segment: {unexpected_keys}'
 
-    def _load_hl7_fixture(self, filename: str) -> StringIO:
-        """Load a HL7 fixture.
+    def _load_hl7_fixture(self, filename: str) -> BytesIO:
+        """Load a HL7 fixture as a byte stream.
 
         Returns:
             bytestream of the fixture data
         """
-        with (FIXTURES_DIR / filename).open('r') as file:
-            return StringIO(file.read())
+        with (FIXTURES_DIR / filename).open('rb') as file:
+            return BytesIO(file.read())

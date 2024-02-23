@@ -291,7 +291,7 @@ class HL7Parser(BaseParser):
         # Decode the bytes object to a string for further processing
         try:
             raw_data_str = raw_data_bytes.decode('utf-8')
-        except UnicodeDecodeError as err:
+        except AttributeError as err:
             raise exceptions.ParseError(f'Error decoding HL7 message: {str(err)}')
 
         # Normalize line endings to CR
