@@ -18,104 +18,12 @@ from opal.patients.api.serializers import HospitalPatientSerializer, PatientSeri
 from opal.patients.models import Patient, RelationshipStatus
 
 
-class EmailVerificationSerializer(DynamicFieldsSerializer[EmailVerification]):
-    """Serializer for model EmailVerification."""
-
-    class Meta:
-        model = EmailVerification
-        fields = ['id', 'code', 'email', 'is_verified', 'sent_at']
-
-
-class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer[RegistrationCode]):
-    """Serializer for the return value of registration encryption info."""
-
-    patient = PatientSerializer(
-        source='relationship.patient',
-        fields=('ramq',),
-        many=False,
-        read_only=True,
-    )
-    hospital_patients = HospitalPatientSerializer(
-        source='relationship.patient.hospital_patients',
-        fields=('mrn', 'is_active'),
-        many=True,
-        read_only=True,
-    )
-
-    class Meta:
-        model = RegistrationCode
-        fields = ['code', 'status', 'patient', 'hospital_patients']
-
-
-class RegistrationCodePatientSerializer(serializers.ModelSerializer[RegistrationCode]):
-    """Serializer that is providing summary info of a patient using `RegistrationCode` model."""
-
-    patient = PatientSerializer(
-        source='relationship.patient',
-        fields=('first_name', 'last_name'),
-        many=False,
-        read_only=True,
-    )
-    institution = serializers.SerializerMethodField()
-
-    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:  # noqa: WPS615
-        """
-        Get a single institution data.
-
-        Args:
-            obj (RegistrationCode): Object of RegistrationCode.
-
-        Returns:
-            `Institution` information where the patient is being registered at.
-        """
-        return InstitutionSerializer(Institution.objects.get(), fields=('id', 'name')).data
-
-    class Meta:
-        model = RegistrationCode
-        fields = ['patient', 'institution']
-
-
-class SecurityQuestionSerializer(serializers.ModelSerializer[SecurityQuestion]):
-    """Serializer for security questions."""
-
-    class Meta:
-        model = SecurityQuestion
-        fields = ['id', 'title_en', 'title_fr']
-
-
-class SecurityAnswerQuestionSerializer(serializers.ModelSerializer[SecurityAnswer]):
-    """Serializer for `SecurityAnswer` questions without answers."""
-
-    class Meta:
-        model = SecurityAnswer
-        fields = ['id', 'question']
-
-
-class VerifySecurityAnswerSerializer(serializers.ModelSerializer[SecurityAnswer]):
-    """Serializer for Verify security answers."""
-
-    answer = serializers.CharField(max_length=128)  # noqa: WPS432
-
-    class Meta:
-        model = SecurityAnswer
-        fields = ['answer']
-
-
 class DeviceSerializer(DynamicFieldsSerializer[Device]):
     """Serializer for devices."""
 
     class Meta:
         model = Device
         fields = ['id', 'caregiver', 'device_id', 'type', 'is_trusted', 'push_token', 'modified']
-
-
-# Security: this serializer includes security answer hashes, and should only be used in secure contexts
-class SecurityAnswerSerializer(DynamicFieldsSerializer[SecurityAnswer]):
-    """Serializer for security answers with corresponding questions."""
-
-    class Meta:
-        model = SecurityAnswer
-        fields = ['id', 'question', 'answer']
 
 
 class CaregiverSerializer(DynamicFieldsSerializer[CaregiverProfile]):
@@ -152,7 +60,105 @@ class CaregiverSerializer(DynamicFieldsSerializer[CaregiverProfile]):
         }
 
 
-class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer[RegistrationCode]):
+class EmailVerificationSerializer(DynamicFieldsSerializer[EmailVerification]):
+    """Serializer for model EmailVerification."""
+
+    class Meta:
+        model = EmailVerification
+        fields = ['id', 'code', 'email', 'is_verified', 'sent_at']
+
+
+class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer[RegistrationCode]):
+    """Serializer for the return value of registration encryption info."""
+
+    patient = PatientSerializer(
+        source='relationship.patient',
+        fields=('ramq',),
+        many=False,
+        read_only=True,
+    )
+    hospital_patients = HospitalPatientSerializer(
+        source='relationship.patient.hospital_patients',
+        fields=('mrn', 'is_active'),
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['code', 'status', 'patient', 'hospital_patients']
+
+
+class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCode]):
+    """Serializer that is providing summary info of a patient using `RegistrationCode` model."""
+
+    caregiver = CaregiverSerializer(
+        source='relationship.caregiver',
+        fields=('first_name', 'last_name'),
+        many=False,
+        read_only=True,
+    )
+    patient = PatientSerializer(
+        source='relationship.patient',
+        fields=('first_name', 'last_name'),
+        many=False,
+        read_only=True,
+    )
+    institution = serializers.SerializerMethodField()
+
+    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:  # noqa: WPS615
+        """
+        Get a single institution data.
+
+        Args:
+            obj (RegistrationCode): Object of RegistrationCode.
+
+        Returns:
+            `Institution` information where the patient is being registered at.
+        """
+        return InstitutionSerializer(Institution.objects.get(), fields=('id', 'name')).data
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['caregiver', 'patient', 'institution']
+
+
+class SecurityQuestionSerializer(serializers.ModelSerializer[SecurityQuestion]):
+    """Serializer for security questions."""
+
+    class Meta:
+        model = SecurityQuestion
+        fields = ['id', 'title_en', 'title_fr']
+
+
+class SecurityAnswerQuestionSerializer(serializers.ModelSerializer[SecurityAnswer]):
+    """Serializer for `SecurityAnswer` questions without answers."""
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question']
+
+
+class VerifySecurityAnswerSerializer(serializers.ModelSerializer[SecurityAnswer]):
+    """Serializer for Verify security answers."""
+
+    answer = serializers.CharField(max_length=128)  # noqa: WPS432
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['answer']
+
+
+# Security: this serializer includes security answer hashes, and should only be used in secure contexts
+class SecurityAnswerSerializer(DynamicFieldsSerializer[SecurityAnswer]):
+    """Serializer for security answers with corresponding questions."""
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question', 'answer']
+
+
+class RegistrationCodeDetailSerializer(serializers.ModelSerializer[RegistrationCode]):
     """Serializer that is providing detailed info of a patient using `RegistrationCode` model."""
 
     caregiver = CaregiverSerializer(
