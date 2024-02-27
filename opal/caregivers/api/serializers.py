@@ -200,10 +200,13 @@ class _NestedCaregiverSerializer(CaregiverSerializer):
     See: https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
     """
 
+    email = serializers.EmailField(required=False)
+
     class Meta(CaregiverSerializer.Meta):
         extra_kwargs = {
             'legacy_id': dict(CaregiverSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
         }
+        fields = list(CaregiverSerializer.Meta.fields) + ['email']
 
 
 class _NestedPatientSerializer(PatientSerializer):
@@ -241,7 +244,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
 
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number', 'username', 'legacy_id'),
+        fields=('language', 'phone_number', 'username', 'email', 'legacy_id'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(

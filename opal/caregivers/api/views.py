@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models.functions import SHA512
+from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -354,7 +355,6 @@ class RegistrationCompletionView(APIView):
         try:  # noqa: WPS229
             utils.update_registration_code_status(registration_code)
             utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
-
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
@@ -379,14 +379,23 @@ class RegistrationCompletionView(APIView):
         """
         # a user can potentially verify multiple email address during the same process
         # use the last one
-        email_verification = relationship.caregiver.email_verifications.filter(
+        email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
+        email_verification = email_verifications.filter(
             is_verified=True,
         ).order_by('-sent_at').first()
 
-        if not email_verification:
+        data_email: str | None = caregiver_data.get('email', None)
+
+        if email_verification is None and not data_email:
             raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
-        self._update_caregiver(relationship.caregiver, email_verification.email, caregiver_data)
+        if data_email is None:
+            raise drf_serializers.ValidationError('Caregiver email is missing')
+
+        reveal_type(email_verification)
+        reveal_type(data_email)
+        email: str = email_verification.email if email_verification is not None else data_email
+        self._update_caregiver(relationship.caregiver, email, caregiver_data)
 
     def _update_caregiver(
         self,
