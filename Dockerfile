@@ -1,4 +1,4 @@
-FROM python:3.11.8-slim-bookworm
+FROM python:3.11.8-slim-bookworm as build
 
 # for which environment the build is done: development or production
 ARG ENV=development
@@ -9,16 +9,23 @@ RUN apt-get update \
   # install git
   && apt-get install git -y \
   # mysqlclient dependencies
-  && apt-get install -y default-libmysqlclient-dev pkg-config \
+  && apt-get install -y default-libmysqlclient-dev pkg-config
   # argon2-cffi dependencies
-  && apt-get install -y libffi-dev libssl-dev \
+  # && apt-get install -y libffi-dev libssl-dev \
   # Translations dependencies
-  && apt-get install -y gettext \
+  # && apt-get install -y gettext \
   # cron dependencies
-  && apt-get install -y cron \
+  # && apt-get install -y cron \
   # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
+  # && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  # && rm -rf /var/lib/apt/lists/*
+
+# Install pip requirements
+COPY ./requirements /tmp/
+RUN python -m pip install --no-cache-dir --upgrade pip \
+  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+
+FROM python:3.11.8-slim-bookworm
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -26,10 +33,23 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED 1
 
-# Install pip requirements
-COPY ./requirements /tmp/
-RUN python -m pip install --upgrade pip \
-  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+RUN apt-get update \
+  && apt-get upgrade \
+  # dependencies for building Python packages
+  # && apt-get install -y build-essential \
+  # install git
+  # && apt-get install git -y \
+  # mysqlclient dependencies
+  && apt-get install -y default-libmysqlclient-dev \
+  # argon2-cffi dependencies
+  # && apt-get install -y libffi-dev libssl-dev \
+  # Translations dependencies
+  && apt-get install -y gettext \
+  # cron dependencies
+  && apt-get install -y cron \
+  # cleaning up unused files
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8000
 
