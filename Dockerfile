@@ -53,6 +53,9 @@ RUN apt-get update \
 
 EXPOSE 8000
 
+# get Python packages lib and bin
+COPY --from=build /usr/local/bin /usr/local/bin
+COPY --from=build /usr/local/lib /usr/local/lib
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /app
