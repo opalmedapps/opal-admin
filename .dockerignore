@@ -4,6 +4,9 @@
 !.env.sample
 !.pylintrc
 
+# exclude tests from getting added
+**/tests
+
 htmlcov/**
 tmp/**
 
