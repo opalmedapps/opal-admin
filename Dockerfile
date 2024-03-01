@@ -49,7 +49,7 @@ COPY manage.py .
 COPY .env.sample .
 
 # Set up the cron jobs
-COPY ./scripts/cron/crontab /tmp/crontab
+COPY ./docker/crontab /tmp/crontab
 
 # Add new cron jobs to the cron tab and compile languages
 RUN crontab /tmp/crontab \
