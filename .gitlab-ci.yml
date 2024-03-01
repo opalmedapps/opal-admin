@@ -265,6 +265,15 @@ django template validation:
     - echo "Validating templates ..."
     - python manage.py validate_templates
 
+check crontab:
+  stage: checks
+  extends:
+    - .default_needs
+    - .default_before
+  script:
+    # Check that the crontab references the correct commands and that they execute
+    - scripts/check_crontab.sh
+
 # Try building the documentation site to ensure there are no issues
 build docs:
   stage: documentation
