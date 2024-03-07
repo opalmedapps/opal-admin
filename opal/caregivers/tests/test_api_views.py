@@ -127,7 +127,16 @@ def test_caregiver_profile(api_client: APIClient, listener_user: User) -> None:
     assert response.status_code == HTTPStatus.OK
     data = response.json()
 
-    expected_data = ['uuid', 'first_name', 'last_name', 'language', 'phone_number', 'username', 'devices', 'legacy_id']
+    expected_data = [
+        'uuid',
+        'first_name',
+        'last_name',
+        'language',
+        'phone_number',
+        'username',
+        'devices',
+        'legacy_id',
+    ]
     assert list(data.keys()) == expected_data
     assert data['username'] == 'johnwaynedabest'
     assert not data['devices']
@@ -1315,6 +1324,33 @@ class TestRegistrationCompletionView:
         registration_code.refresh_from_db()
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
         assert 'Caregiver email is not verified' in response.content.decode()
+
+    def test_email_not_verified_existing_caregiver_other_institution(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+    ) -> None:
+        """It succeeds if the email address is unverified for a caregiver who already has a Firebase account."""
+        api_client.force_login(user=admin_user)
+        caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
+
+        data: dict[str, Any] = copy.deepcopy(self.input_data)
+        data['caregiver'].update({'email': 'hans@wurst.com'})
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=data,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        caregiver.refresh_from_db()
+        assert caregiver.user.email == 'hans@wurst.com'
 
     def test_email_not_verified_existing_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration succeeds with no email verification when it is an existing caregiver."""
