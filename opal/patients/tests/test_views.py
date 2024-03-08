@@ -16,7 +16,7 @@ from django.utils.html import strip_tags
 
 import pytest
 from bs4 import BeautifulSoup
-from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertNotContains, assertQuerySetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
@@ -92,7 +92,7 @@ def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
 
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         response.context['relationshiptype_list'].order_by('name'),
         models.RelationshipType.objects.all(),
     )
@@ -196,7 +196,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
 
     response = relationship_user.get(reverse('patients:relationships-list'))
 
-    assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
+    assertQuerySetEqual(list(reversed(response.context['relationship_list'])), relationships)
 
     for relationship in relationships:
         assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
@@ -851,7 +851,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client) -> 
     mrn_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         mrn_filter.qs,
         models.Relationship.objects.filter(patient__hospital_patients__mrn=hospital_patient.mrn),
         ordered=False,
@@ -910,7 +910,7 @@ def test_not_display_duplicated_patients(relationship_user: Client) -> None:
     mrn_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         mrn_filter.qs,
         models.Relationship.objects.filter(
             patient__hospital_patients__mrn=hospital_patient1.mrn,
@@ -977,7 +977,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
     ramq_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         ramq_filter.qs,
         models.Relationship.objects.filter(patient__ramq=hospital_patient.patient.ramq),
         ordered=False,

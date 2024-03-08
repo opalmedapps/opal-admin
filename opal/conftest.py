@@ -306,7 +306,7 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
         django_db_blocker: pytest fixture to allow database access here only
     """
     # load test questionnaire db sql
-    with Path('opal/tests/sql/test_QuestionnaireDB.sql', encoding='ISO-8859-1').open() as handle:
+    with Path('opal/tests/sql/test_QuestionnaireDB.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
         handle.close()
 
