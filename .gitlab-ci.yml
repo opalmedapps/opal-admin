@@ -50,9 +50,9 @@ stages:
 
 build image:
   stage: build
-  image: docker:25.0.3
+  image: docker:25.0.4
   services:
-    - docker:25.0.3-dind
+    - docker:25.0.4-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
