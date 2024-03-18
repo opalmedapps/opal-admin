@@ -113,6 +113,17 @@ class RelationshipTypeSerializer(DynamicFieldsSerializer[RelationshipType]):
         ]
 
 
+class RelationshipTypeDescriptionSerializer(RelationshipTypeSerializer):
+    """Serializer for the list of names and descriptions of the RelationshipType model."""
+
+    class Meta:
+        model = RelationshipType
+        fields = [
+            'name',
+            'description',
+        ]
+
+
 class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of patients for a given caregiver."""
 
