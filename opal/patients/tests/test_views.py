@@ -389,26 +389,25 @@ def test_form_search_result_http_referrer(relationship_user: Client) -> None:
     assert response_post.url == cancel_url  # type: ignore[attr-defined]
 
 
-def test_caregiver_access_update_form_fail(relationship_user: Client) -> None:
-    """Ensures patient cannot have different name from caregiver in self-relationship."""
+def test_caregiver_access_update_form_name_changed(relationship_user: Client) -> None:
+    """Ensures that changing the caregiver's name for a self-relationship is caught (readonly fields)."""
     patient = factories.Patient()
     self_type = factories.RelationshipType(role_type=models.RoleType.SELF.name)
     relationship = factories.Relationship(patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED)
 
-    cancel_url = 'patient/test/?search-query'
     form_data = model_to_dict(relationship)
     form_data['pk'] = relationship.pk
     form_data['type'] = relationship.type.pk
     form_data['first_name'] = 'test_firstname'
     form_data['last_name'] = 'test_lastname'
-    form_data['end_date'] = date.fromisoformat('2023-05-09')
-    form_data['cancel_url'] = cancel_url
 
     url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+    response = relationship_user.post(path=url, data=form_data)
 
-    response_post = relationship_user.post(path=url, data=form_data)
-    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
-    assert err_msg in response_post.context['form'].errors['__all__']
+    form = response.context['form']
+    assert not form.is_valid()
+    message = "The caregiver's name cannot currently be changed."
+    assert message in response.context['form'].errors[NON_FIELD_ERRORS]
 
 
 @pytest.mark.parametrize(
@@ -446,34 +445,30 @@ def test_caregiver_access_update_form_pass(relationship_user: Client, role_type:
     assert relationship_record.caregiver.user.last_name == form_data['last_name']
 
 
-def test_caregiver_access_update_form_self_pass(relationship_user: Client) -> None:
-    """Ensure patient cannot have different name from caregiver in self relationship."""
-    patient = factories.Patient()
+def test_caregiver_access_update_form_self_name_mismatch(relationship_user: Client) -> None:
+    """Ensure patient can have different name from caregiver in self relationship."""
+    patient = factories.Patient(first_name='John', last_name='Wayne')
     relationshiptype = factories.RelationshipType(role_type=models.RoleType.SELF)
-    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+    relationship = factories.Relationship(
+        patient=patient,
+        type=relationshiptype,
+        status=models.RelationshipStatus.CONFIRMED,
+    )
 
-    cancel_url = 'patient/test/?search-query'
     form_data = model_to_dict(relationship)
-    form_data['pk'] = relationship.pk
     form_data['type'] = relationship.type.pk
-    form_data['first_name'] = 'test_firstname'
-    form_data['last_name'] = 'test_lastname'
-    form_data['cancel_url'] = cancel_url
+    form_data['first_name'] = relationship.caregiver.user.first_name
+    form_data['last_name'] = relationship.caregiver.user.last_name
+    form_data['cancel_url'] = 'patient/test/?search-query'
 
-    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
     url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
-
-    post_response = relationship_user.post(
+    response = relationship_user.post(
         path=url,
         data=form_data,
     )
-    form_context = post_response.context['form']
 
-    assert err_msg in form_context.errors.get(NON_FIELD_ERRORS)
-    # assert the first and last name have not been changed
-    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
-    assert relationship_record.caregiver.user.first_name != form_data['first_name']
-    assert relationship_record.caregiver.user.last_name != form_data['last_name']
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == form_data['cancel_url']
 
 
 @pytest.mark.parametrize(
