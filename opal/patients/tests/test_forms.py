@@ -1419,11 +1419,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
         },
     )
 
-    assert not form.is_valid()
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == (
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
-    )
+    assert form.is_valid()
 
 
 def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> None:
@@ -1462,11 +1458,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
 
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
-    assert not form.is_valid()
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == (
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
-    )
+    assert form.is_valid()
 
 
 def test_accessrequestrequestorform_existing_user_validate_self_patient_exists() -> None:

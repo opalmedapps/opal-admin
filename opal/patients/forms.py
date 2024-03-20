@@ -555,9 +555,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             relationship_type = cleaned_data.get('relationship_type')
 
             if existing_user:
-                if self.is_patient_requestor() and isinstance(patient, OIEPatientData):
-                    self._validate_patient_requestor(patient, existing_user)
-
                 if relationship_type:
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
         elif patient_instance:
@@ -591,13 +588,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     NON_FIELD_ERRORS,
                     _('No existing user could be found.'),
                 )
-
-    def _validate_patient_requestor(self, patient: OIEPatientData, caregiver: CaregiverProfile) -> None:
-        if patient.first_name != caregiver.user.first_name or patient.last_name != caregiver.user.last_name:
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),
-            )
 
     def _validate_relationship(
         self, patient: Patient | None,
