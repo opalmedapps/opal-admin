@@ -28,8 +28,9 @@ from ..api.serializers import (
     PatientDemographicSerializer,
     PatientSerializer,
     PatientUpdateSerializer,
+    RelationshipTypeDescriptionSerializer,
 )
-from ..models import Patient, Relationship
+from ..models import Patient, Relationship, RelationshipType
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
@@ -268,3 +269,11 @@ class PatientExistsView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RelationshipTypeView(ListAPIView[RelationshipType]):
+    """Rest API `ListAPIView` returning list of relationship type names and decsriptions."""
+
+    queryset = RelationshipType.objects.all()
+    permission_classes = (IsListener,)
+    serializer_class = RelationshipTypeDescriptionSerializer

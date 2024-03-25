@@ -144,6 +144,11 @@ urlpatterns = [
         patient_views.PatientDemographicView.as_view(),
         name='patient-demographic-update',
     ),
+    path(
+        'relationship-types/',
+        patient_views.RelationshipTypeView.as_view(),
+        name='relationship-types-list',
+    ),
     # patients (by new ID) for the health data quantity samples
     path(
         'patients/<uuid:uuid>/health-data/quantity-samples/',
