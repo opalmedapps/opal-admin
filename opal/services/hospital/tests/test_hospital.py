@@ -4,13 +4,12 @@ from datetime import datetime
 from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any
-from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_django.fixtures import SettingsWrapper
-from pytest_mock.plugin import MockerFixture
+from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
@@ -459,11 +458,10 @@ def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
     assert response['data']['message'] == ['not_found']
 
 
-@patch('requests.post')
-def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
-    post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
+    post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
     with pytest.raises(RequestException):  # noqa: PT012
         with caplog.at_level(logging.ERROR):
@@ -489,14 +487,14 @@ def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFix
     assert caplog.records[0].levelname == 'ERROR'
 
 
-def test_find_patient_by_mrn_invalid_mrn(mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_invalid_mrn() -> None:
     """Ensure find_patient_by_mrn request with invalid MRN is handled and does not result in an error."""
     response = oie_service.find_patient_by_mrn('', SITE_CODE)
     assert response['status'] == 'error'
     assert response['data']['message'] == 'Provided MRN or site is invalid.'
 
 
-def test_find_patient_by_mrn_invalid_site(mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_invalid_site() -> None:
     """Ensure find_patient_by_mrn request with invalid site is handled and does not result in an error."""
     response = oie_service.find_patient_by_mrn(MRN, '')
     assert response['status'] == 'error'
@@ -583,11 +581,10 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     )
 
 
-@patch('requests.post')
-def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
+def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
-    post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
+    post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
     with pytest.raises(RequestException):  # noqa: PT012
         with caplog.at_level(logging.ERROR):
