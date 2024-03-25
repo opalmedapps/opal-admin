@@ -32,10 +32,10 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'MUHC'
+        assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 8
         assert HospitalPatient.objects.count() == 10
@@ -49,10 +49,10 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert_chusj(self) -> None:
         """Ensure that test data for Sainte-Justine is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'CHUSJ')
+        stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'CHUSJ'
+        assert Institution.objects.get().acronym == 'OHIGPH'
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
@@ -69,7 +69,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
@@ -87,7 +87,7 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
@@ -117,14 +117,14 @@ class TestInsertTestData(CommandTestMixin):
         factories.HospitalPatient()
         caregiver_factories.SecurityAnswer(user=relationship.caregiver)
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC', '--force-delete')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
 
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
-        self._call_command('insert_test_data', 'MUHC')
+        self._call_command('insert_test_data', 'OMI')
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
@@ -145,7 +145,7 @@ class TestInsertTestData(CommandTestMixin):
         )
         mock_date.today.return_value = date(2024, 1, 18)
 
-        self._call_command('insert_test_data', 'MUHC')
+        self._call_command('insert_test_data', 'OMI')
 
         bart = Patient.objects.get(first_name='Bart')
         assert bart.date_of_birth == date(2009, 2, 23)
@@ -160,7 +160,7 @@ class TestInsertTestData(CommandTestMixin):
         )
         mock_date.today.return_value = date(2024, 2, 23)
 
-        self._call_command('insert_test_data', 'MUHC')
+        self._call_command('insert_test_data', 'OMI')
 
         bart = Patient.objects.get(first_name='Bart')
         assert bart.date_of_birth == date(2010, 2, 23)

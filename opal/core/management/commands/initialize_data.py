@@ -182,8 +182,8 @@ class Command(BaseCommand):
         ])
 
         if muhc_deployment:
-            institution = create_institution(InstitutionOption.muhc)
-            create_sites(InstitutionOption.muhc, institution)
+            institution = create_institution(InstitutionOption.omi)
+            create_sites(InstitutionOption.omi, institution)
 
         # get existing or create new tokens for the API users
         token_listener, _ = Token.objects.get_or_create(user=listener)
