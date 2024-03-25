@@ -17,7 +17,7 @@ from rest_framework.test import APIClient
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
-from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
 
@@ -1020,3 +1020,41 @@ class TestPatientExistsView:
             mrn='9999993',
             site=site,
         )
+
+
+def test_relationship_types_list_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    listener_user: User,
+) -> None:
+    """Test that unauthenticated and unauthorized users cannot access the API."""
+    url = reverse('api:relationship-types-list')
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(listener_user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_relationship_types_list(api_client: APIClient, listener_user: User) -> None:
+    """Test the return of the relationship types list."""
+    api_client.force_login(user=listener_user)
+
+    relationship_type = RelationshipType()
+
+    response = api_client.get(reverse('api:relationship-types-list'))
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json()[0] == {
+        'name': relationship_type.name,
+        'description': relationship_type.description,
+    }
