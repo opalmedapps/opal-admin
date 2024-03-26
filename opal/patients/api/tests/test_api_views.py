@@ -77,12 +77,14 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
         'first_name': caregiver1.user.first_name,
         'last_name': caregiver1.user.last_name,
         'status': relationship1.status,
+        'relationship_type': relationship1.type.name,
     }
     assert response.json()[1] == {
         'caregiver_id': caregiver2.user.id,
         'first_name': caregiver2.user.first_name,
         'last_name': caregiver2.user.last_name,
         'status': relationship2.status,
+        'relationship_type': relationship2.type.name,
     }
 
 

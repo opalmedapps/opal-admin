@@ -136,6 +136,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
         fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
         many=False,
     )
+    relationship_type_name = serializers.CharField(source='type.name')
     data_access = serializers.CharField(source='patient.data_access')
     non_interpretable_lab_result_delay = serializers.IntegerField(source='patient.non_interpretable_lab_result_delay')
     interpretable_lab_result_delay = serializers.IntegerField(source='patient.interpretable_lab_result_delay')
@@ -149,6 +150,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
             'last_name',
             'status',
             'relationship_type',
+            'relationship_type_name',
             'data_access',
             'non_interpretable_lab_result_delay',
             'interpretable_lab_result_delay',
@@ -161,10 +163,11 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer[Relationship])
     caregiver_id = serializers.IntegerField(source='caregiver.user.id')
     first_name = serializers.CharField(source='caregiver.user.first_name')
     last_name = serializers.CharField(source='caregiver.user.last_name')
+    relationship_type = serializers.CharField(source='type.name')
 
     class Meta:
         model = Relationship
-        fields = ['caregiver_id', 'first_name', 'last_name', 'status']
+        fields = ['caregiver_id', 'first_name', 'last_name', 'status', 'relationship_type']
 
 
 class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
