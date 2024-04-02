@@ -6,7 +6,7 @@ from _pytest.fixtures import SubRequest
 from pytest_django import DjangoDbBlocker
 
 
-@pytest.fixture()
+@pytest.fixture
 def clear_questionnairedb(request: SubRequest, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
     """Remove specified test data from test_QuestionnaireDB.
 
