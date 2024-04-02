@@ -6,4 +6,4 @@ VERIFICATION_CODE_LENGTH: Final[int] = 6
 #: Time delay before re-sending a verification code by email (in seconds).
 CODE_RESEND_TIME_DELAY: Final[int] = 10
 #: The email verification code timeout in minutes.
-EMAIL_VERIFICATION_TIMEOUT: Final[int] = 30
+EMAIL_VERIFICATION_TIMEOUT: Final[int] = 10

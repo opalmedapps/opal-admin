@@ -253,14 +253,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             'code': email_verification.code,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'timeout': constants.EMAIL_VERIFICATION_TIMEOUT,
         }
 
         email_plain = render_to_string(
             'email/verification_code.txt',
-            context,
-        )
-        email_html = render_to_string(
-            'email/verification_code.html',
             context,
         )
 
@@ -269,7 +266,6 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             email_plain,
             settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
-            html_message=email_html,
         )
 
 
