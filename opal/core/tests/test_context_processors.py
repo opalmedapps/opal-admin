@@ -25,7 +25,7 @@ def test_current_app_no_resolver() -> None:
     assert 'app_verbose_name' not in context
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_current_app_verbose_name_no_app(client: Client) -> None:
     """Ensure that the `current_app` context processor can handle a `None` app_name."""
     response = client.get(reverse('start'))
@@ -35,7 +35,7 @@ def test_current_app_verbose_name_no_app(client: Client) -> None:
     assert 'app_verbose_name' not in context
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_current_app_verbose_name(client: Client) -> None:
     """Ensure that the `current_app` context processor can return the current app's verbose name."""
     response = client.get(reverse('admin:index'))

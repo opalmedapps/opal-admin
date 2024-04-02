@@ -57,7 +57,7 @@ def pytest_collection_modifyitems(session: Session, config: Config, items: list[
     items[:] = original_items_order + migration_tests  # noqa: WPS362
 
 
-@pytest.fixture()
+@pytest.fixture
 def api_client() -> APIClient:
     """
     Fixture providing an instance of Django REST framework's `APIClient`.
@@ -68,7 +68,7 @@ def api_client() -> APIClient:
     return APIClient()
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:  # noqa: WPS442
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in user.
@@ -86,7 +86,7 @@ def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient
     return api_client
 
 
-@pytest.fixture()
+@pytest.fixture
 def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:  # noqa: WPS442
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in admin user.
@@ -123,7 +123,7 @@ def user_instance(django_user_model: User) -> User:
 
 
 # TODO: add additional fixture providing a caregiver?
-@pytest.fixture()
+@pytest.fixture
 def user_with_permission(user: User) -> Callable[[str], User]:
     """
     Fixture providing a user with a permission.
@@ -156,7 +156,7 @@ def user_with_permission(user: User) -> Callable[[str], User]:
     return add_permission
 
 
-@pytest.fixture()
+@pytest.fixture
 def listener_user(django_user_model: User) -> User:
     """
     Fixture providing a `User` instance representing the listener.
@@ -170,7 +170,7 @@ def listener_user(django_user_model: User) -> User:
     return django_user_model.objects.create_user(username=constants.USERNAME_LISTENER)
 
 
-@pytest.fixture()
+@pytest.fixture
 def registration_listener_user(django_user_model: User) -> User:
     """
     Fixture providing a `User` instance representing the registration listener.
@@ -184,7 +184,7 @@ def registration_listener_user(django_user_model: User) -> User:
     return django_user_model.objects.create_user(username=constants.USERNAME_LISTENER_REGISTRATION)
 
 
-@pytest.fixture()
+@pytest.fixture
 def interface_engine_user(django_user_model: User) -> User:
     """
     Fixture providing a `User` instance representing the interface engine.
@@ -198,7 +198,7 @@ def interface_engine_user(django_user_model: User) -> User:
     return django_user_model.objects.create_user(username=constants.USERNAME_INTERFACE_ENGINE)
 
 
-@pytest.fixture()
+@pytest.fixture
 def legacy_backend_user(django_user_model: User) -> User:
     """
     Fixture providing a `User` instance representing the legacy backend user (OpalAdmin).
@@ -212,7 +212,7 @@ def legacy_backend_user(django_user_model: User) -> User:
     return django_user_model.objects.create_user(username=constants.USERNAME_BACKEND_LEGACY)
 
 
-@pytest.fixture()
+@pytest.fixture
 def orms_user(django_user_model: User, settings: LazySettings) -> User:
     """
     Fixture providing a `User` instance belonging to the ORMS users group.
@@ -234,7 +234,7 @@ def orms_user(django_user_model: User, settings: LazySettings) -> User:
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_client(client: Client, user: User) -> Client:
     """
     Fixture providing an instance of [Client][django.test.Client] with a logged in user.
@@ -316,7 +316,7 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
             conn.close()
 
 
-@pytest.fixture()
+@pytest.fixture
 def databank_consent_questionnaire_and_response(  # noqa: WPS210
 ) -> tuple[LegacyPatient, LegacyQuestionnaire]:
     """Add a full databank consent questionnaire and simple response to test setup.
