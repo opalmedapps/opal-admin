@@ -1,7 +1,7 @@
 import base64
 from pathlib import Path
 
-from opal.utils.base64 import Base64Util
+from opal.utils.base64_util import Base64Util
 
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 TXT_FILE_PATH = Path('opal/tests/fixtures/test_txt.txt')

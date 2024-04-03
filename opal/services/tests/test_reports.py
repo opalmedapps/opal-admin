@@ -13,7 +13,7 @@ from requests.exceptions import RequestException
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
 from opal.services.reports import PathologyData, PathologyPDF, QuestionnaireReportRequestData, ReportService
-from opal.utils.base64 import Base64Util
+from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

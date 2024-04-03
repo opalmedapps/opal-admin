@@ -27,9 +27,9 @@ class RelationshipType(DjangoModelFactory):
         django_get_or_create = ('name',)
 
     name = 'Caregiver'
-    name_fr = lazy_attribute(lambda type: f'{type.name} FR')
+    name_fr = lazy_attribute(lambda relationship_type: f'{relationship_type.name} FR')
     description = 'The patient'
-    description_fr = lazy_attribute(lambda type: f'{type.description} FR')
+    description_fr = lazy_attribute(lambda relationship_type: f'{relationship_type.description} FR')
     start_age = 14
     form_required = False
     can_answer_questionnaire = False

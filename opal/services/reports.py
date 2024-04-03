@@ -17,7 +17,7 @@ from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 from typing_extensions import Literal, TypedDict
 
-from opal.utils.base64 import Base64Util
+from opal.utils.base64_util import Base64Util
 
 FPDFCellDictType = TypedDict(
     'FPDFCellDictType',
