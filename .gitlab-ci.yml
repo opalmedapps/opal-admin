@@ -352,6 +352,7 @@ gemnasium-python-dependency_scanning:
     # remove the first line ("-r ...")
     - tail -n +2 requirements/development.txt >> requirements.txt
     - tail -n +2 requirements/production.txt >> requirements.txt
+    - cat requirements.txt
 
 # Container Scanning
 # https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
