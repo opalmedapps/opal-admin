@@ -12,31 +12,58 @@ from opal.users.models import User
 
 from . import factories
 from .forms import InstitutionForm
-from .models import Institution, Site
 
 
-@pytest.fixture(name='institution')
-def institution() -> Institution:
-    """Fixture providing an instance of `Institution` model.
+@pytest.fixture
+def institution_user(client: Client, django_user_model: User) -> User:
+    """
+    Fixture providing a `User` instance with the `can_manage_institutions` permission.
+
+    Also logs the user into the test client.
+    Use this fixture together with the `client` fixture to make authenticated requests.
+
+    Args:
+        client: the Django test client instance
+        django_user_model: the `User` model used in this project
 
     Returns:
-        an instance of `Institution`
+        a user instance with the `can_manage_institutions` permission
     """
-    return factories.Institution()
+    user: User = django_user_model.objects.create_user(username='test_institution_user')
+    permission = Permission.objects.get(codename='can_manage_institutions')
+    user.user_permissions.add(permission)
+
+    user.set_password('testpassword')
+    user.save()
+
+    client.force_login(user)
+
+    return user
 
 
-@pytest.fixture()
-def site() -> Site:
-    """Fixture providing an instance of `Site` model.
+@pytest.fixture
+def site_user(client: Client, django_user_model: User) -> Client:
+    """
+    Fixture provides an instance of [Client][django.test.Client] with a logged in user with site permission.
+
+    Args:
+        client: the Django test client instance
+        django_user_model: the `User` model used in this project
 
     Returns:
-        an instance of `Site`
+        an instance of `Client` with a logged in user with `can_manage_sites` permission
     """
-    return factories.Site()
+    user = django_user_model.objects.create_user(username='test_site_user')
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+
+    client.force_login(user)
+
+    return client
 
 
 @pytest.fixture(name='institution_form_files')
-def fixture_institution_form_files() -> dict:
+def fixture_institution_form_files() -> dict[str, SimpleUploadedFile]:
     """Fixture providing logo images for the InstitutionForm.
 
     Returns:
@@ -69,8 +96,8 @@ def fixture_institution_form_files() -> dict:
     }
 
 
-@pytest.fixture()
-def institution_form(institution_form_files: dict) -> InstitutionForm:
+@pytest.fixture
+def institution_form(institution_form_files: dict[str, SimpleUploadedFile]) -> InstitutionForm:
     """Fixture providing data for the `InstitutionForm`.
 
     Args:
@@ -93,8 +120,10 @@ def institution_form(institution_form_files: dict) -> InstitutionForm:
     )
 
 
-@pytest.fixture()
-def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm:
+@pytest.fixture
+def incomplete_institution_form(
+    institution_form_files: dict[str, SimpleUploadedFile],
+) -> InstitutionForm:
     """Fixture providing data for the incomplete `InstitutionForm`.
 
     Args:
@@ -109,7 +138,7 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
         'logo',
         'logo_en',
         'logo_fr',
-        'code',
+        'acronym',
         'terms_of_use',
         'terms_of_use_en',
         'terms_of_use_fr',
@@ -122,8 +151,10 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
     )
 
 
-@pytest.fixture()
-def institution_form_no_delay_fields(institution_form_files: dict) -> InstitutionForm:
+@pytest.fixture
+def institution_form_no_delay_fields(
+    institution_form_files: dict[str, SimpleUploadedFile],
+) -> InstitutionForm:
     """Fixture providing data for the `InstitutionForm` without delay fields.
 
     Args:
@@ -145,24 +176,3 @@ def institution_form_no_delay_fields(institution_form_files: dict) -> Institutio
         files=institution_form_files,
         instance=instit,
     )
-
-
-@pytest.fixture()
-def site_user(client: Client, django_user_model: User) -> Client:
-    """
-    Fixture provides an instance of [Client][django.test.Client] with a logged in user with site permission.
-
-    Args:
-        client: the Django test client instance
-        django_user_model: the `User` model used in this project
-
-    Returns:
-        an instance of `Client` with a logged in user with `can_manage_sites` permission
-    """
-    user = django_user_model.objects.create_user(username='test_site_user')
-    permission = Permission.objects.get(codename='can_manage_sites')
-    user.user_permissions.add(permission)
-
-    client.force_login(user)
-
-    return client

@@ -13,7 +13,7 @@ from .hospital_data import OIEReportExportData
 # TODO: translate error messages add _(message) that will be shown to the user.
 
 
-class OIEValidator:
+class OIEValidator:  # noqa: WPS214
     """OIE helper service that validates OIE request and response data."""
 
     def is_report_export_request_valid(
@@ -88,7 +88,7 @@ class OIEValidator:
     def is_patient_response_valid(  # noqa: C901, WPS231
         self,
         response_data: Any,
-    ) -> list:
+    ) -> list[str]:
         """Check if the OIE patient response data is valid.
 
         Args:
@@ -98,15 +98,12 @@ class OIEValidator:
             return errors list
         """
         errors = []
-        status = ''
-        try:
-            status = response_data['status']
-        except (KeyError):
-            errors.append('Patient response data does not have the attribute status')
-
+        status = response_data.get('status')
         patient_data = response_data.get('data')
 
-        if not errors and patient_data and status == 'success':
+        if status is None:
+            errors.append('Patient response data does not have the attribute "status"')
+        elif not errors and patient_data and status == 'success':
             errors += self.check_patient_data(patient_data)
         elif status == 'error':
             if patient_data and 'exception' in patient_data:
@@ -115,15 +112,43 @@ class OIEValidator:
 
             if message:
                 # TODO: improve
-                friendly_message = message.replace('Patient 00000000null not found', 'not_found')
+                friendly_message = message.replace('Patient not found', 'not_found')
                 friendly_message = friendly_message.replace(
                     'Not Opal test patient',
                     'no_test_patient',
                 )
                 errors.append(friendly_message)
+        else:
+            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+
         return errors
 
-    def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231
+    def is_new_patient_response_valid(
+        self,
+        response_data: Any,
+    ) -> tuple[bool, list[str]]:
+        """Check if the OIE's new patient response data is valid.
+
+        Args:
+            response_data: OIE new patient response data
+
+        Returns:
+            A boolean indicating validity (true if valid, false otherwise) and an errors list
+        """
+        errors = []
+        status = response_data.get('status')
+        success = status == 'success'
+
+        if status is None:
+            errors.append('Patient response data does not have the attribute "status"')
+        elif status == 'error':
+            errors.append('Error response from the OIE')
+        elif not success:
+            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+
+        return success, errors
+
+    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901 WPS210 WPS213 WPS231
         """Check if the patient data is valid.
 
         Args:
@@ -142,9 +167,9 @@ class OIEValidator:
 
         if date_of_birth:
             try:
-                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                errors.append('Patient data dateOfBirth format is incorrect, should be YYYY-MM-DD HH:mm:ss')
+                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d')
+            except ValueError as exc:
+                errors.append(f'dateOfBirth is invalid: {exc}')
 
         # check firstName
         first_name = None
@@ -182,12 +207,12 @@ class OIEValidator:
         try:
             ramq = patient_data['ramq']
         except (KeyError):
-            errors.append('Patient data does not have the attribute ramq')
+            errors.append('Patient ramq is missing')
         if ramq:
             try:
                 validate_ramq(ramq)
             except ValidationError:
-                errors.append('Patient data ramq is invalid')
+                errors.append('Patient ramq is invalid')
 
         # check ramqExpiration
         ramq_expiration = None
@@ -197,9 +222,9 @@ class OIEValidator:
             errors.append('Patient data does not have the attribute ramqExpiration')
         if ramq_expiration:
             try:
-                datetime.datetime.strptime(ramq_expiration, '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                errors.append('Patient data ramqExpiration format is incorrect, should be YYYY-MM-DD HH:mm:ss')
+                datetime.datetime.strptime(ramq_expiration, '%Y%m')
+            except ValueError as exc:  # noqa: WPS440 (exc from other tr-except is undefined here)
+                errors.append(f'Patient data ramqExpiration is invalid: {exc}')
 
         # check mrns
         mrns = None
@@ -215,7 +240,7 @@ class OIEValidator:
 
         return errors
 
-    def _check_mrn_data(self, mrn_data: Any) -> list:  # noqa: C901
+    def _check_mrn_data(self, mrn_data: Any) -> list[str]:  # noqa: C901
         """Check if the patient MRN data is valid.
 
         Args:

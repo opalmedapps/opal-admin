@@ -10,11 +10,16 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
+import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
-from django.db import models
+from django.apps import apps
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.db import DatabaseError, models
 from django.utils import timezone
+
+from django_stubs_ext.aliases import ValuesQuerySet
 
 from opal.patients.models import Relationship, RelationshipStatus
 
@@ -36,35 +41,40 @@ if TYPE_CHECKING:
 
 _Model = TypeVar('_Model', bound=models.Model)
 
+logger = logging.getLogger(__name__)
+
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
     """LegacyModels unread count mixin."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet[_Model]:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet[_Model]:
         """
         Get the queryset of unread model records for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve unread model records queryset.
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of unread model records.
         """
-        return self.filter(patientsernum=patient_sernum).exclude(readby__contains=user_name)
+        return self.filter(patientsernum=patient_sernum).exclude(readby__contains=username)
 
-    def get_unread_multiple_patients_queryset(self, user_name: str) -> models.QuerySet[_Model]:
+    def get_unread_multiple_patients_queryset(self, username: str) -> models.QuerySet[_Model]:
         """
-        Get the queryset of unread model records for all patient related to the requestion user.
+        Get the queryset of unread model records for all patients related to the requested user.
 
         Args:
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of unread model records.
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
-        return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=user_name)
+        patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(
+            username=username,
+            status=RelationshipStatus.CONFIRMED,
+        )
+        return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=username)
 
 
 class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], models.Manager['LegacyNotification']):
@@ -74,13 +84,13 @@ class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], model
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     """LegacyAppointment manager."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet['LegacyAppointment']:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
         """
         Get the queryset of uncompleted appointments for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of uncompleted appointments.
@@ -89,22 +99,22 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             patientsernum=patient_sernum,
             state='Active',
         ).exclude(
-            readby__contains=user_name,
+            readby__contains=username,
         )
 
-    def get_daily_appointments(self, user_name: str) -> models.QuerySet['LegacyAppointment']:
+    def get_daily_appointments(self, username: str) -> models.QuerySet['LegacyAppointment']:
         """
         Get all appointments for the current day for caregiver related patient(s).
 
         Used by the home page of the app for checkin.
 
         Args:
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Appointments schedule for the current day.
         """
-        relationships = Relationship.objects.get_patient_list_for_caregiver(user_name).filter(
+        relationships = Relationship.objects.get_patient_list_for_caregiver(username).filter(
             status=RelationshipStatus.CONFIRMED,
         )
         patient_ids = [
@@ -124,19 +134,22 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             status='Deleted',
         )
 
-    def get_closest_appointment(self, user_name: str) -> Optional['LegacyAppointment']:
+    def get_closest_appointment(self, username: str) -> Optional['LegacyAppointment']:
         """
         Get the closest next appointment in time for any of the patients in the user's care.
 
         Used by the "Home" page of the app for the "Upcoming Appointment" widget.
 
         Args:
-            user_name: Firebase username making the request
+            username: Firebase username making the request
 
         Returns:
             Closest appointment for the patient in care (including SELF) and their legacy_id
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name, 'confirmed')
+        patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(
+            username=username,
+            status=RelationshipStatus.CONFIRMED,
+        )
         return self.filter(
             scheduledstarttime__gte=timezone.localtime(timezone.now()),
             patientsernum__in=patient_ids,
@@ -150,7 +163,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet:
+    ) -> ValuesQuerySet['LegacyAppointment', dict[str, Any]]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -196,6 +209,75 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
     """LegacyDocument manager."""
 
+    def create_pathology_document(
+        self,
+        legacy_patient_id: Optional[int],
+        prepared_by: int,
+        received_at: datetime,
+        report_file_name: str,
+    ) -> 'LegacyDocument':
+        """Insert a new pathology PDF document record to the OpalDB.Document table.
+
+        This will indicate that a new pathology report is available for viewing in the app.
+
+        Args:
+            legacy_patient_id: legacy patient's ID for whom a new document record being inserted
+            prepared_by: `StaffSerNum` from the `OpalDB.LegacyStaff` table that indicates who prepared the report
+            received_at: date and time that indicate when the pathology report data were entered into the source system
+            report_file_name: filename of the new pathology report document
+
+        Raises:
+            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
+
+        Returns:
+            newly created and saved `LegacyDocument` instance for the pathology report document
+        """
+        # Perform lazy import by using the `django.apps` to avoid circular imports issue
+        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
+        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')    # noqa: N806
+
+        try:
+            legacy_document = self.create(
+                patientsernum=LegacyPatientModel.objects.get(
+                    patientsernum=legacy_patient_id,
+                ),
+                sourcedatabasesernum=LegacySourceDatabaseModel.objects.get(
+                    source_database_name='OACIS',
+                    enabled=1,
+                ),
+                aliasexpressionsernum=LegacyAliasExpressionModel.objects.get(
+                    expression_name='Pathology',
+                    description='Pathology',
+                ),
+                approvedby=prepared_by,
+                approvedtimestamp=received_at,
+                authoredbysernum=prepared_by,
+                dateofservice=received_at,
+                validentry='Y',
+                originalfilename=report_file_name,
+                finalfilename=report_file_name,
+                createdbysernum=prepared_by,
+                createdtimestamp=received_at,
+                transferstatus='T',
+                transferlog='Transfer successful',
+                dateadded=timezone.localtime(timezone.now()),
+                readstatus=0,
+                readby=[],
+            )
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as exp:
+            # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
+            # instances cannot be found or multiple instances returned
+            err = 'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {0}'.format(
+                exp,
+            )
+            logger.error(err)
+            raise DatabaseError(err)
+
+        legacy_document.save()
+
+        return legacy_document
+
 
 class LegacyTxTeamMessageManager(UnreadQuerySetMixin['LegacyTxTeamMessage'], models.Manager['LegacyTxTeamMessage']):
     """LegacyTxTeamMessage manager."""
@@ -215,24 +297,22 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
     """LegacyAnnouncement manager."""
 
-    def get_unread_queryset(self, patient_sernum_list: list[int], user_name: str) -> int:
+    def get_unread_queryset(self, patient_sernum_list: list[int], username: str) -> int:
         """
         Get the count of unread announcement(s) for a given user and their relationship(s).
 
         Args:
-            patient_sernum_list: List of legacy patient sernum to fetch the annoucements for.
-            user_name: Username making the request.
+            patient_sernum_list: List of legacy patient sernum to fetch the announcements for.
+            username: Username making the request.
 
         Returns:
-            Count of unread annoucement(s) records.
+            Count of unread announcement(s) records.
         """
-        return self.filter(
+        return self.exclude(
+            readby__contains=username,
+        ).filter(
             patientsernum__in=patient_sernum_list,
-        ).exclude(
-            readby__contains=user_name,
-        ).values(
-            'postcontrolsernum',
-        ).distinct().count() or 0
+        ).count()
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
@@ -242,7 +322,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatient', dict[str, Any]]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -259,9 +339,9 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             last_updated__gt=last_synchronized,
         ).annotate(
             patient_id=models.F('patientsernum'),
-            opal_registration_date=models.F('registrationdate'),
+            opal_registration_date=models.F('registration_date'),
             patient_sex=models.F('sex'),
-            patient_dob=models.F('dateofbirth'),
+            patient_dob=models.F('date_of_birth'),
             patient_primary_language=models.F('language'),
             patient_death_date=models.F('death_date'),
         ).values(
@@ -282,7 +362,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyDiagnosis', dict[str, Any]]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -309,19 +389,13 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         ).annotate(
             diagnosis_id=models.F('diagnosis_ser_num'),
             date_created=models.F('creation_date'),
-            source_system=models.F('source_database__source_database_name'),
-            source_system_id=models.F('diagnosis_aria_ser'),
             source_system_code=models.F('diagnosis_code'),
             source_system_code_description=models.F('description_en'),
         ).values(
             'diagnosis_id',
             'date_created',
-            'source_system',
-            'source_system_id',
             'source_system_code',
             'source_system_code_description',
-            'stage',
-            'stage_criteria',
             'last_updated',
         )
 
@@ -333,7 +407,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatientTestResult', dict[str, Any]]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
@@ -381,3 +455,21 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             'source_system',
             'last_updated',
         ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
+
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:
+        """
+        Get the queryset of unread lab results for a given patient.
+
+        Args:
+            patient_sernum: Patient's sernum used to retrieve unread lab results
+            username: Firebase username making the request
+
+        Returns:
+            Queryset of unread lab results
+        """
+        return self.filter(
+            patient_ser_num=patient_sernum,
+            available_at__lte=timezone.now(),
+        ).exclude(
+            read_by__contains=username,
+        )

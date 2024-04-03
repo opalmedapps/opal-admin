@@ -17,7 +17,7 @@ def test_mrn_type_for_questionnaire_report() -> None:
     """Ensure `mrn` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site': hospital_patient.site.code},
+        data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
 
     assert isinstance(serializer.fields['mrn'], serializers.CharField)
@@ -28,7 +28,7 @@ def test_site_type_for_questionnaire_report() -> None:
     """Ensure `site_name` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site': hospital_patient.site.code},
+        data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
 
     assert isinstance(serializer.fields['site'], serializers.CharField)
@@ -55,6 +55,7 @@ def test_valid_serializer() -> None:
     """Test if the serializer is valid."""
     unread_count = {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -66,6 +67,7 @@ def test_valid_serializer() -> None:
     assert unread_serializer.is_valid()
     assert unread_serializer.validated_data == {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -75,6 +77,7 @@ def test_valid_serializer() -> None:
     }
     assert unread_serializer.data == {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -88,6 +91,7 @@ def test_invalid_serializer() -> None:
     """Test if the serializer is invalid."""
     unread_count = {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -98,6 +102,7 @@ def test_invalid_serializer() -> None:
     assert not unread_serializer.is_valid()
     assert unread_serializer.data == {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -111,6 +116,7 @@ def test_invalid_field_value_type() -> None:
     """Test if the serializer field value type is invalid."""
     unread_count = {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -141,6 +147,7 @@ def test_data_access_before_save_raises_error() -> None:
     """Test if the serializer data is saved without error."""
     unread_count = {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
@@ -152,6 +159,7 @@ def test_data_access_before_save_raises_error() -> None:
     assert unread_serializer.is_valid()
     assert unread_serializer.data == {
         'unread_appointment_count': 5,
+        'unread_lab_result_count': 777,
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,

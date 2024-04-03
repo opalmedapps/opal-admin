@@ -6,7 +6,7 @@ from rest_framework import serializers
 from ..models import QuantitySample
 
 
-class QuantitySampleListSerializer(serializers.ListSerializer):
+class QuantitySampleListSerializer(serializers.ListSerializer[list[QuantitySample]]):
     """List serializer supporting the bulk creation of multiple `QuantitySample` instances."""
 
     def create(self, validated_data: list[dict[str, Any]]) -> list[QuantitySample]:

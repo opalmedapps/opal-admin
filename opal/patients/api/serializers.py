@@ -1,16 +1,17 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.db import transaction
 
 from rest_framework import serializers
+from rest_framework.fields import empty
 
 from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.models import Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
-class PatientSerializer(DynamicFieldsSerializer):
+class PatientSerializer(DynamicFieldsSerializer[Patient]):
     """
     Patient serializer.
 
@@ -21,60 +22,81 @@ class PatientSerializer(DynamicFieldsSerializer):
     class Meta:
         model = Patient
         fields = [
+            'uuid',
             'legacy_id',
             'first_name',
             'last_name',
             'date_of_birth',
             'date_of_death',
+            'data_access',
             'sex',
             'ramq',
-            'uuid',
+            'is_adult',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
-        # enforce proper value for legacy_id
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer[Patient]):
+    """Patient serializer to update a patient instance."""
+
+    class Meta:
+        model = Patient
+        fields = [
+            'data_access',
+        ]
         extra_kwargs: dict[str, dict[str, Any]] = {
-            'legacy_id': {
-                'allow_null': False,
+            'data_access': {
                 'required': True,
+                # remove empty since the field is required
+                'default': empty,
             },
         }
 
 
-class HospitalPatientSerializer(DynamicFieldsSerializer):
+class PatientUUIDSerializer(serializers.Serializer[Patient]):
+    """Serializer for patient's UUID."""
+
+    patient_uuid = serializers.UUIDField(required=True, allow_null=False)
+
+
+class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.
 
     The serializer inherits from `core.api.serializers.DynamicFieldsSerializer`,
-    and also provides `HospitalPatient` info and the site code according to the 'fields' arguments.
+    and also provides `HospitalPatient` info and the site acronym according to the 'fields' arguments.
     """
 
-    site_code = serializers.CharField(source='site.code')
+    site_code = serializers.CharField(source='site.acronym')
 
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
         # make the is_active field required
-        extra_kwargs = {'is_active': {'required': True}}
+        # need to remove the derault in order to avoid the "May not set both `required` and `default" assertion error
+        extra_kwargs = {'is_active': {'required': True, 'default': empty}}
 
     def validate_site_code(self, value: str) -> str:
         """Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
-            value: site code to be validated
+            value: site acronym to be validated
 
         Returns:
-            validated site code value
+            validated site acronym value
 
         Raises:
-            ValidationError: if provided site code does not exist in the database
+            ValidationError: if provided site acronym does not exist in the database
         """
-        if not Site.objects.filter(code=value).exists():
+        if not Site.objects.filter(acronym=value).exists():
             raise serializers.ValidationError(
-                '{0}{1}{2}'.format('Provided "', value, '" site code does not exist.'),
+                '{0}{1}{2}'.format('Provided "', value, '" site acronym does not exist.'),
             )
         return value
 
 
-class RelationshipTypeSerializer(DynamicFieldsSerializer):
+class RelationshipTypeSerializer(DynamicFieldsSerializer[RelationshipType]):
     """Serializer for the RelationshipType model."""
 
     class Meta:
@@ -91,10 +113,21 @@ class RelationshipTypeSerializer(DynamicFieldsSerializer):
         ]
 
 
-class CaregiverPatientSerializer(serializers.ModelSerializer):
+class RelationshipTypeDescriptionSerializer(RelationshipTypeSerializer):
+    """Serializer for the list of names and descriptions of the RelationshipType model."""
+
+    class Meta:
+        model = RelationshipType
+        fields = [
+            'name',
+            'description',
+        ]
+
+
+class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of patients for a given caregiver."""
 
-    patient_id = serializers.IntegerField(source='patient.id')
+    patient_uuid = serializers.UUIDField(source='patient.uuid')
     patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
     first_name = serializers.CharField(source='patient.first_name')
     last_name = serializers.CharField(source='patient.last_name')
@@ -103,34 +136,41 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
         many=False,
     )
+    relationship_type_name = serializers.CharField(source='type.name')
     data_access = serializers.CharField(source='patient.data_access')
+    non_interpretable_lab_result_delay = serializers.IntegerField(source='patient.non_interpretable_lab_result_delay')
+    interpretable_lab_result_delay = serializers.IntegerField(source='patient.interpretable_lab_result_delay')
 
     class Meta:
         model = Relationship
         fields = [
-            'patient_id',
+            'patient_uuid',
             'patient_legacy_id',
             'first_name',
             'last_name',
             'status',
             'relationship_type',
+            'relationship_type_name',
             'data_access',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
 
 
-class CaregiverRelationshipSerializer(serializers.ModelSerializer):
+class CaregiverRelationshipSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of caregivers for a given patient."""
 
     caregiver_id = serializers.IntegerField(source='caregiver.user.id')
     first_name = serializers.CharField(source='caregiver.user.first_name')
     last_name = serializers.CharField(source='caregiver.user.last_name')
+    relationship_type = serializers.CharField(source='type.name')
 
     class Meta:
         model = Relationship
-        fields = ['caregiver_id', 'first_name', 'last_name', 'status']
+        fields = ['caregiver_id', 'first_name', 'last_name', 'status', 'relationship_type']
 
 
-class PatientDemographicSerializer(DynamicFieldsSerializer):
+class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
     """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
 
     mrns = HospitalPatientSerializer(many=True, allow_empty=False, required=True)
@@ -151,8 +191,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
     def update(
         self,
         instance: Patient,
-        validated_data: Dict[str, Any],
-    ) -> Optional[Patient]:
+        validated_data: dict[str, Any],
+    ) -> Patient:
         """Update `Patient` instance during patient demographic update call.
 
         It updates `User` fields as well.
@@ -162,7 +202,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             validated_data: dictionary containing validated request data
 
         Returns:
-            Optional[Patient]: updated `Patient` record
+            updated `Patient` record
         """
         # Update the fields of the `Patient` instance
         super().update(instance, validated_data)
@@ -175,7 +215,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             # https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.update_or_create
             HospitalPatient.objects.update_or_create(
                 mrn=hospital_patient['mrn'],
-                site=Site.objects.filter(code=hospital_patient['site']['code']).first(),
+                site=Site.objects.filter(acronym=hospital_patient['site']['acronym']).first(),
                 patient=instance,
                 defaults={
                     'is_active': hospital_patient['is_active'],

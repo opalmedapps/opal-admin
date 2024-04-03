@@ -6,7 +6,7 @@ from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any
 
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import Permission
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
@@ -16,10 +16,11 @@ from django.utils.html import strip_tags
 
 import pytest
 from bs4 import BeautifulSoup
-from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertNotContains, assertQuerySetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
+from opal.hospital_settings import factories as hospital_factories
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
@@ -63,19 +64,17 @@ test_url_template_data: list[tuple[str, str]] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_patients_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_patients_urls_exist(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page exists at each URL address."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_views_use_correct_template(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page uses appropriate templates."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assertTemplateUsed(response, template)
 
@@ -93,7 +92,7 @@ def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
 
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         response.context['relationshiptype_list'].order_by('name'),
         models.RelationshipType.objects.all(),
     )
@@ -197,7 +196,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
 
     response = relationship_user.get(reverse('patients:relationships-list'))
 
-    assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
+    assertQuerySetEqual(list(reversed(response.context['relationship_list'])), relationships)
 
     for relationship in relationships:
         assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
@@ -255,7 +254,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
     table: tables.PatientTable = response.context['table']
 
     assert table.data.data[0] == relationship_record.patient
-    assertContains(response, '{0}: {1}'.format(hospital_patient.site.code, hospital_patient.mrn))
+    assertContains(response, '{0}: {1}'.format(hospital_patient.site.acronym, hospital_patient.mrn))
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 
@@ -390,26 +389,25 @@ def test_form_search_result_http_referrer(relationship_user: Client) -> None:
     assert response_post.url == cancel_url  # type: ignore[attr-defined]
 
 
-def test_caregiver_access_update_form_fail(relationship_user: Client) -> None:
-    """Ensures patient cannot have different name from caregiver in self-relationship."""
+def test_caregiver_access_update_form_name_changed(relationship_user: Client) -> None:
+    """Ensures that changing the caregiver's name for a self-relationship is caught (readonly fields)."""
     patient = factories.Patient()
     self_type = factories.RelationshipType(role_type=models.RoleType.SELF.name)
     relationship = factories.Relationship(patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED)
 
-    cancel_url = 'patient/test/?search-query'
     form_data = model_to_dict(relationship)
     form_data['pk'] = relationship.pk
     form_data['type'] = relationship.type.pk
     form_data['first_name'] = 'test_firstname'
     form_data['last_name'] = 'test_lastname'
-    form_data['end_date'] = date.fromisoformat('2023-05-09')
-    form_data['cancel_url'] = cancel_url
 
     url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+    response = relationship_user.post(path=url, data=form_data)
 
-    response_post = relationship_user.post(path=url, data=form_data)
-    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
-    assert err_msg in response_post.context['form'].errors['__all__']
+    form = response.context['form']
+    assert not form.is_valid()
+    message = "The caregiver's name cannot currently be changed."
+    assert message in response.context['form'].errors[NON_FIELD_ERRORS]
 
 
 @pytest.mark.parametrize(
@@ -447,34 +445,30 @@ def test_caregiver_access_update_form_pass(relationship_user: Client, role_type:
     assert relationship_record.caregiver.user.last_name == form_data['last_name']
 
 
-def test_caregiver_access_update_form_self_pass(relationship_user: Client) -> None:
-    """Ensure patient cannot have different name from caregiver in self relationship."""
-    patient = factories.Patient()
+def test_caregiver_access_update_form_self_name_mismatch(relationship_user: Client) -> None:
+    """Ensure patient can have different name from caregiver in self relationship."""
+    patient = factories.Patient(first_name='John', last_name='Wayne')
     relationshiptype = factories.RelationshipType(role_type=models.RoleType.SELF)
-    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+    relationship = factories.Relationship(
+        patient=patient,
+        type=relationshiptype,
+        status=models.RelationshipStatus.CONFIRMED,
+    )
 
-    cancel_url = 'patient/test/?search-query'
     form_data = model_to_dict(relationship)
-    form_data['pk'] = relationship.pk
     form_data['type'] = relationship.type.pk
-    form_data['first_name'] = 'test_firstname'
-    form_data['last_name'] = 'test_lastname'
-    form_data['cancel_url'] = cancel_url
+    form_data['first_name'] = relationship.caregiver.user.first_name
+    form_data['last_name'] = relationship.caregiver.user.last_name
+    form_data['cancel_url'] = 'patient/test/?search-query'
 
-    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
     url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
-
-    post_response = relationship_user.post(
+    response = relationship_user.post(
         path=url,
         data=form_data,
     )
-    form_context = post_response.context['form']
 
-    assert err_msg in form_context.errors.get(NON_FIELD_ERRORS)
-    # assert the first and last name have not been changed
-    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
-    assert relationship_record.caregiver.user.first_name != form_data['first_name']
-    assert relationship_record.caregiver.user.last_name != form_data['last_name']
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == form_data['cancel_url']
 
 
 @pytest.mark.parametrize(
@@ -852,7 +846,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client) -> 
     mrn_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         mrn_filter.qs,
         models.Relationship.objects.filter(patient__hospital_patients__mrn=hospital_patient.mrn),
         ordered=False,
@@ -911,7 +905,7 @@ def test_not_display_duplicated_patients(relationship_user: Client) -> None:
     mrn_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         mrn_filter.qs,
         models.Relationship.objects.filter(
             patient__hospital_patients__mrn=hospital_patient1.mrn,
@@ -978,7 +972,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
     ramq_filter = response.context['filter']
 
     # Check filter's queryset
-    assertQuerysetEqual(
+    assertQuerySetEqual(
         ramq_filter.qs,
         models.Relationship.objects.filter(patient__ramq=hospital_patient.patient.ramq),
         ordered=False,
@@ -1730,6 +1724,7 @@ def test_access_request_confirmation_no_code(client: Client, registration_user: 
         'registration_code': None,
     }
     session.save()
+    hospital_factories.Institution()
 
     # initialize the session storage
     response = client.get(reverse('patients:access-request-confirmation'))
@@ -1752,6 +1747,7 @@ def test_access_request_confirmation_code(client: Client, registration_user: Use
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1797,6 +1793,7 @@ def test_access_request_confirmation_post_no_data(client: Client, registration_u
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1822,6 +1819,7 @@ def test_access_request_confirmation_post_success(
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
+    hospital_factories.Institution()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()

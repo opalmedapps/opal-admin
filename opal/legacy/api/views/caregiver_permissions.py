@@ -1,11 +1,9 @@
 """Collection of api views used for caregiver-patient permission checks."""
-
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.core.drf_permissions import CaregiverPatientPermissions
+from opal.core.drf_permissions import CaregiverPatientPermissions, IsListener
 
 
 class CaregiverPermissionsView(APIView):
@@ -17,7 +15,7 @@ class CaregiverPermissionsView(APIView):
     """
 
     # The essential work for this request is done by CaregiverPatientPermissions
-    permission_classes = [IsAuthenticated, CaregiverPatientPermissions]
+    permission_classes = (IsListener, CaregiverPatientPermissions)
 
     def get(self, request: Request, legacy_id: int) -> Response:
         """

@@ -7,7 +7,7 @@ import pytest
 from opal.users.models import User
 
 
-@pytest.fixture()
+@pytest.fixture
 def relationshiptype_user(client: Client, django_user_model: User) -> Client:
     """
     Fixture provides an instance of [Client][django.test.Client] with a logged in user with relationshiptype permission.
@@ -28,7 +28,7 @@ def relationshiptype_user(client: Client, django_user_model: User) -> Client:
     return client
 
 
-@pytest.fixture()
+@pytest.fixture
 def relationship_user(client: Client, django_user_model: User) -> Client:
     """
     Fixture provides an instance of [Client][django.test.Client] with a logged in user with relationship permission.
@@ -49,7 +49,7 @@ def relationship_user(client: Client, django_user_model: User) -> Client:
     return client
 
 
-@pytest.fixture()
+@pytest.fixture
 def registration_user(client: Client, django_user_model: User) -> User:
     """
     Fixture providing a `User` instance with the `can_perform_registration` permission.
@@ -72,5 +72,24 @@ def registration_user(client: Client, django_user_model: User) -> User:
     user.save()
 
     client.force_login(user)
+
+    return user
+
+
+@pytest.fixture
+def permission_user(django_user_model: User, permission_name: str) -> User:
+    """
+    Fixture providing a `User` instance with the permission from the parameter.
+
+    Args:
+        django_user_model: the `User` model used in this project
+        permission_name: the name of the permission
+
+    Returns:
+        a user instance with the permission from the parameter
+    """
+    user: User = django_user_model.objects.create_user(username='test_permission_user')
+    permission = Permission.objects.get(codename=permission_name)
+    user.user_permissions.add(permission)
 
     return user

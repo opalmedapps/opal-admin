@@ -57,6 +57,9 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
+# https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
+# allow definition of PAGE_SIZE globally while having pagination opt-in
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
 
 # DATABASES
@@ -170,7 +173,6 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
-    'formtools',
     'slippers',
     'fontawesomefree',
     'phonenumber_field',
@@ -188,6 +190,7 @@ LOCAL_APPS = [
     'opal.health_data',
     'opal.databank',
     'opal.test_results',
+    'opal.pharmacy',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -398,6 +401,9 @@ LOGGING = {
 #
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
+# Redirect after logout to legacy OpalAdmin's logout page
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
 
 # Legacy URL for generating questionnaires report
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
@@ -427,11 +433,16 @@ ORMS_HOST = env.url('ORMS_HOST').geturl()
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
 USER_MANAGER_GROUP_NAME = 'User Managers'
+REGISTRANTS_GROUP_NAME = 'Registrants'
 
 # Sending SMS message settings
 TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
 SMS_FROM = env.str('SMS_FROM')
+
+# PATHOLOGY REPORTS SETTINGS
+# Path to the pathology reports folder
+PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
@@ -444,13 +455,16 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
-    # require specific model permissions (including view) to access API
+    # lock down API by default, override on a per-view basis (see Two Scoops of Django Section 17.2)
     'DEFAULT_PERMISSION_CLASSES': [
-        'opal.core.drf_permissions.CustomDjangoModelPermissions',
+        'opal.core.drf_permissions.IsSuperUser',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # disabled pagination by default
+    # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # set default request format to JSON
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 # django-cors-headers
@@ -459,8 +473,6 @@ REST_FRAMEWORK = {
 # A list of origins that are authorized to make cross-site HTTP requests.
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
-# See: https://github.com/adamchainz/django-cors-headers#cors_urls_regex-str--patternstr
-CORS_URLS_REGEX = '^/api/.*$'
 
 # django-easy-audit
 # ------------------------------------------------------------------------------
@@ -469,6 +481,10 @@ CORS_URLS_REGEX = '^/api/.*$'
 DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+# Propagate exceptions during debug
+DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
+# Disable extra DB calls to check whether user exists
+DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
 
 # django-phonenumber-field
 # ------------------------------------------------------------------------------

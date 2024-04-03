@@ -3,12 +3,11 @@ import json
 from http import HTTPStatus
 from io import StringIO
 from typing import Any
-from unittest.mock import MagicMock
 
 from django.core.management import call_command
 
 import requests
-from pytest_mock.plugin import MockerFixture
+from pytest_mock import MockerFixture, MockType
 
 
 class CommandTestMixin:
@@ -46,7 +45,7 @@ class RequestMockerTest:
         cls,
         mocker: MockerFixture,
         response_data: dict[str, Any],
-    ) -> MagicMock:
+    ) -> MockType:
         """Mock an HTTP POST call to a web service.
 
         Args:
@@ -70,7 +69,7 @@ class RequestMockerTest:
         cls,
         mocker: MockerFixture,
         generated_response_data: dict[str, str],
-    ) -> MagicMock:
+    ) -> MockType:
         """Mock an HTTP GET call to a web service.
 
         Args:

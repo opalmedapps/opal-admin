@@ -4,19 +4,18 @@ from datetime import datetime
 from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any
-from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_django.fixtures import SettingsWrapper
-from pytest_mock.plugin import MockerFixture
+from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital import OIEMRNData, OIEPatientData, OIEReportExportData, OIEService
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.hospital.hospital_error import OIEErrorHandler
 from opal.services.hospital.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'
@@ -31,7 +30,7 @@ OIE_CREDENTIALS = '12345Opal!!'
 OIE_HOST = 'https://localhost'
 
 OIE_PATIENT_DATA = MappingProxyType({
-    'dateOfBirth': '1953-01-01 00:00:00',
+    'dateOfBirth': '1953-01-01',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
     'sex': 'F',
@@ -39,7 +38,7 @@ OIE_PATIENT_DATA = MappingProxyType({
     'deceased': True,
     'deathDateTime': '2023-01-01 00:00:00',
     'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
+    'ramqExpiration': '201801',
     'mrns': [
         {
             'site': 'MGH',
@@ -61,12 +60,30 @@ def _create_report_export_response_data() -> dict[str, str]:
     return {'status': 'success'}
 
 
+def _create_oie_service_mock_settings() -> OIEService:
+    """Create a mock OIEService with specific parameters different from the default ones in settings.
+
+    Returns:
+        A mock OIEService
+    """
+    # Create a communication manager with mock settings
+    oie_communication_mock = OIEHTTPCommunicationManager()
+    oie_communication_mock.base_url = OIE_HOST
+    oie_communication_mock.user = OIE_CREDENTIALS_USER
+    oie_communication_mock.password = OIE_CREDENTIALS
+
+    # Assign the communication manager to a new oie_service
+    oie_service_mock = OIEService()
+    oie_service_mock.communication_manager = oie_communication_mock
+    return oie_service_mock
+
+
 # __init__
 
 def test_init_types() -> None:
     """Ensure init function creates helper services of certain types."""
     assert isinstance(oie_service.communication_manager, OIEHTTPCommunicationManager)
-    assert isinstance(oie_service.error_handler, OIEErrorHandler)
+    assert isinstance(oie_service.error_handler, ServiceErrorHandler)
     assert isinstance(oie_service.validator, OIEValidator)
 
 
@@ -186,15 +203,14 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
 
 def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
     """Ensure OIE export report request uses report settings."""
-    settings.OIE_USER = OIE_CREDENTIALS_USER
-    settings.OIE_PASSWORD = OIE_CREDENTIALS
-    settings.OIE_HOST = OIE_HOST
+    # Create a new OIE service that uses the mocked settings
+    oie_service_mock = _create_oie_service_mock_settings()
 
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
     mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
-    report_data = oie_service.export_pdf_report(
+    report_data = oie_service_mock.export_pdf_report(
         OIEReportExportData(
             mrn=MRN,
             site=SITE_CODE,
@@ -330,7 +346,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -344,7 +360,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y%m',
         ),
         mrns=[
             OIEMRNData(
@@ -374,7 +390,7 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -401,7 +417,7 @@ def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'message': 'Patient 00000000null not found',
+            'message': 'Patient not found',
         },
     )
 
@@ -433,7 +449,7 @@ def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'message': 'Patient 00000000null not found',
+            'message': 'Patient not found',
         },
     )
 
@@ -442,11 +458,10 @@ def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
     assert response['data']['message'] == ['not_found']
 
 
-@patch('requests.post')
-def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
-    post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
+    post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
     with pytest.raises(RequestException):  # noqa: PT012
         with caplog.at_level(logging.ERROR):
@@ -472,14 +487,14 @@ def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFix
     assert caplog.records[0].levelname == 'ERROR'
 
 
-def test_find_patient_by_mrn_invalid_mrn(mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_invalid_mrn() -> None:
     """Ensure find_patient_by_mrn request with invalid MRN is handled and does not result in an error."""
     response = oie_service.find_patient_by_mrn('', SITE_CODE)
     assert response['status'] == 'error'
     assert response['data']['message'] == 'Provided MRN or site is invalid.'
 
 
-def test_find_patient_by_mrn_invalid_site(mocker: MockerFixture) -> None:
+def test_find_patient_by_mrn_invalid_site() -> None:
     """Ensure find_patient_by_mrn request with invalid site is handled and does not result in an error."""
     response = oie_service.find_patient_by_mrn(MRN, '')
     assert response['status'] == 'error'
@@ -502,7 +517,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -516,7 +531,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y%m',
         ),
         mrns=[
             OIEMRNData(
@@ -546,7 +561,7 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
             str(OIE_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
         ).date(),
         first_name=str(OIE_PATIENT_DATA['firstName']),
         last_name=str(OIE_PATIENT_DATA['lastName']),
@@ -566,11 +581,10 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     )
 
 
-@patch('requests.post')
-def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
+def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return None and log the error."""
     # mock the post request and pretend it raises `RequestException`
-    post_mock.side_effect = RequestException('Caused by ConnectTimeoutError.')
+    post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
     with pytest.raises(RequestException):  # noqa: PT012
         with caplog.at_level(logging.ERROR):
@@ -604,3 +618,49 @@ def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
     response = oie_service.find_patient_by_ramq(RAMQ_INVALID)
     assert response['status'] == 'error'
     assert response['data']['message'] == 'Provided RAMQ is invalid.'
+
+
+def test_new_opal_patient_success(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient can succeed."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+    response = oie_service.new_opal_patient(
+        [
+            ('RVH', '0000001'),
+            ('MCH', '0000002'),
+        ],
+    )
+
+    assert response['status'] == 'success'
+    assert not hasattr(response, 'data')
+
+
+def test_new_opal_patient_empty_input(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient fails gracefully when given an empty MRN list."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+    response = oie_service.new_opal_patient([])
+
+    assert response['status'] == 'error'
+    assert 'A list of active (site, mrn) tuples should be provided' in response['data']['message']
+
+
+def test_new_opal_patient_error(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient returns an error for invalid input."""
+    RequestMockerTest.mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'error': 'Some error message',
+        },
+    )
+
+    response = oie_service.new_opal_patient(
+        [
+            ('RVH', '0000001'),
+            ('MCH', '0000002'),
+        ],
+    )
+
+    assert response['status'] == 'error'
+    assert response['data']['responseData']['error'] == 'Some error message'

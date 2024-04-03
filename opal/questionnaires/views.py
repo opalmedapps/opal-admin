@@ -36,7 +36,7 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
     permission_required = ('questionnaires.export_report')
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
-    def get_context_data(self, **kwargs: Any) -> Any:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Override class method and append user's followed questionnaires.
 
         Args:
@@ -222,7 +222,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         qid = request.POST.get('questionnaireid')
         datesuffix = datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        df = pd.DataFrame.from_dict(
+        df = pd.DataFrame.from_records(
             get_temp_table(),
         )
 
@@ -263,7 +263,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         datesuffix = datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         report_dict = get_temp_table()
-        df = pd.DataFrame.from_dict(report_dict)
+        df = pd.DataFrame.from_records(report_dict)
         buffer = BytesIO()
 
         if tabs == 'none' or df.empty:

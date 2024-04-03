@@ -193,3 +193,16 @@ class RadioSelect(Field):
     """
 
     template = 'forms/radioselect.html'
+
+
+# potential improvement: inherit from Container or LayoutObject to include the content
+# and provide a method to add content at the right place
+class TabRadioSelect(Field):
+    """
+    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
+
+    Triggers validation via `up-validate` on selection to let the form react to the selection.
+    For example, the form can change the layout according to the selection.
+    """
+
+    template = 'forms/radioselect_tabs.html'

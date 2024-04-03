@@ -4,7 +4,7 @@ import json
 from collections import OrderedDict
 from datetime import date
 from http import HTTPStatus
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -26,6 +26,7 @@ from django_tables2 import SingleTableMixin, SingleTableView
 from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
+from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
@@ -107,7 +108,7 @@ class AccessRequestStorageMixin:
         self.request.session.modified = True
 
 
-class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorageMixin, generic.FormView):
+class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorageMixin, generic.FormView[Form]):
     """
     View that shows the confirmation page for a completed access request.
 
@@ -191,10 +192,12 @@ class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorag
 
         if registration_code:
             code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code}'
+            registration_code_valid_period = Institution.objects.get().registration_code_valid_period
             context.update({
                 'registration_code': registration_code,
                 'registration_url': settings.OPAL_USER_REGISTRATION_URL,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+                'registration_code_valid_period': registration_code_valid_period,
             })
 
         return context
@@ -447,7 +450,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # avoid form resubmit via Post/Redirect/Get pattern
         return redirect(reverse('patients:access-request-confirmation'))
 
-    def _get_prefix(self, form_class: Type[Form]) -> Optional[str]:
+    def _get_prefix(self, form_class: type[Form]) -> Optional[str]:
         """
         Return the prefix for the given form class.
 
@@ -558,7 +561,9 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         if step in {'patient', 'relationship'}:
             # TODO: might be better to refactor into a function so it can be tested easier
-            patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
+            patient_data: str | int = storage.get('patient', '[]')  # type: ignore[assignment]
+            patient: OIEPatientData | Patient
+
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
             else:
@@ -751,7 +756,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
     )
     success_url = reverse_lazy('patients:relationships-pending-list')
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `ManageCaregiverAccessUpdateView` update view.
 

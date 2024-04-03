@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from opal.patients.models import Patient, Relationship, RelationshipStatus
+from opal.patients.models import Relationship, RelationshipStatus
 
 
 class Command(BaseCommand):
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         ).exclude(type__end_age=None)
 
         for relationship in relationships_to_check:
-            patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
+            patient_age = relationship.patient.age
 
             if relationship.type.end_age and patient_age >= relationship.type.end_age:
                 relationship.status = RelationshipStatus.EXPIRED

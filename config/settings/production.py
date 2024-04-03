@@ -33,12 +33,6 @@ CACHES = {
     },
 }
 
-# AUTHENTICATION
-# ------------------------------------------------------------------------------
-# Redirect after logout to legacy OpalAdmin's logout page
-# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
-
 # SECURITY
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
@@ -58,12 +52,16 @@ SECURE_HSTS_PRELOAD = env.bool('SECURE_HSTS_PRELOAD', default=False)
 # https://docs.djangoproject.com/en/dev/ref/middleware/#x-content-type-options-nosniff
 SECURE_CONTENT_TYPE_NOSNIFF = env.bool('SECURE_CONTENT_TYPE_NOSNIFF', default=True)
 
-# STATIC
-# ------------------------
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# MEDIA
+# STATIC & MEDIA
 # ------------------------------------------------------------------------------
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # EMAIL
 # ------------------------------------------------------------------------------

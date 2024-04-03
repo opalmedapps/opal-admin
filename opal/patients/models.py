@@ -13,8 +13,9 @@ from django.utils.translation import gettext_lazy as _
 from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core.models import AbstractLabDelayModel
 from opal.core.validators import validate_ramq
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.managers import PatientManager, PatientQueryset, RelationshipManager, RelationshipTypeManager
 
 from . import constants
@@ -33,7 +34,7 @@ class RoleType(models.TextChoices):
 
 # defined here instead of constants to avoid circular import
 #: Set of role types for which a relationship type is predefined via a data migration
-PREDEFINED_ROLE_TYPES: Final[set] = {  # noqa: WPS407
+PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {  # noqa: WPS407
     RoleType.SELF,
     RoleType.PARENT_GUARDIAN,
     RoleType.GUARDIAN_CAREGIVER,
@@ -160,6 +161,16 @@ class RelationshipType(models.Model):
 
         return super().delete(*args, **kwargs)
 
+    @property
+    def is_self(self) -> bool:
+        """
+        Check whether the RelationshipType is a "Self" role type.
+
+        Returns:
+            True if the role type is SELF.
+        """
+        return self.role_type == RoleType.SELF
+
 
 class SexType(models.TextChoices):
     """
@@ -182,7 +193,7 @@ class DataAccessType(models.TextChoices):
     NEED_TO_KNOW = 'NTK', _('Need To Know')
 
 
-class Patient(models.Model):
+class Patient(AbstractLabDelayModel):
     """A patient whose data can be accessed."""
 
     # TextChoices need to be defined outside to use them in constraints
@@ -225,9 +236,7 @@ class Patient(models.Model):
             MinLengthValidator(12),
             validate_ramq,
         ],
-        unique=True,
         blank=True,
-        null=True,
     )
     data_access = models.CharField(
         verbose_name=_('Data Access Level'),
@@ -235,7 +244,7 @@ class Patient(models.Model):
         choices=DataAccessType.choices,
         default=DataAccessType.ALL,
     )
-    caregivers = models.ManyToManyField(
+    caregivers: models.ManyToManyField[CaregiverProfile, 'Relationship'] = models.ManyToManyField(
         verbose_name=_('Caregivers'),
         related_name='patients',
         to=CaregiverProfile,
@@ -286,6 +295,26 @@ class Patient(models.Model):
         """
         if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
             raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
+
+    @property
+    def age(self) -> int:
+        """
+        Return the age of the patient.
+
+        Returns:
+            the age of the patient
+        """
+        return Patient.calculate_age(self.date_of_birth)
+
+    @property
+    def is_adult(self) -> bool:
+        """
+        Return whether the patient is an adult.
+
+        Returns:
+            True, if the patient's age is greater equal than the institution's adulthood age, False otherwise
+        """
+        return self.age >= Institution.objects.get().adulthood_age
 
     @classmethod
     def calculate_age(cls, date_of_birth: date, reference_date: Optional[date] = None) -> int:
@@ -535,19 +564,6 @@ class Relationship(models.Model):  # noqa: WPS214
                     gettext('There already exists an active relationship between the patient and caregiver.'),
                 )
 
-            if (
-                hasattr(self, 'type')
-                and self.type.role_type == RoleType.SELF
-                and (
-                    self.patient.first_name != self.caregiver.user.first_name
-                    or self.patient.last_name != self.caregiver.user.last_name
-                )
-            ):
-                error = gettext(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                )
-                errors[NON_FIELD_ERRORS].append(error)
-
         if errors:
             raise ValidationError(errors)
 
@@ -619,6 +635,21 @@ class Relationship(models.Model):  # noqa: WPS214
             reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
         return reference_date
 
+    @classmethod
+    def max_end_date(cls, date_of_birth: date) -> date:
+        """
+        Get the max end date for the relationship between a patient and a caregiver.
+
+        The max end date equals to start date plus RELATIONSHIP_MAX_AGE.
+
+        Args:
+            date_of_birth: patient's date of birth
+
+        Returns:
+            the max end date
+        """
+        return date_of_birth + relativedelta(years=constants.RELATIONSHIP_MAX_AGE)
+
 
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
@@ -655,7 +686,7 @@ class HospitalPatient(models.Model):
         Returns:
             the textual representation of this instance
         """
-        return '{site_code}: {mrn}'.format(
-            site_code=str(self.site.code),
+        return '{site_acronym}: {mrn}'.format(
+            site_acronym=str(self.site.acronym),
             mrn=str(self.mrn),
         )

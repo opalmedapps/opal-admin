@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-25 14:50-0400\n"
+"POT-Creation-Date: 2024-03-20 11:42-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,6 +79,38 @@ msgid "Patient is not a test patient."
 msgstr "Le patient n'est pas un patient test."
 
 #: opal/patients/forms.py
+msgid "Patient Date of Birth is invalid."
+msgstr "La date de naissance du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient firstName is invalid."
+msgstr "Le prénom du patient n'est pas valide."
+
+#: opal/patients/forms.py
+msgid "Patient lastName is invalid."
+msgstr "Le nom du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient sex is invalid."
+msgstr "Le sexe du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient alias is invalid."
+msgstr "L'alias du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient ramq is invalid."
+msgstr "Le ramq du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient ramq expiration is invalid."
+msgstr "L'expiration du ramq du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient MRN is invalid."
+msgstr "Le MRN du patient n'est pas valide"
+
+#: opal/patients/forms.py
 msgid ""
 "Unable to complete action with this patient. Please contact Medical Records."
 msgstr ""
@@ -135,14 +167,6 @@ msgstr "Rechercher un utilisateur"
 msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
-#: opal/patients/forms.py opal/patients/models.py
-msgid ""
-"A self-relationship was selected but the caregiver appears to be someone "
-"other than the patient."
-msgstr ""
-"Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
-"être quelqu'un d'autre que le patient."
-
 #: opal/patients/forms.py
 msgid "Age"
 msgstr "Âge"
@@ -150,6 +174,10 @@ msgstr "Âge"
 #: opal/patients/forms.py
 msgid " and older"
 msgstr " et plus"
+
+#: opal/patients/forms.py
+msgid "An active relationship with a caregiver with this name already exists."
+msgstr "Une relation active avec le proche aidant portant ce nom déjà existe."
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
@@ -171,9 +199,12 @@ msgstr "Envoyer"
 
 #: opal/patients/forms.py
 #, python-brace-format
-msgid "Your Opal registration code is: {code}. Please go to: {url}"
+msgid ""
+"Your Opal registration code is: {code}. Please go to: {url}. Your code will "
+"expire in {period} hours."
 msgstr ""
-"Votre code d'inscription Opal est: {code}. Veuillez vous rendre à: {url}"
+"Votre code d'inscription Opal est: {code}. Veuillez vous rendre à: {url}. "
+"Votre code expirera dans {period} heures."
 
 #: opal/patients/forms.py
 msgid "An error occurred while sending the SMS"
@@ -207,6 +238,10 @@ msgstr "Explication des changements"
 #: opal/patients/forms.py
 msgid "Save"
 msgstr "Enregistrer"
+
+#: opal/patients/forms.py
+msgid "The caregiver's name cannot currently be changed."
+msgstr "Le nom du proche aidant ne peut actuellement pas être modifié."
 
 #: opal/patients/models.py
 msgid "Self"
@@ -594,8 +629,12 @@ msgid "Do not print this page!"
 msgstr "N'imprimez pas cette page !"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
-msgid "Inform the requestor that the code is valid for 72 hours."
-msgstr "Informez le demandeur que le code est valable pour 72 heures."
+msgid "Inform the requestor that the code is valid for "
+msgstr "Informez le demandeur que le code est valable pour "
+
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid " hours."
+msgstr " heures."
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
@@ -698,8 +737,8 @@ msgid ""
 "Caregiver accesses that have expired cannot be changed, they can only be "
 "viewed."
 msgstr ""
-"Les accès de proches aidants expirés ne peuvent pas être "
-"modifiés, ils peuvent seulement être consultés."
+"Les accès de proches aidants expirés ne peuvent pas être modifiés, ils "
+"peuvent seulement être consultés."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided"

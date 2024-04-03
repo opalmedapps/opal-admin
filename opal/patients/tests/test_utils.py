@@ -1,6 +1,8 @@
 """App patient utils test functions."""
 import datetime as dt
+import uuid
 from datetime import date, datetime
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
@@ -13,10 +15,15 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
-from opal.hospital_settings.factories import Site
+from opal.hospital_settings.factories import Institution, Site
+from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
+from opal.legacy.factories import LegacyUserFactory as LegacyUser
+from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
+    PREDEFINED_ROLE_TYPES,
     HospitalPatient,
     Patient,
     Relationship,
@@ -31,7 +38,7 @@ from opal.users.factories import Caregiver, User
 
 from .. import utils
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 PATIENT_DATA = OIEPatientData(
@@ -110,49 +117,35 @@ def test_find_caregiver_failure() -> None:
 
 def test_update_caregiver_success() -> None:
     """Test update caregiver information success."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '+15141112223'
-    language1 = 'en'
-    language2 = 'fr'
-    username1 = 'username-1'
-    username2 = 'username-2'
-    user = User(phone_number=phone_number1, language=language1, username=username1)
-    info: dict = {
-        'user': {
-            'language': language2,
-            'phone_number': phone_number2,
-            'username': username2,
-        },
-    }
-    utils.update_caregiver(user, info)
+    email = 'test@example.com'
+    phone_number = '+15141112223'
+    language = 'fr'
+    username = 'username-2'
+    user = User(email='foo@bar.com', phone_number='+15141112222', language='en', username='username-1')
+
+    utils.update_caregiver(user, email, username, language, phone_number)
+
     user.refresh_from_db()
-    assert user.language == language2
-    assert user.phone_number == phone_number2
-    assert user.username == username2
+    assert user.email == email
+    assert user.language == language
+    assert user.phone_number == phone_number
+    assert user.username == username
 
 
 def test_update_caregiver_failure() -> None:
     """Test update caregiver information failure."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '11111112223'
-    language1 = 'en'
-    language2 = 'fr'
-    username1 = 'username-1'
-    username2 = 'username-2'
-    user = User(phone_number=phone_number1, language=language1, username=username1)
-    info: dict = {
-        'user': {
-            'language': language2,
-            'phone_number': phone_number2,
-            'username': username2,
-        },
-    }
+    email = 'test@example.com'
+    phone_number = '11111112223'
+    language = 'en'
+    username = 'username-1'
+    user = User(email='foo@bar.com', phone_number=phone_number, language=language, username=username)
+
     expected_message = "{'phone_number': ['Enter a valid value.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
     ):
-        utils.update_caregiver(user, info)
+        utils.update_caregiver(user, email, username, language, phone_number)
 
 
 def test_replace_caregiver() -> None:
@@ -180,10 +173,9 @@ def test_update_caregiver_profile_success() -> None:
     legacy_id1 = 1
     legacy_id2 = 2
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info: dict = {
-        'legacy_id': legacy_id2,
-    }
-    utils.update_caregiver_profile(profile, info)
+
+    utils.update_caregiver_profile(profile, legacy_id2)
+
     profile.refresh_from_db()
     assert profile.legacy_id == legacy_id2
 
@@ -193,15 +185,13 @@ def test_update_caregiver_profile_failure() -> None:
     legacy_id1 = 1
     legacy_id2 = 'Two'
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info: dict = {
-        'legacy_id': legacy_id2,
-    }
+
     expected_message = "{'legacy_id': ['“Two” value must be an integer.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
     ):
-        utils.update_caregiver_profile(profile, info)
+        utils.update_caregiver_profile(profile, legacy_id2)  # type: ignore[arg-type]
 
 
 def test_insert_security_answers_success() -> None:
@@ -225,7 +215,7 @@ def test_insert_security_answers_success() -> None:
 def test_insert_security_answers_failure() -> None:
     """Test insert security answers failure."""
     caregiver = CaregiverProfile()
-    security_answers = [
+    security_answers: list[dict[str, Any]] = [
         {
             'question': None,
             'answer': 'yes',
@@ -303,24 +293,24 @@ def test_get_patient_by_ramq_in_failed() -> None:
 
 
 def test_get_patient_by_mrn_in_success() -> None:
-    """Get the patient instance by MRN and site code in success."""
+    """Get the patient instance by MRN and site acronym in success."""
     ramq = ''
     mrn = '9999993'
     site_code = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(code=site_code)
+    site = Site(acronym=site_code)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn=mrn)
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
 
 
 def test_get_patient_by_mrn_in_failed() -> None:
-    """Get the patient instance by MRN and site code in failed."""
+    """Get the patient instance by MRN and site acronym in failed."""
     ramq = ''
     mrn = '9999993'
     site_code = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(code=site_code)
+    site = Site(acronym=site_code)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn='9999996')
 
     assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
@@ -333,7 +323,7 @@ def test_create_patient() -> None:
         last_name='Wurst',
         date_of_birth=date(1990, 10, 23),
         sex=SexType.MALE,
-        ramq=None,
+        ramq='',
         mrns=[],
     )
 
@@ -341,7 +331,7 @@ def test_create_patient() -> None:
     assert patient.last_name == 'Wurst'
     assert patient.date_of_birth == date(1990, 10, 23)
     assert patient.sex == SexType.MALE
-    assert patient.ramq is None
+    assert patient.ramq == ''
     assert HospitalPatient.objects.count() == 0
 
 
@@ -514,10 +504,75 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
 
 
+def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to ORMS to initialize a patient succeeds."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call(
+        'Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
+def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to ORMS to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
+
+
+def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to the OIE to initialize a patient succeeds."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    mock_error_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call(
+        'Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid),
+    )
+
+
+def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to the OIE to initialize a patient fails."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
+    mock_error_logger = mocker.patch('logging.Logger.error')
+
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+
+    mock_error_logger.assert_any_call('Failed to initialize patient via the OIE')
+
+
 def test_create_access_request_existing() -> None:
     """A new self relationship is created for an existing patient and caregiver."""
     patient = patient_factories.Patient()
-    caregiver_profile = CaregiverProfile()
+    legacy_user = LegacyUser(usertype=LegacyUserType.CAREGIVER)
+    caregiver_profile = CaregiverProfile(legacy_id=legacy_user.usersernum)
     self_type = RelationshipType.objects.self_type()
 
     relationship, registration_code = utils.create_access_request(
@@ -525,6 +580,7 @@ def test_create_access_request_existing() -> None:
         caregiver_profile,
         self_type,
     )
+    legacy_user.refresh_from_db()
 
     assert registration_code is None
     assert relationship.patient == patient
@@ -534,6 +590,7 @@ def test_create_access_request_existing() -> None:
     assert relationship.request_date == date.today()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date is None
+    assert legacy_user.usertype == LegacyUserType.PATIENT
 
 
 def test_create_access_request_non_self() -> None:
@@ -560,6 +617,7 @@ def test_create_access_request_new_patient() -> None:
     """A new relationship and new patient are created."""
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
+    Institution()
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
@@ -600,10 +658,13 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     assert Relationship.objects.count() == 0
 
 
-def test_create_access_request_new_patient_mrns() -> None:
+def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     """A new relationship and patient are created along with associated hospital patient instances."""
-    Site(code='RVH')
-    Site(code='MGH')
+    RequestMockerTest.mock_requests_post(mocker, {})
+    Site(acronym='RVH')
+    Site(acronym='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
 
@@ -695,6 +756,7 @@ def test_create_access_request_self_relationship_already_exists() -> None:
 def test_create_access_request_new_patient_caregiver() -> None:
     """A new relationship, patient, caregiver and registration code are created."""
     self_type = RelationshipType.objects.self_type()
+    Institution()
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
@@ -707,3 +769,91 @@ def test_create_access_request_new_patient_caregiver() -> None:
     assert user_models.Caregiver.objects.count() == 1
     assert Relationship.objects.count() == 1
     assert Patient.objects.count() == 1
+
+
+def test_create_access_request_missing_legacy_id() -> None:
+    """An error occurs if an existing user registers as self but is missing their legacy_id."""
+    caregiver_profile = CaregiverProfile(legacy_id=None)
+    patient = patient_factories.Patient()
+    self_type = RelationshipType.objects.self_type()
+
+    with assertRaisesMessage(ValueError, 'Legacy ID is missing'):
+        utils.create_access_request(
+            patient,
+            caregiver_profile,
+            self_type,
+        )
+
+
+def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture) -> None:
+    """A new pediatric set delay values following corresponding institution field values."""
+    RequestMockerTest.mock_requests_post(mocker, {})
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Site(acronym='RVH')
+    Site(acronym='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
+    institution = Institution(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
+
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data['date_of_birth'] = date(2008, 10, 23)
+
+    relationship, registration_code = utils.create_access_request(
+        OIEPatientData(**patient_data),
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = relationship.patient
+
+    assert patient.age < institution.adulthood_age
+    assert patient.non_interpretable_lab_result_delay == institution.non_interpretable_lab_result_delay
+    assert patient.interpretable_lab_result_delay == institution.interpretable_lab_result_delay
+
+
+@pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
+def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type: RoleType) -> None:
+    """Legacy data is saved when requesting access to a new patient for an existing caregiver (as self)."""
+    RequestMockerTest.mock_requests_post(mocker, {})
+    Site(acronym='RVH')
+    Site(acronym='MGH')
+    LegacyHospitalIdentifierType(code='RVH')
+    LegacyHospitalIdentifierType(code='MGH')
+    caregiver_profile = CaregiverProfile()
+    relationship_type = RelationshipType.objects.get(role_type=role_type)
+    patient_data = PATIENT_DATA._asdict()
+    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+
+    utils.create_access_request(
+        OIEPatientData(**patient_data),
+        caregiver_profile,
+        relationship_type,
+    )
+
+    legacy_patient = LegacyPatient.objects.get(ramq=patient_data['ramq'])
+    patient = Patient.objects.get(ramq=patient_data['ramq'])
+    legacy_mrn_list = LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient)
+
+    assert patient.legacy_id == legacy_patient.patientsernum
+    assert legacy_patient.first_name == patient_data['first_name']
+    assert legacy_patient.last_name == patient_data['last_name']
+    assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
+    assert legacy_patient.sex == 'Female'
+    assert legacy_patient.death_date is None
+    assert legacy_patient.access_level == '3'
+
+    # Two categories of parametrized test cases: self vs non-self
+    if relationship_type.is_self:
+        assert legacy_patient.email == caregiver_profile.user.email
+        assert legacy_patient.language == caregiver_profile.user.language.upper()
+    else:
+        assert legacy_patient.email == ''
+        assert legacy_patient.language == 'FR'
+
+    assert legacy_mrn_list.filter(mrn='9999993', hospital__code='RVH', is_active=True).count() == 1
+    assert legacy_mrn_list.filter(mrn='9999996', hospital__code='MGH', is_active=False).count() == 1
+
+    assert LegacyPatientControl.objects.filter(patient=legacy_patient).count() == 1

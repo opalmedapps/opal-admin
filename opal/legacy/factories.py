@@ -15,9 +15,10 @@ class LegacyUserFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyUsers
 
+    usersernum = Sequence(lambda number: number + 1)
     usertypesernum = 51
     username = 'username'
-    usertype = 'Patient'
+    usertype = models.LegacyUserType.PATIENT
 
 
 class LegacyPatientFactory(DjangoModelFactory):
@@ -28,19 +29,33 @@ class LegacyPatientFactory(DjangoModelFactory):
         django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
-    firstname = 'Marge'
-    lastname = 'Simpson'
-    telnum = '5149995555'
-    dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
+    first_name = 'Marge'
+    last_name = 'Simpson'
+    tel_num = '5149995555'
+    date_of_birth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
-    ssn = '123456'
-    registrationdate = timezone.make_aware(datetime(2018, 1, 1))
+    ramq = 'SIMM18510198'
+    registration_date = timezone.make_aware(datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
     # All
-    accesslevel = '3'
+    access_level = '3'
     last_updated = timezone.now()
     patient_aria_ser = Sequence(lambda number: number + 1)
+
+
+class LegacyPatientControlFactory(DjangoModelFactory):
+    """Model factory for Legacy PatientControl."""
+
+    class Meta:
+        model = models.LegacyPatientControl
+        django_get_or_create = ('patient',)
+
+    patient = 51
+    patientupdate = 1
+    lasttransferred = timezone.now()
+    lastupdated = timezone.now()
+    transferflag = 0
 
 
 class LegacyNotificationFactory(DjangoModelFactory):
@@ -142,7 +157,25 @@ class LegacyDocumentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyDocument
 
+    documentsernum = 5
     patientsernum = SubFactory(LegacyPatientFactory)
+    sourcedatabasesernum = SubFactory(LegacySourceDatabaseFactory)
+    documentid = '56190000000000039165511'
+    aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
+    approvedby = 890
+    approvedtimestamp = timezone.make_aware(datetime(2023, 6, 1, 12, 36))
+    authoredbysernum = 890
+    dateofservice = timezone.make_aware(datetime(2023, 6, 8, 12, 35))
+    revised = ''
+    validentry = 'Y'
+    originalfilename = 'bart_2009Feb23_pathology.pdf'
+    finalfilename = 'bart_2009Feb23_pathology.pdf'
+    createdbysernum = 890
+    createdtimestamp = timezone.make_aware(datetime(2023, 6, 8, 12, 36))
+    transferstatus = 'T'
+    transferlog = 'Transfer successful'
+    dateadded = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
+    readstatus = 0
     readby = '[]'
     readstatus = 0
 
@@ -201,6 +234,8 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 class LegacyPostcontrolFactory(DjangoModelFactory):
     """Post Controle factory for announcement from the legacy database."""
 
+    posttype = 'Announcement'
+
     class Meta:
         model = models.LegacyPostcontrol
 
@@ -239,7 +274,7 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
 
     securityanswersernum = 1
     securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
-    patientsernum = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyPatientFactory)
     answertext = 'bird'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     lastupdated = timezone.make_aware(datetime(2022, 9, 27))
@@ -260,10 +295,10 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyPatientHospitalIdentifier
 
-    patientsernum = SubFactory(LegacyPatientFactory)
-    hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
+    patient = SubFactory(LegacyPatientFactory)
+    hospital = SubFactory(LegacyHospitalIdentifierTypeFactory)
     mrn = '9999996'
-    isactive = True
+    is_active = True
 
 
 class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
@@ -421,3 +456,74 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     result_date_time = timezone.make_aware(datetime(2018, 1, 1))
     unit_description = 'mmol'
     read_by = ''
+    available_at = timezone.now()
+
+
+class LegacyOARoleFactory(DjangoModelFactory):
+    """LegacyOARole factory."""
+
+    class Meta:
+        model = models.LegacyOARole
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    deleted_by = Faker('name')
+    creation_date = timezone.make_aware(datetime(2018, 1, 1))
+    created_by = Faker('name')
+    updated_by = Faker('name')
+
+
+class LegacyOAUserFactory(DjangoModelFactory):
+    """LegacyOAUser factory."""
+
+    class Meta:
+        model = models.LegacyOAUser
+
+    username = Faker('user_name')
+    password = Faker('password')
+    oa_role = SubFactory(LegacyOARoleFactory)
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+
+
+class LegacyOAUserRoleFactory(DjangoModelFactory):
+    """LegacyOAUserRole factory."""
+
+    class Meta:
+        model = models.LegacyOAUserRole
+
+    oausersernum = Faker('random_int')
+    rolesernum = Faker('random_int')
+
+
+class LegacyModuleFactory(DjangoModelFactory):
+    """LegacyModule factory."""
+
+    class Meta:
+        model = models.LegacyModule
+        django_get_or_create = ('name_en',)
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    description_en = Faker('sentence')
+    description_fr = Faker('sentence')
+    tablename = Faker('name')
+    controltablename = Faker('name')
+    primarykey = Faker('name')
+    iconclass = Faker('name')
+    url = Faker('url')
+    sqlpublicationlist = Faker('paragraph')
+    sqldetails = Faker('paragraph')
+    sqlpublocationcharlog = Faker('paragraph')
+    sqlpublicationlistlog = Faker('paragraph')
+    sqlpublicationmultiple = Faker('paragraph')
+    sqlpublicationunique = Faker('paragraph')
+
+
+class LegacyOARoleModuleFactory(DjangoModelFactory):
+    """LegacyOARoleModule factory."""
+
+    class Meta:
+        model = models.LegacyOARoleModule
+
+    module = SubFactory(LegacyModuleFactory)
+    oa_role = SubFactory(LegacyOARoleFactory)

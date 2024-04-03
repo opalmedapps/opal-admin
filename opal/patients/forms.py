@@ -22,8 +22,16 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
+from opal.core.forms.layouts import (
+    CancelButton,
+    EnterSuppressedLayout,
+    FormActions,
+    InlineSubmit,
+    RadioSelect,
+    TabRadioSelect,
+)
 from opal.core.forms.widgets import AvailableRadioSelect
+from opal.hospital_settings.models import Institution
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.services.twilio import TwilioService, TwilioServiceError
@@ -243,7 +251,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
+                response = self.oie_service.find_patient_by_mrn(medical_number, site.acronym)
 
         if response:
             self._handle_response(response)
@@ -257,6 +265,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
+        messages = []
         if response['status'] == 'success':
             self.patient = response['data']
         else:
@@ -266,6 +275,22 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
             elif 'no_test_patient' in messages:
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
+
+        errors = {
+            ' dateOfBirth': _('Patient Date of Birth is invalid.'),
+            ' firstName': _('Patient firstName is invalid.'),
+            ' lastName': _('Patient lastName is invalid.'),
+            ' sex': _('Patient sex is invalid.'),
+            ' alias': _('Patient alias is invalid.'),
+            ' ramq ': _('Patient ramq is invalid.'),
+            ' ramqExpiration': _('Patient ramq expiration is invalid.'),
+            'Patient MRN': _('Patient MRN is invalid.'),
+        }
+
+        for message in messages:
+            for error, text in errors.items():
+                if error in message:
+                    self.add_error(NON_FIELD_ERRORS, text)
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -520,21 +545,20 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         super().clean()
         cleaned_data = self.cleaned_data
+        patient = self.patient
+        patient_instance = patient if isinstance(patient, Patient) else None
 
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
 
             existing_user = self.existing_user
-            patient = self.patient
             relationship_type = cleaned_data.get('relationship_type')
 
             if existing_user:
-                if self.is_patient_requestor() and isinstance(patient, OIEPatientData):
-                    self._validate_patient_requestor(patient, existing_user)
-
                 if relationship_type:
-                    patient_instance = patient if isinstance(patient, Patient) else None
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
+        elif patient_instance:
+            self._validate_existing_relationship(cleaned_data, patient_instance)
 
         return cleaned_data
 
@@ -548,8 +572,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Args:
             cleaned_data: the form's cleaned data, None if not available
         """
-        cleaned_data = self.cleaned_data
-
         # at the beginning (empty form) they are not in the cleaned data
         if 'user_email' in cleaned_data and 'user_phone' in cleaned_data:
             user_email = cleaned_data['user_email']
@@ -566,13 +588,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     NON_FIELD_ERRORS,
                     _('No existing user could be found.'),
                 )
-
-    def _validate_patient_requestor(self, patient: OIEPatientData, caregiver: CaregiverProfile) -> None:
-        if patient.first_name != caregiver.user.first_name or patient.last_name != caregiver.user.last_name:
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),
-            )
 
     def _validate_relationship(
         self, patient: Patient | None,
@@ -620,8 +635,37 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             )
         return option_descriptions
 
+    def _validate_existing_relationship(self, cleaned_data: dict[str, Any], patient: Patient) -> None:
+        """
+        Validate the existing relationship selection by looking up the caregiver.
 
-# TODO: move this to the core app
+        Look up the relationship by first **and** last name.
+        Add an error to the form if there is already an active relationship to a caregiver
+        with the same name.
+
+        Args:
+            cleaned_data: the form's cleaned data
+            patient: Patient object
+        """
+        # at the beginning (empty form) they are not in the cleaned data
+        if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
+            first_name = cleaned_data['first_name']
+            last_name = cleaned_data['last_name']
+
+            existing_relationship = Relationship.objects.filter(
+                patient=patient,
+                caregiver__user__first_name=first_name,
+                caregiver__user__last_name=last_name,
+                status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
+            ).exists()
+
+            if existing_relationship:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('An active relationship with a caregiver with this name already exists.'),
+                )
+
+
 class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 
@@ -669,20 +713,6 @@ class AccessRequestConfirmForm(forms.Form):
         return self.cleaned_data
 
 
-# TODO: move to core form layouts?
-# potential improvement: inherit from Container or LayoutObject to include the content
-# and provide a method to add content at the right place
-class TabRadioSelect(CrispyField):
-    """
-    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
-
-    Triggers validation via `up-validate` on selection to let the form react to the selection.
-    For example, the form can change the layout according to the selection.
-    """
-
-    template = 'patients/radioselect_tabs.html'
-
-
 class AccessRequestSendSMSForm(forms.Form):
     """This form provides the ability to send SMS with a registration code."""
 
@@ -709,6 +739,7 @@ class AccessRequestSendSMSForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.registration_code = registration_code
+        self.registration_code_valid_period = Institution.objects.get().registration_code_valid_period
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': '', 'up-submit': '', 'up-target': '#sendSMS'}
@@ -737,13 +768,18 @@ class AccessRequestSendSMSForm(forms.Form):
         phone_number = cleaned_data.get('phone_number')
 
         registration_code = self.registration_code
+        registration_code_valid_period = self.registration_code_valid_period
 
         if language and phone_number:
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
-                message = gettext('Your Opal registration code is: {code}. Please go to: {url}').format(
+                message = gettext(
+                    'Your Opal registration code is: {code}. '
+                    + 'Please go to: {url}. Your code will expire in {period} hours.',
+                ).format(
                     code=registration_code,
                     url=url,
+                    period=registration_code_valid_period,
                 )
 
             twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
@@ -856,6 +892,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
@@ -863,6 +901,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
 
@@ -895,19 +935,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             the cleaned form data
         """
         super().clean()
+
         caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
         caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
         type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
 
+        # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
+            caregiver: User = self.instance.caregiver.user
+
+            # Only add an error if the name was modified by the user
             if (
-                self.instance.patient.first_name != caregiver_firstname
-                or self.instance.patient.last_name != caregiver_lastname
+                caregiver.first_name != caregiver_firstname
+                and caregiver.last_name != caregiver_lastname
             ):
-                # this is to capture before saving patient and caregiver has matching names
-                error = (_(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                ))
+                error = _("The caregiver's name cannot currently be changed.")
                 self.add_error(NON_FIELD_ERRORS, error)
 
         return self.cleaned_data

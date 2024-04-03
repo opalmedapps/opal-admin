@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:10.6.15-focal
+    image: mariadb:10.11.7-jammy
     environment:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_USER=${DATABASE_USER}
@@ -24,7 +24,6 @@ services:
       - LEGACY_DATABASE_HOST=host.docker.internal
     volumes:
       - .:/app
-      - ./docker/app/logs:/var/log
     ports:
       - 8000:8000
     depends_on:

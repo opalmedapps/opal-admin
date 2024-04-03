@@ -8,7 +8,7 @@ from django.http import HttpRequest
 from .models import AbstractSample, QuantitySample
 
 
-class AbstractSampleAdminMixin(BaseModelAdmin):
+class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):
     """
     Mixin for sample models to prevent changing an existing instance.
 
@@ -47,7 +47,7 @@ class AbstractSampleAdminMixin(BaseModelAdmin):
 
 
 @admin.register(QuantitySample)
-class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin):
+class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin[QuantitySample]):
     """The admin class for `QuantitySample` models."""
 
     list_display = [
@@ -58,4 +58,6 @@ class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin):
         'source',
         'device',
         'added_at',
+        'viewed_at',
+        'viewed_by',
     ]

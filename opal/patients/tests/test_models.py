@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers.models import CaregiverProfile
+from opal.hospital_settings import factories as hospital_settings_factories
 from opal.users import factories as user_factories
 
 from .. import constants, factories
@@ -116,16 +117,33 @@ def test_relationshiptype_default_role() -> None:
     assert relationship_type.role_type == RoleType.CAREGIVER
 
 
+def test_relationshiptype_is_self_true() -> None:
+    """Ensure the RelationshipType correctly identifies a SELF role type."""
+    relationship_type = factories.RelationshipType(role_type=RoleType.SELF)
+    assert relationship_type.is_self
+
+
+@pytest.mark.parametrize('role_type', [role for role in RoleType.values if role != RoleType.SELF])
+def test_relationshiptype_is_self_false(role_type: RoleType) -> None:
+    """Ensure the RelationshipType correctly identifies non-SELF role types."""
+    relationship_type = factories.RelationshipType(role_type=role_type)
+    assert not relationship_type.is_self
+
+
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
     patient = Patient(first_name='First Name', last_name='Last Name')
     assert str(patient) == 'Last Name, First Name'
 
 
-def test_patient_age_calculation() -> None:
-    """Ensure the `calculate_age` method calculate correctly for the `Patient` model."""
-    date_of_birth = datetime(2004, 1, 1, 9, 20, 30)
-    assert Patient.calculate_age(date_of_birth=date_of_birth) == 19
+@pytest.mark.parametrize(('date_of_birth', 'reference_date', 'age'), [
+    (date(2004, 1, 1), date(2023, 10, 1), 19),
+    (date(2004, 12, 1), date(2023, 1, 1), 18),
+    (date.today() - relativedelta(years=23), None, 23),
+])
+def test_patient_age_calculation(date_of_birth: date, reference_date: date | None, age: int) -> None:
+    """Ensure the `calculate_age` method calculates the age correctly."""
+    assert Patient.calculate_age(date_of_birth, reference_date) == age
 
 
 def test_patient_factory() -> None:
@@ -143,7 +161,7 @@ def test_patient_factory_multiple() -> None:
 
 
 def test_patient_uuid_unique() -> None:
-    """Ensure that the field uuid of carigaver is unique."""
+    """Ensure that the field uuid of patient is unique."""
     patient = factories.Patient()
     patients2 = factories.Patient(ramq='SIMM87531908')
     patient.uuid = patients2.uuid
@@ -153,6 +171,35 @@ def test_patient_uuid_unique() -> None:
         patient.full_clean()
 
 
+def test_patient_age() -> None:
+    """Ensure that the field age of the patient is calculated correctly."""
+    date_of_birth = date.today() - relativedelta(years=42)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.age == 42
+
+
+@pytest.mark.parametrize('adulthood_age', [17, 18, 19])
+def test_patient_is_adult(adulthood_age: int) -> None:
+    """Ensure that a patient is considered an adult."""
+    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
+    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.is_adult is True
+
+
+@pytest.mark.parametrize('adulthood_age', [17, 18, 19])
+def test_patient_is_adult_pediatric(adulthood_age: int) -> None:
+    """Ensure that a patient is considered an adult."""
+    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
+    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    date_of_birth += relativedelta(days=1)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.is_adult is False
+
+
 def test_patient_invalid_sex() -> None:
     """Ensure that a patient cannot be saved with an invalid sex type."""
     message = 'CONSTRAINT `patients_patient_sex_valid` failed'
@@ -160,16 +207,10 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_ramq_unique() -> None:
-    """Ensure that the health insurance number is unique."""
+def test_patient_ramq_non_unique() -> None:
+    """Ensure that the health insurance number is non-unique."""
     factories.Patient(ramq='TEST12345678')
-    patient = factories.Patient(ramq='TEST21234567')
-
-    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
-
-    with assertRaisesMessage(IntegrityError, message):
-        patient.ramq = 'TEST12345678'
-        patient.save()
+    factories.Patient(ramq='TEST12345678')
 
 
 def test_patient_ramq_max() -> None:
@@ -204,19 +245,9 @@ def test_patient_ramq_format() -> None:
         patient.clean_fields()
 
 
-def test_patient_ramq_default_value() -> None:
-    """Ensure patient ramq default value is NULL."""
-    patient = Patient(
-        date_of_birth=date.fromisoformat('2022-09-02'),
-        sex='m',
-    )
-    patient.save()
-    assert patient.ramq is None
-
-
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
-    factories.Patient(ramq=None, legacy_id=1)
+    factories.Patient(ramq='', legacy_id=1)
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):
@@ -225,7 +256,7 @@ def test_patient_legacy_id_unique() -> None:
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
-    factories.Patient(ramq=None, legacy_id=None)
+    factories.Patient(ramq='', legacy_id=None)
     factories.Patient(ramq='somevalue', legacy_id=None)
 
     assert Patient.objects.count() == 2
@@ -236,6 +267,22 @@ def test_patient_access_level_default() -> None:
     patient = factories.Patient()
 
     assert patient.data_access == Patient.DataAccessType.ALL
+
+
+def test_patient_non_interpretable_delay_field_max_value() -> None:
+    """Make sure that non interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(non_interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
+
+
+def test_patient_interpretable_delay_field_max_value() -> None:
+    """Make sure that interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
 
 
 def test_relationship_str() -> None:
@@ -447,7 +494,7 @@ def test_relationship_clean_can_update_existing_self() -> None:
 
 
 def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
-    """Ensure that a name mismatch between patient and caregiver for a self-relationship is detected."""
+    """Ensure that a name mismatch between patient and caregiver for a self-relationship is valid."""
     self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(
@@ -460,20 +507,12 @@ def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
     )
     relationship.full_clean()
 
-    with assertRaisesMessage(
-        ValidationError,
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-    ):
-        relationship.patient.first_name = 'Homer'
-        relationship.full_clean()
+    relationship.patient.first_name = 'Homer'
+    relationship.full_clean()
 
-    with assertRaisesMessage(
-        ValidationError,
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-    ):
-        relationship.patient.first_name = 'Marge'
-        relationship.patient.last_name = 'Flanders'
-        relationship.full_clean()
+    relationship.patient.first_name = 'Marge'
+    relationship.patient.last_name = 'Flanders'
+    relationship.full_clean()
 
 
 def test_relationship_clean_unsaved_instance() -> None:
@@ -919,6 +958,15 @@ def test_relationship_calculate_end_date_without_end_age_set() -> None:
         )
         is None
     )
+
+
+def test_relationship_get_max_end_date() -> None:
+    """Test get max end date based on date_of_birth."""
+    date_of_birth = date(2013, 4, 3)
+
+    assert Relationship.max_end_date(
+        date_of_birth=date_of_birth,
+    ) == date(2163, 4, 3)
 
 
 def test_relationshiptype_default() -> None:

@@ -83,6 +83,46 @@ def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'
 
 
+def test_institutions_list() -> None:
+    """Ensure institutions list is defined."""
+    assert reverse('api:institutions-list') == '/api/institutions/'
+    assert resolve('/api/institutions/').view_name == 'api:institutions-list'
+
+
+def test_institutions_detail() -> None:
+    """Ensure institutions detail is defined."""
+    path = '/api/institutions/123/'
+    assert reverse('api:institutions-detail', kwargs={'pk': 123}) == path
+    assert resolve(path).view_name == 'api:institutions-detail'
+
+
+def test_retrieve_terms_of_use() -> None:
+    """Ensure retrieve terms of use is defined."""
+    path = '/api/institutions/123/terms-of-use/'
+    assert reverse('api:institutions-terms-of-use', kwargs={'pk': 123}) == path
+    assert resolve(path).view_name == 'api:institutions-terms-of-use'
+
+
+def test_institution() -> None:
+    """Ensure the singleton institution retrieval is defined."""
+    path = '/api/institution/'
+    assert reverse('api:institution-detail') == path
+    assert resolve(path).view_name == 'api:institution-detail'
+
+
+def test_sites_list() -> None:
+    """Ensure sites list is defined."""
+    assert reverse('api:sites-list') == '/api/sites/'
+    assert resolve('/api/sites/').view_name == 'api:sites-list'
+
+
+def test_sites_detail() -> None:
+    """Ensure sites detail is defined."""
+    path = '/api/sites/321/'
+    assert reverse('api:sites-detail', kwargs={'pk': 321}) == path
+    assert resolve(path).view_name == 'api:sites-detail'
+
+
 def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API security questions endpoints are defined."""
     question_path = '/{api_root}/security-questions/'.format(api_root=settings.API_ROOT)
@@ -184,6 +224,17 @@ def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     assert resolve(url_path).view_name == 'api:caregivers-list'
 
 
+def test_patient_caregiver_devices(settings: SettingsWrapper) -> None:
+    """Ensure `patients/legacy/<int:legacy_id>/caregiver-devices/` is defined."""
+    patient_id = 52
+    url_path = '/{api_root}/patients/legacy/{legacy_id}/caregiver-devices/'.format(
+        api_root=settings.API_ROOT,
+        legacy_id=patient_id,
+    )
+    assert reverse('api:patient-caregiver-devices', kwargs={'legacy_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patient-caregiver-devices'
+
+
 def test_patient_caregivers(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/` is defined."""
     patient_id = 52
@@ -191,8 +242,8 @@ def test_patient_caregivers(settings: SettingsWrapper) -> None:
         api_root=settings.API_ROOT,
         legacy_id=patient_id,
     )
-    assert reverse('api:patient-caregivers', kwargs={'legacy_id': patient_id}) == url_path
-    assert resolve(url_path).view_name == 'api:patient-caregivers'
+    assert reverse('api:patients-legacy', kwargs={'legacy_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patients-legacy'
 
 
 def test_verify_email(settings: SettingsWrapper) -> None:
@@ -227,10 +278,10 @@ def test_retrieve_device_update(settings: SettingsWrapper) -> None:
 
 def test_quantitysample_create(settings: SettingsWrapper) -> None:
     """Ensure the quantity sample endpoint is defined for a specific patient."""
-    patient_id = 42
-    url_path = f'/{settings.API_ROOT}/patients/{patient_id}/health-data/quantity-samples/'
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/health-data/quantity-samples/'
 
-    assert reverse('api:patients-data-quantity-create', kwargs={'patient_id': patient_id}) == url_path
+    assert reverse('api:patients-data-quantity-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patients-data-quantity-create'
 
 
@@ -239,6 +290,13 @@ def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
     auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
     assert reverse('api:orms-login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:orms-login'
+
+
+def test_api_orms_auth_validate_session_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth validate session endpoint for the ORMS is defined."""
+    auth_validate_path = '/{api_root}/auth/orms/validate/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:orms-validate') == auth_validate_path
+    assert resolve(auth_validate_path).view_name == 'api:orms-validate'
 
 
 def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
@@ -257,3 +315,49 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
+
+
+def test_user_caregiver_update(settings: SettingsWrapper) -> None:
+    """Ensure that the endpoint for users/caregivers/<str:username> is defined."""
+    url_path = '/{api_root}/users/caregivers/{username}/'.format(
+        api_root=settings.API_ROOT,
+        username='username',
+    )
+    assert reverse(
+        'api:users-caregivers-update',
+        kwargs={'username': 'username'},
+    ) == url_path
+    assert resolve(url_path).view_name == 'api:users-caregivers-update'
+
+
+def test_databank_consent_create(settings: SettingsWrapper) -> None:
+    """Ensure the create DatabankConsent endpoint is defined for a specific patient."""
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/databank/consent/'
+
+    assert reverse('api:databank-consent-create', kwargs={'uuid': patient_uuid}) == url_path
+    assert resolve(url_path).view_name == 'api:databank-consent-create'
+
+
+def test_patient_viewed_health_data_update(settings: SettingsWrapper) -> None:
+    """Ensure the endpoint for marking QuantitySamples as viewed for specific patient is defined."""
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/health-data/quantity-samples/viewed/'
+
+    assert reverse('api:patient-viewed-health-data-update', kwargs={'uuid': patient_uuid}) == url_path
+    assert resolve(url_path).view_name == 'api:patient-viewed-health-data-update'
+
+
+def test_patients_unviewed_health_data(settings: SettingsWrapper) -> None:
+    """Ensure the endpoint for fetching unviewed QuantitySamples counts is defined."""
+    url_path = f'/{settings.API_ROOT}/patients/health-data/quantity-samples/unviewed/'
+
+    assert reverse('api:unviewed-health-data-patient-list') == url_path
+    assert resolve(url_path).view_name == 'api:unviewed-health-data-patient-list'
+
+
+def test_retrieve_relationship_type_list(settings: SettingsWrapper) -> None:
+    """Ensure `relationship-types/` is defined."""
+    url_path = '/{api_root}/relationship-types/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:relationship-types-list') == url_path
+    assert resolve(url_path).view_name == 'api:relationship-types-list'

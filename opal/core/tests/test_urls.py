@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Type
 
 from django.contrib.auth.views import LogoutView
 from django.test.client import Client
@@ -11,7 +10,7 @@ from pytest_django.fixtures import SettingsWrapper
 from opal.core.views import LoginView
 
 
-def assert_path_uses_view(path: str, view_class: Type) -> None:
+def assert_path_uses_view(path: str, view_class: type) -> None:
     """
     Assert that the view resolved via the provided path uses the given view class.
 
@@ -26,7 +25,7 @@ def test_start_defined() -> None:
     assert reverse('start') is not None
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_home_redirects(client: Client) -> None:
     """Ensure the root URL redirects somewhere."""
     response = client.get('/')
@@ -39,7 +38,7 @@ def test_admin_urls_enabled() -> None:
     assert reverse('admin:index') == '/admin/'
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_favicon_url_defined(client: Client) -> None:
     """Ensure that a favicon.ico can be found by browsers."""
     assert reverse('favicon.ico') is not None

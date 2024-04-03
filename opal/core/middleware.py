@@ -1,5 +1,6 @@
 """Module providing different middlewares for the whole project."""
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect

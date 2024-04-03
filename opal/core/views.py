@@ -32,6 +32,7 @@ class CreateUpdateView(Generic[_Model], UpdateView[_Model, ModelForm[_Model]]):
     See: https://stackoverflow.com/q/17192737
     """
 
+    # TODO: change signature to be consistent with superclass (-> _Model)
     def get_object(self, queryset: Optional[QuerySet[_Model]] = None) -> Any:
         """
         Return the object the view is displaying.

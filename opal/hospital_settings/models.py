@@ -4,12 +4,14 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from ..core.models import AbstractLabDelayModel, Address
+
 
 class Location(models.Model):
     """Abstract class representing a hospital location with a name and code."""
 
     name = models.CharField(_('Name'), max_length=100)
-    code = models.CharField(_('Code'), max_length=10, unique=True)
+    acronym = models.CharField(_('Acronym'), max_length=10, unique=True)
 
     class Meta:
         abstract = True
@@ -24,7 +26,7 @@ class Location(models.Model):
         return self.name
 
 
-class Institution(Location):  # type: ignore[django-manager-missing]
+class Institution(Location, AbstractLabDelayModel):  # type: ignore[django-manager-missing]
     """A hospital institution."""
 
     terms_of_use = models.FileField(
@@ -48,26 +50,15 @@ class Institution(Location):  # type: ignore[django-manager-missing]
             MaxValueValidator(99),
         ],
     )
-    non_interpretable_lab_result_delay = models.PositiveIntegerField(
-        verbose_name=_('Non-Interpretable Lab Result Delay'),
+    registration_code_valid_period = models.PositiveIntegerField(
+        verbose_name=_('Registration Code Valid Period'),
         help_text=_(
-            'Lab result delay for pediatric patients when clinician interpretation is recommended in lab setting.',
+            'How many hours a registration code is valid for.',
         ),
-        default=0,
+        default=24,
         validators=[
-            MinValueValidator(0),
-            MaxValueValidator(99),
-        ],
-    )
-    interpretable_lab_result_delay = models.PositiveIntegerField(
-        verbose_name=_('Interpretable Lab Result Delay'),
-        help_text=_(
-            'Lab result delay for pediatric patients when clinician interpretation is not specified in lab setting.',
-        ),
-        default=0,
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(99),
+            MinValueValidator(1),
+            MaxValueValidator(72),
         ],
     )
 
@@ -78,7 +69,7 @@ class Institution(Location):  # type: ignore[django-manager-missing]
         verbose_name_plural = _('Institutions')
 
 
-class Site(Location):  # type: ignore[django-manager-missing]
+class Site(Location, Address):  # type: ignore[django-manager-missing]
     """A site belonging to an [Institution][opal.hospital_settings.models.Institution] with its specific properties."""
 
     parking_url = models.URLField(_('Parking Info (URL)'))

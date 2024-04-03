@@ -1,6 +1,6 @@
 # Authentication & Permissions
 
-The default permissions policy is defined in [CustomDjangoModelPermissions][opal.core.drf_permissions.CustomDjangoModelPermissions]. It restricts accesses to at least require the `view` model permissions (for `GET` requests).
+The default permissions policy is defined in [FullDjangoModelPermissions][opal.core.drf_permissions.FullDjangoModelPermissions]. It restricts accesses to at least require the `view` model permissions (for `GET` requests).
 
 For more information see the [DRF documentation on permissions](https://www.django-rest-framework.org/api-guide/permissions/#permissions).
 

@@ -16,17 +16,22 @@ from dateutil.relativedelta import relativedelta
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
+from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
 from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+TRAVEL_URLS_CRE = (
+    'https://live-cbhssjb.pantheonsite.io/cps/travelling',
+    'https://live-cbhssjb.pantheonsite.io/fr/cps/voyager',
+)
 
 
 class InstitutionOption(Enum):
     """The institutions that test data can be created for."""
 
-    muhc = 'MUHC'
-    chusj = 'CHUSJ'
+    omi = 'OMI'
+    ohigph = 'OHIGPH'
 
     def __str__(self) -> str:
         """
@@ -39,33 +44,38 @@ class InstitutionOption(Enum):
 
 
 INSTITUTION_DATA = MappingProxyType({
-    InstitutionOption.muhc: {
-        'name': 'McGill University Health Centre',
-        'name_fr': 'Centre universitaire de santé McGill',
+    InstitutionOption.omi: {
+        'name': 'Opal Medical Institution',
+        'name_fr': 'Établissement Médical Opal',
+        'acronym_fr': 'ÉMO',
         'support_email': 'opal@muhc.mcgill.ca',
     },
-    InstitutionOption.chusj: {
-        'name': 'CHU Sainte-Justine - Mother and child university hospital center',
-        'name_fr': 'CHU Sainte-Justine - Le centre hospitalier universitaire mère-enfant',
+    InstitutionOption.ohigph: {
+        'name': 'OHIG Pediatric Hospital',
+        'name_fr': 'Hôpital Pédiatrique OHIG',
+        'acronym_fr': 'HPOHIG',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
     },
 })
 
 SITE_DATA = MappingProxyType({
-    InstitutionOption.muhc: [
+    InstitutionOption.omi: [
         (
-            'Royal Victoria Hospital',
-            'Hôpital Royal Victoria',
+            'Opal General Hospital 1 (RVH)',
+            'Hôpital général Opal 1 (HRV)',
             'RVH',
+            'HRV',
             PARKING_URLS_MUHC,
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
-            'Montreal General Hospital',
-            'Hôpital général de Montréal',
+            'Opal General Hospital 2 (MGH)',
+            'Hôpital général Opal 2 (HGM)',
             'MGH',
+            'HGM',
             PARKING_URLS_MUHC,
             (
                 'https://muhc.ca/how-get-montreal-general-hospital',
@@ -73,30 +83,47 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.496828'),
             Decimal('-73.588782'),
+            ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
-            "Montreal Children's Hospital",
-            "L'Hôpital de Montréal pour enfants",
+            'Opal Childrens Hospital',
+            "L'Hôpital Opal pour enfants",
             'MCH',
+            'HME',
             PARKING_URLS_MUHC,
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
             Decimal('-73.600802'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
         ),
         (
-            'Lachine Hospital',
-            'Hôpital de Lachine',
+            'Opal General Hospital 3 (LAC)',
+            'Hôpital général Opal 3 (LAC)',
+            'LAC',
             'LAC',
             PARKING_URLS_MUHC,
             ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
             Decimal('45.44121'),
             Decimal('-73.676791'),
+            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
+        ),
+        (
+            'Opal General Hospital 4 (CRE)',
+            'Hôpital général Opal 4 (CRE)',
+            'CRE',
+            'CRE',
+            TRAVEL_URLS_CRE,
+            TRAVEL_URLS_CRE,
+            Decimal('45.51640'),
+            Decimal('-73.55529'),
+            ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
         ),
     ],
-    InstitutionOption.chusj: [
+    InstitutionOption.ohigph: [
         (
-            'CHU Sainte-Justine',
-            'CHU Sainte-Justine',
+            'OHIG Pediatric Hospital',
+            'Hôpital Pédiatrique OHIG',
+            'CHUSJ',
             'CHUSJ',
             (
                 'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
@@ -109,22 +136,29 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.503426'),
             Decimal('-73.624549'),
+            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T1C5', 'Montréal', 'QC', '5143454931', ''),
         ),
     ],
 })
 
 MRN_DATA = MappingProxyType({
-    InstitutionOption.muhc: {
+    InstitutionOption.omi: {
         'Marge Simpson': [('RVH', '9999996')],
         'Homer Simpson': [
             ('RVH', '9999997'),
-            ('MGH', '9999996'),
+            ('MGH', '9999998'),
         ],
         'Bart Simpson': [('MCH', '9999996')],
         'Lisa Simpson': [('MCH', '9999993')],
-        'Mona Simpson': [('RVH', '9999993')],
+        'Mona Simpson': [
+            ('RVH', '9999993'),
+            ('MCH', '5407383'),
+        ],
+        'Fred Flintstone': [('RVH', '9999998')],
+        'Pebbles Flintstone': [('MCH', '9999999')],
+        'Wednesday Addams': [('RVH', '9999991')],
     },
-    InstitutionOption.chusj: {
+    InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
         'Lisa Simpson': [('CHUSJ', '9999993')],
     },
@@ -211,6 +245,9 @@ def _delete_existing_data() -> None:
     Caregiver.objects.all().delete()
     # also deletes Sites
     Institution.objects.all().delete()
+    Note.objects.all().delete()
+    PathologyObservation.objects.all().delete()
+    GeneralTest.objects.all().delete()
 
 
 def _create_test_data(institution_option: InstitutionOption) -> None:
@@ -223,6 +260,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         * patients
         * caregivers
         * relationships between the patients and caregivers
+        * pathology reports matching test data setup in legacy db
 
 
     Args:
@@ -231,8 +269,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     today = date.today()
 
     # hospital settings
-    institution = _create_institution(institution_option)
-    sites = _create_sites(institution_option, institution)
+    institution = create_institution(institution_option)
+    sites = create_sites(institution_option, institution)
 
     mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
 
@@ -240,7 +278,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         new_value = [(sites[site], mrn) for site, mrn in value]
         mrn_data[key] = new_value
 
-    is_pediatric = institution_option == InstitutionOption.chusj
+    is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
     if not is_pediatric:
@@ -273,6 +311,35 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             legacy_id=55,
             mrns=mrn_data['Mona Simpson'],
             date_of_death=_relative_date(today, -2),
+        )
+
+        fred = _create_patient(
+            first_name='Fred',
+            last_name='Flintstone',
+            date_of_birth=date(1960, 8, 1),
+            sex=Patient.SexType.MALE,
+            ramq='FLIF60080199',
+            legacy_id=56,
+            mrns=mrn_data['Fred Flintstone'],
+        )
+
+        pebbles = _create_patient(
+            first_name='Pebbles',
+            last_name='Flintstone',
+            date_of_birth=_create_date(9, 2, 1),
+            sex=Patient.SexType.FEMALE,
+            ramq='FLIP15022299',
+            legacy_id=57,
+            mrns=mrn_data['Pebbles Flintstone'],
+        )
+        wednesday = _create_patient(
+            first_name='Wednesday',
+            last_name='Addams',
+            date_of_birth=date(2009, 2, 13),
+            sex=Patient.SexType.FEMALE,
+            ramq='ADAW09021399',
+            legacy_id=58,
+            mrns=mrn_data['Wednesday Addams'],
         )
 
     bart = _create_patient(
@@ -315,6 +382,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         language='en',
         phone_number='+498999998123',
         legacy_id=3,
+    )
+
+    user_fred = _create_caregiver(
+        first_name='Fred',
+        last_name='Flintstone',
+        username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
+        email='fred@opalmedapps.ca',
+        language='en',
+        phone_number='+15144758941',
+        legacy_id=5,
     )
 
     if not is_pediatric:
@@ -417,6 +494,27 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             end_date=date_bart_fourteen,
         )
 
+        # Fred --> Fred: Self
+        _create_relationship(
+            patient=fred,
+            caregiver=user_fred,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -2),
+            start_date=_relative_date(today, -8),
+        )
+
+        # Fred --> Pebbles: Guardian/Parent
+        _create_relationship(
+            patient=pebbles,
+            caregiver=user_fred,
+            relationship_type=type_parent,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(pebbles.date_of_birth, 14),
+        )
+
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
         patient=bart,
@@ -452,12 +550,65 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     # create the same security question and answers for the caregivers
     if not is_pediatric:
         _create_security_answers(user_homer)
+        _create_security_answers(user_fred)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
 
+    # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
+    # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
+    if not is_pediatric:
+        _create_pathology_result(
+            patient=marge,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            legacy_document_id=7,
+        )
+        _create_pathology_result(
+            patient=homer,
+            site=sites['MGH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            legacy_document_id=6,
+        )
+        _create_pathology_result(
+            patient=fred,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            legacy_document_id=12,
+        )
+        _create_pathology_result(
+            patient=bart,
+            site=sites['MCH'],
+            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            legacy_document_id=5,
+        )
+        _create_pathology_result(
+            patient=pebbles,
+            site=sites['MCH'],
+            collected_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            legacy_document_id=13,
+        )
+        _create_pathology_result(
+            patient=wednesday,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            legacy_document_id=16,
+        )
 
-def _create_institution(institution_option: InstitutionOption) -> Institution:
+
+def create_institution(institution_option: InstitutionOption) -> Institution:
     """
     Create, validate and save an institution instance with the given properties.
 
@@ -487,7 +638,8 @@ def _create_institution(institution_option: InstitutionOption) -> Institution:
     institution = Institution(
         name=data['name'],
         name_fr=data['name_fr'],
-        code=institution_option.value,
+        acronym_fr=data['acronym_fr'],
+        acronym=institution_option.value,
         support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
         terms_of_use_fr=terms_of_use_fr,
@@ -500,7 +652,7 @@ def _create_institution(institution_option: InstitutionOption) -> Institution:
     return institution
 
 
-def _create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
+def create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
     """
     Create sites according to the definition of the `SITE_DATA` constant for the chosen institution.
 
@@ -509,7 +661,7 @@ def _create_sites(institution_option: InstitutionOption, institution: Institutio
         institution: the institution instance
 
     Returns:
-        a mapping from site code to `Site` instance
+        a mapping from site acronym to `Site` instance
     """
     result: dict[str, Site] = {}
 
@@ -524,11 +676,13 @@ def _create_site(
     institution: Institution,
     name: str,
     name_fr: str,
-    code: str,
+    acronym: str,
+    acronym_fr: str,
     parking_urls: tuple[str, str],
     direction_urls: tuple[str, str],
     latitude: Decimal,
     longitude: Decimal,
+    address: tuple[str, str, str, str, str, str, str],
 ) -> Site:
     """
     Create, validate and save a site instance with the given properties.
@@ -537,11 +691,13 @@ def _create_site(
         institution: the institution instance the site belongs to
         name: the English name of the site
         name_fr: the French name of the site
-        code: the code (acronym) of the institution
+        acronym: the acronym of the institution
+        acronym_fr: the French acronym of the institution
         parking_urls: a tuple of URLs to the English and French parking information
         direction_urls: a tuple of URLs to the English and French direction to the hospital information
         latitude: the latitude of the GPS location of the site
         longitude: the longitude of the GPS location of the site
+        address: a tuple of the address information of the site
 
     Returns:
         the newly created site
@@ -550,13 +706,21 @@ def _create_site(
         institution=institution,
         name=name,
         name_fr=name_fr,
-        code=code,
+        acronym=acronym,
+        acronym_fr=acronym_fr,
         parking_url=parking_urls[0],
         parking_url_fr=parking_urls[1],
         direction_url=direction_urls[0],
         direction_url_fr=direction_urls[1],
         latitude=latitude,
         longitude=longitude,
+        street_name=address[0],
+        street_number=address[1],
+        postal_code=address[2],
+        city=address[3],
+        province_code=address[4],
+        contact_telephone=address[5],
+        contact_fax=address[6],
     )
 
     site.full_clean()
@@ -774,6 +938,11 @@ def _create_date(relative_years: int, month: int, day: int) -> date:
     """
     current_year = date.today().year
 
+    # is the current date before the birth date
+    # if so, to have the correct age, we need to add an extra year
+    before_birth_date = date.today() < date(current_year, month, day)
+    relative_years += before_birth_date
+
     return date(current_year, month, day) - relativedelta(years=relative_years)
 
 
@@ -791,3 +960,60 @@ def _relative_date(base_date: date, years: int) -> date:
         the relative date calculated via `base_date + years`
     """
     return base_date + relativedelta(years=years)
+
+
+def _create_pathology_result(
+    patient: Patient,
+    site: Site,
+    collected_at: datetime,
+    received_at: datetime,
+    reported_at: datetime,
+    legacy_document_id: int,
+) -> None:
+    """
+    Generate a Test Result instance for a patient and site.
+
+    Args:
+        patient: subject patient described in the pathology report
+        site: facility where the sample was collected and pathology report was generated
+        collected_at: datetime of biopsy
+        received_at: datetime of sample received by pathologist
+        reported_at: datetime of report
+        legacy_document_id: OpalDB.Document entry serial number
+    """
+    general_test = GeneralTest(
+        patient=patient,
+        type=TestType.PATHOLOGY,
+        sending_facility=site.acronym,
+        receiving_facility=site.acronym,
+        collected_at=collected_at,
+        received_at=received_at,
+        reported_at=reported_at,
+        message_type='ORU',
+        message_event='R01',
+        test_group_code='RQSTPTISS',
+        test_group_code_description='Request Pathology Tissue',
+        legacy_document_id=legacy_document_id,
+    )
+
+    general_test.full_clean()
+    general_test.save()
+
+    specimen_observation = PathologyObservation(
+        general_test=general_test,
+        identifier_code='SPSPECI',
+        identifier_text='SPECIMEN',
+        value='Aliquam tincidunt mauris eu risus.',
+        observed_at=collected_at,
+    )
+    specimen_observation.full_clean()
+    specimen_observation.save()
+
+    note = Note(
+        general_test=general_test,
+        note_source='Signature Line',
+        note_text='Morbi in sem quis dui placerat ornare.',
+    )
+
+    note.full_clean()
+    note.save()

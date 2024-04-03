@@ -7,6 +7,7 @@ Inspired by:
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Group
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
@@ -27,6 +28,7 @@ class User(DjangoModelFactory):
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
+    phone_number = ''
 
 
 class Caregiver(User):
@@ -34,3 +36,19 @@ class Caregiver(User):
 
     class Meta:
         model = models.Caregiver
+
+
+class ClinicalStaff(User):
+    """Model factory to create [opal.users.models.ClinicalStaff][] models."""
+
+    class Meta:
+        model = models.ClinicalStaff
+
+
+class GroupFactory(DjangoModelFactory):
+    """Model factory to create Groups."""
+
+    class Meta:
+        model = Group
+
+    name = 'System Administrators'

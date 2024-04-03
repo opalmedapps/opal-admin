@@ -35,11 +35,13 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str
 
     # Build charts for the measurements that contain only one value
     for sample_type in SINGLE_VALUE_SAMPLE_TYPES:
+        queryset = QuantitySample.objects.order_by('start_date').filter(
+            patient=patient,
+            type=sample_type,
+        ).values('start_date', 'value', 'device')
+
         df = pd.DataFrame(
-            data=QuantitySample.objects.order_by('start_date').filter(
-                patient=patient,
-                type=sample_type,
-            ).values('start_date', 'value', 'device'),
+            data=list(queryset),
         )
 
         if df.empty:

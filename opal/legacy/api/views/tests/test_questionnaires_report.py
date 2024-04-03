@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.urls import reverse
@@ -11,6 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from opal.hospital_settings import factories as hospital_settings_factories
@@ -31,7 +31,7 @@ class TestQuestionnairesReportView:
         admin_user: User,
         site: str,
         mrn: str,
-    ) -> Any:
+    ) -> Response:
         """
         Make a request to the API view being tested (QuestionnairesReportView).
 
@@ -41,27 +41,34 @@ class TestQuestionnairesReportView:
         api_client.force_authenticate(user=admin_user)
 
         url = reverse('api:questionnaires-reviewed')
-        return api_client.post(url, data={'mrn': mrn, 'site': site}, format='json')
+        return api_client.post(url, data={'mrn': mrn, 'site': site})
 
-    def test_unauthenticated(self, api_client: APIClient, admin_user: User) -> None:
+    def test_unauthenticated_unauthorized(self, api_client: APIClient, user: User, orms_user: User) -> None:
         """Test the request while unauthenticated."""
-        hospital_patient = patient_factories.HospitalPatient()
-
         url = reverse('api:questionnaires-reviewed')
-        response = api_client.post(
-            url,
-            data={'mrn': '9999996', 'site': hospital_patient.site.code},
-            format='json',
-        )
+        response = api_client.post(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert 'Authentication' in str(response.data['detail'])
+
+        api_client.force_login(user)
+
+        response = api_client.post(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        api_client.force_login(orms_user)
+
+        response = api_client.post(url)
+
+        # input validation failed
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_invalid_mrn_length(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an MRN that has more than 10 characters."""
         hospital_patient = patient_factories.HospitalPatient()
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, 'invalid mrn')
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, 'invalid mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['mrn'])
@@ -70,7 +77,7 @@ class TestQuestionnairesReportView:
         """Test providing an empty MRN."""
         hospital_patient = patient_factories.HospitalPatient()
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, '')
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, '')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'This field may not be blank.' in str(response.data['mrn'])
@@ -90,7 +97,7 @@ class TestQuestionnairesReportView:
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['site'])
 
     def test_no_site(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing an empty site code."""
+        """Test providing an empty site acronym."""
         hospital_patient = patient_factories.HospitalPatient()
 
         response = self.make_request(api_client, admin_user, '', hospital_patient.mrn)
@@ -99,7 +106,11 @@ class TestQuestionnairesReportView:
         assert 'This field may not be blank.' in str(response.data['site'])
 
     def test_invalid_site_mrn_length(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing an MRN that has more than 10 characters and a site code that has more than 10 characters."""
+        """
+        Test providing an MRN that has more than 10 characters.
+
+        And a site acronym that has more than 10 characters.
+        """
         response = self.make_request(api_client, admin_user, get_random_string(length=11), 'invalid mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -107,16 +118,16 @@ class TestQuestionnairesReportView:
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['mrn'])
 
     def test_site_mrn_not_found(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing a site code and an MRN that do not exist."""
+        """Test providing a site acronym and an MRN that do not exist."""
         patient_factories.HospitalPatient()
 
         response = self.make_request(api_client, admin_user, 'wrong site', 'wrong mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Could not find `Patient` record with the provided MRN and site code.' in str(response.data)
+        assert 'Could not find `Patient` record with the provided MRN and site acronym.' in str(response.data)
 
     def test_no_site_mrn(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing an empty site code and MRN."""
+        """Test providing an empty site acronym and MRN."""
         response = self.make_request(api_client, admin_user, '', '')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -130,7 +141,7 @@ class TestQuestionnairesReportView:
         mocker: MockerFixture,
     ) -> None:
         """Ensure that report generation raises exception in case `Patient` record cannot be found."""
-        message = 'Could not find `Patient` record with the provided MRN and site code.'
+        message = 'Could not find `Patient` record with the provided MRN and site acronym.'
         error_response = {'status': 'error', 'message': message}
 
         # mock the logger
@@ -149,8 +160,8 @@ class TestQuestionnairesReportView:
         admin_user: User,
         mocker: MockerFixture,
     ) -> None:
-        """Ensure that report generation raises exception if we get several patients with the same mrn/site codes."""
-        message = 'Could not find `Patient` record with the provided MRN and site code.'
+        """Ensure that report generation raises exception if we get several patients with the same mrn/site acronyms."""
+        message = 'Could not find `Patient` record with the provided MRN and site acronym.'
         error_response = {'status': 'error', 'message': message}
 
         # mock the logger
@@ -181,12 +192,12 @@ class TestQuestionnairesReportView:
 
         institution = hospital_settings_factories.Institution(pk=1)
         hospital_patient = patient_factories.HospitalPatient(
-            site=patient_factories.Site(code='RVH'),
+            site=patient_factories.Site(acronym='RVH'),
         )
 
         # mock an actual call to the legacy report generation service to raise a request error
-        mock_generate_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+        mock_generate_base64_questionnaire_report = mocker.patch(
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
@@ -196,9 +207,9 @@ class TestQuestionnairesReportView:
             return_value=None,
         )
 
-        self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
+        self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
-        mock_generate_questionnaire_report.assert_called_once_with(
+        mock_generate_base64_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 patient_name='Marge Simpson',
@@ -219,24 +230,24 @@ class TestQuestionnairesReportView:
         """Ensure that unsuccessful report generation is handled properly and does not cause any exceptions."""
         institution = hospital_settings_factories.Institution(pk=1)
         hospital_patient = patient_factories.HospitalPatient(
-            site=patient_factories.Site(code='RVH'),
+            site=patient_factories.Site(acronym='RVH'),
         )
 
         message = 'An error occurred during report generation.'
         error_response = {'status': 'error', 'message': message}
 
         # mock an actual call to the legacy report generation service to raise a request error
-        mock_generate_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+        mock_generate_base64_questionnaire_report = mocker.patch(
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
         # mock the logger
         mock_logger = mocker.patch('logging.Logger.error', return_value=None)
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
-        mock_generate_questionnaire_report.assert_called_once_with(
+        mock_generate_base64_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 patient_name='Marge Simpson',
@@ -268,7 +279,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 
@@ -283,12 +294,12 @@ class TestQuestionnairesReportView:
             return_value=document_date,
         )
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
         mock_export_pdf_report.assert_called_once_with(
             OIEReportExportData(
                 mrn=hospital_patient.mrn,
-                site=hospital_patient.site.code,
+                site=hospital_patient.site.acronym,
                 base64_content=base64_encoded_report,
                 document_number='MU-8624',  # TODO: clarify where to get the value
                 document_date=document_date,  # TODO: get the exact time of the report creation
@@ -311,7 +322,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 
@@ -326,12 +337,12 @@ class TestQuestionnairesReportView:
             return_value=document_date,
         )
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
         mock_export_pdf_report.assert_called_once_with(
             OIEReportExportData(
                 mrn=hospital_patient.mrn,
-                site=hospital_patient.site.code,
+                site=hospital_patient.site.acronym,
                 base64_content=base64_encoded_report,
                 document_number='MU-8624',  # TODO: clarify where to get the value
                 document_date=mocker.ANY,  # TODO: get the exact time of the report creation
