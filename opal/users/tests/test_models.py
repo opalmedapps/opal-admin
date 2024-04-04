@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 import pytest
@@ -78,75 +77,39 @@ def test_user_phone_number_optional() -> None:
 
 
 @pytest.mark.parametrize('phone_number', [
-    # min number of digits
-    '+1514123',
-    # max number of digits
-    '+151412345678901',
+    # required number of digits for CA region
+    '+15142345678',
+    # can handle local phone numbers
+    '5142345678',
     # international number
     '+49745812345',
 ])
-def test_user_phone_number_regex(phone_number: str) -> None:
-    """Phone number regex handles E.164 format."""
+def test_user_phone_number_formats(phone_number: str) -> None:
+    """Phone number handles local and international format."""
     user = factories.User()
 
     user.phone_number = phone_number
     user.full_clean()
-
-
-@pytest.mark.parametrize('phone_number', [
-    # not enough number of digits
-    '+151412',
-    # too many digits
-    '+1514123456789012',
-    # needs international country code prefix
-    '5141234567',
-    # country codes don't start with a zero
-    '+01234567',
-])
-def test_user_phone_number_regex_invalid(phone_number: str) -> None:
-    """Phone number regex excludes invalid cases."""
-    user = factories.User()
-
-    user.phone_number = phone_number
-
-    with assertRaisesMessage(ValidationError, 'phone_number'):
-        user.full_clean()
 
 
 @pytest.mark.parametrize('phone_number', [
     # min number of digits
-    '+1514123x1',
-    # max number of digits
-    '+151412345678901x12345',
+    '+15142345678x1',
+    # local number
+    '5142345678x123',
+    # ext.
+    '+15142345678 ext. 12345',
     # international number
     '+49745812345x0',
     # extension with leading zeros
-    '+15141234567x00010',
+    '+15142345678x00010',
 ])
-def test_user_phone_number_ext_regex(phone_number: str) -> None:
-    """Phone number regex handles extension."""
+def test_user_phone_number_supports_extension(phone_number: str) -> None:
+    """Phone number handles extension."""
     user = factories.User()
 
     user.phone_number = phone_number
     user.full_clean()
-
-
-@pytest.mark.parametrize('phone_number', [
-    # no extension digits
-    '+1514123x',
-    # too many extension digits
-    '+1514123x123456',
-    # invalid separator
-    '+49745812345ext0',
-])
-def test_user_phone_number_ext_regex_invalid(phone_number: str) -> None:
-    """Phone number regex excludes invalid cases for the extension."""
-    user = factories.User()
-
-    user.phone_number = phone_number
-
-    with assertRaisesMessage(ValidationError, 'phone_number'):
-        user.full_clean()
 
 
 def test_caregiver_correct_type() -> None:

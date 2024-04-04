@@ -58,7 +58,6 @@ class User(AbstractUser):
     )
     phone_number = PhoneNumberField(
         verbose_name=_('Phone Number'),
-        max_length=22,
         blank=True,
     )
     type = models.CharField(  # noqa: A003

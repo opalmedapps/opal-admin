@@ -490,6 +490,8 @@ DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
 # ------------------------------------------------------------------------------
 # See: https://django-phonenumber-field.readthedocs.io/en/latest/reference.html#settings
 PHONENUMBER_DEFAULT_REGION = 'CA'
+PHONENUMBER_DEFAULT_FORMAT = 'INTERNATIONAL'
+PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 # django-tables2
 # ------------------------------------------------------------------------------
