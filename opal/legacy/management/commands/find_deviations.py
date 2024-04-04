@@ -89,7 +89,7 @@ DJANGO_CAREGIVER_QUERY = """
         CC.legacy_id AS LegacyID,
         UU.first_name AS FirstName,
         UU.last_name AS LastName,
-        UU.phone_number AS Phone,
+        REPLACE(SUBSTRING(UU.phone_number, 4), '-', '') AS Phone,
         LOWER(UU.email) AS Email,
         LOWER(UU.language) AS Language,
         UU.username as Username

@@ -370,7 +370,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
         email='marge@opalmedapps.ca',
         language='en',
-        phone_number='+15551234567',
+        phone_number='+15142345678',
         legacy_id=1,
     )
 
@@ -401,7 +401,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
             email='homer@opalmedapps.ca',
             language='en',
-            phone_number='+15557654321',
+            phone_number='+15147654321',
             legacy_id=2,
             # homer is blocked: he lost access due to him being unstable
             is_active=False,

@@ -118,10 +118,10 @@ def test_find_caregiver_failure() -> None:
 def test_update_caregiver_success() -> None:
     """Test update caregiver information success."""
     email = 'test@example.com'
-    phone_number = '+15141112223'
+    phone_number = '+15142112223'
     language = 'fr'
     username = 'username-2'
-    user = User(email='foo@bar.com', phone_number='+15141112222', language='en', username='username-1')
+    user = User(email='foo@bar.com', phone_number='+15142112222', language='en', username='username-1')
 
     utils.update_caregiver(user, email, username, language, phone_number)
 
@@ -135,12 +135,12 @@ def test_update_caregiver_success() -> None:
 def test_update_caregiver_failure() -> None:
     """Test update caregiver information failure."""
     email = 'test@example.com'
-    phone_number = '11111112223'
+    phone_number = '2141111222'
     language = 'en'
     username = 'username-1'
     user = User(email='foo@bar.com', phone_number=phone_number, language=language, username=username)
 
-    expected_message = "{'phone_number': ['Enter a valid value.']}"
+    expected_message = "{'phone_number': ['The phone number entered is not valid.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
@@ -150,8 +150,8 @@ def test_update_caregiver_failure() -> None:
 
 def test_replace_caregiver() -> None:
     """Test rebuild relationship and remove the skeleton user."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '+15141112223'
+    phone_number1 = '+1 514 211-2222'
+    phone_number2 = '514-211-2223'
     language1 = 'en'
     language2 = 'fr'
     username1 = 'username-1'

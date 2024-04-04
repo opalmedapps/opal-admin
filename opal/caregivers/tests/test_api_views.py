@@ -1067,7 +1067,7 @@ class TestRegistrationCompletionView:
         },
         'caregiver': {
             'language': 'fr',
-            'phone_number': '+15141112222',
+            'phone_number': '+15142112222',
             'username': 'test-username',
             'legacy_id': 1,
         },
@@ -1271,7 +1271,7 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json() == {
-            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
+            'detail': "({'phone_number': [ValidationError(['The phone number entered is not valid.'])]}, None, None)",
         }
         # check that no data was changed
         registration_code.refresh_from_db()

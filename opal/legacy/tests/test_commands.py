@@ -427,13 +427,13 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
-        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=514123456789)
+        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=5142345678)
         legacy_user = legacy_factories.LegacyUserFactory()
 
         command = migrate_caregivers.Command()
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
-        assert profile.user.phone_number == '+1514123456789'
+        assert profile.user.phone_number == '+15142345678'
 
     def test_import_new_user_phone_number_missing(self) -> None:
         """Ensure that a legacy patient without a phone number is correctly migrated."""
@@ -565,6 +565,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         self._create_two_fully_registered_patients()
 
         message, error = self._call_command('find_deviations')
+        print(error)
         assert patient_models.Patient.objects.count() == 2
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -670,6 +671,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_deviations')
+        print(error)
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_patient_records_deviations_access_level(self) -> None:
