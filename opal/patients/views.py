@@ -22,6 +22,7 @@ from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin, SingleTableView
+from phonenumber_field.phonenumber import PhoneNumber
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
@@ -483,7 +484,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # the data for a step is always a dict
         return storage[f'step_{step}']  # type: ignore[return-value]
 
-    def _store_form_data(  # noqa: C901, WPS210 (too complex, too many local variables)
+    def _store_form_data(  # noqa: C901, WPS231, WPS210 (too complex, too many local variables)
         self,
         form: Form,
         step: str,
@@ -509,6 +510,9 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             # to support serializing them to JSON
             if isinstance(value, Model):
                 cleaned_data[key] = value.pk
+            # convert the phone number to a string according to the defined format
+            elif isinstance(value, PhoneNumber):
+                cleaned_data[key] = str(value)
 
         storage[f'step_{step}'] = cleaned_data
 
