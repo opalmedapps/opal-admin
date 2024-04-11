@@ -1499,7 +1499,7 @@ def test_access_request_requestor_existing_user(client: Client, registration_use
         },
         'caregiver': caregiver.pk,
     })
-    print(session)
+
     assert session == expected_data
 
 

@@ -89,6 +89,7 @@ DJANGO_CAREGIVER_QUERY = """
         CC.legacy_id AS LegacyID,
         UU.first_name AS FirstName,
         UU.last_name AS LastName,
+        -- convert international phonenumber format from +1 514-234-5678 to the format in the legacy DB: 5142345678
         REPLACE(SUBSTRING(UU.phone_number, 4), '-', '') AS Phone,
         LOWER(UU.email) AS Email,
         LOWER(UU.language) AS Language,

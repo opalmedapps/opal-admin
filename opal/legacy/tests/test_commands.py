@@ -565,7 +565,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         self._create_two_fully_registered_patients()
 
         message, error = self._call_command('find_deviations')
-        print(error)
+
         assert patient_models.Patient.objects.count() == 2
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -671,7 +671,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_deviations')
-        print(error)
+
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_patient_records_deviations_access_level(self) -> None:
