@@ -26,6 +26,7 @@ from opal.caregivers.api import serializers as caregiver_serializers
 from opal.caregivers.api.serializers import (
     CaregiverSerializer,
     DeviceSerializer,
+    DynamicFieldsSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
 )
@@ -314,8 +315,21 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
 class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
-    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
     permission_classes = (IsRegistrationListener,)
+
+    def serializers(self, *args: Any, **kwargs: Any) -> type[DynamicFieldsSerializer[RegistrationCode]]:
+        """Override 'get_serializer_class' to switch the serializer based on the parameter `existingUser`.
+
+        Args:
+            args: request parameters
+            kwargs: request parameters
+
+        Returns:
+            The expected serializer according to the request parameter.
+        """
+        if 'existingUser' in self.request.query_params:
+            return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
+        return caregiver_serializers.NewUserRegistrationRegisterSerializer
 
     @transaction.atomic
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
@@ -332,6 +346,7 @@ class RegistrationCompletionView(APIView):
         Returns:
             HTTP response with the error or success status.
         """
+        self.serializer_class = self.serializers()
         serializer = self.serializer_class(
             data=request.data,
         )
