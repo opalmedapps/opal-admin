@@ -115,7 +115,7 @@ class Command(BaseCommand):
         hospital_managers = Group.objects.create(name='Hospital Settings Managers')
         data_exporters = Group.objects.create(name='Questionnaire Data Exporters')
         user_managers = Group.objects.create(name=settings.USER_MANAGER_GROUP_NAME)
-        Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        orms_users = Group.objects.create(name=settings.ORMS_GROUP_NAME)
         Group.objects.create(name=settings.ADMIN_GROUP_NAME)
 
         # users
@@ -179,6 +179,12 @@ class Command(BaseCommand):
             _find_permission('users', 'view_clinicalstaff'),
             _find_permission('users', 'add_clinicalstaff'),
             _find_permission('users', 'change_clinicalstaff'),
+        ])
+
+        # ORMS User
+        orms_users.permissions.set([
+            _find_permission('health_data', 'view_quantitysample'),
+            _find_permission('health_data', 'change_quantitysample'),
         ])
 
         if muhc_deployment:
