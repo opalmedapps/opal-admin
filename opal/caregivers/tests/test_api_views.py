@@ -1172,7 +1172,6 @@ class TestRegistrationCompletionView:
             },
             'caregiver': {
                 'language': 'fr',
-                'phone_number': '+15141112222',
                 'username': 'test-username',
                 'legacy_id': 1,
             },

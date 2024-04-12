@@ -26,7 +26,6 @@ from opal.caregivers.api import serializers as caregiver_serializers
 from opal.caregivers.api.serializers import (
     CaregiverSerializer,
     DeviceSerializer,
-    DynamicFieldsSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
 )
@@ -317,20 +316,6 @@ class RegistrationCompletionView(APIView):
 
     permission_classes = (IsRegistrationListener,)
 
-    def serializers(self, *args: Any, **kwargs: Any) -> type[DynamicFieldsSerializer[RegistrationCode]]:
-        """Override 'get_serializer_class' to switch the serializer based on the parameter `existingUser`.
-
-        Args:
-            args: request parameters
-            kwargs: request parameters
-
-        Returns:
-            The expected serializer according to the request parameter.
-        """
-        if 'existingUser' in self.request.query_params:
-            return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
-        return caregiver_serializers.NewUserRegistrationRegisterSerializer
-
     @transaction.atomic
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
         """
@@ -346,7 +331,7 @@ class RegistrationCompletionView(APIView):
         Returns:
             HTTP response with the error or success status.
         """
-        self.serializer_class = self.serializers()
+        self.serializer_class = self.get_serializers_class()
         serializer = self.serializer_class(
             data=request.data,
         )
@@ -376,6 +361,20 @@ class RegistrationCompletionView(APIView):
             raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
+
+    def get_serializers_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
+        """Override 'get_serializer_class' to switch the serializer based on the parameter `existingUser`.
+
+        Args:
+            args: request parameters
+            kwargs: request parameters
+
+        Returns:
+            The expected serializer according to the request parameter.
+        """
+        if 'existingUser' in self.request.query_params:
+            return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
+        return caregiver_serializers.NewUserRegistrationRegisterSerializer
 
     def _handle_new_caregiver(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> None:
         """
