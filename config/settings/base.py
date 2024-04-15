@@ -105,7 +105,7 @@ DATABASES = {
 }
 
 # Use SSL for all the database connections if DATABASE_USE_SSL is set to True
-if env.bool('DATABASE_USE_SSL'):  # pragma: no cover
+if env.bool('DATABASE_USE_SSL', default=False):  # pragma: no cover
     # Use OPTIONS setting to set extra parameters when connecting to the database.
     # The parameters vary depending on the database backend.
     # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
@@ -189,6 +189,7 @@ LOCAL_APPS = [
     'opal.health_data',
     'opal.databank',
     'opal.test_results',
+    'opal.pharmacy',
     'opal.usage_statistics',
 ]
 
@@ -400,9 +401,6 @@ LOGGING = {
 #
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
-# Redirect after logout to legacy OpalAdmin's logout page
-# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
 
 # Legacy URL for generating questionnaires report
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
@@ -462,6 +460,8 @@ REST_FRAMEWORK = {
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # set default request format to JSON
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 # django-cors-headers

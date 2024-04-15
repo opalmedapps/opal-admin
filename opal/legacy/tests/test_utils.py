@@ -3,6 +3,7 @@ import datetime as dt
 from django.utils import timezone
 
 import pytest
+from dateutil.relativedelta import relativedelta
 
 from opal.caregivers import factories as caregiver_factories
 from opal.hospital_settings import factories as hospital_factories
@@ -69,9 +70,11 @@ def test_update_patient() -> None:
 
     legacy_patient.refresh_from_db()
 
+    expected_age = relativedelta(timezone.now(), date_of_birth)
+
     assert legacy_patient.sex == models.LegacySexType.OTHER
     assert legacy_patient.date_of_birth == date_of_birth
-    assert legacy_patient.age == 15
+    assert legacy_patient.age == expected_age.years
     assert legacy_patient.ramq == 'SIMB08032999'
 
 

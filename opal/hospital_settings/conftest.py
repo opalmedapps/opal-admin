@@ -14,7 +14,7 @@ from . import factories
 from .forms import InstitutionForm
 
 
-@pytest.fixture()
+@pytest.fixture
 def institution_user(client: Client, django_user_model: User) -> User:
     """
     Fixture providing a `User` instance with the `can_manage_institutions` permission.
@@ -41,7 +41,7 @@ def institution_user(client: Client, django_user_model: User) -> User:
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def site_user(client: Client, django_user_model: User) -> Client:
     """
     Fixture provides an instance of [Client][django.test.Client] with a logged in user with site permission.
@@ -96,7 +96,7 @@ def fixture_institution_form_files() -> dict[str, SimpleUploadedFile]:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def institution_form(institution_form_files: dict[str, SimpleUploadedFile]) -> InstitutionForm:
     """Fixture providing data for the `InstitutionForm`.
 
@@ -120,7 +120,7 @@ def institution_form(institution_form_files: dict[str, SimpleUploadedFile]) -> I
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def incomplete_institution_form(
     institution_form_files: dict[str, SimpleUploadedFile],
 ) -> InstitutionForm:
@@ -151,7 +151,7 @@ def incomplete_institution_form(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def institution_form_no_delay_fields(
     institution_form_files: dict[str, SimpleUploadedFile],
 ) -> InstitutionForm:

@@ -69,7 +69,6 @@ def test_quantitysample_create_data_dict(admin_api_client: APIClient) -> None:
     response = admin_api_client.post(
         reverse('api:patients-data-quantity-create', kwargs={'uuid': patient.uuid}),
         data=data,
-        format='json',
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -92,7 +91,6 @@ def test_quantitysample_create_data_list(admin_api_client: APIClient) -> None:
     response = admin_api_client.post(
         reverse('api:patients-data-quantity-create', kwargs={'uuid': patient.uuid}),
         data=data,
-        format='json',
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -112,7 +110,6 @@ def test_quantitysample_create_single_num_queries(admin_user: User) -> None:
     request = factory.post(
         '/unused',
         data,
-        format='json',
     )
     force_authenticate(request, user=admin_user)
 
@@ -139,7 +136,6 @@ def test_quantitysample_create_multiple_num_queries(admin_user: User) -> None:
     request = factory.post(
         '/unused',
         data,
-        format='json',
     )
     force_authenticate(request, user=admin_user)
 
@@ -285,7 +281,6 @@ def test_unviewed_health_data_dict_error(api_client: APIClient, orms_user: User)
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data={'patient_uuid': 'test'},
-        format='json',
     )
 
     assertContains(
@@ -301,7 +296,6 @@ def test_unviewed_health_data_empty_list(api_client: APIClient, orms_user: User)
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data=[],
-        format='json',
     )
 
     assertContains(
@@ -317,7 +311,6 @@ def test_unviewed_health_data_missing_field(api_client: APIClient, orms_user: Us
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data=[{'test': 'test'}],
-        format='json',
     )
 
     assertContains(
@@ -333,7 +326,6 @@ def test_unviewed_health_data_invalid_uuid(api_client: APIClient, orms_user: Use
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data=[{'patient_uuid': 'test'}],
-        format='json',
     )
 
     assertContains(
@@ -349,7 +341,6 @@ def test_unviewed_health_data_non_existing_uuid(api_client: APIClient, orms_user
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data=[{'patient_uuid': '52f51e13-927d-4362-8258-8cc48233d226'}],
-        format='json',
     )
 
     assertContains(
@@ -392,7 +383,6 @@ def test_unviewed_health_data_success(api_client: APIClient, orms_user: User) ->
             {'patient_uuid': str(marge_patient.uuid)},
             {'patient_uuid': str(homer_patient.uuid)},
         ],
-        format='json',
     )
 
     assert QuantitySample.objects.count() == 5
@@ -442,7 +432,6 @@ def test_unviewed_health_data_success_no_unviewed(api_client: APIClient, orms_us
     response = api_client.post(
         reverse('api:unviewed-health-data-patient-list'),
         data=[{'patient_uuid': str(patient.uuid)}],
-        format='json',
     )
 
     assertContains(
@@ -471,7 +460,6 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
             {'patient_uuid': str(patient.uuid)},
             {'patient_uuid': str(patient.uuid)},
         ],
-        format='json',
     )
 
     assert QuantitySample.objects.count() == 3

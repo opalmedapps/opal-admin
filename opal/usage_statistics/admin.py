@@ -1,11 +1,11 @@
-"""This module provides admin options for databank models."""
+"""This module provides admin options for usage statistics models."""
 from django.contrib import admin
 
-from . import models
+from .models import DailyPatientDataReceived, DailyUserAppActivity
 
 
-@admin.register(models.DailyUserAppActivity)
-class DailyUserAppActivityAdmin(admin.ModelAdmin):
+@admin.register(DailyUserAppActivity)
+class DailyUserAppActivityAdmin(admin.ModelAdmin[DailyUserAppActivity]):
     """The admin class for `DailyUserAppActivity` models."""
 
     list_display = [
@@ -30,8 +30,8 @@ class DailyUserAppActivityAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(models.DailyPatientDataReceived)
-class DailyPatientDataReceivedAdmin(admin.ModelAdmin):
+@admin.register(DailyPatientDataReceived)
+class DailyPatientDataReceivedAdmin(admin.ModelAdmin[DailyPatientDataReceived]):
     """The admin class for `DailyPatientDataReceived` models."""
 
     list_display = [

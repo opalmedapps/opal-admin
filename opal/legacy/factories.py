@@ -456,6 +456,7 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     result_date_time = timezone.make_aware(datetime(2018, 1, 1))
     unit_description = 'mmol'
     read_by = ''
+    available_at = timezone.now()
 
 
 class LegacyOARoleFactory(DjangoModelFactory):

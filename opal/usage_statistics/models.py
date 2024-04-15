@@ -19,12 +19,14 @@ class DailyUserAppActivity(models.Model):
         verbose_name=_('User who triggered this action'),
         to=User,
         on_delete=models.CASCADE,
+        related_name='daily_app_activities',
     )
-    user_relationship_to_patient = models.ForeignKey(
+    user_relationship_to_patient = models.OneToOneField(
         verbose_name=_('Relationship between user and patient'),
         to=Relationship,
         on_delete=models.CASCADE,
         null=True,
+        related_name='daily_user_app_activity',
     )
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
@@ -101,14 +103,17 @@ class DailyUserAppActivity(models.Model):
         """
         Return a string representation of the activity, including user and patient details.
 
-        If self.patient is null, then this activity was an account activity not occuring in a patient chart.
+        If self.patient is null, then this activity was an account activity not occurring in a patient chart.
 
         Returns:
             String representing the activity.
         """
-        # TODO: Change the string to 'Daily activity by user XX in the chart of patient YY?' That might be more descriptive?  # noqa: E501
         if self.patient:
-            return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name} for Patient {self.patient}'  # noqa: WPS221, E501
+            return 'Daily activity by user {first_name}, {last_name} in the chart of patient {patient}'.format(
+                first_name=self.action_by_user.first_name,
+                last_name=self.action_by_user.last_name,
+                patient=self.patient,
+            )
         return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name}'
 
 
@@ -119,6 +124,7 @@ class DailyPatientDataReceived(models.Model):
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
+        related_name='daily_data_received',
     )
     next_appointment = models.DateTimeField(
         verbose_name=_('Next Appointment'),
@@ -143,8 +149,8 @@ class DailyPatientDataReceived(models.Model):
         verbose_name=_('Documents Received'),
         validators=[MinValueValidator(0)],
     )
-    last_educational_materials_received = models.DateTimeField(
-        verbose_name=_('Last Educational Materials Received'),
+    last_educational_material_received = models.DateTimeField(
+        verbose_name=_('Last Educational Material Received'),
         null=True,
         blank=False,
     )
@@ -170,7 +176,7 @@ class DailyPatientDataReceived(models.Model):
         verbose_name=_('Labs Received'),
         validators=[MinValueValidator(0)],
     )
-    date_added = models.DateTimeField(
+    date_added = models.DateField(
         verbose_name=_('Date Added'),
         default=timezone.now,
     )
@@ -186,4 +192,4 @@ class DailyPatientDataReceived(models.Model):
         Returns:
             String representing the patient data received.
         """
-        return f'{self.patient} received data on {self.date_added.date()}'
+        return f'{self.patient} received data on {self.date_added}'

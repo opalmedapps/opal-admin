@@ -25,6 +25,7 @@ from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.orms_auth import ORMSLoginView, ORMSValidateView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
+from opal.pharmacy.api.views import CreatePrescriptionView
 from opal.test_results.api.views import CreatePathologyView
 from opal.users.api import views as user_views
 from opal.users.api import viewsets as user_viewsets
@@ -96,6 +97,11 @@ urlpatterns = [
         caregivers_views.UpdateDeviceView.as_view(),
         name='devices-update-or-create',
     ),
+    path(
+        'caregivers/<str:username>/',
+        caregivers_views.RetrieveCaregiverView.as_view(),
+        name='caregivers-detail',
+    ),
 
     # INSTITUTIONS ENDPOINTS
     path(
@@ -138,6 +144,11 @@ urlpatterns = [
         patient_views.PatientDemographicView.as_view(),
         name='patient-demographic-update',
     ),
+    path(
+        'relationship-types/',
+        patient_views.RelationshipTypeView.as_view(),
+        name='relationship-types-list',
+    ),
     # patients (by new ID) for the health data quantity samples
     path(
         'patients/<uuid:uuid>/health-data/quantity-samples/',
@@ -153,6 +164,11 @@ urlpatterns = [
         'patients/<uuid:uuid>/pathology-reports/',
         CreatePathologyView.as_view(),
         name='patient-pathology-create',
+    ),
+    path(
+        'patients/<uuid:uuid>/pharmacy/',
+        CreatePrescriptionView.as_view(),
+        name='patient-pharmacy-create',
     ),
     # databank consent instances for patients
     path(
@@ -201,9 +217,10 @@ urlpatterns = [
     ),
     path(
         'registration/<str:code>/register/',
-        patient_views.RegistrationCompletionView.as_view(),
+        caregivers_views.RegistrationCompletionView.as_view(),
         name='registration-register',
     ),
+
     # USERS ENDPOINTS
     path(
         'groups/',

@@ -651,6 +651,8 @@ class LegacyPatientTestResult(models.Model):
     read_status = models.IntegerField(db_column='ReadStatus', default=0)
     read_by = models.TextField(db_column='ReadBy', blank=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    available_at = models.DateTimeField(db_column='AvailableAt', null=True)
+
     objects: managers.LegacyPatientTestResultManager = managers.LegacyPatientTestResultManager()
 
     class Meta:

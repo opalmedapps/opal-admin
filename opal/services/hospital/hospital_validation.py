@@ -6,7 +6,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 
 from opal.core.validators import validate_ramq
-from opal.utils.base64 import Base64Util
+from opal.utils.base64_util import Base64Util
 
 from .hospital_data import OIEReportExportData
 

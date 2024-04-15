@@ -31,10 +31,17 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(command.patient_data_success_tracker, dict)
         assert command.called_at is not None
 
+    def test_pass_non_default_timeout(self) -> None:
+        """Verify the oie timeout argument is properly parsed."""
+        message, error = self._call_command('send_databank_data', '--oie-timeout', '90')
+        assert 'Sending databank data with 90 seconds timeout for OIE response.' in message
+        assert not error
+
     def test_no_consenting_patients_found_message(self) -> None:
         """Verify correct notifications show in stdout for no patients found."""
         message, error = self._call_command('send_databank_data')
         assert not error
+        assert 'Sending databank data with 120 seconds timeout for OIE response.' in message
         assert 'No patients found consenting to Appointments data donation.' in message
         assert 'No patients found consenting to Demographics data donation.' in message
         assert 'No patients found consenting to Diagnoses data donation.' in message
@@ -185,7 +192,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response({})
+        command._send_to_oie_and_handle_response({}, 60)
         captured = capsys.readouterr()
         assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
 
@@ -225,7 +232,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '502 oie response error' in captured.err
         assert 'Bad Gateway' in captured.err
@@ -270,7 +277,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.NOT_FOUND
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '404 oie response error' in captured.err
         assert 'Resource not found' in captured.err
@@ -819,6 +826,79 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             data_id=124,
         )
         assert shared_data.data_id == 124
+
+    def test_update_metadata_with_diagnosis_data(self) -> None:
+        """Test just the isolated creation of diagnosis-type SharedData instances."""
+        sent_diagnoses_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.DIAGNOSES: [
+                    {'diagnosis_id': 1},
+                    {'diagnosis_id': 2},
+                    {'diagnosis_id': 3},
+                ],
+            },
+            {
+                'GUID': 'b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.DIAGNOSES: [
+                    {'diagnosis_id': 4},
+                ],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=True,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=True,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2)
+        command = send_databank_data.Command()
+        mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        mock_databank_patient2 = databank_models.DatabankConsent.objects.get(
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command._parse_aggregate_databank_response(
+            aggregate_response={
+                'diag_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+                'diag_b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+            },
+            original_data_sent=sent_diagnoses_data,
+        )
+        # Check if SharedData instance is created for diagnosis data
+        shared_data_count1 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient1,
+            data_type=databank_models.DataModuleType.DIAGNOSES,
+        ).count()
+        assert shared_data_count1 == 3
+        shared_data_count2 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient2,
+            data_type=databank_models.DataModuleType.DIAGNOSES,
+        ).count()
+        assert shared_data_count2 == 1
 
     def test_empty_oie_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that execution doesnt fail if oie response is empty."""

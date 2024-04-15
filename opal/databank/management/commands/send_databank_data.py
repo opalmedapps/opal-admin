@@ -6,7 +6,7 @@ from http import HTTPStatus
 from typing import Any, Optional, TypeAlias
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
@@ -42,8 +42,23 @@ class Command(BaseCommand):  # noqa: WPS214
         self.patient_data_success_tracker: dict[str, dict[DataModuleType, bool]] = {}
         self.called_at: datetime = timezone.now()
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
+        parser.add_argument(
+            '--oie-timeout',
+            type=int,
+            required=False,
+            default=120,  # noqa: WPS432
+            help='Specify maximum wait time per-api call to the OIE [seconds]. Default 120.',
+        )
+
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS231
+    def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
         """
         Handle sending patients de-identified data to the databank.
 
@@ -51,7 +66,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
         Args:
             args: non-keyword input arguments.
-            kwargs: variable keyword input arguments.
+            options: additional keyword input arguments.
         """
         consenting_patients_querysets = {
             DataModuleType.DEMOGRAPHICS: DatabankConsent.objects.filter(has_demographics=True),
@@ -61,6 +76,10 @@ class Command(BaseCommand):  # noqa: WPS214
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
 
+        oie_timeout: int = options.get('oie_timeout', 120)  # noqa: WPS432
+        self.stdout.write(
+            f'Sending databank data with {oie_timeout} seconds timeout for OIE response.',
+        )
         for module, queryset in consenting_patients_querysets.items():
             patients_list = list(queryset.iterator())
             patients_count = len(patients_list)
@@ -82,7 +101,10 @@ class Command(BaseCommand):  # noqa: WPS214
                         )
                         combined_module_data.append(nested_databank_data)
                 if combined_module_data:
-                    aggregate_response = self._send_to_oie_and_handle_response({'patientList': combined_module_data})
+                    aggregate_response = self._send_to_oie_and_handle_response(
+                        {'patientList': combined_module_data},
+                        oie_timeout,
+                    )
                     if aggregate_response:
                         self._parse_aggregate_databank_response(aggregate_response, combined_module_data)
             else:
@@ -194,7 +216,11 @@ class Command(BaseCommand):  # noqa: WPS214
             ]
         return {'GUID': guid, nesting_key: data}
 
-    def _send_to_oie_and_handle_response(self, data: dict[str, CombinedModuleData]) -> Any:
+    def _send_to_oie_and_handle_response(
+        self,
+        data: dict[str, CombinedModuleData],
+        oie_timeout: int,
+    ) -> Any:
         """Send databank dataset to the OIE and handle immediate OIE response.
 
         This function should handle status and errors between Django and OIE only.
@@ -202,6 +228,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
         Args:
             data: Databank dictionary of one of the five module types.
+            oie_timeout: Maximum seconds to wait for response per api call to the OIE
 
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
@@ -213,7 +240,7 @@ class Command(BaseCommand):  # noqa: WPS214
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=30,  # noqa: WPS432
+                timeout=oie_timeout,  # noqa: WPS432
             )
         except requests.exceptions.RequestException as exc:
             # Connection details for OIE might be misconfigured
@@ -298,10 +325,10 @@ class Command(BaseCommand):  # noqa: WPS214
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Extract data ids depending on module and save to SharedData instances
         if DataModuleType.DEMOGRAPHICS in synced_data:
-            sent_data_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
+            sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
                 databank_consent=databank_patient,
-                data_id=sent_data_id,
+                data_id=sent_patient_id,
                 data_type=DataModuleType.DEMOGRAPHICS,
             )
         elif DataModuleType.LABS in synced_data:
@@ -314,6 +341,16 @@ class Command(BaseCommand):  # noqa: WPS214
             shared_data_instances = [
                 SharedData(databank_consent=databank_patient, data_id=test_result_id, data_type=DataModuleType.LABS)
                 for test_result_id in sent_test_result_ids
+            ]
+            SharedData.objects.bulk_create(shared_data_instances)
+        elif DataModuleType.DIAGNOSES in synced_data:
+            sent_diagnosis_ids = [
+                diagnosis['diagnosis_id']
+                for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
+            ]
+            shared_data_instances = [
+                SharedData(databank_consent=databank_patient, data_id=diagnosis_id, data_type=DataModuleType.DIAGNOSES)
+                for diagnosis_id in sent_diagnosis_ids
             ]
             SharedData.objects.bulk_create(shared_data_instances)
 

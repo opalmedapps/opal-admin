@@ -494,7 +494,7 @@ def test_relationship_clean_can_update_existing_self() -> None:
 
 
 def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
-    """Ensure that a name mismatch between patient and caregiver for a self-relationship is detected."""
+    """Ensure that a name mismatch between patient and caregiver for a self-relationship is valid."""
     self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(
@@ -507,20 +507,12 @@ def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
     )
     relationship.full_clean()
 
-    with assertRaisesMessage(
-        ValidationError,
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-    ):
-        relationship.patient.first_name = 'Homer'
-        relationship.full_clean()
+    relationship.patient.first_name = 'Homer'
+    relationship.full_clean()
 
-    with assertRaisesMessage(
-        ValidationError,
-        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-    ):
-        relationship.patient.first_name = 'Marge'
-        relationship.patient.last_name = 'Flanders'
-        relationship.full_clean()
+    relationship.patient.first_name = 'Marge'
+    relationship.patient.last_name = 'Flanders'
+    relationship.full_clean()
 
 
 def test_relationship_clean_unsaved_instance() -> None:
@@ -966,6 +958,15 @@ def test_relationship_calculate_end_date_without_end_age_set() -> None:
         )
         is None
     )
+
+
+def test_relationship_get_max_end_date() -> None:
+    """Test get max end date based on date_of_birth."""
+    date_of_birth = date(2013, 4, 3)
+
+    assert Relationship.max_end_date(
+        date_of_birth=date_of_birth,
+    ) == date(2163, 4, 3)
 
 
 def test_relationshiptype_default() -> None:

@@ -41,7 +41,7 @@ class TestQuestionnairesReportView:
         api_client.force_authenticate(user=admin_user)
 
         url = reverse('api:questionnaires-reviewed')
-        return api_client.post(url, data={'mrn': mrn, 'site': site}, format='json')
+        return api_client.post(url, data={'mrn': mrn, 'site': site})
 
     def test_unauthenticated_unauthorized(self, api_client: APIClient, user: User, orms_user: User) -> None:
         """Test the request while unauthenticated."""

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import DatabaseError
 from django.utils import timezone
@@ -98,12 +98,8 @@ def test_get_diagnosis_databank_data() -> None:
     expected_returned_fields = {
         'diagnosis_id',
         'date_created',
-        'source_system',
-        'source_system_id',
         'source_system_code',
         'source_system_code_description',
-        'stage',
-        'stage_criteria',
         'last_updated',
     }
     for diagnosis in databank_data:
@@ -191,3 +187,21 @@ def test_create_pathology_document_raises_exception() -> None:
         )
 
     assert LegacyDocument.objects.count() == 0
+
+
+def test_get_unread_lab_results_queryset() -> None:
+    """Ensure LegacyPatientTestResultManager returns lab results counts where available_at is less or equal than now."""
+    patient = factories.LegacyPatientFactory()
+    factories.LegacyPatientTestResultFactory(patient_ser_num=patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=patient, read_by='[QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2]')
+    available_at = timezone.now() + timedelta(seconds=1)
+    factories.LegacyPatientTestResultFactory(
+        patient_ser_num=patient,
+        available_at=available_at,
+    )
+
+    assert LegacyPatientTestResult.objects.get_unread_queryset(
+        patient_sernum=patient.patientsernum,
+        username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
+    ).count() == 2

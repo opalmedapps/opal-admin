@@ -564,19 +564,6 @@ class Relationship(models.Model):  # noqa: WPS214
                     gettext('There already exists an active relationship between the patient and caregiver.'),
                 )
 
-            if (
-                hasattr(self, 'type')
-                and self.type.role_type == RoleType.SELF
-                and (
-                    self.patient.first_name != self.caregiver.user.first_name
-                    or self.patient.last_name != self.caregiver.user.last_name
-                )
-            ):
-                error = gettext(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                )
-                errors[NON_FIELD_ERRORS].append(error)
-
         if errors:
             raise ValidationError(errors)
 
@@ -647,6 +634,21 @@ class Relationship(models.Model):  # noqa: WPS214
             # Calculate the date at which the patient turns to the end age of relationship type
             reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
         return reference_date
+
+    @classmethod
+    def max_end_date(cls, date_of_birth: date) -> date:
+        """
+        Get the max end date for the relationship between a patient and a caregiver.
+
+        The max end date equals to start date plus RELATIONSHIP_MAX_AGE.
+
+        Args:
+            date_of_birth: patient's date of birth
+
+        Returns:
+            the max end date
+        """
+        return date_of_birth + relativedelta(years=constants.RELATIONSHIP_MAX_AGE)
 
 
 class HospitalPatient(models.Model):

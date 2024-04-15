@@ -1,7 +1,10 @@
+from datetime import date
+
 from django.contrib.auth.models import Group
 from django.core.management.base import CommandError
 
 import pytest
+from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
@@ -29,27 +32,27 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'MUHC'
+        assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 9
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
-        assert GeneralTest.objects.count() == 5
-        assert PathologyObservation.objects.count() == 5
-        assert Note.objects.count() == 5
+        assert GeneralTest.objects.count() == 6
+        assert PathologyObservation.objects.count() == 6
+        assert Note.objects.count() == 6
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_chusj(self) -> None:
         """Ensure that test data for Sainte-Justine is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'CHUSJ')
+        stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'CHUSJ'
+        assert Institution.objects.get().acronym == 'OHIGPH'
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
@@ -66,7 +69,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
@@ -84,7 +87,7 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
@@ -102,8 +105,8 @@ class TestInsertTestData(CommandTestMixin):
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 9
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
@@ -114,14 +117,14 @@ class TestInsertTestData(CommandTestMixin):
         factories.HospitalPatient()
         caregiver_factories.SecurityAnswer(user=relationship.caregiver)
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC', '--force-delete')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
 
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
-        self._call_command('insert_test_data', 'MUHC')
+        self._call_command('insert_test_data', 'OMI')
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
@@ -131,6 +134,36 @@ class TestInsertTestData(CommandTestMixin):
         # left to catch any changes to the languages
         # if changed, assert that the French caregiver has a French security question
         assert caregiver_fr is None
+
+    def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
+        """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
+        # set today before Bart's birth day in the year (Feb 22nd)
+        # mocking date is tricky: https://stackoverflow.com/a/55187924
+        mock_date = mocker.patch(
+            'opal.core.management.commands.insert_test_data.date',
+            wraps=date,
+        )
+        mock_date.today.return_value = date(2024, 1, 18)
+
+        self._call_command('insert_test_data', 'OMI')
+
+        bart = Patient.objects.get(first_name='Bart')
+        assert bart.date_of_birth == date(2009, 2, 23)
+
+    def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
+        """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
+        # set today after Bart's birth day in the year (Feb 22nd)
+        # mocking date is tricky: https://stackoverflow.com/a/55187924
+        mock_date = mocker.patch(
+            'opal.core.management.commands.insert_test_data.date',
+            wraps=date,
+        )
+        mock_date.today.return_value = date(2024, 2, 23)
+
+        self._call_command('insert_test_data', 'OMI')
+
+        bart = Patient.objects.get(first_name='Bart')
+        assert bart.date_of_birth == date(2010, 2, 23)
 
 
 class TestInitializeData(CommandTestMixin):
@@ -255,3 +288,21 @@ class TestInitializeData(CommandTestMixin):
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()
+
+    def test_delete_clinicalstaff_only(self) -> None:
+        """Only existing clinical staff users are deleted, not caregivers."""
+        # create a group to trigger the existing data check
+        Group.objects.create(name='Clinicians')
+        User.objects.create(username='johnwayne')
+        # a caregiver that should not be deleted by the command
+        caregiver = caregiver_factories.CaregiverProfile()
+
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
+
+        # ensure that the caregiver is not deleted but the user was
+        caregiver.refresh_from_db()
+        assert Caregiver.objects.count() == 1
+        assert not User.objects.filter(username='johnwayne').exists()
+        assert 'Deleting existing data\n' in stdout
+        assert 'Data successfully deleted\n' in stdout
+        assert 'Data successfully created\n' in stdout

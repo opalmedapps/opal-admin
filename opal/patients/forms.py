@@ -545,23 +545,20 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         super().clean()
         cleaned_data = self.cleaned_data
+        patient = self.patient
+        patient_instance = patient if isinstance(patient, Patient) else None
 
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
 
             existing_user = self.existing_user
-            patient = self.patient
             relationship_type = cleaned_data.get('relationship_type')
 
             if existing_user:
-                if self.is_patient_requestor() and isinstance(patient, OIEPatientData):
-                    self._validate_patient_requestor(patient, existing_user)
-
                 if relationship_type:
-                    patient_instance = patient if isinstance(patient, Patient) else None
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
-        else:
-            self._validate_existing_relationship(cleaned_data)
+        elif patient_instance:
+            self._validate_existing_relationship(cleaned_data, patient_instance)
 
         return cleaned_data
 
@@ -591,13 +588,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     NON_FIELD_ERRORS,
                     _('No existing user could be found.'),
                 )
-
-    def _validate_patient_requestor(self, patient: OIEPatientData, caregiver: CaregiverProfile) -> None:
-        if patient.first_name != caregiver.user.first_name or patient.last_name != caregiver.user.last_name:
-            self.add_error(
-                NON_FIELD_ERRORS,
-                _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),
-            )
 
     def _validate_relationship(
         self, patient: Patient | None,
@@ -645,7 +635,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             )
         return option_descriptions
 
-    def _validate_existing_relationship(self, cleaned_data: dict[str, Any]) -> None:
+    def _validate_existing_relationship(self, cleaned_data: dict[str, Any], patient: Patient) -> None:
         """
         Validate the existing relationship selection by looking up the caregiver.
 
@@ -655,6 +645,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         Args:
             cleaned_data: the form's cleaned data
+            patient: Patient object
         """
         # at the beginning (empty form) they are not in the cleaned data
         if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
@@ -662,6 +653,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             last_name = cleaned_data['last_name']
 
             existing_relationship = Relationship.objects.filter(
+                patient=patient,
                 caregiver__user__first_name=first_name,
                 caregiver__user__last_name=last_name,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
@@ -900,6 +892,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
@@ -907,6 +901,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
 
@@ -939,19 +935,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             the cleaned form data
         """
         super().clean()
+
         caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
         caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
         type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
 
+        # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
+            caregiver: User = self.instance.caregiver.user
+
+            # Only add an error if the name was modified by the user
             if (
-                self.instance.patient.first_name != caregiver_firstname
-                or self.instance.patient.last_name != caregiver_lastname
+                caregiver.first_name != caregiver_firstname
+                and caregiver.last_name != caregiver_lastname
             ):
-                # this is to capture before saving patient and caregiver has matching names
-                error = (_(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                ))
+                error = _("The caregiver's name cannot currently be changed.")
                 self.add_error(NON_FIELD_ERRORS, error)
 
         return self.cleaned_data
