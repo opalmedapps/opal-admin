@@ -290,7 +290,7 @@ class LegacyDocument(models.Model):
         help_text='Deprecated',
     )
     readby = models.JSONField(db_column='ReadBy', default=list)
-    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyDocumentManager = managers.LegacyDocumentManager()
 
     class Meta:
@@ -324,6 +324,8 @@ class LegacyEducationalMaterial(models.Model):
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     readby = models.JSONField(db_column='ReadBy', default=list)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyEducationalMaterialManager = managers.LegacyEducationalMaterialManager()
 
     class Meta:
@@ -364,6 +366,8 @@ class LegacyQuestionnaire(models.Model):
     questionnairesernum = models.BigAutoField(db_column='QuestionnaireSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     completedflag = models.IntegerField(db_column='CompletedFlag')
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
     class Meta:
@@ -646,7 +650,7 @@ class LegacyPatientTestResult(models.Model):
     date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
     read_status = models.IntegerField(db_column='ReadStatus', default=0)
     read_by = models.TextField(db_column='ReadBy', blank=True)
-    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     available_at = models.DateTimeField(db_column='AvailableAt', null=True)
 
     objects: managers.LegacyPatientTestResultManager = managers.LegacyPatientTestResultManager()
@@ -826,3 +830,22 @@ class LegacyOARoleModule(models.Model):
     class Meta:
         managed = False
         db_table = 'oaRoleModule'
+
+
+class LegacyPatientActivityLog(models.Model):
+    """PatientActivityLog from the legacy database OpalDB."""
+
+    activity_ser_num = models.IntegerField(primary_key=True)
+    request = models.CharField(max_length=255, null=False, db_index=True)
+    parameters = models.CharField(max_length=2048, default='')
+    target_patient_id = models.IntegerField(null=True)
+    username = models.CharField(max_length=255, null=False, db_index=True)
+    device_id = models.CharField(max_length=255, null=False)
+    session_id = models.TextField(default='')
+    date_time = models.DateTimeField(null=False, db_index=True)
+    lastupdated = models.DateTimeField(null=False, default=timezone.now)
+    app_version = models.CharField(max_length=50, null=False, db_index=True)
+
+    class Meta:
+        managed = False
+        db_table = 'PatientActivityLog'
