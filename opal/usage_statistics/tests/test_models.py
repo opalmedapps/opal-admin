@@ -6,7 +6,7 @@ from opal.patients.factories import Patient, Relationship
 from opal.users.factories import Caregiver
 
 from .. import factories
-from ..models import DailyPatientDataReceived, DailyUserAppActivity
+from ..models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 
 pytestmark = pytest.mark.django_db()
 
@@ -25,6 +25,13 @@ def test_daily_user_app_activity_factory() -> None:
     patient_data.full_clean()
 
 
+def test_daily_user_patient_activity_factory() -> None:
+    """Ensure the `DailyUserPatientActivity` factory creates a valid model."""
+    patient_data = factories.DailyUserPatientActivity()
+
+    patient_data.full_clean()
+
+
 def test_daily_patient_data_received_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyPatientDataReceived` model."""
     date_added = timezone.now()
@@ -38,35 +45,35 @@ def test_daily_patient_data_received_str() -> None:
     )
 
 
-def test_daily_user_app_activity_str_no_patient() -> None:
-    """Ensure the `__str__` can handle empty patient field."""
-    patient_data = DailyUserAppActivity(
-        action_by_user=Caregiver(),
-    )
-
-    assert str(patient_data) == 'Daily activity by Marge, Simpson'
-
-
-def test_daily_user_app_activity_str() -> None:
-    """Ensure the `__str__` method is defined for the `DailyUserAppActivity` model."""
+def test_daily_user_patient_activity_str() -> None:
+    """Ensure the `__str__` method is defined for the `DailyUserPatientActivity` model."""
     patient = Patient()
-    patient_data = DailyUserAppActivity(
+    patient_data = DailyUserPatientActivity(
         action_by_user=Caregiver(),
         patient=patient,
     )
 
-    assert str(patient_data) == 'Daily activity by user Marge, Simpson in the chart of patient {patient}'.format(
+    assert str(patient_data) == 'Daily activity by user Marge, Simpson on behalf of patient {patient}'.format(
         patient=patient,
     )
-
 
 def test_daily_user_app_activity_new_can_save() -> None:
     """Ensure a new `DailyUserAppActivity` instance can be saved."""
-    relationship = Relationship()
 
     patient_data = factories.DailyUserAppActivity.build(
+        action_by_user=Caregiver(),
+    )
+
+    patient_data.save()
+
+
+def test_daily_user_patient_activity_new_can_save() -> None:
+    """Ensure a new `DailyUserPatientActivity` instance can be saved."""
+    relationship = Relationship()
+
+    patient_data = factories.DailyUserPatientActivity.build(
         user_relationship_to_patient=relationship,
-        action_by_user=relationship.caregiver.user,
+        action_by_user=Caregiver(),
         patient=relationship.patient,
     )
 
@@ -86,17 +93,12 @@ def test_daily_patient_data_received_new_can_save() -> None:
 
 def test_daily_user_app_activity_multiple_per_patient() -> None:
     """Ensure a relationship can have multiple `DailyUserAppActivity` records."""
-    relationship = Relationship()
 
     factories.DailyUserAppActivity(
-        user_relationship_to_patient=relationship,
-        action_by_user=relationship.caregiver.user,
-        patient=relationship.patient,
+        action_by_user=Caregiver(),
     )
     factories.DailyUserAppActivity(
-        user_relationship_to_patient=relationship,
-        action_by_user=relationship.caregiver.user,
-        patient=relationship.patient,
+        action_by_user=Caregiver(),
     )
 
     assert DailyUserAppActivity.objects.count() == 2
