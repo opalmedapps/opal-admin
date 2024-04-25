@@ -13,17 +13,10 @@ from . import models
 class DailyUserAppActivity(DjangoModelFactory):
     """Model factory to create [opal.usage_statistics.models.DailyUserAppActivity][] models."""
 
-    user_relationship_to_patient = factory.SubFactory(Relationship)
     action_by_user = factory.SubFactory(Caregiver)
-    patient = factory.SubFactory(Patient)
     last_login = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     count_logins = factory.Faker('pyint', min_value=0, max_value=20)
-    count_checkins = factory.Faker('pyint', min_value=0, max_value=10)
-    count_documents = factory.Faker('pyint', min_value=0, max_value=10)
-    count_educational_materials = factory.Faker('pyint', min_value=0, max_value=10)
     count_feedback = factory.Faker('pyint', min_value=0, max_value=10)
-    count_questionnaires_complete = factory.Faker('pyint', min_value=0, max_value=10)
-    count_labs = factory.Faker('pyint', min_value=0, max_value=20)
     count_update_security_answers = factory.Faker('pyint', min_value=0, max_value=10)
     count_update_passwords = factory.Faker('pyint', min_value=0, max_value=10)
     count_update_language = factory.Faker('pyint', min_value=0, max_value=10)
@@ -33,6 +26,22 @@ class DailyUserAppActivity(DjangoModelFactory):
 
     class Meta:
         model = models.DailyUserAppActivity
+
+
+class DailyUserPatientActivity(DjangoModelFactory):
+    """Model factory to create [opal.usage_statistics.models.DailyUserPatientActivity][] models."""
+
+    user_relationship_to_patient = factory.SubFactory(Relationship)
+    action_by_user = factory.SubFactory(Caregiver)
+    patient = factory.SubFactory(Patient)
+    count_checkins = factory.Faker('pyint', min_value=0, max_value=10)
+    count_documents = factory.Faker('pyint', min_value=0, max_value=10)
+    count_educational_materials = factory.Faker('pyint', min_value=0, max_value=10)
+    count_questionnaires_complete = factory.Faker('pyint', min_value=0, max_value=10)
+    count_labs = factory.Faker('pyint', min_value=0, max_value=20)
+
+    class Meta:
+        model = models.DailyUserPatientActivity
 
 
 class DailyPatientDataReceived(DjangoModelFactory):
