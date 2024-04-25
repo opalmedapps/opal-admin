@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-15 17:57-0400\n"
+"POT-Creation-Date: 2024-04-24 14:51-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,14 +35,6 @@ msgid "Patient"
 msgstr "Patient"
 
 #: opal/usage_statistics/models.py
-msgid "Last Login"
-msgstr "Dernière connexion"
-
-#: opal/usage_statistics/models.py
-msgid "Count Logins"
-msgstr "Nombre de connexions"
-
-#: opal/usage_statistics/models.py
 msgid "Count Checkins"
 msgstr "Nombre d'enregistrements"
 
@@ -55,16 +47,36 @@ msgid "Count Educational Materials"
 msgstr "Nombre de matériel éducatif"
 
 #: opal/usage_statistics/models.py
-msgid "Count Feedbacks"
-msgstr "Nombre de rétroactions"
-
-#: opal/usage_statistics/models.py
 msgid "Count Questionnaires"
 msgstr "Nombre de questionnaires"
 
 #: opal/usage_statistics/models.py
 msgid "Count Labs"
 msgstr "Nombre de résultats de laboratoire"
+
+#: opal/usage_statistics/models.py
+msgid "Date Added"
+msgstr "Date ajoutée"
+
+#: opal/usage_statistics/models.py
+msgid "User Patient Activity"
+msgstr "Activité de l'utilisateur et du patient"
+
+#: opal/usage_statistics/models.py
+msgid "User Patient Activities"
+msgstr "Activités des patients utilisateurs"
+
+#: opal/usage_statistics/models.py
+msgid "Last Login"
+msgstr "Dernière connexion"
+
+#: opal/usage_statistics/models.py
+msgid "Count Logins"
+msgstr "Nombre de connexions"
+
+#: opal/usage_statistics/models.py
+msgid "Count Feedbacks"
+msgstr "Nombre de rétroactions"
 
 #: opal/usage_statistics/models.py
 msgid "Count Security Answer Updates"
@@ -89,10 +101,6 @@ msgstr "Appareils Android"
 #: opal/usage_statistics/models.py
 msgid "Browser Devices"
 msgstr "Appareils de navigateur"
-
-#: opal/usage_statistics/models.py
-msgid "Date Added"
-msgstr "Date ajoutée"
 
 #: opal/usage_statistics/models.py
 msgid "User App Activity"

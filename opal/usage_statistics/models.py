@@ -9,36 +9,30 @@ from opal.patients.models import Patient, Relationship
 from opal.users.models import User
 
 
-class DailyUserAppActivity(models.Model):
-    """A daily app activity statistics per user and patient. One record per user + patient per day (Maximum)."""
+class DailyUserPatientActivity(models.Model):
+    """
+    Daily application activity by a user on behalf of a patient.
+
+    One record per user + patient per day (Maximum).
+    """
 
     action_by_user = models.ForeignKey(
         verbose_name=_('User who triggered this action'),
         to=User,
         on_delete=models.CASCADE,
-        related_name='daily_app_activities',
+        related_name='daily_patient_activities',
     )
     user_relationship_to_patient = models.ForeignKey(
         verbose_name=_('Relationship between user and patient'),
         to=Relationship,
         on_delete=models.CASCADE,
-        null=True,
-        related_name='daily_app_activities',
+        related_name='daily_patient_activities',
     )
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
-        null=True,
-        related_name='daily_app_activities',
-    )
-    last_login = models.DateTimeField(
-        verbose_name=_('Last Login'),
-        null=True,
-    )
-    count_logins = models.PositiveIntegerField(
-        verbose_name=_('Count Logins'),
-        validators=[MinValueValidator(0)],
+        related_name='daily_patient_activities',
     )
     count_checkins = models.PositiveIntegerField(
         verbose_name=_('Count Checkins'),
@@ -52,16 +46,63 @@ class DailyUserAppActivity(models.Model):
         verbose_name=_('Count Educational Materials'),
         validators=[MinValueValidator(0)],
     )
-    count_feedback = models.PositiveIntegerField(
-        verbose_name=_('Count Feedbacks'),
-        validators=[MinValueValidator(0)],
-    )
     count_questionnaires_complete = models.PositiveIntegerField(
         verbose_name=_('Count Questionnaires'),
         validators=[MinValueValidator(0)],
     )
     count_labs = models.PositiveIntegerField(
         verbose_name=_('Count Labs'),
+        validators=[MinValueValidator(0)],
+    )
+    date_added = models.DateField(
+        verbose_name=_('Date Added'),
+        default=timezone.now,
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['date_added']),
+        ]
+        verbose_name = _('User Patient Activity')
+        verbose_name_plural = _('User Patient Activities')
+
+    def __str__(self) -> str:
+        """
+        Return a string representation of the activity, including user and patient details.
+
+        Returns:
+            String representing the activity.
+        """
+        return 'Daily activity by user {first_name}, {last_name} on behalf of patient {patient}'.format(
+            first_name=self.action_by_user.first_name,
+            last_name=self.action_by_user.last_name,
+            patient=self.patient,
+        )
+
+
+class DailyUserAppActivity(models.Model):
+    """
+    Daily application (non-chart) activity per user.
+
+    One record per user per day (Maximum).
+    """
+
+    action_by_user = models.ForeignKey(
+        verbose_name=_('User who triggered this action'),
+        to=User,
+        on_delete=models.CASCADE,
+        related_name='daily_user_app_activities',
+    )
+    last_login = models.DateTimeField(
+        verbose_name=_('Last Login'),
+        null=True,
+    )
+    count_logins = models.PositiveIntegerField(
+        verbose_name=_('Count Logins'),
+        validators=[MinValueValidator(0)],
+    )
+    count_feedback = models.PositiveIntegerField(
+        verbose_name=_('Count Feedbacks'),
         validators=[MinValueValidator(0)],
     )
     count_update_security_answers = models.PositiveIntegerField(
@@ -102,19 +143,11 @@ class DailyUserAppActivity(models.Model):
 
     def __str__(self) -> str:
         """
-        Return a string representation of the activity, including user and patient details.
-
-        If self.patient is null, then this activity was an account activity not occurring in a patient chart.
+        Return a string representation of the activity.
 
         Returns:
             String representing the activity.
         """
-        if self.patient:
-            return 'Daily activity by user {first_name}, {last_name} in the chart of patient {patient}'.format(
-                first_name=self.action_by_user.first_name,
-                last_name=self.action_by_user.last_name,
-                patient=self.patient,
-            )
         return f'Daily activity by {self.action_by_user.first_name}, {self.action_by_user.last_name}'
 
 
