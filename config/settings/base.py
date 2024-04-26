@@ -102,6 +102,18 @@ DATABASES = {
             'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')),
         },
     },
+    'report': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('LEGACY_REPORT_DATABASE_NAME'),
+        'USER': env('LEGACY_DATABASE_USER'),
+        'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
+        'HOST': env('LEGACY_DATABASE_HOST'),
+        'PORT': env('LEGACY_DATABASE_PORT'),
+        'TIME_ZONE': 'EST5EDT',
+        'TEST': {
+            'NAME': 'test_{0}'.format(env('LEGACY_REPORT_DATABASE_NAME')),
+        },
+    },
 }
 
 # Use SSL for all the database connections if DATABASE_USE_SSL is set to True
@@ -131,6 +143,7 @@ if env.bool('DATABASE_USE_SSL', default=False):  # pragma: no cover
     DATABASES['default']['OPTIONS'] = ssl_settings
     DATABASES['legacy']['OPTIONS'] = ssl_settings
     DATABASES['questionnaire']['OPTIONS'] = ssl_settings
+    DATABASES['report']['OPTIONS'] = ssl_settings
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
 DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
