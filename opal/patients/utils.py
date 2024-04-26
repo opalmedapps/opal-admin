@@ -82,19 +82,6 @@ def update_registration_code_status(
     registration_code.save()
 
 
-def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
-    """
-    Update Patient Legacy_id.
-
-    Args:
-        patient: Patient object
-        legacy_id: number or None.
-    """
-    patient.legacy_id = legacy_id
-    patient.full_clean()
-    patient.save()
-
-
 def find_caregiver(username: str) -> Optional[User]:
     """
     Find the user if it exists.
