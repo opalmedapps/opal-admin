@@ -217,7 +217,7 @@ class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registration
 
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number', 'username', 'email', 'legacy_id'),
+        fields=('language', 'phone_number', 'username', 'email'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(
@@ -238,7 +238,7 @@ class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registr
 
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'username', 'email', 'legacy_id'),
+        fields=('language', 'username', 'email'),
         many=False,
     )
 

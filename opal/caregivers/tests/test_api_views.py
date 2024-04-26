@@ -1071,7 +1071,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             'language': 'fr',
             'phone_number': '+15141112222',
             'username': 'test-username',
-            'legacy_id': 1,
         },
         'security_answers': [
             {
@@ -1244,7 +1243,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             'caregiver': {
                 'language': 'fr',
                 'username': 'test-username',
-                'legacy_id': 1,
             },
         }
         # Build existing caregiver

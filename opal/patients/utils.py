@@ -394,7 +394,7 @@ def initialize_new_opal_patient(  # noqa: WPS210
     legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
     patient.legacy_id = legacy_patient.patientsernum
     patient.save()
-    logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
+    logger.info('Successfully initialized patient in legacy DB; legacy_id = {0}'.format(patient.legacy_id))
 
     # Call the OIE to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
