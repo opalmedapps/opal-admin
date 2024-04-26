@@ -1053,7 +1053,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 'api:registration-register',
                 kwargs={'code': self.code},
             ),
-            data=TestRegistrationCompletionView.input_data,
+            data=TestRegistrationCompletionView.data_new_caregiver,
         )
 
         user = self.registration_code.relationship.caregiver.user
@@ -1066,7 +1066,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
 class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be first)
     """Test class tests the api registration/<str: code>/register."""
 
-    input_data = {
+    data_new_caregiver = {
         'caregiver': {
             'language': 'fr',
             'phone_number': '+15141112222',
@@ -1083,8 +1083,19 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             },
         ],
     }
+    data_existing_caregiver = {
+        'caregiver': {
+            'language': 'fr',
+            'email': 'marge@opalmedapps.ca',
+            'username': 'test-username',
+        },
+    }
 
-    def _build_access_request(self, new_patient: bool = False) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
+    def _build_access_request(
+        self,
+        new_patient: bool = False,
+        email_verified: bool = False,
+    ) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
         # Build relationships: code -> relationship -> patient
         skeleton = user_factories.Caregiver(
             username='skeleton-username',
@@ -1094,9 +1105,11 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         )
         registration_code = caregiver_factories.RegistrationCode(
             relationship__caregiver__user=skeleton,
-            relationship__patient__legacy_id=None if new_patient else 1,
+            relationship__patient__legacy_id=None if new_patient else 42,
         )
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+
+        if email_verified:
+            caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         return (registration_code, skeleton)
 
@@ -1126,14 +1139,14 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
-        registration_code, _ = self._build_access_request()
+        registration_code, _ = self._build_access_request(email_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         registration_code.refresh_from_db()
@@ -1143,14 +1156,14 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     def test_register_success_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The skeleton user is updated."""
         api_client.force_login(user=admin_user)
-        registration_code, skeleton = self._build_access_request()
+        registration_code, skeleton = self._build_access_request(email_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1175,7 +1188,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
 
         api_client.force_login(user=admin_user)
-        registration_code, _ = self._build_access_request(True)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True)
 
         patient = registration_code.relationship.patient
 
@@ -1191,7 +1204,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1216,7 +1229,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': '123456'},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1230,7 +1243,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': 'code11111111'},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1239,12 +1252,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         """Test registration without security answers don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
 
-        input_data_without_security_answers = {
-            'caregiver': {
-                'language': 'fr',
-                'username': 'test-username',
-            },
-        }
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
             username='test-username',
@@ -1257,7 +1264,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         url = reverse('api:registration-register', kwargs={'code': registration_code.code})
         response = api_client.post(
             f'{url}?existingUser',
-            data=input_data_without_security_answers,
+            data=self.data_existing_caregiver,
         )
 
         registration_code.refresh_from_db()
@@ -1276,7 +1283,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1285,7 +1292,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         """Test validation of patient's legacy_id."""
         api_client.force_login(user=admin_user)
 
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
+        invalid_data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         invalid_data['caregiver']['email'] = 'foo'
 
         response = api_client.post(
@@ -1314,7 +1321,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
+        invalid_data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         invalid_data['caregiver']['phone_number'] = '1234567890'
 
         response = api_client.post(
@@ -1345,23 +1352,15 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             last_name='test',
         )
         caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-        # Build skeleton user
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
-        # Build relationships: code -> relationship -> patient
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code, skeleton = self._build_access_request()
+        relationship = registration_code.relationship
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         registration_code.refresh_from_db()
@@ -1384,23 +1383,14 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         )
         caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
         caregiver_factories.SecurityAnswer(user=caregiver_profile, answer='anser1')
-        # Build skeleton user
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
-        # Build relationships: code -> relationship -> patient
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code, _ = self._build_access_request()
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1422,7 +1412,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code != HTTPStatus.OK
@@ -1440,7 +1430,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
 
-        data: dict[str, Any] = copy.deepcopy(self.input_data)
+        data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         data['caregiver'].update({'email': 'hans@wurst.com'})
 
         response = api_client.post(
@@ -1475,7 +1465,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1499,7 +1489,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
