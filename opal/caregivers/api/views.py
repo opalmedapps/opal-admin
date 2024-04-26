@@ -341,16 +341,26 @@ class RegistrationCompletionView(APIView):
         registration_code = get_object_or_404(
             caregiver_models.RegistrationCode.objects.select_related(
                 'relationship__patient',
+                'relationship__type',
                 'relationship__caregiver__user',
             ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
         )
         caregiver_data = validated_data['relationship']['caregiver']
         existing_caregiver = utils.find_caregiver(caregiver_data['user']['username'])
-        relationship = registration_code.relationship
+        relationship: Relationship = registration_code.relationship
+        patient = relationship.patient
+        self_caregiver = relationship.caregiver if relationship.type.is_self else None
+        mrns = [
+            (hospital_patient.site, hospital_patient.mrn, hospital_patient.is_active)
+            for hospital_patient in patient.hospital_patients.all()
+        ]
+
+        # if relationship.patient.legacy_id is None:
+            # utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
 
         try:  # noqa: WPS229
             utils.update_registration_code_status(registration_code)
-            utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
+            # utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
@@ -367,8 +377,8 @@ class RegistrationCompletionView(APIView):
         Switch the serializer based on the parameter `existingUser`.
 
         Args:
-            args: request parameters
-            kwargs: request parameters
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
             The expected serializer according to the request parameter.
