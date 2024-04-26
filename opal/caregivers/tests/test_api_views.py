@@ -19,7 +19,12 @@ from rest_framework.test import APIClient
 from opal.caregivers import constants
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
+from opal.core.test_utils import RequestMockerTest
+from opal.hospital_settings import factories as hospital_factories
+from opal.legacy import factories as legacy_factories
+from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier
 from opal.patients import factories as patient_factories
+from opal.patients import utils
 from opal.patients.factories import Relationship
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
@@ -1080,7 +1085,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         ],
     }
 
-    def _build_access_request(self) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
+    def _build_access_request(self, new_patient: bool = False) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
         # Build relationships: code -> relationship -> patient
         skeleton = user_factories.Caregiver(
             username='skeleton-username',
@@ -1088,7 +1093,10 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             last_name='test',
             is_active=False,
         )
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
+        registration_code = caregiver_factories.RegistrationCode(
+            relationship__caregiver__user=skeleton,
+            relationship__patient__legacy_id=None if new_patient else 1,
+        )
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         return (registration_code, skeleton)
@@ -1155,6 +1163,49 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert skeleton.username == 'test-username'
         assert skeleton.phone_number == '+15141112222'
         assert skeleton.language == 'fr'
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_success_new_legacy_patient(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """A new patient is added to the legacy DB if it doesn't exist yet."""
+        mocker_init = mocker.spy(utils, name='initialize_new_opal_patient')
+        RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(True)
+
+        patient = registration_code.relationship.patient
+
+        rvh = hospital_factories.Site(acronym='RVH')
+        mch = hospital_factories.Site(acronym='MCH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='RVH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MCH')
+        patient_factories.HospitalPatient(patient=patient, site=rvh, mrn='9999996')
+        patient_factories.HospitalPatient(patient=patient, site=mch, mrn='9999996', is_active=False)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        mocker_init.assert_called_once()
+        patient.refresh_from_db()
+        legacy_patient = LegacyPatient.objects.get()
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert LegacyPatientControl.objects.count() == 1
+        assert LegacyPatientHospitalIdentifier.objects.count() == 2
+        assert list(LegacyPatientHospitalIdentifier.objects.values('hospital', 'mrn', 'is_active')) == [
+            {'hospital': 'RVH', 'mrn': '9999996', 'is_active': True},
+            {'hospital': 'MCH', 'mrn': '9999996', 'is_active': False},
+        ]
 
     def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Existing patient and caregiver don't cause the serializer to fail."""

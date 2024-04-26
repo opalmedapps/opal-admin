@@ -355,17 +355,16 @@ class RegistrationCompletionView(APIView):
             for hospital_patient in patient.hospital_patients.all()
         ]
 
-        # if relationship.patient.legacy_id is None:
-            # utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
-
         try:  # noqa: WPS229
-            utils.update_registration_code_status(registration_code)
-            # utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
+            if relationship.patient.legacy_id is None:
+                utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
                 self._handle_new_caregiver(relationship, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
+
+            utils.update_registration_code_status(registration_code)
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
