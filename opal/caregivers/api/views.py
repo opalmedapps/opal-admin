@@ -33,6 +33,7 @@ from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, 
 from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
+from opal.legacy import utils as legacy_utils
 from opal.patients import utils
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -341,21 +342,38 @@ class RegistrationCompletionView(APIView):
         registration_code = get_object_or_404(
             caregiver_models.RegistrationCode.objects.select_related(
                 'relationship__patient',
+                'relationship__type',
                 'relationship__caregiver__user',
             ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
         )
         caregiver_data = validated_data['relationship']['caregiver']
         existing_caregiver = utils.find_caregiver(caregiver_data['user']['username'])
-        relationship = registration_code.relationship
+        relationship: Relationship = registration_code.relationship
+        patient = relationship.patient
+        self_caregiver = relationship.caregiver if relationship.type.is_self else None
+        mrns = [
+            (hospital_patient.site, hospital_patient.mrn, hospital_patient.is_active)
+            for hospital_patient in patient.hospital_patients.all()
+        ]
 
         try:  # noqa: WPS229
-            utils.update_registration_code_status(registration_code)
-            utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
+            if relationship.patient.legacy_id is None:
+                # also creates the legacy patient and sets patient.legacy_id
+                utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
+
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
+                # if an existing caregiver gets access to themself the legacy data needs to be updated
+                if relationship.type.is_self:
+                    caregiver_profile = CaregiverProfile.objects.get(user=existing_caregiver)
+                    # an existing caregiver will have a legacy ID
+                    caregiver_id: int = caregiver_profile.legacy_id  # type: ignore[assignment]
+                    legacy_utils.change_caregiver_user_to_patient(caregiver_id, relationship.patient)
             else:
                 self._handle_new_caregiver(relationship, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
+
+            utils.update_registration_code_status(registration_code)
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
@@ -367,8 +385,8 @@ class RegistrationCompletionView(APIView):
         Switch the serializer based on the parameter `existingUser`.
 
         Args:
-            args: request parameters
-            kwargs: request parameters
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
             The expected serializer according to the request parameter.
@@ -403,11 +421,11 @@ class RegistrationCompletionView(APIView):
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution
         email: str = email_verification.email if email_verification is not None else data_email
-        self._update_caregiver(relationship.caregiver, email, caregiver_data)
+        self._update_caregiver(relationship, email, caregiver_data)
 
     def _update_caregiver(
         self,
-        caregiver_profile: caregiver_models.CaregiverProfile,
+        relationship: Relationship,
         email: str,
         caregiver_data: dict[str, Any],
     ) -> None:
@@ -415,11 +433,12 @@ class RegistrationCompletionView(APIView):
         Update the caregiver with the provided data.
 
         Args:
-            caregiver_profile: the caregiver profile instance to update
+            relationship: the relationship linking to the the caregiver to update
             email: the verified email
             caregiver_data: the validated data specific to the caregiver
         """
         user_data = caregiver_data['user']
+        caregiver_profile = relationship.caregiver
         utils.update_caregiver(
             caregiver_profile.user,
             email,
@@ -427,10 +446,14 @@ class RegistrationCompletionView(APIView):
             user_data['language'],
             user_data['phone_number'],
         )
-        utils.update_caregiver_profile(
-            caregiver_profile,
-            caregiver_data['legacy_id'],
+        # Handle creation of legacy user and dummy patient (if necessary)
+        legacy_user = legacy_utils.create_caregiver_user(
+            relationship,
+            user_data['username'],
+            user_data['language'],
+            email,
         )
+        utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
 class RetrieveCaregiverView(RetrieveAPIView[User]):

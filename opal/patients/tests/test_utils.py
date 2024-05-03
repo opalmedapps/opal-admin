@@ -76,27 +76,6 @@ def test_update_registration_code_status_success() -> None:
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
 
-def test_update_patient_legacy_id_valid() -> None:
-    """Test update patient legacy id with valid value."""
-    patient = patient_factories.Patient()
-    legacy_id = patient.legacy_id + 1
-    utils.update_patient_legacy_id(patient, legacy_id)
-    patient.refresh_from_db()
-    assert patient.legacy_id == legacy_id
-
-
-def test_update_patient_legacy_id_invalid() -> None:
-    """Test update patient legacy id with invalid value."""
-    patient = patient_factories.Patient()
-    legacy_id = 0
-    expected_message = "'legacy_id': ['Ensure this value is greater than or equal to 1.']"
-    with assertRaisesMessage(
-        ValidationError,
-        expected_message,
-    ):
-        utils.update_patient_legacy_id(patient, legacy_id)
-
-
 def test_find_caregiver_success() -> None:
     """Test get caregiver information success."""
     username1 = 'username-1'

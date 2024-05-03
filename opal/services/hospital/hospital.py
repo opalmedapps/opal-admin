@@ -232,8 +232,7 @@ class OIEService:
 
         for site_code, mrn in active_mrn_list:
             response_data = self.communication_manager.submit(
-                # TODO Update to 'Patient/New' after the renaming is deployed
-                endpoint='/Patient/UpdateOpalStatus',
+                endpoint='/Patient/New',
                 payload={
                     'mrn': mrn,
                     'site': site_code,

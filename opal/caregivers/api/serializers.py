@@ -209,42 +209,15 @@ class _NestedCaregiverSerializer(CaregiverSerializer):
         fields = list(CaregiverSerializer.Meta.fields) + ['email']
 
 
-class _NestedPatientSerializer(PatientSerializer):
-    """
-    Patient serializer that supports nested updates.
-
-    The unique validator on legacy_id otherwise fails when the legacy_id already exists.
-
-    See: https://github.com/encode/django-rest-framework/issues/2996
-    See: https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
-    """
-
-    class Meta(PatientSerializer.Meta):
-        extra_kwargs = {
-            # enforce proper value for legacy_id
-            'legacy_id': {
-                'allow_null': False,
-                'required': True,
-                'validators': [],
-            },
-        }
-
-
 class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
     """RegistrationCode serializer used to get patient and caregiver information for new users.
 
     The information include Patient and Caregiver data.
     """
 
-    patient = _NestedPatientSerializer(
-        source='relationship.patient',
-        fields=('legacy_id',),
-        many=False,
-    )
-
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number', 'username', 'email', 'legacy_id'),
+        fields=('language', 'phone_number', 'username', 'email'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(
@@ -254,7 +227,7 @@ class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registration
 
     class Meta:
         model = RegistrationCode
-        fields = ['patient', 'caregiver', 'security_answers']
+        fields = ['caregiver', 'security_answers']
 
 
 class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
@@ -263,21 +236,15 @@ class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registr
     The information include Patient and Caregiver data.
     """
 
-    patient = _NestedPatientSerializer(
-        source='relationship.patient',
-        fields=('legacy_id',),
-        many=False,
-    )
-
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'username', 'email', 'legacy_id'),
+        fields=('language', 'username'),
         many=False,
     )
 
     class Meta:
         model = RegistrationCode
-        fields = ['patient', 'caregiver']
+        fields = ['caregiver']
 
 
 class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):

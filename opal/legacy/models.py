@@ -37,6 +37,7 @@ class LegacyUsers(models.Model):
     usertype = models.CharField(db_column='UserType', max_length=255, choices=LegacyUserType.choices)
     usertypesernum = models.IntegerField(db_column='UserTypeSerNum')
     username = models.CharField(db_column='Username', max_length=255)
+    password = models.CharField(db_column='Password', max_length=255, blank=True)
 
     class Meta:
         managed = False
