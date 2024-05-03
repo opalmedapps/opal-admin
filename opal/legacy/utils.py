@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
-from opal.patients.models import Patient
+from opal.patients.models import Patient, Relationship
 
 from .models import (
     LegacyAccessLevel,
@@ -80,12 +80,14 @@ def create_patient(  # noqa: WPS211 (too many arguments)
         the legacy patient instance
     """
     age = Patient.calculate_age(date_of_birth)
+    # the legacy DB stores the date of birth as a datetime
+    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
 
     patient = LegacyPatient(
         first_name=first_name,
         last_name=last_name,
         sex=sex,
-        date_of_birth=date_of_birth,
+        date_of_birth=datetime_of_birth,
         age=age,
         email=email,
         language=language,
@@ -96,6 +98,39 @@ def create_patient(  # noqa: WPS211 (too many arguments)
     patient.save()
 
     return patient
+
+
+def create_dummy_patient(
+    first_name: str,
+    last_name: str,
+    email: str,
+    language: LegacyLanguage,
+) -> LegacyPatient:
+    """
+    Create a dummy patient for a caregiver with the given properties.
+
+    Uses sensible defaults for any date that is unknown.
+
+    Args:
+        first_name: the first name of the patient
+        last_name: the last name of the patient
+        email: the email of the patient
+        language: the language of the patient
+
+    Returns:
+        the legacy patient instance
+    """
+    return create_patient(
+        first_name=first_name,
+        last_name=last_name,
+        sex=LegacySexType.UNKNOWN,
+        # requires a valid date; use a temporary date
+        date_of_birth=timezone.make_aware(dt.datetime(1900, 1, 1)),  # noqa: WPS432
+        email=email,
+        language=language,
+        ramq='',
+        access_level=LegacyAccessLevel.ALL,
+    )
 
 
 def update_patient(patient: LegacyPatient, sex: LegacySexType, date_of_birth: dt.date, ramq: str) -> None:
@@ -109,9 +144,11 @@ def update_patient(patient: LegacyPatient, sex: LegacySexType, date_of_birth: dt
         ramq: the RAMQ of the patient
     """
     age = Patient.calculate_age(date_of_birth)
+    # the legacy DB stores the date of birth as a datetime
+    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
 
     patient.sex = sex
-    patient.date_of_birth = date_of_birth
+    patient.date_of_birth = datetime_of_birth
     patient.age = age
     patient.ramq = ramq
     patient.full_clean()
@@ -187,6 +224,31 @@ def initialize_new_patient(
     return legacy_patient
 
 
+def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> LegacyUsers:
+    """
+    Create a user with the given properties.
+
+    Args:
+        user_type: the type of the user
+        user_type_id: the legacy ID of the type of the user (e.g., the patient ID for a patient)
+        username: the username of the user
+
+    Returns:
+        the created user instance
+    """
+    user = LegacyUsers(  # noqa: S106
+        usertype=user_type,
+        usertypesernum=user_type_id,
+        username=username,
+        password='',
+    )
+
+    user.full_clean()
+    user.save()
+
+    return user
+
+
 def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) -> None:
     """
     Update a user's UserType in the legacy Users table.
@@ -196,3 +258,75 @@ def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) 
         new_type: The new UserType to set for the user.
     """
     LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
+
+
+def create_caregiver_user(  # noqa: WPS210 (too many local variables)
+    relationship: Relationship,
+    username: str,
+    language: str,
+    email: str,
+) -> LegacyUsers:
+    """
+    Create a user for the caregiver.
+
+    If the relationship the caregiver is created for is a self relationship,
+    the patient is expected to be present already.
+    In this case, the user record is created with type 'Patient' and pointing to that record.
+
+    Otherwise, a dummy patient is created and the user record created with type 'Caregiver'
+    and pointing to the dummy patient.
+
+    Args:
+        relationship: the relationship between the caregiver and patient
+        username: the username of the caregiver
+        language: the language the caregiver selected
+        email: the email address of the user account
+
+    Returns:
+        the created user
+    """
+    # the legacy_id is only None if it is not a self relationship
+    # otherwise we know that the legacy patient was already added
+    user_patient_legacy_id: int = relationship.patient.legacy_id  # type: ignore[assignment]
+    user_type = LegacyUserType.PATIENT
+    language = LegacyLanguage(language.upper())
+
+    if relationship.type.is_self:
+        legacy_patient = LegacyPatient.objects.get(patientsernum=user_patient_legacy_id)
+
+        # add missing user information
+        legacy_patient.email = email
+        legacy_patient.language = language
+        legacy_patient.full_clean()
+        legacy_patient.save()
+    else:
+        caregiver_user = relationship.caregiver.user
+        dummy_patient = create_dummy_patient(
+            first_name=caregiver_user.first_name,
+            last_name=caregiver_user.last_name,
+            email=email,
+            language=language,
+        )
+        user_patient_legacy_id = dummy_patient.patientsernum
+        user_type = LegacyUserType.CAREGIVER
+
+    return create_user(user_type, user_patient_legacy_id, username)
+
+
+def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient) -> None:
+    """
+    Change an existing legacy caregiver user to a regular patient.
+
+    This assumes that the caregiver is the patient (i.e., has a self relationship).
+    The user record's type is updated to Patient.
+    In addition, the dummy patient that was previously created is updated.
+
+    Args:
+        caregiver_legacy_id: the ID of the caregiver's user record
+        patient: the patient instance
+    """
+    update_legacy_user_type(caregiver_legacy_id, LegacyUserType.PATIENT)
+    patient_user = LegacyUsers.objects.get(usersernum=caregiver_legacy_id)
+    dummy_patient = LegacyPatient.objects.get(patientsernum=patient_user.usertypesernum)
+    sex = SEX_TYPE_MAPPING[patient.sex]
+    update_patient(dummy_patient, sex, patient.date_of_birth, patient.ramq)

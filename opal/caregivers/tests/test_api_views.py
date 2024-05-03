@@ -19,8 +19,24 @@ from rest_framework.test import APIClient
 from opal.caregivers import constants
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
+from opal.core.test_utils import RequestMockerTest
+from opal.hospital_settings import factories as hospital_factories
+from opal.legacy import factories as legacy_factories
+from opal.legacy import utils as legacy_utils
+from opal.legacy.models import (
+    LegacyAccessLevel,
+    LegacyLanguage,
+    LegacyPatient,
+    LegacyPatientControl,
+    LegacyPatientHospitalIdentifier,
+    LegacySexType,
+    LegacyUsers,
+    LegacyUserType,
+)
 from opal.patients import factories as patient_factories
+from opal.patients import utils
 from opal.patients.factories import Relationship
+from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
@@ -1029,6 +1045,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         assert email_verification.sent_at == future
         assert not email_verification.is_verified
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verify_email_multiple(self, api_client: APIClient, admin_user: User) -> None:
         """Ensure that the registration process still works when a user verifies two different emails."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
@@ -1048,7 +1065,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
                 'api:registration-register',
                 kwargs={'code': self.code},
             ),
-            data=TestRegistrationCompletionView.input_data,
+            data=TestRegistrationCompletionView.data_new_caregiver,
         )
 
         user = self.registration_code.relationship.caregiver.user
@@ -1058,18 +1075,14 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         assert user.email == 'bar@foo.ca'
 
 
-class TestRegistrationCompletionView:
+class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be first)
     """Test class tests the api registration/<str: code>/register."""
 
-    input_data = {
-        'patient': {
-            'legacy_id': 1,
-        },
+    data_new_caregiver = {
         'caregiver': {
             'language': 'fr',
             'phone_number': '+15141112222',
             'username': 'test-username',
-            'legacy_id': 1,
         },
         'security_answers': [
             {
@@ -1082,6 +1095,43 @@ class TestRegistrationCompletionView:
             },
         ],
     }
+    data_existing_caregiver = {
+        'caregiver': {
+            'language': 'en',
+            'username': 'test-username',
+        },
+    }
+
+    def _build_access_request(
+        self,
+        new_patient: bool = False,
+        email_verified: bool = False,
+        self_relationship: bool = False,
+    ) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
+        # Build relationships: code -> relationship -> patient
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+            is_active=False,
+        )
+        registration_code = caregiver_factories.RegistrationCode(
+            relationship__caregiver__legacy_id=None,
+            relationship__caregiver__user=skeleton,
+            relationship__patient__legacy_id=None if new_patient else 42,
+            relationship__patient__ramq='SIMM86600199',
+        )
+
+        if self_relationship:
+            relationship = registration_code.relationship
+            relationship.type = RelationshipType.objects.self_type()
+            relationship.status = RelationshipStatus.CONFIRMED
+            relationship.save()
+
+        if email_verified:
+            caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+
+        return (registration_code, skeleton)
 
     def test_unauthenticated_unauthorized(
         self,
@@ -1106,32 +1156,237 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.OK
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-            is_active=False,
-        )
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+        registration_code, _ = self._build_access_request(email_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         registration_code.refresh_from_db()
-        security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.OK
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_success_new_caregiver(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The skeleton user is updated and the legacy data updated."""
+        mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
+
+        api_client.force_login(user=admin_user)
+        registration_code, skeleton = self._build_access_request(email_verified=True)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert len(security_answers) == 2
+        assert caregiver_models.CaregiverProfile.objects.get().legacy_id == LegacyUsers.objects.get().usersernum
+        skeleton.refresh_from_db()
+        assert skeleton.is_active
+        assert skeleton.username == 'test-username'
+        assert skeleton.phone_number == '+15141112222'
+        assert skeleton.language == 'fr'
+
+        # check legacy data
+        # we skipped insertion of the actual patient for this test
+        assert LegacyPatient.objects.count() == 1
+        mock_create.assert_called_once_with(
+            registration_code.relationship,
+            'test-username',
+            'fr',
+            'opal@muhc.mcgill.ca',
+        )
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_new_caregiver_self(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The legacy patient is updated due to the self relationship."""
+        mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
+        # need an existing legacy patient
+        legacy_patient = LegacyPatient(
+            patientsernum=42,
+            first_name='Marge',
+            last_name='Simpson',
+            sex=LegacySexType.FEMALE,
+            date_of_birth=timezone.make_aware(dt.datetime(1986, 10, 5)),
+            email='',
+            language=LegacyLanguage.ENGLISH,
+            ramq='SIMM86600599',
+            access_level=LegacyAccessLevel.NEED_TO_KNOW,
+        )
+        legacy_patient.full_clean()
+        legacy_patient.save()
+
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(email_verified=True, self_relationship=True)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert caregiver_models.CaregiverProfile.objects.get().legacy_id is not None
+
+        # check legacy data
+        # no additional dummy patient was added
+        assert LegacyPatient.objects.count() == 1
+        assert LegacyUsers.objects.get().usertypesernum == 42
+        mock_create.assert_called_once()
+        # the legacy patient was updated with user-specific information
+        legacy_patient.refresh_from_db()
+        assert legacy_patient.email == 'opal@muhc.mcgill.ca'
+        assert legacy_patient.language == LegacyLanguage.FRENCH
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_new_legacy_patient(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """A new patient is added to the legacy DB if it doesn't exist yet."""
+        mock_init = mocker.spy(utils, name='initialize_new_opal_patient')
+        RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True)
+
+        patient = registration_code.relationship.patient
+
+        rvh = hospital_factories.Site(acronym='RVH')
+        mch = hospital_factories.Site(acronym='MCH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='RVH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MCH')
+        patient_factories.HospitalPatient(patient=patient, site=rvh, mrn='9999996')
+        patient_factories.HospitalPatient(patient=patient, site=mch, mrn='9999996', is_active=False)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        mock_init.assert_called_once()
+        patient.refresh_from_db()
+
+        # actual patient plus dummy patient
+        assert LegacyPatient.objects.count() == 2
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert LegacyPatientControl.objects.count() == 1
+        assert LegacyPatientHospitalIdentifier.objects.count() == 2
+        assert list(LegacyPatientHospitalIdentifier.objects.values('hospital', 'mrn', 'is_active')) == [
+            {'hospital': 'RVH', 'mrn': '9999996', 'is_active': True},
+            {'hospital': 'MCH', 'mrn': '9999996', 'is_active': False},
+        ]
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_new_caregiver_and_patient_self(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+    ) -> None:
+        """Ensure the legacy data for a self-relationship is added correctly."""
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
+
+        patient = registration_code.relationship.patient
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        patient.refresh_from_db()
+
+        # actual patient
+        assert LegacyPatient.objects.count() == 1
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert legacy_patient.email == 'opal@muhc.mcgill.ca'
+        assert legacy_patient.language == LegacyLanguage.FRENCH
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_existing_caregiver_self(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The legacy user and patient are updated due to the self relationship."""
+        mock_create = mocker.spy(legacy_utils, name='change_caregiver_user_to_patient')
+        legacy_patient = legacy_utils.create_dummy_patient(
+            'Marge',
+            'Simpson',
+            'marge@opalmedapps.ca',
+            LegacyLanguage.ENGLISH,
+        )
+        legacy_user = legacy_utils.create_user(LegacyUserType.CAREGIVER, legacy_patient.patientsernum, 'test-username')
+
+        api_client.force_login(user=admin_user)
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='Marge',
+            last_name='Simpson',
+        )
+        caregiver_factories.CaregiverProfile(user=caregiver, legacy_id=legacy_user.usersernum)
+        registration_code, _ = self._build_access_request(self_relationship=True)
+        patient = registration_code.relationship.patient
+
+        url = reverse(
+            'api:registration-register',
+            kwargs={'code': registration_code.code},
+        )
+        response = api_client.post(
+            f'{url}?existingUser',
+            data=self.data_existing_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        # check legacy data
+        legacy_user.refresh_from_db()
+        assert legacy_user.usertype == LegacyUserType.PATIENT
+        legacy_patient.refresh_from_db()
+        assert legacy_patient.ramq == patient.ramq
+        assert legacy_patient.sex == LegacySexType.MALE
+        assert legacy_patient.date_of_birth.date() == patient.date_of_birth
+
+        mock_create.assert_called_once()
 
     def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Existing patient and caregiver don't cause the serializer to fail."""
@@ -1143,7 +1398,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': '123456'},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1157,7 +1412,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': 'code11111111'},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1166,16 +1421,6 @@ class TestRegistrationCompletionView:
         """Test registration without security answers don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
 
-        input_data_without_security_answers = {
-            'patient': {
-                'legacy_id': 1,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'username': 'test-username',
-                'legacy_id': 1,
-            },
-        }
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
             username='test-username',
@@ -1183,27 +1428,12 @@ class TestRegistrationCompletionView:
             last_name='test',
         )
         caregiver_factories.CaregiverProfile(user=caregiver)
-        # Build skeleton user
-        # Build relationships: code -> relationship -> patient
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+        registration_code, _ = self._build_access_request()
 
+        url = reverse('api:registration-register', kwargs={'code': registration_code.code})
         response = api_client.post(
-            '{0}{1}'.format(
-                reverse(
-                    'api:registration-register',
-                    kwargs={'code': registration_code.code},
-                ),
-                '?existingUser',
-            ),
-            data=input_data_without_security_answers,
+            f'{url}?existingUser',
+            data=self.data_existing_caregiver,
         )
 
         registration_code.refresh_from_db()
@@ -1222,7 +1452,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -1231,8 +1461,8 @@ class TestRegistrationCompletionView:
         """Test validation of patient's legacy_id."""
         api_client.force_login(user=admin_user)
 
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
-        invalid_data['patient']['legacy_id'] = 0
+        invalid_data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
+        invalid_data['caregiver']['email'] = 'foo'
 
         response = api_client.post(
             reverse(
@@ -1244,7 +1474,7 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json() == {
-            'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
+            'caregiver': {'email': ['Enter a valid email address.']},
         }
 
     def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: User) -> None:
@@ -1260,7 +1490,7 @@ class TestRegistrationCompletionView:
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
+        invalid_data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         invalid_data['caregiver']['phone_number'] = '1234567890'
 
         response = api_client.post(
@@ -1291,23 +1521,15 @@ class TestRegistrationCompletionView:
             last_name='test',
         )
         caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-        # Build skeleton user
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
-        # Build relationships: code -> relationship -> patient
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code, skeleton = self._build_access_request()
+        relationship = registration_code.relationship
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         registration_code.refresh_from_db()
@@ -1330,23 +1552,14 @@ class TestRegistrationCompletionView:
         )
         caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
         caregiver_factories.SecurityAnswer(user=caregiver_profile, answer='anser1')
-        # Build skeleton user
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
-        # Build relationships: code -> relationship -> patient
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code, _ = self._build_access_request()
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1368,7 +1581,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code != HTTPStatus.OK
@@ -1376,6 +1589,7 @@ class TestRegistrationCompletionView:
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
         assert 'Caregiver email is not verified' in response.content.decode()
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_email_not_verified_existing_caregiver_other_institution(
         self,
         api_client: APIClient,
@@ -1386,7 +1600,7 @@ class TestRegistrationCompletionView:
         caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
 
-        data: dict[str, Any] = copy.deepcopy(self.input_data)
+        data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         data['caregiver'].update({'email': 'hans@wurst.com'})
 
         response = api_client.post(
@@ -1421,7 +1635,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1429,6 +1643,7 @@ class TestRegistrationCompletionView:
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert Caregiver.objects.count() == 1
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
         """The verified email is copied to the caregiver."""
         api_client.force_login(user=admin_user)
@@ -1445,7 +1660,7 @@ class TestRegistrationCompletionView:
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=self.input_data,
+            data=self.data_new_caregiver,
         )
 
         assert response.status_code == HTTPStatus.OK

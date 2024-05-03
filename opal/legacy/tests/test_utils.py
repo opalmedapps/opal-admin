@@ -10,6 +10,7 @@ from opal.hospital_settings import factories as hospital_factories
 from opal.legacy import factories, models
 from opal.legacy import utils as legacy_utils
 from opal.patients import factories as patient_factories
+from opal.patients.models import RelationshipType
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -36,7 +37,7 @@ def test_create_patient() -> None:
         'Marge',
         'Simpson',
         models.LegacySexType.FEMALE,
-        timezone.make_aware(dt.datetime(1986, 10, 5)),
+        dt.date(1986, 10, 5),
         'marge@opalmedapps.ca',
         models.LegacyLanguage.FRENCH,
         'SIMM86600599',
@@ -55,6 +56,29 @@ def test_create_patient() -> None:
     assert legacy_patient.access_level == models.LegacyAccessLevel.NEED_TO_KNOW
 
 
+def test_create_dummy_patient() -> None:
+    """The dummy patient is created successfully."""
+    legacy_patient = legacy_utils.create_dummy_patient(
+        'Marge',
+        'Simpson',
+        'marge@opalmedapps.ca',
+        models.LegacyLanguage.FRENCH,
+    )
+
+    legacy_patient.full_clean()
+
+    date_of_birth = timezone.make_aware(dt.datetime(1900, 1, 1))
+
+    assert legacy_patient.first_name == 'Marge'
+    assert legacy_patient.last_name == 'Simpson'
+    assert legacy_patient.sex == models.LegacySexType.UNKNOWN
+    assert legacy_patient.date_of_birth == date_of_birth
+    assert legacy_patient.email == 'marge@opalmedapps.ca'
+    assert legacy_patient.language == models.LegacyLanguage.FRENCH
+    assert legacy_patient.ramq == ''
+    assert legacy_patient.access_level == models.LegacyAccessLevel.ALL
+
+
 def test_update_patient() -> None:
     """An existing dummy patient is updated successfully."""
     # the date of birth for dummy patients is 0000-00-00 but it fails validation since it is an invalid date
@@ -66,7 +90,7 @@ def test_update_patient() -> None:
     )
 
     date_of_birth = timezone.make_aware(dt.datetime(2008, 3, 29))
-    legacy_utils.update_patient(legacy_patient, models.LegacySexType.OTHER, date_of_birth, 'SIMB08032999')
+    legacy_utils.update_patient(legacy_patient, models.LegacySexType.OTHER, date_of_birth.date(), 'SIMB08032999')
 
     legacy_patient.refresh_from_db()
 
@@ -175,6 +199,17 @@ def test_initialize_new_patient_existing_caregiver() -> None:
     assert legacy_patient.language == models.LegacyLanguage.ENGLISH
 
 
+def test_create_user() -> None:
+    """The legacy user is created successfully."""
+    legacy_user = legacy_utils.create_user(models.LegacyUserType.CAREGIVER, 123, 'test-username')
+
+    legacy_user.full_clean()
+
+    assert legacy_user.usertype == models.LegacyUserType.CAREGIVER
+    assert legacy_user.usertypesernum == 123
+    assert legacy_user.username == 'test-username'
+
+
 def test_update_legacy_user_type() -> None:
     """Ensure that a legacy user's type can be updated."""
     legacy_user = factories.LegacyUserFactory(usertype=models.LegacyUserType.CAREGIVER)
@@ -182,3 +217,81 @@ def test_update_legacy_user_type() -> None:
     legacy_user.refresh_from_db()
 
     assert legacy_user.usertype == models.LegacyUserType.PATIENT
+
+
+def test_create_caregiver_user_patient() -> None:
+    """The caregiver user is created for a patient."""
+    legacy_patient = legacy_utils.create_patient(
+        'Marge',
+        'Simpson',
+        models.LegacySexType.FEMALE,
+        dt.date(1986, 10, 5),
+        '',
+        models.LegacyLanguage.ENGLISH,
+        'SIMM86600599',
+        models.LegacyAccessLevel.NEED_TO_KNOW,
+    )
+    relationship = patient_factories.Relationship(
+        patient__legacy_id=legacy_patient.patientsernum,
+        type=RelationshipType.objects.self_type(),
+    )
+
+    legacy_user = legacy_utils.create_caregiver_user(relationship, 'test-username', 'fr', 'marge@opalmedapps.ca')
+
+    # no additional dummy patient was created
+    assert models.LegacyPatient.objects.count() == 1
+    assert legacy_user.usertype == models.LegacyUserType.PATIENT
+    assert legacy_user.usertypesernum == legacy_patient.patientsernum
+    assert legacy_user.username == 'test-username'
+
+    legacy_patient.refresh_from_db()
+    assert legacy_patient.email == 'marge@opalmedapps.ca'
+    assert legacy_patient.language == models.LegacyLanguage.FRENCH
+
+
+def test_create_caregiver_user_caregiver() -> None:
+    """The caregiver user is created for a non-patient."""
+    relationship = patient_factories.Relationship(
+        patient__legacy_id=None,
+        caregiver__user__first_name='John',
+        caregiver__user__last_name='Wayne',
+    )
+
+    legacy_user = legacy_utils.create_caregiver_user(relationship, 'test-username', 'fr', 'marge@opalmedapps.ca')
+
+    # a dummy patient was created
+    assert models.LegacyPatient.objects.count() == 1
+    legacy_patient = models.LegacyPatient.objects.get()
+    assert legacy_patient.first_name == 'John'
+    assert legacy_patient.last_name == 'Wayne'
+    assert legacy_patient.language == models.LegacyLanguage.FRENCH
+    assert legacy_patient.email == 'marge@opalmedapps.ca'
+
+    assert legacy_user.usertype == models.LegacyUserType.CAREGIVER
+    assert legacy_user.usertypesernum == legacy_patient.patientsernum
+    assert legacy_user.username == 'test-username'
+
+
+def test_change_caregiver_user_to_patient() -> None:
+    """The caregiver user is updated to a patient user."""
+    patient = patient_factories.Patient(ramq='SIMB04100199')
+    legacy_patient = legacy_utils.create_dummy_patient(
+        'Marge',
+        'Simpson',
+        'marge@opalmedapps.ca',
+        models.LegacyLanguage.ENGLISH,
+    )
+    legacy_user = factories.LegacyUserFactory(
+        usertype=models.LegacyUserType.CAREGIVER,
+        usertypesernum=legacy_patient.patientsernum,
+    )
+
+    legacy_utils.change_caregiver_user_to_patient(legacy_user.usersernum, patient)
+
+    legacy_user.refresh_from_db()
+    assert legacy_user.usertype == models.LegacyUserType.PATIENT
+
+    legacy_patient.refresh_from_db()
+    assert legacy_patient.sex == models.LegacySexType.MALE
+    assert legacy_patient.ramq == 'SIMB04100199'
+    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
