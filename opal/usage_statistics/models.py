@@ -2,7 +2,6 @@
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from opal.patients.models import Patient, Relationship
@@ -54,14 +53,13 @@ class DailyUserPatientActivity(models.Model):
         verbose_name=_('Count Labs'),
         validators=[MinValueValidator(0)],
     )
-    date_added = models.DateField(
-        verbose_name=_('Date Added'),
-        default=timezone.now,
+    action_date = models.DateField(
+        verbose_name=_('Action Date'),
     )
 
     class Meta:
         indexes = [
-            models.Index(fields=['date_added']),
+            models.Index(fields=['action_date']),
         ]
         verbose_name = _('User Patient Activity')
         verbose_name_plural = _('User Patient Activities')
@@ -129,14 +127,13 @@ class DailyUserAppActivity(models.Model):
         verbose_name=_('Browser Devices'),
         validators=[MinValueValidator(0)],
     )
-    date_added = models.DateField(
-        verbose_name=_('Date Added'),
-        default=timezone.now,
+    action_date = models.DateField(
+        verbose_name=_('Action Date'),
     )
 
     class Meta:
         indexes = [
-            models.Index(fields=['date_added']),
+            models.Index(fields=['action_date']),
         ]
         verbose_name = _('User App Activity')
         verbose_name_plural = _('User App Activities')
@@ -210,14 +207,13 @@ class DailyPatientDataReceived(models.Model):
         verbose_name=_('Labs Received'),
         validators=[MinValueValidator(0)],
     )
-    date_added = models.DateField(
-        verbose_name=_('Date Added'),
-        default=timezone.now,
+    action_date = models.DateField(
+        verbose_name=_('Action Date'),
     )
 
     class Meta:
         indexes = [
-            models.Index(fields=['date_added']),
+            models.Index(fields=['action_date']),
         ]
         verbose_name = _('Patient Data Received')
         verbose_name_plural = _('Patient Data Received Records')
@@ -229,7 +225,7 @@ class DailyPatientDataReceived(models.Model):
         Returns:
             String representing the patient data received.
         """
-        return '{patient} received data on {date_added}'.format(
+        return '{patient} received data on {action_date}'.format(
             patient=str(self.patient),
-            date_added=self.date_added.strftime('%Y-%m-%d'),
+            action_date=self.action_date.strftime('%Y-%m-%d'),
         )

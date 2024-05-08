@@ -1,5 +1,5 @@
 """Module providing model factories for Legacy database models."""
-from datetime import datetime
+import datetime as dt
 
 from django.utils import timezone
 
@@ -32,10 +32,10 @@ class LegacyPatientFactory(DjangoModelFactory):
     first_name = 'Marge'
     last_name = 'Simpson'
     tel_num = '5149995555'
-    date_of_birth = timezone.make_aware(datetime(2018, 1, 1))
+    date_of_birth = timezone.make_aware(dt.datetime(2018, 1, 1))
     sex = 'Male'
     ramq = 'SIMM18510198'
-    registration_date = timezone.make_aware(datetime(2018, 1, 1))
+    registration_date = timezone.make_aware(dt.datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
     # All
@@ -77,7 +77,7 @@ class LegacyHospitalMapFactory(DjangoModelFactory):
 
     mapname_en = 'R720'
     mapname_fr = 'R720'
-    dateadded = timezone.make_aware(datetime(2023, 3, 15))
+    dateadded = timezone.make_aware(dt.datetime(2023, 3, 15))
 
 
 class LegacyAliasFactory(DjangoModelFactory):
@@ -134,8 +134,8 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyAppointment
 
-    scheduledstarttime = timezone.make_aware(datetime(2018, 1, 1))
-    scheduled_end_time = timezone.make_aware(datetime(2018, 1, 2))
+    scheduledstarttime = timezone.make_aware(dt.datetime(2018, 1, 1))
+    scheduled_end_time = timezone.make_aware(dt.datetime(2018, 1, 2))
     checkin = 1
     status = 'Open'
     state = 'active'
@@ -145,9 +145,9 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     roomlocation_fr = 'SMVC Salle 1'
     aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
     appointment_aria_ser = Sequence(lambda number: number + 1)
-    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    last_updated = timezone.make_aware(dt.datetime(2018, 1, 1))
     source_database = SubFactory(LegacySourceDatabaseFactory)
 
 
@@ -163,18 +163,18 @@ class LegacyDocumentFactory(DjangoModelFactory):
     documentid = '56190000000000039165511'
     aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
     approvedby = 890
-    approvedtimestamp = timezone.make_aware(datetime(2023, 6, 1, 12, 36))
+    approvedtimestamp = timezone.make_aware(dt.datetime(2023, 6, 1, 12, 36))
     authoredbysernum = 890
-    dateofservice = timezone.make_aware(datetime(2023, 6, 8, 12, 35))
+    dateofservice = timezone.make_aware(dt.datetime(2023, 6, 8, 12, 35))
     revised = ''
     validentry = 'Y'
     originalfilename = 'bart_2009Feb23_pathology.pdf'
     finalfilename = 'bart_2009Feb23_pathology.pdf'
     createdbysernum = 890
-    createdtimestamp = timezone.make_aware(datetime(2023, 6, 8, 12, 36))
+    createdtimestamp = timezone.make_aware(dt.datetime(2023, 6, 8, 12, 36))
     transferstatus = 'T'
     transferlog = 'Transfer successful'
-    dateadded = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
+    dateadded = timezone.make_aware(dt.datetime(2023, 6, 9, 16, 38, 26))
     readstatus = 0
     readby = '[]'
     readstatus = 0
@@ -219,7 +219,7 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
     educationalmaterialcontrolsernum = SubFactory(LegacyEducationalMaterialControlFactory)
     readby = '[]'
     readstatus = 0
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
 class LegacyQuestionnaireFactory(DjangoModelFactory):
@@ -230,7 +230,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 
     patientsernum = SubFactory(LegacyPatientFactory)
     completedflag = 0
-    date_added = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
+    date_added = timezone.make_aware(dt.datetime(2023, 6, 9, 16, 38, 26))
 
 
 class LegacyPostcontrolFactory(DjangoModelFactory):
@@ -263,8 +263,8 @@ class LegacySecurityQuestionFactory(DjangoModelFactory):
     securityquestionsernum = 1
     questiontext_en = 'What is the name of your first pet?'
     questiontext_fr = 'Quel est le nom de votre premier animal de compagnie?'
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
-    lastupdated = timezone.make_aware(datetime(2022, 9, 27))
+    creationdate = timezone.make_aware(dt.datetime(2022, 9, 27))
+    lastupdated = timezone.make_aware(dt.datetime(2022, 9, 27))
     active = 1
 
 
@@ -278,8 +278,8 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
     securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
     patient = SubFactory(LegacyPatientFactory)
     answertext = 'bird'
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
-    lastupdated = timezone.make_aware(datetime(2022, 9, 27))
+    creationdate = timezone.make_aware(dt.datetime(2022, 9, 27))
+    lastupdated = timezone.make_aware(dt.datetime(2022, 9, 27))
 
 
 class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
@@ -336,10 +336,10 @@ class LegacyDiagnosisFactory(DjangoModelFactory):
     diagnosis_aria_ser = '22234'
     diagnosis_code = 'C12.3'
     description_en = 'Breast Cancer'
-    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    last_updated = timezone.make_aware(dt.datetime(2018, 1, 1))
     stage = 'IIIB'
     stage_criteria = 'T2, pN1a, M0'
-    creation_date = timezone.make_aware(datetime(2018, 1, 1))
+    creation_date = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
 class LegacyTestResultControlFactory(DjangoModelFactory):
@@ -356,10 +356,10 @@ class LegacyTestResultControlFactory(DjangoModelFactory):
     group_fr = Faker('word')
     source_database = 1
     publish_flag = Sequence(lambda number: number)
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
-    last_published = timezone.make_aware(datetime(2018, 1, 1))
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
+    last_published = timezone.make_aware(dt.datetime(2018, 1, 1))
     last_updated_by = Sequence(lambda number: number)
-    last_updated = datetime.now()
+    last_updated = dt.datetime.now()
     url_en = Faker('url')
     url_fr = Faker('url')
 
@@ -379,7 +379,7 @@ class LegacyTestResultFactory(DjangoModelFactory):
     component_name = Faker('word')
     fac_component_name = Faker('word')
     abnormal_flag = 'N'
-    test_date = timezone.make_aware(datetime(2018, 1, 1))
+    test_date = timezone.make_aware(dt.datetime(2018, 1, 1))
     max_norm = Faker('pyfloat', positive=True)
     min_norm = Faker('pyfloat', positive=True)
     approved_flag = 'Y'
@@ -387,7 +387,7 @@ class LegacyTestResultFactory(DjangoModelFactory):
     test_value_string = lazy_attribute(lambda legacytestresult: str(legacytestresult.test_value))
     unit_description = Faker('word')
     valid_entry = 'Y'
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
     read_status = Faker('random_int', min=0, max=1)
 
 
@@ -454,8 +454,8 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     )
     test_value_numeric = Faker('pyfloat', positive=True)
     test_value_string = lazy_attribute(lambda legacypatienttestresult: str(legacypatienttestresult.test_value_numeric))
-    collected_date_time = timezone.make_aware(datetime(2018, 1, 1))
-    result_date_time = timezone.make_aware(datetime(2018, 1, 1))
+    collected_date_time = timezone.make_aware(dt.datetime(2018, 1, 1))
+    result_date_time = timezone.make_aware(dt.datetime(2018, 1, 1))
     unit_description = 'mmol'
     read_by = ''
     available_at = timezone.now()
@@ -470,7 +470,7 @@ class LegacyOARoleFactory(DjangoModelFactory):
     name_en = Faker('name')
     name_fr = Faker('name')
     deleted_by = Faker('name')
-    creation_date = timezone.make_aware(datetime(2018, 1, 1))
+    creation_date = timezone.make_aware(dt.datetime(2018, 1, 1))
     created_by = Faker('name')
     updated_by = Faker('name')
 
@@ -484,7 +484,7 @@ class LegacyOAUserFactory(DjangoModelFactory):
     username = Faker('user_name')
     password = Faker('password')
     oa_role = SubFactory(LegacyOARoleFactory)
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
 class LegacyOAUserRoleFactory(DjangoModelFactory):
@@ -529,3 +529,44 @@ class LegacyOARoleModuleFactory(DjangoModelFactory):
 
     module = SubFactory(LegacyModuleFactory)
     oa_role = SubFactory(LegacyOARoleFactory)
+
+
+class LegacyPatientActivityLogFactory(DjangoModelFactory):
+    """LegacyPatientActivityLog factory."""
+
+    class Meta:
+        model = models.LegacyPatientActivityLog
+
+    activity_ser_num = Faker('random_int')
+    # Possible request values:
+    #   - AccountChange
+    #   - DeviceIdentifier
+    #   - DocumentContent
+    #   - EducationalPackageContents
+    #   - Feedback
+    #   - GetOneItem
+    #   - Log
+    #   - Login
+    #   - Logout
+    #   - PatientTestDateResults
+    #   - Questionnaire
+    #   - QuestionnaireNumberUnread
+    #   - QuestionnairePurpose
+    #   - QuestionnaireSaveAnswer
+    #   - QuestionnaireUpdateStatus
+    #   - Read
+    #   - Refresh
+    #   - SecurityQuestion
+    #   - SecurityQuestionAnswerList
+    #   - UpdateSecurityQuestionAnswer
+    #   - VerifyAnswer
+    #   etc.
+    request = 'Login'
+    parameters = ''
+    target_patient_id = 51
+    username = Faker('user_name')
+    device_id = Faker('uuid4')
+    session_id = ''
+    date_time = timezone.now() - dt.timedelta(days=1)
+    lastupdated = timezone.now() - dt.timedelta(days=1)
+    app_version = '100.100.100'

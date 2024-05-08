@@ -34,14 +34,14 @@ def test_daily_user_patient_activity_factory() -> None:
 
 def test_daily_patient_data_received_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyPatientDataReceived` model."""
-    date_added = timezone.now()
+    action_date = timezone.now()
     patient_data = DailyPatientDataReceived(
         patient=Patient(),
-        date_added=date_added,
+        action_date=action_date,
     )
 
-    assert str(patient_data) == 'Simpson, Marge received data on {date_added}'.format(
-        date_added=date_added.strftime('%Y-%m-%d'),
+    assert str(patient_data) == 'Simpson, Marge received data on {action_date}'.format(
+        action_date=action_date.strftime('%Y-%m-%d'),
     )
 
 

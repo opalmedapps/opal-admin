@@ -55,8 +55,8 @@ msgid "Count Labs"
 msgstr "Nombre de résultats de laboratoire"
 
 #: opal/usage_statistics/models.py
-msgid "Date Added"
-msgstr "Date ajoutée"
+msgid "Action Date"
+msgstr "Date de l'action"
 
 #: opal/usage_statistics/models.py
 msgid "User Patient Activity"
