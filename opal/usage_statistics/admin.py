@@ -19,7 +19,7 @@ class DailyUserAppActivityAdmin(admin.ModelAdmin[DailyUserAppActivity]):
         'count_device_ios',
         'count_device_android',
         'count_device_browser',
-        'date_added',
+        'action_date',
     ]
 
 
@@ -36,7 +36,7 @@ class DailyUserPatientActivityAdmin(admin.ModelAdmin[DailyUserPatientActivity]):
         'count_educational_materials',
         'count_questionnaires_complete',
         'count_labs',
-        'date_added',
+        'action_date',
     ]
 
 
@@ -58,5 +58,5 @@ class DailyPatientDataReceivedAdmin(admin.ModelAdmin[DailyPatientDataReceived]):
         'questionnaires_received',
         'last_lab_received',
         'labs_received',
-        'date_added',
+        'action_date',
     ]

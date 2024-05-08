@@ -9,7 +9,7 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.legacy.factories import LegacyAliasExpressionFactory, LegacyPatientFactory, LegacySourceDatabaseFactory
 
 from .. import factories
-from ..models import LegacyAppointment, LegacyDiagnosis, LegacyDocument, LegacyPatient, LegacyPatientTestResult
+from .. import models as legacy_models
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -25,7 +25,7 @@ def test_get_appointment_databank_data() -> None:
     factories.LegacyAppointmentFactory(appointmentsernum=3, patientsernum=consenting_patient)
     factories.LegacyAppointmentFactory(appointmentsernum=4, patientsernum=consenting_patient)
     # Fetch the data
-    databank_data = LegacyAppointment.objects.get_databank_data_for_patient(
+    databank_data = legacy_models.LegacyAppointment.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
@@ -57,7 +57,7 @@ def test_get_demographics_databank_data() -> None:
     consenting_patient = factories.LegacyPatientFactory()
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
     # Fetch the data
-    databank_data = LegacyPatient.objects.get_databank_data_for_patient(
+    databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
@@ -89,7 +89,7 @@ def test_get_diagnosis_databank_data() -> None:
     factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
     factories.LegacyDiagnosisFactory(patient_ser_num=non_consenting_patient)
     # Fetch the data
-    databank_data = LegacyDiagnosis.objects.get_databank_data_for_patient(
+    databank_data = legacy_models.LegacyDiagnosis.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
@@ -121,7 +121,7 @@ def test_get_labs_databank_data() -> None:
     factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
     factories.LegacyPatientTestResultFactory(patient_ser_num=non_consenting_patient)
     # Fetch the data
-    databank_data = LegacyPatientTestResult.objects.get_databank_data_for_patient(
+    databank_data = legacy_models.LegacyPatientTestResult.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
@@ -161,14 +161,14 @@ def test_create_pathology_document_success() -> None:
         description='Pathology',
     )
 
-    LegacyDocument.objects.create_pathology_document(
+    legacy_models.LegacyDocument.objects.create_pathology_document(
         legacy_patient_id=legacy_patient.patientsernum,
         prepared_by=1,  # TODO: add LegacyStaff model;
         received_at=timezone.now(),
         report_file_name='test-pathology-pdf-name',
     )
 
-    assert LegacyDocument.objects.count() == 1
+    assert legacy_models.LegacyDocument.objects.count() == 1
 
 
 def test_create_pathology_document_raises_exception() -> None:
@@ -179,14 +179,14 @@ def test_create_pathology_document_raises_exception() -> None:
         DatabaseError,
         'Failed to insert a new pathology PDF document record to the OpalDB.Document table:',
     ):
-        LegacyDocument.objects.create_pathology_document(
+        legacy_models.LegacyDocument.objects.create_pathology_document(
             legacy_patient_id=legacy_patient.patientsernum,
             prepared_by=1,  # TODO: add LegacyStaff model;
             received_at=timezone.now(),
             report_file_name='test-pathology-pdf-name',
         )
 
-    assert LegacyDocument.objects.count() == 0
+    assert legacy_models.LegacyDocument.objects.count() == 0
 
 
 def test_get_unread_lab_results_queryset() -> None:
@@ -201,7 +201,25 @@ def test_get_unread_lab_results_queryset() -> None:
         available_at=available_at,
     )
 
-    assert LegacyPatientTestResult.objects.get_unread_queryset(
+    assert legacy_models.LegacyPatientTestResult.objects.get_unread_queryset(
         patient_sernum=patient.patientsernum,
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
     ).count() == 2
+
+
+def test_get_aggregated_user_app_no_activities() -> None:
+    """Ensure that get_aggregated_user_app_activities function does not fail when there is no app statistics."""
+    start_datetime_period = datetime.combine(
+        datetime.now() - timedelta(days=1),
+        datetime.min.time(),
+        timezone.get_current_timezone(),
+    )
+    end_datetime_period = datetime.combine(
+        start_datetime_period,
+        datetime.max.time(),
+        timezone.get_current_timezone(),
+    )
+    assert legacy_models.LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
+        start_datetime_period,
+        end_datetime_period,
+    ).count() == 0
