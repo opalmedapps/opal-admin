@@ -4,7 +4,7 @@ from typing import Any
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
-from rest_framework import mixins, serializers, status
+from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.request import Request
@@ -38,16 +38,13 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
 
     queryset = (
         caregiver_models.RegistrationCode.objects.select_related(
-            'relationship',
-            'relationship__type',
             'relationship__patient',
             'relationship__caregiver',
-        ).prefetch_related(
-            'relationship__patient__hospital_patients',
         ).filter(
             status=caregiver_models.RegistrationCodeStatus.NEW,
         )
     )
+    serializer_class = caregiver_serializers.RegistrationCodeInfoSerializer
     permission_classes = (IsRegistrationListener,)
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
@@ -66,22 +63,6 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
         if registration_code.relationship.patient.date_of_death:
             raise PermissionDenied()
         return registration_code
-
-    def get_serializer_class(
-        self, *args: Any, **kwargs: Any,
-    ) -> type[serializers.BaseSerializer[caregiver_models.RegistrationCode]]:
-        """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
-
-        Args:
-            args: request parameters
-            kwargs: request parameters
-
-        Returns:
-            The expected serializer according to the request parameter.
-        """
-        if 'detailed' in self.request.query_params:
-            return caregiver_serializers.RegistrationCodeDetailSerializer
-        return caregiver_serializers.RegistrationCodeInfoSerializer
 
 
 class CaregiverRelationshipView(ListAPIView[Relationship]):

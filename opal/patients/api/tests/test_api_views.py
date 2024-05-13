@@ -181,58 +181,6 @@ class TestRetrieveRegistrationDetailsView:
         assert response.status_code == HTTPStatus.FORBIDDEN
         assert response.json() == {'detail': 'You do not have permission to perform this action.'}
 
-    def test_registration_code_detailed(self, api_client: APIClient, admin_user: User) -> None:
-        """Test api registration code with detailed serializer."""
-        api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
-
-        # Build relationships: hospital_patient -> site -> institution
-        institution = Institution()
-        site = Site(institution=institution)
-        hospital_patient = HospitalPatient(patient=patient, site=site)
-
-        response = api_client.get(
-            '{0}{1}'.format(
-                reverse(
-                    'api:registration-code',
-                    kwargs={'code': registration_code.code},
-                ),
-                '?detailed',
-            ),
-        )
-        assert response.status_code == HTTPStatus.OK
-        assert response.json() == {
-            'caregiver': {
-                'uuid': str(caregiver.uuid),
-                'first_name': caregiver.user.first_name,
-                'last_name': caregiver.user.last_name,
-                'legacy_id': caregiver.legacy_id,
-            },
-            'patient': {
-                'uuid': str(patient.uuid),
-                'first_name': patient.first_name,
-                'last_name': patient.last_name,
-                'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
-                'sex': patient.sex.value,
-                'ramq': patient.ramq,
-                'legacy_id': patient.legacy_id,
-            },
-            'hospital_patients': [
-                {
-                    'mrn': hospital_patient.mrn,
-                    'site_code': site.acronym,
-                },
-            ],
-            'relationship_type': {
-                'name': relationship.type.name,
-                'role_type': relationship.type.role_type.value,
-            },
-        }
-
 
 class TestPatientDemographicView:
     """Class wrapper for patient demographic endpoint tests."""
