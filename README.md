@@ -7,7 +7,8 @@
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.10 or higher
+* Python 3.11
+* [Git LFS](https://git-lfs.com/)
 
 ## Getting Started
 
@@ -49,7 +50,7 @@ In order for linting, type checking, unit testing etc. to be available in your I
 === "macOS/Linux"
 
     ```sh
-    python3 -m venv --prompt 'opal' .venv
+    python3.11 -m venv --prompt 'opal' .venv
     source .venv/bin/activate
     ```
 
@@ -153,12 +154,16 @@ python -m pip install -r requirements/development.txt
 
 ### Migrate Database and Create Superuser
 
-Before you can start, you need to migrate the database and create a superuser. Execute the following commands either in the virtual environment or in the `app` container.
+Before you can start, you need to migrate the database and create a superuser. Ensure at least the database container is running. Execute the following commands either in the virtual environment or in the `app` container.
 
 ```sh
 python manage.py migrate
 python manage.py createsuperuser
 ```
+
+!!! note
+
+The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
 
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
 
