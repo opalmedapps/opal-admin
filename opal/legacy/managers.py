@@ -530,6 +530,9 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             count_device_browser=models.Count(
                 'device_id', filter=models.Q(parameters__contains='browser'), distinct=True,
             ),
+            # NOTE! The action_date indicates the date when the application activities were made.
+            # It is not the date when the activity statistics were populated.
+            action_date=models.Value(start_datetime_period.date()),
         ).filter(
             # Since the query returns each unique pairing of patient+user (e.g., relationship),
             #     we have the potential to have several 'useless' records created here.
@@ -610,6 +613,9 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
                 'activity_ser_num',
                 filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
             ),
+            # NOTE! The action_date indicates the date when the application activities were made.
+            # It is not the date when the activity statistics were populated.
+            action_date=models.Value(start_datetime_period.date()),
         ).filter(
             # Since the query returns each unique pairing of patient+user (e.g., relationship),
             #     we have the potential to have several 'useless' records created here.

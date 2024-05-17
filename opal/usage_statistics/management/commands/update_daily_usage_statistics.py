@@ -1,4 +1,4 @@
-"""Command for updating the `DailyUserAppActivity` and `DailyUserPatientActivity` models on daily basis."""
+"""Command for populating the application activity statistics to the statistics models on daily basis."""
 
 import datetime as dt
 from typing import Any
@@ -8,11 +8,10 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import models, transaction
 from django.utils import timezone
 
-from django_stubs_ext.aliases import ValuesQuerySet
-
-from opal.legacy.models import LegacyPatientActivityLog
-from opal.patients.models import Relationship, RelationshipStatus
-from opal.usage_statistics.models import DailyUserAppActivity, DailyUserPatientActivity
+from opal.legacy import models as legacy_models
+from opal.patients.models import Patient, Relationship, RelationshipStatus
+from opal.usage_statistics import utils as stats_utils
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
 
 
@@ -20,7 +19,7 @@ class Command(BaseCommand):
     """
     Command to update the daily app activity statistics per user and patient.
 
-    The command populates `DailyUserAppActivity` and `DailyUserPatientActivity` models.
+    The command populates `DailyUserAppActivity`, `DailyUserPatientActivity` and `DailyPatientDataReceived` models.
     """
 
     help = '{0}\n{1}'.format(  # noqa: A003
@@ -50,8 +49,10 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
-        """
-        Populate daily application activity statistics to the `DailyUserAppActivity` and `DailyUserPatientActivity`.
+        """Populate the daily application activities to the statistics models.
+
+        The statistics are populated to the `DailyUserAppActivity`, `DailyUserPatientActivity`
+        and `DailyPatientDataReceived` models.
 
         By default, the command calculates the usage statistics for the previous complete day (e.g., 00:00:00-23:59:59).
 
@@ -60,9 +61,8 @@ class Command(BaseCommand):
             options:  additional keyword arguments
         """
         # Convenient CL argument for testing; it does not work in production environment
-        if options['force_delete']:
-            if self._delete_stored_statistics() is not True:
-                return
+        if options['force_delete'] and self._delete_stored_statistics() is not True:
+            return
 
         # By default the command extract the statistics for the previous day
         days_delta = 1
@@ -96,6 +96,11 @@ class Command(BaseCommand):
             end_datetime_period=end_datetime_period,
         )
 
+        self._populate_patient_received_data(
+            start_datetime_period=start_datetime_period,
+            end_datetime_period=end_datetime_period,
+        )
+
         self.stdout.write(self.style.SUCCESS(
             'Successfully populated daily statistics data',
         ))
@@ -111,17 +116,12 @@ class Command(BaseCommand):
             start_datetime_period: the beginning of the time period of users' app activities being extracted
             end_datetime_period: the end of the time period of users' app activities being extracted
         """
-        # NOTE! The action_date indicates the date when the application activities were made.
-        # It is not the date when the activity statistics were populated.
-        action_date = start_datetime_period.date()
         users = User.objects.values('id', 'username')
         users_dict = {user['username']: user['id'] for user in users}
 
-        activities = LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
+        activities = legacy_models.LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
-        ).annotate(
-            action_date=models.Value(action_date),
         )
 
         DailyUserAppActivity.objects.bulk_create(
@@ -142,14 +142,9 @@ class Command(BaseCommand):
             start_datetime_period: the beginning of the time period of patients' app activities being extracted
             end_datetime_period: the end of the time period of patients' app activities being extracted
         """
-        # NOTE! The action_date indicates the date when the application activities were made.
-        # It is not the date when the activity statistics were populated.
-        action_date = start_datetime_period.date()
-        activities = LegacyPatientActivityLog.objects.get_aggregated_patient_app_activities(
+        activities = legacy_models.LegacyPatientActivityLog.objects.get_aggregated_patient_app_activities(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
-        ).annotate(
-            action_date=models.Value(action_date),
         )
 
         # Fetch relationships where:
@@ -162,7 +157,7 @@ class Command(BaseCommand):
             'patient',
             'caregiver__user',
         ).filter(
-            models.Q(end_date__gte=action_date) | models.Q(end_date=None)
+            models.Q(end_date__gte=start_datetime_period.date()) | models.Q(end_date=None)
             | models.Q(status=RelationshipStatus.CONFIRMED),
         ).exclude(
             models.Q(status=RelationshipStatus.PENDING)
@@ -177,76 +172,45 @@ class Command(BaseCommand):
             end_date=models.Max('end_date'),
         )
 
-        patient_activities_list = self._annotate_patient_activities(activities, relationships)
+        relationships_dict = stats_utils.RelationshipMapping(relationships)
+
+        patient_activities_list = stats_utils.annotate_patient_activities(
+            activities,
+            relationships_dict,
+        )
 
         DailyUserPatientActivity.objects.bulk_create(patient_activities_list)
 
-    def _annotate_patient_activities(
+    def _populate_patient_received_data(
         self,
-        activities: ValuesQuerySet[LegacyPatientActivityLog, dict[str, Any]],
-        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
-    ) -> list[DailyUserPatientActivity]:
-        """Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
-
-        For each record add `user_relationship_to_patient_id`, `action_by_user_id`, `patient_id` fields.
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
+    ) -> None:
+        """Create daily patients' received data statistics records in `DailyPatientDataReceived` model.
 
         Args:
-            activities: `LegacyPatientActivityLog` records per patient per day
-            relationships: patient-caregiver relationships for annotating activity records
-
-        Returns:
-            list of `DailyUserPatientActivity` objects
+            start_datetime_period: the beginning of the time period of received data statistics being extracted
+            end_datetime_period: the end of the time period of received data statistics being extracted
         """
-        relationships_dict = self._build_relationships_dict(relationships)
-        patient_activities_list = []
+        received_data = stats_utils.get_aggregated_patient_received_data(
+            start_datetime_period=start_datetime_period,
+            end_datetime_period=end_datetime_period,
+        )
+        patients = Patient.objects.values('id', 'legacy_id')
+        patients_dict = {patient['legacy_id']: patient['id'] for patient in patients}
 
-        for activity in activities:
-            username = activity.pop('username')
-            patient_data = relationships_dict[activity.pop('target_patient_id')]
-            activity['user_relationship_to_patient_id'] = patient_data[username]['relationship_id']
-            activity['action_by_user_id'] = patient_data[username]['user_id']
-            activity['patient_id'] = patient_data['patient_id']
-            patient_activities_list.append(DailyUserPatientActivity(**activity))
-
-        return patient_activities_list
-
-    def _build_relationships_dict(
-        self,
-        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
-    ) -> dict[str, Any]:
-        """Build relationships dictionary for populating patients' application activities.
-
-        The mapping contains the legacy patient IDs that map to a dictionary with patient ID and usernames.
-        The username keys map to a dictionary with the relationship and user IDs.
-
-        The created dictionary contains required values for populating `DailyUserPatientActivity` model.
-
-        Args:
-            relationships: patient-caregiver relationships queryset
-
-        Returns:
-            dictionary containing required relationship_id, user_id, and patient_id values
-        """
-        relationships_dict = {}
-        for rel in relationships:
-            legacy_id = rel['patient__legacy_id']
-            username = rel['caregiver__user__username']
-            username_dict = {
-                'relationship_id': rel['id'],
-                'user_id': rel['caregiver__user__id'],
-            }
-
-            if legacy_id not in relationships_dict:
-                relationships_dict[legacy_id] = {'patient_id': rel['patient__id']}
-
-            relationships_dict[legacy_id][username] = username_dict
-
-        return relationships_dict
+        DailyPatientDataReceived.objects.bulk_create(
+            DailyPatientDataReceived(
+                patient_id=patients_dict[data.pop('patient')],
+                **data,
+            ) for data in received_data
+        )
 
     def _delete_stored_statistics(self) -> bool:
         """Delete daily application activity statistics data.
 
-        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity` models.
+        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`
+        an `DailyPatientDataReceived` models.
 
         Returns:
             True, if the records were deleted, False otherwise
@@ -270,4 +234,6 @@ class Command(BaseCommand):
 
         DailyUserAppActivity.objects.all().delete()
         DailyUserPatientActivity.objects.all().delete()
+        DailyPatientDataReceived.objects.all().delete()
+
         return True

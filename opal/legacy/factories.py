@@ -51,7 +51,7 @@ class LegacyPatientControlFactory(DjangoModelFactory):
         model = models.LegacyPatientControl
         django_get_or_create = ('patient',)
 
-    patient = 51
+    patient = SubFactory(LegacyPatientFactory)
     patientupdate = 1
     lasttransferred = timezone.now()
     lastupdated = timezone.now()
@@ -537,7 +537,7 @@ class LegacyPatientActivityLogFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyPatientActivityLog
 
-    activity_ser_num = Faker('random_int')
+    activity_ser_num = Sequence(lambda number: number + 1)
     # Possible request values:
     #   - AccountChange
     #   - DeviceIdentifier
