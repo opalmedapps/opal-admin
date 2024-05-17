@@ -648,7 +648,7 @@ class LegacyPatientTestResult(models.Model):
     test_value_numeric = models.FloatField(db_column='TestValueNumeric')
     test_value_string = models.CharField(db_column='TestValue', max_length=255)
     unit_description = models.CharField(db_column='UnitDescription', max_length=40)
-    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    date_added = models.DateTimeField(db_column='DateAdded', default=timezone.now)
     read_status = models.IntegerField(db_column='ReadStatus', default=0)
     read_by = models.TextField(db_column='ReadBy', blank=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)

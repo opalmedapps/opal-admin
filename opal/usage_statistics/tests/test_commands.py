@@ -14,7 +14,7 @@ from opal.legacy import models as legacy_models
 from opal.patients import factories as patients_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import factories as statistics_factory
-from opal.usage_statistics.models import DailyUserAppActivity, DailyUserPatientActivity
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -22,14 +22,83 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     """Test class to group the `update_daily_usage_statistics` command tests."""
 
-    # tests for populating user app activities
-
     def test_no_app_statistics(self) -> None:
         """Ensure that the command does not fail when there is no app statistics."""
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 0
+        assert DailyPatientDataReceived.objects.count() == 0
+
+    def test_existing_statistics_delete_yes(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Ensure that the command's force-delete flag deletes the data in models."""
+        monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
+        statistics_factory.DailyUserAppActivity(
+            action_by_user=caregivers_factories.Caregiver(username='marge'),
+        )
+        statistics_factory.DailyUserAppActivity(
+            action_by_user=caregivers_factories.Caregiver(username='homer'),
+        )
+        statistics_factory.DailyUserAppActivity(
+            action_by_user=caregivers_factories.Caregiver(username='bart'),
+        )
+        marge_caregiver = caregivers_factories.CaregiverProfile(
+            user=caregivers_factories.Caregiver(username='marge'),
+            legacy_id=1,
+        )
+        self_relationship = patients_factories.Relationship(
+            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+            caregiver=marge_caregiver,
+        )
+        caregiver_relationship = patients_factories.Relationship(
+            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
+            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+            caregiver=marge_caregiver,
+        )
+        mandatry_relationship = patients_factories.Relationship(
+            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.MANDATARY),
+            patient=patients_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+            caregiver=marge_caregiver,
+        )
+        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
+        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=caregiver_relationship)
+        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=mandatry_relationship)
+        statistics_factory.DailyPatientDataReceived()
+        statistics_factory.DailyPatientDataReceived()
+        statistics_factory.DailyPatientDataReceived()
+        monkeypatch.setattr('builtins.input', lambda _: 'yes')
+        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
+        assert stdout == 'Deleting existing usage statistics data\nSuccessfully populated daily statistics data\n'
+        assert DailyUserAppActivity.objects.count() == 0
+        assert DailyUserPatientActivity.objects.count() == 0
+        assert DailyPatientDataReceived.objects.count() == 0
+
+    def test_existing_statistics_delete_no(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Ensure that the command's force-delete stops execution if user enters 'no' to the prompt."""
+        self_relationship = patients_factories.Relationship(
+            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        )
+        statistics_factory.DailyUserAppActivity(
+            action_by_user=caregivers_factories.Caregiver(username='marge'),
+        )
+        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
+        statistics_factory.DailyPatientDataReceived()
+        monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
+        monkeypatch.setattr('builtins.input', lambda _: 'no')
+        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
+        assert stdout == 'Deleting existing usage statistics data\nUsage statistics update is cancelled\n'
+        assert DailyUserAppActivity.objects.count() == 1
+        assert DailyUserPatientActivity.objects.count() == 1
+        assert DailyPatientDataReceived.objects.count() == 1
+
+    def test_existing_statistics_delete_in_prod_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Ensure that the command's force-delete flag is forbidden in production environment."""
+        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
+        assert stdout == 'Existing usage statistics data cannot be deleted in production environment\n'
+
+    # tests for populating user app activities
 
     def test_populate_previous_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics per user."""
@@ -88,7 +157,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 1
-        assert DailyUserPatientActivity.objects.count() == 0
         user_app_activity = DailyUserAppActivity.objects.first()
         assert user_app_activity
         assert user_app_activity.count_logins == 1
@@ -165,7 +233,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics', '--today')
         assert stdout == 'Calculating usage statistics for today\nSuccessfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 1
-        assert DailyUserPatientActivity.objects.count() == 0
         user_app_activity = DailyUserAppActivity.objects.first()
         assert user_app_activity
         assert user_app_activity.count_logins == 1
@@ -174,60 +241,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert user_app_activity.count_update_passwords == 1
         assert user_app_activity.count_update_language == 2
         assert user_app_activity.action_date == dt.datetime.now().date()
-
-    def test_existing_statistics_delete_yes(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Ensure that the command's force-delete flag deletes the data in models."""
-        monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='marge'),
-        )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='homer'),
-        )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='bart'),
-        )
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
-            legacy_id=1,
-        )
-        self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
-            caregiver=marge_caregiver,
-        )
-        caregiver_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
-            caregiver=marge_caregiver,
-        )
-        mandatry_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.MANDATARY),
-            patient=patients_factories.Patient(legacy_id=53, ramq='TEST01161974'),
-            caregiver=marge_caregiver,
-        )
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=caregiver_relationship)
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=mandatry_relationship)
-        monkeypatch.setattr('builtins.input', lambda _: 'yes')
-        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
-        assert stdout == 'Deleting existing usage statistics data\nSuccessfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
-        assert DailyUserPatientActivity.objects.count() == 0
-
-    def test_existing_statistics_delete_no(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Ensure that the command's force-delete stops execution if user enters 'no' to the prompt."""
-        monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
-        monkeypatch.setattr('builtins.input', lambda _: 'no')
-        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
-        assert stdout == 'Deleting existing usage statistics data\nUsage statistics update is cancelled\n'
-        assert DailyUserAppActivity.objects.count() == 0
-        assert DailyUserPatientActivity.objects.count() == 0
-
-    def test_existing_statistics_delete_in_prod_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Ensure that the command's force-delete flag is forbidden in production environment."""
-        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
-        assert stdout == 'Existing usage statistics data cannot be deleted in production environment\n'
 
     def test_populate_last_login_user_statistics(self) -> None:
         """Ensure that the command correctly populates the last login time per user per day."""
@@ -331,7 +344,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=marge_two_days_ago_date_time,
@@ -393,7 +405,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -464,7 +475,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -559,7 +569,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -654,7 +663,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -749,7 +757,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -844,7 +851,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -1034,7 +1040,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 4
-        assert DailyUserPatientActivity.objects.count() == 0
         marge_two_days_ago_app_activity = DailyUserAppActivity.objects.filter(
             action_by_user=marge_caregiver.user,
             action_date=date - dt.timedelta(days=2),
@@ -1380,7 +1385,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 4
         marge_two_days_ago_patient_activity = DailyUserPatientActivity.objects.filter(
             user_relationship_to_patient=marge_self_relationship,
@@ -1507,7 +1511,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 4
         marge_two_days_ago_patient_activity = DailyUserPatientActivity.objects.filter(
             user_relationship_to_patient=marge_self_relationship,
@@ -1634,7 +1637,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 4
         marge_two_days_ago_patient_activity = DailyUserPatientActivity.objects.filter(
             user_relationship_to_patient=marge_self_relationship,
@@ -1777,7 +1779,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 4
         marge_two_days_ago_patient_activity = DailyUserPatientActivity.objects.filter(
             user_relationship_to_patient=marge_self_relationship,
@@ -1904,7 +1905,6 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 4
         marge_two_days_ago_patient_activity = DailyUserPatientActivity.objects.filter(
             user_relationship_to_patient=marge_self_relationship,
@@ -1930,47 +1930,285 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         ).first()
         assert marge_current_day_patient_activity is None
 
-    def test_multiple_relationships(self) -> None:
-        """Ensure _build_relationships_dict handles relationships mapping with multiple usernames with no errors."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
-            legacy_id=1,
+    # tests for populating patient received data statistics
+
+    def test_populate_previous_day_received_data(self) -> None:
+        """Ensure that the command successfully populates the previous day received data statistics per patient."""
+        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
+        legacy_factories.LegacyPatientControlFactory(patient=marge)
+        legacy_factories.LegacyPatientControlFactory(patient=homer)
+
+        django_marge_patient = patients_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patients_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+
+        previous_day = timezone.make_aware(
+            dt.datetime.now() - dt.timedelta(days=1),
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
-            legacy_id=2,
+        current_day = timezone.make_aware(dt.datetime.now())
+
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=previous_day,
         )
-        patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
-            caregiver=marge_caregiver,
-            status=patient_models.RelationshipStatus.CONFIRMED,
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=previous_day,
         )
-        homer_patient = patients_factories.Patient(legacy_id=52, ramq='TEST01161973')
-        patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
-            patient=homer_patient,
-            caregiver=marge_caregiver,
-            status=patient_models.RelationshipStatus.CONFIRMED,
+
+        next_appointment = timezone.make_aware(
+            dt.datetime.now() + dt.timedelta(days=3),
         )
-        patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=homer_patient,
-            caregiver=homer_caregiver,
-            status=patient_models.RelationshipStatus.CONFIRMED,
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=previous_day,
+            scheduledstarttime=next_appointment,
         )
-        self._create_log_record(
-            request='QuestionnaireUpdateStatus',
-            parameters=json.dumps({
-                'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
-            }).replace(' ', ''),
-            target_patient_id=52,
-            username=homer_caregiver.user.username,
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+            scheduledstarttime=next_appointment,
         )
+
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=1,
+            patientsernum=marge,
+            dateadded=previous_day,
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=2,
+            patientsernum=homer,
+            dateadded=previous_day,
+        )
+
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=marge,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+        )
+
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+        )
+
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=marge,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=previous_day,
+        )
+
+        # current day records should not be included to the final queryset
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=current_day,
+            scheduledstarttime=timezone.make_aware(
+                dt.datetime.now() + dt.timedelta(days=7),
+            ),
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=3,
+            patientsernum=marge,
+            dateadded=current_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=current_day,
+        )
+
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
-        assert DailyUserAppActivity.objects.count() == 0
-        assert DailyUserPatientActivity.objects.count() == 1
+        assert DailyPatientDataReceived.objects.count() == 2
+        marge_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_marge_patient,
+        ).first()
+        assert marge_received_data
+        assert marge_received_data.next_appointment == next_appointment
+        assert marge_received_data.last_appointment_received == previous_day
+        assert marge_received_data.appointments_received == 1
+        assert marge_received_data.last_document_received == previous_day
+        assert marge_received_data.documents_received == 1
+        assert marge_received_data.last_educational_material_received == previous_day
+        assert marge_received_data.educational_materials_received == 1
+        assert marge_received_data.last_questionnaire_received == previous_day
+        assert marge_received_data.questionnaires_received == 1
+        assert marge_received_data.last_lab_received == previous_day
+        assert marge_received_data.labs_received == 1
+
+        homer_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_homer_patient,
+        ).first()
+        assert homer_received_data
+        assert homer_received_data.next_appointment == next_appointment
+        assert homer_received_data.last_appointment_received == previous_day
+        assert homer_received_data.appointments_received == 1
+        assert homer_received_data.last_document_received == previous_day
+        assert homer_received_data.documents_received == 1
+        assert homer_received_data.last_educational_material_received == previous_day
+        assert homer_received_data.educational_materials_received == 1
+        assert homer_received_data.last_questionnaire_received == previous_day
+        assert homer_received_data.questionnaires_received == 1
+        assert homer_received_data.last_lab_received == previous_day
+        assert homer_received_data.labs_received == 1
+
+    def test_populate_current_day_received_data(self) -> None:
+        """Ensure that the command successfully populates the current day received data statistics per patient."""
+        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
+        legacy_factories.LegacyPatientControlFactory(patient=marge)
+        legacy_factories.LegacyPatientControlFactory(patient=homer)
+
+        django_marge_patient = patients_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patients_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+
+        previous_day = timezone.make_aware(
+            dt.datetime.now() - dt.timedelta(days=1),
+        )
+        current_day = timezone.make_aware(dt.datetime.now())
+
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=current_day,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=current_day,
+        )
+
+        next_appointment = timezone.make_aware(
+            dt.datetime.now() + dt.timedelta(days=3),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=current_day,
+            scheduledstarttime=next_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=current_day,
+            scheduledstarttime=next_appointment,
+        )
+
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=1,
+            patientsernum=marge,
+            dateadded=current_day,
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=2,
+            patientsernum=homer,
+            dateadded=current_day,
+        )
+
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=current_day,
+        )
+
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=homer,
+            date_added=current_day,
+        )
+
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=current_day,
+        )
+
+        # previous day records should not be included to the final queryset
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+            scheduledstarttime=timezone.make_aware(
+                dt.datetime.now() + dt.timedelta(days=7),
+            ),
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=3,
+            patientsernum=marge,
+            dateadded=previous_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=previous_day,
+        )
+
+        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--today')
+        assert stdout == 'Calculating usage statistics for today\nSuccessfully populated daily statistics data\n'
+        assert DailyPatientDataReceived.objects.count() == 2
+        marge_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_marge_patient,
+        ).first()
+        assert marge_received_data
+        assert marge_received_data.next_appointment == next_appointment
+        assert marge_received_data.last_appointment_received == current_day
+        assert marge_received_data.appointments_received == 1
+        assert marge_received_data.last_document_received == current_day
+        assert marge_received_data.documents_received == 1
+        assert marge_received_data.last_educational_material_received == current_day
+        assert marge_received_data.educational_materials_received == 1
+        assert marge_received_data.last_questionnaire_received == current_day
+        assert marge_received_data.questionnaires_received == 1
+        assert marge_received_data.last_lab_received == current_day
+        assert marge_received_data.labs_received == 1
+
+        homer_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_homer_patient,
+        ).first()
+        assert homer_received_data
+        assert homer_received_data.next_appointment == next_appointment
+        assert homer_received_data.last_appointment_received == current_day
+        assert homer_received_data.appointments_received == 1
+        assert homer_received_data.last_document_received == current_day
+        assert homer_received_data.documents_received == 1
+        assert homer_received_data.last_educational_material_received == current_day
+        assert homer_received_data.educational_materials_received == 1
+        assert homer_received_data.last_questionnaire_received == current_day
+        assert homer_received_data.questionnaires_received == 1
+        assert homer_received_data.last_lab_received == current_day
+        assert homer_received_data.labs_received == 1
 
     def _create_log_record(
         self,
