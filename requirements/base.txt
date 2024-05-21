@@ -50,7 +50,7 @@ twilio==9.0.5  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
-fpdf2==2.7.8
+fpdf2==2.7.9
 
 # Unidecode for transliterating special characters during de-identification
 #
