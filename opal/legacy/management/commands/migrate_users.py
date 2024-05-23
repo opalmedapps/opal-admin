@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
                 if self._save_clinical_staff_user(clinical_staff_user):
                     # waiting for fix to be released: https://github.com/typeddjango/django-stubs/pull/1864
-                    admin_group.user_set.add(clinical_staff_user)  # type: ignore[attr-defined]
+                    admin_group.user_set.add(clinical_staff_user)
                     admin_users_counter += 1
                     all_users_counter += 1
             else:
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                     # access codes 0-7
                     if role_module:
                         # waiting for fix to be released: https://github.com/typeddjango/django-stubs/pull/1864
-                        registrant_group.user_set.add(clinical_staff_user)  # type: ignore[attr-defined]
+                        registrant_group.user_set.add(clinical_staff_user)
                         staff_users_counter += 1
 
                     all_users_counter += 1
