@@ -397,7 +397,7 @@ class RegistrationCompletionView(APIView):
         """
         with translation.override(language):
             email_plain = render_to_string(
-                'email/confirmation_code.txt',
+                'email/confirmation_email.txt',
             )
 
         send_mail(
