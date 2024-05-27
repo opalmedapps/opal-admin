@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:10.11.7-jammy
+    image: mariadb:10.11.8-jammy
     environment:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_USER=${DATABASE_USER}
