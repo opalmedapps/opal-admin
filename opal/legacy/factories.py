@@ -138,7 +138,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     scheduled_end_time = timezone.make_aware(dt.datetime(2018, 1, 2))
     checkin = 1
     status = 'Open'
-    state = 'active'
+    state = 'Active'
     readstatus = 0
     readby = '[]'
     roomlocation_en = 'CVIS Clinic Room 1'
