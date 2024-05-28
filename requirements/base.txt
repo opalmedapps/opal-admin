@@ -12,7 +12,7 @@ django-easy-audit==1.3.4b1  # https://github.com/soynatan/django-easy-audit
 django-tables2==2.7.0  # https://github.com/jieter/django-tables2
 django-forms-dynamic==1.0.0  # https://github.com/dabapps/django-forms-dynamic
 
-# required as a base dependency due to the need to monkeypatch at runtime
+# required as a runtime dependency due to the need to monkeypatch at runtime
 django-stubs-ext==5.0.0  # https://github.com/typeddjango/django-stubs/tree/master/ext
 
 # UI
