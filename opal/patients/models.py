@@ -7,6 +7,7 @@ from uuid import uuid4
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
@@ -256,6 +257,10 @@ class Patient(AbstractLabDelayModel):
         unique=True,
         null=True,
         blank=True,
+    )
+    created_at = models.DateTimeField(
+        verbose_name=_('Created At'),
+        default=timezone.now,
     )
 
     objects = PatientManager.from_queryset(PatientQueryset)()

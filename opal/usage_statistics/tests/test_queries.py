@@ -209,16 +209,19 @@ def test_fetch_caregivers_summary() -> None:
 
 def test_empty_fetch_patients_summary() -> None:
     """Ensure fetch_patients_summary() query can return an empty result without errors."""
-    caregivers_summary = stats_queries.fetch_patients_summary()
+    caregivers_summary = stats_queries.fetch_patients_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
     assert caregivers_summary == {
         'total': 0,
         'deceased': 0,
         'male': 0,
         'female': 0,
-        'other_sex': 0,
-        'unknown_sex': 0,
-        'all_access': 0,
-        'ntk_access': 0,
+        'sex_other': 0,
+        'sex_unknown': 0,
+        'access_all': 0,
+        'access_ntk': 0,
     }
 
 
@@ -246,16 +249,22 @@ def test_fetch_patients_summary() -> None:
         legacy_id=57, ramq='TEST01161980', date_of_death=timezone.now(),
     )
     patient_factories.Patient(
-        legacy_id=58, ramq='TEST01161981', sex=patient_models.Patient.SexType.FEMALE,
+        legacy_id=58,
+        ramq='TEST01161981',
+        sex=patient_models.Patient.SexType.FEMALE,
+        created_at=timezone.now() - dt.timedelta(days=3),
     )
-    caregivers_summary = stats_queries.fetch_patients_summary()
+    caregivers_summary = stats_queries.fetch_patients_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
     assert caregivers_summary == {
-        'total': 8,
+        'total': 7,
         'deceased': 2,
         'male': 3,
-        'female': 3,
-        'other_sex': 1,
-        'unknown_sex': 1,
-        'all_access': 6,
-        'ntk_access': 2,
+        'female': 2,
+        'sex_other': 1,
+        'sex_unknown': 1,
+        'access_all': 5,
+        'access_ntk': 2,
     }
