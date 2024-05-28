@@ -83,12 +83,14 @@ setup dev dependencies:
     - .needs_image
   script:
     - pip install uv
-    - uv pip install --system -r requirements/development.txt
+    - uv pip install --system --no-cache -r requirements/development.txt
 
 flake8:
   stage: static analysis
   extends:
     - .needs_image
+  needs:
+    - setup dev dependencies
   script:
     - flake8 --version
     # install plugin to produce code climate report
@@ -106,6 +108,8 @@ mypy:
   stage: static analysis
   extends:
     - .needs_image
+  needs:
+    - setup dev dependencies
   script:
     # install plugin to produce code climate report
     - pip install mypy-gitlab-code-quality
@@ -141,6 +145,8 @@ pytest:
   stage: test
   extends:
     - .needs_image
+  needs:
+    - setup dev dependencies
   # set up DB service only for the test job since it is not used by others
   services:
     - mariadb:10.11.8-jammy
