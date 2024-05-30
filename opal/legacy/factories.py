@@ -157,7 +157,7 @@ class LegacyDocumentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyDocument
 
-    documentsernum = 5
+    documentsernum = Sequence(lambda number: number + 1)
     patientsernum = SubFactory(LegacyPatientFactory)
     sourcedatabasesernum = SubFactory(LegacySourceDatabaseFactory)
     documentid = '56190000000000039165511'
