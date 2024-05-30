@@ -9,6 +9,7 @@ from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
+from opal.usage_statistics.models import DailyUserAppActivity
 
 # GROUP REPORTING - POPULATION-LEVEL AGGREGATE STATISTICS
 
@@ -131,4 +132,33 @@ def fetch_devices_summary(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=3),
         ),
+    )
+
+
+def fetch_logins_summary_per_day(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by:str = None,
+) -> list[dict[str, Any]]:
+    """Fetch grouped logins summary per day from `DailyUserAppActivity` model.
+
+    Args:
+        start_date: the beginning of the time period of the logins summary per day (inclusive)
+        end_date: the end of the time period of the logins summary per day (inclusive)
+        group_by: the date component to group by. Acceptable values are 'day', 'month', 'year'.
+
+    Returns:
+        logins summary per day for a given time period
+    """
+    return list(
+        DailyUserAppActivity.objects.filter(
+            action_date__gte=start_date,
+            action_date__lte=end_date,
+        ).values(
+            'action_date',
+        ).annotate(
+            total_logins=models.Sum('count_logins'),
+            unique_user_logins=models.Count('id'),
+            avg_logins_per_user=models.Avg('count_logins'),
+        ).order_by(),
     )
