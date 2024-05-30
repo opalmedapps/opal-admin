@@ -11,6 +11,9 @@ variables:
 
 default:
   image: python:3.11.9-slim-bookworm
+  # mark all jobs interruptible by default
+  # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
+  interruptible: true
   before_script:
     - uname -a
     - python --version
@@ -47,7 +50,7 @@ setup:
   stage: .pre
   before_script:
     # install dependencies for mysqlclient
-    - apt update && apt-get install -y libmariadb-dev pkg-config
+    - apt update && apt-get install -y build-essential libmariadb-dev pkg-config
   script:
     - pip install uv
     - uv venv
@@ -285,6 +288,11 @@ pages:
       - public
   needs:
     - build docs
+
+
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
 
 
 include:
