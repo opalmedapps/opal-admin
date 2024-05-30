@@ -9,21 +9,13 @@ variables:
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
 
-
-stages:
-  - build
-  - static analysis
-  - checks
-  - test
-  - documentation
-
-.needs_image:
-  needs:
-    - job: build image
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+default:
+  image: python:3.11.9-slim-bookworm
   before_script:
     - uname -a
     - python --version
+      # don't fail if venv is not set up yet (during setup)
+    - source .venv/bin/activate || true
     # set up env file for DB service
     # use sample env file
     - cp .env.sample .env
@@ -44,53 +36,34 @@ stages:
     - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
-build image:
-  stage: build
-  image: docker:26.1.3
-  services:
-    - docker:26.1.3-dind
-  variables:
-    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
-  before_script:
-    # login to CI registry: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#option-1-run-docker-login
-    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
-  script:
-    - export IMAGE_REPOSITORY=$CI_REGISTRY_IMAGE
-    # create an image tagged with the branch or tag name
-    - export IMAGE_BRANCH=$IMAGE_REPOSITORY:$CI_COMMIT_REF_SLUG
-    # plus for the default branch create a latest and commit tag
-    # the commit tag allows us to get images of previous commits in case of problems
-    - export IMAGE_LATEST=$IMAGE_REPOSITORY:latest
-    - export IMAGE_COMMIT=$IMAGE_REPOSITORY:$CI_COMMIT_SHA
-    # make use of the Docker cache to speed up building
-    # see: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
-    - docker pull $IMAGE_LATEST || true
-    - docker pull $IMAGE_BRANCH || true
-    - docker build --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $IMAGE_BRANCH --cache-from $IMAGE_LATEST --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
-    - docker push $IMAGE_BRANCH
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        echo "Running on default branch. Pushing latest and commit tags..."
-        docker push $IMAGE_LATEST
-        docker push $IMAGE_COMMIT
-      fi
+stages:
+  - static analysis
+  - checks
+  - test
+  - build
+  - deploy
 
-setup dev dependencies:
-  stage: build
-  extends:
-    - .needs_image
+setup:
+  stage: .pre
   script:
+    # install dependencies for mysqlclient
+    - apt update && apt-get install -y build-essential libmariadb-dev
     - pip install uv
-    - uv pip install --system --no-cache -r requirements/development.txt
+    - uv venv
+    - source .venv/bin/activate
+    - uv pip install --no-cache -r requirements/development.txt
+  artifacts:
+    # pin artifacts to the branch
+    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
+    name: $CI_COMMIT_REF_SLUG
+    expire_in: "1 day"
+    paths:
+      - .venv
+    # don't cache since it takes just as long to download the cache than to re-download dependencies with uv
+
 
 flake8:
   stage: static analysis
-  extends:
-    - .needs_image
-  needs:
-    - setup dev dependencies
   script:
     - flake8 --version
     # install plugin to produce code climate report
@@ -106,10 +79,6 @@ flake8:
 
 mypy:
   stage: static analysis
-  extends:
-    - .needs_image
-  needs:
-    - setup dev dependencies
   script:
     # install plugin to produce code climate report
     - pip install mypy-gitlab-code-quality
@@ -143,16 +112,12 @@ markdownlint:
 
 pytest:
   stage: test
-  extends:
-    - .needs_image
-  needs:
-    - setup dev dependencies
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.11.8-jammy
+    - mariadb:10.11.7-jammy
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
-    - apk add --no-cache mariadb-client
+    - apt update && apt-get install -y default-mysql-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
@@ -167,8 +132,6 @@ pytest:
 
 coverage:
   stage: test
-  extends:
-    - .needs_image
   script:
     # allow XML creation to fail to be able to parse coverage out of text report
     - coverage xml || true
@@ -188,8 +151,6 @@ coverage:
 
 django migrations:
   stage: checks
-  extends:
-    - .needs_image
   script:
     # Missing migrations
     - echo "Checking that there are no model changes for which there is no migration..."
@@ -197,11 +158,9 @@ django migrations:
 
 django translations:
   stage: checks
-  extends:
-    - .needs_image
   script:
     # install dependencies for git diff
-    - apk add --no-cache git
+    - apt update && apt-get install -y gettext git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
@@ -245,8 +204,6 @@ django auto-named migrations:
 
 django checks:
   stage: checks
-  extends:
-    - .needs_image
   script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
@@ -254,8 +211,6 @@ django checks:
 
 django template validation:
   stage: checks
-  extends:
-    - .needs_image
   script:
     # Check templates
     - echo "Validating templates ..."
@@ -267,11 +222,44 @@ check crontab:
     # Check that the crontab references the correct commands and that they execute
     - scripts/check_crontab.sh
 
+build image:
+  stage: build
+  image: docker:26.1.3
+  services:
+    - docker:26.1.3-dind
+  variables:
+    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    # login to CI registry: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#option-1-run-docker-login
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
+  script:
+    - export IMAGE_REPOSITORY=$CI_REGISTRY_IMAGE
+    # create an image tagged with the branch or tag name
+    - export IMAGE_BRANCH=$IMAGE_REPOSITORY:$CI_COMMIT_REF_SLUG
+    # plus for the default branch create a latest and commit tag
+    # the commit tag allows us to get images of previous commits in case of problems
+    - export IMAGE_LATEST=$IMAGE_REPOSITORY:latest
+    - export IMAGE_COMMIT=$IMAGE_REPOSITORY:$CI_COMMIT_SHA
+    # make use of the Docker cache to speed up building
+    # see: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
+    - docker pull $IMAGE_LATEST || true
+    - docker pull $IMAGE_BRANCH || true
+    - docker build --cache-from $IMAGE_BRANCH --cache-from $IMAGE_LATEST --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
+    - docker push $IMAGE_BRANCH
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Running on default branch. Pushing latest and commit tags..."
+        docker push $IMAGE_LATEST
+        docker push $IMAGE_COMMIT
+      fi
+  only:
+    - main
+
 # Try building the documentation site to ensure there are no issues
 build docs:
-  stage: documentation
-  extends:
-    - .needs_image
+  stage: build
   needs:
     - job: markdownlint
   script:
@@ -284,9 +272,7 @@ build docs:
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
 #
 pages:
-  stage: documentation
-  extends:
-    - .needs_image
+  stage: deploy
   only:
     - main
   script:
