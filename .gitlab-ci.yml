@@ -17,6 +17,8 @@ default:
   before_script:
     - uname -a
     - python --version
+    # install dependencies for mysqlclient
+    - apk add --no-cache build-base mariadb-dev
     # don't fail if venv is not set up yet (during setup)
     - source .venv/bin/activate || true
     # set up env file for DB service
@@ -48,9 +50,6 @@ stages:
 
 setup:
   stage: .pre
-  before_script:
-    # install dependencies for mysqlclient
-    - apk add --no-cache build-base mariadb-dev
   script:
     - pip install uv
     - uv venv
