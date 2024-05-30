@@ -10,14 +10,14 @@ variables:
   MARIADB_PASSWORD: $DB_PASSWORD
 
 default:
-  image: python:3.11.9-slim-bookworm
+  image: python:3.11.9-alpine3.19
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
   before_script:
     - uname -a
     - python --version
-      # don't fail if venv is not set up yet (during setup)
+    # don't fail if venv is not set up yet (during setup)
     - source .venv/bin/activate || true
     # set up env file for DB service
     # use sample env file
@@ -50,7 +50,7 @@ setup:
   stage: .pre
   before_script:
     # install dependencies for mysqlclient
-    - apt update && apt-get install -y build-essential libmariadb-dev pkg-config
+    - apk add --no-cache build-base mariadb-dev
   script:
     - pip install uv
     - uv venv
@@ -71,6 +71,7 @@ flake8:
   script:
     - flake8 --version
     # install plugin to produce code climate report
+    - pip install uv
     - uv pip install flake8-gl-codeclimate
     # don't fail if there are errors so the result can also be printed to the console for logs
     - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json || true
@@ -85,6 +86,7 @@ mypy:
   stage: static analysis
   script:
     # install plugin to produce code climate report
+    - pip install uv
     - uv pip install mypy-gitlab-code-quality
     - mypy --version
     # export output and don't fail if there are errors
@@ -164,7 +166,7 @@ django translations:
   stage: checks
   script:
     # install dependencies for git diff
-    - apt update && apt-get install -y gettext git
+    - apk add --no-cache gettext git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
@@ -268,6 +270,7 @@ build docs:
     - job: setup
     - job: markdownlint
   script:
+    - pip install uv
     - uv pip install -r requirements/docs.txt
     - mkdocs --version
     # abort on warnings to catch invalid cross-references
@@ -281,6 +284,7 @@ pages:
   only:
     - main
   script:
+    - pip install uv
     - uv pip install -r requirements/docs.txt
     - mkdocs build --site-dir public
   artifacts:
