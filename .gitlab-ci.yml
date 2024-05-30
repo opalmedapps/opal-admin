@@ -20,7 +20,7 @@ default:
     # install dependencies for mysqlclient
     - apk add --no-cache build-base mariadb-dev
     # don't fail if venv is not set up yet (during setup)
-    - source .venv/bin/activate || true
+    - source .venv/bin/activate
     # set up env file for DB service
     # use sample env file
     - cp .env.sample .env
@@ -50,6 +50,9 @@ stages:
 
 setup:
   stage: .pre
+  before_script:
+    # install dependencies for mysqlclient
+    - apk add --no-cache build-base mariadb-dev
   script:
     - pip install uv
     - uv venv
