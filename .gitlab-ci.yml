@@ -47,7 +47,7 @@ setup:
   stage: .pre
   script:
     # install dependencies for mysqlclient
-    - apt update && apt-get install -y build-essential libmariadb-dev
+    - apt update && apt-get install -y build-essential libmariadb-dev pkg-config
     - pip install uv
     - uv venv
     - source .venv/bin/activate
