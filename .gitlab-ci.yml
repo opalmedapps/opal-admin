@@ -45,9 +45,10 @@ stages:
 
 setup:
   stage: .pre
-  script:
+  before_script:
     # install dependencies for mysqlclient
     - apt update && apt-get install -y build-essential libmariadb-dev pkg-config
+  script:
     - pip install uv
     - uv venv
     - source .venv/bin/activate
@@ -261,6 +262,7 @@ build image:
 build docs:
   stage: build
   needs:
+    - job: setup
     - job: markdownlint
   script:
     - pip install -r requirements/docs.txt
