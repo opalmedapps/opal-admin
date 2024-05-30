@@ -47,7 +47,7 @@ setup:
   stage: .pre
   before_script:
     # install dependencies for mysqlclient
-    - apt update && apt-get install -y build-essential libmariadb-dev pkg-config
+    - apt update && apt-get install -y libmariadb-dev pkg-config
   script:
     - pip install uv
     - uv venv
@@ -68,7 +68,7 @@ flake8:
   script:
     - flake8 --version
     # install plugin to produce code climate report
-    - pip install flake8-gl-codeclimate
+    - uv pip install flake8-gl-codeclimate
     # don't fail if there are errors so the result can also be printed to the console for logs
     - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json || true
     # fail if JSON file does not contain empty array
@@ -82,7 +82,7 @@ mypy:
   stage: static analysis
   script:
     # install plugin to produce code climate report
-    - pip install mypy-gitlab-code-quality
+    - uv pip install mypy-gitlab-code-quality
     - mypy --version
     # export output and don't fail if there are errors
     - mypy config/ opal/ --no-error-summary > mypy-out.txt || true
@@ -265,7 +265,7 @@ build docs:
     - job: setup
     - job: markdownlint
   script:
-    - pip install -r requirements/docs.txt
+    - uv pip install -r requirements/docs.txt
     - mkdocs --version
     # abort on warnings to catch invalid cross-references
     - mkdocs build --strict
@@ -278,8 +278,7 @@ pages:
   only:
     - main
   script:
-    - pip install --upgrade pip
-    - pip install -r requirements/docs.txt
+    - uv pip install -r requirements/docs.txt
     - mkdocs build --site-dir public
   artifacts:
     paths:
