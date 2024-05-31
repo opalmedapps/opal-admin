@@ -1,6 +1,7 @@
 """Statistics queries used by usage statistics app."""
 import datetime as dt
-from typing import Any, Optional
+from enum import Enum
+from typing import Any
 
 from django.conf import settings
 from django.db import models
@@ -11,6 +12,15 @@ from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.usage_statistics.models import DailyUserAppActivity
 from opal.users import models as users_models
+
+
+class GroupByComponent(Enum):
+    """An enumeration of supported group by components."""
+
+    DATE = 'date'  # noqa: WPS115
+    MONTH = 'month'  # noqa: WPS115
+    YEAR = 'year'  # noqa: WPS115
+
 
 # GROUP REPORTING - POPULATION-LEVEL AGGREGATE STATISTICS
 
@@ -136,35 +146,28 @@ def fetch_devices_summary(
     )
 
 
-def fetch_logins_summary_per_day(
+def fetch_logins_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: Optional[str] = None,
+    group_by: GroupByComponent = GroupByComponent.DATE,
 ) -> list[dict[str, Any]]:
-    """Fetch grouped logins summary per day from `DailyUserAppActivity` model.
+    """Fetch grouped logins summary from `DailyUserAppActivity` model.
 
     Args:
-        start_date: the beginning of the time period of the logins summary per day (inclusive)
-        end_date: the end of the time period of the logins summary per day (inclusive)
-        group_by: the date component to group by. Acceptable values are 'day', 'month', 'year'.
+        start_date: the beginning of the time period of the logins summary (inclusive)
+        end_date: the end of the time period of the logins summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
 
     Returns:
-        logins summary per day for a given time period
+        grouped logins summary for a given time period
     """
     queryset = DailyUserAppActivity.objects.filter(
         action_date__gte=start_date,
         action_date__lte=end_date,
     )
-    # Apply date truncation based on the 'group_by' parameter
-    if group_by == 'year':
-        queryset = queryset.annotate(year=TruncYear('action_date'))
-        group_field = 'year'
-    elif group_by == 'month':
-        queryset = queryset.annotate(month=TruncMonth('action_date'))
-        group_field = 'month'
-    else:
-        queryset = queryset.annotate(date=TruncDay('action_date'))
-        group_field = 'date'
+
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
 
     return list(
         queryset.values(
@@ -175,3 +178,26 @@ def fetch_logins_summary_per_day(
             avg_logins_per_user=models.Avg('count_logins'),
         ).order_by(group_field),
     )
+
+
+def _annotate_queryset_with_grouping_field(
+    queryset: Any,
+    field_name: str,
+    group_by: GroupByComponent,
+) -> Any:
+    """Add an aggregation field to the queryset based on the grouping component.
+
+    Args:
+        queryset: the queryset to annotate with a new grouping field
+        field_name: the name of the queryset's field that is used to create new aggregation field
+        group_by: the date component to group by
+
+    Returns:
+        queryset with annotated grouping component field
+    """
+    if group_by == GroupByComponent.YEAR:
+        return queryset.annotate(year=TruncYear(field_name))
+    elif group_by == GroupByComponent.MONTH:
+        return queryset.annotate(month=TruncMonth(field_name))
+
+    return queryset.annotate(date=TruncDay(field_name))

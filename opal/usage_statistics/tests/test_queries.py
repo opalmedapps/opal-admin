@@ -10,6 +10,7 @@ from opal.caregivers import models as caregiver_models
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
+from opal.usage_statistics import factories as stats_factories
 from opal.usage_statistics import queries as stats_queries
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -312,3 +313,83 @@ def test_fetch_devices_summary(mocker: MockerFixture) -> None:
         'device_android': 2,
         'device_browser': 2,
     }
+
+
+def test_empty_logins_summary() -> None:
+    """Ensure fetch_logins_summary() query can return an empty result without errors."""
+    logins_summary = stats_queries.fetch_logins_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not logins_summary
+
+
+def test_fetch_logins_summary() -> None:
+    """Ensure fetch_logins_summary() query successfully logins statistics."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='marge'),
+        legacy_id=1,
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='homer'),
+        legacy_id=2,
+    )
+    bart_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='bart'),
+        legacy_id=3,
+    )
+    current_date = dt.datetime.now().date()
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=3,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=3,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=current_date,
+    )
+
+    logins_summary = stats_queries.fetch_logins_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+    assert logins_summary == [
+        {
+            'date': current_date - dt.timedelta(days=2),
+            'total_logins': 8,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 4,
+        },
+        {
+            'date': current_date,
+            'total_logins': 18,
+            'unique_user_logins': 3,
+            'avg_logins_per_user': 6,
+        },
+    ]
