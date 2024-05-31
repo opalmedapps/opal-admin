@@ -435,7 +435,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             first_name='Laurie',
             last_name='Hendren',
             username='a51fba18-3810-4808-9238-4d0e487785c8',
-            email='hendren@cs.mcgill.ca',
+            email='laurie@opalmedapps.ca',
             language='en',
             phone_number='+5144415642',
             legacy_id=6,
