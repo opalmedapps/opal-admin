@@ -11,6 +11,7 @@ from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import factories as stats_factories
+from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import queries as stats_queries
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -324,8 +325,8 @@ def test_empty_logins_summary() -> None:
     assert not logins_summary
 
 
-def test_fetch_logins_summary() -> None:
-    """Ensure fetch_logins_summary() query successfully logins statistics."""
+def test_fetch_logins_summary_by_date() -> None:
+    """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by date."""
     marge_caregiver = caregiver_factories.CaregiverProfile(
         user=caregiver_factories.Caregiver(username='marge'),
         legacy_id=1,
@@ -381,15 +382,115 @@ def test_fetch_logins_summary() -> None:
     )
     assert logins_summary == [
         {
+            'date': current_date,
+            'total_logins': 18,
+            'unique_user_logins': 3,
+            'avg_logins_per_user': 6,
+        },
+        {
             'date': current_date - dt.timedelta(days=2),
             'total_logins': 8,
             'unique_user_logins': 2,
             'avg_logins_per_user': 4,
         },
+    ]
+
+
+def test_fetch_logins_summary_by_month() -> None:
+    """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by month."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='marge'),
+        legacy_id=1,
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='homer'),
+        legacy_id=2,
+    )
+    bart_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='bart'),
+        legacy_id=3,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=3,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=6,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=1,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=10,
+        action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=9,
+        action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2024, 3, 1),
+    )
+
+    logins_summary = stats_queries.fetch_logins_summary(
+        start_date=dt.date(2024, 3, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert stats_models.DailyUserAppActivity.objects.count() == 8
+    assert logins_summary == [
         {
-            'date': current_date,
-            'total_logins': 18,
+            'month': dt.date(2024, 5, 1),
+            'total_logins': 8,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 4.0,
+        },
+        {
+            'month': dt.date(2024, 4, 1),
+            'total_logins': 12,
             'unique_user_logins': 3,
-            'avg_logins_per_user': 6,
+            'avg_logins_per_user': 4.0,
+        },
+        {
+            'month': dt.date(2024, 3, 1),
+            'total_logins': 24,
+            'unique_user_logins': 3,
+            'avg_logins_per_user': 8.0,
         },
     ]
