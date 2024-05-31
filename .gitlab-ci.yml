@@ -304,7 +304,7 @@ build image:
     - docker context create builder
     - docker buildx create builder --use
     - docker buildx ls
-    - docker buildx build --builder docker-container $CACHE_TO --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
+    - docker buildx build $CACHE_TO --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
     # - docker push $IMAGE_BRANCH
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
