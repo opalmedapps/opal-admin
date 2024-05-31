@@ -205,6 +205,7 @@ django translations fuzzy:
   stage: checks
   needs: []
   script:
+    - apk add --no-cache grep
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
     - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep -E '#[~]?\| msgid' -B02 -A01 || true)
@@ -219,6 +220,7 @@ django translations commented:
   stage: checks
   needs: []
   script:
+    - apk add --no-cache grep
     # Ensure there are no commented out translation strings
     - echo "Checking for presence of commented out translation strings ..."
     - COMMENTED_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#~ msgid" -B01 -A03 || true)
@@ -307,7 +309,7 @@ build docs:
     - job: setup
     - job: markdownlint
   extends:
-   - .uses_python_dependencies
+   - .uses_django
   script:
     - pip install uv
     - uv pip install -r requirements/docs.txt
