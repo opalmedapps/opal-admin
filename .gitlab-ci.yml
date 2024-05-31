@@ -14,32 +14,17 @@ default:
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
+
+.load_venv:
   before_script:
     - uname -a
     - python --version
+    - source .venv/bin/activate
+
+.uses_django:
+  before_script:
     # install dependencies for mysqlclient
     - apk add --no-cache build-base mariadb-dev
-    # don't fail if venv is not set up yet (during setup)
-    - source .venv/bin/activate
-    # set up env file for DB service
-    # use sample env file
-    - cp .env.sample .env
-    - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
-    - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
-    - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
-    - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
-    # set up legacy DB connection
-    # reuse the same database as for the other tests to make it easier
-    - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-    - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-    - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
-    - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-    - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
-    # set up QuestionnaireDB connection as well
-    - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
-    # generate secret key
-    - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-    - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 stages:
   - static analysis
@@ -65,11 +50,7 @@ setup:
     expire_in: "1 day"
     paths:
       - .venv
-  cache:
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - .cache/uv
-    # don't cache since it takes just as long to download the cache than to re-download dependencies with uv
+    # don't cache since it takes just as long to upload and download the cache than to re-download dependencies with uv
 
 
 flake8:
