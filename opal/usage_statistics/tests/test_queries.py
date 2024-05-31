@@ -494,3 +494,103 @@ def test_fetch_logins_summary_by_month() -> None:
             'avg_logins_per_user': 8.0,
         },
     ]
+
+
+def test_fetch_logins_summary_by_year() -> None:
+    """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by year."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='marge'),
+        legacy_id=1,
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='homer'),
+        legacy_id=2,
+    )
+    bart_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='bart'),
+        legacy_id=3,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=3,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2024, 4, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2023, 8, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=6,
+        action_date=dt.date(2023, 7, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=1,
+        action_date=dt.date(2023, 6, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=10,
+        action_date=dt.date(2022, 4, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=9,
+        action_date=dt.date(2022, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=5,
+        action_date=dt.date(2022, 2, 1),
+    )
+
+    logins_summary = stats_queries.fetch_logins_summary(
+        start_date=dt.date(2022, 2, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert stats_models.DailyUserAppActivity.objects.count() == 8
+    assert logins_summary == [
+        {
+            'year': dt.date(2024, 1, 1),
+            'total_logins': 8,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 4.0,
+        },
+        {
+            'year': dt.date(2023, 1, 1),
+            'total_logins': 12,
+            'unique_user_logins': 3,
+            'avg_logins_per_user': 4.0,
+        },
+        {
+            'year': dt.date(2022, 1, 1),
+            'total_logins': 24,
+            'unique_user_logins': 3,
+            'avg_logins_per_user': 8.0,
+        },
+    ]
