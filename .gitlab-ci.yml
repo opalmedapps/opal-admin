@@ -301,7 +301,7 @@ build image:
         export CACHE_TO="--cache-to type=registry,ref=$IMAGE_BUILD_CACHE,mode=max"
       fi
     # only cache to build cache if on main
-    - docker buildx create docker-container
+    - docker buildx create --name docker-container
     - docker buildx ls
     - docker buildx build --builder docker-container $CACHE_TO --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
     # - docker push $IMAGE_BRANCH
