@@ -27,6 +27,7 @@ default:
   extends:
     - .uses_python_dependencies
   before_script:
+    - !reference [.uses_python_dependencies, before_script]
     # install dependencies for mysqlclient
     - apk add --no-cache build-base mariadb-dev
     # set up env file for DB service
@@ -98,7 +99,7 @@ flake8:
 mypy:
   stage: static analysis
   extends:
-    - .uses_python_dependencies
+    - .uses_django
   script:
     # install plugin to produce code climate report
     - pip install uv
@@ -179,6 +180,8 @@ coverage:
 
 django migrations:
   stage: checks
+  extends:
+    - .uses_python_dependencies
   script:
     # Missing migrations
     - echo "Checking that there are no model changes for which there is no migration..."
@@ -186,6 +189,8 @@ django migrations:
 
 django translations:
   stage: checks
+  extends:
+    - .uses_python_dependencies
   script:
     # install dependencies for git diff
     - apk add --no-cache gettext git
@@ -232,6 +237,8 @@ django auto-named migrations:
 
 django checks:
   stage: checks
+  extends:
+    - .uses_python_dependencies
   script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
@@ -239,6 +246,8 @@ django checks:
 
 django template validation:
   stage: checks
+  extends:
+    - .uses_python_dependencies
   script:
     # Check templates
     - echo "Validating templates ..."
@@ -246,6 +255,8 @@ django template validation:
 
 check crontab:
   stage: checks
+  extends:
+    - .uses_python_dependencies
   script:
     # Check that the crontab references the correct commands and that they execute
     - scripts/check_crontab.sh
