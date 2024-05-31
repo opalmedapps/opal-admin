@@ -1,15 +1,16 @@
 """Statistics queries used by usage statistics app."""
 import datetime as dt
-from typing import Any
+from typing import Any, Optional
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
-from opal.users import models as users_models
 from opal.usage_statistics.models import DailyUserAppActivity
+from opal.users import models as users_models
 
 # GROUP REPORTING - POPULATION-LEVEL AGGREGATE STATISTICS
 
@@ -138,7 +139,7 @@ def fetch_devices_summary(
 def fetch_logins_summary_per_day(
     start_date: dt.date,
     end_date: dt.date,
-    group_by:str = None,
+    group_by: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Fetch grouped logins summary per day from `DailyUserAppActivity` model.
 
@@ -150,15 +151,27 @@ def fetch_logins_summary_per_day(
     Returns:
         logins summary per day for a given time period
     """
+    queryset = DailyUserAppActivity.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    )
+    # Apply date truncation based on the 'group_by' parameter
+    if group_by == 'year':
+        queryset = queryset.annotate(year=TruncYear('action_date'))
+        group_field = 'year'
+    elif group_by == 'month':
+        queryset = queryset.annotate(month=TruncMonth('action_date'))
+        group_field = 'month'
+    else:
+        queryset = queryset.annotate(date=TruncDay('action_date'))
+        group_field = 'date'
+
     return list(
-        DailyUserAppActivity.objects.filter(
-            action_date__gte=start_date,
-            action_date__lte=end_date,
-        ).values(
-            'action_date',
+        queryset.values(
+            group_field,
         ).annotate(
             total_logins=models.Sum('count_logins'),
             unique_user_logins=models.Count('id'),
             avg_logins_per_user=models.Avg('count_logins'),
-        ).order_by(),
+        ).order_by(group_field),
     )
