@@ -292,25 +292,23 @@ build image:
     # see: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
     # - docker pull $IMAGE_LATEST || true
     # - docker pull $IMAGE_BRANCH || true
-    - export IMAGE_BUILD_CACHE=$IMAGE_REPOSITORY/docker-build-cache:latest
-    - export CACHE_TO=
-    - export CACHE_TO="--cache-to type=registry,ref=$IMAGE_BUILD_CACHE,mode=max"
-    - echo $CACHE_TO
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        export CACHE_TO="--cache-to type=registry,ref=$IMAGE_BUILD_CACHE,mode=max"
-      fi
-    # only cache to build cache if on main
-    - docker context create builder
-    - docker buildx create builder --use
-    - docker buildx ls
-    - docker buildx build $CACHE_TO --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
-    # - docker push $IMAGE_BRANCH
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
         echo "Running on default branch. Pushing latest and commit tags..."
         docker push $IMAGE_LATEST
         docker push $IMAGE_COMMIT
+      fi
+    - export IMAGE_BUILD_CACHE=$IMAGE_REPOSITORY/docker-build-cache:latest
+    # only cache to build cache if on main
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        echo "Running on default branch. Pushing latest and commit tags..."
+        docker context create builder
+        docker buildx create builder --use
+        docker buildx build --push --cache-to type=registry,ref=$IMAGE_BUILD_CACHE,mode=max --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE --tag $IMAGE_BRANCH --tag $IMAGE_LATEST --tag $IMAGE_COMMIT .
+      else
+        echo "Running on branch. Building image only..."
+        docker buildx build --cache-from type=registry,ref=$IMAGE_LATEST --cache-from type=registry,ref=$IMAGE_BUILD_CACHE .
       fi
 
 # Try building the documentation site to ensure there are no issues
