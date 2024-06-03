@@ -1,7 +1,7 @@
 """Statistics queries used by usage statistics app."""
 import datetime as dt
 from enum import Enum
-from typing import Any
+from typing import Any, TypeVar
 
 from django.conf import settings
 from django.db import models
@@ -12,6 +12,9 @@ from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.usage_statistics.models import DailyUserAppActivity
 from opal.users import models as users_models
+
+# Create a type variable to represent any model type
+_ModelT = TypeVar('_ModelT', bound=models.Model)
 
 
 class GroupByComponent(Enum):
@@ -181,10 +184,10 @@ def fetch_logins_summary(
 
 
 def _annotate_queryset_with_grouping_field(
-    queryset: Any,
+    queryset: models.QuerySet[_ModelT],
     field_name: str,
     group_by: GroupByComponent,
-) -> Any:
+) -> models.QuerySet[_ModelT]:
     """Add an aggregation field to the queryset based on the grouping component.
 
     Args:
@@ -196,8 +199,10 @@ def _annotate_queryset_with_grouping_field(
         queryset with annotated grouping component field
     """
     if group_by == GroupByComponent.YEAR:
-        return queryset.annotate(year=TruncYear(field_name))
+        annotated_queryset: models.QuerySet[_ModelT] = queryset.annotate(year=TruncYear(field_name))
     elif group_by == GroupByComponent.MONTH:
-        return queryset.annotate(month=TruncMonth(field_name))
+        annotated_queryset = queryset.annotate(month=TruncMonth(field_name))
+    else:
+        annotated_queryset = queryset.annotate(date=TruncDay(field_name))
 
-    return queryset.annotate(date=TruncDay(field_name))
+    return annotated_queryset
