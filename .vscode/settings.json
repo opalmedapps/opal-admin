@@ -5,4 +5,7 @@
     "flake8.interpreter": ["${workspaceFolder}/.venv/bin/python"],
     "isort.interpreter": ["${workspaceFolder}/.venv/bin/python"],
     "mypy-type-checker.importStrategy": "fromEnvironment",
+    "yaml.customTags": [
+      "!reference sequence"
+    ]
 }
