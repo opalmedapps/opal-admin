@@ -332,7 +332,7 @@ pages:
     - main
   script:
     - pip install uv
-    - uv pip install -r requirements/docs.txt
+    - uv pip install --system -r requirements/docs.txt
     - mkdocs build --site-dir public
   artifacts:
     paths:
