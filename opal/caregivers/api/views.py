@@ -35,6 +35,7 @@ from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, 
 from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
+from opal.hospital_settings.models import Institution
 from opal.legacy import utils as legacy_utils
 from opal.patients import utils
 from opal.patients.api.serializers import CaregiverPatientSerializer
@@ -397,9 +398,16 @@ class RegistrationCompletionView(APIView):
             email: the target email
             language: the language of user
         """
+        institution = Institution.objects.get()
+
+        context = {
+            'support_email': institution.support_email,
+        }
+
         with override(language):
             email_plain = render_to_string(
                 'email/confirmation_email.txt',
+                context,
             )
             send_mail(
                 gettext('Thank you for registering for Opal!'),
