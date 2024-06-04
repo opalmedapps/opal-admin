@@ -1,11 +1,13 @@
 #!/bin/sh
-set -eux
+# option pipefail available on alpine sh
+# shellcheck disable=SC3040
+set -euo pipefail
 
 python /app/manage.py collectstatic --noinput
 
 
-/usr/local/bin/gunicorn digitalprint.wsgi:application \
-    --workers=3 \
+/usr/local/bin/gunicorn config.wsgi \
+    --workers=4 \
     --bind 0.0.0.0:8000  \
     --timeout 90 \
     --chdir=/app
