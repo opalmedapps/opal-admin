@@ -160,12 +160,12 @@ class DailyPatientDataReceived(models.Model):
     next_appointment = models.DateTimeField(
         verbose_name=_('Next Appointment'),
         null=True,
-        blank=False,
+        blank=True,
     )
     last_appointment_received = models.DateTimeField(
         verbose_name=_('Last Appointment Received'),
         null=True,
-        blank=False,
+        blank=True,
     )
     appointments_received = models.PositiveIntegerField(
         verbose_name=_('Appointments Received'),
@@ -174,7 +174,7 @@ class DailyPatientDataReceived(models.Model):
     last_document_received = models.DateTimeField(
         verbose_name=_('Last Document Received'),
         null=True,
-        blank=False,
+        blank=True,
     )
     documents_received = models.PositiveIntegerField(
         verbose_name=_('Documents Received'),
@@ -183,7 +183,7 @@ class DailyPatientDataReceived(models.Model):
     last_educational_material_received = models.DateTimeField(
         verbose_name=_('Last Educational Material Received'),
         null=True,
-        blank=False,
+        blank=True,
     )
     educational_materials_received = models.PositiveIntegerField(
         verbose_name=_('Educational Materials Received'),
@@ -192,7 +192,7 @@ class DailyPatientDataReceived(models.Model):
     last_questionnaire_received = models.DateTimeField(
         verbose_name=_('Last Questionnaire Received'),
         null=True,
-        blank=False,
+        blank=True,
     )
     questionnaires_received = models.PositiveIntegerField(
         verbose_name=_('Questionnaires Received'),
@@ -201,7 +201,7 @@ class DailyPatientDataReceived(models.Model):
     last_lab_received = models.DateTimeField(
         verbose_name=_('Last Lab Received'),
         null=True,
-        blank=False,
+        blank=True,
     )
     labs_received = models.PositiveIntegerField(
         verbose_name=_('Labs Received'),

@@ -19,6 +19,7 @@ from opal.legacy import factories as legacy_factories
 from opal.legacy import models as legacy_models
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff
 
@@ -1391,3 +1392,121 @@ class TestMigrateUsersCommand(CommandTestMixin):
         assert ClinicalStaff.objects.count() == 1
         assert ClinicalStaff.objects.filter(username=actual_user.username).exists()
         assert not ClinicalStaff.objects.filter(username=deleted_user.username).exists()
+
+
+class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
+    """Test class for legacy usage statistics data migrations from legacy DB."""
+
+    def test_migrate_legacy_usage_statistics_with_no_legacy_statistics(self) -> None:
+        """Test import success but no legacy statistics exist."""
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_empty_file.csv',
+            'opal/tests/fixtures/test_empty_file.csv',
+        )
+
+        assert 'Number of imported legacy activity log is: 0' in message
+        assert 'Number of imported legacy data received log is: 0' in message
+        assert DailyUserAppActivity.objects.all().count() == 0
+        assert DailyUserPatientActivity.objects.all().count() == 0
+        assert DailyPatientDataReceived.objects.all().count() == 0
+
+    def test_migrate_legacy_usage_statistics_with_success(self) -> None:
+        """Ensure the command handle the legacy usage statistics migration with success."""
+        self._create_test_self_registered_patient(99)
+
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log.csv',
+            'opal/tests/fixtures/test_data_received_log.csv',
+        )
+
+        assert 'Number of imported legacy activity log is: 1' in message
+        assert 'Number of imported legacy data received log is: 1' in message
+        assert DailyUserAppActivity.objects.all().count() == 1
+        assert DailyUserPatientActivity.objects.all().count() == 1
+        assert DailyPatientDataReceived.objects.all().count() == 1
+
+    def test_migrate_legacy_usage_statistics_with_success_no_date_value(self) -> None:
+        """Ensure the command handle the legacy usage statistics migration using no date test data."""
+        self._create_test_self_registered_patient(99)
+
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log.csv',
+            'opal/tests/fixtures/test_data_received_log_no_date.csv',
+        )
+
+        assert 'Number of imported legacy activity log is: 1' in message
+        assert 'Number of imported legacy data received log is: 1' in message
+        assert DailyUserAppActivity.objects.all().count() == 1
+        assert DailyUserPatientActivity.objects.all().count() == 1
+        assert DailyPatientDataReceived.objects.all().count() == 1
+
+    def test_migrate_legacy_patient_activity_logs_with_failed(self) -> None:
+        """Test the legacy patient activity log migration failed due to unexisting patient."""
+        self._create_test_self_registered_patient(100)
+
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log.csv',
+            'opal/tests/fixtures/test_data_received_log.csv',
+        )
+
+        assert 'Cannot prepare `DailyUserPatientActivity` instance for patient (legacy ID: 99),' in error
+        assert 'Cannot prepare `DailyUserAppActivity` instance for patient (legacy ID: 99),' in error
+        assert 'Patient (legacy ID: 99) does not exist in system.' in error
+        assert 'Number of imported legacy activity log is: 0' in message
+        assert 'Cannot prepare `DailyPatientDataReceived` instance for patient (legacy ID: 99),' in error
+        assert 'Number of imported legacy data received log is: 0' in message
+        assert DailyUserAppActivity.objects.all().count() == 0
+        assert DailyUserPatientActivity.objects.all().count() == 0
+        assert DailyPatientDataReceived.objects.all().count() == 0
+
+    def test_migrate_legacy_usage_statistics_with_success_with_large_data(self) -> None:
+        """Ensure the command handle the legacy usage statistics migration using large test data."""
+        self._create_test_self_registered_patient(99)
+
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log_large_data.csv',
+            'opal/tests/fixtures/test_data_received_log_large_data.csv',
+            '--batch-size=10',
+        )
+
+        assert 'Number of imported legacy activity log is: 1000' in message
+        assert 'Number of imported legacy data received log is: 1000' in message
+        assert DailyUserAppActivity.objects.all().count() == 1000
+        assert DailyUserPatientActivity.objects.all().count() == 1000
+        assert DailyPatientDataReceived.objects.all().count() == 1000
+
+    def _create_test_self_registered_patient(self, patient_id: int) -> None:
+        """
+        Create a test self registered patient.
+
+        Args:
+            patient_id: legacy id of patient instance
+        """
+        patient = patient_factories.Patient(
+            legacy_id=patient_id,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+        caregiver = caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                language='en',
+                phone_number='5149999999',
+                first_name='First Name',
+                last_name='Last Name',
+                username='first_username',
+            ),
+            legacy_id=patient_id,
+        )
+        relationship_type = patient_factories.RelationshipType(name='Self')
+        patient_factories.Relationship(
+            patient=patient,
+            caregiver=caregiver,
+            type=relationship_type,
+        )
