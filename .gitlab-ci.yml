@@ -330,6 +330,8 @@ pages:
   stage: deploy
   only:
     - main
+  extends:
+    - .uses_django
   script:
     - pip install uv
     - uv pip install -r requirements/docs.txt
@@ -338,6 +340,7 @@ pages:
     paths:
       - public
   needs:
+    - setup
     - build docs
 
 
