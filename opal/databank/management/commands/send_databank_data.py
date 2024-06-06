@@ -331,7 +331,7 @@ class Command(BaseCommand):  # noqa: WPS214
                     ),
                 )
 
-    def _update_databank_patient_shared_data(
+    def _update_databank_patient_shared_data(  # noqa: WPS231
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
@@ -347,7 +347,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Extract data ids depending on module and save to SharedData instances
-        if DataModuleType.DEMOGRAPHICS in synced_data:
+        if DataModuleType.DEMOGRAPHICS in synced_data:  # noqa: WPS223
             sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
                 databank_consent=databank_patient,
@@ -361,21 +361,49 @@ class Command(BaseCommand):  # noqa: WPS214
                 for component in lab.get('components', [])
                 if 'test_result_id' in component
             ]
-            shared_data_instances = [
-                SharedData(databank_consent=databank_patient, data_id=test_result_id, data_type=DataModuleType.LABS)
-                for test_result_id in sent_test_result_ids
-            ]
-            SharedData.objects.bulk_create(shared_data_instances)
+            self._create_shared_data_instances(databank_patient, DataModuleType.LABS, sent_test_result_ids)
         elif DataModuleType.DIAGNOSES in synced_data:
             sent_diagnosis_ids = [
                 diagnosis['diagnosis_id']
                 for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
             ]
-            shared_data_instances = [
-                SharedData(databank_consent=databank_patient, data_id=diagnosis_id, data_type=DataModuleType.DIAGNOSES)
-                for diagnosis_id in sent_diagnosis_ids
+            self._create_shared_data_instances(databank_patient, DataModuleType.DIAGNOSES, sent_diagnosis_ids)
+        elif DataModuleType.QUESTIONNAIRES in synced_data:
+            sent_questionnaire_answer_ids = [
+                questionnaire_answer['questionnaire_answer_id']
+                for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
-            SharedData.objects.bulk_create(shared_data_instances)
+            self._create_shared_data_instances(
+                databank_patient,
+                DataModuleType.QUESTIONNAIRES,
+                sent_questionnaire_answer_ids,
+            )
+        elif DataModuleType.APPOINTMENTS in synced_data:
+            sent_appointment_ids = [
+                appointment['appointment_id']
+                for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
+            ]
+            self._create_shared_data_instances(databank_patient, DataModuleType.APPOINTMENTS, sent_appointment_ids)
+
+    def _create_shared_data_instances(
+        self,
+        databank_patient: DatabankConsent,
+        data_module_type: DataModuleType,
+        id_list: list[Any],
+    ) -> None:
+        """
+        Bulk create SharedData instances given the module type and id list.
+
+        Args:
+            databank_patient: The consent instance whose data was successfully synced with LORIS
+            data_module_type: The data type
+            id_list: The list of specific ids of module data that was successfully synced
+        """
+        shared_data_instances = [
+            SharedData(databank_consent=databank_patient, data_id=data_id, data_type=data_module_type)
+            for data_id in id_list
+        ]
+        SharedData.objects.bulk_create(shared_data_instances)
 
     def _update_patients_last_synchronization(self) -> None:
         """Update the `databank_patient.last_synchronized` for all patients based on the success tracker."""
