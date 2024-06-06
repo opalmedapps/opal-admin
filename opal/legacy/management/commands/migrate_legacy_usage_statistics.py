@@ -93,11 +93,16 @@ class Command(BaseCommand):    # noqa: WPS214
         batch_app_activity = []
         batch_patient_activity = []
         last_record = DailyUserPatientActivity.objects.all().last()
-        index = last_record.pk if last_record else 0
         legacy_activity_log_count = 0
         with file_path.open() as data_received_file:
             legacy_activity_logs = csv.DictReader(data_received_file, delimiter=';')
-            for row in list(legacy_activity_logs)[index:]:
+            for row in list(legacy_activity_logs):
+                if (
+                    last_record and last_record.patient.legacy_id
+                    and last_record.patient.legacy_id >= int(row['PatientSerNum'])
+                    and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
+                ):
+                    continue
                 self.total_legacy_activity_log_count += 1
                 try:
                     batch_patient_activity.append(self._create_legacy_patient_activity_log(row))
@@ -162,11 +167,16 @@ class Command(BaseCommand):    # noqa: WPS214
         """
         batch = []
         last_record = DailyPatientDataReceived.objects.all().last()
-        index = last_record.pk if last_record else 0
         legacy_data_received_log_count = 0
         with file_path.open() as data_received_file:
             legacy_data_received_logs = csv.DictReader(data_received_file, delimiter=';')
-            for row in list(legacy_data_received_logs)[index:]:
+            for row in list(legacy_data_received_logs):
+                if (
+                    last_record and last_record.patient.legacy_id
+                    and last_record.patient.legacy_id >= int(row['PatientSerNum'])
+                    and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
+                ):
+                    continue
                 self.total_legacy_data_received_log_count += 1
                 try:
                     batch.append(self._create_legacy_patient_data_received_log(row))
