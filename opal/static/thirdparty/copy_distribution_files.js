@@ -9,6 +9,10 @@ dependencies.set('bootstrap/dist/css/bootstrap.min.css', 'bootstrap/css/bootstra
 dependencies.set('bootstrap/dist/css/bootstrap.min.css.map', 'bootstrap/css/bootstrap.min.css.map')
 dependencies.set('bootstrap/dist/js/bootstrap.bundle.min.js', 'bootstrap/js/bootstrap.bundle.min.js')
 dependencies.set('bootstrap/dist/js/bootstrap.bundle.min.js.map', 'bootstrap/js/bootstrap.bundle.min.js.map')
+// Fontawesome
+dependencies.set('@fortawesome/fontawesome-free/css/fontawesome.min.css', 'fontawesomefree/css/fontawesome.min.css')
+dependencies.set('@fortawesome/fontawesome-free/css/solid.min.css', 'fontawesomefree/css/solid.min.css')
+dependencies.set('@fortawesome/fontawesome-free/css/regular.min.css', 'fontawesomefree/css/regular.min.css')
 // Unpoly
 dependencies.set('unpoly/unpoly.min.css', 'unpoly/css/unpoly.min.css')
 dependencies.set('unpoly/unpoly-bootstrap5.min.css', 'unpoly/css/unpoly-bootstrap5.min.css')
