@@ -688,6 +688,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             language='en',
             access_level='1',
         )
+        legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
         user_factories.Caregiver(
             email='opal@example.com',
             language='en',
@@ -709,11 +710,58 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         message, error = self._call_command('find_deviations')
 
+        assert 'The number of records in' not in error
+
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
             'OpalDB.Patient(UserType="Patient")',
         )
         assert deviations_err in error
+
+    def test_patient_records_deviations_date_of_death(self) -> None:
+        """Ensure the command returns no error if the date of death matches."""
+        # create legacy patient
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            sex='Male',
+            tel_num='5149995555',
+            email='opal@example.com',
+            language='en',
+            death_date=timezone.make_aware(datetime(2024, 12, 31)),
+        )
+        legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
+        user_factories.Caregiver(
+            email='opal@example.com',
+            language='en',
+            phone_number='5149995555',
+            first_name='First Name',
+            last_name='Last Name',
+        )
+        # create patient
+        patient_factories.Patient(
+            legacy_id=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_death=timezone.make_aware(datetime(2024, 12, 31)),
+        )
+
+        message, error = self._call_command('find_deviations')
+
+        assert 'The number of records in' not in error
+
+        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
+        )
+        # legacy datetimes are added as is whereas Django converts it to UTC
+        # ensure the command can handle this
+        assert deviations_err not in error
 
     def test_deviations_uneven_caregiver_records(self) -> None:
         """Ensure the command handles the cases when "User/Caregiver" model/tables have uneven number of records."""
@@ -761,9 +809,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
-        assert "(51, 'Homer', 'Simpson', '', 'test@test.com', 'en', 'test_username')" in error
+        assert "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'test_username')" in error
         assert (
-            "(51, 'Homer', 'Simpson', '5149995555', 'test@test.com', 'en', 'username')"
+            "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'username')"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 

@@ -1,12 +1,16 @@
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
 from typing import Any, Optional
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
 from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
+# datetimes in legacy are in the DB in the local timezone
+# whereas Django inserts them as UTC
+# therefore, datetimes need to be converted to UTC to compare them
 LEGACY_PATIENT_QUERY = """
     SELECT
         P.PatientSerNum AS LegacyID,
@@ -32,7 +36,7 @@ LEGACY_PATIENT_QUERY = """
             ELSE "UNDEFINED"
         END
         ) As AccessLevel,
-        P.DeathDate as DeathDate
+        CONVERT_TZ(P.DeathDate, '{timezone}', 'UTC') as DeathDate
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
 """  # noqa: WPS323
@@ -51,7 +55,6 @@ LEGACY_CAREGIVER_QUERY = """
         P.PatientSerNum AS LegacyID,
         P.FirstName AS FirstName,
         P.LastName AS LastName,
-        CONVERT(P.TelNum, CHAR) AS Phone,
         LOWER(P.Email) AS Email,
         LOWER(P.Language) AS Language,
         U.Username as Username
@@ -89,7 +92,6 @@ DJANGO_CAREGIVER_QUERY = """
         CC.legacy_id AS LegacyID,
         UU.first_name AS FirstName,
         UU.last_name AS LastName,
-        UU.phone_number AS Phone,
         LOWER(UU.email) AS Email,
         LOWER(UU.language) AS Language,
         UU.username as Username
@@ -161,9 +163,8 @@ class Command(BaseCommand):
             django_hospital_patients = django_db.fetchall()
             django_db.execute(DJANGO_CAREGIVER_QUERY)
             django_caregivers = django_db.fetchall()
-
         with connections['legacy'].cursor() as legacy_db:
-            legacy_db.execute(LEGACY_PATIENT_QUERY)
+            legacy_db.execute(LEGACY_PATIENT_QUERY.format(timezone=settings.TIME_ZONE))
             legacy_patients = legacy_db.fetchall()
             legacy_db.execute(LEGACY_HOSPITAL_PATIENT_QUERY)
             legacy_hospital_patients = legacy_db.fetchall()
