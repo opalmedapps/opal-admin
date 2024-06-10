@@ -1480,6 +1480,27 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
         assert DailyUserPatientActivity.objects.all().count() == 1000
         assert DailyPatientDataReceived.objects.all().count() == 1000
 
+    def test_migrate_legacy_usage_statistics_skip_exist_data(self) -> None:
+        """Ensure the command handle the legacy usage statistics migration using existed data."""
+        self._create_test_self_registered_patient(99)
+
+        self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log.csv',
+            'opal/tests/fixtures/test_data_received_log.csv',
+        )
+        message, error = self._call_command(
+            'migrate_legacy_usage_statistics',
+            'opal/tests/fixtures/test_activity_log.csv',
+            'opal/tests/fixtures/test_data_received_log.csv',
+        )
+
+        assert 'Number of imported legacy activity log is: 0' in message
+        assert 'Number of imported legacy data received log is: 0' in message
+        assert DailyUserAppActivity.objects.all().count() == 1
+        assert DailyUserPatientActivity.objects.all().count() == 1
+        assert DailyPatientDataReceived.objects.all().count() == 1
+
     def _create_test_self_registered_patient(self, patient_id: int) -> None:
         """
         Create a test self registered patient.
