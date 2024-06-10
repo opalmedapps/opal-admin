@@ -174,7 +174,6 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'slippers',
-    'fontawesomefree',
 ]
 
 LOCAL_APPS = [
