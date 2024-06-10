@@ -901,6 +901,146 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         ).count()
         assert shared_data_count2 == 1
 
+    def test_update_metadata_with_appointment_data(self) -> None:
+        """Test just the isolated creation of appointment-type SharedData instances."""
+        sent_appointments_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.APPOINTMENTS: [
+                    {'appointment_id': 1},
+                    {'appointment_id': 2},
+                    {'appointment_id': 3},
+                ],
+            },
+            {
+                'GUID': 'b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.APPOINTMENTS: [
+                    {'appointment_id': 4},
+                ],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=True,
+            has_diagnoses=False,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=True,
+            has_diagnoses=False,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat2)
+        command = send_databank_data.Command()
+        mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        mock_databank_patient2 = databank_models.DatabankConsent.objects.get(
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command._parse_aggregate_databank_response(
+            aggregate_response={
+                'appt_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+                'appt_b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+            },
+            original_data_sent=sent_appointments_data,
+        )
+        # Check if SharedData instance is created for appointments data
+        shared_data_count1 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient1,
+            data_type=databank_models.DataModuleType.APPOINTMENTS,
+        ).count()
+        assert shared_data_count1 == 3
+        shared_data_count2 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient2,
+            data_type=databank_models.DataModuleType.APPOINTMENTS,
+        ).count()
+        assert shared_data_count2 == 1
+
+    def test_update_metadata_with_questionnaires_data(self) -> None:
+        """Test just the isolated creation of questionnaire-type SharedData instances."""
+        sent_questionnaires_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.QUESTIONNAIRES: [
+                    {'questionnaire_answer_id': 1},
+                    {'questionnaire_answer_id': 2},
+                    {'questionnaire_answer_id': 3},
+                ],
+            },
+            {
+                'GUID': 'b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.QUESTIONNAIRES: [
+                    {'questionnaire_answer_id': 4},
+                ],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=False,
+            has_questionnaires=True,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=False,
+            has_questionnaires=True,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        command = send_databank_data.Command()
+        mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        mock_databank_patient2 = databank_models.DatabankConsent.objects.get(
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command._parse_aggregate_databank_response(
+            aggregate_response={
+                'qstn_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+                'qstn_b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+            },
+            original_data_sent=sent_questionnaires_data,
+        )
+        # Check if SharedData instance is created for questionnaires data
+        shared_data_count1 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient1,
+            data_type=databank_models.DataModuleType.QUESTIONNAIRES,
+        ).count()
+        assert shared_data_count1 == 3
+        shared_data_count2 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient2,
+            data_type=databank_models.DataModuleType.QUESTIONNAIRES,
+        ).count()
+        assert shared_data_count2 == 1
+
     def test_empty_oie_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that execution doesnt fail if oie response is empty."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
