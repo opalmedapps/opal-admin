@@ -1,6 +1,7 @@
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
 from typing import Any, Optional
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
 from django.utils import timezone
@@ -32,7 +33,7 @@ LEGACY_PATIENT_QUERY = """
             ELSE "UNDEFINED"
         END
         ) As AccessLevel,
-        P.DeathDate as DeathDate
+        CONVERT_TZ(P.DeathDate, '{timezone}', 'UTC') as DeathDate
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
 """  # noqa: WPS323
@@ -161,9 +162,8 @@ class Command(BaseCommand):
             django_hospital_patients = django_db.fetchall()
             django_db.execute(DJANGO_CAREGIVER_QUERY)
             django_caregivers = django_db.fetchall()
-
         with connections['legacy'].cursor() as legacy_db:
-            legacy_db.execute(LEGACY_PATIENT_QUERY)
+            legacy_db.execute(LEGACY_PATIENT_QUERY.format(timezone=settings.TIME_ZONE))
             legacy_patients = legacy_db.fetchall()
             legacy_db.execute(LEGACY_HOSPITAL_PATIENT_QUERY)
             legacy_hospital_patients = legacy_db.fetchall()
