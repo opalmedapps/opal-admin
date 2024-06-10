@@ -52,7 +52,7 @@ LEGACY_HOSPITAL_PATIENT_QUERY = """
 
 LEGACY_CAREGIVER_QUERY = """
     SELECT
-        P.PatientSerNum AS LegacyID,
+        U.UserSerNum AS LegacyID,
         P.FirstName AS FirstName,
         P.LastName AS LastName,
         LOWER(P.Email) AS Email,
