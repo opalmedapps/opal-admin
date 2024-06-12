@@ -17,7 +17,7 @@ isort==5.13.2  # https://github.com/PyCQA/isort
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 django-stubs==5.0.0  # https://github.com/typeddjango/django-stubs
 djangorestframework-stubs==3.14.5  # https://github.com/typeddjango/djangorestframework-stubs
-pandas-stubs==2.2.2.240514
+pandas-stubs==2.2.2.240603
 types-beautifulsoup4==4.12.0.20240511
 types-fpdf2==2.7.9.20240519
 types-requests==2.31.0.20240406
