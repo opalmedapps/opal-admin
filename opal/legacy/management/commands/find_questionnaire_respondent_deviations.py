@@ -1,7 +1,7 @@
 """Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
 from typing import Any, Optional
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, transaction
 from django.utils import timezone
 
@@ -43,11 +43,12 @@ class Command(BaseCommand):
         """
         Handle sync check for the questionnaire respondents.
 
-        Return 'None'.
-
         Args:
-            args: input arguments.
-            kwargs: input arguments.
+            args: input arguments
+            kwargs: input arguments
+
+        Raises:
+            CommandError: if there are deviations
         """
         with connections['questionnaire'].cursor() as questionnaire_db:
             questionnaire_db.execute(LEGACY_RESPONDENT_QUERY)
@@ -67,11 +68,9 @@ class Command(BaseCommand):
         )
 
         if respondents_err_str:
-            self.stderr.write(
-                respondents_err_str,
-            )
+            raise CommandError(respondents_err_str)
         else:
-            self.stdout.write('No sync errors has been found in the in the questionnaire respondent data.')
+            self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
 
     def _get_respondents_sync_err(
         self,
