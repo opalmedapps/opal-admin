@@ -13,6 +13,8 @@ from opal.patients import models as patients_models
 from opal.usage_statistics.models import DailyUserAppActivity
 from opal.users import models as users_models
 
+from .models import DailyPatientDataReceived
+
 # Create a type variable to represent any model type
 _ModelT = TypeVar('_ModelT', bound=models.Model)
 
@@ -146,6 +148,72 @@ def fetch_devices_summary(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=3),
         ),
+    )
+
+
+def fetch_patients_received_clinical_data_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, Any]:
+    """Fetch grouped patients received data summary from the `DailyPatientDataReceived` model.
+
+    The summary includes only clinical data (e.g., appointments, labs, clinical notes, diagnosis).
+
+    Args:
+        start_date: the beginning of the time period of the patients received data summary (inclusive)
+        end_date: the end of the time period of the patients received data summary (inclusive)
+
+    Returns:
+        patients received data summary for a given time period
+    """
+    aggregated_patients_received_data = {
+        'no_appointments_labs_notes': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received=None,
+                last_document_received=None,
+            ),
+        ),
+        'has_appointments_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received__isnull=False,
+                last_lab_received=None,
+                last_document_received=None,
+            ),
+        ),
+        'has_labs_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received__isnull=False,
+                last_document_received=None,
+            ),
+        ),
+        'has_clinical_notes_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received=None,
+                last_document_received__isnull=False,
+            ),
+        ),
+        'receiving_new_data_total': models.Count(
+            'id',
+            filter=models.Q(
+                models.Q(last_appointment_received__isnull=False)
+                | models.Q(last_lab_received__isnull=False)
+                | models.Q(last_document_received__isnull=False),
+            ),
+        ),
+    }
+
+    return DailyPatientDataReceived.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    ).aggregate(
+        **aggregated_patients_received_data,
     )
 
 

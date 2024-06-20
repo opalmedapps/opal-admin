@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Any
 
 from django.utils import timezone
 
@@ -304,6 +305,363 @@ def test_fetch_devices_summary(mocker: MockerFixture) -> None:
     }
 
 
+def test_empty_fetch_patients_received_clinical_data_summary() -> None:
+    """Ensure fetch_patients_received_clinical_data_summary() query can return an empty result without errors."""
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 0,
+        'has_appointments_only': 0,
+        'has_labs_only': 0,
+        'has_clinical_notes_only': 0,
+        'receiving_new_data_total': 0,
+    }
+
+
+def test_patients_received_data_no_appointment_labs_note() -> None:
+    """Ensure received_clinical_data_summary query successfully returns no_appointments_labs_notes statistic."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+
+    # previous day received records should not be included to the no_appointments_labs_notes count
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+
+    assert stats_models.DailyPatientDataReceived.objects.count() == 8
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 4,
+        'has_appointments_only': 0,
+        'has_labs_only': 0,
+        'has_clinical_notes_only': 0,
+        'receiving_new_data_total': 0,
+    }
+
+
+def test_patients_received_data_has_appointments_only() -> None:
+    """Ensure received_clinical_data_summary() query successfully returns has_appointments_only statistic."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+
+    # previous day received records should not be included to the has_appointments_only count
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+
+    assert stats_models.DailyPatientDataReceived.objects.count() == 8
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 1,
+        'has_appointments_only': 3,
+        'has_labs_only': 0,
+        'has_clinical_notes_only': 0,
+        'receiving_new_data_total': 3,
+    }
+
+
+def test_patients_received_data_has_labs_only() -> None:
+    """Ensure received_clinical_data_summary() query successfully returns has_labs_only statistic."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        action_date=dt.date.today(),
+    )
+
+    # previous day received records should not be included to the has_labs_only count
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+    )
+
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+
+    assert stats_models.DailyPatientDataReceived.objects.count() == 8
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 1,
+        'has_appointments_only': 0,
+        'has_labs_only': 3,
+        'has_clinical_notes_only': 0,
+        'receiving_new_data_total': 3,
+    }
+
+
+def test_patients_received_data_has_clinical_notes_only() -> None:
+    """Ensure received_clinical_data_summary() query successfully returns has_clinical_notes_only statistic."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+
+    # previous day received records should not be included to the has_clinical_notes_only count
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+    )
+
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+
+    assert stats_models.DailyPatientDataReceived.objects.count() == 8
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 1,
+        'has_appointments_only': 0,
+        'has_labs_only': 0,
+        'has_clinical_notes_only': 3,
+        'receiving_new_data_total': 3,
+    }
+
+
+def test_patients_received_data_using_app_after_receiving_new_data() -> None:
+    """Ensure received_clinical_data_summary() successfully returns using_app_after_receiving_new_data count."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+        action_date=dt.date.today(),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+        action_date=dt.date.today(),
+    )
+
+    # previous day received records should not be included to the using_app_after_receiving_new_data count
+
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['marge_relationship'].patient,
+        last_document_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['homer_relationship'].patient,
+        last_appointment_received=None,
+        last_lab_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['bart_relationship'].patient,
+        last_appointment_received=None,
+        last_document_received=None,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=relationships['lisa_relationship'].patient,
+    )
+
+    patients_received_data_summary = stats_queries.fetch_patients_received_clinical_data_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+
+    assert stats_models.DailyPatientDataReceived.objects.count() == 8
+    assert patients_received_data_summary == {
+        'no_appointments_labs_notes': 0,
+        'has_appointments_only': 1,
+        'has_labs_only': 1,
+        'has_clinical_notes_only': 1,
+        'receiving_new_data_total': 4,
+    }
+
+
 def test_empty_logins_summary() -> None:
     """Ensure fetch_logins_summary() query can return an empty result without errors."""
     logins_summary = stats_queries.fetch_logins_summary(
@@ -513,3 +871,71 @@ def test_fetch_logins_summary_by_year() -> None:
             'avg_logins_per_user': 8.0,
         },
     ]
+
+
+def _create_relationship_records() -> dict[str, Any]:
+    """Create relationships for 4 patients.
+
+    The records are created for Marge, Homer, Bart, and Lisa.
+
+    Returns:
+        dictionary with self relationships
+    """
+    marge_self_relationship = patient_factories.Relationship(
+        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        caregiver=caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge', last_login=timezone.now()),
+            legacy_id=1,
+        ),
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    homer_self_relationship = patient_factories.Relationship(
+        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        caregiver=caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(
+                username='homer',
+                last_login=timezone.now() - dt.timedelta(days=1),
+            ),
+            legacy_id=2,
+        ),
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    bart_self_relationship = patient_factories.Relationship(
+        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        caregiver=caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(
+                username='bart',
+                last_login=timezone.now() - dt.timedelta(days=2),
+            ),
+            legacy_id=3,
+        ),
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    lisa_self_relationship = patient_factories.Relationship(
+        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        caregiver=caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(
+                username='lisa',
+                last_login=None,
+            ),
+            legacy_id=4,
+        ),
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+
+    caregiver_factories.RegistrationCode(
+        relationship=marge_self_relationship,
+        code='marge1234567',
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+
+    return {
+        'marge_relationship': marge_self_relationship,
+        'homer_relationship': homer_self_relationship,
+        'bart_relationship': bart_self_relationship,
+        'lisa_relationship': lisa_self_relationship,
+    }
