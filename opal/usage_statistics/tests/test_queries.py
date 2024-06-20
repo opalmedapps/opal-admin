@@ -873,6 +873,671 @@ def test_fetch_logins_summary_by_year() -> None:
     ]
 
 
+def test_empty_users_clicks_summary() -> None:
+    """Ensure fetch_users_clicks_summary() query can return an empty result without errors."""
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not users_clicks_summary
+
+
+def test_users_clicks_summary_by_date() -> None:
+    """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by date."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    current_date = dt.datetime.now().date()
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=10,
+        count_feedback=11,
+        count_update_security_answers=12,
+        count_update_passwords=13,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=current_date,
+    )
+
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+    assert users_clicks_summary == [
+        {
+            'date': current_date,
+            'login_count': 18,
+            'feedback_count': 21,
+            'update_security_answers_count': 24,
+            'update_passwords_count': 27,
+        },
+        {
+            'date': current_date - dt.timedelta(days=2),
+            'login_count': 8,
+            'feedback_count': 10,
+            'update_security_answers_count': 12,
+            'update_passwords_count': 14,
+        },
+    ]
+
+
+def test_users_clicks_summary_by_month() -> None:
+    """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by month."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=6,
+        count_feedback=7,
+        count_update_security_answers=8,
+        count_update_passwords=9,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=1,
+        count_feedback=2,
+        count_update_security_answers=3,
+        count_update_passwords=4,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=10,
+        count_feedback=11,
+        count_update_security_answers=12,
+        count_update_passwords=13,
+        action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=9,
+        count_feedback=10,
+        count_update_security_answers=11,
+        count_update_passwords=12,
+        action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2024, 3, 1),
+    )
+
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=dt.date(2024, 3, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert stats_models.DailyUserAppActivity.objects.count() == 8
+    assert users_clicks_summary == [
+        {
+            'month': dt.date(2024, 5, 1),
+            'login_count': 8,
+            'feedback_count': 10,
+            'update_security_answers_count': 12,
+            'update_passwords_count': 14,
+        },
+        {
+            'month': dt.date(2024, 4, 1),
+            'login_count': 12,
+            'feedback_count': 15,
+            'update_security_answers_count': 18,
+            'update_passwords_count': 21,
+        },
+        {
+            'month': dt.date(2024, 3, 1),
+            'login_count': 24,
+            'feedback_count': 27,
+            'update_security_answers_count': 30,
+            'update_passwords_count': 33,
+        },
+    ]
+
+
+def test_users_clicks_summary_by_year() -> None:
+    """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by year."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2024, 4, 5),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2023, 8, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=6,
+        count_feedback=7,
+        count_update_security_answers=8,
+        count_update_passwords=9,
+        action_date=dt.date(2023, 7, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=1,
+        count_feedback=2,
+        count_update_security_answers=3,
+        count_update_passwords=4,
+        action_date=dt.date(2023, 6, 4),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        count_logins=10,
+        count_feedback=11,
+        count_update_security_answers=12,
+        count_update_passwords=13,
+        action_date=dt.date(2022, 4, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=9,
+        count_feedback=10,
+        count_update_security_answers=11,
+        count_update_passwords=12,
+        action_date=dt.date(2022, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=dt.date(2022, 2, 1),
+    )
+
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=dt.date(2022, 2, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert stats_models.DailyUserAppActivity.objects.count() == 8
+    assert users_clicks_summary == [
+        {
+            'year': dt.date(2024, 1, 1),
+            'login_count': 8,
+            'feedback_count': 10,
+            'update_security_answers_count': 12,
+            'update_passwords_count': 14,
+        },
+        {
+            'year': dt.date(2023, 1, 1),
+            'login_count': 12,
+            'feedback_count': 15,
+            'update_security_answers_count': 18,
+            'update_passwords_count': 21,
+        },
+        {
+            'year': dt.date(2022, 1, 1),
+            'login_count': 24,
+            'feedback_count': 27,
+            'update_security_answers_count': 30,
+            'update_passwords_count': 33,
+        },
+    ]
+
+
+def test_user_patient_clicks_summary_by_date() -> None:
+    """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by date."""
+    relationships = _create_relationship_records()
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=10,
+        count_documents=11,
+        count_educational_materials=12,
+        count_questionnaires_complete=13,
+        count_labs=14,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['bart_relationship'],
+        action_by_user=relationships['bart_relationship'].caregiver.user,
+        patient=relationships['bart_relationship'].patient,
+        count_checkins=5,
+        count_documents=6,
+        count_educational_materials=7,
+        count_questionnaires_complete=8,
+        count_labs=9,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=7,
+        count_documents=8,
+        count_educational_materials=9,
+        count_questionnaires_complete=10,
+        count_labs=11,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=current_date,
+    )
+
+    user_patient_clicks_summary = stats_queries.fetch_user_patient_clicks_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+    assert stats_models.DailyUserPatientActivity.objects.count() == 8
+    assert user_patient_clicks_summary == [
+        {
+            'date': current_date,
+            'checkins_count': 4,
+            'documents_count': 6,
+            'educational_materials_count': 8,
+            'completed_questionnaires_count': 10,
+            'labs_count': 12,
+        },
+        {
+            'date': current_date - dt.timedelta(days=1),
+            'checkins_count': 16,
+            'documents_count': 20,
+            'educational_materials_count': 24,
+            'completed_questionnaires_count': 28,
+            'labs_count': 32,
+        },
+        {
+            'date': current_date - dt.timedelta(days=2),
+            'checkins_count': 13,
+            'documents_count': 15,
+            'educational_materials_count': 17,
+            'completed_questionnaires_count': 19,
+            'labs_count': 21,
+        },
+    ]
+
+
+def test_user_patient_clicks_summary_by_month() -> None:
+    """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by month."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=10,
+        count_documents=11,
+        count_educational_materials=12,
+        count_questionnaires_complete=13,
+        count_labs=14,
+        action_date=dt.date(2024, 5, 4),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['bart_relationship'],
+        action_by_user=relationships['bart_relationship'].caregiver.user,
+        patient=relationships['bart_relationship'].patient,
+        count_checkins=5,
+        count_documents=6,
+        count_educational_materials=7,
+        count_questionnaires_complete=8,
+        count_labs=9,
+        action_date=dt.date(2024, 4, 4),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=7,
+        count_documents=8,
+        count_educational_materials=9,
+        count_questionnaires_complete=10,
+        count_labs=11,
+        action_date=dt.date(2024, 4, 3),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=dt.date(2024, 4, 2),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2024, 4, 1),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2024, 3, 1),
+    )
+
+    user_patient_clicks_summary = stats_queries.fetch_user_patient_clicks_summary(
+        start_date=dt.date(2024, 3, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert stats_models.DailyUserPatientActivity.objects.count() == 8
+    assert user_patient_clicks_summary == [
+        {
+            'month': dt.date(2024, 5, 1),
+            'checkins_count': 13,
+            'documents_count': 15,
+            'educational_materials_count': 17,
+            'completed_questionnaires_count': 19,
+            'labs_count': 21,
+        },
+        {
+            'month': dt.date(2024, 4, 1),
+            'checkins_count': 16,
+            'documents_count': 20,
+            'educational_materials_count': 24,
+            'completed_questionnaires_count': 28,
+            'labs_count': 32,
+        },
+        {
+            'month': dt.date(2024, 3, 1),
+            'checkins_count': 4,
+            'documents_count': 6,
+            'educational_materials_count': 8,
+            'completed_questionnaires_count': 10,
+            'labs_count': 12,
+        },
+    ]
+
+
+def test_user_patient_clicks_summary_by_year() -> None:
+    """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by year."""
+    relationships = _create_relationship_records()
+
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=10,
+        count_documents=11,
+        count_educational_materials=12,
+        count_questionnaires_complete=13,
+        count_labs=14,
+        action_date=dt.date(2024, 4, 5),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['bart_relationship'],
+        action_by_user=relationships['bart_relationship'].caregiver.user,
+        patient=relationships['bart_relationship'].patient,
+        count_checkins=5,
+        count_documents=6,
+        count_educational_materials=7,
+        count_questionnaires_complete=8,
+        count_labs=9,
+        action_date=dt.date(2023, 5, 5),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=7,
+        count_documents=8,
+        count_educational_materials=9,
+        count_questionnaires_complete=10,
+        count_labs=11,
+        action_date=dt.date(2023, 4, 4),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=dt.date(2023, 3, 3),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['homer_relationship'],
+        action_by_user=relationships['homer_relationship'].caregiver.user,
+        patient=relationships['homer_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2023, 2, 2),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['marge_relationship'],
+        action_by_user=relationships['marge_relationship'].caregiver.user,
+        patient=relationships['marge_relationship'].patient,
+        count_checkins=1,
+        count_documents=2,
+        count_educational_materials=3,
+        count_questionnaires_complete=4,
+        count_labs=5,
+        action_date=dt.date(2022, 3, 3),
+    )
+    stats_factories.DailyUserPatientActivity(
+        user_relationship_to_patient=relationships['lisa_relationship'],
+        action_by_user=relationships['lisa_relationship'].caregiver.user,
+        patient=relationships['lisa_relationship'].patient,
+        count_checkins=3,
+        count_documents=4,
+        count_educational_materials=5,
+        count_questionnaires_complete=6,
+        count_labs=7,
+        action_date=dt.date(2022, 2, 1),
+    )
+
+    user_patient_clicks_summary = stats_queries.fetch_user_patient_clicks_summary(
+        start_date=dt.date(2022, 2, 1),
+        end_date=dt.date(2024, 5, 5),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert stats_models.DailyUserPatientActivity.objects.count() == 8
+    assert user_patient_clicks_summary == [
+        {
+            'year': dt.date(2024, 1, 1),
+            'checkins_count': 13,
+            'documents_count': 15,
+            'educational_materials_count': 17,
+            'completed_questionnaires_count': 19,
+            'labs_count': 21,
+        },
+        {
+            'year': dt.date(2023, 1, 1),
+            'checkins_count': 16,
+            'documents_count': 20,
+            'educational_materials_count': 24,
+            'completed_questionnaires_count': 28,
+            'labs_count': 32,
+        },
+        {
+            'year': dt.date(2022, 1, 1),
+            'checkins_count': 4,
+            'documents_count': 6,
+            'educational_materials_count': 8,
+            'completed_questionnaires_count': 10,
+            'labs_count': 12,
+        },
+    ]
+
+
 def _create_relationship_records() -> dict[str, Any]:
     """Create relationships for 4 patients.
 

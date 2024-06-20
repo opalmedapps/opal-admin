@@ -10,7 +10,7 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
-from opal.usage_statistics.models import DailyUserAppActivity
+from opal.usage_statistics.models import DailyUserAppActivity, DailyUserPatientActivity
 from opal.users import models as users_models
 
 from .models import DailyPatientDataReceived
@@ -247,6 +247,78 @@ def fetch_logins_summary(
             total_logins=models.Sum('count_logins'),
             unique_user_logins=models.Count('id'),
             avg_logins_per_user=models.Avg('count_logins'),
+        ).order_by(f'-{group_field}'),
+    )
+
+
+def fetch_users_clicks_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch grouped users' clicks from `DailyUserAppActivity` model.
+
+    Args:
+        start_date: the beginning of the time period of the users' clicks summary (inclusive)
+        end_date: the end of the time period of the users' clicks summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped users' clicks summary for a given time period
+    """
+    queryset = DailyUserAppActivity.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    )
+
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
+
+    # TODO: QSCCD-2173 - add count of the announcement clicks
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            login_count=models.Sum('count_logins'),
+            feedback_count=models.Sum('count_feedback'),
+            update_security_answers_count=models.Sum('count_update_security_answers'),
+            update_passwords_count=models.Sum('count_update_passwords'),
+        ).order_by(f'-{group_field}'),
+    )
+
+
+def fetch_user_patient_clicks_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch grouped user's clicks on behalf of a patient from `DailyUserPatientActivity` model.
+
+    Args:
+        start_date: the beginning of the time period of the patients' clicks summary (inclusive)
+        end_date: the end of the time period of the patients' clicks summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped patients' clicks summary for a given time period
+    """
+    queryset = DailyUserPatientActivity.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    )
+
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
+
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            checkins_count=models.Sum('count_checkins'),
+            documents_count=models.Sum('count_documents'),
+            educational_materials_count=models.Sum('count_educational_materials'),
+            completed_questionnaires_count=models.Sum('count_questionnaires_complete'),
+            labs_count=models.Sum('count_labs'),
         ).order_by(f'-{group_field}'),
     )
 
