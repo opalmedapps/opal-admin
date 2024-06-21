@@ -27,116 +27,53 @@ def test_empty_fetch_registration_summary() -> None:
     assert registration_summary == {
         'uncompleted_registration': 0,
         'completed_registration': 0,
+        'total_registration_codes': 0,
     }
 
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
-    homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
-    bart_patient = patient_factories.Patient(legacy_id=53, ramq='TEST01161974')
-    lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
-    # marge
-    marge_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
-        caregiver=marge_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    # homer
-    marge_homer_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.guardian_caregiver(),
-        patient=homer_patient,
-        caregiver=marge_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    homer_first_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=homer_patient,
-        caregiver=homer_caregiver,
-        status=patient_models.RelationshipStatus.PENDING,
-    )
-    homer_second_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=homer_patient,
-        caregiver=homer_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    # bart
-    marge_bart_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.guardian_caregiver(),
-        patient=bart_patient,
-        caregiver=marge_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    bart_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=bart_patient,
-        caregiver=bart_caregiver,
-        status=patient_models.RelationshipStatus.EXPIRED,
-    )
-    # lisa
-    homer_lisa_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.guardian_caregiver(),
-        patient=lisa_patient,
-        caregiver=homer_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    lisa_first_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=lisa_patient,
-        caregiver=lisa_caregiver,
-        status=patient_models.RelationshipStatus.CONFIRMED,
-    )
-    lisa_second_self_relationship = patient_factories.Relationship(
-        type=patient_models.RelationshipType.objects.self_type(),
-        patient=lisa_patient,
-        caregiver=lisa_caregiver,
-        status=patient_models.RelationshipStatus.PENDING,
-    )
+    relationships = _create_relationship_records()
 
     caregiver_models.RegistrationCode.objects.bulk_create([
         caregiver_models.RegistrationCode(
             code='marge_code',
-            relationship=marge_self_relationship,
+            relationship=relationships['marge_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='marge_homer',
-            relationship=marge_homer_relationship,
+            relationship=relationships['marge_homer_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='homer_self1',
-            relationship=homer_first_self_relationship,
+            relationship=relationships['homer_relationship'],
             status=caregiver_models.RegistrationCodeStatus.BLOCKED,
         ),
         caregiver_models.RegistrationCode(
             code='homer_self2',
-            relationship=homer_second_self_relationship,
+            relationship=relationships['homer_pending_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='marge_bart',
-            relationship=marge_bart_relationship,
+            relationship=relationships['marge_bart_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='bart_self',
-            relationship=bart_self_relationship,
+            relationship=relationships['bart_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='homer_lisa',
-            relationship=homer_lisa_relationship,
+            relationship=relationships['homer_lisa_relationship'],
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         ),
         caregiver_models.RegistrationCode(
             code='lisa_self2',
-            relationship=lisa_second_self_relationship,
+            relationship=relationships['lisa_pending_relationship'],
             status=caregiver_models.RegistrationCodeStatus.NEW,
         ),
     ])
@@ -147,7 +84,7 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     mock_timezone.return_value = previous_day
     caregiver_factories.RegistrationCode(
         code='lisa_self1',
-        relationship=lisa_first_self_relationship,
+        relationship=relationships['lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
 
@@ -158,7 +95,260 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     assert population_summary == {
         'uncompleted_registration': 2,
         'completed_registration': 6,
+        'total_registration_codes': 8,
     }
+
+
+def test_empty_fetch_grouped_registration_summary() -> None:
+    """Ensure fetch_grouped_registration_summary() query can return an empty result without errors."""
+    registration_summary = stats_queries.fetch_grouped_registration_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not registration_summary
+
+
+def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> None:
+    """Ensure fetch_grouped_registration_summary query successfully returns registration statistics grouped by day."""
+    relationships = _create_relationship_records()
+    current_datetime = timezone.localtime()
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = current_datetime
+    caregiver_factories.RegistrationCode(
+        code='marge_code',
+        relationship=relationships['marge_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = current_datetime - dt.timedelta(days=1)
+    caregiver_factories.RegistrationCode(
+        code='marge_homer',
+        relationship=relationships['marge_homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    caregiver_factories.RegistrationCode(
+        code='homer_self',
+        relationship=relationships['homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.BLOCKED,
+    )
+    mock_timezone.return_value = current_datetime - dt.timedelta(days=4)
+    caregiver_factories.RegistrationCode(
+        code='marge_bart',
+        relationship=relationships['marge_bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    caregiver_factories.RegistrationCode(
+        code='bart_self',
+        relationship=relationships['bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = current_datetime - dt.timedelta(days=6)
+    caregiver_factories.RegistrationCode(
+        code='homer_lisa',
+        relationship=relationships['homer_lisa_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    caregiver_factories.RegistrationCode(
+        code='lisa_self',
+        relationship=relationships['lisa_pending_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.NEW,
+    )
+
+    population_summary = stats_queries.fetch_grouped_registration_summary(
+        start_date=current_datetime.today() - dt.timedelta(days=7),
+        end_date=current_datetime.today(),
+    )
+
+    current_datetime = current_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+    assert population_summary == [
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 1,
+            'total_registration_codes': 1,
+            'date': current_datetime,
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'date': current_datetime - dt.timedelta(days=1),
+        },
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 2,
+            'total_registration_codes': 2,
+            'date': current_datetime - dt.timedelta(days=4),
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'date': current_datetime - dt.timedelta(days=6),
+        },
+    ]
+
+
+def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> None:
+    """Ensure fetch_grouped_registration_summary() successfully returns registration statistics grouped by month."""
+    relationships = _create_relationship_records()
+
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 6, 20))
+    caregiver_factories.RegistrationCode(
+        code='marge_code',
+        relationship=relationships['marge_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 5, 15))
+    caregiver_factories.RegistrationCode(
+        code='marge_homer',
+        relationship=relationships['marge_homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 5, 10))
+    caregiver_factories.RegistrationCode(
+        code='homer_self',
+        relationship=relationships['homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.BLOCKED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 4, 10))
+    caregiver_factories.RegistrationCode(
+        code='marge_bart',
+        relationship=relationships['marge_bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 4, 5))
+    caregiver_factories.RegistrationCode(
+        code='bart_self',
+        relationship=relationships['bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 3, 4))
+    caregiver_factories.RegistrationCode(
+        code='homer_lisa',
+        relationship=relationships['homer_lisa_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 3, 1))
+    caregiver_factories.RegistrationCode(
+        code='lisa_self',
+        relationship=relationships['lisa_pending_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.NEW,
+    )
+
+    population_summary = stats_queries.fetch_grouped_registration_summary(
+        start_date=dt.date(2024, 3, 1),
+        end_date=dt.date(2024, 6, 20),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert population_summary == [
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 1,
+            'total_registration_codes': 1,
+            'month': timezone.make_aware(dt.datetime(2024, 6, 1)),
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'month': timezone.make_aware(dt.datetime(2024, 5, 1)),
+        },
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 2,
+            'total_registration_codes': 2,
+            'month': timezone.make_aware(dt.datetime(2024, 4, 1)),
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'month': timezone.make_aware(dt.datetime(2024, 3, 1)),
+        },
+    ]
+
+
+def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> None:
+    """Ensure fetch_grouped_registration_summary() successfully returns registration statistics grouped by year."""
+    relationships = _create_relationship_records()
+
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 6, 20))
+    caregiver_factories.RegistrationCode(
+        code='marge_code',
+        relationship=relationships['marge_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2023, 5, 15))
+    caregiver_factories.RegistrationCode(
+        code='marge_homer',
+        relationship=relationships['marge_homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2023, 4, 10))
+    caregiver_factories.RegistrationCode(
+        code='homer_self',
+        relationship=relationships['homer_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.BLOCKED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2022, 4, 10))
+    caregiver_factories.RegistrationCode(
+        code='marge_bart',
+        relationship=relationships['marge_bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2022, 3, 5))
+    caregiver_factories.RegistrationCode(
+        code='bart_self',
+        relationship=relationships['bart_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2021, 2, 4))
+    caregiver_factories.RegistrationCode(
+        code='homer_lisa',
+        relationship=relationships['homer_lisa_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    )
+    mock_timezone.return_value = timezone.make_aware(dt.datetime(2021, 1, 1))
+    caregiver_factories.RegistrationCode(
+        code='lisa_self',
+        relationship=relationships['lisa_pending_relationship'],
+        status=caregiver_models.RegistrationCodeStatus.NEW,
+    )
+
+    population_summary = stats_queries.fetch_grouped_registration_summary(
+        start_date=dt.date(2021, 1, 1),
+        end_date=dt.date(2024, 6, 20),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert population_summary == [
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 1,
+            'total_registration_codes': 1,
+            'year': timezone.make_aware(dt.datetime(2024, 1, 1)),
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'year': timezone.make_aware(dt.datetime(2023, 1, 1)),
+        },
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 2,
+            'total_registration_codes': 2,
+            'year': timezone.make_aware(dt.datetime(2022, 1, 1)),
+        },
+        {
+            'uncompleted_registration': 1,
+            'completed_registration': 1,
+            'total_registration_codes': 2,
+            'year': timezone.make_aware(dt.datetime(2021, 1, 1)),
+        },
+    ]
 
 
 def test_empty_fetch_caregivers_summary() -> None:
@@ -168,7 +358,10 @@ def test_empty_fetch_caregivers_summary() -> None:
         end_date=timezone.now().today(),
     )
     assert caregivers_summary == {
-        'total': 0,
+        'caregivers_total': 0,
+        'caregivers_registered': 0,
+        'caregivers_unregistered': 0,
+        'never_logged_in_after_registration': 0,
         'en': 0,
         'fr': 0,
     }
@@ -176,12 +369,12 @@ def test_empty_fetch_caregivers_summary() -> None:
 
 def test_fetch_caregivers_summary() -> None:
     """Ensure fetch_caregivers_summary() query successfully returns caregivers statistics."""
-    caregiver_factories.Caregiver(username='marge', language='fr')
-    caregiver_factories.Caregiver(username='homer', language='fr')
+    caregiver_factories.Caregiver(username='marge', language='fr', last_login=timezone.now())
+    caregiver_factories.Caregiver(username='homer', language='fr', last_login=timezone.now())
     caregiver_factories.Caregiver(username='bart')
-    caregiver_factories.Caregiver(username='lisa')
-    caregiver_factories.Caregiver(username='mona', language='fr')
-    caregiver_factories.Caregiver(username='fred')
+    caregiver_factories.Caregiver(username='lisa', is_active=False)
+    caregiver_factories.Caregiver(username='mona', language='fr', is_active=False)
+    caregiver_factories.Caregiver(username='fred', is_active=False)
     caregiver_factories.Caregiver(
         username='pebbles', language='fr', date_joined=timezone.now() - dt.timedelta(days=1),
     )
@@ -193,7 +386,10 @@ def test_fetch_caregivers_summary() -> None:
         end_date=timezone.now().today(),
     )
     assert caregivers_summary == {
-        'total': 6,
+        'caregivers_total': 6,
+        'caregivers_registered': 3,
+        'caregivers_unregistered': 3,
+        'never_logged_in_after_registration': 1,
         'en': 3,
         'fr': 3,
     }
@@ -1546,56 +1742,81 @@ def _create_relationship_records() -> dict[str, Any]:
     Returns:
         dictionary with self relationships
     """
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user__username='marge', legacy_id=1, user__last_login=timezone.now(),
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user__username='homer', legacy_id=2, user__last_login=timezone.now(),
+    )
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
+    homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
+    bart_patient = patient_factories.Patient(legacy_id=53, ramq='TEST01161974')
+    lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
+
+    # marge
     marge_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
-        caregiver=caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge', last_login=timezone.now()),
-            legacy_id=1,
-        ),
+        caregiver=marge_caregiver,
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    # homer
+    marge_homer_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
+        patient=homer_patient,
+        caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     homer_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
-        caregiver=caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(
-                username='homer',
-                last_login=timezone.now() - dt.timedelta(days=1),
-            ),
-            legacy_id=2,
-        ),
+        caregiver=homer_caregiver,
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    homer_pending_self_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.self_type(),
+        patient=homer_patient,
+        caregiver=homer_caregiver,
+        status=patient_models.RelationshipStatus.PENDING,
+    )
+    # bart
+    marge_bart_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
+        patient=bart_patient,
+        caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     bart_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
-        caregiver=caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(
-                username='bart',
-                last_login=timezone.now() - dt.timedelta(days=2),
-            ),
-            legacy_id=3,
-        ),
+        caregiver=bart_caregiver,
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
+    bart_expired_self_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.self_type(),
+        patient=bart_patient,
+        caregiver=bart_caregiver,
+        status=patient_models.RelationshipStatus.EXPIRED,
+    )
+    # lisa
+    homer_lisa_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
+        patient=lisa_patient,
+        caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     lisa_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
-        caregiver=caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(
-                username='lisa',
-                last_login=None,
-            ),
-            legacy_id=4,
-        ),
+        caregiver=lisa_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-
-    caregiver_factories.RegistrationCode(
-        relationship=marge_self_relationship,
-        code='marge1234567',
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+    lisa_pending_self_relationship = patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.self_type(),
+        patient=lisa_patient,
+        caregiver=lisa_caregiver,
+        status=patient_models.RelationshipStatus.PENDING,
     )
 
     return {
@@ -1603,4 +1824,10 @@ def _create_relationship_records() -> dict[str, Any]:
         'homer_relationship': homer_self_relationship,
         'bart_relationship': bart_self_relationship,
         'lisa_relationship': lisa_self_relationship,
+        'marge_homer_relationship': marge_homer_relationship,
+        'homer_pending_relationship': homer_pending_self_relationship,
+        'marge_bart_relationship': marge_bart_relationship,
+        'bart_expired_relationship': bart_expired_self_relationship,
+        'homer_lisa_relationship': homer_lisa_relationship,
+        'lisa_pending_relationship': lisa_pending_self_relationship,
     }
