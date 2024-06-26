@@ -12,8 +12,6 @@ from opal.caregivers.models import SecurityQuestion
 from opal.core import constants
 from opal.users.models import ClinicalStaff
 
-from .insert_test_data import InstitutionOption, create_institution, create_sites
-
 
 class Command(BaseCommand):
     """
@@ -39,12 +37,6 @@ class Command(BaseCommand):
             action='store_true',
             default=False,
             help='Force deleting existing data first before initializing (default: false)',
-        )
-        parser.add_argument(
-            '--muhc-deployment',
-            action='store_true',
-            default=False,
-            help='Add MUHC deployment-specific data such as the MUHC institution, sites',
         )
 
     @transaction.atomic
@@ -85,12 +77,11 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
 
-        muhc_deployment: bool = options['muhc_deployment']
-        self._create_data(muhc_deployment)
+        self._create_data()
 
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
-    def _create_data(self, muhc_deployment: bool) -> None:  # noqa: WPS210, WPS213
+    def _create_data(self) -> None:  # noqa: WPS210, WPS213
         """
         Create all initial data.
 
@@ -99,10 +90,6 @@ class Command(BaseCommand):
             * groups and their permissions
             * users
             * tokens for system users
-            * institution and sites for muhc if flag set
-
-        Args:
-            muhc_deployment: whether to insert MUHC specific deployment data
         """
         _create_security_questions()
 
@@ -187,10 +174,6 @@ class Command(BaseCommand):
             _find_permission('health_data', 'view_quantitysample'),
             _find_permission('health_data', 'change_quantitysample'),
         ])
-
-        if muhc_deployment:
-            institution = create_institution(InstitutionOption.omi)
-            create_sites(InstitutionOption.omi, institution)
 
         # get existing or create new tokens for the API users
         token_listener, _ = Token.objects.get_or_create(user=listener)
