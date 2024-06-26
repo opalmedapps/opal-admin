@@ -220,6 +220,7 @@ def get_aggregated_patient_received_data(
             zero_count,
         ),
 
+        # TODO: QSCCD-2209 - add a lab_groups_received count that shows how many "complete lab groups" were received.
         # Subqueries for Labs
         'last_lab_received': models.Subquery(
             # Retrieve the latest received lab result for every patient, regardless of how old it might be.

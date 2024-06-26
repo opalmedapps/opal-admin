@@ -940,11 +940,6 @@ def test_fetch_logins_summary_by_month() -> None:
         action_date=dt.date(2024, 4, 4),
     )
     stats_factories.DailyUserAppActivity(
-        action_by_user=homer_caregiver.user,
-        count_logins=6,
-        action_date=dt.date(2024, 4, 4),
-    )
-    stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         action_date=dt.date(2024, 4, 4),
@@ -958,6 +953,11 @@ def test_fetch_logins_summary_by_month() -> None:
         action_by_user=homer_caregiver.user,
         count_logins=9,
         action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=9,
+        action_date=dt.date(2024, 3, 2),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
@@ -981,15 +981,15 @@ def test_fetch_logins_summary_by_month() -> None:
         },
         {
             'month': dt.date(2024, 4, 1),
-            'total_logins': 12,
-            'unique_user_logins': 3,
-            'avg_logins_per_user': 4.0,
+            'total_logins': 6,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 3.0,
         },
         {
             'month': dt.date(2024, 3, 1),
-            'total_logins': 24,
+            'total_logins': 33,
             'unique_user_logins': 3,
-            'avg_logins_per_user': 8.0,
+            'avg_logins_per_user': 11.0,
         },
     ]
 
@@ -1025,19 +1025,19 @@ def test_fetch_logins_summary_by_year() -> None:
         action_date=dt.date(2023, 6, 4),
     )
     stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=3,
+        action_date=dt.date(2023, 5, 4),
+    )
+    stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         action_date=dt.date(2022, 4, 3),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=homer_caregiver.user,
-        count_logins=9,
+        count_logins=8,
         action_date=dt.date(2022, 3, 3),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=bart_caregiver.user,
-        count_logins=5,
-        action_date=dt.date(2022, 2, 1),
     )
 
     logins_summary = stats_queries.fetch_logins_summary(
@@ -1056,15 +1056,15 @@ def test_fetch_logins_summary_by_year() -> None:
         },
         {
             'year': dt.date(2023, 1, 1),
-            'total_logins': 12,
+            'total_logins': 15,
             'unique_user_logins': 3,
-            'avg_logins_per_user': 4.0,
+            'avg_logins_per_user': 5.0,
         },
         {
             'year': dt.date(2022, 1, 1),
-            'total_logins': 24,
-            'unique_user_logins': 3,
-            'avg_logins_per_user': 8.0,
+            'total_logins': 18,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 9.0,
         },
     ]
 
@@ -1734,6 +1734,971 @@ def test_user_patient_clicks_summary_by_year() -> None:
     ]
 
 
+def test_empty_received_labs_summary() -> None:
+    """Ensure fetch_received_labs_summary() query can return an empty result without errors."""
+    received_labs_summary = stats_queries.fetch_received_labs_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not received_labs_summary
+
+
+def test_received_labs_summary_by_day() -> None:
+    """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by day."""
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        labs_received=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        labs_received=15,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        labs_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        labs_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=15,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+
+    received_labs_summary = stats_queries.fetch_received_labs_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+
+    assert received_labs_summary == [
+        {
+            'total_received_labs': 30,
+            'total_unique_patients': 3,
+            'avg_received_labs_per_patient': 10,
+            'date': current_date,
+        },
+        {
+            'total_received_labs': 10,
+            'total_unique_patients': 2,
+            'avg_received_labs_per_patient': 5,
+            'date': current_date - dt.timedelta(days=1),
+        },
+        {
+            'total_received_labs': 15,
+            'total_unique_patients': 1,
+            'avg_received_labs_per_patient': 15,
+            'date': current_date - dt.timedelta(days=2),
+        },
+    ]
+
+
+def test_received_labs_summary_by_month() -> None:
+    """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by month."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        labs_received=10,
+        action_date=dt.date(2024, 6, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        labs_received=15,
+        action_date=dt.date(2024, 6, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        labs_received=5,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        labs_received=5,
+        action_date=dt.date(2024, 5, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=15,
+        action_date=dt.date(2024, 4, 10),
+    )
+
+    received_labs_summary = stats_queries.fetch_received_labs_summary(
+        start_date=dt.date(2024, 4, 10),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert received_labs_summary == [
+        {
+            'total_received_labs': 30,
+            'total_unique_patients': 3,
+            'avg_received_labs_per_patient': 10,
+            'month': dt.date(2024, 6, 1),
+        },
+        {
+            'total_received_labs': 10,
+            'total_unique_patients': 2,
+            'avg_received_labs_per_patient': 5,
+            'month': dt.date(2024, 5, 1),
+        },
+        {
+            'total_received_labs': 15,
+            'total_unique_patients': 1,
+            'avg_received_labs_per_patient': 15,
+            'month': dt.date(2024, 4, 1),
+        },
+    ]
+
+
+def test_received_labs_summary_by_year() -> None:
+    """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by year."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        labs_received=10,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        labs_received=15,
+        action_date=dt.date(2024, 4, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        labs_received=5,
+        action_date=dt.date(2023, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        labs_received=5,
+        action_date=dt.date(2023, 3, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        labs_received=15,
+        action_date=dt.date(2022, 2, 10),
+    )
+
+    received_labs_summary = stats_queries.fetch_received_labs_summary(
+        start_date=dt.date(2022, 2, 10),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert received_labs_summary == [
+        {
+            'total_received_labs': 30,
+            'total_unique_patients': 3,
+            'avg_received_labs_per_patient': 10,
+            'year': dt.date(2024, 1, 1),
+        },
+        {
+            'total_received_labs': 10,
+            'total_unique_patients': 2,
+            'avg_received_labs_per_patient': 5,
+            'year': dt.date(2023, 1, 1),
+        },
+        {
+            'total_received_labs': 15,
+            'total_unique_patients': 1,
+            'avg_received_labs_per_patient': 15,
+            'year': dt.date(2022, 1, 1),
+        },
+    ]
+
+
+def test_empty_received_appointments_summary() -> None:
+    """Ensure fetch_received_appointments_summary() query can return an empty result without errors."""
+    received_appointments_summary = stats_queries.fetch_received_appointments_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not received_appointments_summary
+
+
+def test_fetch_received_appointments_summary_by_day() -> None:
+    """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by day."""
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        appointments_received=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        appointments_received=15,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        appointments_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        appointments_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=15,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+
+    received_appointments_summary = stats_queries.fetch_received_appointments_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+
+    assert received_appointments_summary == [
+        {
+            'total_received_appointments': 30,
+            'total_unique_patients': 3,
+            'avg_received_appointments_per_patient': 10,
+            'date': current_date,
+        },
+        {
+            'total_received_appointments': 10,
+            'total_unique_patients': 2,
+            'avg_received_appointments_per_patient': 5,
+            'date': current_date - dt.timedelta(days=1),
+        },
+        {
+            'total_received_appointments': 15,
+            'total_unique_patients': 1,
+            'avg_received_appointments_per_patient': 15,
+            'date': current_date - dt.timedelta(days=2),
+        },
+    ]
+
+
+def test_fetch_received_appointments_summary_by_month() -> None:
+    """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by month."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        appointments_received=10,
+        action_date=dt.date(2024, 6, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        appointments_received=15,
+        action_date=dt.date(2024, 6, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        appointments_received=5,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        appointments_received=5,
+        action_date=dt.date(2024, 5, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=15,
+        action_date=dt.date(2024, 4, 1),
+    )
+
+    received_appointments_summary = stats_queries.fetch_received_appointments_summary(
+        start_date=dt.date(2024, 4, 1),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert received_appointments_summary == [
+        {
+            'total_received_appointments': 30,
+            'total_unique_patients': 3,
+            'avg_received_appointments_per_patient': 10,
+            'month': dt.date(2024, 6, 1),
+        },
+        {
+            'total_received_appointments': 10,
+            'total_unique_patients': 2,
+            'avg_received_appointments_per_patient': 5,
+            'month': dt.date(2024, 5, 1),
+        },
+        {
+            'total_received_appointments': 15,
+            'total_unique_patients': 1,
+            'avg_received_appointments_per_patient': 15,
+            'month': dt.date(2024, 4, 1),
+        },
+    ]
+
+
+def test_fetch_received_appointments_summary_by_year() -> None:
+    """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by year."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        appointments_received=10,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        appointments_received=15,
+        action_date=dt.date(2024, 4, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        appointments_received=5,
+        action_date=dt.date(2023, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        appointments_received=5,
+        action_date=dt.date(2023, 4, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        appointments_received=15,
+        action_date=dt.date(2022, 3, 1),
+    )
+
+    received_appointments_summary = stats_queries.fetch_received_appointments_summary(
+        start_date=dt.date(2022, 3, 1),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert received_appointments_summary == [
+        {
+            'total_received_appointments': 30,
+            'total_unique_patients': 3,
+            'avg_received_appointments_per_patient': 10,
+            'year': dt.date(2024, 1, 1),
+        },
+        {
+            'total_received_appointments': 10,
+            'total_unique_patients': 2,
+            'avg_received_appointments_per_patient': 5,
+            'year': dt.date(2023, 1, 1),
+        },
+        {
+            'total_received_appointments': 15,
+            'total_unique_patients': 1,
+            'avg_received_appointments_per_patient': 15,
+            'year': dt.date(2022, 1, 1),
+        },
+    ]
+
+
+def test_empty_received_educational_materials_summary() -> None:
+    """Ensure fetch_received_educational_materials_summary() query can return an empty result without errors."""
+    received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not received_educational_materials_summary
+
+
+def test_fetch_received_educational_materials_summary_by_day() -> None:
+    """Ensure received_edu_materials_summary() successfully aggregates received edu materials summary grouped by day."""
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        educational_materials_received=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        educational_materials_received=15,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        educational_materials_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        educational_materials_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=15,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+
+    received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+
+    assert received_educational_materials_summary == [
+        {
+            'total_received_edu_materials': 30,
+            'total_unique_patients': 3,
+            'avg_received_edu_materials_per_patient': 10,
+            'date': current_date,
+        },
+        {
+            'total_received_edu_materials': 10,
+            'total_unique_patients': 2,
+            'avg_received_edu_materials_per_patient': 5,
+            'date': current_date - dt.timedelta(days=1),
+        },
+        {
+            'total_received_edu_materials': 15,
+            'total_unique_patients': 1,
+            'avg_received_edu_materials_per_patient': 15,
+            'date': current_date - dt.timedelta(days=2),
+        },
+    ]
+
+
+def test_fetch_received_educational_materials_summary_by_month() -> None:
+    """Ensure received_edu_materials_summary successfully aggregates received edu materials summary grouped by month."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        educational_materials_received=10,
+        action_date=dt.date(2024, 6, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        educational_materials_received=15,
+        action_date=dt.date(2024, 6, 5),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        educational_materials_received=5,
+        action_date=dt.date(2024, 5, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        educational_materials_received=5,
+        action_date=dt.date(2024, 5, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=15,
+        action_date=dt.date(2024, 4, 3),
+    )
+
+    received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
+        start_date=dt.date(2024, 4, 3),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert received_educational_materials_summary == [
+        {
+            'total_received_edu_materials': 30,
+            'total_unique_patients': 3,
+            'avg_received_edu_materials_per_patient': 10,
+            'month': dt.date(2024, 6, 1),
+        },
+        {
+            'total_received_edu_materials': 10,
+            'total_unique_patients': 2,
+            'avg_received_edu_materials_per_patient': 5,
+            'month': dt.date(2024, 5, 1),
+        },
+        {
+            'total_received_edu_materials': 15,
+            'total_unique_patients': 1,
+            'avg_received_edu_materials_per_patient': 15,
+            'month': dt.date(2024, 4, 1),
+        },
+    ]
+
+
+def test_fetch_received_educational_materials_summary_by_year() -> None:
+    """Ensure received_edu_materials_summary successfully aggregates received edu materials summary grouped by year."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        educational_materials_received=10,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        educational_materials_received=15,
+        action_date=dt.date(2024, 4, 5),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        educational_materials_received=5,
+        action_date=dt.date(2023, 4, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        educational_materials_received=5,
+        action_date=dt.date(2023, 3, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        educational_materials_received=15,
+        action_date=dt.date(2022, 2, 3),
+    )
+
+    received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
+        start_date=dt.date(2022, 2, 3),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert received_educational_materials_summary == [
+        {
+            'total_received_edu_materials': 30,
+            'total_unique_patients': 3,
+            'avg_received_edu_materials_per_patient': 10,
+            'year': dt.date(2024, 1, 1),
+        },
+        {
+            'total_received_edu_materials': 10,
+            'total_unique_patients': 2,
+            'avg_received_edu_materials_per_patient': 5,
+            'year': dt.date(2023, 1, 1),
+        },
+        {
+            'total_received_edu_materials': 15,
+            'total_unique_patients': 1,
+            'avg_received_edu_materials_per_patient': 15,
+            'year': dt.date(2022, 1, 1),
+        },
+    ]
+
+
+def test_empty_received_documents_summary() -> None:
+    """Ensure fetch_received_documents_summary() query can return an empty result without errors."""
+    received_documents_summary = stats_queries.fetch_received_documents_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not received_documents_summary
+
+
+def test_fetch_received_documents_summary_by_day() -> None:
+    """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by day."""
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        documents_received=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        documents_received=15,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        documents_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        documents_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=15,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+
+    received_documents_summary = stats_queries.fetch_received_documents_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+
+    assert received_documents_summary == [
+        {
+            'total_received_documents': 30,
+            'total_unique_patients': 3,
+            'avg_received_documents_per_patient': 10,
+            'date': current_date,
+        },
+        {
+            'total_received_documents': 10,
+            'total_unique_patients': 2,
+            'avg_received_documents_per_patient': 5,
+            'date': current_date - dt.timedelta(days=1),
+        },
+        {
+            'total_received_documents': 15,
+            'total_unique_patients': 1,
+            'avg_received_documents_per_patient': 15,
+            'date': current_date - dt.timedelta(days=2),
+        },
+    ]
+
+
+def test_fetch_received_documents_summary_by_month() -> None:
+    """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by month."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        documents_received=10,
+        action_date=dt.date(2024, 6, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        documents_received=15,
+        action_date=dt.date(2024, 6, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        documents_received=5,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        documents_received=5,
+        action_date=dt.date(2024, 5, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=15,
+        action_date=dt.date(2024, 4, 5),
+    )
+
+    received_documents_summary = stats_queries.fetch_received_documents_summary(
+        start_date=dt.date(2024, 4, 5),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert received_documents_summary == [
+        {
+            'total_received_documents': 30,
+            'total_unique_patients': 3,
+            'avg_received_documents_per_patient': 10,
+            'month': dt.date(2024, 6, 1),
+        },
+        {
+            'total_received_documents': 10,
+            'total_unique_patients': 2,
+            'avg_received_documents_per_patient': 5,
+            'month': dt.date(2024, 5, 1),
+        },
+        {
+            'total_received_documents': 15,
+            'total_unique_patients': 1,
+            'avg_received_documents_per_patient': 15,
+            'month': dt.date(2024, 4, 1),
+        },
+    ]
+
+
+def test_fetch_received_documents_summary_by_year() -> None:
+    """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by year."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        documents_received=10,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        documents_received=15,
+        action_date=dt.date(2024, 4, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        documents_received=5,
+        action_date=dt.date(2023, 4, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        documents_received=5,
+        action_date=dt.date(2023, 3, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        documents_received=15,
+        action_date=dt.date(2022, 2, 5),
+    )
+
+    received_documents_summary = stats_queries.fetch_received_documents_summary(
+        start_date=dt.date(2022, 2, 5),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert received_documents_summary == [
+        {
+            'total_received_documents': 30,
+            'total_unique_patients': 3,
+            'avg_received_documents_per_patient': 10,
+            'year': dt.date(2024, 1, 1),
+        },
+        {
+            'total_received_documents': 10,
+            'total_unique_patients': 2,
+            'avg_received_documents_per_patient': 5,
+            'year': dt.date(2023, 1, 1),
+        },
+        {
+            'total_received_documents': 15,
+            'total_unique_patients': 1,
+            'avg_received_documents_per_patient': 15,
+            'year': dt.date(2022, 1, 1),
+        },
+    ]
+
+
+def test_empty_received_questionnaires_summary() -> None:
+    """Ensure fetch_received_questionnaires_summary() query can return an empty result without errors."""
+    received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not received_questionnaires_summary
+
+
+def test_fetch_received_questionnaires_summary_by_day() -> None:
+    """Ensure received_questionnaires_summary successfully aggregates received questionnaires summary grouped by day."""
+    current_date = dt.datetime.now().date()
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=5,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        questionnaires_received=10,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        questionnaires_received=15,
+        action_date=current_date,
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        questionnaires_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        questionnaires_received=5,
+        action_date=current_date - dt.timedelta(days=1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=15,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+
+    received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+
+    assert received_questionnaires_summary == [
+        {
+            'total_received_questionnaires': 30,
+            'total_unique_patients': 3,
+            'avg_received_questionnaires_per_patient': 10,
+            'date': current_date,
+        },
+        {
+            'total_received_questionnaires': 10,
+            'total_unique_patients': 2,
+            'avg_received_questionnaires_per_patient': 5,
+            'date': current_date - dt.timedelta(days=1),
+        },
+        {
+            'total_received_questionnaires': 15,
+            'total_unique_patients': 1,
+            'avg_received_questionnaires_per_patient': 15,
+            'date': current_date - dt.timedelta(days=2),
+        },
+    ]
+
+
+def test_fetch_received_questionnaires_summary_by_month() -> None:
+    """Ensure fetch_received_questionnaires_summary successfully aggregates questionnaires summary grouped by month."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        questionnaires_received=10,
+        action_date=dt.date(2024, 6, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        questionnaires_received=15,
+        action_date=dt.date(2024, 6, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        questionnaires_received=5,
+        action_date=dt.date(2024, 5, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        questionnaires_received=5,
+        action_date=dt.date(2024, 5, 5),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=15,
+        action_date=dt.date(2024, 4, 3),
+    )
+
+    received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
+        start_date=dt.date(2024, 4, 3),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.MONTH,
+    )
+
+    assert received_questionnaires_summary == [
+        {
+            'total_received_questionnaires': 30,
+            'total_unique_patients': 3,
+            'avg_received_questionnaires_per_patient': 10,
+            'month': dt.date(2024, 6, 1),
+        },
+        {
+            'total_received_questionnaires': 10,
+            'total_unique_patients': 2,
+            'avg_received_questionnaires_per_patient': 5,
+            'month': dt.date(2024, 5, 1),
+        },
+        {
+            'total_received_questionnaires': 15,
+            'total_unique_patients': 1,
+            'avg_received_questionnaires_per_patient': 15,
+            'month': dt.date(2024, 4, 1),
+        },
+    ]
+
+
+def test_fetch_received_questionnaires_summary_by_year() -> None:
+    """Ensure fetch_received_questionnaires_summary successfully aggregates questionnaires summary grouped by year."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=5,
+        action_date=dt.date(2024, 6, 25),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        questionnaires_received=10,
+        action_date=dt.date(2024, 5, 20),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        questionnaires_received=15,
+        action_date=dt.date(2024, 4, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        questionnaires_received=5,
+        action_date=dt.date(2023, 4, 15),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        questionnaires_received=5,
+        action_date=dt.date(2023, 3, 5),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        questionnaires_received=15,
+        action_date=dt.date(2022, 2, 3),
+    )
+
+    received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
+        start_date=dt.date(2022, 2, 3),
+        end_date=dt.date(2024, 6, 25),
+        group_by=stats_queries.GroupByComponent.YEAR,
+    )
+
+    assert received_questionnaires_summary == [
+        {
+            'total_received_questionnaires': 30,
+            'total_unique_patients': 3,
+            'avg_received_questionnaires_per_patient': 10,
+            'year': dt.date(2024, 1, 1),
+        },
+        {
+            'total_received_questionnaires': 10,
+            'total_unique_patients': 2,
+            'avg_received_questionnaires_per_patient': 5,
+            'year': dt.date(2023, 1, 1),
+        },
+        {
+            'total_received_questionnaires': 15,
+            'total_unique_patients': 1,
+            'avg_received_questionnaires_per_patient': 15,
+            'year': dt.date(2022, 1, 1),
+        },
+    ]
+
+
 def _create_relationship_records() -> dict[str, Any]:
     """Create relationships for 4 patients.
 
@@ -1750,6 +2715,8 @@ def _create_relationship_records() -> dict[str, Any]:
     )
     bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
     lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
+
+    marge_patient = patient_factories.Patient(legacy_id=51, ramq='TEST01161972')
     homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
     bart_patient = patient_factories.Patient(legacy_id=53, ramq='TEST01161974')
     lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
@@ -1757,7 +2724,7 @@ def _create_relationship_records() -> dict[str, Any]:
     # marge
     marge_self_relationship = patient_factories.Relationship(
         type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient=marge_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
