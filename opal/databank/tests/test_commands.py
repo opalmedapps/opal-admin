@@ -422,9 +422,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         command = send_databank_data.Command()
         # Pre-init one patients success tracker to test the pass over works correctly in parse_aggregate_response
-        command.patient_data_success_tracker['a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'] = {
-            module: True for module in databank_models.DataModuleType
-        }
+        command.patient_data_success_tracker['a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'] = (
+            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+        )
         command.handle()
         assert databank_models.SharedData.objects.all().count() == 2
         for databank_patient in databank_models.DatabankConsent.objects.all():
@@ -597,9 +597,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
         command = send_databank_data.Command()
-        command.patient_data_success_tracker[databank_patient1.guid] = {
-            module: True for module in databank_models.DataModuleType
-        }
+        command.patient_data_success_tracker[databank_patient1.guid] = (
+            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+        )
 
         command._update_patients_last_synchronization()
         databank_patient1.refresh_from_db()
@@ -624,9 +624,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
         command = send_databank_data.Command()
-        command.patient_data_success_tracker[databank_patient1.guid] = {
-            module: True for module in databank_models.DataModuleType
-        }
+        command.patient_data_success_tracker[databank_patient1.guid] = (
+            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+        )
         # Simulate a partial sender error
         command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
 
@@ -1098,9 +1098,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
         command = send_databank_data.Command()
         # Manually intialize the success tracker for this patient
-        command.patient_data_success_tracker[databank_patient1.guid] = {
-            module: True for module in databank_models.DataModuleType
-        }
+        command.patient_data_success_tracker[databank_patient1.guid] = (
+            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+        )
 
         # Set a failed module for the patient
         command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
