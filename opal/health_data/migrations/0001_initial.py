@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
@@ -26,7 +28,7 @@ class Migration(migrations.Migration):
                 ('device', models.CharField(help_text='The device that was used to take the measurement', max_length=255, verbose_name='Device')),
                 ('source', models.CharField(choices=[('P', 'Patient'), ('C', 'Clinician')], help_text='The source that provided this sample, for example, the patient if it is patient-reported data', max_length=1, verbose_name='Source')),
                 ('added_at', models.DateTimeField(auto_now_add=True, verbose_name='Added At')),
-                ('value', models.DecimalField(decimal_places=2, max_digits=7, validators=[django.core.validators.MinValueValidator(0)], verbose_name='Value')),
+                ('value', models.DecimalField(decimal_places=2, max_digits=7, validators=[django.core.validators.MinValueValidator(Decimal('0'))], verbose_name='Value')),
                 ('type', models.CharField(choices=[('BM', 'Body Mass (kg)'), ('TMP', 'Body Temperature (°C)'), ('HR', 'Heart Rate (bpm)'), ('HRV', 'Heart Rate Variability (ms)'), ('SPO2', 'Oxygen Saturation (%)')], max_length=4, verbose_name='Type')),
                 ('patient', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='quantity_samples', to='patients.patient', verbose_name='Patient')),
             ],
