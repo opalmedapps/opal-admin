@@ -237,7 +237,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         auth=requests.auth.HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
         headers=None,
         json=payload,
-        timeout=5,
+        timeout=15,
     )
 
 

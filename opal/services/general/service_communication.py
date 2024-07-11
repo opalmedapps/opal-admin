@@ -12,6 +12,9 @@ from .service_error import ServiceErrorHandler
 # add this in any module that need to log
 logger = logging.getLogger(__name__)
 
+# hard-coded OIE timeout
+OIE_TIMEOUT = 15
+
 
 class ServiceHTTPCommunicationManager:
     """Manager that provides functionality for communication with an external component.
@@ -81,7 +84,7 @@ class ServiceHTTPCommunicationManager:
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 json=json.dumps(payload) if self.dump_json_payload else payload,
-                timeout=5,
+                timeout=OIE_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             # log external component errors
@@ -122,7 +125,7 @@ class ServiceHTTPCommunicationManager:
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 params=params,
-                timeout=5,
+                timeout=OIE_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             return self.error_handler.generate_error({'message': str(req_exp)})
