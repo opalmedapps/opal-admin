@@ -174,6 +174,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'slippers',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -461,6 +462,17 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     # set default request format to JSON
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF Spectacular API documentation (OpenAPI 3.0 Specification)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Opal Backend',
+    'DESCRIPTION': 'This python django-based backend provides API endpoints for other opal applications and a user interface for administrative functionality.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    #  TODO: 'CONTACT': {},
+    #  TODO: 'LICENSE': {},
 }
 
 # django-cors-headers

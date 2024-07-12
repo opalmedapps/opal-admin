@@ -4,6 +4,7 @@ from typing import Any
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
@@ -188,7 +189,11 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         self.serializer_class = PatientUpdateSerializer
         return self.update(request, *args, **kwargs)
 
-
+@extend_schema(
+    responses={
+        200: PatientSerializer
+    }
+)
 class PatientExistsView(APIView):
     """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 

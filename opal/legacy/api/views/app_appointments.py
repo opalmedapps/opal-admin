@@ -1,4 +1,5 @@
 """Collection of api views used to get appointment details."""
+from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,11 @@ from opal.legacy import models
 from ..serializers import LegacyAppointmentDetailedSerializer
 
 
+@extend_schema(
+    responses={
+        200: LegacyAppointmentDetailedSerializer(many=True)
+    }
+)
 class AppAppointmentsView(APIView):
     """Class to return appointments detail data."""
 

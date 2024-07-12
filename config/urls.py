@@ -25,11 +25,21 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 from opal.core.views import LoginView
 
 urlpatterns = [
     # REST API
     path('api/', include('opal.core.api_urls', namespace='api')),
+
+    # DRF SPECTACULAR API URLS
+    # JSON-based schema for external system requests
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Swagger web-based API UI
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # ReDoc web-based API UI
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # apps
     path('hospital-settings/', include('opal.hospital_settings.urls')),

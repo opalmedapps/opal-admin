@@ -9,6 +9,7 @@ from django.db.models import Model
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
@@ -24,7 +25,11 @@ from .serializers import LanguageSerializer
 
 _Model = TypeVar('_Model', bound=Model)
 
-
+@extend_schema(
+    responses={
+        200: LanguageSerializer(many=True)
+    }
+)
 class LanguagesView(APIView):
     """View that returns the list of supported languages."""
 
