@@ -573,7 +573,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         Returns:
             Annotated `LegacyPatientActivityLog` records
         """
-        # TODO: QSCCD-2147. An activity triggered from the Notifications page is recorded differently than
+        # NOTE: an activity triggered from the Notifications page is recorded differently than
         #       an activity that is initialized in the chart.
         #       E.g., if Marge clicks on a TxTeamMessage notification from her Home page,
         #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
@@ -592,16 +592,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             # TODO: QSCCD-2139. Split the counts of successful from failed check in attempts
             count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
             count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
-            # TODO: QSCCD-2148. Different educational material types get logged differently in PAL table.
-            # Package --> Request==Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"6"}
-            #  + for each content Request==Log,
-            #       and Parameters={"Activity":"EducationalMaterialControlSerNum","ActivityDetails":"649"}
-            #         + etc
-            # Factsheet --> Request=Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"11"}
-            # Booklet --> Log + {"Activity":"EducationalMaterialSerNum","ActivityDetails":"4"}
-            #         + for each chapter Request=Read, Parameters={"Field":"EducationalMaterial","Id":"4"}
-            # Might have to use PatientActionLog to properly determine educational material count?
-            # Could consider counting each type separately here then aggregating below in the model creation?
+            # NOTE: educational materials count does not include opened sub educational materials or chapters.
+            # E.g., Package or Booklet educational materials might have sub-materials that won't be counted.
             count_educational_materials=models.Count(
                 'activity_ser_num',
                 filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
