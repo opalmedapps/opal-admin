@@ -1,16 +1,24 @@
 import datetime as dt
+import os
+from pathlib import Path
 from typing import Any
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+import pandas as pd
 import pytest
+import pytz
 from django_stubs_ext.aliases import ValuesQuerySet
+from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
+from opal.usage_statistics import factories as stats_factories
+from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import utils as stats_utils
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -958,3 +966,103 @@ def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationsh
     ).annotate(
         end_date=models.Max('end_date'),
     )
+
+
+def test_export_data_empty_data(tmp_path: Path) -> None:
+    """Ensure the export function handle the empty list."""
+    settings.USAGE_STATS_PATH = tmp_path
+
+    expected_message = 'Invalid input, unable to export empty data'
+    with assertRaisesMessage(
+        ValueError,
+        expected_message,
+    ):
+        stats_utils.export_data([], '{0}test.random'.format(settings.USAGE_STATS_PATH))
+
+
+def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
+    """Ensure the export function handle the input in form of dictionnary."""
+    settings.USAGE_STATS_PATH = tmp_path
+
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = list(query.values(*model_fields))
+    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test_dict.csv')
+    stats_utils.export_data(dict(data_set[0]), 'test_dict.csv')
+    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test_dict.csv')
+    assert model_fields == list(
+        pd.read_csv(settings.USAGE_STATS_PATH / 'test_dict.csv').head(),
+    )
+
+
+def test_export_data_csv(tmp_path: Path) -> None:
+    """Ensure the export function generate csv file with model queryset."""
+    settings.USAGE_STATS_PATH = tmp_path
+
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
+    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test.csv')
+    stats_utils.export_data(list(data_set), 'test.csv')
+    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test.csv')
+    assert model_fields == list(
+        pd.read_csv(settings.USAGE_STATS_PATH / 'test.csv').head(),
+    )
+
+
+def test_export_data_xlsx(tmp_path: Path) -> None:
+    """Ensure the export_data generate excel file with model queryset."""
+    settings.USAGE_STATS_PATH = tmp_path
+
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        last_appointment_received=None,
+        last_document_received=None,
+        last_lab_received=None,
+        action_date=dt.date.today(),
+    )
+    query = stats_models.DailyPatientDataReceived.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
+    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test.xlsx')
+    stats_utils.export_data(list(data_set), 'test.xlsx')
+    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test.xlsx')
+    assert model_fields == list(
+        pd.read_excel(settings.USAGE_STATS_PATH / 'test.xlsx', nrows=1, engine='openpyxl').columns,
+    )
+
+
+def test_export_data_invalid_file_name(tmp_path: Path) -> None:
+    """Ensure the export_data handle the invalid file format."""
+    settings.USAGE_STATS_PATH = tmp_path
+
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
+    expected_message = 'Invalid file format, please use either csv or xlsx'
+    with assertRaisesMessage(
+        ValueError,
+        expected_message,
+    ):
+        stats_utils.export_data(list(data_set), 'test.random')
+
+
+def test_convert_to_naive() -> None:
+    """Ensure that datetime conversion function remove the timezone information."""
+    sample_datetime = pd.Timestamp(dt.datetime.now(pytz.utc))
+    assert sample_datetime.tz
+    sample_datetime = stats_utils._convert_to_naive(sample_datetime)
+    assert not sample_datetime.tz
