@@ -7,7 +7,7 @@ from http import HTTPStatus
 from typing import Any, Optional
 
 from django.conf import settings
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Model
@@ -25,18 +25,28 @@ from django_tables2 import SingleTableMixin, SingleTableView
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
-from opal.core.views import CreateUpdateView, UpdateView
+from opal.core.views import CreateUpdateView, EmptyByDefaultFilterView, UpdateView
 from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
-from .filters import ManageCaregiverAccessFilter
+from .filters import ManageCaregiverAccessFilter, PatientFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
 from .utils import create_access_request
 
 # TODO: consider changing this to a TypedDict
 _StorageValue = int | str | dict[str, Any]
+
+
+class PatientSettingsListView(SingleTableView, LoginRequiredMixin, EmptyByDefaultFilterView):
+    """This view provides a page that displays a list of `Patient` objects."""
+
+    model = Patient
+    table_class = tables.PatientTable
+    ordering = ['pk']
+    template_name = 'patients/patient_settings/list.html'
+    filterset_class = PatientFilter
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):

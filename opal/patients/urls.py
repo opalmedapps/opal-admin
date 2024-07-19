@@ -53,4 +53,10 @@ urlpatterns = [
         views.AccessRequestConfirmationView.as_view(),
         name='access-request-confirmation',
     ),
+    # Patient Setting pages
+    path(
+        'settings/search/',
+        views.PatientSettingsListView.as_view(),
+        name='patient_settings_list',
+    ),
 ]

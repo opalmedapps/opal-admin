@@ -1,13 +1,47 @@
 """Module providing reusable views for the whole project."""
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Dict, Generic, Optional, Tuple, TypeVar
 
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.db.models import Model, QuerySet
 from django.forms.models import ModelForm
+from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import UpdateView
 
+from django_filters.views import FilterView
+
 _Model = TypeVar('_Model', bound=Model)
+
+
+class EmptyByDefaultFilterView(FilterView):
+    """FilterView that defaults to an empty queryset and when filter form is unbound or invalid."""
+
+    def get(self, request: HttpRequest, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> Any:  # noqa: WPS221
+        """
+        Handle GET requests and filter the queryset.
+
+        If the filter form is invalid or unbound, set the queryset to empty.
+
+        Args:
+            request: The HTTP request instance containing metadata about the request.
+            args: Additional positional arguments passed to the method.
+            kwargs: Additional keyword arguments passed to the method.
+
+        Returns:
+            The rendered template response
+        """
+        filterset_class = self.get_filterset_class()
+        self.filterset = self.get_filterset(filterset_class)
+
+        if self.filterset.is_valid() or not self.get_strict():
+            self.object_list = self.filterset.qs
+        else:
+            self.object_list = self.filterset.queryset.none()
+
+        context = self.get_context_data(
+            filter=self.filterset, object_list=self.object_list,
+        )
+        return self.render_to_response(context)
 
 
 class LoginView(DjangoLoginView):

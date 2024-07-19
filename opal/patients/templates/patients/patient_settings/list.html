@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block heading %}
+  {% translate "Patient Settings" %}
+{% endblock %}
+
+{% block content %}
+  <h2>{% translate "Search Patient Settings" %}</h2>
+  <form method="get" novalidate>
+    {{ filter.form.as_p }}
+    <button type="submit">{% translate "Search" %}</button>
+    <button type="reset" onclick="window.location.href='{{ request.path }}'">{% translate "Reset" %}</button>
+  </form>
+  {% if table %}
+    {% render_table table %}
+  {% else %}
+    <p>{% translate "No patients found." %}</p>
+  {% endif %}
+{% endblock %}
