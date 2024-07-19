@@ -53,7 +53,7 @@ class SecurityAnswerAdmin(admin.ModelAdmin[models.SecurityAnswer]):
 
 
 @admin.register(models.SecurityQuestion)
-class SecurityQuestionAdmin(TranslationAdmin, admin.ModelAdmin[models.SecurityQuestion]):
+class SecurityQuestionAdmin(TranslationAdmin[models.SecurityQuestion]):
     """This class provides admin options for `SecurityQuestion`."""
 
     list_display = ['__str__', 'is_active']
