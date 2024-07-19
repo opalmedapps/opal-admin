@@ -43,7 +43,7 @@ class CaregiverProfile(models.Model):
         Returns:
             the name of the associated user
         """
-        return '{last}, {first}'.format(first=self.user.first_name, last=self.user.last_name)
+        return f'{self.user.last_name}, {self.user.first_name}'
 
 
 class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]

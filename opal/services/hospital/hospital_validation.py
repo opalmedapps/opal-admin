@@ -119,7 +119,7 @@ class OIEValidator:  # noqa: WPS214
                 )
                 errors.append(friendly_message)
         else:
-            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+            errors.append(f'New patient response data has an unexpected "status" value: {status}')
 
         return errors
 
@@ -144,7 +144,7 @@ class OIEValidator:  # noqa: WPS214
         elif status == 'error':
             errors.append('Error response from the OIE')
         elif not success:
-            errors.append('New patient response data has an unexpected "status" value: {0}'.format(status))
+            errors.append(f'New patient response data has an unexpected "status" value: {status}')
 
         return success, errors
 

@@ -2,7 +2,6 @@
 import logging
 from collections import namedtuple
 from http import HTTPStatus
-from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -37,10 +36,10 @@ class FedAuthBackend(BaseBackend):
     # method defined as per Django doc with explicit args instead of **kwargs
     def authenticate(  # type: ignore[override]
         self,
-        request: Optional[HttpRequest],
-        username: Optional[str],
-        password: Optional[str],
-    ) -> Optional[User]:
+        request: HttpRequest | None,
+        username: str | None,
+        password: str | None,
+    ) -> User | None:
         """
         Authenticate against the provincial auth web service.
 
@@ -73,7 +72,7 @@ class FedAuthBackend(BaseBackend):
 
         return None
 
-    def get_user(self, user_id: int) -> Optional[User]:  # noqa: WPS615
+    def get_user(self, user_id: int) -> User | None:  # noqa: WPS615
         """
         Retrieve the user with the given user ID.
 
@@ -88,7 +87,7 @@ class FedAuthBackend(BaseBackend):
         except UserModel.DoesNotExist:
             return None
 
-    def _authenticate_fedauth(self, username: str, password: str) -> Optional[UserData]:
+    def _authenticate_fedauth(self, username: str, password: str) -> UserData | None:
         """
         Perform the request to the fed auth web service.
 
@@ -117,7 +116,7 @@ class FedAuthBackend(BaseBackend):
 
         return None
 
-    def _parse_response(self, response: requests.Response) -> Optional[UserData]:
+    def _parse_response(self, response: requests.Response) -> UserData | None:
         """
         Parse the response from the fed auth web service.
 

@@ -51,7 +51,7 @@ def test_institution_email_format() -> None:
 
 def test_institution_email_max_length() -> None:
     """Make sure the institution email length is less than 254 chars."""
-    email = '{0}@opal.com'.format(get_random_string(length=254))
+    email = f'{get_random_string(length=254)}@opal.com'
     assert len(email) > 254
     with assertRaisesMessage(DataError, "Data too long for column 'support_email' at row 1"):
         factories.Institution(support_email=email)

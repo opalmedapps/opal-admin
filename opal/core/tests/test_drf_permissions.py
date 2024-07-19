@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import ImproperlyConfigured
@@ -29,7 +29,7 @@ class TestCaregiverPatientPermissions:
 
     class_instance = drf_permissions.CaregiverPatientPermissions()
 
-    def set_args(self, user_id: Optional[Any], patient_id: int | str | None) -> None:
+    def set_args(self, user_id: Any | None, patient_id: int | str | None) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
         if user_id:
             self.request.META['HTTP_Appuserid'] = user_id
@@ -147,7 +147,7 @@ class TestCaregiverSelfPermissions:
 
     class_instance = drf_permissions.CaregiverSelfPermissions()
 
-    def set_args(self, user_id: Optional[Any], patient_id: Optional[Any]) -> None:
+    def set_args(self, user_id: Any | None, patient_id: Any | None) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
         if user_id:
             self.request.META['HTTP_Appuserid'] = user_id

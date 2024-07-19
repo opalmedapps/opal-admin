@@ -1,6 +1,5 @@
 import json
 from http import HTTPStatus
-from typing import Optional
 
 from django.contrib.auth import authenticate
 from django.test import Client
@@ -33,7 +32,7 @@ def _create_auth_data(success: str) -> dict[str, str]:
     (AUTHENTICATION_FAILURE, None),
     (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
 ])
-def test_parse_response(success: str, expected: Optional[UserData], mocker: MockerFixture) -> None:
+def test_parse_response(success: str, expected: UserData | None, mocker: MockerFixture) -> None:
     """Ensure JSON response is parsed correctly."""
     mock_logger = mocker.patch('logging.Logger.error')
     response: Response = Response()

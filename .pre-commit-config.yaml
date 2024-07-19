@@ -30,6 +30,11 @@ repos:
   rev: v0.13.0
   hooks:
   - id: markdownlint-cli2
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.16.0
+  hooks:
+  - id: pyupgrade
+    args: ['--py311-plus']
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 - repo: local
   hooks:

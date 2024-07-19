@@ -254,7 +254,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
     table: tables.PatientTable = response.context['table']
 
     assert table.data.data[0] == relationship_record.patient
-    assertContains(response, '{0}: {1}'.format(hospital_patient.site.acronym, hospital_patient.mrn))
+    assertContains(response, f'{hospital_patient.site.acronym}: {hospital_patient.mrn}')
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 

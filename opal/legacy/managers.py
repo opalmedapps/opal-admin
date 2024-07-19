@@ -212,7 +212,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
 
     def create_pathology_document(
         self,
-        legacy_patient_id: Optional[int],
+        legacy_patient_id: int | None,
         prepared_by: int,
         received_at: datetime,
         report_file_name: str,
@@ -269,9 +269,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         except (ObjectDoesNotExist, MultipleObjectsReturned) as exp:
             # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
             # instances cannot be found or multiple instances returned
-            err = 'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {0}'.format(
-                exp,
-            )
+            err = f'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {exp}'
             logger.error(err)
             raise DatabaseError(err)
 

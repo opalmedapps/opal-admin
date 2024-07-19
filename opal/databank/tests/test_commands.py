@@ -508,9 +508,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         command.handle()
         captured = capsys.readouterr()
-        err_message = '{0}{1}'.format(
-            '405 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : ',
-            'Method Not Allowed',
+        err_message = (
+            '405 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : '
+            + 'Method Not Allowed'
         )
         assert err_message in captured.err
         databank_patient1 = databank_models.DatabankConsent.objects.get(
@@ -559,9 +559,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         command.handle()
         captured = capsys.readouterr()
-        err_message = '{0}{1}'.format(
-            '400 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : ',
-            'Data was missing',
+        err_message = (
+            '400 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : '
+            + 'Data was missing'
         )
         assert err_message in captured.err
         databank_patient1 = databank_models.DatabankConsent.objects.get(

@@ -1,5 +1,5 @@
 """Module providing custom crispy layout objects."""
-from typing import Any, Optional
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
@@ -53,8 +53,8 @@ class InlineSubmit(Layout):
     def __init__(  # noqa: WPS211
         self,
         name: str,
-        label: Optional[str] = None,
-        extra_css: Optional[str] = None,
+        label: str | None = None,
+        extra_css: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -100,8 +100,8 @@ class InlineReset(Layout):
 
     def __init__(  # noqa: WPS210
         self,
-        label: Optional[str] = None,
-        extra_css: Optional[str] = None,
+        label: str | None = None,
+        extra_css: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -141,9 +141,9 @@ class FormActions(CrispyFormActions):
     def __init__(  # noqa: WPS211
         self,
         *fields: Any,
-        css_id: Optional[str] = None,
-        css_class: Optional[str] = None,
-        template: Optional[str] = None,
+        css_id: str | None = None,
+        css_class: str | None = None,
+        template: str | None = None,
         **kwargs: Any,
     ):
         """

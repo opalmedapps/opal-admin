@@ -1,7 +1,8 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
 from collections import defaultdict
+from collections.abc import Callable, Mapping
 from datetime import datetime
-from typing import IO, Any, Callable, Mapping, TypeAlias
+from typing import IO, Any, TypeAlias
 
 from django.utils import timezone
 

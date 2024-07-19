@@ -369,9 +369,9 @@ class TestPatientDemographicView:
 
         assertRaisesMessage(
             expected_exception=NotFound,
-            expected_message='{0} {1}'.format(
-                'Cannot find patient record with the provided MRNs and sites.',
-                'Make sure that MRN/site pairs refer to the same patient.',
+            expected_message=(
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.'
             ),
         )
 
@@ -384,9 +384,9 @@ class TestPatientDemographicView:
 
         assertRaisesMessage(
             expected_exception=NotFound,
-            expected_message='{0} {1}'.format(
-                'Cannot find patient record with the provided MRNs and sites.',
-                'Make sure that MRN/site pairs refer to the same patient.',
+            expected_message=(
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.'
             ),
         )
 
@@ -421,9 +421,9 @@ class TestPatientDemographicView:
 
         assertRaisesMessage(
             expected_exception=NotFound,
-            expected_message='{0} {1}'.format(
-                'Cannot find patient record with the provided MRNs and sites.',
-                'Make sure that MRN/site pairs refer to the same patient.',
+            expected_message=(
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.'
             ),
         )
 
@@ -436,9 +436,9 @@ class TestPatientDemographicView:
 
         assertRaisesMessage(
             expected_exception=NotFound,
-            expected_message='{0} {1}'.format(
-                'Cannot find patient record with the provided MRNs and sites.',
-                'Make sure that MRN/site pairs refer to the same patient.',
+            expected_message=(
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.'
             ),
         )
 
@@ -818,8 +818,8 @@ class TestPatientView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert patient.data_access == 'NTK'
-        assert str(response.data['data_access']) == '{0}'.format(
-            "[ErrorDetail(string='\"\" is not a valid choice.', code='invalid_choice')]",
+        assert str(response.data['data_access']) == (
+            "[ErrorDetail(string='\"\" is not a valid choice.', code='invalid_choice')]"
         )
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
@@ -839,8 +839,8 @@ class TestPatientView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         patient.refresh_from_db()
         assert patient.data_access == 'NTK'
-        assert str(response.data['data_access']) == '{0}'.format(
-            "[ErrorDetail(string='This field is required.', code='required')]",
+        assert str(response.data['data_access']) == (
+            "[ErrorDetail(string='This field is required.', code='required')]"
         )
 
 
@@ -911,9 +911,9 @@ class TestPatientExistsView:
             reverse('api:patient-exists'),
             data=self.input_data_cases['patient_not_found'],
         )
-        expected_error = '{0} {1}'.format(
-            'Cannot find patient record with the provided MRNs and sites or',
-            'multiple patients found.',
+        expected_error = (
+            'Cannot find patient record with the provided MRNs and sites or'
+            + ' multiple patients found.'
         )
         assert expected_error in response.data['detail']
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -926,9 +926,9 @@ class TestPatientExistsView:
             reverse('api:patient-exists'),
             data=self.input_data_cases['multiple_patients'],
         )
-        expected_error = '{0} {1}'.format(
-            'Cannot find patient record with the provided MRNs and sites or',
-            'multiple patients found.',
+        expected_error = (
+            'Cannot find patient record with the provided MRNs and sites or'
+            + 'multiple patients found.'
         )
         assert expected_error in response.data['detail']
         assert response.status_code == HTTPStatus.NOT_FOUND

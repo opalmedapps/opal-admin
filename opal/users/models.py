@@ -12,7 +12,7 @@ This is based on Two Scoops of Django, Section 22.3.
 If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """  # noqa: E501
-from typing import Any, ClassVar, Set, TypeAlias
+from typing import Any, ClassVar, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
@@ -167,7 +167,7 @@ def post_save_user_signal_handler(  # noqa: WPS211
     instance: ClinicalStaff,
     action: str,
     model: type[models.Model],
-    pk_set: Set[int],
+    pk_set: set[int],
     *args: Any,
     **kwargs: Any,
 ) -> None:

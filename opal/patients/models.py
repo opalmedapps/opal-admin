@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 from collections import defaultdict
 from datetime import date
-from typing import Any, Final, Optional, TypeAlias
+from typing import Any, Final, TypeAlias
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -290,7 +290,7 @@ class Patient(AbstractLabDelayModel):
         Returns:
             the name of the associated patient
         """
-        return '{last}, {first}'.format(first=self.first_name, last=self.last_name)
+        return f'{self.last_name}, {self.first_name}'
 
     def clean(self) -> None:
         """Validate date fields.
@@ -322,7 +322,7 @@ class Patient(AbstractLabDelayModel):
         return self.age >= Institution.objects.get().adulthood_age
 
     @classmethod
-    def calculate_age(cls, date_of_birth: date, reference_date: Optional[date] = None) -> int:
+    def calculate_age(cls, date_of_birth: date, reference_date: date | None = None) -> int:
         """
         Return the age based on the given date of birth.
 

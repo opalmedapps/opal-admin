@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='databankconsent',
             name='last_synchronized',
-            field=models.DateTimeField(default=datetime.datetime(1970, 1, 1, 5, 0, tzinfo=datetime.timezone.utc), verbose_name='Last Synchronized'),
+            field=models.DateTimeField(default=datetime.datetime(1970, 1, 1, 5, 0, tzinfo=datetime.UTC), verbose_name='Last Synchronized'),
         ),
     ]
