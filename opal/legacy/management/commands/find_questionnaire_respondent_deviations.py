@@ -1,5 +1,5 @@
 """Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
-from typing import Any, Optional
+from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, transaction
@@ -33,9 +33,9 @@ class Command(BaseCommand):
     `first_name` and the `last_name` of the same `CaregiverProfile` stored in the Django back end.
     """
 
-    help = '{0} {1}'.format(  # noqa: A003
-        'Check the `first_name` and `last_name` of the questionnaire respondents are in sync',
-        'with those stored for the same caregiver in Django.',
+    help = (  # noqa: A003
+        'Check the `first_name` and `last_name` of the questionnaire respondents are in sync'
+        + 'with those stored for the same caregiver in Django.'
     )
     requires_migrations_checks = True
 
@@ -77,7 +77,7 @@ class Command(BaseCommand):
         self,
         legacy_respondents: list[tuple[str, ...]],
         django_respondents: list[tuple[str, ...]],
-    ) -> Optional[str]:
+    ) -> str | None:
         """Build error string based on the questionnaire respondents' first & last names deviations.
 
         Args:
@@ -97,16 +97,14 @@ class Command(BaseCommand):
         if not unmatched_respondents:
             return None
 
-        err_str = '\n{0}'.format(SPLIT_LENGTH * '-')
-        err_str += '\n{0}: found deviations in the questionnaire respondents!!!'.format(timezone.now())
-        err_str = '{0}\n\n{1}\n{2}\n\n'.format(
-            err_str,
-            '[QuestionnaireDB.answerQuestionnaire.respondentUsername  <===>  opal.users_user.first_name::last_name]',
-            '[format: (Username, CaregiverName)]:',
+        divider = SPLIT_LENGTH * '-'
+        unmatched_respondents_string = '\n'.join(str(respondent) for respondent in (unmatched_respondents))
+        return (
+            f'\n{divider}'
+            + f'\n{timezone.now()}: found deviations in the questionnaire respondents!!!\n\n'
+            + '[QuestionnaireDB.answerQuestionnaire.respondentUsername  <===>  opal.users_user.first_name::last_name]\n'
+            + '[format: (Username, CaregiverName)]:\n\n'
+            # Add a list of unmatched questionnaire respondents' names to the error string
+            + unmatched_respondents_string
+            + f'\n{divider}\n\n\n'
         )
-
-        # Add a list of unmatched questionnaire respondents' names to the error string
-        err_str += '\n'.join(str(respondent) for respondent in (unmatched_respondents))
-        err_str += '\n{0}\n\n\n'.format(SPLIT_LENGTH * '-')
-
-        return err_str
