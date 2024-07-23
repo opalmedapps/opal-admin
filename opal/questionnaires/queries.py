@@ -100,8 +100,8 @@ def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
     except DatabaseError as error:
         message = _(
             'DatabaseError: No questionnaires found, are you sure you are connected to a'
-            + f' production database? \n Error:  {error} ',
-        )
+            + ' production database?\nError:  {error}',
+        ).format(error=error)
         logger.error(message)
         return [{}]
     return qs
