@@ -462,7 +462,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
                 Column(
                     # make it appear like a label
-                    HTML(f"<p class=\"fw-semibold\">{_('Validation')}</p>"),
+                    HTML(f"<p class=\"fw-semibold\">{gettext('Validation')}</p>"),
                     'form_filled',
                     'id_checked',
                 ),
