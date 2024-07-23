@@ -927,8 +927,7 @@ class TestPatientExistsView:
             data=self.input_data_cases['multiple_patients'],
         )
         expected_error = (
-            'Cannot find patient record with the provided MRNs and sites or'
-            + 'multiple patients found.'
+            'Cannot find patient record with the provided MRNs and sites or multiple patients found.'
         )
         assert expected_error in response.data['detail']
         assert response.status_code == HTTPStatus.NOT_FOUND

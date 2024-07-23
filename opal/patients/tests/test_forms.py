@@ -1165,7 +1165,7 @@ def test_requestor_form_relationship_type_description() -> None:
 
     options = form.fields['relationship_type'].widget.option_descriptions
     assert options[1] == (
-        'The patient is the requestor and is caring for themselves, Age: 14 and older',
+        'The patient is the requestor and is caring for themselves, Age: 14 and older'
     )
 
     assert options[3] == (

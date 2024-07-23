@@ -219,7 +219,7 @@ def test_patient_ramq_max() -> None:
     patient.ramq = 'ABCD5678901234'
     expected_message = (
         "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'"
-        + "'Ensure this value has at most 12 characters (it has 14).']"
+        + ", 'Ensure this value has at most 12 characters (it has 14).']"
     )
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
