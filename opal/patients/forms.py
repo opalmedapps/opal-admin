@@ -410,7 +410,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(  # noqa: WPS231 (too much cognitive complexity)
+    def __init__(  # noqa: WPS231, WPS210 (too much cognitive complexity, too many local variables)
         self,
         patient: Patient | OIEPatientData,
         existing_user: CaregiverProfile | None = None,
@@ -455,6 +455,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         self.helper.form_tag = False
         self.helper.disable_csrf = True
 
+        validation_text = gettext('Validation')
         self.helper.layout = Layout(
             Row(
                 Column(
@@ -462,7 +463,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
                 Column(
                     # make it appear like a label
-                    HTML(f"<p class=\"fw-semibold\">{gettext('Validation')}</p>"),
+                    HTML(f'<p class=\"fw-semibold\">{validation_text}</p>'),
                     'form_filled',
                     'id_checked',
                 ),
