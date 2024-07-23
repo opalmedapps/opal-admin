@@ -30,11 +30,10 @@ def test_generate_line_chart_missing_columns(caplog: LogCaptureFixture) -> None:
         ),
     )
 
-    error = '{0}\n{1}\n{2} {3}\n\n'.format(
-        'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):',
-        'chart_data.data should contain the following columns: x, y, legend',
-        'The columns received:',
-        "Index(['not_x', 'not_y', 'not_legend'], dtype='object')",
+    error = (
+        'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):\n'
+        + 'chart_data.data should contain the following columns: x, y, legend\n'
+        + "The columns received: Index(['not_x', 'not_y', 'not_legend'], dtype='object')\n\n"
     )
     chart = chart_service.generate_line_chart(chart_data)
     assert caplog.records[0].message == error
@@ -49,11 +48,10 @@ def test_generate_line_chart_missing_columns(caplog: LogCaptureFixture) -> None:
         ),
     )
 
-    error = '{0}\n{1}\n{2} {3}\n\n'.format(
-        'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):',
-        'chart_data.data should contain the following columns: x, y, legend',
-        'The columns received:',
-        "Index(['x', 'y', 'not_legend'], dtype='object')",
+    error = (
+        'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):\n'
+        + 'chart_data.data should contain the following columns: x, y, legend\n'
+        + "The columns received: Index(['x', 'y', 'not_legend'], dtype='object')\n\n"
     )
     chart = chart_service.generate_line_chart(chart_data)
     assert caplog.records[1].message == error
@@ -97,11 +95,10 @@ def test_generate_error_bar_chart_missing_columns(caplog: LogCaptureFixture) -> 
         ),
     )
 
-    error = '{0}\n{1}\n{2} {3}\n\n'.format(
-        'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):',
-        'chart_data.data should contain the following columns: x, error_max, error_min, legend',
-        'The columns received:',
-        "Index(['not_x', 'not_error_max', 'not_error_min', 'not_legend'], dtype='object')",
+    error = (
+        'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):\n'
+        + 'chart_data.data should contain the following columns: x, error_max, error_min, legend\n'
+        + "The columns received: Index(['not_x', 'not_error_max', 'not_error_min', 'not_legend'], dtype='object')\n\n"
     )
     chart = chart_service.generate_error_bar_chart(chart_data)
     assert caplog.records[0].message == error
@@ -116,11 +113,10 @@ def test_generate_error_bar_chart_missing_columns(caplog: LogCaptureFixture) -> 
         ),
     )
 
-    error = '{0}\n{1}\n{2} {3}\n\n'.format(
-        'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):',
-        'chart_data.data should contain the following columns: x, error_max, error_min, legend',
-        'The columns received:',
-        "Index(['x', 'error_max', 'error_min', 'not_legend'], dtype='object')",
+    error = (
+        'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):\n'
+        + 'chart_data.data should contain the following columns: x, error_max, error_min, legend\n'
+        + "The columns received: Index(['x', 'error_max', 'error_min', 'not_legend'], dtype='object')\n\n"
     )
     chart = chart_service.generate_error_bar_chart(chart_data)
     assert caplog.records[1].message == error
