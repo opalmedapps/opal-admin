@@ -34,6 +34,8 @@ repos:
   rev: v3.16.0
   hooks:
   - id: pyupgrade
+    # desired Python version needs to be set explicitly
+    # see: https://github.com/asottile/pyupgrade/issues/768
     args: ['--py311-plus']
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 - repo: local
