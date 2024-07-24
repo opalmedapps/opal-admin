@@ -86,8 +86,7 @@ pre-commit:
     - .uses_python_dependencies
   script:
     - apk add --no-cache git
-    # - pre-commit install-hooks
-    - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files
+    - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
 
 
 flake8:
