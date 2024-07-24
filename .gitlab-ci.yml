@@ -85,6 +85,7 @@ pre-commit:
   extends:
     - .uses_python_dependencies
   script:
+    - ls -la
     - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files
 
 
