@@ -1,13 +1,12 @@
 """Module for common validators for `patients` app."""
 from collections import Counter
-from typing import Union
 
 from opal.patients.models import Patient
 from opal.services.hospital.hospital_data import OIEPatientData
 
 
 # Patients Validators
-def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
+def is_deceased(patient: Patient | OIEPatientData) -> bool:
     """
     Check if a patient is deceased.
 

@@ -484,13 +484,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_patient',
-            'OpalDB.Patient(UserType="Patient")',
+        assert (
+            'found deviations between opal.patients_patient Django model'
+            + ' and OpalDB.Patient(UserType="Patient") legacy table!!!'
         ) in error
-        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
-            'opal.patients_patient',
-            'OpalDB.Patient(UserType="Patient")',
+        assert (
+            'The number of records in "opal.patients_patient"'
+            + ' and "OpalDB.Patient(UserType="Patient")" tables does not match!'
         ) in error
         assert 'opal.patients_patient: 1' in error
         assert 'OpalDB.Patient(UserType="Patient"): 2' in error
@@ -520,9 +520,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_patient',
-            'OpalDB.Patient(UserType="Patient")',
+        assert (
+            'found deviations between opal.patients_patient Django model'
+            + ' and OpalDB.Patient(UserType="Patient") legacy table!!!'
         ) in error
 
         assert 'opal.patients_patient  <===>  OpalDB.Patient(UserType="Patient"):' in error
@@ -530,7 +530,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert (
             "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', 'ALL', None)"
         ) in error
-        assert '{0}\n\n\n'.format(120 * '-')
 
     def test_deviations_uneven_hospital_patient_records(self) -> None:
         """Ensure the command handles the cases when "HospitalPatient" model/tables have uneven number of records."""
@@ -547,13 +546,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_hospitalpatient',
-            'OpalDB.Patient_Hospital_Identifier',
+        assert (
+            'found deviations between opal.patients_hospitalpatient Django model'
+            + ' and OpalDB.Patient_Hospital_Identifier legacy table!!!'
         ) in error
-        assert '{0}{1}'.format(
-            'The number of records in "opal.patients_hospitalpatient" ',
-            'and "OpalDB.Patient_Hospital_Identifier" tables does not match!',
+        assert (
+            'The number of records in "opal.patients_hospitalpatient" '
+            + 'and "OpalDB.Patient_Hospital_Identifier" tables does not match!'
         ) in error
         assert 'opal.patients_hospitalpatient: 2' in error
         assert 'OpalDB.Patient_Hospital_Identifier: 1' in error
@@ -571,9 +570,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_hospitalpatient',
-            'OpalDB.Patient_Hospital_Identifier',
+        deviations_err = (
+            'found deviations between opal.patients_hospitalpatient Django model'
+            + ' and OpalDB.Patient_Hospital_Identifier legacy table!!!'
         )
         assert deviations_err in error
         assert 'opal.patients_hospitalpatient  <===>  OpalDB.Patient_Hospital_Identifier:' in error
@@ -619,7 +618,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
-    def test_no_deviations_for_patients_without_user(self) -> None:  # noqa: WPS213
+    def test_no_deviations_for_patients_without_user(self) -> None:
         """Ensure the command does not return deviations error for "Patient" records without users."""
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
@@ -716,7 +715,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             last_name='Last Name',
         )
         # create patient
-        patient: patient_models.Patient = patient_factories.Patient(
+        patient = patient_factories.Patient(
             legacy_id=99,
             ramq='RAMQ12345678',
             first_name='First Name',
@@ -733,9 +732,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         error = str(exc.value)
         assert 'The number of records in' not in error
 
-        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_patient',
-            'OpalDB.Patient(UserType="Patient")',
+        deviations_err = (
+            'found deviations between opal.patients_patient Django model'
+            + ' and OpalDB.Patient(UserType="Patient") legacy table!!!'
         )
         assert deviations_err in error
 
@@ -777,9 +776,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
         assert 'The number of records in' not in error
 
-        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.patients_patient',
-            'OpalDB.Patient(UserType="Patient")',
+        deviations_err = (
+            'found deviations between opal.patients_patient Django model'
+            + ' and OpalDB.Patient(UserType="Patient") legacy table!!!'
         )
         # legacy datetimes are added as is whereas Django converts it to UTC
         # ensure the command can handle this
@@ -807,13 +806,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.caregivers_caregiverprofile',
-            'OpalDB.Patient(UserType="Caregiver")',
+        assert (
+            'found deviations between opal.caregivers_caregiverprofile Django model'
+            + ' and OpalDB.Patient(UserType="Caregiver") legacy table!!!'
         ) in error
-        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
-            'opal.caregivers_caregiverprofile',
-            'OpalDB.Patient(UserType="Caregiver")',
+        assert (
+            'The number of records in "opal.caregivers_caregiverprofile"'
+            + ' and "OpalDB.Patient(UserType="Caregiver")" tables does not match!'
         ) in error
         assert 'opal.caregivers_caregiverprofile: 1' in error
         assert 'OpalDB.Patient(UserType="Caregiver"): 2' in error
@@ -839,9 +838,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         error = str(exc.value)
 
-        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
-            'opal.caregivers_caregiverprofile',
-            'OpalDB.Patient(UserType="Caregiver")',
+        assert (
+            'found deviations between opal.caregivers_caregiverprofile Django model'
+            + ' and OpalDB.Patient(UserType="Caregiver") legacy table!!!'
         ) in error
 
         assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
@@ -849,7 +848,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert (
             "(42, 'Homer', 'Simpson', 'test@test.com', 'en', 'username')"
         ) in error
-        assert '{0}\n\n\n'.format(120 * '-')
 
     def test_no_caregiver_deviations(self) -> None:
         """Ensure the command does not return an error if there are no deviations in "Caregiver" records."""
@@ -1318,7 +1316,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
         patients_num = patient_models.Patient.objects.all().count()
         assert "An error occurred during patients' UUID update!" not in error
-        assert 'Updated {0} out of {1}'.format(patients_num, patients_num) in message
+        assert f'Updated {patients_num} out of {patients_num}' in message
         assert 'The following patients were not updated:' not in error
 
 
@@ -1399,11 +1397,9 @@ class TestMigrateUsersCommand(CommandTestMixin):
         assert ClinicalStaff.objects.all().count() == 1
 
         message, error = self._call_command('migrate_users')
-        errormsg = '{0} {1} {2}{3}'.format(
-            "Error: {'username': ['A user with that username already exists.']}",
-            'when saving username:',
-            user.username,
-            '\n',
+        errormsg = (
+            "Error: {'username': ['A user with that username already exists.']}"
+            + f' when saving username: {user.username}\n'
         )
         assert errormsg in error
         assert 'Migrated 0 of 1 users (0 system administrators and 0 registrants)' in message
@@ -1455,11 +1451,9 @@ class TestMigrateUsersCommand(CommandTestMixin):
 
         message, error = self._call_command('migrate_users')
 
-        errormsg = '{0} {1} {2}{3}'.format(
-            "Error: {'username': ['A user with that username already exists.']}",
-            'when saving username:',
-            user.username,
-            '\n',
+        errormsg = (
+            "Error: {'username': ['A user with that username already exists.']}"
+            + f' when saving username: {user.username}\n'
         )
         assert errormsg in error
 

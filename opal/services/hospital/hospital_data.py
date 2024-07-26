@@ -1,6 +1,6 @@
 """Module providing custom data structures (a.k.a., named tuples) for the OIE Service."""
 from datetime import date, datetime
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 
 class OIEReportExportData(NamedTuple):
@@ -57,7 +57,7 @@ class OIEPatientData(NamedTuple):
     sex: str
     alias: str
     deceased: bool
-    death_date_time: Optional[datetime]
+    death_date_time: datetime | None
     ramq: str
-    ramq_expiration: Optional[datetime]
+    ramq_expiration: datetime | None
     mrns: list[OIEMRNData]

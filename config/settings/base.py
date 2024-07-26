@@ -74,7 +74,7 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': 'test_{0}'.format(env('DATABASE_NAME')),
+            'NAME': f"test_{env('DATABASE_NAME')}",
         },
         'ATOMIC_REQUESTS': True,
     },
@@ -87,7 +87,7 @@ DATABASES = {
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_DATABASE_NAME')),
+            'NAME': f"test_{env('LEGACY_DATABASE_NAME')}",
         },
     },
     'questionnaire': {
@@ -99,7 +99,7 @@ DATABASES = {
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')),
+            'NAME': f"test_{env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')}",
         },
     },
 }

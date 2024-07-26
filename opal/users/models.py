@@ -12,7 +12,7 @@ This is based on Two Scoops of Django, Section 22.3.
 If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """  # noqa: E501
-from typing import Any, ClassVar, Set, TypeAlias
+from typing import Any, ClassVar, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
@@ -73,12 +73,12 @@ class User(AbstractUser):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_language_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_language_valid',
                 # determine the language codes from the list of tuples
                 check=models.Q(language__in=[language[0] for language in Language]),
             ),
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=UserType.values),
             ),
         ]
@@ -167,7 +167,7 @@ def post_save_user_signal_handler(  # noqa: WPS211
     instance: ClinicalStaff,
     action: str,
     model: type[models.Model],
-    pk_set: Set[int],
+    pk_set: set[int],
     *args: Any,
     **kwargs: Any,
 ) -> None:

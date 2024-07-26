@@ -287,7 +287,7 @@ def test_check_patient_ramq_expiration_invalid() -> None:
 
     errors = oie_validator.check_patient_data(patient_data)
 
-    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]  # noqa: WPS323, E501
+    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]  # noqa: E501
 
 
 def test_check_patient_mrns_non_exists() -> None:

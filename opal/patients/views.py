@@ -4,7 +4,7 @@ import json
 from collections import OrderedDict
 from datetime import date
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -450,7 +450,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # avoid form resubmit via Post/Redirect/Get pattern
         return redirect(reverse('patients:access-request-confirmation'))
 
-    def _get_prefix(self, form_class: type[Form]) -> Optional[str]:
+    def _get_prefix(self, form_class: type[Form]) -> str | None:
         """
         Return the prefix for the given form class.
 
@@ -525,7 +525,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
                 # use DjangoJSONEncoder which supports date/datetime
                 storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
         elif step == 'relationship':
-            caregiver: Optional[CaregiverProfile] = form.existing_user  # type: ignore[attr-defined]
+            caregiver: CaregiverProfile | None = form.existing_user  # type: ignore[attr-defined]
 
             if caregiver:
                 storage['caregiver'] = caregiver.pk
@@ -582,7 +582,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             })
 
             if step == 'relationship':
-                caregiver_pk: Optional[int] = storage.get('caregiver', None)  # type: ignore[assignment]
+                caregiver_pk: int | None = storage.get('caregiver', None)  # type: ignore[assignment]
 
                 if caregiver_pk:
                     caregiver = CaregiverProfile.objects.get(pk=caregiver_pk)
@@ -651,7 +651,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return form_list
 
-    def _next_step(self, current_step: str) -> Optional[str]:
+    def _next_step(self, current_step: str) -> str | None:
         """
         Determine the next step in the process.
 

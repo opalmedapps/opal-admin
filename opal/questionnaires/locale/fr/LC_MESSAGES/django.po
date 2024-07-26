@@ -48,12 +48,12 @@ msgstr "Profils de questionnaires"
 #, python-brace-format
 msgid ""
 "DatabaseError: No questionnaires found, are you sure you are connected to a "
-"production database? \n"
-" Error:  {error} "
+"production database?\n"
+"Error:  {error}"
 msgstr ""
 "DatabaseError: Aucun questionnaire trouvé, êtes-vous sûr d'être connecté à "
-"une base de données de production? \n"
-" Erreur:  {error} "
+"une base de données de production?\n"
+"Erreur :  {error}"
 
 #: opal/questionnaires/tables.py
 msgid "Patient ID"

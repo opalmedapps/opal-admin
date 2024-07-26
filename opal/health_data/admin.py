@@ -1,6 +1,4 @@
 """This module provides admin options for health data models."""
-from typing import Optional
-
 from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
 from django.http import HttpRequest
@@ -15,7 +13,7 @@ class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):
     All admin classes for samples should inherit from this mixin.
     """
 
-    def has_change_permission(self, request: HttpRequest, obj: Optional[AbstractSample] = None) -> bool:
+    def has_change_permission(self, request: HttpRequest, obj: AbstractSample | None = None) -> bool:
         """
         Return whether the given request has permission to change the given sample instance.
 
@@ -30,7 +28,7 @@ class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):
         """
         return False
 
-    def has_delete_permission(self, request: HttpRequest, obj: Optional[AbstractSample] = None) -> bool:
+    def has_delete_permission(self, request: HttpRequest, obj: AbstractSample | None = None) -> bool:
         """
         Return whether the given request has permission to delete the given sample instance.
 

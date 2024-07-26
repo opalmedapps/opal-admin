@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
-from typing import Any, Optional, TypeAlias
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -261,7 +261,7 @@ class Command(BaseCommand):  # noqa: WPS214
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=oie_timeout,  # noqa: WPS432
+                timeout=oie_timeout,
             )
         except requests.exceptions.RequestException as exc:
             # Connection details for OIE might be misconfigured
@@ -276,11 +276,8 @@ class Command(BaseCommand):  # noqa: WPS214
         else:
             # Specific error occured between Django, Nginx, and/or OIE communications
             self.stderr.write(
-                '{0}{1}: {2}'.format(
-                    response.status_code,
-                    ' oie response error ',
-                    response.content.decode(),
-                ),
+                f'{response.status_code} oie response error: '
+                + response.content.decode(),
             )
 
     def _parse_aggregate_databank_response(
@@ -305,7 +302,7 @@ class Command(BaseCommand):  # noqa: WPS214
             except ValueError:
                 self.stderr.write(f'Unrecognized module prefix in response: {module_prefix}')
 
-            # Intialize the patient_data_success tracker for this patient
+            # Initialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
                 self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)  # noqa: WPS425
 
@@ -321,19 +318,15 @@ class Command(BaseCommand):  # noqa: WPS214
             else:
                 self.patient_data_success_tracker[patient_guid][data_module] = False
                 self.stderr.write(
-                    '{0}{1}{2} : {3}'.format(
-                        status_code,
-                        ' error for patient ',
-                        patient_guid,
-                        message.strip('[]"'),
-                    ),
+                    f'{status_code} error for patient {patient_guid}: '
+                    + message.strip('[]"'),
                 )
 
     def _update_databank_patient_shared_data(  # noqa: WPS231
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
-        message: Optional[str] = None,
+        message: str | None = None,
     ) -> None:
         """Create `SharedData` instances for a given patient.
 
