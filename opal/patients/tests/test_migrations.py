@@ -10,7 +10,7 @@ pytestmark = pytest.mark.slow()
 
 def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
+    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     assert RelationshipType.objects.count() == 0
@@ -218,7 +218,7 @@ def test_migration_relationshiptype_existing_role_types_updated(migrator: Migrat
 
 def test_migration_relationshiptype_add_remaining_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))  # noqa: WPS204
+    old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     assert RelationshipType.objects.count() == 2

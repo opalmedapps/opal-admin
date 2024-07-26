@@ -118,7 +118,7 @@ def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str
     """
     return {
         'data': {
-            'status': 'Success: {0}'.format(status),
+            'status': f'Success: {status}',
             'base64EncodedReport': BASE64_ENCODED_REPORT,
         },
     }
@@ -395,7 +395,7 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
     """Ensure that when the report is not base64 an error is logged."""
     mock_post = RequestMockerTest.mock_requests_post(mocker, {
         'data': {
-            'status': 'Success: {0}'.format(HTTPStatus.OK),
+            'status': f'Success: {HTTPStatus.OK}',
             'base64EncodedReport': 'not-base64',
         },
     })
@@ -468,7 +468,7 @@ def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> Non
 
     patient_list = pathology_pdf._get_site_address_patient_info_box()
 
-    patient_info = next((elem for elem in patient_list if elem.get('name') == 'patient_name'))
+    patient_info = next(elem for elem in patient_list if elem.get('name') == 'patient_name')
     # Wrap the text with the maximum characters can be filled in each line.
     wrapper = textwrap.TextWrapper(
         width=int((185 - 110) / 2) - 1,

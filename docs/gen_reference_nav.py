@@ -30,7 +30,7 @@ for path in sorted(Path(CODE_ROOT).glob('**/*.py')):
 
     # write Markdown file for module
     with mkdocs_gen_files.open(doc_path, 'w') as fd:
-        print('::: {identifier}'.format(identifier=ident), file=fd)
+        print(f'::: {ident}', file=fd)
 
     mkdocs_gen_files.set_edit_path(doc_path, Path('..', path))
 

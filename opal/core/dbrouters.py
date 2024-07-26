@@ -3,12 +3,12 @@ Module providing DB routers for multi-database scenarios.
 
 Specifically provides a DB router for separate handling database operations of regular and legacy DBs.
 """
-from typing import Any, Optional
+from typing import Any
 
 from django.db.models import Model
 
 
-class LegacyDbRouter(object):
+class LegacyDbRouter:
     """
     A router to ensure all legacy models use the appropriate legacy DB.
 
@@ -20,7 +20,7 @@ class LegacyDbRouter(object):
     legacy_questionnaire_app_label = 'legacy_questionnaires'
     legacy_questionnaire_db_name = 'questionnaire'
 
-    def db_for_read(self, model: type[Model], **hints: Any) -> Optional[str]:
+    def db_for_read(self, model: type[Model], **hints: Any) -> str | None:
         """
         Redirect attempts to read legacy models to the legacy DBs.
 
@@ -38,7 +38,7 @@ class LegacyDbRouter(object):
 
         return None
 
-    def db_for_write(self, model: type[Model], **hints: Any) -> Optional[str]:
+    def db_for_write(self, model: type[Model], **hints: Any) -> str | None:
         """
         Redirect attempts to write legacy models to the legacy DBs.
 

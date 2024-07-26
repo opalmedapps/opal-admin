@@ -7,7 +7,7 @@ from opal.users.models import Caregiver
 pytestmark = pytest.mark.django_db
 
 
-def test_caregiver_patient_list_query() -> None:  # noqa: WPS218
+def test_caregiver_patient_list_query() -> None:
     """Test the query to get the list of patients for a given caregiver."""
     relationship_type = patient_factory.RelationshipType(name='Mother')
     relationship = patient_factory.Relationship(type=relationship_type)

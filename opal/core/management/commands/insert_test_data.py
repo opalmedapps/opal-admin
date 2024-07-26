@@ -4,7 +4,7 @@ from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Optional
+from typing import Any
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandParser
@@ -263,7 +263,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C901
+def _create_test_data(institution_option: InstitutionOption) -> None:
     """
     Create all test data.
 
@@ -856,7 +856,7 @@ def _create_patient(
     ramq: str,
     legacy_id: int,
     mrns: list[tuple[Site, str]],
-    date_of_death: Optional[date] = None,
+    date_of_death: date | None = None,
     data_access: Patient.DataAccessType = Patient.DataAccessType.ALL,
 ) -> Patient:
     """
@@ -968,7 +968,7 @@ def _create_relationship(
     status: RelationshipStatus,
     request_date: date,
     start_date: date,
-    end_date: Optional[date] = None,
+    end_date: date | None = None,
     reason: str = '',
 ) -> None:
     """

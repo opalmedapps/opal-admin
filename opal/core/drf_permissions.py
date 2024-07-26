@@ -2,7 +2,7 @@
 
 These permissions are provided for the project and intended to be reused.
 """
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -215,7 +215,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Returns:
             The patient's legacy id.
         """
-        patient_legacy_id: Optional[int] = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
+        patient_legacy_id: int | None = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
                 'Requests to APIs using CaregiverPatientPermissions must provide an integer'
@@ -223,7 +223,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
         return patient_legacy_id
 
-    def _check_caregiver_exists(self, caregiver_username: Optional[str]) -> CaregiverProfile:
+    def _check_caregiver_exists(self, caregiver_username: str | None) -> CaregiverProfile:
         """
         Validate the existence of a CaregiverProfile matching the input caregiver username, and return it if found.
 

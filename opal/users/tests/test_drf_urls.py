@@ -27,7 +27,7 @@ def test_users_detail() -> None:
     assert reverse(
         'api:users-detail',
         kwargs={'username': user.username},
-    ) == f'/api/users/{user.username}/'  # noqa: WPS221
+    ) == f'/api/users/{user.username}/'
     assert resolve(f'/api/users/{user.username}/').view_name == 'api:users-detail'
 
 

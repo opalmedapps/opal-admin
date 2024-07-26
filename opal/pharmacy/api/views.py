@@ -71,20 +71,20 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
             'filler_order_number': order_data['filler_order_number'],
             'order_status': order_data['order_status'],
             'entered_at': order_data['entered_at'],
-            'entered_by': '{0}_{1}_{2}'.format(
-                order_data['entered_by_given_name'],
-                order_data['entered_by_family_name'],
-                order_data['entered_by_id'],
+            'entered_by': (
+                order_data['entered_by_given_name']
+                + f"_{order_data['entered_by_family_name']}"
+                + f"_{order_data['entered_by_id']}"
             ),
-            'verified_by': '{0}_{1}_{2}'.format(
-                order_data['verified_by_given_name'],
-                order_data['verified_by_family_name'],
-                order_data['verified_by_id'],
+            'verified_by': (
+                order_data['verified_by_given_name']
+                + f"_{order_data['verified_by_family_name']}"
+                + f"_{order_data['verified_by_id']}"
             ),
-            'ordered_by': '{0}_{1}_{2}'.format(
-                order_data['order_by_given_name'],
-                order_data['order_by_family_name'],
-                order_data['ordered_by_id'],
+            'ordered_by': (
+                order_data['order_by_given_name']
+                + f"_{order_data['order_by_family_name']}"
+                + f"_{order_data['ordered_by_id']}"
             ),
             'effective_at': order_data['effective_at'],
             'pharmacy_encoded_order': {

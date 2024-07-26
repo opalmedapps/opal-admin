@@ -31,7 +31,7 @@ class Institution(Location, AbstractLabDelayModel):  # type: ignore[django-manag
 
     terms_of_use = models.FileField(
         verbose_name=_('Terms of use'),
-        upload_to='uploads/%Y/%m/%d/',  # noqa: WPS323
+        upload_to='uploads/%Y/%m/%d/',
         validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
     )
     logo = models.ImageField(

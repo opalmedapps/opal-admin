@@ -1,6 +1,5 @@
 import datetime as dt
 import json
-from typing import Optional
 
 from django.utils import timezone
 
@@ -3247,7 +3246,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self,
         request: str = 'Login',
         parameters: str = '',
-        target_patient_id: Optional[int] = None,
+        target_patient_id: int | None = None,
         username: str = 'username',
         app_version: str = '100.100.100',
         days_delta: int = 1,

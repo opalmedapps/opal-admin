@@ -80,6 +80,15 @@ setup:
     # don't cache since it takes just as long to upload and download the cache than to re-download dependencies with uv
 
 
+pre-commit:
+  stage: static analysis
+  extends:
+    - .uses_python_dependencies
+  script:
+    - apk add --no-cache git
+    - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
+
+
 flake8:
   stage: static analysis
   extends:
