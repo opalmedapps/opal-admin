@@ -31,7 +31,7 @@ repos:
   hooks:
   - id: markdownlint-cli2
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.16.0
+  rev: v3.17.0
   hooks:
   - id: pyupgrade
     # desired Python version needs to be set explicitly
