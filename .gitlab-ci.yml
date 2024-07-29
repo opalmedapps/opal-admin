@@ -272,10 +272,10 @@ django template validation:
 
 build image:
   stage: build
-  image: docker:27.0.3
+  image: docker:27.1.1
   needs: []
   services:
-    - docker:27.0.3-dind
+    - docker:27.1.1-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
@@ -284,6 +284,8 @@ build image:
     # login to CI registry: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#option-1-run-docker-login
     - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
   script:
+    # Run build checks: https://docs.docker.com/reference/build-checks/
+    - docker build --check .
     - export IMAGE_REPOSITORY=$CI_REGISTRY_IMAGE
     # create an image tagged with the branch or tag name
     - export IMAGE_BRANCH=$IMAGE_REPOSITORY:$CI_COMMIT_REF_SLUG
