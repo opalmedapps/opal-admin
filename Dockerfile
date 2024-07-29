@@ -1,4 +1,4 @@
-FROM python:3.11.9-alpine3.19 as build
+FROM python:3.11.9-alpine3.19 AS build
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -27,10 +27,10 @@ RUN apk upgrade --no-cache \
   && apk add --no-cache gettext
 
 # Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 WORKDIR /app
