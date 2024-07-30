@@ -7,7 +7,8 @@ from django.utils.translation import gettext_lazy as _
 from .models import Caregiver, ClinicalStaff, User
 
 
-@admin.register(User)
+# use Django's default UserAdmin for now for all types of caregivers (until the User is actually customized)
+@admin.register(User, Caregiver, ClinicalStaff)
 class UserAdmin(DjangoUserAdmin):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
@@ -20,8 +21,3 @@ class UserAdmin(DjangoUserAdmin):
         new_fieldsets.append((_('Extra'), {'fields': ('type', 'language', 'phone_number')}))
 
         self.fieldsets = tuple(new_fieldsets)
-
-
-# use Django's default UserAdmin for now (until the User is actually customized)
-admin.site.register(Caregiver, UserAdmin)
-admin.site.register(ClinicalStaff, UserAdmin)
