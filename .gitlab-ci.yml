@@ -395,7 +395,7 @@ gemnasium-python-dependency_scanning:
     # prepare a single requirements.txt that contains all relevant dependencies
     - mv requirements/base.txt requirements.txt
     # remove the first line ("-r ...")
-    - tail -n +2 requirements/development.txt >> requirements.txt
+    # - tail -n +2 requirements/development.txt >> requirements.txt
     - tail -n +2 requirements/production.txt >> requirements.txt
     - cat requirements.txt
 
