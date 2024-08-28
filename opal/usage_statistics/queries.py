@@ -671,7 +671,7 @@ def fetch_patient_labs_statistics_report() -> list[dict[str, Any]]:
     So the number of records might be large for the first time.
 
     Returns:
-        the daily basic statistics report for functionality using by user
+        the basic individual statistics report for labs
     """
     lab_report = DailyPatientDataReceived.objects.values('patient__legacy_id').annotate(
         patient_sernum=models.F('patient__legacy_id'),
@@ -692,13 +692,10 @@ def fetch_patient_labs_statistics_report() -> list[dict[str, Any]]:
 
 
 def fetch_individual_average_login_report() -> list[dict[str, Any]]:
-    """Fetch the statistics report of individual patients for the average times they log into app per day.
-
-    Arg:
-        report_date: the date required of the daily basic statistics report for functionality using(inclusive)
+    """Fetch the statistics report of individual patients for the average times they log into app.
 
     Returns:
-        the daily basic statistics report for functionality using by user
+        the basic individual statistics report for average login group by user
     """
     login_report = DailyUserAppActivity.objects.values('action_by_user_id').annotate(
         user_id=models.F('action_by_user_id'),
@@ -717,11 +714,73 @@ def fetch_individual_average_login_report() -> list[dict[str, Any]]:
 def fetch_average_login_per_year_by_month_report() -> list[dict[str, Any]]:
     """Fetch the statistics report of individual years and months for the average times user log into app.
 
-    Arg:
-        report_date: the date required of the daily basic statistics report for functionality using(inclusive)
+    Returns:
+        the basic annually statistics report for average login group by month
+    """
+    month_number = {
+        'january': 12,
+        'february': 1,
+        'march': 2,
+        'april': 3,
+        'may': 4,
+        'june': 5,
+        'july': 6,
+        'august': 7,
+        'september': 8,
+        'october': 9,
+        'november': 10,
+        'december': 11,
+    }
+    login_per_year_by_month_report = DailyUserAppActivity.objects.annotate(
+        trunc_year=TruncYear('last_login'),
+        trunc_month=TruncMonth('last_login'),
+    ).values('trunc_year').annotate(
+        year=models.F('trunc_year__year') + 1,
+        january=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['january'])),
+        february=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['february'])),
+        march=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['march'])),
+        april=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['april'])),
+        may=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['may'])),
+        june=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['june'])),
+        july=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['july'])),
+        august=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['august'])),
+        september=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['september'])),
+        october=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['october'])),
+        november=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['november'])),
+        december=models.Sum('count_logins', filter=models.Q(trunc_month__month=month_number['december'])),
+    ).values(
+        'year',
+        'january',
+        'february',
+        'march',
+        'april',
+        'may',
+        'june',
+        'july',
+        'august',
+        'september',
+        'october',
+        'november',
+        'december',
+    )
+    return list(login_per_year_by_month_report.all())
+
+
+# SILVANA'S REPORTS
+def fetch_monthly_user_activity_log_report() -> list[dict[str, Any]]:
+    """Fetch the Silvana's user activity log report by years and months.
 
     Returns:
-        the daily basic statistics report for functionality using by user
+        the silvana monthly statistics report for user activity log
+    """
+    return []
+
+
+def fetch_annually_user_activity_log_report() -> list[dict[str, Any]]:
+    """Fetch the Silvana's user activity log report by years.
+
+    Returns:
+        the silvana annually statistics report for user activity log
     """
     return []
 

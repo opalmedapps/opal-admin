@@ -3051,6 +3051,86 @@ def test_fetch_individual_average_login_report_multiple_login() -> None:
     ]
 
 
+def test_fetch_average_login_per_year_by_month_report_empty() -> None:
+    """Ensure fetch_average_login_per_year_by_month_report successfully generated with empty data."""
+    annual_login_report = stats_queries.fetch_average_login_per_year_by_month_report()
+    assert not annual_login_report
+
+
+def test_test_fetch_average_login_per_year_by_month_report_success() -> None:
+    """Ensure fetch_average_login_per_year_by_month_report successfully generated with empty data."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 1, 20, 10, 10, 10).astimezone(),
+        count_logins=2,
+        action_date=dt.datetime(2024, 1, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 2, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 2, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2023, 4, 20, 10, 10, 10).astimezone(),
+        count_logins=2,
+        action_date=dt.datetime(2023, 4, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2023, 5, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2023, 5, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2023, 10, 20, 10, 10, 10).astimezone(),
+        count_logins=6,
+        action_date=dt.datetime(2023, 10, 20),
+    )
+    annual_login_report = stats_queries.fetch_average_login_per_year_by_month_report()
+    assert annual_login_report == [
+        {
+            'year': 2024,
+            'january': 2,
+            'february': 5,
+            'march': None,
+            'april': None,
+            'may': None,
+            'june': None,
+            'july': None,
+            'august': 5,
+            'september': None,
+            'october': None,
+            'november': None,
+            'december': None,
+        },
+        {
+            'year': 2023,
+            'january': None,
+            'february': None,
+            'march': None,
+            'april': 2,
+            'may': 3,
+            'june': None,
+            'july': None,
+            'august': None,
+            'september': None,
+            'october': 6,
+            'november': None,
+            'december': None,
+        },
+    ]
+
+
 def _create_relationship_records() -> dict[str, Any]:
     """Create relationships for 4 patients.
 
