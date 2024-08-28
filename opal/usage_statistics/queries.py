@@ -522,8 +522,209 @@ def fetch_received_questionnaires_summary(
     )
 
 
-# INDIVIDUAL REPORTING
-# TODO: implement QSCCD-2204
+# INDIVIDUAL REPORTS
+def fetch_user_last_login_year_report(report_date: dt.date) -> dict[str, int]:
+    """Fetch the daily report of basic information for user last login year before the given date.
+
+    Args:
+        report_date: the date required of the daily basic statistics report for user last login (inclusive)
+
+    Returns:
+        the daily basic statistics report for user last login
+    """
+    last_login_records = DailyUserAppActivity.objects.filter(
+        action_date__lte=report_date,
+    ).values('action_by_user_id').annotate(
+        last_login_year=TruncYear(models.Max('last_login')),
+    )
+    start_year = 2016
+    login_report = {
+        'last_login_with_the_year_{0}'.format(year): last_login_records.aggregate(
+            login_stats=models.Sum(
+                models.Case(
+                    models.When(last_login_year__year=year - 1, then=1),
+                    default=0,
+                ),
+            ),
+        )['login_stats'] for year in range(start_year, dt.datetime.now().year + 1)
+    }
+
+    login_report['last_login_with_none_date'] = last_login_records.aggregate(
+        login_stats=models.Sum(
+            models.Case(
+                models.When(last_login_year__isnull=True, then=1),
+                default=0,
+            ),
+        ),
+    )['login_stats']
+    return login_report
+
+
+def fetch_basic_functionality_stats_report(report_date: dt.date) -> dict[str, int]:
+    """Fetch the basic statistics report of number of user who use app functionnality.
+
+    Args:
+        report_date: the date required of the daily basic statistics report for functionality using(inclusive)
+
+    Returns:
+        the daily basic statistics report for functionality using by user
+    """
+    return DailyPatientDataReceived.objects.filter(action_date=report_date).aggregate(
+        received_nothing=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=True,
+                    last_document_received__isnull=True,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=True,
+                    last_questionnaire_received__isnull=True,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_new_data=models.Sum(
+            models.Case(
+                models.When(
+                    models.Q(last_appointment_received__isnull=False)
+                    | models.Q(last_document_received__isnull=False)
+                    | models.Q(last_lab_received__isnull=False)
+                    | models.Q(last_educational_material_received__isnull=False)
+                    | models.Q(last_questionnaire_received__isnull=False),
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_only_appointment=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=False,
+                    last_document_received__isnull=True,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=True,
+                    last_questionnaire_received__isnull=True,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_only_document=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=True,
+                    last_document_received__isnull=False,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=True,
+                    last_questionnaire_received__isnull=True,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_only_lab=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=True,
+                    last_document_received__isnull=False,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=True,
+                    last_questionnaire_received__isnull=True,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_only_educational_material=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=True,
+                    last_document_received__isnull=True,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=False,
+                    last_questionnaire_received__isnull=True,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+        received_only_questionnaire=models.Sum(
+            models.Case(
+                models.When(
+                    last_appointment_received__isnull=True,
+                    last_document_received__isnull=True,
+                    last_lab_received__isnull=True,
+                    last_educational_material_received__isnull=True,
+                    last_questionnaire_received__isnull=False,
+                    then=1,
+                ),
+                default=0,
+            ),
+        ),
+    )
+
+
+def fetch_patient_labs_statistics_report() -> list[dict[str, Any]]:
+    """Fetch the statistics report of patients when the first and last time they received their test.
+
+    Note that when patient first signs up, the system will import as many of their tests.
+    So the number of records might be large for the first time.
+
+    Returns:
+        the daily basic statistics report for functionality using by user
+    """
+    lab_report = DailyPatientDataReceived.objects.values('patient__legacy_id').annotate(
+        patient_sernum=models.F('patient__legacy_id'),
+        first_received=models.Min('last_lab_received'),
+        last_received=models.Max('last_lab_received'),
+        number_test=models.Count('last_lab_received'),
+        number_lab_received=models.Sum('labs_received'),
+        average_labs_per_test=models.F('number_lab_received') / models.F('number_test'),
+    ).values(
+        'patient_sernum',
+        'first_received',
+        'last_received',
+        'number_test',
+        'number_lab_received',
+        'average_labs_per_test',
+    )
+    return list(lab_report.all())
+
+
+def fetch_individual_average_login_report() -> list[dict[str, Any]]:
+    """Fetch the statistics report of individual patients for the average times they log into app per day.
+
+    Arg:
+        report_date: the date required of the daily basic statistics report for functionality using(inclusive)
+
+    Returns:
+        the daily basic statistics report for functionality using by user
+    """
+    login_report = DailyUserAppActivity.objects.values('action_by_user_id').annotate(
+        user_id=models.F('action_by_user_id'),
+        number_of_days=models.Count('action_by_user_id'),
+        number_of_logins=models.Sum('count_logins'),
+        average_login_per_day=models.F('number_of_logins') / models.F('number_of_days'),
+    ).values(
+        'user_id',
+        'number_of_days',
+        'number_of_logins',
+        'average_login_per_day',
+    )
+    return list(login_report.all())
+
+
+def fetch_average_login_per_year_by_month_report() -> list[dict[str, Any]]:
+    """Fetch the statistics report of individual years and months for the average times user log into app.
+
+    Arg:
+        report_date: the date required of the daily basic statistics report for functionality using(inclusive)
+
+    Returns:
+        the daily basic statistics report for functionality using by user
+    """
+    return []
+
 
 def _fetch_received_medical_records_summary(
     start_date: dt.date,
