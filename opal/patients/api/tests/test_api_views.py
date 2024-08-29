@@ -64,6 +64,10 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
         status=patient_models.RelationshipStatus.CONFIRMED,
         type=patient_models.RelationshipType.objects.self_type(),
     )
+    # Create relationship with a different patient that should not appear in the response
+    patient2 = Patient(ramq='TEST12345678')
+    Relationship(patient=patient2, caregiver=caregiver1)
+
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
 
     response = api_client.get(reverse(
@@ -72,6 +76,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     ))
 
     assert response.status_code == HTTPStatus.OK
+    assert len(response.json()) == 2
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,
         'first_name': caregiver1.user.first_name,

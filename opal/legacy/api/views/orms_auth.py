@@ -2,6 +2,7 @@
 from django.conf import settings
 
 from dj_rest_auth.views import LoginView
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -41,6 +42,11 @@ class ORMSLoginView(LoginView):
             raise PermissionDenied()
 
 
+@extend_schema(
+    responses={
+        200: ClinicalStaffDetailSerializer,
+    },
+)
 class ORMSValidateView(APIView):
     """
     Custom `ValidateView` for the ORMS system.

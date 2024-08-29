@@ -14,6 +14,7 @@ from pytest_mock.plugin import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from opal.core.api.views import EmptyResponseSerializer
 from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.models import Site
 from opal.patients import factories as patient_factories
@@ -248,3 +249,10 @@ def _load_hl7_fixture(filename: str) -> str:
     """
     with (FIXTURES_DIR / filename).open('r') as file:
         return file.read()
+
+
+def test_empty_response_serializer() -> None:
+    """Ensure the EmptyResponseSerializer data is empty and valid."""
+    serializer = EmptyResponseSerializer(data={})
+    assert serializer.is_valid(), 'Serializer should be valid for empty data'
+    assert not serializer.data, 'Serialized data should be an empty dictionary'

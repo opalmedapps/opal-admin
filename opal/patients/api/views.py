@@ -4,6 +4,7 @@ from typing import Any
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
@@ -65,21 +66,27 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
         return registration_code
 
 
+@extend_schema(
+    responses={
+        200: CaregiverRelationshipSerializer(many=True),
+        403: {'description': 'User not authorized'},
+        404: {'description': 'Patient not found'},
+    },
+)
 class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = (IsListener, CaregiverSelfPermissions)
+    queryset = Relationship.objects.select_related('caregiver__user')
 
-    def get_queryset(self) -> QuerySet[Relationship]:
+    def get_queryset(self) -> QuerySet[Relationship]:  # noqa: WPS615
         """Query set to retrieve list of caregivers for the input patient.
 
         Returns:
             List of caregiver profiles for a given patient
         """
-        return Relationship.objects.select_related(
-            'caregiver__user',
-        ).filter(
+        return self.queryset.filter(
             patient__legacy_id=self.kwargs['legacy_id'],
         )
 
@@ -156,6 +163,13 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
+    @extend_schema(
+        responses={
+            200: PatientSerializer,
+            403: {'description': 'User not authorized'},
+            404: {'description': 'Patient not found'},
+        },
+    )
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle a GET request to retrieve a patient instance.
@@ -171,6 +185,15 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         self.serializer_class = PatientSerializer
         return self.retrieve(request, *args, **kwargs)
 
+    @extend_schema(
+        request=PatientUpdateSerializer,
+        responses={
+            200: PatientUpdateSerializer,
+            400: {'description': 'Bad request'},
+            403: {'description': 'User not authorized'},
+            404: {'description': 'Patient not found'},
+        },
+    )
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle a PUT request to update a patient instance.
@@ -187,6 +210,14 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         return self.update(request, *args, **kwargs)
 
 
+@extend_schema(
+    request={
+        'serializer': HospitalPatientSerializer(many=True),
+    },
+    responses={
+        200: PatientSerializer,
+    },
+)
 class PatientExistsView(APIView):
     """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 

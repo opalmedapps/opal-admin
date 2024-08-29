@@ -42,8 +42,9 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     """
 
     permission_classes = (IsListener,)
+    queryset = SecurityAnswer.objects.none()
 
-    def get_queryset(self) -> QuerySet[SecurityAnswer]:
+    def get_queryset(self) -> QuerySet[SecurityAnswer]:  # noqa: WPS615
         """
         Override get_queryset to filter security answers by caregiver uuid.
 

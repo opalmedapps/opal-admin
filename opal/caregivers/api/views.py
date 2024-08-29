@@ -15,6 +15,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import override
 
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
@@ -33,6 +34,7 @@ from opal.caregivers.api.serializers import (
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.api.mixins import AllowPUTAsCreateMixin
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
 from opal.hospital_settings.models import Institution
@@ -81,6 +83,20 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 
+# TODO: Switch to using GenericListView for GetCaregiverPatientsList
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+    responses={
+        200: CaregiverPatientSerializer(many=True),
+    },
+)
 class GetCaregiverPatientsList(APIView):
     """Class to return a list of patients for a given caregiver."""
 
@@ -112,6 +128,16 @@ class GetCaregiverPatientsList(APIView):
         )
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+)
 class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
     """Retrieve the profile of the current caregiver."""
 
@@ -170,6 +196,15 @@ class RetrieveRegistrationCodeMixin:
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
 
+@extend_schema(
+    request={
+        'serializer': EmailVerificationSerializer,
+    },
+    responses={
+        200: {},
+        400: {'description': 'Email verification not found or already verified'},
+    },
+)
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
     """View that initiates email verification for a given email address.
@@ -273,6 +308,15 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         )
 
 
+@extend_schema(
+    request={
+        'serializer': EmailVerificationSerializer,
+    },
+    responses={
+        200: {},
+        400: {'description': 'Email verification not found or already verified'},
+    },
+)
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
     """View that verifies the user-provided verification code with the actual one."""
@@ -315,6 +359,16 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
         return Response()
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter('existingUser'),
+    ],
+    request={
+        'existingUser': caregiver_serializers.ExistingUserRegistrationRegisterSerializer,
+        'newUser': caregiver_serializers.NewUserRegistrationRegisterSerializer,
+    },
+    responses={200: None},
+)
 class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
@@ -507,6 +561,6 @@ class RetrieveCaregiverView(RetrieveAPIView[User]):
 
     permission_classes = (IsRegistrationListener,)
     queryset = Caregiver.objects.all()
-    serializer_class = drf_serializers.Serializer
+    serializer_class = EmptyResponseSerializer
     lookup_field = 'username'
     lookup_url_kwarg = 'username'

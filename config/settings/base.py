@@ -174,6 +174,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'slippers',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -461,6 +462,29 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     # set default request format to JSON
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF Spectacular API documentation (OpenAPI 3.0 Specification)
+# See https://drf-spectacular.readthedocs.io/en/latest/index.html
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Opal Backend',
+    'DESCRIPTION': (
+        'This Python Django-based backend provides API '
+        + 'endpoints for other Opal applications and a user '
+        + 'interface for administrative functionality.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'RelationshipStatusEnum': 'opal.patients.models.RelationshipStatus.choices',
+        'RegistrationCodeStatusEnum': 'opal.caregivers.models.RegistrationCodeStatus.choices',
+    },
+    # list of authentication/permission classes for spectacular's views.
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+    #  TODO: 'CONTACT': {},
+    #  TODO: 'LICENSE': {},
 }
 
 # django-cors-headers
