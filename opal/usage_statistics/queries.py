@@ -785,7 +785,8 @@ def fetch_annually_user_pat_activity_log_report() -> list[dict[str, Any]]:
 
 
 # JOHN'S REPORT
-
+# TODO: John's Ptient diagnosis report and educational material report is not available due to
+# missing module. This need to be implemented once the module is available.
 
 def _fetch_user_app_activity_log_report(
     queryset: models.QuerySet[DailyUserAppActivity],
