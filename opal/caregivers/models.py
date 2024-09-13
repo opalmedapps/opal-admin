@@ -185,7 +185,7 @@ class RegistrationCodeStatus(models.TextChoices):
 
 
 class RegistrationCode(models.Model):
-    """A Registration Code belonging to an [Patients][location of the model] with its specific properties."""
+    """A Registration code for a [relationship][opal.patients.models.Relationship] between a patient and caregiver."""
 
     relationship = models.ForeignKey(
         # Using string model references to avoid circular import
