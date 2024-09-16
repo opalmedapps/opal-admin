@@ -19,7 +19,7 @@ class PatientData:
     first_name: str
     middle_name: str
     last_name: str
-    gender: str
+    gender: SexType
     date_of_birth: str
     city_of_birth: str
 
@@ -38,7 +38,12 @@ class OpenScienceIdentity():
     _pbkdf2_iterations: Final[int] = 10000
     _pbkdf2_hash_function: Final[str] = 'sha256'
     _pbkdf2_key_length: Final[int] = 32
-    _gender_values = [value.lower() for value in SexType.labels]
+    _sextype_mapping: Final[dict[SexType, str]] = {
+        SexType.FEMALE: 'female',
+        SexType.MALE: 'male',
+        SexType.OTHER: 'other',
+        SexType.UNKNOWN: 'unknown',
+    }
     # Identity attributes are the minimum required attributes for GUID generation
     _identity_attributes = ['first_name', 'last_name', 'gender', 'date_of_birth', 'city_of_birth']
 
@@ -81,6 +86,11 @@ class OpenScienceIdentity():
         """
         if attr_name not in self._cache:
             attr_value = getattr(self.patient_data, attr_name, '')
+
+            # Map SexType value to plaintext gender to match OSI validation
+            if attr_name == 'gender' and isinstance(attr_value, SexType):
+                attr_value = self._sextype_mapping.get(attr_value, '')
+
             # Cache the result to avoid needing to re-clean data during algorithm execution
             self._cache[attr_name] = self._plain_alpha(attr_value)
         return self._cache[attr_name]
@@ -128,7 +138,7 @@ class OpenScienceIdentity():
         # General cleaning and validation for all attributes, gender must be in specified list
         for attr in self._identity_attributes:
             cleaned_value = self._clean_general_attribute(attr)
-            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._gender_values):
+            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._sextype_mapping.values()):
                 self.invalid_attributes.append(attr)
 
         # Special validation rules for date_of_birth

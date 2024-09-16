@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import IsListener
-from opal.patients.models import Patient
+from opal.patients.models import Patient, SexType
 from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 from ..models import DatabankConsent
@@ -35,7 +35,7 @@ class CreateDatabankConsentView(generics.CreateAPIView[DatabankConsent]):
             first_name=patient.first_name,
             middle_name=serializer.validated_data.pop('middle_name', None),
             last_name=patient.last_name,
-            gender=patient.get_sex_display(),
+            gender=SexType(patient.sex),
             date_of_birth=str(patient.date_of_birth),
             city_of_birth=serializer.validated_data.pop('city_of_birth', None),
         )
