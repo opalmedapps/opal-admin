@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from opal.patients.models import SexType
 from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -14,9 +15,23 @@ FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 test_cases = []
 with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_file:
     reader = csv.reader(csv_file)
+    # Mapping gender string to SexType enum
+    sex_type_mapping = {
+        'male': SexType.MALE,
+        'masculin': SexType.MALE,
+        'female': SexType.FEMALE,
+        'féminin': SexType.FEMALE,
+        'other': SexType.OTHER,
+        'unknown': SexType.UNKNOWN,
+        'autre': SexType.OTHER,
+        'inconnu': SexType.UNKNOWN,
+    }
+
     for row in reader:
+        gender_str = row[0].strip().lower()
+        gender = sex_type_mapping.get(gender_str, None)
+
         attributes = {
-            'gender': row[0],
             'first_name': row[1],
             'middle_name': row[2],
             'last_name': row[3],
@@ -24,16 +39,16 @@ with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_f
             'city_of_birth': row[5],
         }
         expected_signature = row[6]
-        test_cases.append((attributes, expected_signature))
+        test_cases.append((gender, attributes, expected_signature))
 
 
 class TestOpenScienceIdentity:
     """Tests for the OpenScienceIdentity a.k.a GUID algorithm."""
 
-    @pytest.mark.parametrize(('attributes', 'expected_signature'), test_cases)
-    def test_signature_generation(self, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442
+    @pytest.mark.parametrize(('gender', 'attributes', 'expected_signature'), test_cases)
+    def test_signature_generation(self, gender: SexType, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442, E501
         """Test the successful generation of signatures/guids for patients."""
-        identity = OpenScienceIdentity(PatientData(**attributes))
+        identity = OpenScienceIdentity(PatientData(gender=gender, **attributes))
         if expected_signature == 'invalid':
             with pytest.raises(ValueError, match='Invalid identity components'):
                 identity.to_signature()
@@ -43,8 +58,8 @@ class TestOpenScienceIdentity:
 
     def test_empty_attributes(self) -> None:
         """Test the handling of empty attributes."""
+        empty_gender = SexType.UNKNOWN
         empty_attributes = {
-            'gender': '',
             'first_name': '',
             'middle_name': '',
             'last_name': '',
@@ -52,4 +67,4 @@ class TestOpenScienceIdentity:
             'city_of_birth': '',
         }
         with pytest.raises(ValueError, match='Invalid identity components'):
-            OpenScienceIdentity(PatientData(**empty_attributes)).to_signature()
+            OpenScienceIdentity(PatientData(gender=empty_gender, **empty_attributes)).to_signature()
