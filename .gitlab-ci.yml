@@ -272,10 +272,10 @@ django template validation:
 
 build image:
   stage: build
-  image: docker:27.2.1
+  image: docker:27.3.1
   needs: []
   services:
-    - docker:27.2.1-dind
+    - docker:27.3.1-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
