@@ -17,6 +17,14 @@ from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppA
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
+PARAMETERS_DEFAULT = json.dumps(
+    {
+        'Activity': 'Login',
+        'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+    },
+    separators=(',', ':'),
+)
+
 
 class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     """Test class to group the `update_daily_usage_statistics` command tests."""
@@ -3244,8 +3252,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def _create_log_record(
         self,
-        request: str = 'Login',
-        parameters: str = '',
+        request: str = 'Log',
+        parameters: str = PARAMETERS_DEFAULT,
         target_patient_id: int | None = None,
         username: str = 'username',
         app_version: str = '100.100.100',
