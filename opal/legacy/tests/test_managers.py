@@ -1365,9 +1365,18 @@ def test_get_aggregated_user_app_activities_labs_statistics() -> None:
     assert app_activities.filter(username='homer')[0]['count_labs'] == 3
 
 
+PARAMETERS_DEFAULT = json.dumps(
+    {
+        'Activity': 'Login',
+        'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+    },
+    separators=(',', ':'),
+)
+
+
 def _create_log_record(
-    request: str = 'Login',
-    parameters: str = '',
+    request: str = 'Log',
+    parameters: str = PARAMETERS_DEFAULT,
     target_patient_id: int | None = None,
     username: str = 'username',
     app_version: str = '100.100.100',
