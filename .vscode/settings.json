@@ -1,11 +1,9 @@
 {
-    "python.terminal.activateEnvironment": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "flake8.interpreter": ["${workspaceFolder}/.venv/bin/python"],
-    "isort.interpreter": ["${workspaceFolder}/.venv/bin/python"],
-    "mypy-type-checker.importStrategy": "fromEnvironment",
-    "yaml.customTags": [
-      "!reference sequence"
-    ]
+  "python.terminal.activateEnvironment": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "yaml.customTags": [
+    "!reference sequence"
+  ]
 }
