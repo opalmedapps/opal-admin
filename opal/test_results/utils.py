@@ -9,8 +9,8 @@ from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
-from opal.services.report.reports_pathology import PathologyData, PathologyReportService
-from opal.services.reports import InstitutionData, PatientData, SiteData
+from opal.services.common import InstitutionData, PatientData, SiteData
+from opal.services.reports.pathology import PathologyData, PathologyReportService
 
 LOGGER = logging.getLogger(__name__)
 

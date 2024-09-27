@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from fpdf import FPDF_VERSION, FlexTemplate
 
-from opal.services import reports
+from opal.services import common
 
 
 class PathologyData(NamedTuple):
@@ -42,14 +42,14 @@ FIRST_PAGE_NUMBER: int = 1
 PATHOLOGY_REPORT_FONT: str = 'helvetica'
 
 
-class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
+class PathologyPDF(common.ReportPDF):  # noqa: WPS214
     """Customized FPDF class that provides implementation for generating pathology PDF reports."""
 
     def __init__(
         self,
-        institution_data: reports.InstitutionData,
-        patient_data: reports.PatientData,
-        site_data: reports.SiteData,
+        institution_data: common.InstitutionData,
+        patient_data: common.PatientData,
+        site_data: common.SiteData,
         report_data: PathologyData,
     ) -> None:
         """Initialize a `PathologyPDF` instance for generating pathology reports.
@@ -91,21 +91,21 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
         if self.page != FIRST_PAGE_NUMBER:
-            header_text_fr = reports.FPDFCellDictType(
+            header_text_fr = common.FPDFCellDictType(
                 w=0,
                 h=None,
                 align='L',
                 border=0,
                 text='Pathologie Chirurgicale Rapport (suite)',
             )
-            header_text_en = reports.FPDFCellDictType(
+            header_text_en = common.FPDFCellDictType(
                 w=0,
                 h=None,
                 align='L',
                 border=0,
                 text='Surgical Pathology Final Report (continuation)',
             )
-            header_patient_info = reports.FPDFCellDictType(
+            header_patient_info = common.FPDFCellDictType(
                 w=0,
                 h=None,
                 align='L',
@@ -144,13 +144,13 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
             + 'clinical use.'
         )
         footer_cursor_abscissa_position_in_mm: int = -40
-        footer_block = reports.FPDFMultiCellDictType(
+        footer_block = common.FPDFMultiCellDictType(
             w=180,
             h=None,
             align='L',
             text=footer_text,
         )
-        footer_page = reports.FPDFCellDictType(
+        footer_page = common.FPDFCellDictType(
             w=0,
             h=10,
             text=f'Page {self.page_no()}/{{nb}}',
@@ -173,7 +173,7 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
         Args:
             height_of_section: the height of the section to be added
         """
-        frame_size = reports.FPDFRectDictType(
+        frame_size = common.FPDFRectDictType(
             x=15,
             y=30,
             w=180,
@@ -215,19 +215,19 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
 
     def _draw_pathology_table_title(self) -> None:
         """Draw pathology table title."""
-        table_title_font = reports.FPDFFontDictType(
+        table_title_font = common.FPDFFontDictType(
             family=PATHOLOGY_REPORT_FONT,
             style='B',
             size=12,
         )
-        title_fr = reports.FPDFCellDictType(
+        title_fr = common.FPDFCellDictType(
             w=0,
             h=10,
             align='C',
             border=0,
             text='PATHOLOGIE CHIRURGICALE RAPPORT FINAL',
         )
-        title_en = reports.FPDFCellDictType(
+        title_en = common.FPDFCellDictType(
             w=0,
             h=10,
             align='C',
@@ -248,7 +248,7 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
         # Grey area at the top of the table.
         grey_area_color = {'r': 211, 'g': 211, 'b': 211}
         self.set_fill_color(**grey_area_color)
-        grey_area_dimension = reports.FPDFRectDictType(
+        grey_area_dimension = common.FPDFRectDictType(
             x=15,
             y=self.get_y() + 10,
             w=180,
@@ -260,7 +260,7 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
         # Draw the pathology table frame for the first page.
         page_height_in_mm: int = 297
         table_length_offset: int = 55
-        first_page_frame = reports.FPDFRectDictType(
+        first_page_frame = common.FPDFRectDictType(
             x=15,
             y=self.get_y() + 10,
             w=180,
@@ -302,25 +302,25 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
             section_title: the title of the section
             section_content: the text content of the section
         """
-        section_title_font = reports.FPDFFontDictType(
+        section_title_font = common.FPDFFontDictType(
             family=PATHOLOGY_REPORT_FONT,
             style='B',
             size=12,
         )
-        section_content_font = reports.FPDFFontDictType(
+        section_content_font = common.FPDFFontDictType(
             family=PATHOLOGY_REPORT_FONT,
             style='',
             size=12,
         )
         new_abscissa_position: int = 20
-        section_title_block = reports.FPDFCellDictType(
+        section_title_block = common.FPDFCellDictType(
             w=0,
             h=10,
             border=0,
             align='L',
             text=section_title,
         )
-        section_content_block = reports.FPDFMultiCellDictType(
+        section_content_block = common.FPDFMultiCellDictType(
             w=155,
             h=None,
             align='J',
@@ -854,14 +854,14 @@ class PathologyPDF(reports.ReportPDF):  # noqa: WPS214
         ]
 
 
-class PathologyReportService(reports.ReportService):
+class PathologyReportService(common.ReportService):
     """Service that provides functionality for generating pathology PDF reports."""
 
     def generate_pathology_report(
         self,
-        institution_data: reports.InstitutionData,
-        patient_data: reports.PatientData,
-        site_data: reports.SiteData,
+        institution_data: common.InstitutionData,
+        patient_data: common.PatientData,
+        site_data: common.SiteData,
         pathology_data: PathologyData,
     ) -> Path:
         """Create a pathology PDF report.

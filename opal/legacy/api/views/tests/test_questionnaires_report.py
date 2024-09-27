@@ -15,8 +15,8 @@ from rest_framework.test import APIClient
 
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.patients import factories as patient_factories
+from opal.services.common import QuestionnaireReportRequestData
 from opal.services.hospital.hospital import OIEReportExportData
-from opal.services.reports import QuestionnaireReportRequestData
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
