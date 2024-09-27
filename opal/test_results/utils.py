@@ -9,7 +9,7 @@ from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
-from opal.services.reports import PathologyData, ReportService
+from opal.services.reports import InstitutionData, PathologyData, PatientData, ReportService, SiteData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +40,10 @@ def generate_pathology_report(
     site = _get_site_instance(pathology_data['receiving_facility'])
 
     return report_service.generate_pathology_report(
-        pathology_data=PathologyData(
-            site_logo_path=Path(Institution.objects.get().logo.path),
-            site_name=site.name,
-            site_building_address=site.street_name,
-            site_city=site.city,
-            site_province=site.province_code,
-            site_postal_code=site.postal_code,
-            site_phone=site.contact_telephone,
+        institution_data=InstitutionData(
+            institution_logo_path=Path(Institution.objects.get().logo.path),
+        ),
+        patient_data=PatientData(
             patient_first_name=patient.first_name,
             patient_last_name=patient.last_name,
             patient_date_of_birth=patient.date_of_birth,
@@ -57,6 +53,16 @@ def generate_pathology_report(
                     site_code=models.F('site__acronym'),
                 ).values('mrn', 'site_code'),
             ),
+        ),
+        site_data=SiteData(
+            site_name=site.name,
+            site_building_address=site.street_name,
+            site_city=site.city,
+            site_province=site.province_code,
+            site_postal_code=site.postal_code,
+            site_phone=site.contact_telephone,
+        ),
+        pathology_data=PathologyData(
             test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
             test_collected_at=pathology_data['collected_at'],
             test_reported_at=pathology_data['reported_at'],
