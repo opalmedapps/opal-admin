@@ -9,7 +9,8 @@ from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
-from opal.services.reports import InstitutionData, PathologyData, PatientData, ReportService, SiteData
+from opal.services.report.reports_pathology import PathologyData, PathologyReportService
+from opal.services.reports import InstitutionData, PatientData, SiteData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ def generate_pathology_report(
     note_comment = _parse_notes(pathology_data['notes'])
 
     # Report service for generating pathology reports
-    report_service = ReportService()
+    report_service = PathologyReportService()
 
     # Find Site record filtering by receiving_facility field (a.k.a. site code)
     site = _get_site_instance(pathology_data['receiving_facility'])

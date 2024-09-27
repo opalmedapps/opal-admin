@@ -12,15 +12,8 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import (
-    InstitutionData,
-    PathologyData,
-    PathologyPDF,
-    PatientData,
-    QuestionnaireReportRequestData,
-    ReportService,
-    SiteData,
-)
+from opal.services.report.reports_pathology import PathologyData, PathologyPDF, PathologyReportService
+from opal.services.reports import InstitutionData, PatientData, QuestionnaireReportRequestData, ReportService, SiteData
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -32,6 +25,8 @@ NON_STRING_VALUE = 123
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
 report_service = ReportService()
+
+pathology_report_service = PathologyReportService()
 
 QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     patient_id=51,
@@ -448,7 +443,7 @@ def test_generate_pathology_report_success_with_no_page_break(
     settings.PATHOLOGY_REPORTS_PATH = tmp_path
 
     # Generate the pathology report
-    pathology_report = report_service.generate_pathology_report(
+    pathology_report = pathology_report_service.generate_pathology_report(
         institution_data=INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         patient_data=PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
         site_data=SITE_REPORT_DATA_WITH_NO_PAGE_BREAK,
@@ -468,7 +463,7 @@ def test_generate_pathology_report_success_with_page_break(
     settings.PATHOLOGY_REPORTS_PATH = tmp_path
 
     # Generate the pathology report
-    pathology_report = report_service.generate_pathology_report(
+    pathology_report = pathology_report_service.generate_pathology_report(
         institution_data=INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK,
         patient_data=PATIENT_REPORT_DATA_WITH_PAGE_BREAK,
         site_data=SITE_REPORT_DATA_WITH_PAGE_BREAK,
