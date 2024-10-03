@@ -126,9 +126,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             if legacy_id is not None
         ]
         return self.select_related(
-            'aliasexpressionsernum',
-            'aliasexpressionsernum__aliassernum',
             'aliasexpressionsernum__aliassernum__appointmentcheckin',
+            'aliasexpressionsernum__aliassernum__educational_material_control_ser_num',
         ).filter(
             scheduledstarttime__date=timezone.localtime(timezone.now()).date(),
             patientsernum__in=patient_ids,
