@@ -1,4 +1,4 @@
-"""Module providing business logic for generating PDF reports using legacy PHP endpoints."""
+"""Module providing business logic for generating PDF reports using fpdf2 library."""
 
 import json
 import logging
