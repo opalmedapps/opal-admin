@@ -1,4 +1,4 @@
-"""Module providing business logic for generating pathology PDF reports using legacy PHP endpoints."""
+"""Module providing business logic for generating pathology PDF reports using fpdf2 library."""
 
 from datetime import datetime
 from pathlib import Path
