@@ -227,6 +227,14 @@ class LegacyAlias(models.Model):
     )
     alias_description_en = models.TextField(db_column='AliasDescription_EN')
     alias_description_fr = models.TextField(db_column='AliasDescription_FR')
+    # TODO To be renamed to Reference Material when fully migrated to Django
+    educational_material_control_ser_num = models.ForeignKey(
+        'LegacyEducationalMaterialControl',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialControlSerNum',
+        to_field='educationalmaterialcontrolsernum',
+        null=True,
+    )
 
     class Meta:
         managed = False
@@ -343,6 +351,9 @@ class LegacyEducationalMaterialControl(models.Model):
         models.DO_NOTHING,
         db_column='EducationalMaterialCategoryId',
     )
+    # These columns are configured to allow NULL in the database
+    url_en = models.CharField(db_column='URL_EN', max_length=2000, null=True, blank=True)  # noqa: DJ01
+    url_fr = models.CharField(db_column='URL_FR', max_length=2000, null=True, blank=True)  # noqa: DJ01
 
     class Meta:
         managed = False
