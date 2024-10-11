@@ -314,11 +314,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _generate(self) -> None:
         """Generate a PDF questionnaire report."""
-        self._draw_patient_name_rvh_and_barrcode()
+        self._draw_patient_name_rvh_and_barcode()
         self._draw_table_of_content()
         self._draw_questionnaire_result()
 
-    def _draw_patient_name_rvh_and_barrcode(self) -> None:  # noqa: WPS213
+    def _draw_patient_name_rvh_and_barcode(self) -> None:  # noqa: WPS213
         """Generate a PDF questionnaire report."""
         patient_info = FPDFCellDictType(
             w=0,
@@ -337,7 +337,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**patient_info)
-        self.code39(text='NO-SCAN', x=160, y=30, w=1, h=18)
+        self.code39(text='NO-SCAN', x=160, y=30, w=1, h=18)  # barcode generation
         self.ln(6)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**text_rvh)
@@ -587,7 +587,7 @@ class QuestionnaireReportService():
 def insert_toc_title(
     pdf: Any,
 ) -> None:
-    """Insert the 'Table of contents' title.
+    """Insert the 'Table of contents' title and set fonts for the TOC.
 
     Args:
         pdf: The pdf
@@ -606,7 +606,7 @@ def render_toc_with_table(
     pdf: Any,
     outline: list[Any],
 ) -> None:
-    """Render the table of content.
+    """Render the table of content as a table .
 
     Args:
         pdf: The pdf
