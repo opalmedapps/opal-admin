@@ -62,26 +62,6 @@ class InstitutionData(NamedTuple):
     institution_logo_path: Path
 
 
-class SiteData(NamedTuple):
-    """Information about a hospital site from which a report was received.
-
-    Attributes:
-        site_name: the name of the site (e.g., Royal Victoria Hospital)
-        site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
-        site_city: the name of the city that is specified in the address (e.g., Montréal)
-        site_province: the name of the province that is specified in the address (e.g., Québec)
-        site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
-        site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
-    """
-
-    site_name: str
-    site_building_address: str
-    site_city: str
-    site_province: str
-    site_postal_code: str
-    site_phone: str
-
-
 class PatientData(NamedTuple):
     """Information about a patient for whom a report was received.
 
@@ -146,7 +126,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self,
         institution_data: InstitutionData,
         patient_data: PatientData,
-        site_data: SiteData,
         questionnaire_data: QuestionnaireData,
     ) -> None:
         """Initialize a `QuestionnairePDF` instance for generating questionnaire reports.
@@ -158,13 +137,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         Args:
             institution_data: institution data required to generate the PDF report
-            site_data: site data required to generate the PDF report
             patient_data: patient data required to generate the PDF report
             questionnaire_data: questionnaire data required to generate the PDF report
         """
         super().__init__()
         self.institution_data = institution_data
-        self.site_data = site_data
         self.patient_data = patient_data
         self.questionnaire_data = questionnaire_data
         self.patient_name = f'{patient_data.patient_last_name}, {patient_data.patient_first_name}'.upper()
@@ -440,7 +417,6 @@ class QuestionnaireReportService():
         self,
         institution_data: InstitutionData,
         patient_data: PatientData,
-        site_data: SiteData,
         questionnaire_data: QuestionnaireData,
     ) -> Path:
         """Create a pathology PDF report.
@@ -450,7 +426,6 @@ class QuestionnaireReportService():
         Args:
             institution_data: institution data required to generate the PDF report
             patient_data: patient data required to generate the PDF report
-            site_data: site data required to generate the PDF report
             questionnaire_data: questionnaire data required to generate the PDF report
 
         Returns:
@@ -464,7 +439,7 @@ class QuestionnaireReportService():
         )
         # TODO: Change the report path and view to the questionnaire one's
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        questionnaire_pdf = QuestionnairePDF(institution_data, patient_data, site_data, questionnaire_data)
+        questionnaire_pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
         questionnaire_pdf.output(name=str(report_path))
 
         return report_path
