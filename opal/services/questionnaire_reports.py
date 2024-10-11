@@ -1,6 +1,5 @@
 """Module providing business logic for generating PDF reports using legacy PHP endpoints."""
 
-import json
 import logging
 import math
 from datetime import date, datetime
@@ -10,13 +9,8 @@ from typing import Any, Literal, NamedTuple
 from django.conf import settings
 from django.utils import timezone
 
-import requests
 from fpdf import FPDF, FPDF_VERSION, Align, TitleStyle, enums
-from requests.exceptions import JSONDecodeError, RequestException
-from rest_framework import status
 from typing_extensions import TypedDict
-
-from opal.utils.base64_util import Base64Util
 
 
 class FPDFCellDictType(TypedDict):
@@ -441,33 +435,6 @@ class QuestionnaireReportService():
     logger = logging.getLogger(__name__)
 
     # TODO: use fpdf2 instead of the legacy PDF-generator (PHP service)
-    def generate_base64_questionnaire_report(
-        self,
-        report_data: QuestionnaireReportRequestData,
-    ) -> str | None:
-        """Create a questionnaire PDF report in encoded base64 string format.
-
-        Args:
-            report_data: questionnaire data required to call the legacy PHP report service
-
-        Returns:
-            encoded base64 string of the generated questionnaire PDF report
-        """
-        # return a `None` if questionnaire report request data are not valid
-        if not self._is_questionnaire_report_request_data_valid(report_data):
-            self.logger.error(
-                'The questionnaire report request data are not valid.'
-                + 'Please check the data that are being passed to the legacy PHP report service.',
-            )
-            return None
-
-        base64_report = self._request_base64_report(report_data)
-
-        if Base64Util().is_base64(base64_report) is True:
-            return base64_report
-
-        self.logger.error('The generated questionnaire PDF report is not in the base64 format.')
-        return None
 
     def generate_questionnaire_report(
         self,
@@ -501,65 +468,6 @@ class QuestionnaireReportService():
         questionnaire_pdf.output(name=str(report_path))
 
         return report_path
-
-    def _request_base64_report(
-        self,
-        report_data: QuestionnaireReportRequestData,
-    ) -> str | None:
-        """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
-
-        Args:
-            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
-
-        Returns:
-            str: encoded base64 string of the generated PDF report
-        """
-        payload = json.dumps({
-            'patient_id': report_data.patient_id,
-            'patient_name': report_data.patient_name,
-            'patient_site': report_data.patient_site,
-            'patient_mrn': report_data.patient_mrn,
-            'logo_base64': Base64Util().encode_to_base64(report_data.logo_path),
-            'language': report_data.language,
-        })
-
-        headers = {'Content-Type': self.content_type}
-
-        try:
-            response = requests.post(
-                url=settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
-                headers=headers,
-                data=payload,
-                timeout=60,
-            )
-        except RequestException:
-            self.logger.exception('An error occurred while requesting the legacy PHP report service.')
-            return None
-
-        # Return a `None` if response status code is not success (e.g., different than 2**)
-        if status.is_success(response.status_code) is False:
-            self.logger.error(
-                'The status code of the response from the PHP report service should be "200".\n'
-                + f'{response.reason}\n{response.text}',
-            )
-            return None
-
-        # Return a `None` string if cannot read encoded pdf report
-        try:
-            base64_report = response.json()['data']['base64EncodedReport']
-        except (KeyError, JSONDecodeError):
-            self.logger.exception(
-                'Cannot read "base64EncodedReport" key in the JSON response received from PHP report service.\n'
-                + f' {response.text}',
-            )
-            return None
-
-        # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return `None`.
-        if isinstance(base64_report, str):
-            return base64_report
-
-        self.logger.error('The "base64EncodedReport" value received from the PHP report service is not a string.')
-        return None
 
     def _is_questionnaire_report_request_data_valid(
         self,
