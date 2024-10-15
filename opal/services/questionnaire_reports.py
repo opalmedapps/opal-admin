@@ -168,28 +168,28 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         header_patient_info = FPDFCellDictType(
             w=0,
             h=0,
-            align='R',
+            align=enums.Align.R,
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
         header_text_rvh = FPDFCellDictType(
             w=0,
             h=0,
-            align='R',
+            align=enums.Align.R,
             border=0,
             text=f'{self.patient_sites_and_mrns_str}',
         )
         header_title = FPDFCellDictType(
             w=0,
             h=0,
-            align='L',
+            align=enums.Align.L,
             border=0,
             text='Questionnaires remplis et déclarés par le patient',
         )
         header_toc_link = FPDFCellDictType(
             w=0,
             h=0,
-            align='L',
+            align=enums.Align.L,
             border=0,
             text='Back to Table of Contents',
         )
@@ -249,14 +249,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             h=5,
             text=f'Page {self.page_no()} de {{nb}}',
             border=0,
-            align='R',
+            align=enums.Align.R,
         )
         footer_fmu_date = FPDFCellDictType(
             w=0,
             h=5,
             text='Tempory text',
             border=0,
-            align='L',
+            align=enums.Align.L,
         )
         self.line(10, 260, 200, 260)
         self.set_y(y=-35)
@@ -293,14 +293,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         patient_info = FPDFCellDictType(
             w=0,
             h=0,
-            align='L',
+            align=enums.Align.L,
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
         text_rvh = FPDFCellDictType(
             w=0,
             h=0,
-            align='L',
+            align=enums.Align.L,
             border=0,
             text=f'{self.patient_sites_and_mrns_str}',
         )
@@ -393,40 +393,47 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             if num != 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(f'{title}', level=1)  # For the TOC
+            self.start_section(title, level=1)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(f'{title}', align=enums.Align.C)  # To print the title in the center
+            self._insert_paragraph(self, title, align=enums.Align.C)  # To print the title in the center
             self.ln(1)
-            self._insert_paragraph(f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
+            self._insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            self._insert_paragraph('TODO: add graphs', align=enums.Align.C)
+            self._insert_paragraph(self, 'TODO: add graphs', align=enums.Align.C)
             num += 1
 
     def _insert_toc_title(
-        self: Any,
+        self,
+        pdf: FPDF,
     ) -> None:
-        """Insert the 'Table of contents' title and set fonts for the TOC."""
-        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
-        self.underline = True
-        self.set_x(12)
+        """Insert the 'Table of contents' title and set fonts for the TOC.
+
+        Args:
+            pdf: The pdf
+        """
+        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
+        pdf.underline = True
+        pdf.set_x(12)
         self._insert_paragraph(self, 'Table of contents:')
-        self.underline = False
-        self.y += 5  # noqa: WPS111
-        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-        self.x = 10  # noqa: WPS111
+        pdf.underline = False
+        pdf.y += 5  # noqa: WPS111
+        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
+        pdf.x = 10  # noqa: WPS111
 
     def _render_toc_with_table(
-        self: Any,
+        self,
+        pdf: Any,
         outline: list[Any],
     ) -> None:
         """Render the table of content as a table .
 
         Args:
+            pdf: the pdf
             outline: A list outline of the table of content
         """
-        self._insert_toc_title(self)
-        self.set_font_size(size=16)
+        self._insert_toc_title(pdf)
+        pdf.set_font_size(size=16)
         with self.table(
             borders_layout=enums.TableBordersLayout.NONE,
             text_align=(enums.Align.L, enums.Align.L, enums.Align.R),
@@ -436,7 +443,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             for section in outline:
                 if section.level < 2:
                     data = TABLE_DATA[section.name]
-                    link = self.add_link(page=section.page_number)
+                    link = pdf.add_link(page=section.page_number)
                     row = table.row()
                     row.cell(data[0], link=link)
                     row.cell(
@@ -445,19 +452,21 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
                     row.cell(str(section.page_number), link=link)
 
     def _insert_paragraph(
-        self: Any,
+        self,
+        pdf: Any,
         text: Any,
         **kwargs: Any,
     ) -> None:
         """Insert the paragrah related to the questionnaires.
 
         Args:
+            pdf: the pdf
             text: text to insert
             kwargs: varied amount of keyword arguments
         """
         self.multi_cell(
-            w=self.epw,
-            h=self.font_size,
+            w=pdf.epw,
+            h=pdf.font_size,
             text=text,
             new_x='LMARGIN',
             new_y='NEXT',
