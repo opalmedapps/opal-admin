@@ -191,7 +191,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             source_db_name=models.F('source_database__source_database_name'),
             source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
             source_db_alias_description=models.F('aliasexpressionsernum__description'),
-            source_db_appointment_id=models.F('appointment_aria_ser'),
+            source_db_appointment_id=models.F('source_system_id'),
             alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
             scheduled_start_time=models.F('scheduledstarttime'),
         ).values(
