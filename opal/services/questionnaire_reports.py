@@ -1,4 +1,4 @@
-"""Module providing business logic for generating PDF reports using legacy PHP endpoints."""
+"""Module providing business logic for generating PDF reports using FPDF2."""
 
 import logging
 import math
@@ -119,7 +119,7 @@ for title, update_date in sorted_data:
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
 
-class QuestionnairePDF(FPDF):  # noqa: WPS214
+class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
     """Customized FPDF class that provides implementation for generating questionnaire PDF reports."""
 
     def __init__(
@@ -149,7 +149,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         sites_and_mrns_list = [
             f'{site_mrn["site_code"]}: {site_mrn["mrn"]}'
             for site_mrn in self.patient_data.patient_sites_and_mrns
-            if site_mrn['site_code'] == 'RVH'
         ]
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
@@ -271,7 +270,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.multi_cell(**footer_block, markdown=True)
 
     def add_page(self, *args: Any, **kwargs: Any) -> None:
-        """Add new page to the pathology report and draw the frame if not the first page.
+        """Add new page to the questionnaire report and set the correct spacing for the header.
 
         Args:
             args: varied amount of non-keyword arguments
@@ -285,12 +284,12 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _generate(self) -> None:
         """Generate a PDF questionnaire report."""
-        self._draw_patient_name_rvh_and_barcode()
+        self._draw_patient_name_site_and_barcode()
         self._draw_table_of_content()
         self._draw_questionnaire_result()
 
-    def _draw_patient_name_rvh_and_barcode(self) -> None:  # noqa: WPS213
-        """Generate a PDF questionnaire report."""
+    def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
+        """Draw the patients name, site information and barcode on the first page."""
         patient_info = FPDFCellDictType(
             w=0,
             h=0,
@@ -351,7 +350,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             guesstimate = math.ceil(
                 (len(QUESTIONNAIRE_DATA) - questionnaire_per_page1) / questionnaire_per_page,
             ) + 1
-        self.insert_toc_placeholder(render_toc_with_table, guesstimate)
+        self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
         self.set_section_title_styles(
@@ -396,13 +395,74 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(f'{title}', level=1)  # For the TOC
             self.set_y(35)
-            insert_paragraph(self, f'{title}', align=enums.Align.C)  # To print the title in the center
+            self._insert_paragraph(f'{title}', align=enums.Align.C)  # To print the title in the center
             self.ln(1)
-            insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
+            self._insert_paragraph(f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            insert_paragraph(self, 'TODO: add graphs', align=enums.Align.C)
+            self._insert_paragraph('TODO: add graphs', align=enums.Align.C)
             num += 1
+
+    def _insert_toc_title(
+        self: Any,
+    ) -> None:
+        """Insert the 'Table of contents' title and set fonts for the TOC."""
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
+        self.underline = True
+        self.set_x(12)
+        self._insert_paragraph(self, 'Table of contents:')
+        self.underline = False
+        self.y += 5  # noqa: WPS111
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
+        self.x = 10  # noqa: WPS111
+
+    def _render_toc_with_table(
+        self: Any,
+        outline: list[Any],
+    ) -> None:
+        """Render the table of content as a table .
+
+        Args:
+            outline: A list outline of the table of content
+        """
+        self._insert_toc_title(self)
+        self.set_font_size(size=16)
+        with self.table(
+            borders_layout=enums.TableBordersLayout.NONE,
+            text_align=(enums.Align.L, enums.Align.L, enums.Align.R),
+            col_widths=(60, 30, 10),
+        ) as table:
+            table.row(TABLE_HEADER)
+            for section in outline:
+                if section.level < 2:
+                    data = TABLE_DATA[section.name]
+                    link = self.add_link(page=section.page_number)
+                    row = table.row()
+                    row.cell(data[0], link=link)
+                    row.cell(
+                        f'{datetime.strptime(data[1],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
+                    )
+                    row.cell(str(section.page_number), link=link)
+
+    def _insert_paragraph(
+        self: Any,
+        text: Any,
+        **kwargs: Any,
+    ) -> None:
+        """Insert the paragrah related to the questionnaires.
+
+        Args:
+            text: text to insert
+            kwargs: varied amount of keyword arguments
+        """
+        self.multi_cell(
+            w=self.epw,
+            h=self.font_size,
+            text=text,
+            new_x='LMARGIN',
+            new_y='NEXT',
+            **kwargs,
+        )
 
 
 class QuestionnaireReportService():
@@ -465,73 +525,3 @@ class QuestionnaireReportService():
             # check if language exists
             and report_data.language in languages
         )
-
-
-def insert_toc_title(
-    pdf: Any,
-) -> None:
-    """Insert the 'Table of contents' title and set fonts for the TOC.
-
-    Args:
-        pdf: The pdf
-    """
-    pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
-    pdf.underline = True
-    pdf.set_x(12)
-    insert_paragraph(pdf, 'Table of contents:')
-    pdf.underline = False
-    pdf.y += 5
-    pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-    pdf.x = 10
-
-
-def render_toc_with_table(
-    pdf: Any,
-    outline: list[Any],
-) -> None:
-    """Render the table of content as a table .
-
-    Args:
-        pdf: The pdf
-        outline: A list outline of the table of content
-    """
-    insert_toc_title(pdf)
-    pdf.set_font_size(size=16)
-    with pdf.table(
-        borders_layout=enums.TableBordersLayout.NONE,
-        text_align=(enums.Align.L, enums.Align.L, enums.Align.R),
-        col_widths=(60, 30, 10),
-    ) as table:
-        table.row(TABLE_HEADER)
-        for section in outline:
-            if section.level < 2:
-                data = TABLE_DATA[section.name]
-                link = pdf.add_link(page=section.page_number)
-                row = table.row()
-                row.cell(data[0], link=link)
-                row.cell(
-                    f'{datetime.strptime(data[1],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
-                )
-                row.cell(str(section.page_number), link=link)
-
-
-def insert_paragraph(
-    pdf: Any,
-    text: Any,
-    **kwargs: Any,
-) -> None:
-    """Insert the paragrah related to the questionnaires.
-
-    Args:
-        pdf: The pdf
-        text: text to insert
-        kwargs: varied amount of keyword arguments
-    """
-    pdf.multi_cell(
-        w=pdf.epw,
-        h=pdf.font_size,
-        text=text,
-        new_x='LMARGIN',
-        new_y='NEXT',
-        **kwargs,
-    )
