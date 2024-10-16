@@ -1,4 +1,4 @@
-"""Module providing business logic for generating PDF reports using FPDF2."""
+"""Module providing business logic for generating questionnaire PDF reports using FPDF2."""
 
 import math
 from datetime import date, datetime
