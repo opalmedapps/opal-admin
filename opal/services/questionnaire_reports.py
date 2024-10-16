@@ -1,6 +1,5 @@
 """Module providing business logic for generating PDF reports using FPDF2."""
 
-import logging
 import math
 from datetime import date, datetime
 from pathlib import Path
@@ -452,12 +451,3 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             new_y='NEXT',
             **kwargs,
         )
-
-
-class QuestionnaireReportService():
-    """Service that provides functionality for generating questionnaire PDF reports."""
-
-    content_type = 'application/json'
-    logger = logging.getLogger(__name__)
-
-    # TODO: use fpdf2 instead of the legacy PDF-generator (PHP service)
