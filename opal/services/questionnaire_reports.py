@@ -67,20 +67,22 @@ class QuestionnaireData(NamedTuple):
         updated_at: the date when the questionnaire was last updated by the patient
     """
 
-    title: str
-    updated_at: datetime
+    quetionnaire_title: list[str]
+    updated_at: list[str]
 
 
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 
 # TODO: Add query for all the the completed questionnaire data of the patient
-QUESTIONNAIRE_DATA = ()
-UPDATE_DATA = ()
+questionnaire_data_info = QuestionnaireData(
+    quetionnaire_title=[],
+    updated_at=[],
+)
 
 # Subject to changes once the data is correctly imported
-sorted_data = sorted(  # type: ignore[var-annotated]
-    zip(QUESTIONNAIRE_DATA, UPDATE_DATA),
+sorted_data = sorted(
+    zip(questionnaire_data_info.quetionnaire_title, questionnaire_data_info.updated_at),
     key=lambda sort: datetime.strptime(sort[1], '%Y-%m-%d %H:%M'),
     reverse=True,
 )
@@ -321,11 +323,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         questionnaire_per_page1 = 15
         questionnaire_per_page = 17
         guesstimate = 0
-        if len(QUESTIONNAIRE_DATA) <= questionnaire_per_page1:
+        if len(questionnaire_data_info.quetionnaire_title) <= questionnaire_per_page1:
             guesstimate = 1
         else:
             guesstimate = math.ceil(
-                (len(QUESTIONNAIRE_DATA) - questionnaire_per_page1) / questionnaire_per_page,
+                (len(questionnaire_data_info.quetionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
             ) + 1
         self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
