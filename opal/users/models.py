@@ -123,7 +123,7 @@ class ClinicalStaff(User):
 
     base_type = UserType.CLINICAL_STAFF
 
-    objects: ClassVar[ClinicalStaffManager] = ClinicalStaffManager()
+    objects: ClassVar[UserManager['ClinicalStaff']] = ClinicalStaffManager()  # type: ignore[assignment]
 
     class Meta:
         proxy = True
@@ -154,7 +154,7 @@ class Caregiver(User):
 
     base_type = UserType.CAREGIVER
 
-    objects: ClassVar[CaregiverManager] = CaregiverManager()
+    objects: ClassVar[UserManager['Caregiver']] = CaregiverManager()  # type: ignore[assignment]
 
     class Meta:
         proxy = True

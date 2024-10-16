@@ -1,5 +1,5 @@
 """This module provides Django REST framework serializers for Caregiver apis."""
-from typing import Any
+from typing import Any, TypedDict
 
 from rest_framework import serializers
 
@@ -257,7 +257,11 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
     caregivers = serializers.SerializerMethodField()
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: Patient) -> dict[str, str]:  # noqa: WPS615
+    class _InstitutionData(TypedDict):  # noqa: WPS431
+        acronym_en: str
+        acronym_fr: str
+
+    def get_institution(self, obj: Patient) -> _InstitutionData:  # noqa: WPS615
         """
         Get a single institution acronym.
 
