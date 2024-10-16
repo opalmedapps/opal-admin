@@ -8,7 +8,6 @@ from django.utils import timezone
 import pandas as pd
 import pytest
 import pytz
-from django_stubs_ext.aliases import ValuesQuerySet
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import factories as caregiver_factories
@@ -938,7 +937,7 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
     assert received_data.filter(patient=homer)[0]['labs_received'] == 1
 
 
-def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationship, dict[str, Any]]:
+def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relationship, dict[str, Any]]:
     """Fetch annotated relationships queryset used in the `RelationshipMapping`.
 
     Returns:

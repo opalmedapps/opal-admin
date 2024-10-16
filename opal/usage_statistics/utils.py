@@ -8,7 +8,6 @@ from typing import Any
 from django.db import models
 
 import pandas as pd
-from django_stubs_ext.aliases import ValuesQuerySet
 
 from opal.legacy import models as legacy_models
 from opal.patients.models import Relationship
@@ -20,7 +19,7 @@ class RelationshipMapping(UserDict[str, Any]):
 
     def __init__(
         self,
-        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
+        relationships: models.QuerySet[Relationship, dict[str, Any]],
     ) -> None:
         """Build relationships dictionary for populating patients' application activities.
 
@@ -51,7 +50,7 @@ class RelationshipMapping(UserDict[str, Any]):
 
 
 def annotate_patient_activities(
-    activities: ValuesQuerySet[legacy_models.LegacyPatientActivityLog, dict[str, Any]],
+    activities: models.QuerySet[legacy_models.LegacyPatientActivityLog, dict[str, Any]],
     relationships_dict: RelationshipMapping,
 ) -> list[DailyUserPatientActivity]:
     """Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
@@ -81,7 +80,7 @@ def annotate_patient_activities(
 def get_aggregated_patient_received_data(
     start_datetime_period: dt.datetime,
     end_datetime_period: dt.datetime,
-) -> ValuesQuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]:
+) -> models.QuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]:
     """Retrieve aggregated patients' received data statistics for a given time period.
 
     The statistics are fetched from the legacy `OpalDB` tables.
@@ -253,7 +252,7 @@ def get_aggregated_patient_received_data(
         'action_date': models.Value(start_datetime_period.date()),
     }
 
-    return legacy_models.LegacyPatientControl.objects.annotate(
+    return legacy_models.LegacyPatientControl.objects.annotate(  # type: ignore[no-any-return]
         **annotation_subqueries,
     ).values(
         'patient',

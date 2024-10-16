@@ -17,7 +17,7 @@ import django_stubs_ext
 import environ
 
 # Monkeypatching Django, so stubs will work for all generics
-# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
+# see: https://github.com/typeddjango/django-stubs/tree/master/ext
 django_stubs_ext.monkeypatch()
 
 # get root of the project

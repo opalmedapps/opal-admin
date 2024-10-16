@@ -9,7 +9,7 @@ from .models import Caregiver, ClinicalStaff, User
 
 # use Django's default UserAdmin for now for all types of caregivers (until the User is actually customized)
 @admin.register(User, Caregiver, ClinicalStaff)
-class UserAdmin(DjangoUserAdmin):
+class UserAdmin(DjangoUserAdmin[DjangoUser]):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
     def __init__(self, model: type[DjangoUser], admin_site: admin.AdminSite) -> None:
