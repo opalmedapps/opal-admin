@@ -6,10 +6,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Literal, NamedTuple
 
-from django.conf import settings
-from django.utils import timezone
-
-from fpdf import FPDF, FPDF_VERSION, Align, TitleStyle, enums
+from fpdf import FPDF, FPDF_VERSION, FontFace, TitleStyle
+from fpdf.enums import Align, TableBordersLayout
 from typing_extensions import TypedDict
 
 
@@ -30,26 +28,6 @@ class FPDFMultiCellDictType(TypedDict):
     h: float | None  # noqa: WPS111
     text: str
     align: str | Align
-
-
-class QuestionnaireReportRequestData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
-
-    Attributes:
-        patient_id: the ID of an Opal patient (e.g., patient serial number)
-        patient_name: patient's first name and last name
-        patient_site: patient's site code (e.g., RVH)
-        patient_mrn: patient's medical record number (e.g., 9999996) within the site
-        logo_path: file path of the logo image
-        language: report's language (English or French)
-    """
-
-    patient_id: int
-    patient_name: str
-    patient_site: str
-    patient_mrn: str
-    logo_path: Path
-    language: str
 
 
 class InstitutionData(NamedTuple):
@@ -86,12 +64,12 @@ class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
-        prepared_by: the name of the person who prepared the report (e.g., Atilla Omeroglu, MD)
-        prepared_at: the date and time when the report was prepared (e.g., 28-Nov-2021 11:52am)
+        title: list of questionnaire title completed by the patient
+        updated_at: the date when the questionnaire was last updated by the patient
     """
 
-    prepared_by: str
-    prepared_at: datetime
+    title: str
+    updated_at: datetime
 
 
 FIRST_PAGE_NUMBER: int = 1
@@ -168,30 +146,30 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         header_patient_info = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.R,
+            align=Align.R,
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
         header_text_rvh = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.R,
+            align=Align.R,
             border=0,
             text=f'{self.patient_sites_and_mrns_str}',
         )
         header_title = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.L,
+            align=Align.L,
             border=0,
             text='Questionnaires remplis et déclarés par le patient',
         )
         header_toc_link = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.L,
+            align=Align.L,
             border=0,
-            text='Back to Table of Contents',
+            text='Retour à la Table des Matières',
         )
         self.image(
             (self.institution_data.institution_logo_path),
@@ -249,14 +227,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             h=5,
             text=f'Page {self.page_no()} de {{nb}}',
             border=0,
-            align=enums.Align.R,
+            align=Align.R,
         )
         footer_fmu_date = FPDFCellDictType(
             w=0,
             h=5,
             text='Tempory text',
             border=0,
-            align=enums.Align.L,
+            align=Align.L,
         )
         self.line(10, 260, 200, 260)
         self.set_y(y=-35)
@@ -293,14 +271,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         patient_info = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.L,
+            align=Align.L,
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
         text_rvh = FPDFCellDictType(
             w=0,
             h=0,
-            align=enums.Align.L,
+            align=Align.L,
             border=0,
             text=f'{self.patient_sites_and_mrns_str}',
         )
@@ -395,12 +373,12 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(title, level=1)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(self, title, align=enums.Align.C)  # To print the title in the center
+            self._insert_paragraph(self, title, align=Align.C)  # To print the title in the center
             self.ln(1)
-            self._insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
+            self._insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=Align.C)
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            self._insert_paragraph(self, 'TODO: add graphs', align=enums.Align.C)
+            self._insert_paragraph(self, 'TODO: add graphs', align=Align.C)
             num += 1
 
     def _insert_toc_title(
@@ -412,11 +390,9 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         Args:
             pdf: The pdf
         """
-        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
-        pdf.underline = True
+        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=20)
         pdf.set_x(12)
-        self._insert_paragraph(self, 'Table of contents:')
-        pdf.underline = False
+        self._insert_paragraph(self, 'Table des matières:')
         pdf.y += 5  # noqa: WPS111
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
         pdf.x = 10  # noqa: WPS111
@@ -435,8 +411,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         self._insert_toc_title(pdf)
         pdf.set_font_size(size=16)
         with self.table(
-            borders_layout=enums.TableBordersLayout.NONE,
-            text_align=(enums.Align.L, enums.Align.L, enums.Align.R),
+            borders_layout=TableBordersLayout.NONE,
+            text_align=(Align.L, Align.L, Align.R),
             col_widths=(60, 30, 10),
         ) as table:
             table.row(TABLE_HEADER)
@@ -445,7 +421,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
                     data = TABLE_DATA[section.name]
                     link = pdf.add_link(page=section.page_number)
                     row = table.row()
-                    row.cell(data[0], link=link)
+                    row.cell(
+                        data[0],
+                        style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
+                        link=link,
+                    )
                     row.cell(
                         f'{datetime.strptime(data[1],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
                     )
@@ -481,56 +461,3 @@ class QuestionnaireReportService():
     logger = logging.getLogger(__name__)
 
     # TODO: use fpdf2 instead of the legacy PDF-generator (PHP service)
-
-    def generate_questionnaire_report(
-        self,
-        institution_data: InstitutionData,
-        patient_data: PatientData,
-        questionnaire_data: QuestionnaireData,
-    ) -> Path:
-        """Create a pathology PDF report.
-
-        The generated report is saved in the directory specified in the QUESTIONNAIRE_REPORTS_PATH environment variable.
-
-        Args:
-            institution_data: institution data required to generate the PDF report
-            patient_data: patient data required to generate the PDF report
-            questionnaire_data: questionnaire data required to generate the PDF report
-
-        Returns:
-            path to the generated pathology report
-        """
-        generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
-        report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
-            first_name=patient_data.patient_first_name,
-            last_name=patient_data.patient_last_name,
-            date=generated_at,
-        )
-        # TODO: Change the report path and view to the questionnaire one's
-        report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        questionnaire_pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
-        questionnaire_pdf.output(name=str(report_path))
-
-        return report_path
-
-    def _is_questionnaire_report_request_data_valid(
-        self,
-        report_data: QuestionnaireReportRequestData,
-    ) -> bool:
-        """Check if questionnaire report request data is valid.
-
-        Args:
-            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
-
-        Returns:
-            bool: boolean value showing if questionnaire report request data is valid
-        """
-        languages = dict(settings.LANGUAGES)
-
-        return (  # check if patient_id is a positive number
-            report_data.patient_id >= 0
-            # check if logo_path exists
-            and report_data.logo_path.exists()
-            # check if language exists
-            and report_data.language in languages
-        )
