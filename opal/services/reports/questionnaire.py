@@ -1,6 +1,6 @@
 """Module providing business logic for generating questionnaire PDF reports using FPDF2."""
-import logging
 import json
+import logging
 import math
 from datetime import datetime
 from pathlib import Path
