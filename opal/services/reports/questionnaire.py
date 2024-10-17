@@ -3,30 +3,12 @@
 import math
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Literal, NamedTuple
+from typing import Any, NamedTuple
 
 from fpdf import FPDF, FPDF_VERSION, FontFace, TitleStyle
 from fpdf.enums import Align, TableBordersLayout
-from typing_extensions import TypedDict
 
-
-class FPDFCellDictType(TypedDict):
-    """The required arguments to pass to FPDF's cell() function."""
-
-    w: float | None  # noqa: WPS111
-    h: float | None  # noqa: WPS111
-    text: str
-    border: bool | str | Literal[0, 1]
-    align: str | Align
-
-
-class FPDFMultiCellDictType(TypedDict):
-    """The required arguments to pass to FPDF's multi_cell() function."""
-
-    w: float  # noqa: WPS111
-    h: float | None  # noqa: WPS111
-    text: str
-    align: str | Align
+from .base import FPDFCellDictType, FPDFMultiCellDictType
 
 
 class InstitutionData(NamedTuple):

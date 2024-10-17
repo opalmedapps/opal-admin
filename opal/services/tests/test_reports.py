@@ -12,7 +12,7 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import (
+from opal.services.reports.pathology import (
     InstitutionData,
     PathologyData,
     PathologyPDF,
