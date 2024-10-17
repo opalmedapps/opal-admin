@@ -67,7 +67,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self,
         institution_data: InstitutionData,
         patient_data: PatientData,
-        questionnaire_data: QuestionnaireData,
+        questionnaire_data: list[QuestionnaireData],
     ) -> None:
         """Initialize a `QuestionnairePDF` instance for generating questionnaire reports.
 
@@ -407,7 +407,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
 
 
-def generate_pdf(institution_data: InstitutionData, patient_data: PatientData, questionnaire_data: QuestionnaireData) -> bytearray:
+def generate_pdf(
+    institution_data: InstitutionData,
+    patient_data: PatientData,
+    questionnaire_data: list[QuestionnaireData],
+) -> bytearray:
     pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
 
     return pdf.output()
