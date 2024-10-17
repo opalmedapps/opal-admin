@@ -438,7 +438,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         text: Any,
         **kwargs: Any,
     ) -> None:
-        """Insert the paragrah related to the questionnaires.
+        """Insert the paragraph related to the questionnaires.
 
         Args:
             pdf: the pdf
