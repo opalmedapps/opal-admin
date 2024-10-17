@@ -29,7 +29,7 @@ class QuestionnaireData(NamedTuple):
         updated_at: the date when the questionnaire was last updated by the patient
     """
 
-    quetionnaire_title: list[str]
+    questionnaire_title: list[str]
     updated_at: list[str]
 
 
@@ -38,13 +38,13 @@ QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 
 # TODO: Add query for all the the completed questionnaire data of the patient
 questionnaire_data_info = QuestionnaireData(
-    quetionnaire_title=[],
+    questionnaire_title=[],
     updated_at=[],
 )
 
 # Subject to changes once the data is correctly imported
 sorted_data = sorted(
-    zip(questionnaire_data_info.quetionnaire_title, questionnaire_data_info.updated_at),
+    zip(questionnaire_data_info.questionnaire_title, questionnaire_data_info.updated_at),
     key=lambda sort: datetime.strptime(sort[1], '%Y-%m-%d %H:%M'),
     reverse=True,
 )
@@ -60,7 +60,7 @@ for title, update_date in sorted_data:
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
 
-class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
+class QuestionnairePDF(FPDF):  # noqa: WPS214
     """Customized FPDF class that provides implementation for generating questionnaire PDF reports."""
 
     def __init__(
@@ -89,12 +89,12 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
             f'{site_mrn["site_code"]}: {site_mrn["mrn"]}'
-            for site_mrn in self.patient_data.patient_sites_and_mrns
+            for site_mrn in patient_data.patient_sites_and_mrns
         ]
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
         )
-        auto_page_break_bottom_margin: int = 50
+        auto_page_break_bottom_margin = 50
 
         self._set_report_metadata()
         self.set_auto_page_break(auto=True, margin=auto_page_break_bottom_margin)
@@ -146,14 +146,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         self.cell(**header_patient_info)
         self.ln(6)
 
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(70)
         self.cell(**header_text)
 
         self.ln(11)
         self.cell(8)
-
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.set_x(10)
         self.cell(**header_title)
 
@@ -285,11 +282,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         questionnaire_per_page1 = 15
         questionnaire_per_page = 17
         guesstimate = 0
-        if len(questionnaire_data_info.quetionnaire_title) <= questionnaire_per_page1:
+        if len(questionnaire_data_info.questionnaire_title) <= questionnaire_per_page1:
             guesstimate = 1
         else:
             guesstimate = math.ceil(
-                (len(questionnaire_data_info.quetionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
+                (len(questionnaire_data_info.questionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
             ) + 1
         self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
@@ -400,13 +397,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
         text: Any,
         **kwargs: Any,
     ) -> None:
-        """Insert the paragraph related to the questionnaires.
-
-        Args:
-            pdf: the pdf
-            text: text to insert
-            kwargs: varied amount of keyword arguments
-        """
         self.multi_cell(
             w=pdf.epw,
             h=pdf.font_size,
