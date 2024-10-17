@@ -80,7 +80,7 @@ for title, update_date in sorted_data:
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
 
-class QuestionnairePDF(FPDF):  # noqa: WPS214, WPS230
+class QuestionnairePDF(FPDF):  # noqa: WPS214
     """Customized FPDF class that provides implementation for generating questionnaire PDF reports."""
 
     def __init__(
