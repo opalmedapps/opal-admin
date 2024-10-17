@@ -4,7 +4,7 @@ import json
 import logging
 import math
 import textwrap
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -16,7 +16,15 @@ from fpdf import FPDF, FPDF_VERSION, FlexTemplate
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
-from opal.services.reports.base import FPDFCellDictType, FPDFFontDictType, FPDFMultiCellDictType, FPDFRectDictType
+from opal.services.reports.base import (
+    FPDFCellDictType,
+    FPDFFontDictType,
+    FPDFMultiCellDictType,
+    FPDFRectDictType,
+    InstitutionData,
+    PatientData,
+    SiteData,
+)
 from opal.utils.base64_util import Base64Util
 
 
@@ -64,54 +72,6 @@ class PathologyData(NamedTuple):
     observation_diagnosis: list[str]
     prepared_by: str
     prepared_at: datetime
-
-
-class InstitutionData(NamedTuple):
-    """Information about an institution from which a report was received.
-
-    Attributes:
-        institution_logo_path: file path of the instituion's logo image
-    """
-
-    institution_logo_path: Path
-
-
-class SiteData(NamedTuple):
-    """Information about a hospital site from which a report was received.
-
-    Attributes:
-        site_name: the name of the site (e.g., Royal Victoria Hospital)
-        site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
-        site_city: the name of the city that is specified in the address (e.g., Montréal)
-        site_province: the name of the province that is specified in the address (e.g., Québec)
-        site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
-        site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
-    """
-
-    site_name: str
-    site_building_address: str
-    site_city: str
-    site_province: str
-    site_postal_code: str
-    site_phone: str
-
-
-class PatientData(NamedTuple):
-    """Information about a patient for whom a report was received.
-
-    Attributes:
-        patient_first_name: patient's first name (e.g., Marge)
-        patient_last_name: patient's last name (e.g., Simpson)
-        patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
-        patient_ramq: patient's RAMQ number (SIMM99999999)
-        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
-    """
-
-    patient_first_name: str
-    patient_last_name: str
-    patient_date_of_birth: date
-    patient_ramq: str
-    patient_sites_and_mrns: list[dict[str, str]]
 
 
 FIRST_PAGE_NUMBER: int = 1

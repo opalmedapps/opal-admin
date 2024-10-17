@@ -1,42 +1,13 @@
 """Module providing business logic for generating questionnaire PDF reports using FPDF2."""
 
 import math
-from datetime import date, datetime
-from pathlib import Path
+from datetime import datetime
 from typing import Any, NamedTuple
 
 from fpdf import FPDF, FPDF_VERSION, FontFace, TitleStyle
 from fpdf.enums import Align, TableBordersLayout
 
-from .base import FPDFCellDictType, FPDFMultiCellDictType
-
-
-class InstitutionData(NamedTuple):
-    """Information about an institution from which a report was received.
-
-    Attributes:
-        institution_logo_path: file path of the institution's logo image
-    """
-
-    institution_logo_path: Path
-
-
-class PatientData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields for storing patient's personal information.
-
-    Attributes:
-        patient_first_name: patient's first name (e.g., Marge)
-        patient_last_name: patient's last name (e.g., Simpson)
-        patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
-        patient_ramq: patient's RAMQ number (SIMM99999999)
-        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
-    """
-
-    patient_first_name: str
-    patient_last_name: str
-    patient_date_of_birth: date
-    patient_ramq: str
-    patient_sites_and_mrns: list[dict[str, str]]
+from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
 # TODO: Correctly define the questionnaireData with it's appropriate attributes
 
