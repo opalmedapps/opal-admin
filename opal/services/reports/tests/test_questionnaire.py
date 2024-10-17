@@ -333,3 +333,8 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
     assert caplog.records[0].message == 'The generated questionnaire PDF report is not in the base64 format.'
     assert caplog.records[0].levelname == 'ERROR'
+
+
+def test_generate_pdf():
+    # TODO: call generate PDF
+    pytest.fail('TODO: implement me')

@@ -407,6 +407,12 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
 
 
+def generate_pdf(institution_data: InstitutionData, patient_data: PatientData, questionnaire_data: QuestionnaireData) -> bytearray:
+    pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
+
+    return pdf.output()
+
+
 class QuestionnaireReportRequestData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
