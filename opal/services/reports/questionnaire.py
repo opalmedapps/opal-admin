@@ -247,7 +247,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.cell(**patient_info)
         self.code39(text='NO-SCAN', x=160, y=30, w=1, h=18)  # barcode generation
         self.ln(6)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**patient_site_and_mrns)
         self.ln(8)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
@@ -397,6 +396,13 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         text: Any,
         **kwargs: Any,
     ) -> None:
+        """Insert the paragraph related to the questionnaires.
+
+        Args:
+            pdf: the pdf
+            text: text to insert
+            kwargs: varied amount of keyword arguments
+        """
         self.multi_cell(
             w=pdf.epw,
             h=pdf.font_size,
