@@ -75,7 +75,7 @@ class SiteData(NamedTuple):
 
 
 class PatientData(NamedTuple):
-    """Information about a patient for whom a report was received.
+    """Typed `NamedTuple` that describes data fields for storing patient's personal information.
 
     Attributes:
         patient_first_name: patient's first name (e.g., Marge)
