@@ -10,8 +10,8 @@ from typing_extensions import TypedDict
 class FPDFCellDictType(TypedDict):
     """The required arguments to pass to FPDF's cell() function."""
 
-    w: float | None  # noqa: WPS111
-    h: float | None  # noqa: WPS111
+    w: float | None
+    h: float | None
     text: str
     border: bool | str | Literal[0, 1]
     align: str | Align
@@ -20,8 +20,8 @@ class FPDFCellDictType(TypedDict):
 class FPDFMultiCellDictType(TypedDict):
     """The required arguments to pass to FPDF's multi_cell() function."""
 
-    w: float  # noqa: WPS111
-    h: float | None  # noqa: WPS111
+    w: float
+    h: float | None
     text: str
     align: str | Align
 
@@ -37,10 +37,10 @@ class FPDFFontDictType(TypedDict):
 class FPDFRectDictType(TypedDict):
     """The required arguments to pass to FPDF's rect() function."""
 
-    x: float  # noqa: WPS111
-    y: float  # noqa: WPS111
-    w: float  # noqa: WPS111
-    h: float  # noqa: WPS111
+    x: float
+    y: float
+    w: float
+    h: float
     style: str | None
 
 

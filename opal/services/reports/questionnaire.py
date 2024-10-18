@@ -33,29 +33,14 @@ class QuestionnaireData(NamedTuple):
     updated_at: list[str]
 
 
-FIRST_PAGE_NUMBER: int = 1
-QUESTIONNAIRE_REPORT_FONT: str = 'Times'
-
-# TODO: Add query for all the the completed questionnaire data of the patient
-questionnaire_data_info = QuestionnaireData(
+temporary_data = QuestionnaireData(
     questionnaire_title=[],
     updated_at=[],
 )
 
-# Subject to changes once the data is correctly imported
-sorted_data = sorted(
-    zip(questionnaire_data_info.questionnaire_title, questionnaire_data_info.updated_at),
-    key=lambda sort: datetime.strptime(sort[1], '%Y-%m-%d %H:%M'),
-    reverse=True,
-)
-
-TABLE_DATA = {}  # noqa: WPS407
-
-for title, update_date in sorted_data:
-    last_updated = datetime.strptime(update_date, '%Y-%m-%d %H:%M')
-    formatted_date = last_updated.strftime('%Y-%b-%d %H:%M')
-    TABLE_DATA[title] = (title, formatted_date)
-
+FIRST_PAGE_NUMBER: int = 1
+QUESTIONNAIRE_REPORT_FONT: str = 'Times'
+AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
@@ -83,7 +68,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """
         super().__init__()
         self.institution_data = institution_data
-        self.patient_data = patient_data
         self.questionnaire_data = questionnaire_data
         self.patient_name = f'{patient_data.patient_last_name}, {patient_data.patient_first_name}'.upper()
         # Concatenated patient's site codes and MRNs for the header.
@@ -94,10 +78,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
         )
-        auto_page_break_bottom_margin = 50
-
         self._set_report_metadata()
-        self.set_auto_page_break(auto=True, margin=auto_page_break_bottom_margin)
+        self.set_auto_page_break(auto=True, margin=AUTO_PAGE_BREAK_BOTTOM_MARGIN)
         self.add_page()
         self._generate()
 
@@ -111,7 +93,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=0,
             align=Align.R,
             border=0,
-            text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
+            text=f'{self.patient_name}',
         )
         header_text = FPDFCellDictType(
             w=0,
@@ -233,7 +215,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=0,
             align=Align.L,
             border=0,
-            text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
+            text=f'{self.patient_name}',
         )
         patient_site_and_mrns = FPDFCellDictType(
             w=0,
@@ -281,11 +263,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         questionnaire_per_page1 = 15
         questionnaire_per_page = 17
         guesstimate = 0
-        if len(questionnaire_data_info.questionnaire_title) <= questionnaire_per_page1:
+        if len(QuestionnaireData.questionnaire_title) <= questionnaire_per_page1:
             guesstimate = 1
         else:
             guesstimate = math.ceil(
-                (len(questionnaire_data_info.questionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
+                (len(QuestionnaireData.questionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
             ) + 1
         self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
@@ -324,7 +306,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             ),
         )
         num = 0
-        for title, last_updated in TABLE_DATA.values():  # noqa: WPS442
+        for title, last_updated in temporary_data:  # noqa: WPS442
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if num != 0:  # Skip empty first page
@@ -377,16 +359,16 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             table.row(TABLE_HEADER)
             for section in outline:
                 if section.level < 2:
-                    data = TABLE_DATA[section.name]
+                    data = QuestionnaireData
                     link = pdf.add_link(page=section.page_number)
                     row = table.row()
                     row.cell(
-                        data[0],
+                        data.questionnaire_title[section],
                         style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
                         link=link,
                     )
                     row.cell(
-                        f'{datetime.strptime(data[1],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
+                        f'{datetime.strptime(data.updated_at[section],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
                     )
                     row.cell(str(section.page_number), link=link)
 
@@ -418,6 +400,16 @@ def generate_pdf(
     patient_data: PatientData,
     questionnaire_data: list[QuestionnaireData],
 ) -> bytearray:
+    """Create a questionnaire PDF report.
+
+    Args:
+        institution_data: institution data required to generate the PDF report
+        patient_data: patient data required to generate the PDF report
+        questionnaire_data: questionnaire data required to generate the PDF report
+
+    Returns:
+        output of the generated questionnaire report
+    """
     pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
 
     return pdf.output()

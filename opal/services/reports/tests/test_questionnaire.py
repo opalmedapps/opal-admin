@@ -1,3 +1,4 @@
+import datetime
 import json
 from http import HTTPStatus
 from pathlib import Path
@@ -10,7 +11,9 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports.questionnaire import QuestionnaireReportRequestData, ReportService
+from opal.services.reports.base import InstitutionData, PatientData
+from opal.services.reports.questionnaire import QuestionnaireReportRequestData, ReportService, generate_pdf
+from opal.services.reports.test_data import convert_table_data_to_questionnaire_list
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -30,6 +33,19 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     patient_mrn='9999996',
     logo_path=LOGO_PATH,
     language='en',
+)
+PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
+    patient_first_name='Bart',
+    patient_last_name='Simpson',
+    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_ramq='SIMM99999999',
+    patient_sites_and_mrns=[
+        {'mrn': '22222443', 'site_code': 'MGH'},
+        {'mrn': '1111728', 'site_code': 'RVH'},
+    ],
+)
+INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
+    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
 )
 
 
@@ -335,6 +351,16 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
     assert caplog.records[0].levelname == 'ERROR'
 
 
-def test_generate_pdf():
+def test_generate_pdf() -> None:
+    """Ensure that the pdf is correctly generated."""
     # TODO: call generate PDF
-    pytest.fail('TODO: implement me')
+    questionnaire_data = convert_table_data_to_questionnaire_list()
+
+    pdf_bytes = generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
+    )
+
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
