@@ -348,7 +348,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Render the table of content as a table .
 
         Args:
-            pdf: the pdf
+            pdf: The FPDF instance
             outline: A list outline of the table of content
         """
         self._insert_toc_title(pdf)
