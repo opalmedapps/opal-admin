@@ -29,14 +29,16 @@ class QuestionnaireData(NamedTuple):
         updated_at: the date when the questionnaire was last updated by the patient
     """
 
-    questionnaire_title: list[str]
-    updated_at: list[str]
+    questionnaire_title: str
+    updated_at: datetime
 
 
-temporary_data = QuestionnaireData(
-    questionnaire_title=[],
-    updated_at=[],
-)
+temporary_data = [
+    QuestionnaireData(
+        questionnaire_title='Temporary',
+        updated_at=datetime(2024, 10, 21, 14, 0),
+    ),
+]
 
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
@@ -117,7 +119,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text='Retour à la Table des Matières',
         )
         self.image(
-            (self.institution_data.institution_logo_path),
+            str(self.institution_data.institution_logo_path),
             x=5,
             y=5,
             w=60,
@@ -260,15 +262,15 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _draw_table_of_content(self) -> None:
         # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
-        questionnaire_per_page1 = 15
-        questionnaire_per_page = 17
+        first_page_count = 15
+        subsequent_page_count = 17
+        total_questions = len(QuestionnaireData.questionnaire_title)
+
         guesstimate = 0
-        if len(QuestionnaireData.questionnaire_title) <= questionnaire_per_page1:
+        if total_questions <= first_page_count:
             guesstimate = 1
         else:
-            guesstimate = math.ceil(
-                (len(QuestionnaireData.questionnaire_title) - questionnaire_per_page1) / questionnaire_per_page,
-            ) + 1
+            guesstimate = math.ceil((total_questions - first_page_count) / subsequent_page_count) + 1
         self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
@@ -306,17 +308,17 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             ),
         )
         num = 0
-        for title, last_updated in temporary_data:  # noqa: WPS442
+        for data in temporary_data:  # noqa: WPS442
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if num != 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(title, level=1)  # For the TOC
+            self.start_section(data.questionnaire_title, level=1)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(self, title, align=Align.C)  # To print the title in the center
+            self._insert_paragraph(self, data.questionnaire_title, align=Align.C)  # To print the title in the center
             self.ln(1)
-            self._insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=Align.C)
+            self._insert_paragraph(self, f'Dernière mise à jour: {data.updated_at}', align=Align.C)
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
             self._insert_paragraph(self, 'TODO: add graphs', align=Align.C)
@@ -338,7 +340,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
         pdf.x = 10  # noqa: WPS111
 
-    def _render_toc_with_table(
+    def _render_toc_with_table(  # noqa: WPS210
         self,
         pdf: Any,
         outline: list[Any],
@@ -357,18 +359,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             col_widths=(60, 30, 10),
         ) as table:
             table.row(TABLE_HEADER)
-            for section in outline:
+            for idx, section in enumerate(outline):
                 if section.level < 2:
-                    data = QuestionnaireData
+                    data = temporary_data[idx]
                     link = pdf.add_link(page=section.page_number)
                     row = table.row()
                     row.cell(
-                        data.questionnaire_title[section],
+                        data.questionnaire_title,
                         style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
                         link=link,
                     )
                     row.cell(
-                        f'{datetime.strptime(data.updated_at[section],"%Y-%b-%d %H:%M",).strftime("%Y-%b-%d %H:%M")}',
+                        data.updated_at.strftime('%Y-%b-%d %H:%M'),
                     )
                     row.cell(str(section.page_number), link=link)
 
