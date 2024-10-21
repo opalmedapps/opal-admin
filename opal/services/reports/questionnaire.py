@@ -211,7 +211,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self._draw_questionnaire_result()
 
     def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
-        """Draw the patients name, site information and barcode on the first page."""
+        """Draw the patient's name, site information and barcode on the first page."""
         patient_info = FPDFCellDictType(
             w=0,
             h=0,
