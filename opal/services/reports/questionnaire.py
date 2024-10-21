@@ -383,7 +383,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Insert the paragraph related to the questionnaires.
 
         Args:
-            pdf: the pdf
+            pdf: The FPDF instance
             text: text to insert
             kwargs: varied amount of keyword arguments
         """
