@@ -61,9 +61,6 @@ pytest-django==4.9.0  # https://github.com/pytest-dev/pytest-django
 # Pre-commit
 #
 pre-commit==4.0.1  # https://github.com/pre-commit/pre-commit
-# pin YAML Clib until musl binary is distributed
-# see: https://sourceforge.net/p/ruamel-yaml-clib/tickets/39/
-ruamel.yaml.clib==0.2.8
 
 # Beautiful Soup parser for unit tests
 #
