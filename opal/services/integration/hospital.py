@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 
-from .models import ErrorResponse, Patient, RequestPatientByHIN
+from .models import ErrorResponse, Patient, PatientByHINRequest, PatientByMRNRequest
 
 
 class NonOKResponseError(Exception):
@@ -21,7 +21,6 @@ class NonOKResponseError(Exception):
         super().__init__(message)
 
 
-
 def _retrieve(url: str, data: Any | None) -> requests.Response:
     response = requests.get(url, data=data, timeout=5)
 
@@ -32,7 +31,14 @@ def _retrieve(url: str, data: Any | None) -> requests.Response:
 
 
 def find_patient_by_hin(health_insurance_number: str) -> Patient:
-    data = RequestPatientByHIN(health_insurance_number='SIMM86601399')
+    data = PatientByHINRequest(health_insurance_number=health_insurance_number)
     response = _retrieve('http://localhost/getPatientByHIN', data=data.model_dump_json())
+
+    return Patient.model_validate_json(response.content, strict=True)
+
+
+def find_patient_by_mrn(mrn: str, site: str) -> Patient:
+    data = PatientByMRNRequest(mrn=mrn, site=site)
+    response = _retrieve('http://localhost/getPatientByMRN', data=data.model_dump_json())
 
     return Patient.model_validate_json(response.content, strict=True)
