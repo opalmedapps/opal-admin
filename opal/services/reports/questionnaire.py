@@ -331,7 +331,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Insert the 'Table of contents' title and set fonts for the TOC.
 
         Args:
-            pdf: The pdf
+            pdf: The FPDF instance
         """
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=20)
         pdf.set_x(12)
