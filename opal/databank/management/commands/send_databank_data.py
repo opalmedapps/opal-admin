@@ -7,11 +7,10 @@ from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.utils import timezone
 
 import requests
-from django_stubs_ext.aliases import ValuesQuerySet
 from requests.auth import HTTPBasicAuth
 
 from opal.databank.models import DatabankConsent, DataModuleType, SharedData
@@ -19,7 +18,7 @@ from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 
 CombinedModuleData: TypeAlias = list[dict[str, Any]]
-DatabankQuerySet: TypeAlias = ValuesQuerySet[Model, dict[str, Any]] | CombinedModuleData
+DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
 class Command(BaseCommand):  # noqa: WPS214

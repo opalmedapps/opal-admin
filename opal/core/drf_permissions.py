@@ -59,7 +59,7 @@ class IsSuperUser(permissions.IsAuthenticated):
         Returns:
             True, if the check is successful, False otherwise
         """
-        return super().has_permission(request, view) and request.user.is_superuser
+        return super().has_permission(request, view) and request.user.is_superuser  # type: ignore[union-attr]
 
 
 class _UsernameRequired(permissions.IsAuthenticated):
@@ -96,7 +96,7 @@ class _UsernameRequired(permissions.IsAuthenticated):
             )
 
         return super().has_permission(request, view) and (
-            str(request.user.username) == self.required_username or request.user.is_superuser
+            request.user.username == self.required_username or request.user.is_superuser  # type: ignore[union-attr]
         )
 
 
@@ -139,10 +139,8 @@ class IsORMSUser(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
         """
         return super().has_permission(request, view) and (
-            # make mypy happy to know that the user is not anonymous
-            request.user.is_authenticated
-            and request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
-            or request.user.is_superuser
+            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()  # type: ignore[union-attr]
+            or request.user.is_superuser  # type: ignore[union-attr]
         )
 
 
@@ -357,7 +355,3 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
             raise exceptions.PermissionDenied(
                 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
             )
-
-
-# Future Enhancement: Pull common permissions functionality into an abstract base class
-#                     to allow for faster definition of new perms in the future
