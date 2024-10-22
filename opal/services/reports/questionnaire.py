@@ -212,7 +212,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self._draw_questionnaire_result()
 
     def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
-        """Draw the patients name, site information and barcode on the first page."""
+        """Draw the patient's name, site information and barcode on the first page."""
         patient_info = FPDFCellDictType(
             w=0,
             h=0,
@@ -333,7 +333,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Insert the 'Table of contents' title and set fonts for the TOC.
 
         Args:
-            pdf: The pdf
+            pdf: The FPDF instance
         """
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=30)
         pdf.set_x(10)
@@ -350,7 +350,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Render the table of content as a table .
 
         Args:
-            pdf: the pdf
+            pdf: The FPDF instance
             outline: A list outline of the table of content
         """
         self._insert_toc_title(pdf)
@@ -385,7 +385,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Insert the paragraph related to the questionnaires.
 
         Args:
-            pdf: the pdf
+            pdf: The FPDF instance
             text: text to insert
             kwargs: varied amount of keyword arguments
         """
