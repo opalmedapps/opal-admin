@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 
-from .models import ErrorResponse, Patient, PatientByHINRequest, PatientByMRNRequest
+from .models import ErrorResponse, HospitalNumber, Patient, PatientByHINRequest, PatientByMRNRequest
 
 
 class NonOKResponseError(Exception):
@@ -22,7 +22,8 @@ class NonOKResponseError(Exception):
 
 
 def _retrieve(url: str, data: Any | None) -> requests.Response:
-    response = requests.get(url, data=data, timeout=5)
+    # TODO: use GET for find patient?
+    response = requests.post(url, data=data, timeout=5)
 
     if response.status_code != HTTPStatus.OK:
         raise NonOKResponseError(response)
@@ -42,3 +43,10 @@ def find_patient_by_mrn(mrn: str, site: str) -> Patient:
     response = _retrieve('http://localhost/getPatientByMRN', data=data.model_dump_json())
 
     return Patient.model_validate_json(response.content, strict=True)
+
+
+def notify_new_patient(mrn: str, site: str) -> None:
+    data = HospitalNumber(mrn=mrn, site=site)
+    _retrieve('http://localhost/newOpalPatient', data=data.model_dump_json())
+
+    # we know at this point that the request was successful
