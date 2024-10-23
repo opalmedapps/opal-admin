@@ -171,7 +171,7 @@ class LegacyAppointment(models.Model):
     roomlocation_fr = models.CharField(db_column='RoomLocation_FR', max_length=100)
     date_added = models.DateTimeField(db_column='DateAdded')
     scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
-    source_system_id = models.IntegerField(db_column='SourceSystemID')
+    source_system_id = models.CharField(db_column='SourceSystemID', max_length=100)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     source_database = models.ForeignKey(
         'LegacySourceDatabase',
