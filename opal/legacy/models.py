@@ -183,7 +183,6 @@ class LegacyAppointment(models.Model):
     objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
     class Meta:
-        managed = False
         db_table = 'Appointment'
 
 

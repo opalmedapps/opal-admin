@@ -1,5 +1,11 @@
-"""Collection of api views used to get appointment details."""
+"""Collection of api views used to get and update appointment details."""
+from typing import Any
+
+from django.db.models.query import QuerySet
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import UpdateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,7 +13,7 @@ from rest_framework.views import APIView
 from opal.core.drf_permissions import IsListener
 from opal.legacy import models
 
-from ..serializers import LegacyAppointmentDetailedSerializer
+from ..serializers import LegacyAppointmentCheckinSerializer, LegacyAppointmentDetailedSerializer
 
 
 @extend_schema(
@@ -48,3 +54,46 @@ class AppAppointmentsView(APIView):
                 many=True,
             ).data,
         })
+
+
+class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
+    """View supporting single legacy appointment update based on patient legacy ID."""
+
+    permission_classes = (IsListener,)
+    serializer_class = LegacyAppointmentCheckinSerializer
+
+    def get_queryset(self) -> QuerySet[models.LegacyAppointment]:
+        """
+        Override get_queryset to filter by source_system_id and source_database.
+
+        Raises:
+            ValidationError: If one or both search parameters are omitted from request
+
+        Returns:
+            QuerySet of LegacyAppointment model instance
+        """
+        source_system_id = self.request.data.get('source_system_id')
+        source_database = self.request.data.get('source_database')
+
+        # Ensure both required fields are present
+        if not source_system_id or not source_database:
+            raise ValidationError("Both 'source_system_id' and 'source_database' are required.")
+
+        return models.LegacyAppointment.objects.filter(
+            source_system_id=source_system_id,
+            source_database=source_database,
+        )
+
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle a PATCH request to update an appointment instance.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        return self.update(request, *args, **kwargs)
