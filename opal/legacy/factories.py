@@ -166,7 +166,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
     date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
-    appointment_aria_ser = Sequence(lambda number: number + 1)
+    source_system_id = Sequence(lambda number: number + 1)
     last_updated = timezone.make_aware(dt.datetime(2018, 1, 1))
     source_database = SubFactory(LegacySourceDatabaseFactory)
 
