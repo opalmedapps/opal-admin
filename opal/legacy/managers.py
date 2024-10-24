@@ -335,6 +335,8 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         return self.filter(
             patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
+        ).exclude(
+            sex='Unknown',
         ).annotate(
             patient_id=models.F('patientsernum'),
             opal_registration_date=models.F('registration_date'),
