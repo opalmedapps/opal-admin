@@ -64,7 +64,7 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
 
     def get_object(self) -> models.LegacyAppointment:
         """
-        Override get_queryset to filter by source_system_id and source_database.
+        Override get_object to filter by source_system_id and source_database.
 
         Raises:
             ValidationError: If one or both search parameters are omitted from request
