@@ -55,6 +55,7 @@ def test_find_patient_by_hin(mocker: MockFixture) -> None:
         'sex': 'female',
         'date_of_birth': '1986-10-05',
         'health_insurance_number': 'SIMM86600599',
+        'date_of_death': None,
         'mrns': [
             {
                 'mrn': '9999996',
@@ -95,6 +96,7 @@ def test_find_patient_by_mrn(mocker: MockFixture) -> None:
         'sex': 'female',
         'date_of_birth': '1986-10-05',
         'health_insurance_number': 'SIMM86600599',
+        'date_of_death': None,
         'mrns': [
             {
                 'mrn': '9999996',

@@ -10,9 +10,8 @@ class ErrorResponse(BaseModel):
 
 
 class HospitalNumber(BaseModel):
-    # TODO: validate this? non-empty strings
-    mrn: str
-    site: str
+    mrn: str = Field(min_length=1, max_length=10)
+    site: str = Field(min_length=3, max_length=10)
 
 
 class SexType(StrEnum):
@@ -23,20 +22,13 @@ class SexType(StrEnum):
 
 
 class Patient(BaseModel):
-    first_name: str
-    last_name: str
-    # limit to an enum
+    first_name: str = Field(min_length=1, max_length=150)
+    last_name: str = Field(min_length=1, max_length=150)
     sex: SexType
     date_of_birth: date
-    # TODO: derive or remove? Or do deceased: datetime | None (or deceased_at)
-    # deceased: bool = False
-    # TODO: date_of_death
-    # TODO: validate to be after date of birth
-    # TODO: enforce timezone-aware?
-    datetime_of_death: datetime | None = None
-    # TODO: validate? what if there is none? empty string or None? should there be at least one between HIN and MRNs?
-    health_insurance_number: str
-    mrns: list[HospitalNumber] = Field(default_factory=list)
+    date_of_death: datetime | None
+    health_insurance_number: str | None = Field(min_length=1, max_length=12)
+    mrns: list[HospitalNumber] = Field(min_length=1)
 
 
 class PatientByHINRequest(BaseModel):

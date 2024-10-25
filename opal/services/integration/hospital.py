@@ -40,7 +40,7 @@ def find_patient_by_hin(health_insurance_number: str) -> Patient:
 
 def find_patient_by_mrn(mrn: str, site: str) -> Patient:
     data = PatientByMRNRequest(mrn=mrn, site=site)
-    response = _retrieve('http://localhost/getPatientByMRN', data=data.model_dump_json())
+    response = _retrieve('http://localhost/getPatientByMRN?mrn9999996=&site=RVH', data=data.model_dump_json())
 
     return Patient.model_validate_json(response.content, strict=True)
 
