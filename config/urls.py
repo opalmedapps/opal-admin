@@ -40,10 +40,11 @@ urlpatterns = [
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
     # apps
+    path('health-data/', include('opal.health_data.urls')),
     path('hospital-settings/', include('opal.hospital_settings.urls')),
     path('patients/', include('opal.patients.urls')),
     path('questionnaires/', include('opal.questionnaires.urls')),
-    path('health-data/', include('opal.health_data.urls')),
+    path('usage-statistics/', include('opal.usage_statistics.urls')),
 
     # global config
     path(settings.ADMIN_URL, admin.site.urls),
