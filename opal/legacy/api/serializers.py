@@ -134,32 +134,24 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
 class LegacyAppointmentCheckinSerializer(serializers.ModelSerializer[LegacyAppointment]):
     """Appointment serializer to update checkin status for a LegacyAppointment instance."""
 
+    checkin = serializers.BooleanField(
+        required=True,
+        help_text='Checkin value of 1 means patient successfully checked in.',
+    )
+    source_system_id = serializers.CharField(
+        max_length=100,
+        read_only=True,
+        help_text='The source system identifier.',
+    )
+    source_database = serializers.IntegerField(
+        source='source_database_id',
+        read_only=True,
+        help_text='The source database identifier.',
+    )
+
     class Meta:
         model = LegacyAppointment
-        fields = ['checkin']
-        extra_kwargs = {
-            'checkin': {
-                'required': True,
-            },
-        }
-
-    def validate_checkin(self, value: int) -> int:
-        """Validate checkin value to ensure it is either 0 or 1.
-
-        Checkin is actually declared as tinyint in the legacy database, not boolean.
-
-        Args:
-            value: checkin value to update to
-
-        Raises:
-            ValidationError: If checkin value not valid (0 or 1)
-
-        Returns:
-            Validated checkin value
-        """
-        if value not in {0, 1}:
-            raise serializers.ValidationError('Invalid checkin value')
-        return value
+        fields = ['checkin', 'source_system_id', 'source_database']
 
 
 class QuestionnaireReportRequestSerializer(serializers.Serializer[tuple[str, str]]):

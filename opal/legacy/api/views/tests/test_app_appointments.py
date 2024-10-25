@@ -284,7 +284,7 @@ class TestUpdateAppointmentCheckinView:
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert appointment1.checkin == 0
-        assert 'Invalid checkin value' in response.data['checkin']
+        assert 'Must be a valid boolean.' in response.data['checkin']
 
     def test_update_checkin_missing_args(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending incomplete data to endpoint."""
