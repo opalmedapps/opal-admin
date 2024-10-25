@@ -7,7 +7,7 @@ import requests
 from pydantic import ValidationError
 from pytest_mock import MockFixture
 
-from opal.services.integration import hospital, models
+from opal.services.integration import hospital, schemas
 
 
 class _MockResponse(requests.Response):
@@ -17,13 +17,14 @@ class _MockResponse(requests.Response):
 
     @property
     def content(self) -> Any:
-        if isinstance(self.data, models.ErrorResponse):
+        if isinstance(self.data, schemas.ErrorResponseSchema):
             return self.data.model_dump_json().encode()
 
         return json.dumps(self.data).encode()
 
 
 def test_nonok_response_error_not_valid() -> None:
+    """A validation error is raised if the error response data is not valid."""
     with pytest.raises(ValidationError) as exc:
         hospital.NonOKResponseError(_MockResponse(HTTPStatus.BAD_REQUEST, {}))
 
@@ -31,7 +32,8 @@ def test_nonok_response_error_not_valid() -> None:
 
 
 def test_find_patient_by_hin_non_ok(mocker: MockFixture) -> None:
-    error = models.ErrorResponse(status_code=HTTPStatus.BAD_REQUEST, message='error message')
+    """A NonOKResponseError is raised if the response is not OK."""
+    error = schemas.ErrorResponseSchema(status_code=HTTPStatus.BAD_REQUEST, message='error message')
     mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.BAD_REQUEST, error))
 
     with pytest.raises(hospital.NonOKResponseError) as exc:
@@ -41,6 +43,7 @@ def test_find_patient_by_hin_non_ok(mocker: MockFixture) -> None:
 
 
 def test_find_patient_by_hin_not_valid(mocker: MockFixture) -> None:
+    """A ValidationError is raised if the response data is not valid."""
     response = _MockResponse(HTTPStatus.OK, {'first_name': 'Hans', 'last_name': 'Wurst'})
     mocker.patch('requests.post', return_value=response)
 
@@ -49,6 +52,7 @@ def test_find_patient_by_hin_not_valid(mocker: MockFixture) -> None:
 
 
 def test_find_patient_by_hin(mocker: MockFixture) -> None:
+    """A patient is returned if found."""
     data = {
         'first_name': 'Marge',
         'last_name': 'Simpson',
@@ -68,11 +72,12 @@ def test_find_patient_by_hin(mocker: MockFixture) -> None:
 
     patient = hospital.find_patient_by_hin('test')
 
-    assert patient == models.Patient.model_validate(data)
+    assert patient == schemas.PatientSchema.model_validate(data)
 
 
 def test_find_patient_by_mrn_non_ok(mocker: MockFixture) -> None:
-    error = models.ErrorResponse(status_code=HTTPStatus.BAD_REQUEST, message='error message')
+    """A NonOKResponseError is raised if the response is not OK."""
+    error = schemas.ErrorResponseSchema(status_code=HTTPStatus.BAD_REQUEST, message='error message')
     mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.BAD_REQUEST, error))
 
     with pytest.raises(hospital.NonOKResponseError) as exc:
@@ -82,6 +87,7 @@ def test_find_patient_by_mrn_non_ok(mocker: MockFixture) -> None:
 
 
 def test_find_patient_by_mrn_not_valid(mocker: MockFixture) -> None:
+    """A ValidationError is raised if the response data is not valid."""
     response = _MockResponse(HTTPStatus.OK, {'first_name': 'Hans', 'last_name': 'Wurst'})
     mocker.patch('requests.post', return_value=response)
 
@@ -90,6 +96,7 @@ def test_find_patient_by_mrn_not_valid(mocker: MockFixture) -> None:
 
 
 def test_find_patient_by_mrn(mocker: MockFixture) -> None:
+    """A patient is returned if found."""
     data = {
         'first_name': 'Marge',
         'last_name': 'Simpson',
@@ -109,10 +116,11 @@ def test_find_patient_by_mrn(mocker: MockFixture) -> None:
 
     patient = hospital.find_patient_by_mrn('1234', 'test')
 
-    assert patient == models.Patient.model_validate(data)
+    assert patient == schemas.PatientSchema.model_validate(data)
 
 
 def test_notify_new_patient(mocker: MockFixture) -> None:
+    """No error is raised if the response is OK."""
     response = _MockResponse(HTTPStatus.OK, data=None)
     mocker.patch('requests.post', return_value=response)
 
@@ -120,6 +128,7 @@ def test_notify_new_patient(mocker: MockFixture) -> None:
 
 
 def test_notify_new_patient_bad_request(mocker: MockFixture) -> None:
+    """A NonOKResponseError is raised if the response is not OK."""
     response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status_code': 400, 'message': 'no no no'})
     mocker.patch('requests.post', return_value=response)
 
@@ -131,6 +140,7 @@ def test_notify_new_patient_bad_request(mocker: MockFixture) -> None:
 
 
 def test_notify_new_patient_not_found(mocker: MockFixture) -> None:
+    """A NonOKResponseError is raised if the patient was not found."""
     response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status_code': 404, 'message': 'not found'})
     mocker.patch('requests.post', return_value=response)
 
