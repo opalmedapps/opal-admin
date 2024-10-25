@@ -37,7 +37,7 @@ def find_patient_by_hin(health_insurance_number: str) -> PatientSchema:
     """
     Find a patient by their health insurance number.
 
-    Raises [NonOKResponseError][] if the response is not OK.
+    Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
     Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
     Args:
@@ -56,7 +56,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> PatientSchema:
     """
     Find a patient by their hospital number (MRN and site code).
 
-    Raises [NonOKResponseError][] if the response is not OK.
+    Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
     Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
     Args:
@@ -76,7 +76,7 @@ def notify_new_patient(mrn: str, site: str) -> None:
     """
     Notify the integration engine that a patient is now an Opal patient.
 
-    Raises [NonOKResponseError][] if the response is not OK.
+    Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
     Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
     Args:
