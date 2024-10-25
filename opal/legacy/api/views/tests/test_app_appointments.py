@@ -196,14 +196,14 @@ class TestUpdateAppointmentCheckinView:
 
     def test_unauthenticated(self, api_client: APIClient) -> None:
         """Unauthenticated requests are forbidden."""
-        response = api_client.patch(reverse('api:patients-legacy-appointment-checkin'))
+        response = api_client.post(reverse('api:patients-legacy-appointment-checkin'))
 
         assert response.status_code == HTTPStatus.FORBIDDEN
 
     def test_no_permission(self, api_client: APIClient, user: User) -> None:
         """Requests from an unauthorized user are forbidden."""
         api_client.force_login(user)
-        response = api_client.patch(reverse('api:patients-legacy-appointment-checkin'))
+        response = api_client.post(reverse('api:patients-legacy-appointment-checkin'))
 
         assert response.status_code == HTTPStatus.FORBIDDEN
 
@@ -219,7 +219,7 @@ class TestUpdateAppointmentCheckinView:
             checkin=0,
         )
 
-        response = api_client.patch(
+        response = api_client.post(
             reverse('api:patients-legacy-appointment-checkin'),
             data={
                 'source_system_id': '2024A21342134',
@@ -249,7 +249,7 @@ class TestUpdateAppointmentCheckinView:
             checkin=1,
         )
 
-        response = api_client.patch(
+        response = api_client.post(
             reverse('api:patients-legacy-appointment-checkin'),
             data={
                 'source_system_id': '2024A21342134',
@@ -274,7 +274,7 @@ class TestUpdateAppointmentCheckinView:
             checkin=0,
         )
 
-        response = api_client.patch(
+        response = api_client.post(
             reverse('api:patients-legacy-appointment-checkin'),
             data={
                 'source_system_id': '2024A21342134',
@@ -298,7 +298,7 @@ class TestUpdateAppointmentCheckinView:
             checkin=0,
         )
 
-        response = api_client.patch(
+        response = api_client.post(
             reverse('api:patients-legacy-appointment-checkin'),
             data={
                 'source_system_id': '2024A21342134',
@@ -320,7 +320,7 @@ class TestUpdateAppointmentCheckinView:
             checkin=0,
         )
 
-        response = api_client.patch(
+        response = api_client.post(
             reverse('api:patients-legacy-appointment-checkin'),
             data={
                 'source_system_id': '2024A21342134',
