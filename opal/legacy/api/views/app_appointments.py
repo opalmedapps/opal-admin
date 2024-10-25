@@ -90,9 +90,9 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
                 detail='Cannot find a unique appointment matching criteria.',
             )
 
-    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
-        Handle a PATCH request to update an appointment instance.
+        Handle a POST request to update an appointment instance.
 
         Args:
             request: the HTTP request
