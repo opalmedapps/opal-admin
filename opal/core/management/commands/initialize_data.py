@@ -70,6 +70,7 @@ class Command(BaseCommand):
                     constants.USERNAME_LISTENER_REGISTRATION,
                     constants.USERNAME_INTERFACE_ENGINE,
                     constants.USERNAME_BACKEND_LEGACY,
+                    constants.USERNAME_ORMS,
                 ],
             ).delete()
             Group.objects.all().delete()
@@ -121,6 +122,9 @@ class Command(BaseCommand):
         legacy_backend, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
+        orms, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_ORMS)
+        orms.set_unusable_password()
+        orms.save()
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
@@ -180,11 +184,13 @@ class Command(BaseCommand):
         token_listener_registration, _ = Token.objects.get_or_create(user=listener_registration)
         token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
         token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
+        token_orms, _ = Token.objects.get_or_create(user=orms)
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
         self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
+        self.stdout.write(f'{orms.username} token: {token_orms}')
 
 
 def _create_security_questions() -> None:
