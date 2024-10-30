@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import date, datetime
 from http import HTTPStatus
 from pathlib import Path
 
@@ -67,7 +67,7 @@ QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
     patient_last_name='Simpson',
-    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_date_of_birth=date(1999, 1, 1),
     patient_ramq='SIMM99999999',
     patient_sites_and_mrns=[
         {'mrn': '22222443', 'site_code': 'MGH'},
