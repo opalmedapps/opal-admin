@@ -385,7 +385,7 @@ def test_generate_pdf() -> None:
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        list[QUESTIONNAIRE_REPORT_DATA],
+        [QUESTIONNAIRE_REPORT_DATA],
     )
 
     assert isinstance(pdf_bytes, bytearray), 'Output'
