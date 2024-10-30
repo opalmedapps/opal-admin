@@ -4,10 +4,10 @@ import logging
 import math
 from datetime import datetime
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Optional
 
 from django.conf import settings
-
+from django.utils import timezone
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, TextStyle
 from fpdf.enums import Align, TableBordersLayout, TextEmphasis
@@ -18,27 +18,49 @@ from opal.utils.base64_util import Base64Util
 
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
-# TODO: Correctly define the questionnaireData with it's appropriate attributes
+
+class Question(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
+
+    Attributes:
+        question_text: name of the question title completed by the patient
+        question_label: A short label describing the question.
+        question_type_id: The type or category ID of the question.
+        position: The order of the question within the questionnaire.
+        min_value: Minimum allowed value for the answer (if applicable).
+        max_value: Maximum allowed value for the answer (if applicable).
+        polarity: idk
+        section_id: idk
+        values: List of tuples representing timestamp and answer values.
+    """
+
+    question_text: str
+    question_label: str
+    question_type_id: int
+    position: int
+    min_value: Optional[int]
+    max_value: Optional[int]
+    polarity: int
+    section_id: int
+    values: list[tuple[int, str]]
 
 
 class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
-        title: list of questionnaire title completed by the patient
-        updated_at: the date when the questionnaire was last updated by the patient
+        questionnaire_id: Unique ID of the questionnaire.
+        questionnaire_nickname: Name of questionnaire title completed by the patient
+        last_updated: The date when the questionnaire was last updated by the patient
+        questions: List of questions associated to the questionnaire
+
     """
 
-    questionnaire_title: str
-    updated_at: datetime
+    questionnaire_id: int
+    questionnaire_nickname: str
+    last_updated: datetime
+    questions: list[Question]
 
-
-temporary_data = [
-    QuestionnaireData(
-        questionnaire_title='Temporary',
-        updated_at=datetime(2024, 10, 21, 14, 0),
-    ),
-]
 
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
@@ -142,7 +164,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.U, size=10)
         self.set_text_color(0, 0, 255)
         self.set_x(155)
-        self.cell(**header_toc_link, link=str(self.add_link(page=1)))
+        self.cell(**header_toc_link, link=self.add_link(page=1))
 
         self.line(10, 18, 200, 18)  # X1, Y1, X2, Y2
 
@@ -310,17 +332,21 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             ),
         )
         num = 0
-        for data in temporary_data:  # noqa: WPS442
+        for data in self.questionnaire_data:  # noqa: WPS442
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if num != 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=16)
-            self.start_section(data.questionnaire_title, level=1)  # For the TOC
+            self.start_section(data.questionnaire_nickname, level=1)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(self, data.questionnaire_title, align=Align.C)  # To print the title in the center
+            self._insert_paragraph(self, data.questionnaire_nickname, align=Align.C)  # To print the title in the center
             self.ln(1)
-            self._insert_paragraph(self, f'Dernière mise à jour: {data.updated_at}', align=Align.C)
+            self._insert_paragraph(
+                self,
+                f'Dernière mise à jour: {data.last_updated.strftime("%Y-%b-%d %H:%M")}',
+                align=Align.C,
+            )
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
             self._insert_paragraph(self, 'TODO: add graphs', align=Align.C)
@@ -363,16 +389,16 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             table.row(TABLE_HEADER)
             for idx, section in enumerate(outline):
                 if section.level < 2:
-                    data = temporary_data[idx]
+                    data = self.questionnaire_data[idx]
                     link = pdf.add_link(page=section.page_number)
                     row = table.row()
                     row.cell(
-                        data.questionnaire_title,
+                        data.questionnaire_nickname,
                         style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
                         link=link,
                     )
                     row.cell(
-                        data.updated_at.strftime('%Y-%b-%d %H:%M'),
+                        data.last_updated.strftime('%Y-%b-%d %H:%M'),
                     )
                     row.cell(str(section.page_number), link=link)
 
@@ -414,9 +440,19 @@ def generate_pdf(
     Returns:
         output of the generated questionnaire report
     """
+    generated_at = timezone.localtime(timezone.now()).strftime('%Y-%m-%d_%H-%M-%S')
+    report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
+        first_name=patient_data.patient_first_name,
+        last_name=patient_data.patient_last_name,
+        date=generated_at,
+    )
+    report_path = settings.QUESTIONNAIRE_REPORTS_PATH / f'{report_file_name}.pdf'
+
     pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
 
-    return pdf.output()
+    pdf.output(name=str(report_path))
+
+    return report_path
 
 
 class QuestionnaireReportRequestData(NamedTuple):
