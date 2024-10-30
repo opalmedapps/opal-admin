@@ -445,7 +445,7 @@ def generate_pdf(
         last_name=patient_data.patient_last_name,
         date=generated_at,
     )
-    report_path = settings.QUESTIONNAIRE_REPORTS_PATH / f'{report_file_name}.pdf'
+    report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
 
     pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
 
