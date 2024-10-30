@@ -11,7 +11,7 @@ from django.utils import timezone
 
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, TextStyle
-from fpdf.enums import Align, TableBordersLayout, TextEmphasis
+from fpdf.enums import Align, TableBordersLayout
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
@@ -150,7 +150,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=12,
         )
         self.set_y(y=5)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
         self.cell(**header_patient_info, markdown=True)
         self.ln(6)
 
@@ -161,7 +161,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_x(10)
         self.cell(**header_title)
 
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.U, size=10)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='U', size=10)
         self.set_text_color(0, 0, 255)
         self.set_x(155)
         self.cell(**header_toc_link, link=self.add_link(page=1))
@@ -198,16 +198,15 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         source_date = FPDFCellDictType(
             w=0,
             h=5,
-            text='Tempory text',
+            text='**Tempory text**',
             border=0,
             align=Align.L,
         )
         self.set_y(y=-35)
         # Move the cursor to the bottom (e.g., 3.5 cm from the bottom).
         self.line(10, 260, 200, 260)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.B, size=12)
-        self.cell(**source_date)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=12)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
+        self.cell(**source_date, markdown=True)
         self.cell(**footer_page)
         self.ln(10)
 
@@ -250,13 +249,13 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text=f'{self.patient_sites_and_mrns_str}',
         )
 
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
         self.cell(**patient_info)
         self.code39(text='*NO-SCAN*', x=160, y=30, w=1, h=18)
         self.ln(6)
         self.cell(**patient_site_and_mrns)
         self.ln(8)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=12)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.set_x(162)
         self.cell(
             text='*  NO  -  SCAN  *',
@@ -336,7 +335,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
             if num != 0:  # Skip empty first page
                 self.add_page()
-            self.set_font(QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=16)
+            self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(data.questionnaire_nickname, level=1)  # For the TOC
             self.set_y(35)
             self._insert_paragraph(self, data.questionnaire_nickname, align=Align.C)  # To print the title in the center
@@ -360,7 +359,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         Args:
             pdf: The FPDF instance
         """
-        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=30)
+        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=30)
         pdf.set_x(10)
         self._insert_paragraph(self, 'Table des matières:')
         pdf.y += 5  # noqa: WPS111
