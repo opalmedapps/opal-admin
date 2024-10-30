@@ -68,21 +68,6 @@ AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
-header_title = FPDFCellDictType(
-    w=0,
-    h=0,
-    align=Align.L,
-    border=0,
-    text='Questionnaires remplis et déclarés par le patient',
-)
-header_toc_link = FPDFCellDictType(
-    w=0,
-    h=0,
-    align=Align.L,
-    border=0,
-    text='Retour à la Table des Matières',
-)
-
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
     """Customized FPDF class that provides implementation for generating questionnaire PDF reports."""
@@ -132,7 +117,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=0,
             align=Align.R,
             border=0,
-            text=f'{self.patient_name}',
+            text=f'**{self.patient_name}**',
         )
         header_text = FPDFCellDictType(
             w=0,
@@ -141,6 +126,21 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             border=0,
             text=f'{self.patient_sites_and_mrns_str}',
         )
+        header_title = FPDFCellDictType(
+            w=0,
+            h=0,
+            align=Align.L,
+            border=0,
+            text='Questionnaires remplis et déclarés par le patient',
+        )
+        header_toc_link = FPDFCellDictType(
+            w=0,
+            h=0,
+            align=Align.L,
+            border=0,
+            text='Retour à la Table des Matières',
+        )
+
         self.image(
             str(self.institution_data.institution_logo_path),
             x=5,
@@ -149,12 +149,10 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=12,
         )
         self.set_y(y=5)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.B, size=15)
-        self.cell(**header_patient_info)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
+        self.cell(**header_patient_info, markdown=True)
         self.ln(6)
 
-        self.cell(70)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
         self.cell(**header_text)
 
         self.ln(11)
@@ -241,7 +239,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=0,
             align=Align.L,
             border=0,
-            text=f'{self.patient_name}',
+            text=f'**{self.patient_name}**',
         )
         patient_site_and_mrns = FPDFCellDictType(
             w=0,
@@ -251,11 +249,10 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text=f'{self.patient_sites_and_mrns_str}',
         )
 
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.B, size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
         self.cell(**patient_info)
         self.code39(text='*NO-SCAN*', x=160, y=30, w=1, h=18)
         self.ln(6)
-        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=15)
         self.cell(**patient_site_and_mrns)
         self.ln(8)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style=TextEmphasis.NONE, size=12)
