@@ -41,21 +41,18 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
 )
 
 
-QUESTION_REPORT_DATA = Question(
-    question_text='Question demo for patient',
-    question_label='demo for patient',
-    question_type_id=1,
-    position=1,
-    min_value=None,
-    max_value=None,
-    polarity=0,
-    section_id=1,
-    values=[
-        [
-            1,
-            '3000',
-        ],
-    ],
+QUESTION_REPORT_DATA = (
+    Question(
+        question_text='Question demo for patient',
+        question_label='demo for patient',
+        question_type_id=1,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[[1, '3000']],
+    ),
 )
 QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
     questionnaire_id=1,
@@ -388,7 +385,7 @@ def test_generate_pdf() -> None:
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        QUESTIONNAIRE_REPORT_DATA,
+        list[QUESTIONNAIRE_REPORT_DATA],
     )
 
     assert isinstance(pdf_bytes, bytearray), 'Output'
