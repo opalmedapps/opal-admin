@@ -309,7 +309,7 @@ class TestUpdateAppointmentCheckinView:
         assert appointment1.checkin == 0
         assert 'Must be a valid boolean.' in response.data['checkin']
 
-    def test_update_checkin_missing_args(self, api_client: APIClient, listener_user: User) -> None:
+    def test_update_checkin_missing_sourcedb(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending incomplete data to endpoint."""
         user = factories.LegacyUserFactory()
         api_client.force_login(user=listener_user)
@@ -329,7 +329,29 @@ class TestUpdateAppointmentCheckinView:
             },
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert "Both 'source_system_id' and 'source_database' are required." in response.data
+        assert 'This field is required.' in response.data['source_database']
+
+    def test_update_checkin_missing_sourceid(self, api_client: APIClient, listener_user: User) -> None:
+        """Test response of sending incomplete data to endpoint."""
+        user = factories.LegacyUserFactory()
+        api_client.force_login(user=listener_user)
+        api_client.credentials(HTTP_APPUSERID=user.username)
+        medivisit = factories.LegacySourceDatabaseFactory()
+        factories.LegacyAppointmentFactory(
+            source_system_id='2024A21342134',
+            source_database=medivisit,
+            checkin=0,
+        )
+
+        response = api_client.post(
+            reverse('api:patients-legacy-appointment-checkin'),
+            data={
+                'source_database': medivisit.source_database,
+                'checkin': 1,
+            },
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert 'This field is required.' in response.data['source_system_id']
 
     def test_update_checkin_missing_checkin(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending missing checkin field data to endpoint."""
