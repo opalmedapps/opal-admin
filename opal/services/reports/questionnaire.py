@@ -4,10 +4,11 @@ import logging
 import math
 from datetime import datetime
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 from django.conf import settings
 from django.utils import timezone
+
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, TextStyle
 from fpdf.enums import Align, TableBordersLayout, TextEmphasis
@@ -29,8 +30,8 @@ class Question(NamedTuple):
         position: The order of the question within the questionnaire.
         min_value: Minimum allowed value for the answer (if applicable).
         max_value: Maximum allowed value for the answer (if applicable).
-        polarity: idk
-        section_id: idk
+        polarity: polarity value for the answer
+        section_id: id of the section
         values: List of tuples representing timestamp and answer values.
     """
 
@@ -38,8 +39,8 @@ class Question(NamedTuple):
     question_label: str
     question_type_id: int
     position: int
-    min_value: Optional[int]
-    max_value: Optional[int]
+    min_value: int | None
+    max_value: int | None
     polarity: int
     section_id: int
     values: list[tuple[int, str]]

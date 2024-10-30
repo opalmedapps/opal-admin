@@ -12,8 +12,13 @@ from requests.exceptions import RequestException
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
 from opal.services.reports.base import InstitutionData, PatientData
-from opal.services.reports.questionnaire import QuestionnaireReportRequestData, ReportService, generate_pdf
-from opal.services.reports.test_data import convert_table_data_to_questionnaire_list
+from opal.services.reports.questionnaire import (
+    Question,
+    QuestionnaireData,
+    QuestionnaireReportRequestData,
+    ReportService,
+    generate_pdf,
+)
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -34,6 +39,31 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     logo_path=LOGO_PATH,
     language='en',
 )
+
+
+QUESTION_REPORT_DATA = Question(
+    question_text='Question demo for patient',
+    question_label='demo for patient',
+    question_type_id=1,
+    position=1,
+    min_value=None,
+    max_value=None,
+    polarity=0,
+    section_id=1,
+    values=[
+        [
+            1,
+            '3000',
+        ],
+    ],
+)
+QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
+    questionnaire_id=1,
+    questionnaire_nickname='Questionnaire Demo for patient',
+    last_updated=datetime(2024, 10, 21, 14, 0),
+    questions=QUESTION_REPORT_DATA,
+)
+
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
     patient_last_name='Simpson',
@@ -354,12 +384,11 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 def test_generate_pdf() -> None:
     """Ensure that the pdf is correctly generated."""
     # TODO: call generate PDF
-    questionnaire_data = convert_table_data_to_questionnaire_list()
 
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        questionnaire_data,
+        QUESTIONNAIRE_REPORT_DATA,
     )
 
     assert isinstance(pdf_bytes, bytearray), 'Output'
