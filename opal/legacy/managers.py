@@ -98,7 +98,6 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         """
         return self.filter(
             patientsernum=patient_sernum,
-            state='Active',
         ).exclude(
             readby__contains=username,
         )
