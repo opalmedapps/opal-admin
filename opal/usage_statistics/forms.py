@@ -25,7 +25,7 @@ class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
     )
     group_by = forms.ChoiceField(
         choices=(
-            ('BY_DATE', _('Date')),
+            ('BY_DAY', _('Day')),
             ('BY_MONTH', _('Month')),
             ('BY_YEAR', _('Year')),
         ),
