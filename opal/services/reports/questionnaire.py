@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 from django.conf import settings
-from django.utils import timezone
 
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, TextStyle
@@ -103,6 +102,21 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
         )
+
+        self.header_patient_info = FPDFCellDictType(
+            w=0,
+            h=0,
+            align=Align.R,
+            border=0,
+            text=f'**{self.patient_name}**',
+        )
+        self.header_text = FPDFCellDictType(
+            w=0,
+            h=0,
+            align=Align.R,
+            border=0,
+            text=f'{self.patient_sites_and_mrns_str}',
+        )
         self._set_report_metadata()
         self.set_auto_page_break(auto=True, margin=AUTO_PAGE_BREAK_BOTTOM_MARGIN)
         self.add_page()
@@ -113,20 +127,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
-        header_patient_info = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.R,
-            border=0,
-            text=f'**{self.patient_name}**',
-        )
-        header_text = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.R,
-            border=0,
-            text=f'{self.patient_sites_and_mrns_str}',
-        )
         header_title = FPDFCellDictType(
             w=0,
             h=0,
@@ -141,7 +141,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             border=0,
             text='Retour à la Table des Matières',
         )
-
         self.image(
             str(self.institution_data.institution_logo_path),
             x=5,
@@ -151,10 +150,10 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
         self.set_y(y=5)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
-        self.cell(**header_patient_info, markdown=True)
+        self.cell(**self.header_patient_info, markdown=True)
         self.ln(6)
 
-        self.cell(**header_text)
+        self.cell(**self.header_text)
 
         self.ln(11)
         self.cell(8)
@@ -438,19 +437,11 @@ def generate_pdf(
     Returns:
         output of the generated questionnaire report
     """
-    generated_at = timezone.localtime(timezone.now()).strftime('%Y-%m-%d_%H-%M-%S')
-    report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
-        first_name=patient_data.patient_first_name,
-        last_name=patient_data.patient_last_name,
-        date=generated_at,
-    )
-    report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
+    # TODO: Add report path back in the test
 
     pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
 
-    pdf.output(name=str(report_path))
-
-    return report_path
+    return pdf.output()
 
 
 class QuestionnaireReportRequestData(NamedTuple):
