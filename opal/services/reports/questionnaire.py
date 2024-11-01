@@ -173,7 +173,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         self.line(10, 26, 200, 26)  # X1, Y1, X2, Y2
 
-    def footer(self) -> None:  # noqa: WPS213
+    def footer(self) -> None:
         """Set the questionnaire PDF's footer.
 
         This is automatically called by FPDF.add_page() and FPDF.output().
