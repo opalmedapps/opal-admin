@@ -15,6 +15,8 @@ class FPDFCellDictType(TypedDict):
     text: str
     border: bool | str | Literal[0, 1]
     align: str | Align
+    link: str | None
+    markdown: bool | None
 
 
 class FPDFMultiCellDictType(TypedDict):
