@@ -24,14 +24,14 @@ class Question(NamedTuple):
 
     Attributes:
         question_text: name of the question title completed by the patient
-        question_label: A short label describing the question.
-        question_type_id: The type or category ID of the question.
-        position: The order of the question within the questionnaire.
-        min_value: Minimum allowed value for the answer (if applicable).
-        max_value: Maximum allowed value for the answer (if applicable).
+        question_label: a short label describing the question.
+        question_type_id: the type or category ID of the question.
+        position: the order of the question within the questionnaire.
+        min_value: minimum allowed value for the answer (if applicable).
+        max_value: maximum allowed value for the answer (if applicable).
         polarity: polarity value for the answer
-        section_id: id of the section
-        values: List of tuples representing timestamp and answer values.
+        section_id: ID of the section
+        values: list of tuples representing timestamp and answer values.
     """
 
     question_text: str
@@ -49,10 +49,10 @@ class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
-        questionnaire_id: Unique ID of the questionnaire.
-        questionnaire_nickname: Name of questionnaire title completed by the patient
-        last_updated: The date when the questionnaire was last updated by the patient
-        questions: List of questions associated to the questionnaire
+        questionnaire_id: unique ID of the questionnaire.
+        questionnaire_nickname: name of questionnaire title completed by the patient
+        last_updated: the date when the questionnaire was last updated by the patient
+        questions: list of questions associated to the questionnaire
 
     """
 
@@ -103,20 +103,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             sites_and_mrns_list,
         )
 
-        self.header_patient_info = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.R,
-            border=0,
-            text=f'**{self.patient_name}**',
-        )
-        self.header_text = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.R,
-            border=0,
-            text=f'{self.patient_sites_and_mrns_str}',
-        )
         self._set_report_metadata()
         self.set_auto_page_break(auto=True, margin=AUTO_PAGE_BREAK_BOTTOM_MARGIN)
         self.add_page()
@@ -127,20 +113,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
-        header_title = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.L,
-            border=0,
-            text='Questionnaires remplis et déclarés par le patient',
-        )
-        header_toc_link = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.L,
-            border=0,
-            text='Retour à la Table des Matières',
-        )
         self.image(
             str(self.institution_data.institution_logo_path),
             x=5,
@@ -150,20 +122,52 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
         self.set_y(y=5)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
-        self.cell(**self.header_patient_info, markdown=True)
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.R,
+                border=0,
+                text=f'**{self.patient_name}**',
+                markdown=True,
+            ),
+        )
         self.ln(6)
-
-        self.cell(**self.header_text)
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.R,
+                border=0,
+                text=f'{self.patient_sites_and_mrns_str}',
+            ),
+        )
 
         self.ln(11)
-        self.cell(8)
         self.set_x(10)
-        self.cell(**header_title)
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.L,
+                border=0,
+                text='Questionnaires remplis et déclarés par le patient',
+            ),
+        )
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='U', size=10)
         self.set_text_color(0, 0, 255)
         self.set_x(155)
-        self.cell(**header_toc_link, link=self.add_link(page=1))
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.L,
+                border=0,
+                text='Retour à la Table des Matières',
+                link=self.add_link(page=1),
+            ),
+        )
 
         self.line(10, 18, 200, 18)  # X1, Y1, X2, Y2
 
@@ -187,26 +191,29 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             + 'Corrections must be done in the preliminary document or via an addendum if the document is final.\n'
         )
         footer_block = FPDFMultiCellDictType(w=190, h=None, align='L', text=footer_text)
-        footer_page = FPDFCellDictType(
-            w=0,
-            h=5,
-            text=f'Page {self.page_no()} de {{nb}}',
-            border=0,
-            align=Align.R,
-        )
-        source_date = FPDFCellDictType(
-            w=0,
-            h=5,
-            text='**Tempory text**',
-            border=0,
-            align=Align.L,
-        )
         self.set_y(y=-35)
         # Move the cursor to the bottom (e.g., 3.5 cm from the bottom).
         self.line(10, 260, 200, 260)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
-        self.cell(**source_date, markdown=True)
-        self.cell(**footer_page)
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=5,
+                text='**Tempory text**',
+                border=0,
+                align=Align.L,
+                markdown=True,
+            ),
+        )
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=5,
+                text=f'Page {self.page_no()} de {{nb}}',
+                border=0,
+                align=Align.R,
+            ),
+        )
         self.ln(10)
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, size=9)
@@ -233,27 +240,31 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
         """Draw the patient's name, site information and barcode on the first page."""
-        patient_info = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.L,
-            border=0,
-            text=f'**{self.patient_name}**',
-        )
-        patient_site_and_mrns = FPDFCellDictType(
-            w=0,
-            h=0,
-            align=Align.L,
-            border=0,
-            text=f'{self.patient_sites_and_mrns_str}',
-        )
-
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
-        self.cell(**patient_info)
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.L,
+                border=0,
+                text=f'**{self.patient_name}**',
+                markdown=True,
+            ),
+        )
         self.code39(text='*NO-SCAN*', x=160, y=30, w=1, h=18)
         self.ln(6)
-        self.cell(**patient_site_and_mrns)
+
+        self.cell(
+            **FPDFCellDictType(
+                w=0,
+                h=0,
+                align=Align.L,
+                border=0,
+                text=f'{self.patient_sites_and_mrns_str}',
+            ),
+        )
         self.ln(8)
+
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.set_x(162)
         self.cell(
