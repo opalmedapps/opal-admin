@@ -329,7 +329,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             ),
         )
         num = 0
-        for data in self.questionnaire_data:  # noqa: WPS442
+        for data in self.questionnaire_data:
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if num != 0:  # Skip empty first page
