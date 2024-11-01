@@ -380,7 +380,6 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
 def test_generate_pdf() -> None:
     """Ensure that the pdf is correctly generated."""
-
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
