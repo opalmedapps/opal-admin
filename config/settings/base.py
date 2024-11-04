@@ -80,26 +80,26 @@ DATABASES = {
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_DATABASE_NAME'),
+        'NAME': 'OpalDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': f"test_{env('LEGACY_DATABASE_NAME')}",
+            'NAME': 'test_OpalDB',
         },
     },
     'questionnaire': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_QUESTIONNAIRE_DATABASE_NAME'),
+        'NAME': 'QuestionnaireDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': f"test_{env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')}",
+            'NAME': 'test_QuestionnaireDB',
         },
     },
 }
