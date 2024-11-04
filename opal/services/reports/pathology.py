@@ -107,6 +107,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 align='L',
                 border=0,
                 text='Pathologie Chirurgicale Rapport (suite)',
+                link='',
+                markdown=False,
             )
             header_text_en = FPDFCellDictType(
                 w=0,
@@ -114,6 +116,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 align='L',
                 border=0,
                 text='Surgical Pathology Final Report (continuation)',
+                link='',
+                markdown=False,
             )
             header_patient_info = FPDFCellDictType(
                 w=0,
@@ -121,6 +125,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 align='L',
                 border=0,
                 text=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns_str}]',
+                link='',
+                markdown=False,
             )
 
             self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=10)
@@ -161,6 +167,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             text=f'Page {self.page_no()}/{{nb}}',
             border=0,
             align='R',
+            link='',
+            markdown=False,
         )
         self.set_y(y=footer_cursor_abscissa_position_in_mm)
         self.set_font(family=PATHOLOGY_REPORT_FONT, size=9)
@@ -271,8 +279,24 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             style='B',
             size=12,
         )
-        title_fr = FPDFCellDictType(w=0, h=10, align='C', border=0, text='PATHOLOGIE CHIRURGICALE RAPORT FINAL')
-        title_en = FPDFCellDictType(w=0, h=10, align='C', border=0, text='SURGICAL PATHOLOGY FINAL REPORT')
+        title_fr = FPDFCellDictType(
+            w=0,
+            h=10,
+            align='C',
+            border=0,
+            text='PATHOLOGIE CHIRURGICALE RAPORT FINAL',
+            link='',
+            markdown=False,
+        )
+        title_en = FPDFCellDictType(
+            w=0,
+            h=10,
+            align='C',
+            border=0,
+            text='SURGICAL PATHOLOGY FINAL REPORT',
+            link='',
+            markdown=False,
+        )
         space_between_titles: int = 6  # the height between titles
         title_indentation: int = 12    # to make an indentation from previous section/block
 
@@ -352,7 +376,15 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             size=12,
         )
         new_abscissa_position: int = 20
-        section_title_block = FPDFCellDictType(w=0, h=10, border=0, align='L', text=section_title)
+        section_title_block = FPDFCellDictType(
+            w=0,
+            h=10,
+            border=0,
+            align='L',
+            text=section_title,
+            link='',
+            markdown=False,
+        )
         section_content_block = FPDFMultiCellDictType(
             w=155,
             h=None,

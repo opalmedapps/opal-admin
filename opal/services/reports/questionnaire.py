@@ -122,28 +122,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
         self.set_y(y=5)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
-        self.cell(
-            **FPDFCellDictType(
-                w=0,
-                h=0,
-                align=Align.R,
-                border=0,
-                text=f'**{self.patient_name}**',
-                markdown=True,
-            ),
+        patient_info = FPDFMultiCellDictType(
+            w=0,
+            h=None,
+            align=Align.R,
+            text=f'**{self.patient_name}**\n{self.patient_sites_and_mrns_str}',
         )
+        self.multi_cell(**patient_info, markdown=True)
         self.ln(6)
-        self.cell(
-            **FPDFCellDictType(
-                w=0,
-                h=0,
-                align=Align.R,
-                border=0,
-                text=f'{self.patient_sites_and_mrns_str}',
-            ),
-        )
-
-        self.ln(11)
         self.set_x(10)
         self.cell(
             **FPDFCellDictType(
@@ -152,6 +138,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 align=Align.L,
                 border=0,
                 text='Questionnaires remplis et déclarés par le patient',
+                link='',
+                markdown=False,
             ),
         )
 
@@ -166,6 +154,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 border=0,
                 text='Retour à la Table des Matières',
                 link=self.add_link(page=1),
+                markdown=False,
             ),
         )
 
@@ -173,7 +162,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         self.line(10, 26, 200, 26)  # X1, Y1, X2, Y2
 
-    def footer(self) -> None:  # noqa: WPS213
+    def footer(self) -> None:
         """Set the questionnaire PDF's footer.
 
         This is automatically called by FPDF.add_page() and FPDF.output().
@@ -202,6 +191,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 text='**Tempory text**',
                 border=0,
                 align=Align.L,
+                link='',
                 markdown=True,
             ),
         )
@@ -212,6 +202,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 text=f'Page {self.page_no()} de {{nb}}',
                 border=0,
                 align=Align.R,
+                link='',
+                markdown=False,
             ),
         )
         self.ln(10)
@@ -248,6 +240,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 align=Align.L,
                 border=0,
                 text=f'**{self.patient_name}**',
+                link='',
                 markdown=True,
             ),
         )
@@ -261,6 +254,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 align=Align.L,
                 border=0,
                 text=f'{self.patient_sites_and_mrns_str}',
+                link='',
+                markdown=False,
             ),
         )
         self.ln(8)
@@ -298,11 +293,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         subsequent_page_count = 17
         total_questions = len(self.questionnaire_data)
 
-        guesstimate = 0
-        if total_questions <= first_page_count:
-            guesstimate = 1
-        else:
-            guesstimate = math.ceil((total_questions - first_page_count) / subsequent_page_count) + 1
+        guesstimate = math.ceil(
+            (
+                max(0, total_questions - first_page_count)
+            ) / subsequent_page_count,
+        ) + 1
         self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213

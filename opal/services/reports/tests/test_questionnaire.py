@@ -58,7 +58,7 @@ QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
     questionnaire_id=1,
     questionnaire_nickname='Questionnaire Demo for patient',
     last_updated=datetime(2024, 10, 21, 14, 0),
-    questions=QUESTION_REPORT_DATA,
+    questions=[QUESTION_REPORT_DATA],
 )
 
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
