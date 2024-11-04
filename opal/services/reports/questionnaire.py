@@ -180,8 +180,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             + 'Corrections must be done in the preliminary document or via an addendum if the document is final.\n'
         )
         footer_block = FPDFMultiCellDictType(w=190, h=None, align='L', text=footer_text)
-        self.set_y(y=-35)
         # Move the cursor to the bottom (e.g., 3.5 cm from the bottom).
+        self.set_y(y=-35)
         self.line(10, 260, 200, 260)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.cell(
