@@ -76,37 +76,6 @@ class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
             'app_activity_report',
             'individual_patient_report',
             'all_reports',
-            HTML("""
-            <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var allReportsCheckbox = document.getElementById('id_all_reports');
-                var reportCheckboxes = [
-                    document.getElementById('id_summary_report'),
-                    document.getElementById('id_data_received_report'),
-                    document.getElementById('id_app_activity_report'),
-                    document.getElementById('id_individual_patient_report'),
-                ];
-
-                function toggleReportCheckboxes() {
-                    if (allReportsCheckbox.checked) {
-                        reportCheckboxes.forEach(function(checkbox) {
-                            checkbox.checked = true;
-                            checkbox.disabled = true;
-                        });
-                    } else {
-                        reportCheckboxes.forEach(function(checkbox) {
-                            checkbox.disabled = false;
-                        });
-                    }
-                }
-
-                allReportsCheckbox.addEventListener('change', toggleReportCheckboxes);
-
-                // Initialize on page load
-                toggleReportCheckboxes();
-            });
-            </script>
-            """),
             Row(
                 Column('card_type', css_class='col-4'),
                 Column('medical_number', css_class='col-3'),
