@@ -145,7 +145,7 @@ class IsORMSUser(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
         """
         return super().has_permission(request, view) and (
-            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()  # type: ignore[union-attr]
+            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
             or request.user.is_superuser
         )
 
