@@ -12,8 +12,8 @@ from crispy_forms.layout import HTML, Column, Field, Layout, Row
 from opal.core.forms.layouts import CancelButton, FormActions, Submit
 
 
-class UsageStatisticsExportForm(forms.Form):
-    """Form for exporting usage statistics data based on the provided filtering values."""
+class GroupUsageStatisticsExportForm(forms.Form):
+    """Form for exporting group usage statistics data based on the provided filtering values."""
 
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -38,7 +38,6 @@ class UsageStatisticsExportForm(forms.Form):
             ('summary_report', _('Grouped registration codes, caregivers, patients, device identifiers')),
             ('data_received_report', _('Grouped patients received data')),
             ('app_activity_report', _('Grouped patient/user app activity')),
-            ('individual_patient_report', _('Individual reports for Labs, Logins, Demographics & Diagnoses')),
         ),
         widget=forms.widgets.CheckboxSelectMultiple,
         label='',
@@ -73,3 +72,23 @@ class UsageStatisticsExportForm(forms.Form):
                 CancelButton(reverse('usage-statistics:data-export')),
             ),
         )
+
+    def clean(self) -> dict[str, Any]:
+        """Clean exporting usage statistics form.
+
+        Raises:
+            ValidationError: if the data is invalid.
+
+        Returns:
+            form with cleaned fields
+        """
+        super().clean()
+        start_date = self.cleaned_data.get('start_date')
+        end_date = self.cleaned_data.get('end_date')
+
+        if start_date and end_date:
+            if start_date > end_date:
+                raise forms.ValidationError(
+                    _('Start Date cannot be later than End Date.'),
+                )
+        return self.cleaned_data

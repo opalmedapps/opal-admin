@@ -11,7 +11,7 @@ from opal.usage_statistics import forms
 class UsageStatisticsExportTemplateView(UserPassesTestMixin, generic.FormView[Form]):
     """This `TemplateView` displays a form for exporting usage statistics."""
 
-    form_class = forms.UsageStatisticsExportForm
+    form_class = forms.GroupUsageStatisticsExportForm
     template_name = 'usage_statistics/export_data/export_form.html'
 
     def test_func(self) -> bool:
