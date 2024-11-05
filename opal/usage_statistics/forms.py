@@ -3,16 +3,16 @@ from typing import Any
 
 from django import forms
 from django.urls import reverse
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Layout, Row
+from crispy_forms.layout import HTML, Column, Field, Layout, Row
 
 from opal.core.forms.layouts import CancelButton, FormActions, Submit
-from opal.patients.forms import AccessRequestSearchPatientForm
 
 
-class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
+class UsageStatisticsExportForm(forms.Form):
     """Form for exporting usage statistics data based on the provided filtering values."""
 
     start_date = forms.DateField(
@@ -24,6 +24,7 @@ class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
         label=_('End Date'),
     )
     group_by = forms.ChoiceField(
+        required=True,
         choices=(
             ('BY_DAY', _('Day')),
             ('BY_MONTH', _('Month')),
@@ -32,25 +33,15 @@ class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
         initial='BY_YEAR',
         label=_('Group By'),
     )
-    summary_report = forms.BooleanField(
-        required=False,
-        label=_('Grouped registration codes, caregivers, patients, device identifiers'),
-    )
-    data_received_report = forms.BooleanField(
-        required=False,
-        label=_('Grouped patients received data'),
-    )
-    app_activity_report = forms.BooleanField(
-        required=False,
-        label=_('Grouped patient/user app activity'),
-    )
-    individual_patient_report = forms.BooleanField(
-        required=False,
-        label=_('Individual reports for Labs, Logins, Demographics & Diagnoses'),
-    )
-    all_reports = forms.BooleanField(
-        required=False,
-        label=_('All statistic reports'),
+    report_type = forms.MultipleChoiceField(
+        choices=(
+            ('summary_report', _('Grouped registration codes, caregivers, patients, device identifiers')),
+            ('data_received_report', _('Grouped patients received data')),
+            ('app_activity_report', _('Grouped patient/user app activity')),
+            ('individual_patient_report', _('Individual reports for Labs, Logins, Demographics & Diagnoses')),
+        ),
+        widget=forms.widgets.CheckboxSelectMultiple,
+        label='',
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -62,24 +53,19 @@ class UsageStatisticsExportForm(AccessRequestSearchPatientForm):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        # self.helper = FormHelper()
-        # self.helper.form_tag = False
+        self.helper = FormHelper()
+        self.helper.form_tag = False
 
+        report_type_label = gettext('Report Type*')
         self.helper.layout = Layout(
             Row(
                 Column('start_date', css_class='col-6'),
                 Column('end_date', css_class='col-6'),
             ),
             'group_by',
-            'summary_report',
-            'data_received_report',
-            'app_activity_report',
-            'individual_patient_report',
-            'all_reports',
-            Row(
-                Column('card_type', css_class='col-4'),
-                Column('medical_number', css_class='col-3'),
-                Column('site', css_class='col-5'),
+            Field(
+                HTML(f'<label for="id_report_type" class="form-label requiredField">{report_type_label}</label>'),
+                'report_type',
             ),
             FormActions(
                 Submit('submit', _('Download csv')),
