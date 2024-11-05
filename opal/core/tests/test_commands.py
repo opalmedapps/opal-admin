@@ -10,8 +10,10 @@ from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
+from opal.core import constants
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
@@ -167,15 +169,20 @@ class TestInsertTestData(CommandTestMixin):
         assert bart.date_of_birth == date(2010, 2, 23)
 
 
-class TestInitializeData(CommandTestMixin):
+@pytest.mark.django_db(databases=['default', 'legacy'])
+class TestInitializeData(CommandTestMixin):  # noqa: WPS338
     """Test class to group the `initialize_data` command tests."""
+
+    @pytest.fixture(autouse=True)
+    def _add_legacy_role(self) -> None:
+        legacy_models.LegacyOARole.objects.create(name_en='System Administrator')
 
     def test_insert(self) -> None:
         """Ensure that initial data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
@@ -266,7 +273,7 @@ class TestInitializeData(CommandTestMixin):
         stdout, stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
@@ -331,3 +338,46 @@ class TestInitializeData(CommandTestMixin):
         token = Token.objects.get(user=user)
 
         assert token.key == random_token
+
+    def test_insert_superuser_random_password(self) -> None:
+        """An admin user with a random password us generated."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password: ' in stdout
+
+    def test_insert_superuser_predefined_password(self) -> None:
+        """A predefined password can be provided for the admin user."""
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+
+        stdout, _stderr = self._call_command('initialize_data', f'--admin-password={random_password}')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+        assert user.check_password(random_password)
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password' not in stdout
+
+    def test_insert_superuser_predefined_password_invalid(self) -> None:
+        """The password for the admin user needs to have a minimum length."""
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES - 1)
+
+        with pytest.raises(
+            CommandError,
+            match=f"Error: argument --admin-password: invalid password value: '{random_password}'",
+        ):
+            self._call_command('initialize_data', f'--admin-password={random_password}')

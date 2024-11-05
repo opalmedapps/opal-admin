@@ -1,4 +1,5 @@
 """Management command for inserting test data."""
+import secrets
 from typing import Any
 
 from django.conf import settings
@@ -10,12 +11,8 @@ from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
 from opal.core import constants
+from opal.legacy import models as legacy_models
 from opal.users.models import ClinicalStaff
-
-# 40 characters (20 bytes)
-# same as length used by DRF for auth token:
-# https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L37
-TOKEN_LENGTH = 40
 
 
 def token(value: str) -> str:
@@ -31,8 +28,29 @@ def token(value: str) -> str:
     Returns:
         the token string
     """
-    if len(value) != TOKEN_LENGTH:
+    if len(value) != constants.TOKEN_LENGTH:
         raise ValueError('Token must be 40 characters long')
+
+    return value
+
+
+def password(value: str) -> str:
+    """
+    Validate that the password has a minimum required length.
+
+    Args:
+        value: the password string to validate
+
+    Raises:
+        ValueError: If the password is too short
+
+    Returns:
+        the password string
+    """
+    minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
+
+    if len(value) < minimum_length:
+        raise ValueError(f'Password must be at least {minimum_length} characters long')
 
     return value
 
@@ -61,6 +79,16 @@ class Command(BaseCommand):
             action='store_true',
             default=False,
             help='Force deleting existing data first before initializing (default: false)',
+        )
+        password_help = (
+            'password for the admin user to be used'
+            + f' instead of generating a random one (minimum length: {constants.ADMIN_PASSWORD_MIN_LENGTH}'
+        )
+        parser.add_argument(
+            '--admin-password',
+            type=password,
+            default=None,
+            help=password_help,
         )
         parser.add_argument(
             '--listener-token',
@@ -111,23 +139,32 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.WARNING('Deleting existing data'))
 
-            # keep system users
-            ClinicalStaff.objects.exclude(
-                username__in=[
-                    constants.USERNAME_LISTENER,
-                    constants.USERNAME_LISTENER_REGISTRATION,
-                    constants.USERNAME_INTERFACE_ENGINE,
-                    constants.USERNAME_BACKEND_LEGACY,
-                ],
-            ).delete()
-            Group.objects.all().delete()
-            SecurityQuestion.objects.all().delete()
+            self._delete_data()
 
             self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
 
         self._create_data(**options)
+        self._create_legacy_data(**options)
 
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
+
+    def _delete_data(self) -> None:
+        """
+        Delete existing data that was initialized.
+
+        Keeps the system users so that they keep their existing API tokens.
+        """
+        # keep system users
+        ClinicalStaff.objects.exclude(
+            username__in=[
+                constants.USERNAME_LISTENER,
+                constants.USERNAME_LISTENER_REGISTRATION,
+                constants.USERNAME_INTERFACE_ENGINE,
+                constants.USERNAME_BACKEND_LEGACY,
+            ],
+        ).delete()
+        Group.objects.all().delete()
+        SecurityQuestion.objects.all().delete()
 
     def _create_data(self, **options: Any) -> None:  # noqa: WPS210, WPS213
         """
@@ -252,6 +289,34 @@ class Command(BaseCommand):
         self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
+
+    def _create_legacy_data(self, **options: Any) -> None:
+        # create a legacy admin user with the system administrator role
+        admin_role = legacy_models.LegacyOARole.objects.get(name_en='System Administrator')
+        legacy_models.LegacyOAUser.objects.create(
+            username='admin',
+            # the password does not matter since legacy OpalAdmin
+            # does not support logging in with AD or regular login at the same time
+            # i.e., if AD login is enabled a regular log in is not possible
+            password=secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES),
+            oa_role=admin_role,
+            user_type=legacy_models.LegacyOAUserType.HUMAN,
+        )
+
+        password_option: str = options['admin_password']
+        raw_password = (
+            password_option
+            if password_option
+            else secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+        )
+        ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
+
+        message = 'Created superuser with username "admin"'
+
+        if not password_option:
+            message += ' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
+
+        self.stdout.write(message)
 
 
 def _create_security_questions() -> None:
