@@ -7,7 +7,7 @@ pytest==8.3.3  # https://github.com/pytest-dev/pytest
 pytest-mock==3.14.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.7.0  # https://github.com/miketheman/pytest-socket
 pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
-pytest-randomly==3.15.0  # https://github.com/pytest-dev/pytest-randomly
+pytest-randomly==3.16.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.4.0  # https://github.com/wemake-services/django-test-migrations
 coverage==7.6.4  # https://github.com/nedbat/coveragepy
 factory-boy==3.3.1  # https://github.com/FactoryBoy/factory_boy
@@ -15,7 +15,7 @@ isort==5.13.2  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==5.1.0  # https://github.com/typeddjango/django-stubs
+django-stubs==5.1.1  # https://github.com/typeddjango/django-stubs
 djangorestframework-stubs==3.15.1  # https://github.com/typeddjango/djangorestframework-stubs
 pandas-stubs==2.2.3.241009
 types-beautifulsoup4==4.12.0.20241020
