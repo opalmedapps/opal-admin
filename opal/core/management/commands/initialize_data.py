@@ -12,6 +12,30 @@ from opal.caregivers.models import SecurityQuestion
 from opal.core import constants
 from opal.users.models import ClinicalStaff
 
+# 40 characters (20 bytes)
+# same as length used by DRF for auth token:
+# https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L37
+TOKEN_LENGTH = 40
+
+
+def token(value: str) -> str:
+    """
+    Validate token string.
+
+    Args:
+        value: The token string to validate
+
+    Raises:
+        ValueError: If the token string is not 40 characters long
+
+    Returns:
+        the token string
+    """
+    if len(value) != TOKEN_LENGTH:
+        raise ValueError('Token must be 40 characters long')
+
+    return value
+
 
 class Command(BaseCommand):
     """
@@ -38,6 +62,30 @@ class Command(BaseCommand):
             default=False,
             help='Force deleting existing data first before initializing (default: false)',
         )
+        parser.add_argument(
+            '--listener-token',
+            type=token,
+            default=None,
+            help='token for the listener user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--listener-registration-token',
+            type=token,
+            default=None,
+            help='token for the listener-registration user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--interface-engine-token',
+            type=token,
+            default=None,
+            help='token for the interface-engine user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--opaladmin-backend-legacy-token',
+            type=token,
+            default=None,
+            help='token for the opaladmin backend user to be used instead of generating a random one (length: 40)',
+        )
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
@@ -49,7 +97,7 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            options: additional keyword arguments
+            options: the options keyword arguments passed to the command
         """
         if any([
             Group.objects.all().exists(),
@@ -77,11 +125,11 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
 
-        self._create_data()
+        self._create_data(**options)
 
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
-    def _create_data(self) -> None:  # noqa: WPS210, WPS213
+    def _create_data(self, **options: Any) -> None:  # noqa: WPS210, WPS213
         """
         Create all initial data.
 
@@ -90,6 +138,9 @@ class Command(BaseCommand):
             * groups and their permissions
             * users
             * tokens for system users
+
+        Args:
+            options: the options keyword arguments passed to the command
         """
         _create_security_questions()
 
@@ -176,10 +227,26 @@ class Command(BaseCommand):
         ])
 
         # get existing or create new tokens for the API users
-        token_listener, _ = Token.objects.get_or_create(user=listener)
-        token_listener_registration, _ = Token.objects.get_or_create(user=listener_registration)
-        token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
-        token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
+        predefined_token = options['listener_token']
+        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})
+
+        predefined_token = options['listener_registration_token']
+        token_listener_registration, _ = Token.objects.get_or_create(
+            user=listener_registration,
+            defaults={'key': predefined_token},
+        )
+
+        predefined_token = options['interface_engine_token']
+        token_interface_engine, _ = Token.objects.get_or_create(
+            user=interface_engine,
+            defaults={'key': predefined_token},
+        )
+
+        predefined_token = options['opaladmin_backend_legacy_token']
+        token_legacy_backend, _ = Token.objects.get_or_create(
+            user=legacy_backend,
+            defaults={'key': predefined_token},
+        )
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
         self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')

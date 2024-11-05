@@ -1,3 +1,4 @@
+import secrets
 from datetime import date
 
 from django.contrib.auth.models import Group
@@ -295,3 +296,38 @@ class TestInitializeData(CommandTestMixin):
         assert 'Deleting existing data\n' in stdout
         assert 'Data successfully deleted\n' in stdout
         assert 'Data successfully created\n' in stdout
+
+    @pytest.mark.parametrize('arg_name', [
+        '--listener-token',
+        '--listener-registration-token',
+        '--interface-engine-token',
+        '--opaladmin-backend-legacy-token',
+    ])
+    def test_insert_existing_data_predefined_tokens_invalid(self, arg_name: str) -> None:
+        """Tokens for system users can be provided."""
+        token = secrets.token_hex(19)
+
+        with pytest.raises(CommandError, match=f"{arg_name}: invalid token value: '{token}'"):
+            self._call_command('initialize_data', f'{arg_name}={token}')
+
+        token = secrets.token_hex(21)
+
+        with pytest.raises(CommandError, match=f"{arg_name}: invalid token value: '{token}'"):
+            self._call_command('initialize_data', f'{arg_name}={token}')
+
+    @pytest.mark.parametrize('username', [
+        'listener',
+        'listener-registration',
+        'interface-engine',
+        'opaladmin-backend-legacy',
+    ])
+    def test_insert_existing_data_predefined_tokens(self, username: str) -> None:
+        """Tokens for system users can be provided."""
+        random_token = secrets.token_hex(20)
+
+        self._call_command('initialize_data', f'--{username}-token={random_token}')
+
+        user = User.objects.get(username=username)
+        token = Token.objects.get(user=user)
+
+        assert token.key == random_token
