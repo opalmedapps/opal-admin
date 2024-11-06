@@ -19,7 +19,7 @@ def group_usage_stats_form() -> GroupUsageStatisticsExportForm:
     form_data = {
         'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
         'end_date': dt.datetime.now().date(),
-        'group_by': constants.TimeIntervalGrouping.YEAR.name,
+        'group_by': constants.GroupByComponent.YEAR.name,
         'report_type': [item.name for item in constants.GroupReportType],
     }
 

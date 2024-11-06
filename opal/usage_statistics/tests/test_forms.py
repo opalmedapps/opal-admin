@@ -14,7 +14,7 @@ def test_group_stats_form_missing_start_date() -> None:
     """Ensure that the GroupUsageStatisticsExportForm checks for missing start date."""
     form_data = {
         'end_date': dt.datetime.now().date(),
-        'group_by': constants.TimeIntervalGrouping.YEAR.name,
+        'group_by': constants.GroupByComponent.YEAR.name,
         'report_type': [item.name for item in constants.GroupReportType],
     }
     form = GroupUsageStatisticsExportForm(data=form_data)
@@ -32,7 +32,7 @@ def test_group_stats_form_missing_end_date() -> None:
     """Ensure that the GroupUsageStatisticsExportForm checks for missing end date."""
     form_data = {
         'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
-        'group_by': constants.TimeIntervalGrouping.YEAR.name,
+        'group_by': constants.GroupByComponent.YEAR.name,
         'report_type': [item.name for item in constants.GroupReportType],
     }
     form = GroupUsageStatisticsExportForm(data=form_data)
@@ -69,7 +69,7 @@ def test_group_stats_form_missing_report_type() -> None:
     form_data = {
         'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
         'end_date': dt.datetime.now().date(),
-        'group_by': constants.TimeIntervalGrouping.YEAR.name,
+        'group_by': constants.GroupByComponent.YEAR.name,
     }
     form = GroupUsageStatisticsExportForm(data=form_data)
 
@@ -87,7 +87,7 @@ def test_group_stats_form_start_later_than_end() -> None:
     form_data = {
         'start_date': dt.datetime.now().date(),
         'end_date': dt.datetime.now().date() - dt.timedelta(days=7),
-        'group_by': constants.TimeIntervalGrouping.YEAR.name,
+        'group_by': constants.GroupByComponent.YEAR.name,
         'report_type': [item.name for item in constants.GroupReportType],
     }
     form = GroupUsageStatisticsExportForm(data=form_data)

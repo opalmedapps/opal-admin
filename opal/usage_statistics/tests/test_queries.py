@@ -164,25 +164,25 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'date': current_datetime,
+            'day': current_datetime,
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=1),
+            'day': current_datetime - dt.timedelta(days=1),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=4),
+            'day': current_datetime - dt.timedelta(days=4),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=6),
+            'day': current_datetime - dt.timedelta(days=6),
         },
     ]
 
@@ -905,13 +905,13 @@ def test_fetch_logins_summary_by_date() -> None:
     )
     assert logins_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'total_logins': 18,
             'unique_user_logins': 3,
             'avg_logins_per_user': 6,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'total_logins': 8,
             'unique_user_logins': 2,
             'avg_logins_per_user': 4,
@@ -1131,14 +1131,14 @@ def test_users_clicks_summary_by_date() -> None:
     )
     assert users_clicks_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'login_count': 18,
             'feedback_count': 21,
             'update_security_answers_count': 24,
             'update_passwords_count': 27,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'login_count': 8,
             'feedback_count': 10,
             'update_security_answers_count': 12,
@@ -1452,7 +1452,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
     assert stats_models.DailyUserPatientActivity.objects.count() == 8
     assert user_patient_clicks_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'checkins_count': 4,
             'documents_count': 6,
             'educational_materials_count': 8,
@@ -1460,7 +1460,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
             'labs_count': 12,
         },
         {
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
             'checkins_count': 16,
             'documents_count': 20,
             'educational_materials_count': 24,
@@ -1468,7 +1468,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
             'labs_count': 32,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'checkins_count': 13,
             'documents_count': 15,
             'educational_materials_count': 17,
@@ -1788,19 +1788,19 @@ def test_received_labs_summary_by_day() -> None:
             'total_received_labs': 30,
             'total_unique_patients': 3,
             'avg_received_labs_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_labs': 10,
             'total_unique_patients': 2,
             'avg_received_labs_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_labs': 15,
             'total_unique_patients': 1,
             'avg_received_labs_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -1981,19 +1981,19 @@ def test_fetch_received_appointments_summary_by_day() -> None:
             'total_received_appointments': 30,
             'total_unique_patients': 3,
             'avg_received_appointments_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_appointments': 10,
             'total_unique_patients': 2,
             'avg_received_appointments_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_appointments': 15,
             'total_unique_patients': 1,
             'avg_received_appointments_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2174,19 +2174,19 @@ def test_fetch_received_educational_materials_summary_by_day() -> None:
             'total_received_edu_materials': 30,
             'total_unique_patients': 3,
             'avg_received_edu_materials_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_edu_materials': 10,
             'total_unique_patients': 2,
             'avg_received_edu_materials_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_edu_materials': 15,
             'total_unique_patients': 1,
             'avg_received_edu_materials_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2367,19 +2367,19 @@ def test_fetch_received_documents_summary_by_day() -> None:
             'total_received_documents': 30,
             'total_unique_patients': 3,
             'avg_received_documents_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_documents': 10,
             'total_unique_patients': 2,
             'avg_received_documents_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_documents': 15,
             'total_unique_patients': 1,
             'avg_received_documents_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2560,19 +2560,19 @@ def test_fetch_received_questionnaires_summary_by_day() -> None:
             'total_received_questionnaires': 30,
             'total_unique_patients': 3,
             'avg_received_questionnaires_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_questionnaires': 10,
             'total_unique_patients': 2,
             'avg_received_questionnaires_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_questionnaires': 15,
             'total_unique_patients': 1,
             'avg_received_questionnaires_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
