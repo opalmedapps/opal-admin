@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 13:01-0500\n"
+"POT-Creation-Date: 2024-11-06 14:44-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,8 @@ msgstr "Année"
 
 #: opal/usage_statistics/constants.py
 msgid "Grouped registration codes, caregivers, patients, device identifiers"
-msgstr "Codes d'enregistrement, proches aidants, patients, identifiants d'appareils"
+msgstr ""
+"Codes d'enregistrement, proches aidants, patients, identifiants d'appareils"
 
 #: opal/usage_statistics/constants.py
 msgid "Grouped patients received data"
@@ -59,8 +60,8 @@ msgid "Group By"
 msgstr "Grouper par"
 
 #: opal/usage_statistics/forms.py
-msgid "Report Type*"
-msgstr "Type de rapport*"
+msgid "Report Type"
+msgstr "Type de rapport"
 
 #: opal/usage_statistics/forms.py
 msgid "Download csv"

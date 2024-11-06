@@ -3,11 +3,10 @@ from typing import Any
 
 from django import forms
 from django.urls import reverse
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Field, Layout, Row
+from crispy_forms.layout import Column, Layout, Row
 
 from opal.core.forms.layouts import CancelButton, FormActions, Submit
 
@@ -30,10 +29,9 @@ class GroupUsageStatisticsExportForm(forms.Form):
         initial=constants.GroupByComponent.DAY.name,
         label=_('Group By'),
     )
-    report_type = forms.MultipleChoiceField(
+    report_type = forms.ChoiceField(
         choices=constants.GROUP_REPORT_TYPES,
-        widget=forms.widgets.CheckboxSelectMultiple,
-        label='',
+        label=_('Report Type'),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -48,17 +46,13 @@ class GroupUsageStatisticsExportForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_tag = False
 
-        report_type_label = gettext('Report Type*')
         self.helper.layout = Layout(
             Row(
                 Column('start_date', css_class='col-6'),
                 Column('end_date', css_class='col-6'),
             ),
             'group_by',
-            Field(
-                HTML(f'<label for="id_report_type" class="form-label requiredField">{report_type_label}</label>'),
-                'report_type',
-            ),
+            'report_type',
             FormActions(
                 Submit('submit', _('Download csv')),
                 Submit('submit', _('Download xlsx')),
