@@ -11,6 +11,8 @@ from crispy_forms.layout import HTML, Column, Field, Layout, Row
 
 from opal.core.forms.layouts import CancelButton, FormActions, Submit
 
+from . import constants
+
 
 class GroupUsageStatisticsExportForm(forms.Form):
     """Form for exporting group usage statistics data based on the provided filtering values."""
@@ -24,21 +26,12 @@ class GroupUsageStatisticsExportForm(forms.Form):
         label=_('End Date'),
     )
     group_by = forms.ChoiceField(
-        required=True,
-        choices=(
-            ('BY_DAY', _('Day')),
-            ('BY_MONTH', _('Month')),
-            ('BY_YEAR', _('Year')),
-        ),
-        initial='BY_YEAR',
+        choices=constants.TIME_INTERVAL_GROUPINGS,
+        initial=constants.TimeIntervalGrouping.YEAR.name,
         label=_('Group By'),
     )
     report_type = forms.MultipleChoiceField(
-        choices=(
-            ('summary_report', _('Grouped registration codes, caregivers, patients, device identifiers')),
-            ('data_received_report', _('Grouped patients received data')),
-            ('app_activity_report', _('Grouped patient/user app activity')),
-        ),
+        choices=constants.GROUP_REPORT_TYPES,
         widget=forms.widgets.CheckboxSelectMultiple,
         label='',
     )
