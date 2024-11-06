@@ -27,7 +27,7 @@ class GroupUsageStatisticsExportForm(forms.Form):
     )
     group_by = forms.ChoiceField(
         choices=constants.TIME_INTERVAL_GROUPINGS,
-        initial=constants.GroupByComponent.YEAR.name,
+        initial=constants.GroupByComponent.DAY.name,
         label=_('Group By'),
     )
     report_type = forms.MultipleChoiceField(
