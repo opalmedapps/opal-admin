@@ -2,15 +2,15 @@
 import json
 import logging
 import math
+import re
 from datetime import datetime
 from pathlib import Path
-import re
 from typing import Any, NamedTuple
 
 from django.conf import settings
 
 import requests
-from fpdf import FPDF, FPDF_VERSION, FPDFException, FontFace, TextStyle
+from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException, TextStyle
 from fpdf.enums import Align, TableBordersLayout
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
@@ -291,6 +291,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
     def _calculate_toc_pages(self) -> int:
+        # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
         first_page_count = 15
         subsequent_page_count = 17
         total_questions = len(self.questionnaire_data)
@@ -300,7 +301,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         return math.ceil((total_questions - first_page_count) / subsequent_page_count) + 1
 
     def _draw_table_of_content(self) -> None:
-        # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
         self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
@@ -444,7 +444,8 @@ def generate_pdf(
         questionnaire_data: questionnaire data required to generate the PDF report
 
     Returns:
-        output of the generated questionnaire report
+        output of the generated questionnaire report after checking if the number
+        of pages required for the toc is correct so it can export without errors
     """
     try:
         result = _generate_pdf(institution_data, patient_data, questionnaire_data)
