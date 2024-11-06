@@ -236,31 +236,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
     def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
         """Draw the patient's name, site information and barcode on the first page."""
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
-        self.cell(
-            **FPDFCellDictType(
-                w=0,
-                h=0,
-                align=Align.L,
-                border=0,
-                text=f'**{self.patient_name}**',
-                link='',
-                markdown=True,
-            ),
+        patient_info = FPDFMultiCellDictType(
+            w=0,
+            h=None,
+            align=Align.L,
+            text=f'**{self.patient_name}**\n{self.patient_sites_and_mrns_str}',
         )
+        self.multi_cell(**patient_info, markdown=True)
         self.code39(text='*NO-SCAN*', x=160, y=30, w=1, h=18)
-        self.ln(6)
-
-        self.cell(
-            **FPDFCellDictType(
-                w=0,
-                h=0,
-                align=Align.L,
-                border=0,
-                text=f'{self.patient_sites_and_mrns_str}',
-                link='',
-                markdown=False,
-            ),
-        )
         self.ln(8)
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
