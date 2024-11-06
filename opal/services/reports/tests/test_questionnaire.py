@@ -61,7 +61,7 @@ question_report_data = [
 ]
 QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
     questionnaire_id=1,
-    questionnaire_nickname='Questionnaire Demo for patient',
+    questionnaire_nickname='BREAST-Q Reconstruction Module Preoperative Scales',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=question_report_data,
 )
@@ -389,6 +389,20 @@ def test_generate_pdf() -> None:
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
         [QUESTIONNAIRE_REPORT_DATA],
+    )
+
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+
+
+def test_generate_pdf_multiple_pages() -> None:
+    """Ensure that the pdf is correctly generated with the toc being multiple pages."""
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA for _ in range(9)]
+
+    pdf_bytes = generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
     )
 
     assert isinstance(pdf_bytes, bytearray), 'Output'

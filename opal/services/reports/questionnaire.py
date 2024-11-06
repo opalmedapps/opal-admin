@@ -4,12 +4,13 @@ import logging
 import math
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Any, NamedTuple
 
 from django.conf import settings
 
 import requests
-from fpdf import FPDF, FPDF_VERSION, FontFace, TextStyle
+from fpdf import FPDF, FPDF_VERSION, FPDFException, FontFace, TextStyle
 from fpdf.enums import Align, TableBordersLayout
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
@@ -77,6 +78,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         institution_data: InstitutionData,
         patient_data: PatientData,
         questionnaire_data: list[QuestionnaireData],
+        toc_pages: int | None = None,
     ) -> None:
         """Initialize a `QuestionnairePDF` instance for generating questionnaire reports.
 
@@ -89,6 +91,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             institution_data: institution data required to generate the PDF report
             patient_data: patient data required to generate the PDF report
             questionnaire_data: questionnaire data required to generate the PDF report
+            toc_pages: number of pages required to generate the toc
         """
         super().__init__()
         self.institution_data = institution_data
@@ -102,7 +105,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
         )
-
+        self.toc_pages = toc_pages if toc_pages is not None else self._calculate_toc_pages()
         self._set_report_metadata()
         self.set_auto_page_break(auto=True, margin=AUTO_PAGE_BREAK_BOTTOM_MARGIN)
         self.add_page()
@@ -287,18 +290,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_title('Rapport des Questionnaire remplis et déclarés/Completed Questionnaire Report')
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
-    def _draw_table_of_content(self) -> None:
-        # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
+    def _calculate_toc_pages(self) -> int:
         first_page_count = 15
         subsequent_page_count = 17
         total_questions = len(self.questionnaire_data)
 
-        guesstimate = math.ceil(
-            (
-                max(0, total_questions - first_page_count)
-            ) / subsequent_page_count,
-        ) + 1
-        self.insert_toc_placeholder(self._render_toc_with_table, guesstimate)
+        if total_questions <= first_page_count:
+            return 1
+        return math.ceil((total_questions - first_page_count) / subsequent_page_count) + 1
+
+    def _draw_table_of_content(self) -> None:
+        # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
+        self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
         self.set_section_title_styles(
@@ -443,9 +446,38 @@ def generate_pdf(
     Returns:
         output of the generated questionnaire report
     """
+    try:
+        result = _generate_pdf(institution_data, patient_data, questionnaire_data)
+    except FPDFException as exc:
+        error = str(exc)
+        if 'ToC ended on page' in error:
+            match = re.search(r'ToC ended on page (\d+) while it was expected to span exactly (\d+) pages', error)
+            if match:
+                actual_pages = int(match.group(1))
+                result = _generate_pdf(institution_data, patient_data, questionnaire_data, actual_pages)
+    return result
+
+
+def _generate_pdf(
+    institution_data: InstitutionData,
+    patient_data: PatientData,
+    questionnaire_data: list[QuestionnaireData],
+    toc_pages: int | None = None,
+) -> bytearray:
+    """Create a questionnaire PDF report.
+
+    Args:
+        institution_data: institution data required to generate the PDF report
+        patient_data: patient data required to generate the PDF report
+        questionnaire_data: questionnaire data required to generate the PDF report
+        toc_pages: number of pages required to generate the toc
+
+    Returns:
+        output of the generated questionnaire report
+    """
     # TODO: Add report path back in the test
 
-    pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data)
+    pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data, toc_pages=toc_pages)
 
     return pdf.output()
 
