@@ -279,9 +279,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         subsequent_page_count = 17
         total_questions = len(self.questionnaire_data)
 
-        if total_questions <= first_page_count:
-            return 1
-        return math.ceil((total_questions - first_page_count) / subsequent_page_count) + 1
+        return math.ceil((max(0, total_questions - first_page_count)) / subsequent_page_count)
 
     def _draw_table_of_content(self) -> None:
         self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
