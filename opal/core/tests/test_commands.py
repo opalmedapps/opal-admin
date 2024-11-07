@@ -182,7 +182,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 5
+        assert User.objects.count() == 6
         assert Token.objects.count() == 5
         assert SecurityQuestion.objects.count() == 6
 
@@ -283,7 +283,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         stdout, stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 5
+        assert User.objects.count() == 6
         assert Token.objects.count() == 5
         assert SecurityQuestion.objects.count() == 6
 
