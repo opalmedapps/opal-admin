@@ -331,7 +331,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             self.ln(1)
             self._insert_paragraph(
                 self,
-                f'Dernière mise à jour: {data.last_updated.strftime("%Y-%b-%d %H:%M")}',
+                f'Dernière mise à jour: {data.last_updated.strftime("%b %d, %Y %H:%M")}',
                 align=Align.C,
             )
             self.ln(6)
@@ -385,7 +385,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                         link=link,
                     )
                     row.cell(
-                        data.last_updated.strftime('%Y-%b-%d %H:%M'),
+                        data.last_updated.strftime('%b %d, %Y %H:%M'),
                     )
                     row.cell(str(section.page_number), link=link)
 
