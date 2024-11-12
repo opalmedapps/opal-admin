@@ -39,7 +39,6 @@ RUN addgroup --system appuser \
   && adduser --system --ingroup appuser appuser \
   && chown -R appuser:appuser /app
 
-
 # get Python packages lib and bin
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /usr/local/lib /usr/local/lib
@@ -56,7 +55,10 @@ COPY docker/start.sh ./start.sh
 # Compile messages so translations are baked into the image
 RUN cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
-  && rm .env
+  && rm .env \
+  # ensure the uploads directory exists with appuser as the owner
+  && mkdir -p ./opal/media/uploads \
+  && chown appuser:appuser ./opal/media/uploads
 
 USER appuser
 
