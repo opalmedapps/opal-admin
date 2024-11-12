@@ -25,14 +25,14 @@ class Question(NamedTuple):
 
     Attributes:
         question_text: name of the question title completed by the patient
-        question_label: a short label describing the question.
-        question_type_id: the type or category ID of the question.
-        position: the order of the question within the questionnaire.
-        min_value: minimum allowed value for the answer (if applicable).
-        max_value: maximum allowed value for the answer (if applicable).
+        question_label: a short label describing the question
+        question_type_id: the type or category ID of the question
+        position: the order of the question within the questionnaire
+        min_value: minimum allowed value for the answer (if applicable)
+        max_value: maximum allowed value for the answer (if applicable)
         polarity: polarity value for the answer
         section_id: ID of the section
-        values: list of tuples representing timestamp and answer values.
+        values: list of tuples representing timestamp and answer values
     """
 
     question_text: str
@@ -50,7 +50,7 @@ class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
-        questionnaire_id: unique ID of the questionnaire.
+        questionnaire_id: unique ID of the questionnaire
         questionnaire_nickname: name of questionnaire title completed by the patient
         last_updated: the date when the questionnaire was last updated by the patient
         questions: list of questions associated to the questionnaire
@@ -230,7 +230,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
     def _generate(self) -> None:
         """Generate a PDF questionnaire report."""
         self._draw_patient_name_site_and_barcode()
-        self._draw_table_of_content()
+        self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
         self._draw_questionnaire_result()
 
     def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
@@ -280,9 +280,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         total_questions = len(self.questionnaire_data)
 
         return math.ceil((max(0, total_questions - first_page_count)) / subsequent_page_count)
-
-    def _draw_table_of_content(self) -> None:
-        self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
         self.set_section_title_styles(
