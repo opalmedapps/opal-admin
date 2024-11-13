@@ -233,7 +233,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.insert_toc_placeholder(self._render_toc_with_table, self.toc_pages)
         self._draw_questionnaire_result()
 
-    def _draw_patient_name_site_and_barcode(self) -> None:  # noqa: WPS213
+    def _draw_patient_name_site_and_barcode(self) -> None:
         """Draw the patient's name, site information and barcode on the first page."""
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=15)
         patient_info = FPDFMultiCellDictType(
