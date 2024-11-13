@@ -200,7 +200,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         )
         self.cell(
             **FPDFCellDictType(
-                w=0,
+                w=5,
                 h=5,
                 text=f'Page {self.page_no()} de {{nb}}',
                 border=0,
@@ -243,11 +243,11 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text=f'**{self.patient_name}**\n{self.patient_sites_and_mrns_str}',
         )
         self.multi_cell(**patient_info, markdown=True)
-        self.code39(text='*NO-SCAN*', x=160, y=30, w=1, h=18)
-        self.ln(8)
+        self.code39(text='*NO-SCAN*', x=152, y=30, w=1, h=18)
+        self.ln(4)
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
-        self.set_x(162)
+        self.set_x(160)
         self.cell(
             text='*  NO  -  SCAN  *',
         )
