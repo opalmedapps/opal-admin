@@ -46,6 +46,8 @@ class Question(NamedTuple):
     values: list[tuple[int, str]]
 
 
+# TODO: Handle data from values. Ticket: OP-48
+
 class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
@@ -304,15 +306,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 t_margin=5,
                 l_margin=0,
                 b_margin=5,
-            ),
-            TextStyle(
-                font_family=QUESTIONNAIRE_REPORT_FONT,
-                font_size_pt=14,
-                color=128,
-                underline=False,
-                t_margin=20,
-                l_margin=0,
-                b_margin=10,
             ),
         )
         num = 0
