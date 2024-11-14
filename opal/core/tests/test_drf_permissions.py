@@ -295,6 +295,7 @@ def test_username_required_missing_attribute() -> None:
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
     drf_permissions.IsLegacyBackend,
+    drf_permissions.IsOrmsSystem,
 ])
 def test_username_required_unauthenticated(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions require the user to be authenticated."""
@@ -308,6 +309,7 @@ def test_username_required_unauthenticated(permission_class: type[drf_permission
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
     drf_permissions.IsLegacyBackend,
+    drf_permissions.IsOrmsSystem,
 ])
 def test_username_required_admin_permitted(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions succeed if the user is an admin (superuser)."""
@@ -322,6 +324,7 @@ def test_username_required_admin_permitted(permission_class: type[drf_permission
     drf_permissions.IsRegistrationListener,
     drf_permissions.IsInterfaceEngine,
     drf_permissions.IsLegacyBackend,
+    drf_permissions.IsOrmsSystem,
 ])
 def test_username_required_wrong_username(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions fail if the user does not have the expected username."""
@@ -336,6 +339,7 @@ def test_username_required_wrong_username(permission_class: type[drf_permissions
     (drf_permissions.IsRegistrationListener, constants.USERNAME_LISTENER_REGISTRATION),
     (drf_permissions.IsInterfaceEngine, constants.USERNAME_INTERFACE_ENGINE),
     (drf_permissions.IsLegacyBackend, constants.USERNAME_BACKEND_LEGACY),
+    (drf_permissions.IsOrmsSystem, constants.USERNAME_ORMS),
 ])
 def test_username_required_correct_username(
     permission_class: type[drf_permissions._UsernameRequired],
