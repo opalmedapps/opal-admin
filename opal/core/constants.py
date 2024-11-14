@@ -8,6 +8,8 @@ USERNAME_BACKEND_LEGACY = 'opaladmin-backend-legacy'
 USERNAME_INTERFACE_ENGINE = 'interface-engine'
 USERNAME_LISTENER = 'listener'
 USERNAME_LISTENER_REGISTRATION = 'listener-registration'
+USERNAME_ORMS = 'orms'
+
 # 40 characters (20 bytes)
 # same as length used by DRF for auth token:
 # https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L37

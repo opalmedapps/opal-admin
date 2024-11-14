@@ -425,8 +425,11 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_GROUP_NAME = 'ORMS Users'
-# base URL to ORMS (no trailing slash)
-ORMS_HOST = env.url('ORMS_HOST').geturl()
+ORMS_ENABLED = env.bool('ORMS_ENABLED')
+
+if ORMS_ENABLED:
+    # base URL to ORMS (no trailing slash)
+    ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'

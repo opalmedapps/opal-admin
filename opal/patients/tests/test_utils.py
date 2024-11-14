@@ -496,6 +496,23 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     )
 
 
+@pytest.mark.usefixtures('set_orms_disabled')
+def test_initialize_new_opal_patient_orms_success_disabled(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to ORMS is not executed because it is disabled."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
+    mock_logger = mocker.patch('logging.Logger.info')
+
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
+    LegacyHospitalIdentifierType(code='RVH')
+    mrn_list = [(rvh_site, '9999993', True)]
+    patient = patient_factories.Patient()
+    patient_uuid = uuid.uuid4()
+    utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
+    mock_logger.assert_any_call(
+        f'ORMS System not enabled, skipping notification of new patient; patient_uuid {patient_uuid}',
+    )
+
+
 def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     """An error is logged when the call to ORMS to initialize a patient fails."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'Error'})
