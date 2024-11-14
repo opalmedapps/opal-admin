@@ -279,9 +279,10 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
         first_page_count = 15
         subsequent_page_count = 17
-        total_questions = len(self.questionnaire_data)
-
-        return math.ceil((max(0, total_questions - first_page_count)) / subsequent_page_count)
+        total_questionnaires = len(self.questionnaire_data)
+        if total_questionnaires <= first_page_count:
+            return 1
+        return math.ceil((total_questionnaires - first_page_count) / subsequent_page_count) + 1
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
         self.set_section_title_styles(
@@ -296,7 +297,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 l_margin=None,
                 b_margin=None,
             ),
-            # Level 1 subtitles for questions:
+            # Level 1 subtitles for questionnaires:
             TextStyle(
                 font_family=QUESTIONNAIRE_REPORT_FONT,
                 font_style='B',
@@ -308,26 +309,23 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 b_margin=5,
             ),
         )
-        num = 0
-        for data in self.questionnaire_data:
+        for index, data in enumerate(self.questionnaire_data):
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
-            if num != 0:  # Skip empty first page
+            if index > 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(data.questionnaire_nickname, level=1)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(self, data.questionnaire_nickname, align=Align.C)  # To print the title in the center
+            self._insert_paragraph(data.questionnaire_nickname, align=Align.C)  # To print the title in the center
             self.ln(1)
             self._insert_paragraph(
-                self,
                 f'Dernière mise à jour: {data.last_updated.strftime("%b %d, %Y %H:%M")}',
                 align=Align.C,
             )
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            self._insert_paragraph(self, 'TODO: add graphs', align=Align.C)
-            num += 1
+            self._insert_paragraph('TODO: add graphs', align=Align.C)
 
     def _insert_toc_title(
         self,
@@ -340,14 +338,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=30)
         pdf.set_x(10)
-        self._insert_paragraph(self, 'Table des matières:')
+        self._insert_paragraph('Table des matières:')
         pdf.y += 5  # noqa: WPS111
         pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
         pdf.x = 10  # noqa: WPS111
 
     def _render_toc_with_table(  # noqa: WPS210
         self,
-        pdf: Any,
+        pdf: FPDF,
         outline: list[Any],
     ) -> None:
         """Render the table of content as a table .
@@ -381,20 +379,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _insert_paragraph(
         self,
-        pdf: Any,
-        text: Any,
+        text: str,
         **kwargs: Any,
     ) -> None:
         """Insert the paragraph related to the questionnaires.
 
         Args:
-            pdf: The FPDF instance
             text: text to insert
             kwargs: varied amount of keyword arguments
         """
         self.multi_cell(
-            w=pdf.epw,
-            h=pdf.font_size,
+            w=self.epw,
+            h=self.font_size,
             text=text,
             new_x='LMARGIN',
             new_y='NEXT',
