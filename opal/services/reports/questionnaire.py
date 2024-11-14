@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import re
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -44,10 +45,8 @@ class Question(NamedTuple):
     max_value: int | None
     polarity: int
     section_id: int
-    values: list[tuple[int, str]]
+    values: list[tuple[int, str]]  # TODO: OP-48 - proper typing for values
 
-
-# TODO: Handle data from values. Ticket: OP-48
 
 class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
@@ -63,7 +62,7 @@ class QuestionnaireData(NamedTuple):
     questionnaire_id: int
     questionnaire_nickname: str
     last_updated: datetime
-    questions: list[Question]
+    questions: Iterable[Question]
 
 
 FIRST_PAGE_NUMBER: int = 1
@@ -306,19 +305,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _insert_toc_title(
         self,
-        pdf: FPDF,
     ) -> None:
-        """Insert the 'Table of contents' title and set fonts for the TOC.
-
-        Args:
-            pdf: The FPDF instance
-        """
-        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=30)
-        pdf.set_x(10)
+        """Insert the 'Table of contents' title and set fonts for the TOC."""
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=30)
+        self.set_x(10)
         self._insert_paragraph('Table des matières:')
-        pdf.y += 5  # noqa: WPS111
-        pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-        pdf.x = 10  # noqa: WPS111
+        self.set_y(self.y + 5)
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
+        self.set_x(10)
 
     def _render_toc_with_table(  # noqa: WPS210
         self,
@@ -331,7 +325,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             pdf: The FPDF instance
             outline: A list outline of the table of content
         """
-        self._insert_toc_title(pdf)
+        self._insert_toc_title()
         pdf.set_font_size(size=16)
         with self.table(
             borders_layout=TableBordersLayout.NONE,
@@ -340,16 +334,16 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         ) as table:
             table.row(TABLE_HEADER)
             for idx, section in enumerate(outline):
-                data = self.questionnaire_data[idx]
+                questionnaire = self.questionnaire_data[idx]
                 link = pdf.add_link(page=section.page_number)
                 row = table.row()
                 row.cell(
-                    data.questionnaire_nickname,
+                    questionnaire.questionnaire_nickname,
                     style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
                     link=link,
                 )
                 row.cell(
-                    data.last_updated.strftime('%b %d, %Y %H:%M'),
+                    questionnaire.last_updated.strftime('%b %d, %Y %H:%M'),
                 )
                 row.cell(str(section.page_number), link=link)
 
@@ -375,45 +369,45 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
 
 def generate_pdf(
-    institution_data: InstitutionData,
-    patient_data: PatientData,
-    questionnaire_data: list[QuestionnaireData],
+    institution: InstitutionData,
+    patient: PatientData,
+    questionnaires: list[QuestionnaireData],
 ) -> bytearray:
     """Create a questionnaire PDF report.
 
     Args:
-        institution_data: institution data required to generate the PDF report
-        patient_data: patient data required to generate the PDF report
-        questionnaire_data: questionnaire data required to generate the PDF report
+        institution: institution data required to generate the PDF report
+        patient: patient data required to generate the PDF report
+        questionnaires: questionnaire list required to generate the PDF report
 
     Returns:
         output of the generated questionnaire report after checking if the number
         of pages required for the toc is correct so it can export without errors
     """
     try:
-        result = _generate_pdf(institution_data, patient_data, questionnaire_data)
+        result = _generate_pdf(institution, patient, questionnaires)
     except FPDFException as exc:
         error = str(exc)
         if 'ToC ended on page' in error:
             match = re.search(r'ToC ended on page (\d+) while it was expected to span exactly (\d+) pages', error)
             if match:
                 actual_pages = int(match.group(1))
-                result = _generate_pdf(institution_data, patient_data, questionnaire_data, actual_pages)
+                result = _generate_pdf(institution, patient, questionnaires, actual_pages)
     return result
 
 
 def _generate_pdf(
-    institution_data: InstitutionData,
-    patient_data: PatientData,
-    questionnaire_data: list[QuestionnaireData],
+    institution: InstitutionData,
+    patient: PatientData,
+    questionnaires: list[QuestionnaireData],
     toc_pages: int | None = None,
 ) -> bytearray:
     """Create a questionnaire PDF report.
 
     Args:
-        institution_data: institution data required to generate the PDF report
-        patient_data: patient data required to generate the PDF report
-        questionnaire_data: questionnaire data required to generate the PDF report
+        institution: institution data required to generate the PDF report
+        patient: patient data required to generate the PDF report
+        questionnaires: questionnaire list required to generate the PDF report
         toc_pages: number of pages required to generate the toc
 
     Returns:
@@ -421,7 +415,7 @@ def _generate_pdf(
     """
     # TODO: Add report path back in the test
 
-    pdf = QuestionnairePDF(institution_data, patient_data, questionnaire_data, toc_pages=toc_pages)
+    pdf = QuestionnairePDF(institution, patient, questionnaires, toc_pages=toc_pages)
 
     return pdf.output()
 
