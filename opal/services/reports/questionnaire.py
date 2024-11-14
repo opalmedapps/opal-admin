@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 from django.conf import settings
 
 import requests
-from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException, TextStyle
+from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, TableBordersLayout
 from fpdf.outline import OutlineSection
 from requests.exceptions import JSONDecodeError, RequestException
@@ -286,37 +286,13 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         return math.ceil((total_questionnaires - first_page_count) / subsequent_page_count) + 1
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
-        self.set_section_title_styles(
-            # Level 0 titles:
-            TextStyle(
-                font_family=QUESTIONNAIRE_REPORT_FONT,
-                font_style='B',
-                font_size_pt=15,
-                color=None,
-                underline=False,
-                t_margin=-5,
-                l_margin=None,
-                b_margin=None,
-            ),
-            # Level 1 subtitles for questionnaires:
-            TextStyle(
-                font_family=QUESTIONNAIRE_REPORT_FONT,
-                font_style='B',
-                font_size_pt=1,
-                color=(255, 255, 255),  # Font is white and size is 1 so we can hide it
-                underline=False,
-                t_margin=5,
-                l_margin=0,
-                b_margin=5,
-            ),
-        )
         for index, data in enumerate(self.questionnaire_data):
             # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if index > 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(data.questionnaire_nickname, level=1)  # For the TOC
+            self.start_section(data.questionnaire_nickname)  # For the TOC
             self.set_y(35)
             self._insert_paragraph(data.questionnaire_nickname, align=Align.C)  # To print the title in the center
             self.ln(1)
@@ -364,19 +340,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         ) as table:
             table.row(TABLE_HEADER)
             for idx, section in enumerate(outline):
-                if section.level < 2:
-                    data = self.questionnaire_data[idx]
-                    link = pdf.add_link(page=section.page_number)
-                    row = table.row()
-                    row.cell(
-                        data.questionnaire_nickname,
-                        style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
-                        link=link,
-                    )
-                    row.cell(
-                        data.last_updated.strftime('%b %d, %Y %H:%M'),
-                    )
-                    row.cell(str(section.page_number), link=link)
+                data = self.questionnaire_data[idx]
+                link = pdf.add_link(page=section.page_number)
+                row = table.row()
+                row.cell(
+                    data.questionnaire_nickname,
+                    style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
+                    link=link,
+                )
+                row.cell(
+                    data.last_updated.strftime('%b %d, %Y %H:%M'),
+                )
+                row.cell(str(section.page_number), link=link)
 
     def _insert_paragraph(
         self,
