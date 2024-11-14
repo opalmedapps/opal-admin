@@ -12,6 +12,7 @@ from django.conf import settings
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException, TextStyle
 from fpdf.enums import Align, TableBordersLayout
+from fpdf.outline import OutlineSection
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
@@ -346,7 +347,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
     def _render_toc_with_table(  # noqa: WPS210
         self,
         pdf: FPDF,
-        outline: list[Any],
+        outline: list[OutlineSection],
     ) -> None:
         """Render the table of content as a table .
 
