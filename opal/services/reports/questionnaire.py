@@ -6,7 +6,7 @@ import re
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 from django.conf import settings
 
@@ -68,6 +68,21 @@ class QuestionnaireData(NamedTuple):
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
+_Orientation = Literal['', 'portrait', 'p', 'P', 'landscape', 'l', 'L']
+_Format = Literal[
+    '',
+    'a3',
+    'A3',
+    'a4',
+    'A4',
+    'a5',
+    'A5',
+    'letter',
+    'Letter',
+    'legal',
+    'Legal',
+]
+
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
@@ -216,14 +231,24 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, size=9)
         self.multi_cell(**footer_block, markdown=True)
 
-    def add_page(self, *args: Any, **kwargs: Any) -> None:
+    def add_page(  # noqa: WPS211
+        self,
+        orientation: _Orientation = '',
+        format_page: _Format | tuple[float, float] = '',
+        same: bool = False,
+        duration: int = 0,
+        transition: Any | None = None,
+    ) -> None:
         """Add new page to the questionnaire report and set the correct spacing for the header.
 
         Args:
-            args: varied amount of non-keyword arguments
-            kwargs: varied amount of keyword arguments
+            orientation: "portrait" or "landscape". Default to "portrait"
+            format_page: "a3", "a4", "a5", "letter", "legal" or a tuple (width, height). Default to "a4"
+            same: indicates to use the same page format as the previous page. Default to False
+            duration: optional page’s display duration
+            transition: optional visual transition to use when moving from another page
         """
-        super().add_page(*args, **kwargs)
+        super().add_page(orientation, format_page, same, duration, transition)
 
         header_cursor_abscissa_position_in_mm: int = 35
         # Set the cursor at the top (e.g., 3.5 cm from the top).
@@ -309,7 +334,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         """Insert the 'Table of contents' title and set fonts for the TOC."""
         self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=30)
         self.set_x(10)
-        self._insert_paragraph('Table des matières:')
+        self._insert_paragraph('Table des matières:', align=Align.L)
         self.set_y(self.y + 5)
         self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
         self.set_x(10)
@@ -350,13 +375,13 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
     def _insert_paragraph(
         self,
         text: str,
-        **kwargs: Any,
+        align: str | Align,
     ) -> None:
         """Insert the paragraph related to the questionnaires.
 
         Args:
             text: text to insert
-            kwargs: varied amount of keyword arguments
+            align: desired alignement of the paragraph
         """
         self.multi_cell(
             w=self.epw,
@@ -364,7 +389,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text=text,
             new_x='LMARGIN',
             new_y='NEXT',
-            **kwargs,
+            align=align,
         )
 
 
