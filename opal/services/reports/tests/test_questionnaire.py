@@ -59,9 +59,15 @@ QUESTION_REPORT_DATA = (
         ],
     ),
 )
-QUESTIONNAIRE_REPORT_DATA = QuestionnaireData(
+QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = QuestionnaireData(
     questionnaire_id=1,
-    questionnaire_nickname='BREAST-Q Reconstruction Module Preoperative Scales',
+    questionnaire_nickname='BREAST-Q Reconstruction Module',
+    last_updated=datetime(2024, 10, 21, 14, 0),
+    questions=QUESTION_REPORT_DATA,
+)
+QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = QuestionnaireData(
+    questionnaire_id=1,
+    questionnaire_nickname='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=QUESTION_REPORT_DATA,
 )
@@ -383,21 +389,41 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
     assert caplog.records[0].levelname == 'ERROR'
 
 
-def test_generate_pdf() -> None:
+def test_generate_pdf_one_page() -> None:
     """Ensure that the pdf is correctly generated."""
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        [QUESTIONNAIRE_REPORT_DATA],
+        [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME],
     )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
 
+    assert page_count == 2, 'PDF should have the expected amount of pages'
     assert isinstance(pdf_bytes, bytearray), 'Output'
     assert pdf_bytes, 'PDF should not be empty'
 
 
 def test_generate_pdf_multiple_pages() -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages."""
-    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA for _ in range(9)]
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
+
+    pdf_bytes = generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
+    )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
+
+    assert page_count == 19, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+
+
+def test_generate_pdf_multiple_pages_with_long_name() -> None:
+    """Ensure that the pdf is correctly generated with the toc being multiple pages."""
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME for _ in range(17)]
 
     pdf_bytes = generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
@@ -405,5 +431,22 @@ def test_generate_pdf_multiple_pages() -> None:
         questionnaire_data,
     )
 
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
+
+    assert page_count == 20, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+
+
+def test_generate_pdf_empty_list() -> None:
+    """Ensure that the pdf is correctly generated with an empty list."""
+    questionnaire_data: list[QuestionnaireData] = []
+
+    pdf_bytes = generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
+    )
     assert isinstance(pdf_bytes, bytearray), 'Output'
     assert pdf_bytes, 'PDF should not be empty'

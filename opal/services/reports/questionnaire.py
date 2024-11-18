@@ -408,6 +408,9 @@ def generate_pdf(
     Returns:
         output of the generated questionnaire report after checking if the number
         of pages required for the toc is correct so it can export without errors
+
+    Raises:
+        FPDFException: If any other errors occurs during the PDF generation
     """
     try:
         result = _generate_pdf(institution, patient, questionnaires)
@@ -417,7 +420,9 @@ def generate_pdf(
             match = re.search(r'ToC ended on page (\d+) while it was expected to span exactly (\d+) pages', error)
             if match:
                 actual_pages = int(match.group(1))
-                result = _generate_pdf(institution, patient, questionnaires, actual_pages)
+                return _generate_pdf(institution, patient, questionnaires, actual_pages)
+        raise exc
+
     return result
 
 
