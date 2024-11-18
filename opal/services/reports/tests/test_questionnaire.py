@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from fpdf import FPDFException
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
@@ -404,20 +405,6 @@ def test_generate_pdf_one_page() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
-def test_generate_pdf_toc_not_in_error() -> None:
-    """Ensure PDF generation handles cases without ToC errors correctly."""
-    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
-    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
-    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
-    pdf_bytes = generate_pdf(institution_data, patient_data, questionnaire_data)
-
-    try:
-        assert pdf_bytes, 'PDF should not be empty'
-    except Exception as exc:
-        error_message = str(exc)
-        assert 'ToC ended on page' not in error_message, 'Unexpected ToC error'
-
-
 def test_generate_pdf_multiple_pages() -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages."""
     questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
@@ -464,3 +451,52 @@ def test_generate_pdf_empty_list() -> None:
     )
     assert isinstance(pdf_bytes, bytearray), 'Output'
     assert pdf_bytes, 'PDF should not be empty'
+
+
+def test_generate_pdf_no_toc_error(mocker: MockerFixture) -> None:
+    """Ensure PDF generation raises the exception if ToC error is missing."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+
+    mocker.patch(
+        'opal.services.reports.questionnaire._generate_pdf',
+        side_effect=FPDFException('Some other error'),
+    )
+    with pytest.raises(FPDFException) as excinfo:
+        generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    assert 'ToC ended on page' not in str(excinfo.value)
+
+
+def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
+    """Ensure PDF generation does not proceed when regex doesn't match."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+
+    mocker.patch(
+        'opal.services.reports.questionnaire._generate_pdf',
+        side_effect=FPDFException(
+            'ToC ended on page 10 while expected to span more pages',
+        ),
+    )
+    with pytest.raises(FPDFException) as excinfo:
+        generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    error_message = str(excinfo.value)
+    assert 'ToC ended on page' in error_message
+
+
+def test_generate_pdf_toc_not_in_error() -> None:
+    """Ensure PDF generation handles cases without ToC errors correctly."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+    pdf_bytes = generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    try:
+        assert pdf_bytes, 'PDF should not be empty'
+    except Exception as exc:
+        error_message = str(exc)
+        assert 'ToC ended on page' not in error_message, 'Unexpected ToC error'
