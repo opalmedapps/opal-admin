@@ -404,6 +404,20 @@ def test_generate_pdf_one_page() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
+def test_generate_pdf_toc_not_in_error() -> None:
+    """Ensure PDF generation handles cases without ToC errors correctly."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+    pdf_bytes = generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    try:
+        assert pdf_bytes, 'PDF should not be empty'
+    except Exception as exc:
+        error_message = str(exc)
+        assert 'ToC ended on page' not in error_message, 'Unexpected ToC error'
+
+
 def test_generate_pdf_multiple_pages() -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages."""
     questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
