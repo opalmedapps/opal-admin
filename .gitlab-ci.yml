@@ -57,6 +57,27 @@ stages:
   - test
   - deploy
 
+test:
+  stage: .pre
+  image: node:22.11.0-alpine
+  script:
+    - apk add --no-cache git git-lfs
+    - git config user.name "${GITLAB_USER_NAME}"
+    - git config user.email "${GITLAB_USER_EMAIL}"
+    - git config --list
+    - cd opal/static/thirdparty
+    - npm install
+    - git status
+    - git add ./
+    - git commit -m "add dist files"
+    - echo $CI_REPOSITORY_URL
+    # we're on a detached head but we can push the commits we made to the remote branch like so:
+    - git push origin HEAD:$CI_COMMIT_REF_NAME
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - opal/static/thirdparty/package.json
+
 setup:
   stage: .pre
   before_script:
