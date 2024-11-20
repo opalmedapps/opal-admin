@@ -466,7 +466,7 @@ def test_generate_pdf_no_toc_error(mocker: MockerFixture) -> None:
     with pytest.raises(FPDFException) as excinfo:
         generate_pdf(institution_data, patient_data, questionnaire_data)
 
-    assert 'ToC ended on page' not in str(excinfo.value)
+    assert 'Some other error' in str(excinfo.value)
 
 
 def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
