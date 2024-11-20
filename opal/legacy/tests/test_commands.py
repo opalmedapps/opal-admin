@@ -1216,6 +1216,13 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         message, error = self._call_command('update_orms_patients')
         assert 'Updated 0 out of 3 patients.' in message
 
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_orms_patients_update_orms_disabled(self) -> None:
+        """Ensure the command does not fail if ORMS is disabled."""
+        message, error = self._call_command('update_orms_patients')
+        assert 'ORMS System not enabled, exiting command' in message
+        assert not error
+
     def test_orms_patients_update_with_request_exception(self, mocker: MockerFixture) -> None:
         """Ensure the command handles exceptions during POST requests to the ORMS."""
         # Create test data

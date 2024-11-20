@@ -131,6 +131,29 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
         ]
 
 
+class LegacyAppointmentCheckinSerializer(serializers.ModelSerializer[LegacyAppointment]):
+    """Appointment serializer to update checkin status for a LegacyAppointment instance."""
+
+    checkin = serializers.BooleanField(
+        required=True,
+        help_text='Checkin value of 1 means patient successfully checked in.',
+    )
+    source_system_id = serializers.CharField(
+        max_length=100,
+        required=True,
+        help_text='The source system identifier.',
+    )
+    source_database = serializers.IntegerField(
+        source='source_database_id',
+        required=True,
+        help_text='The source database identifier.',
+    )
+
+    class Meta:
+        model = LegacyAppointment
+        fields = ['checkin', 'source_system_id', 'source_database']
+
+
 class QuestionnaireReportRequestSerializer(serializers.Serializer[tuple[str, str]]):
     """This class defines how a `QuestionnairesReport` request data are serialized."""
 

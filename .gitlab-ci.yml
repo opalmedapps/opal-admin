@@ -126,7 +126,7 @@ mypy:
 markdownlint:
   stage: static analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.14.0
+    name: davidanson/markdownlint-cli2:v0.15.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # does not need setup artifacts
@@ -149,7 +149,7 @@ pytest:
     - .uses_django
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.11.9-jammy
+    - mariadb:10.11.10-jammy
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apk add --no-cache mariadb-client

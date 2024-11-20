@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
 from pathlib import Path
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
@@ -229,7 +230,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 # https://docs.djangoproject.com/en/dev/topics/auth/passwords/#enabling-password-validation
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list[dict[str, Any]] = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -424,8 +425,11 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_GROUP_NAME = 'ORMS Users'
-# base URL to ORMS (no trailing slash)
-ORMS_HOST = env.url('ORMS_HOST').geturl()
+ORMS_ENABLED = env.bool('ORMS_ENABLED')
+
+if ORMS_ENABLED:
+    # base URL to ORMS (no trailing slash)
+    ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
