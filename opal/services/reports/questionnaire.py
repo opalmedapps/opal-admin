@@ -53,14 +53,14 @@ class QuestionnaireData(NamedTuple):
 
     Attributes:
         questionnaire_id: unique ID of the questionnaire
-        questionnaire_nickname: name of questionnaire title completed by the patient
+        questionnaire_title: name of questionnaire title completed by the patient
         last_updated: the date when the questionnaire was last updated by the patient
         questions: list of questions associated to the questionnaire
 
     """
 
     questionnaire_id: int
-    questionnaire_nickname: str
+    questionnaire_title: str
     last_updated: datetime
     questions: Iterable[Question]
 
@@ -68,6 +68,9 @@ class QuestionnaireData(NamedTuple):
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
+
+TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
+
 _Orientation = Literal['', 'portrait', 'p', 'P', 'landscape', 'l', 'L']
 _Format = Literal[
     '',
@@ -82,9 +85,6 @@ _Format = Literal[
     'legal',
     'Legal',
 ]
-
-
-TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -316,9 +316,9 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             if index > 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(data.questionnaire_nickname)  # For the TOC
+            self.start_section(data.questionnaire_title)  # For the TOC
             self.set_y(35)
-            self._insert_paragraph(data.questionnaire_nickname, align=Align.C)  # To print the title in the center
+            self._insert_paragraph(data.questionnaire_title, align=Align.C)  # To print the title in the center
             self.ln(1)
             self._insert_paragraph(
                 f'Dernière mise à jour: {data.last_updated.strftime("%b %d, %Y %H:%M")}',
@@ -363,7 +363,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 link = pdf.add_link(page=section.page_number)
                 row = table.row()
                 row.cell(
-                    questionnaire.questionnaire_nickname,
+                    questionnaire.questionnaire_title,
                     style=FontFace(emphasis='UNDERLINE', color=(0, 0, 255)),
                     link=link,
                 )

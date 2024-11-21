@@ -62,13 +62,13 @@ QUESTION_REPORT_DATA = (
 )
 QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = QuestionnaireData(
     questionnaire_id=1,
-    questionnaire_nickname='BREAST-Q Reconstruction Module',
+    questionnaire_title='BREAST-Q Reconstruction Module',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=QUESTION_REPORT_DATA,
 )
 QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = QuestionnaireData(
     questionnaire_id=1,
-    questionnaire_nickname='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
+    questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=QUESTION_REPORT_DATA,
 )
@@ -440,6 +440,27 @@ def test_generate_pdf_multiple_pages_with_long_name() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
+def test_generate_pdf_with_long_name() -> None:
+    """Ensure that the pdf is correctly generated with the toc being multiple pages.
+
+    Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
+    the right number of pages for the TOC.
+    """
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME for _ in range(8)]
+
+    pdf_bytes = generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
+    )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
+
+    assert page_count == 10, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+
+
 def test_generate_pdf_empty_list() -> None:
     """Ensure that the pdf is correctly generated with an empty list."""
     questionnaire_data: list[QuestionnaireData] = []
@@ -486,17 +507,3 @@ def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
 
     error_message = str(excinfo.value)
     assert 'ToC ended on page' in error_message
-
-
-def test_generate_pdf_toc_not_in_error() -> None:
-    """Ensure PDF generation handles cases without ToC errors correctly."""
-    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
-    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
-    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
-    pdf_bytes = generate_pdf(institution_data, patient_data, questionnaire_data)
-
-    try:
-        assert pdf_bytes, 'PDF should not be empty'
-    except Exception as exc:
-        error_message = str(exc)
-        assert 'ToC ended on page' not in error_message, 'Unexpected ToC error'
