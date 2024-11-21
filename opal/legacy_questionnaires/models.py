@@ -206,7 +206,7 @@ class LegacyAnswerQuestionnaire(models.Model):
         to_field='id',
     )
     status = models.IntegerField(db_column='status')
-    creationdate = models.DateTimeField(db_column='creationDate')
+    creation_date = models.DateTimeField(db_column='creationDate')
     deleted_by = models.CharField(db_column='deletedBy', max_length=255)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)

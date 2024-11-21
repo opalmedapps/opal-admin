@@ -346,6 +346,13 @@ class LegacyEducationalMaterialControl(models.Model):
     """EducationalMaterialControl model from the legacy database OpalDB."""
 
     educationalmaterialcontrolsernum = models.AutoField(db_column='EducationalMaterialControlSerNum', primary_key=True)
+    educational_material_type_en = models.CharField(max_length=100, db_column='EducationalMaterialType_EN')
+    educational_material_type_fr = models.CharField(max_length=100, db_column='EducationalMaterialType_FR')
+    publish_flag = models.IntegerField(db_column='PublishFlag', default=0)
+    name_en = models.CharField(db_column='Name_EN', max_length=200)
+    name_fr = models.CharField(db_column='Name_FR', max_length=200)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     educationalmaterialcategoryid = models.ForeignKey(
         'LegacyEducationalMaterialCategory',
         models.DO_NOTHING,

@@ -97,6 +97,12 @@ class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
         model = models.LegacyEducationalMaterialControl
 
     educationalmaterialcategoryid = SubFactory(LegacyEducationalMaterialCategoryFactory)
+    educational_material_type_en = 'Booklet'
+    educational_material_type_fr = 'Brochure'
+    publish_flag = 1
+    name_en = 'Radiotherapy at the Cedars Cancer Centre'
+    name_fr = 'Radiothérapie au Centre du Cancer des Cèdres'
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
 class LegacyAliasFactory(DjangoModelFactory):
