@@ -5,9 +5,16 @@ import secrets
 import string
 import uuid
 import zipfile
+from typing import Any, TypeAlias
 
 import qrcode
+from openpyxl import Workbook
 from qrcode.image import svg
+
+# Type aliases
+RowData: TypeAlias = dict[str, Any]
+SheetData: TypeAlias = list[RowData]
+WorkbookData: TypeAlias = dict[str, SheetData]
 
 
 def generate_random_number(length: int) -> str:
@@ -97,3 +104,47 @@ def create_zip(files: dict[str, bytes]) -> bytes:
         for filename, file_content in files.items():
             zip_file.writestr(filename, file_content)
     return zip_buffer.getvalue()
+
+
+def dict_to_xlsx(dicts: WorkbookData) -> bytes:
+    """Create an XLSX file from a mapping of dictionaries and return it as bytes.
+
+    Each `RowData` dictionary is expected to have the same keys, as the sheet header is
+    determined by the keys of the first dictionary.
+
+    Args:
+        dicts: a mapping where each key is a sheet name, and the value is a list of dictionaries representing rows.
+
+    Returns:
+        bytes: the XLSX file content as bytes.
+    """
+    workbook = Workbook()
+    # Remove the default sheet created by openpyxl
+    workbook.remove(workbook.active)
+
+    for sheet_name, rows in dicts.items():
+        _add_sheet_to_workbook(workbook, sheet_name, rows)
+
+    output_stream = io.BytesIO()
+    workbook.save(output_stream)
+    return output_stream.getvalue()
+
+
+def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData) -> None:
+    """Add a sheet with the given name and rows to the workbook.
+
+    Args:
+        workbook: the workbook to add the sheet to.
+        sheet_name: The name of the sheet.
+        rows: the data rows to add to the sheet.
+    """
+    # If sheet data is empty, continue to next sheet
+    if not rows:
+        return
+
+    worksheet = workbook.create_sheet(title=sheet_name)
+    headers = list(rows[0].keys())
+    worksheet.append(headers)
+
+    for row_data in rows:
+        worksheet.append([row_data.get(header, '') for header in headers])
