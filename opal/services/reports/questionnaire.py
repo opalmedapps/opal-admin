@@ -6,7 +6,7 @@ import re
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
 
@@ -20,6 +20,9 @@ from rest_framework import status
 from opal.utils.base64_util import Base64Util
 
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
+
+if TYPE_CHECKING:
+    from fpdf.fpdf import _Format, _Orientation  # noqa: WPS450
 
 
 class Question(NamedTuple):
@@ -70,21 +73,6 @@ QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
-
-_Orientation = Literal['', 'portrait', 'p', 'P', 'landscape', 'l', 'L']
-_Format = Literal[
-    '',
-    'a3',
-    'A3',
-    'a4',
-    'A4',
-    'a5',
-    'A5',
-    'letter',
-    'Letter',
-    'legal',
-    'Legal',
-]
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -233,8 +221,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def add_page(  # noqa: WPS211
         self,
-        orientation: _Orientation = '',
-        format_page: _Format | tuple[float, float] = '',
+        orientation: '_Orientation' = '',
+        format_page: '_Format | tuple[float, float]' = '',
         same: bool = False,
         duration: int = 0,
         transition: Any | None = None,
