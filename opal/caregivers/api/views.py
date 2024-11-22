@@ -375,7 +375,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213, WPS231
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -434,6 +434,9 @@ class RegistrationCompletionView(APIView):
 
             utils.update_registration_code_status(registration_code)
             self._send_confirmation_email(email, caregiver_data['user']['language'])
+            # Send databank consent and infosheet automatically, if enabled
+            if settings.DATABANK_ENABLED:
+                legacy_utils.create_databank_patient_consent_data(patient)
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})

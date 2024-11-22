@@ -1,18 +1,21 @@
 """Utility functions used by legacy API views."""
 import datetime as dt
 from types import MappingProxyType
+from typing import TypeAlias, Union
 
-from django.db.models import Q
+from django.db import transaction
 from django.utils import timezone
+
+from rest_framework.exceptions import NotFound, ValidationError
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.legacy_questionnaires.models import LegacyPatient as QDC_LegacyPatient
+from opal.legacy_questionnaires.models import LegacyPatient as QDB_LegacyPatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
 from opal.patients.models import Patient, Relationship
 
-from .models import (  # LegacyQuestionnaireControl,
+from .models import (  # noqa: WPS235
     LegacyAccessLevel,
     LegacyEducationalMaterial,
     LegacyEducationalMaterialControl,
@@ -21,6 +24,7 @@ from .models import (  # LegacyQuestionnaireControl,
     LegacyPatientControl,
     LegacyPatientHospitalIdentifier,
     LegacyQuestionnaire,
+    LegacyQuestionnaireControl,
     LegacySexType,
     LegacyUsers,
     LegacyUserType,
@@ -39,6 +43,16 @@ ACCESS_LEVEL_MAPPING = MappingProxyType({
     Patient.DataAccessType.ALL.value: LegacyAccessLevel.ALL,
     Patient.DataAccessType.NEED_TO_KNOW.value: LegacyAccessLevel.NEED_TO_KNOW,
 })
+
+DatabankControlRecords: TypeAlias = Union[
+    tuple[
+        LegacyEducationalMaterialControl,
+        QDB_LegacyPatient,
+        QDB_LegacyQuestionnaire,
+        LegacyQuestionnaireControl,
+    ],
+    None,
+]
 
 
 def get_patient_sernum(username: str) -> int:
@@ -339,52 +353,87 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
     update_patient(dummy_patient, sex, patient.date_of_birth, patient.ramq)
 
 
-def create_databank_patient_consent_data(patient: Patient) -> None:
+@transaction.atomic
+def create_databank_patient_consent_data(django_patient: Patient) -> None:  # noqa: WPS210
     """Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
 
     Args:
-        patient: The patient who has just completed registration
+        django_patient: The patient who has just completed registration
     """
-    patient = Patient.objects.get(legacy_id=51)
-    print(vars(patient))
-    # Check for the existence of the consent form and educational materials before attempting to insert
+    # TODO: remove
+    django_patient = Patient.objects.get(legacy_id=51)  # noqa: WPS432
+    try:  # noqa: WPS229
+        legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
 
-    # Retrieve the LegacyQuestionnaire databank consent form  and infosheet instances
-    qdb_questionnaire = QDB_LegacyQuestionnaire.objects.filter(
-        title__content__icontains='QSCC Databank Information',
-        title__language_id=2,
-    ).first()
+        # Check for the existence of the consent form and educational materials before attempting to insert
+        control_records = fetch_databank_control_records(django_patient)
+        if not control_records:
+            # If a control record can't be found we return without raising to avoid affecting the registration
+            return
+        info_sheet, qdb_patient, qdb_questionnaire_control, questionnaire_control = control_records
 
+        # Create the AnswerQuestionnaire instance
+        answer_instance = LegacyAnswerQuestionnaire.objects.create(
+            questionnaire_id=qdb_questionnaire_control.id,
+            patient_id=qdb_patient.id,
+            status=0,
+            creation_date=timezone.make_aware(dt.datetime.now()),
+            created_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
+            updated_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
+        )
+
+        # Link the OpalDB.Questionnaire instance to the QDB.AnswerQuestionnaire instance
+        LegacyQuestionnaire.objects.create(
+            questionnaire_control_ser_num=questionnaire_control,
+            patientsernum=legacy_patient,
+            patient_questionnaire_db_ser_num=answer_instance.id,
+            completedflag=0,
+            date_added=dt.date.today(),
+        )
+
+        # Create the educational material factsheet
+        LegacyEducationalMaterial.objects.create(
+            educationalmaterialcontrolsernum=info_sheet,
+            patientsernum=legacy_patient,
+            readstatus=0,
+            date_added=dt.date.today(),
+        )
+    except (NotFound, ValidationError):
+        # Rollback and return empty without raising to avoid affecting registration completion
+        transaction.set_rollback(True)
+        return
+
+
+def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRecords:
+    """Fetch the required control records for databank consent creation.
+
+    Args:
+        django_patient: Django patient instance
+
+    Returns:
+        tuple of the found records, or None
+    """
+    # Retrieve the questionnaire databank consent form controls and infosheet instances
     info_sheet = LegacyEducationalMaterialControl.objects.filter(
         educational_material_type_en='Factsheet',
         publish_flag=1,
         name_en__icontains='Consent Factsheet - QSCC Databank',
     ).first()
+    qdb_questionnaire_control = QDB_LegacyQuestionnaire.objects.filter(
+        title__content__icontains='QSCC Databank Information',
+        title__language_id=2,
+    ).first()
+    questionnaire_control = LegacyQuestionnaireControl.objects.filter(
+        questionnaire_name_en__icontains='QSCC Databank Information',
+        publish_flag=1,
+    ).first()
 
-    print(vars(qdb_questionnaire))
-    print(vars(info_sheet))
+    # If the questionnaireDB patient population event hasnt run yet, create the patient record
+    qdb_patient, _ = QDB_LegacyPatient.objects.get_or_create(external_id=django_patient.legacy_id)
+
     # Exit if we fail to locate the consent form or the educational material in the db
-    if not qdb_questionnaire or not info_sheet:
-        return
-
-    # Get or create the questionnaire legacy patient instance
-    # TODO: What happens if the patient record in questionnairedb hasnt been created by the `SyncPublishQuestionnaire` event yet?
-    # Maybe it always will be since the OpalDB.Patient record gets created immediately, and this is only triggered on registration completion...
-    qdb_patient, _ = QDC_LegacyPatient.objects.get_or_create(external_id=patient.legacy_id)
-    print(vars(qdb_patient), _)
-
-
-    # Create the AnswerQuestionnaire instance
-    answer_instance = LegacyAnswerQuestionnaire.objects.create(
-        questionnaire_id=qdb_questionnaire.id,
-        patient_id=qdb_patient.id,
-        status=0,
-        creation_date=dt.datetime.now(),
-        created_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
-        updated_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
-    )
-    print(vars(answer_instance))
-
-    # Link the OpalDB.Questionnaire instance to the QDB.AnswerQuestionnaire instance
+    if not (qdb_questionnaire_control and info_sheet and questionnaire_control):
+        return None
+    return (info_sheet, qdb_patient, qdb_questionnaire_control, questionnaire_control)

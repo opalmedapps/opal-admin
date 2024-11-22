@@ -383,7 +383,14 @@ class LegacyQuestionnaire(models.Model):
     """Questionnaire model from the legacy database OpalDB."""
 
     questionnairesernum = models.BigAutoField(db_column='QuestionnaireSerNum', primary_key=True)
+    questionnaire_control_ser_num = models.ForeignKey(
+        'LegacyQuestionnaireControl',
+        models.DO_NOTHING,
+        db_column='QuestionnaireControlSerNum',
+        to_field='questionnaire_control_ser_num',
+    )
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    patient_questionnaire_db_ser_num = models.IntegerField(db_column='PatientQuestionnaireDBSerNum', max_length=11)
     completedflag = models.IntegerField(db_column='CompletedFlag')
     date_added = models.DateTimeField(db_column='DateAdded')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
@@ -392,6 +399,22 @@ class LegacyQuestionnaire(models.Model):
     class Meta:
         managed = False
         db_table = 'Questionnaire'
+
+
+class LegacyQuestionnaireControl(models.Model):
+    """QuestionnaireControl model from the legacy database OpalDB."""
+
+    questionnaire_control_ser_num = models.BigAutoField(db_column='QuestionnaireControlSerNum', primary_key=True)
+    questionnaire_db_ser_num = models.IntegerField(db_column='QuestionnaireDBSerNum', max_length=11)
+    questionnaire_name_en = models.CharField(db_column='QuestionnaireName_EN', max_length=2056)
+    questionnaire_name_fr = models.CharField(db_column='QuestionnaireName_FR', max_length=2056)
+    publish_flag = models.SmallIntegerField(db_column='PublishFlag', max_length=4)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'QuestionnaireControl'
 
 
 class LegacyAnnouncement(models.Model):
