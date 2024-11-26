@@ -173,7 +173,7 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'django_tables2',
     'corsheaders',
-    'easyaudit',
+    'auditlog',
     'slippers',
     'drf_spectacular',
 ]
@@ -264,7 +264,7 @@ MIDDLEWARE = [
     'opal.core.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
+    'auditlog.middleware.AuditlogMiddleware',
 ]
 
 # STATIC
@@ -524,3 +524,5 @@ DJANGO_TABLES2_TABLE_ATTRS = {
         'class': 'table-light',
     },
 }
+
+AUDITLOG_INCLUDE_ALL_MODELS = True

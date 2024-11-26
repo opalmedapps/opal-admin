@@ -2,7 +2,7 @@
 
 from django.http import HttpRequest
 
-from easyaudit.models import RequestEvent
+# from easyaudit.models import RequestEvent
 
 
 def update_request_event_query_string(request: HttpRequest, parameters: list[str]) -> None:
@@ -13,13 +13,14 @@ def update_request_event_query_string(request: HttpRequest, parameters: list[str
         parameters: Filter request parameters to be appended to the request event query string
 
     """
-    request_event = RequestEvent.objects.filter(
-        url=request.path,
-        user=request.user,
-    ).order_by('-datetime').first()
-    query_string = {}
-    for param in parameters:
-        query_string[param] = request.POST.get(param, '')
+    # request_event = RequestEvent.objects.filter(
+    #     url=request.path,
+    #     user=request.user,
+    # ).order_by('-datetime').first()
+    # query_string = {}
+    # for param in parameters:
+    #     query_string[param] = request.POST.get(param, '')
 
-    request_event.query_string += str(query_string)
-    request_event.save()
+    # request_event.query_string += str(query_string)
+    # request_event.save()
+    pass
