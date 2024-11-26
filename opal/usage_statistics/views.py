@@ -1,13 +1,17 @@
 """This module provides views for the usage statistics application."""
 
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic.base import TemplateView
+from django.forms import Form
+from django.views import generic
+
+from opal.usage_statistics import forms
 
 
 # EXPORT USAGE STATISTICS PAGE
-class UsageStatisticsExportTemplateView(UserPassesTestMixin, TemplateView):
+class UsageStatisticsExportTemplateView(UserPassesTestMixin, generic.FormView[Form]):
     """This `TemplateView` displays a form for exporting usage statistics."""
 
+    form_class = forms.GroupUsageStatisticsExportForm
     template_name = 'usage_statistics/export_data/export_form.html'
 
     def test_func(self) -> bool:
