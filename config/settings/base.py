@@ -264,7 +264,8 @@ MIDDLEWARE = [
     'opal.core.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'auditlog.middleware.AuditlogMiddleware',
+    # 'auditlog.middleware.AuditlogMiddleware',
+    'opal.core.middleware.AuditlogMiddleware',
 ]
 
 # STATIC
@@ -526,3 +527,4 @@ DJANGO_TABLES2_TABLE_ATTRS = {
 }
 
 AUDITLOG_INCLUDE_ALL_MODELS = True
+AUDITLOG_CID_HEADER = 'Appuserid'

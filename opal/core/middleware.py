@@ -4,6 +4,11 @@ from collections.abc import Callable
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse
+from django.utils.functional import SimpleLazyObject
+
+from auditlog.cid import set_cid
+from auditlog.context import set_actor
+from auditlog.middleware import AuditlogMiddleware as _AuditlogMiddleware
 
 
 class LoginRequiredMiddleware():
@@ -74,3 +79,15 @@ class LoginRequiredMiddleware():
             route_name = f'{resolver.namespace}:{route_name}'
 
         return route_name
+
+
+# source: https://github.com/jazzband/django-auditlog/issues/115
+class AuditlogMiddleware(_AuditlogMiddleware):
+    def __call__(self, request):
+        remote_addr = self._get_remote_addr(request)
+        user = SimpleLazyObject(lambda: self._get_actor(request))
+
+        set_cid(request)
+
+        with set_actor(actor=user, remote_addr=remote_addr):
+            return self.get_response(request)
