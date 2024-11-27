@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-01 03:29+0300\n"
+"POT-Creation-Date: 2024-11-21 08:21-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,10 @@ msgstr ""
 #: opal/users/admin.py
 msgid "Extra"
 msgstr "Extra"
+
+#: opal/users/api/serializers.py
+msgid "The two password fields don't match."
+msgstr "Les deux mots de passe ne correspondent pas."
 
 #: opal/users/api/viewsets.py
 msgid "Manager group not found."
