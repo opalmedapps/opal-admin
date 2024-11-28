@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.patients import factories as patient_factories
 from opal.services.hospital.hospital import OIEReportExportData
-from opal.services.reports import QuestionnaireReportRequestData
+from opal.services.reports.questionnaire import QuestionnaireReportRequestData
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -197,7 +197,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mock_generate_base64_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
+            'opal.services.reports.questionnaire.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
@@ -238,7 +238,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mock_generate_base64_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
+            'opal.services.reports.questionnaire.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
@@ -279,7 +279,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
+            'opal.services.reports.questionnaire.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 
@@ -322,7 +322,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
+            'opal.services.reports.questionnaire.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 
