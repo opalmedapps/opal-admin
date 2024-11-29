@@ -1,12 +1,21 @@
 """Utility functions used by legacy API views."""
 import datetime as dt
+import json
+from datetime import datetime
+from pathlib import Path
 from types import MappingProxyType
+from typing import Any
 
+from django.conf import settings
+from django.core.management.base import CommandError
+from django.db import connections, models, transaction
 from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient, Relationship
+from opal.services.reports.base import InstitutionData, PatientData
+from opal.services.reports.questionnaire import Question, QuestionnaireData, generate_pdf
 
 from .models import (
     LegacyAccessLevel,
@@ -330,3 +339,237 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
     dummy_patient = LegacyPatient.objects.get(patientsernum=patient_user.usertypesernum)
     sex = SEX_TYPE_MAPPING[patient.sex]
     update_patient(dummy_patient, sex, patient.date_of_birth, patient.ramq)
+
+
+@transaction.atomic
+def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
+    """
+    Handle sync check for the questionnaire respondents.
+
+    Args:
+        patient: patient for data
+
+    Raises:
+        CommandError: if there are deviations
+
+    Returns:
+        list of the questionnaireData
+
+    """
+    external_patient_id = patient.legacy_id if patient.legacy_id else -1
+    try:
+        query_result = fetch_questionnaires_from_db(external_patient_id)
+    except Exception as exc:
+        raise CommandError(f'Error fetching questionnaires: {exc}')
+
+    try:
+        data_list = parse_query_result(query_result)
+    except ValueError as exc:  # noqa: WPS440
+        raise CommandError(f'Error parsing questionnaires: {exc}')
+    return process_questionnaire_data(data_list)
+
+
+def fetch_questionnaires_from_db(external_patient_id: int) -> list[Any]:
+    """Fetch completed questionnaires data from the database.
+
+    Args:
+        external_patient_id (int): patient's legacy id
+
+    Returns:
+        the result of the query
+    """
+    with connections['questionnaire'].cursor() as cursor:
+        print(cursor.cursor)
+        cursor.callproc(
+            'getCompletedQuestionnairesList',
+            [external_patient_id, 1, 'EN'],
+        )
+        return [
+            json.loads(row[0]) for row in cursor.fetchall() if row and row[0]  # noqa: WPS221
+        ]
+
+
+def parse_query_result(
+    query_result: list[Any],
+) -> list[dict[Any, Any]]:  # noqa: WPS231
+    """Parse the raw query result into a structured list of disctionries.
+
+    This function processes each row in the query result, expecting JSON data in the first column
+    (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
+
+    Args:
+        query_result (list[tuple[Any]]): raw query results, each tuple represents a database row
+
+    Raises:
+        ValueError: if the JSON data cannot be deserialized
+
+    Returns:
+        list[dict[Any, Any]]: structured list of dictonaries representing the query
+    """
+    data_list = []
+    for parsed_data in query_result:
+        if isinstance(parsed_data, dict):
+            data_list.append(parsed_data)
+        elif isinstance(parsed_data, list):
+            data_list.extend(parsed_data)
+        else:
+            raise ValueError(
+                f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
+            )
+    if not all(isinstance(item, dict) for item in data_list):
+        raise ValueError(f'Expected parsed data to be a dict or list of dicts, got {type(data_list)}.')
+
+    return data_list
+
+
+def process_questionnaire_data(parsed_data_list: list[dict[Any, Any]]) -> list[QuestionnaireData]:
+    """Process parsed questionnaire data into QuestionnaireData objects.
+
+    Args:
+        parsed_data_list (list[dict[Any,Any]]): parsed data list of the questionnaire
+
+    Raises:
+        CommandError: if the questionnaire format is wrong
+
+    Returns:
+        list[QuestionnaireData]: complete answered questionnaire data list of the patient
+    """
+    questionnaire_data_list = []
+
+    for data in parsed_data_list:
+        if 'questions' not in data:
+            raise CommandError(f'Unexpected data format: {data}')
+        questions = process_questions(data['questions'])
+        questionnaire_data_list.append(
+            QuestionnaireData(
+                questionnaire_id=data['questionnaire_id'],
+                questionnaire_title=data['questionnaire_nickname'],
+                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S'),
+                questions=questions,
+            ),
+        )
+
+    return questionnaire_data_list
+
+
+def process_questions(questions_data: list[Any]) -> list[Question]:
+    """Process question data into Question objects.
+
+    Args:
+        questions_data (list[Any]): unprocessed questions data associated with the questionnaire
+
+    Raises:
+        CommandError: if the question format is wrong
+
+    Returns:
+        list[Question]: questions list associated with the questionnaire
+    """
+    questions = []
+
+    for que in questions_data:
+        if not isinstance(que, dict):
+            raise CommandError(f'Invalid question format: {que}')
+
+        values = que.get('values') or []
+        if not isinstance(values, list):
+            raise CommandError(f"Invalid 'values' format for question: {que}")
+
+        questions.append(
+            Question(
+                question_text=que['question_text'],
+                question_label=que['question_label'],
+                question_type_id=que['question_type_id'],
+                position=que['position'],
+                min_value=que['min_value'],
+                max_value=que['max_value'],
+                polarity=que['polarity'],
+                section_id=que['section_id'],
+                values=[
+                    (
+                        datetime.strptime(val[0], '%Y-%m-%d %H:%M:%S'),
+                        str(val[1]),
+                    ) for val in values
+                ],
+            ),
+        )
+
+    return questions
+
+
+def generate_questionnaire_report(
+    patient: Patient,
+    questionnaire_data_list: list[QuestionnaireData],
+) -> bytearray:
+    """Generate the questionnaire PDF report by calling the pdf generator for Questionnaires.
+
+    Args:
+        patient (Patient): patient instance for whom a new PDF questionnaire report being generated
+        questionnaire_data_list (list[QuestionnaireData]): list of questionnaireData required to generate the PDF report
+
+    Returns:
+        bytearray: the generated questionnaire report
+    """
+    combined_questionnaire_data = []
+    for questionnaire_data in questionnaire_data_list:
+        questions_data = [
+            Question(
+                question_text=question.question_text,
+                question_label=question.question_label,
+                question_type_id=question.question_type_id,
+                position=question.position,
+                min_value=question.min_value,
+                max_value=question.max_value,
+                polarity=question.polarity,
+                section_id=question.section_id,
+                values=question.values,
+            )
+            for question in questionnaire_data.questions
+        ]
+
+        combined_questionnaire_data.append(
+            QuestionnaireData(
+                questionnaire_id=questionnaire_data.questionnaire_id,
+                questionnaire_title=questionnaire_data.questionnaire_title,
+                last_updated=questionnaire_data.last_updated,
+                questions=questions_data,
+            ),
+        )
+
+    return generate_pdf(
+        institution=InstitutionData(
+            institution_logo_path=Path(Institution.objects.get().logo.path),
+        ),
+        patient=PatientData(
+            patient_first_name=patient.first_name,
+            patient_last_name=patient.last_name,
+            patient_date_of_birth=patient.date_of_birth,
+            patient_ramq=patient.ramq,
+            patient_sites_and_mrns=list(
+                patient.hospital_patients.all().annotate(
+                    site_code=models.F('site__acronym'),
+                ).values('mrn', 'site_code'),
+            ),
+        ),
+        questionnaires=combined_questionnaire_data,
+    )
+
+
+def path_to_questionnaire_report(patient: Patient, pdf_report: bytearray) -> Path:
+    """Generate a path to the pdf for the encoded base64 to send to OIE.
+
+    Args:
+        patient (Patient): patient instance for whom a new PDF questionnaire report being generated
+        pdf_report (bytearray): list of questionnaireData required to generate the PDF report
+
+    Returns:
+        Path: path to the generated questionnaire report
+    """
+    generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
+    report_file_name = f'{patient.first_name}_{patient.last_name}_{generated_at}_questionnaire.pdf'
+    report_path = settings.QUESTIONNAIRE_REPORTS_PATH / f'{report_file_name}.pdf'
+
+    # Save the PDF bytearray to a file
+    with open(report_path, 'wb') as report_file:
+        report_file.write(pdf_report)
+
+    return report_path

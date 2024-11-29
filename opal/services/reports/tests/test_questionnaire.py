@@ -54,7 +54,7 @@ QUESTION_REPORT_DATA = (
         section_id=1,
         values=[
             (
-                1,
+                datetime(2024, 10, 21, 14, 0),
                 '3000',
             ),
         ],
