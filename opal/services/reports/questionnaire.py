@@ -1,4 +1,5 @@
 """Module providing business logic for generating questionnaire PDF reports using FPDF2."""
+import io
 import json
 import logging
 import math
@@ -10,10 +11,12 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
 
+import pandas as pd
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, TableBordersLayout
 from fpdf.outline import OutlineSection
+from plotly import express
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
@@ -73,6 +76,8 @@ QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
+
+TABLE_HEADER_QUESTIONS = ('Date', 'Response')
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -299,7 +304,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
     def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
         for index, data in enumerate(self.questionnaire_data):
-            # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if index > 0:  # Skip empty first page
                 self.add_page()
@@ -314,7 +318,129 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             )
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            self._insert_paragraph('TODO: add graphs', align=Align.C)
+            self._draw_questions_results(data.questions)
+
+    def _draw_questions_results(self, questions: Any) -> None:
+        """Logic regarding how to show the data for the different type of questions.
+
+        Args:
+            questions: list of questions associated with the questionnaire
+        """
+        for question in questions:
+            if question.question_type_id == 2:
+                self._draw_charts_for_questions(question)
+                self.ln(4)
+            else:
+                self._draw_questions_tables(question)
+
+    def _draw_charts_for_questions(self, question: Any) -> None:
+        """Chart generation for the specific question inside the questionnaire.
+
+        Args:
+            question: question that needs a chart created
+        """
+        data_frame = self._prepare_questions_charts(question)
+
+        chart_trace = express.line(
+            data_frame,
+            x=data_frame.iloc[:, 0],
+            y=data_frame.iloc[:, 1],
+            markers=True,
+            width=800,
+            height=300,
+            text='Value',
+            template='plotly_white',
+        )
+        chart_trace.update_traces(
+            textposition='bottom center',
+            marker={'size': 10},
+            textfont={'size': 15},
+        )
+
+        chart_trace.update_yaxes(showgrid=True, range=[0, 11])
+        chart_trace.update_layout(
+            yaxis_title=question.question_label,
+            xaxis_title=None,
+            margin={
+                'l': 40,
+                'r': 40,
+                't': 20,
+                'b': 40,
+            },
+            height=300,  # Keep height fixed
+            xaxis={
+                'tickangle': 20,  # Better readability than flat
+            },
+        )
+
+        image = io.BytesIO(chart_trace.to_image(format='PNG', engine='kaleido'))
+        self.image(image, w=self.epw, x=Align.R)
+
+    def _prepare_questions_charts(self, question: Any) -> pd.DataFrame:
+        """Logic regarding the preparation for the charts.
+
+        Args:
+            question: question that needs to be prepared
+
+        Returns:
+            DataFrame of the questions answer value
+        """
+        if self.will_page_break(50):
+            self.add_page()
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
+        self._insert_paragraph(
+            f'{question.question_text}',
+            align=Align.L,
+        )
+        self.ln(5)
+        x_data = []
+        y_data = []
+        for values in question.values:
+            x_data.append(
+                values[0],
+            )
+            y_data.append(int(values[1]))
+
+        return pd.DataFrame(
+            {
+                'Last Updated': x_data,
+                'Value': y_data,
+            },
+        )
+
+    def _draw_questions_tables(self, questions: Any) -> None:  # noqa: WPS213
+        """Drawing the tables of the patients answers for questions.
+
+        Args:
+            questions: question needing a table to be rendered
+        """
+        if self.will_page_break(30):
+            self.add_page()
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
+        self._insert_paragraph(
+            f'{questions.question_text}',
+            align=Align.L,
+        )
+        self.ln(4)
+
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
+        headings_style = FontFace(fill_color=(160, 207, 236), emphasis='BOLD')
+        with self.table(
+            borders_layout=TableBordersLayout.ALL,
+            text_align=(Align.L, Align.L),
+            col_widths=(30, 60),
+            headings_style=headings_style,
+        ) as table:
+            table.row(TABLE_HEADER_QUESTIONS)
+            for values in reversed(questions.values):
+                row = table.row()
+                row.cell(
+                    f'{values[0].strftime("%b %d, %Y %H:%M")}',
+                )
+                row.cell(
+                    f'{values[1]}',
+                )
+        self.ln(7)
 
     def _insert_toc_title(
         self,
