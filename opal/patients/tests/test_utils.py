@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime
 from typing import Any
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.utils import IntegrityError
 from django.utils import timezone
 
@@ -20,7 +20,18 @@ from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Institution, Site
 from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
-from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
+from opal.legacy.models import (
+    LegacyEducationalMaterial,
+    LegacyEducationalMaterialControl,
+    LegacyPatient,
+    LegacyPatientControl,
+    LegacyPatientHospitalIdentifier,
+    LegacyQuestionnaire,
+    LegacyUserType,
+)
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyPatient as qdb_LegacyPatient
+from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     PREDEFINED_ROLE_TYPES,
@@ -38,7 +49,7 @@ from opal.users.factories import Caregiver, User
 
 from .. import utils
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
 PATIENT_DATA = OIEPatientData(
@@ -849,3 +860,103 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     assert legacy_mrn_list.filter(mrn='9999996', hospital__code='MGH', is_active=False).count() == 1
 
     assert LegacyPatientControl.objects.filter(patient=legacy_patient).count() == 1
+
+
+def test_create_access_request_new_patient_and_databank_consent(
+    databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+) -> None:
+    """A new relationship and new patient with databank consent records are created."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Institution()
+
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = Patient.objects.get()
+
+    assert relationship.patient == patient
+    assert patient.first_name == 'Marge'
+    assert patient.last_name == 'Simpson'
+    assert patient.date_of_birth == date(1986, 10, 1)
+    assert patient.sex == SexType.FEMALE
+    assert patient.ramq == 'SIMM86600199'
+    assert patient.date_of_death is None
+    assert HospitalPatient.objects.count() == 0
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    # Search for the expected databank records
+    qdb_patient = qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+        external_id=patient.legacy_id,
+    )
+    inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
+        questionnaire_id=consent_form.id,
+        patient_id=qdb_patient.id,
+    )
+    inserted_sheet = LegacyEducationalMaterial.objects.get(
+        educationalmaterialcontrolsernum=info_sheet,
+        patientsernum=patient.legacy_id,
+    )
+    inserted_questionnaire = LegacyQuestionnaire.objects.get(
+        patientsernum=patient.legacy_id,
+        patient_questionnaire_db_ser_num=inserted_answer_questionnaire.id,
+    )
+    assert inserted_questionnaire.completedflag == 0
+    assert inserted_questionnaire.patientsernum.patientsernum == patient.legacy_id
+    assert inserted_questionnaire.patient_questionnaire_db_ser_num == inserted_answer_questionnaire.id
+
+    assert inserted_sheet.readstatus == 0
+    assert inserted_sheet.patientsernum.patientsernum == patient.legacy_id
+    assert inserted_sheet.educationalmaterialcontrolsernum == info_sheet
+
+    assert inserted_answer_questionnaire.status == 0
+    assert inserted_answer_questionnaire.patient_id == qdb_patient.id
+    assert inserted_answer_questionnaire.questionnaire_id == consent_form.id
+
+
+@pytest.mark.usefixtures('set_databank_disabled')
+def test_create_access_request_new_patient_databank_disabled(
+    databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+) -> None:
+    """Ensure the databank consent form is not created if databank is disabled."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Institution()
+    info_sheet = databank_consent_questionnaire_data[1]
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = Patient.objects.get()
+
+    assert relationship.patient == patient
+    assert patient.first_name == 'Marge'
+    assert patient.last_name == 'Simpson'
+    assert patient.date_of_birth == date(1986, 10, 1)
+    assert patient.sex == SexType.FEMALE
+    assert patient.ramq == 'SIMM86600199'
+    assert patient.date_of_death is None
+    assert HospitalPatient.objects.count() == 0
+    # Ensure records are not created
+    message = 'LegacyPatient matching query does not exist.'
+    with assertRaisesMessage(ObjectDoesNotExist, message):
+        qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+            external_id=patient.legacy_id,
+        )
+    message = 'LegacyEducationalMaterial matching query does not exist.'
+    with assertRaisesMessage(ObjectDoesNotExist, message):
+        LegacyEducationalMaterial.objects.get(
+            educationalmaterialcontrolsernum=info_sheet,
+            patientsernum=patient.legacy_id,
+        )
+    # We cant search for the specific answer questionnaire instance without the qdb_patient instance, so check all
+    answer_questionnaires = LegacyAnswerQuestionnaire.objects.all()
+    for qst in answer_questionnaires:
+        assert qst.created_by != 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'

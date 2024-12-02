@@ -423,7 +423,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210, WPS231
+def create_access_request(  # noqa: WPS210, WPS231, C901
     patient: Patient | OIEPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
@@ -502,6 +502,9 @@ def create_access_request(  # noqa: WPS210, WPS231
                 patient.uuid,
                 caregiver_profile if relationship_type.is_self else None,
             )
+            # Prepare databank consent and infosheet automatically for new patients, if enabled
+            if settings.DATABANK_ENABLED:
+                legacy_utils.create_databank_patient_consent_data(patient)
     else:
         # New user
         # Create caregiver and caregiver profile
