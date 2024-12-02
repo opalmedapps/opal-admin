@@ -97,6 +97,12 @@ class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
         model = models.LegacyEducationalMaterialControl
 
     educationalmaterialcategoryid = SubFactory(LegacyEducationalMaterialCategoryFactory)
+    educational_material_type_en = 'Booklet'
+    educational_material_type_fr = 'Brochure'
+    publish_flag = 1
+    name_en = 'Radiotherapy at the Cedars Cancer Centre'
+    name_fr = 'Radiothérapie au Centre du Cancer des Cèdres'
+    date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
 class LegacyAliasFactory(DjangoModelFactory):
@@ -224,13 +230,28 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
     date_added = timezone.make_aware(dt.datetime(2018, 1, 1))
 
 
+class LegacyQuestionnaireControlFactory(DjangoModelFactory):
+    """QuestionnaireControl factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyQuestionnaireControl
+
+    questionnaire_db_ser_num = Faker('random_int', min=0, max=1000)
+    questionnaire_name_en = 'Patient Satisfaction Questionnaire'
+    questionnaire_name_fr = 'Questionnaire de satisfaction des patients'
+    publish_flag = 1
+    date_added = timezone.make_aware(dt.datetime(2023, 6, 9, 16, 38, 26))
+
+
 class LegacyQuestionnaireFactory(DjangoModelFactory):
     """Questionnaire factory from the legacy database."""
 
     class Meta:
         model = models.LegacyQuestionnaire
 
+    questionnaire_control_ser_num = SubFactory(LegacyQuestionnaireControlFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
+    patient_questionnaire_db_ser_num = Faker('random_int', min=0, max=1000)
     completedflag = 0
     date_added = timezone.make_aware(dt.datetime(2023, 6, 9, 16, 38, 26))
 

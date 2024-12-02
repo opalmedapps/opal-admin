@@ -94,7 +94,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     patient = SubFactory(LegacyPatientFactory)
     status = 0
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = timezone.make_aware(datetime(2022, 9, 27))
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
