@@ -3,7 +3,7 @@
 # Testing
 #
 mypy[faster-cache]==1.13.0  # https://github.com/python/mypy
-pytest==8.3.3  # https://github.com/pytest-dev/pytest
+pytest==8.3.4  # https://github.com/pytest-dev/pytest
 pytest-mock==3.14.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.7.0  # https://github.com/miketheman/pytest-socket
 pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
