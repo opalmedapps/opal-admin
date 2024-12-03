@@ -51,7 +51,7 @@ class Question(NamedTuple):
     max_value: int | None
     polarity: int
     section_id: int
-    values: list[tuple[int, str]]  # TODO: OP-48 - proper typing for values
+    values: list[tuple[datetime, str]]
 
 
 class QuestionnaireData(NamedTuple):
