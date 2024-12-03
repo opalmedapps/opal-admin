@@ -2,6 +2,10 @@ import io
 import zipfile
 from typing import Any
 
+from django.utils.text import Truncator
+
+from openpyxl import load_workbook
+
 from .. import utils
 
 # Sample file contents
@@ -244,3 +248,181 @@ def test_dict_to_csv_none_values() -> None:
     csv_bytes = utils.dict_to_csv(input_dict)
     csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
+
+
+def test_dict_to_xlsx_empty_workbook() -> None:
+    """Ensure that an empty data input results in an empty workbook."""
+    data: utils.WorkbookData = {}
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert len(workbook.sheetnames) == 1
+
+
+def test_dict_to_xlsx_single_sheet_single_row() -> None:
+    """Test a workbook with one sheet and one row of data."""
+    data: utils.WorkbookData = {
+        'Sheet1': [
+            {'Name': 'Alice', 'Age': 30, 'City': 'New York'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert workbook.sheetnames == ['Sheet1']
+    sheet = workbook['Sheet1']
+    headers = [cell.value for cell in next(sheet.iter_rows(max_row=1))]
+    assert headers == ['Name', 'Age', 'City']
+    row = [cell.value for cell in next(sheet.iter_rows(min_row=2))]
+    assert row == ['Alice', 30, 'New York']
+
+
+def test_dict_to_xlsx_multiple_sheets_multiple_rows() -> None:
+    """Test a workbook with multiple sheets and multiple rows."""
+    data: utils.WorkbookData = {
+        'Employees': [
+            {'Name': 'Alice', 'Age': 30, 'Department': 'HR'},
+            {'Name': 'Bob', 'Age': 35, 'Department': 'Engineering'},
+        ],
+        'Products': [
+            {'Product ID': 'P001', 'Product Name': 'Widget', 'Price': 19.99},
+            {'Product ID': 'P002', 'Product Name': 'Gadget', 'Price': 29.99},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert set(workbook.sheetnames) == {'Employees', 'Products'}
+
+    # Test Employees sheet
+    employees_sheet = workbook['Employees']
+    headers = [cell.value for cell in next(employees_sheet.iter_rows(max_row=1))]
+    assert headers == ['Name', 'Age', 'Department']
+    rows = list(employees_sheet.iter_rows(min_row=2, values_only=True))
+    assert rows == [
+        ('Alice', 30, 'HR'),
+        ('Bob', 35, 'Engineering'),
+    ]
+
+    # Test Products sheet
+    products_sheet = workbook['Products']
+    headers = [cell.value for cell in next(products_sheet.iter_rows(max_row=1))]
+    assert headers == ['Product ID', 'Product Name', 'Price']
+    rows = list(products_sheet.iter_rows(min_row=2, values_only=True))
+    assert rows == [
+        ('P001', 'Widget', 19.99),
+        ('P002', 'Gadget', 29.99),
+    ]
+
+
+def test_dict_to_xlsx_missing_keys_in_rows() -> None:
+    """Test handling of rows with missing keys."""
+    data: utils.WorkbookData = {
+        'Sheet1': [
+            {'Name': 'Alice', 'Age': 30},
+            {'Name': 'Bob'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    sheet = workbook['Sheet1']
+    headers = [cell.value for cell in next(sheet.iter_rows(max_row=1))]
+    assert headers == ['Name', 'Age']
+    rows = list(sheet.iter_rows(min_row=2, values_only=True))
+    assert rows == [
+        ('Alice', 30),
+        ('Bob', None),  # Missing value should be a None
+    ]
+
+
+def test_dict_to_xlsx_non_string_values() -> None:
+    """Test handling of non-string values like integers and floats."""
+    data: utils.WorkbookData = {
+        'Numbers': [
+            {'Integer': 42, 'Float': 1.05, 'Boolean': True},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    sheet = workbook['Numbers']
+    headers = [cell.value for cell in next(sheet.iter_rows(max_row=1))]
+    assert headers == ['Integer', 'Float', 'Boolean']
+    row = [cell.value for cell in next(sheet.iter_rows(min_row=2))]
+    assert row == [42, 1.05, True]
+
+
+def test_dict_to_xlsx_empty_sheet() -> None:
+    """Test a workbook with a sheet that has no data."""
+    data: utils.WorkbookData = {
+        'EmptySheet': [],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'EmptySheet' in workbook.sheetnames
+    sheet = workbook['EmptySheet']
+    rows = list(sheet.iter_rows(values_only=True))
+    assert not rows
+
+
+def test_dict_to_xlsx_special_characters_in_sheet_name() -> None:
+    """Ensure that special characters in sheet names are handled."""
+    data: utils.WorkbookData = {
+        'Data & Analysis': [
+            {'Metric': 'Engagement', 'Value': 75.5},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'Data & Analysis' in workbook.sheetnames
+
+
+def test_dict_to_xlsx_long_sheet_name() -> None:
+    """Ensure that long sheet names are truncated appropriately."""
+    long_sheet_name = 'A' * 40  # Exceeds Excel's 31-character limit
+    data: utils.WorkbookData = {
+        long_sheet_name: [
+            {'Data': 'Test'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    truncator = Truncator(long_sheet_name)
+    truncated_sheet_name = truncator.chars(num=utils.SHEET_TITLE_MAX_LENGTH)
+    assert truncated_sheet_name in workbook.sheetnames
+
+
+def test_dict_to_xlsx_invalid_sheet_name_characters_removed() -> None:
+    """Ensure that invalid characters in sheet names are removed."""
+    invalid_sheet_name = r'Invalid:/\\*?[]'
+    data: utils.WorkbookData = {
+        invalid_sheet_name: [
+            {'Data': 'Test'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'Invalid' in workbook.sheetnames
+
+
+def test_dict_to_xlsx_empty_sheet_name() -> None:
+    """Ensure that an empty sheet name is handled without errors."""
+    invalid_sheet_name = r':/\\*?[]'
+    data: utils.WorkbookData = {
+        invalid_sheet_name: [
+            {'Data': 'Test'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'Sheet' in workbook.sheetnames
+
+
+def test_dict_to_xlsx_none_values_in_data() -> None:
+    """Ensure that None values in data are handled properly."""
+    data: utils.WorkbookData = {
+        'Sheet1': [
+            {'Name': 'Alice', 'Age': None},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    sheet = workbook['Sheet1']
+    row = [cell.value for cell in next(sheet.iter_rows(min_row=2))]
+    assert row == ['Alice', None]
