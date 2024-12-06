@@ -12,7 +12,7 @@ variables:
   FF_SCRIPT_SECTIONS: "true"
 
 default:
-  image: python:3.11.10-alpine3.20
+  image: python:3.11.11-alpine3.20
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
