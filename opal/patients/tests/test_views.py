@@ -21,7 +21,7 @@ from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
 from opal.hospital_settings import factories as hospital_factories
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
 from opal.users.models import Caregiver, User
 
 from .. import constants, factories, forms, models, tables
@@ -29,7 +29,7 @@ from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCare
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = OIEPatientData(
+SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
     date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
@@ -40,17 +40,17 @@ OIE_PATIENT_DATA = OIEPatientData(
     ramq='MARG99991313',
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
     mrns=[
-        OIEMRNData(
+        SourceSystemMRNData(
             site='MGH',
             mrn='9999993',
             active=True,
         ),
-        OIEMRNData(
+        SourceSystemMRNData(
             site='MCH',
             mrn='9999994',
             active=True,
         ),
-        OIEMRNData(
+        SourceSystemMRNData(
             site='RVH',
             mrn='9999993',
             active=True,
@@ -1221,10 +1221,10 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
     """Ensure that the patient search form finds a new patient and moves to the next step."""
     _initialize_session(client)
     mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': SOURCE_SYSTEM_PATIENT_DATA,
         },
     )
 
@@ -1249,16 +1249,16 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
     assert len(table.data.data) == 1
     patient = table.data.data[0]
     # spot check only since some dates are datetimes others are strings
-    assert patient.first_name == OIE_PATIENT_DATA.first_name
-    assert patient.last_name == OIE_PATIENT_DATA.last_name
-    assert patient.ramq == OIE_PATIENT_DATA.ramq
-    assert patient.date_of_birth == OIE_PATIENT_DATA.date_of_birth
-    assert patient.mrns == OIE_PATIENT_DATA.mrns
+    assert patient.first_name == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert patient.last_name == SOURCE_SYSTEM_PATIENT_DATA.last_name
+    assert patient.ramq == SOURCE_SYSTEM_PATIENT_DATA.ramq
+    assert patient.date_of_birth == SOURCE_SYSTEM_PATIENT_DATA.date_of_birth
+    assert patient.mrns == SOURCE_SYSTEM_PATIENT_DATA.mrns
 
     # the form's data was saved and models were converted to their pk only
     session = client.session[AccessRequestView.session_key_name]
 
-    patient_data = OIE_PATIENT_DATA._asdict()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA._asdict()
     patient_data['mrns'] = [mrn._asdict() for mrn in patient_data['mrns']]
     patient_json = json.dumps(patient_data, cls=DjangoJSONEncoder)
 
@@ -1276,7 +1276,7 @@ def test_access_request_search_not_found(client: Client, registration_user: User
     """Ensure that the patient search form is invalid when no patient is found."""
     _initialize_session(client)
     mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
         return_value={
             'status': 'error',
             'data': {'message': 'patient not found'},

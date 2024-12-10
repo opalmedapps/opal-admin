@@ -14,8 +14,8 @@ from opal.core.utils import generate_random_registration_code, generate_random_u
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import LegacyUserType
-from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.hospital.hospital import SourceSystemService
+from opal.services.hospital.hospital_data import SourceSystemPatientData
 from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
@@ -29,7 +29,8 @@ RANDOM_USERNAME_LENGTH: Final = 16
 REGISTRATION_CODE_LENGTH: Final = 10
 
 # Initialize services to communicate with external components
-oie_service: OIEService = OIEService()
+source_system_service: SourceSystemService = SourceSystemService()
+orms_service: ORMSService = ORMSService()
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +380,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
-    This includes notifying ORMS and the OIE of the new patient.
+    This includes notifying ORMS and the source system of the new patient.
 
     Args:
         patient: the patient to initialize in the legacy DB.
@@ -395,20 +396,19 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
     patient.save()
     logger.info(f'Successfully initialized patient in legacy DB; legacy_id = {patient.legacy_id}')
 
-    # Call the OIE to notify it of the existence of the new patient (must be done before calling
+    # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
-    oie_response = oie_service.new_opal_patient(active_mrn_list)
+    source_system_response = source_system_service.new_opal_patient(active_mrn_list)
 
-    if oie_response['status'] == 'success':
-        logger.info(f'Successfully initialized patient via the OIE; patient_uuid = {patient_uuid}')
+    if source_system_response['status'] == 'success':
+        logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
     else:
-        logger.error('Failed to initialize patient via the OIE')
+        logger.error('Failed to initialize patient via the source system')
         logger.error(
-            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, OIE response = {oie_response}',
+            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, Source system response = {source_system_response}',
         )
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
-        orms_service: ORMSService = ORMSService()
         orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
         if orms_response['status'] == 'success':
@@ -424,7 +424,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
 @transaction.atomic
 def create_access_request(  # noqa: WPS210, WPS231, C901
-    patient: Patient | OIEPatientData,
+    patient: Patient | SourceSystemPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
 ) -> tuple[Relationship, caregiver_models.RegistrationCode | None]:
@@ -436,7 +436,7 @@ def create_access_request(  # noqa: WPS210, WPS231, C901
     For a new caregiver a registration code will also be created.
 
     Args:
-        patient: a `Patient` instance if the patient exists, `OIEPatientData` otherwise
+        patient: a `Patient` instance if the patient exists, `SourceSystemPatientData` otherwise
         caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
         relationship_type: the type of relationship between the caregiver and patient
 
@@ -455,7 +455,7 @@ def create_access_request(  # noqa: WPS210, WPS231, C901
     )
 
     # New patient
-    if isinstance(patient, OIEPatientData):
+    if isinstance(patient, SourceSystemPatientData):
         is_new_patient = True
         mrns = [
             (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active)
