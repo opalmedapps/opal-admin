@@ -1,4 +1,4 @@
-"""Collection of api views used to send questionnaire PDF reports to the OIE."""
+"""Collection of api views used to send questionnaire PDF reports to the source system."""
 
 import logging
 from pathlib import Path
@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from opal.core.drf_permissions import IsORMSUser
 from opal.hospital_settings.models import Institution
 from opal.patients.models import Patient
-from opal.services.hospital.hospital import OIEReportExportData, OIEService
+from opal.services.hospital.hospital import SourceSystemReportExportData, SourceSystemService
 from opal.services.reports.questionnaire import QuestionnaireReportRequestData, ReportService
 
 from ..serializers import QuestionnaireReportRequestSerializer
@@ -27,7 +27,7 @@ class QuestionnairesReportView(views.APIView):
 
     permission_classes = (IsORMSUser,)
     serializer_class = QuestionnaireReportRequestSerializer
-    oie = OIEService()
+    source_system = SourceSystemService()
     report_service = ReportService()
 
     def post(
@@ -37,7 +37,7 @@ class QuestionnairesReportView(views.APIView):
         **kwargs: Any,
     ) -> response.Response:
         """
-        Generate questionnaire PDF report and submit to the OIE.
+        Generate questionnaire PDF report and submit to the source system.
 
         Args:
             request: HTTP request that initiates report generation
@@ -86,9 +86,9 @@ class QuestionnairesReportView(views.APIView):
         if not encoded_report:
             return self._create_error_response('An error occurred during report generation.')
 
-        # Submit report to the OIE
-        export_result = self.oie.export_pdf_report(
-            OIEReportExportData(
+        # Submit report to the source system
+        export_result = self.source_system.export_pdf_report(
+            SourceSystemReportExportData(
                 mrn=serializer.validated_data.get('mrn'),
                 site=serializer.validated_data.get('site'),
                 base64_content=encoded_report,
@@ -102,7 +102,7 @@ class QuestionnairesReportView(views.APIView):
             or 'status' not in export_result
             or export_result['status'] == 'error'
         ):
-            LOGGER.error('An error occurred while exporting a PDF report to the OIE.')
+            LOGGER.error('An error occurred while exporting a PDF report to the source system.')
 
         return response.Response(export_result)
 
