@@ -1,10 +1,10 @@
-"""Module providing custom data structures (a.k.a., named tuples) for the OIE Service."""
+"""Module providing custom data structures (a.k.a., named tuples) for the Source System Service."""
 from datetime import date, datetime
 from typing import NamedTuple
 
 
-class OIEReportExportData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the OIE.
+class SourceSystemReportExportData(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs for the site
@@ -21,8 +21,8 @@ class OIEReportExportData(NamedTuple):
     document_date: datetime
 
 
-class OIEMRNData(NamedTuple):
-    """Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the OIE.
+class SourceSystemMRNData(NamedTuple):
+    """Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs associated with a particular site
@@ -35,8 +35,8 @@ class OIEMRNData(NamedTuple):
     active: bool
 
 
-class OIEPatientData(NamedTuple):
-    """Typed `NamedTuple` that describes `Patient` fields (a.k.a., Patient data structure) returned from the OIE.
+class SourceSystemPatientData(NamedTuple):
+    """Typed `NamedTuple` that describes Patient fields (a.k.a., Patient data structure) returned from the SourceSystem.
 
     Attributes:
         date_of_birth: the date of birth
@@ -60,4 +60,4 @@ class OIEPatientData(NamedTuple):
     death_date_time: datetime | None
     ramq: str
     ramq_expiration: datetime | None
-    mrns: list[OIEMRNData]
+    mrns: list[SourceSystemMRNData]

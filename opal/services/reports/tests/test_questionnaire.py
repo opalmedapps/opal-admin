@@ -1,26 +1,19 @@
-import datetime
 import json
-import textwrap
+from datetime import date, datetime
 from http import HTTPStatus
 from pathlib import Path
 
 import pytest
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from fpdf import FPDFException
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import (
-    InstitutionData,
-    PathologyData,
-    PathologyPDF,
-    PatientData,
-    QuestionnaireReportRequestData,
-    ReportService,
-    SiteData,
-)
+from opal.services.reports import questionnaire
+from opal.services.reports.base import InstitutionData, PatientData
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -31,9 +24,9 @@ LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
-report_service = ReportService()
+report_service = questionnaire.ReportService()
 
-QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
+QUESTIONNAIRE_REPORT_REQUEST_DATA = questionnaire.QuestionnaireReportRequestData(
     patient_id=51,
     patient_name='Bart Simpson',
     patient_site='RVH',
@@ -42,95 +35,50 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     language='en',
 )
 
-INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
-    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+
+QUESTION_REPORT_DATA = (
+    questionnaire.Question(
+        question_text='Question demo for patient',
+        question_label='demo for patient',
+        question_type_id=1,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                1,
+                '3000',
+            ),
+        ],
+    ),
+)
+QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
+    questionnaire_id=1,
+    questionnaire_title='BREAST-Q Reconstruction Module',
+    last_updated=datetime(2024, 10, 21, 14, 0),
+    questions=QUESTION_REPORT_DATA,
+)
+QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
+    questionnaire_id=1,
+    questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
+    last_updated=datetime(2024, 10, 21, 14, 0),
+    questions=QUESTION_REPORT_DATA,
 )
 
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
     patient_last_name='Simpson',
-    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_date_of_birth=date(1999, 1, 1),
     patient_ramq='SIMM99999999',
     patient_sites_and_mrns=[
         {'mrn': '22222443', 'site_code': 'MGH'},
         {'mrn': '1111728', 'site_code': 'RVH'},
     ],
 )
-
-SITE_REPORT_DATA_WITH_NO_PAGE_BREAK = SiteData(
-    site_name='Decarie Boulevard',
-    site_building_address='1001',
-    site_city='Montreal',
-    site_province='QC',
-    site_postal_code='H4A3J1',
-    site_phone='5149341934',
-)
-
-
-PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
-    test_number='AS-2021-62605',
-    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
-    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
-    observation_clinical_info=['Clinical Information', 'Clinical Information'],
-    observation_specimens=['Specimen', 'Specimen', 'Specimen', 'Specimen'],
-    observation_descriptions=['Gross Description', 'Gross Description', 'Gross Description'],
-    observation_diagnosis=['Diagnosis'],
-    prepared_by='Atilla Omeroglu, MD',
-    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
-)
-
-observation_clinical_info = """Left breast mass at 3 o'clock (previously collagenous stroma,
- discordant with imaging).\nRebiopsy under ultrasound was done today."""
-observation_specimens = "LEFT BREAST AT 3 O'CLOCK, BIOPSY:"
-observation_descriptions = """The specimen is received in formalin in 1 container labelled
- with patient's name. It consists of fragments of core needle biopsy tissue measuring
- 0.5 to 2.0 cm in length. The specimen is submitted in toto in cassettes A1 and A2.\n
-Time to fixation: 0\nTotal time of fixation: 9h 5m"""
-observation_diagnosis = """LEFT BREAST AT 3 O'CLOCK, BIOPSY\n - BENIGN BREAST TISSUE
- WITH DENSE COLLAGENOUS STROMA AND ADENOSIS.\n - CALCIFICATIONS PRESENT\nCODE 1
-"""
-
-PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
-    test_number='AS-2021-62605',
-    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
-    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
-    observation_clinical_info=[observation_clinical_info],
-    observation_specimens=[observation_specimens],
-    observation_descriptions=[
-        observation_descriptions,
-        observation_descriptions,
-        observation_descriptions,
-        observation_descriptions,
-        observation_descriptions,
-        observation_descriptions,
-    ],
-    observation_diagnosis=[observation_diagnosis],
-    prepared_by='Atilla Omeroglu, MD',
-    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
-)
-
-INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK = InstitutionData(
+INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
     institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
-)
-
-SITE_REPORT_DATA_WITH_PAGE_BREAK = SiteData(
-    site_name='Decarie Boulevard',
-    site_building_address='1001',
-    site_city='Montreal',
-    site_province='QC',
-    site_postal_code='H4A3J1',
-    site_phone='5149341934',
-)
-
-PATIENT_REPORT_DATA_WITH_PAGE_BREAK = PatientData(
-    patient_first_name='Bart',
-    patient_last_name='Simpson',
-    patient_date_of_birth=datetime.date(1999, 1, 1),
-    patient_ramq='SIMM99999999',
-    patient_sites_and_mrns=[
-        {'mrn': '22222443', 'site_code': 'MGH'},
-        {'mrn': '1111728', 'site_code': 'RVH'},
-    ],
 )
 
 
@@ -149,8 +97,6 @@ def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str
             'base64EncodedReport': BASE64_ENCODED_REPORT,
         },
     }
-
-# QUESTIONNAIRE PDF REPORTS TESTS
 
 
 # _is_questionnaire_report_request_data_valid
@@ -438,81 +384,113 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
     assert caplog.records[0].levelname == 'ERROR'
 
 
-# PATHOLOGY PDF REPORTS TESTS
-
-def test_generate_pathology_report_success_with_no_page_break(
-    tmp_path: Path,
-    settings: SettingsWrapper,
-) -> None:
-    """Ensure generate_pathology_report() method successfully generates a pathology report."""
-    settings.PATHOLOGY_REPORTS_PATH = tmp_path
-
-    # Generate the pathology report
-    pathology_report = report_service.generate_pathology_report(
-        institution_data=INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        patient_data=PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        site_data=SITE_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        pathology_data=PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK,
+def test_generate_pdf_one_page() -> None:
+    """Ensure that the pdf is correctly generated."""
+    pdf_bytes = questionnaire.generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME],
     )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
 
-    assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
-    assert pathology_report.exists()
-    assert pathology_report.is_file()
+    assert page_count == 2, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
 
 
-def test_generate_pathology_report_success_with_page_break(
-    tmp_path: Path,
-    settings: SettingsWrapper,
-) -> None:
-    """Ensure generate_pathology_report() method successfully generates a pathology report with a page break."""
-    settings.PATHOLOGY_REPORTS_PATH = tmp_path
+def test_generate_pdf_multiple_pages() -> None:
+    """Ensure that the pdf is correctly generated with the toc being multiple pages."""
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
 
-    # Generate the pathology report
-    pathology_report = report_service.generate_pathology_report(
-        institution_data=INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK,
-        patient_data=PATIENT_REPORT_DATA_WITH_PAGE_BREAK,
-        site_data=SITE_REPORT_DATA_WITH_PAGE_BREAK,
-        pathology_data=PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK,
+    pdf_bytes = questionnaire.generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
     )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
 
-    assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
-    assert pathology_report.exists()
-    assert pathology_report.is_file()
-
-
-# tuple with patient first name and last name
-test_patient_names_data: list[tuple[str, str]] = [
-    ('Gertruda', 'Evaristo'),
-    ('Jean', 'Phillipe The Third of Canterbury'),
-    ('Jean-Phillipe-Burgundy-Long-First-Name', 'Jean-Phillipe-Burgundy-Long-Last-Name'),
-    ('Timothy John', 'Berners-Lee'),
-    ('Leonardo di ser', 'Piero da Vinci'),
-]
+    assert page_count == 19, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
 
 
-@pytest.mark.parametrize(('first_name', 'last_name'), test_patient_names_data)
-def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> None:
-    """Ensure long patient names are formatted and no words splitted."""
-    pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK
+def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> None:
+    """
+    Ensure that the pdf is correctly generated with the toc being multiple pages.
 
+    Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
+    the right number of pages for the TOC.
+    """
+    mock_generate = mocker.spy(questionnaire, '_generate_pdf')
+    # 14 with short name fit on one ToC page
+    # create 13 with short names and one with long name to cause the ToC to span 2 pages
+    data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(13)] + [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME]
     institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
 
-    site_data = SITE_REPORT_DATA_WITH_NO_PAGE_BREAK
-
-    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
-        patient_first_name=first_name,
-        patient_last_name=last_name,
+    pdf_bytes = questionnaire.generate_pdf(
+        institution_data,
+        patient_data,
+        data,
     )
-    pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
 
-    patient_list = pathology_pdf._get_site_address_patient_info_box()
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
 
-    patient_info = next(elem for elem in patient_list if elem.get('name') == 'patient_name')
-    # Wrap the text with the maximum characters can be filled in each line.
-    wrapper = textwrap.TextWrapper(
-        width=int((185 - 110) / 2) - 1,
+    assert page_count == 16, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+    mock_generate.assert_has_calls([
+        mocker.call(institution_data, patient_data, data),
+        mocker.call(institution_data, patient_data, data, 2),
+    ])
+
+
+def test_generate_pdf_empty_list() -> None:
+    """Ensure that the pdf is correctly generated with an empty list."""
+    questionnaire_data: list[questionnaire.QuestionnaireData] = []
+
+    pdf_bytes = questionnaire.generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        questionnaire_data,
     )
-    patient_name = f'{last_name}, {first_name}'.upper()
-    expected_patient_name = wrapper.fill(text=f'Nom/Name: {patient_name}')
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
 
-    assert patient_info.get('text') == expected_patient_name
+
+def test_generate_pdf_no_toc_error(mocker: MockerFixture) -> None:
+    """Ensure PDF generation raises the exception if ToC error is missing."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+
+    mocker.patch(
+        'opal.services.reports.questionnaire._generate_pdf',
+        side_effect=FPDFException('Some other error'),
+    )
+    with pytest.raises(FPDFException) as excinfo:
+        questionnaire.generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    assert 'Some other error' in str(excinfo.value)
+
+
+def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
+    """Ensure PDF generation does not proceed when regex doesn't match."""
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
+    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME]
+
+    mocker.patch(
+        'opal.services.reports.questionnaire._generate_pdf',
+        side_effect=FPDFException(
+            'ToC ended on page 10 while expected to span more pages',
+        ),
+    )
+    with pytest.raises(FPDFException) as excinfo:
+        questionnaire.generate_pdf(institution_data, patient_data, questionnaire_data)
+
+    error_message = str(excinfo.value)
+    assert 'ToC ended on page' in error_message

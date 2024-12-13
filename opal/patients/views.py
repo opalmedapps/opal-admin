@@ -28,7 +28,7 @@ from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
 
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
@@ -562,20 +562,21 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         if step in {'patient', 'relationship'}:
             # TODO: might be better to refactor into a function so it can be tested easier
             patient_data: str | int = storage.get('patient', '[]')  # type: ignore[assignment]
-            patient: OIEPatientData | Patient
+            patient: SourceSystemPatientData | Patient
 
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
             else:
                 patient_json = json.loads(patient_data)
                 date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
-                # convert JSON back to OIEPatientData for consistency (so it is either Patient or OIEPatientData)
+                # convert JSON back to SourceSystemPatientData for consistency
+                # (so it is either Patient or SourceSystemPatientData)
                 patient_json['mrns'] = [
-                    OIEMRNData(**mrn)
+                    SourceSystemMRNData(**mrn)
                     for mrn in patient_json['mrns']
                 ]
                 patient_json['date_of_birth'] = date_of_birth
-                patient = OIEPatientData(**patient_json)
+                patient = SourceSystemPatientData(**patient_json)
 
             kwargs.update({
                 'patient': patient,

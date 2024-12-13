@@ -1,4 +1,4 @@
-"""Module providing validation rules for the data being sent/received to/from the OIE."""
+"""Module providing validation rules for the data being sent/received to/from the source system."""
 import datetime
 import re
 from typing import Any
@@ -8,25 +8,26 @@ from django.core.exceptions import ValidationError
 from opal.core.validators import validate_ramq
 from opal.utils.base64_util import Base64Util
 
-from .hospital_data import OIEReportExportData
+from .hospital_data import SourceSystemReportExportData
 
 # TODO: translate error messages add _(message) that will be shown to the user.
 
 
-class OIEValidator:  # noqa: WPS214
-    """OIE helper service that validates OIE request and response data."""
+class SourceSystemValidator:  # noqa: WPS214
+    """Source system helper service that validates source system request and response data."""
 
     def is_report_export_request_valid(
         self,
-        report_data: OIEReportExportData,
+        report_data: SourceSystemReportExportData,
     ) -> bool:
-        """Check if the OIE report export data is valid.
+        """Check if the source system report export data is valid.
 
         Args:
-            report_data (OIEReportExportData): OIE report export data needed to call OIE endpoint
+            report_data (SourceSystemReportExportData): Source system report export data needed to
+                                                        call source system endpoint
 
         Returns:
-            bool: boolean value showing if OIE report export data is valid
+            bool: boolean value showing if source system report export data is valid
         """
         # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
         # TODO: Confirm the regex pattern for the document number
@@ -45,13 +46,13 @@ class OIEValidator:  # noqa: WPS214
         self,
         response_data: Any,
     ) -> bool:
-        """Check if the OIE report export response data is valid.
+        """Check if the source system report export response data is valid.
 
         Args:
-            response_data (Any): OIE report export response data received from the OIE
+            response_data (Any): Source system report export response data received from the source system
 
         Returns:
-            bool: boolean value showing if OIE report export data is valid
+            bool: boolean value showing if source system report export data is valid
         """
         try:
             status = response_data['status']
@@ -89,10 +90,10 @@ class OIEValidator:  # noqa: WPS214
         self,
         response_data: Any,
     ) -> list[str]:
-        """Check if the OIE patient response data is valid.
+        """Check if the source system patient response data is valid.
 
         Args:
-            response_data (Any): OIE patient response data received from the OIE
+            response_data (Any): Source system patient response data received from the source system
 
         return:
             return errors list
@@ -127,10 +128,10 @@ class OIEValidator:  # noqa: WPS214
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
-        """Check if the OIE's new patient response data is valid.
+        """Check if the source system's new patient response data is valid.
 
         Args:
-            response_data: OIE new patient response data
+            response_data: Source system new patient response data
 
         Returns:
             A boolean indicating validity (true if valid, false otherwise) and an errors list
@@ -142,7 +143,7 @@ class OIEValidator:  # noqa: WPS214
         if status is None:
             errors.append('Patient response data does not have the attribute "status"')
         elif status == 'error':
-            errors.append('Error response from the OIE')
+            errors.append('Error response from the source system')
         elif not success:
             errors.append(f'New patient response data has an unexpected "status" value: {status}')
 
@@ -152,7 +153,7 @@ class OIEValidator:  # noqa: WPS214
         """Check if the patient data is valid.
 
         Args:
-            patient_data (Any): OIEpatient data
+            patient_data (Any): Source system patient data
 
         Returns:
             return errors list
@@ -244,7 +245,7 @@ class OIEValidator:  # noqa: WPS214
         """Check if the patient MRN data is valid.
 
         Args:
-            mrn_data (Any): OIEpatient MRN data
+            mrn_data (Any): Source system patient MRN data
 
         Returns:
             return errors list

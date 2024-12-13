@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime
 from typing import Any
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.utils import IntegrityError
 from django.utils import timezone
 
@@ -20,7 +20,18 @@ from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Institution, Site
 from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
-from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUserType
+from opal.legacy.models import (
+    LegacyEducationalMaterial,
+    LegacyEducationalMaterialControl,
+    LegacyPatient,
+    LegacyPatientControl,
+    LegacyPatientHospitalIdentifier,
+    LegacyQuestionnaire,
+    LegacyUserType,
+)
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyPatient as qdb_LegacyPatient
+from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     PREDEFINED_ROLE_TYPES,
@@ -32,16 +43,16 @@ from opal.patients.models import (
     RoleType,
     SexType,
 )
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
 from .. import utils
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
-PATIENT_DATA = OIEPatientData(
+PATIENT_DATA = SourceSystemPatientData(
     date_of_birth=date.fromisoformat('1986-10-01'),
     first_name='Marge',
     last_name='Simpson',
@@ -53,8 +64,8 @@ PATIENT_DATA = OIEPatientData(
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
     mrns=[],
 )
-MRN_DATA_RVH = OIEMRNData(site='RVH', mrn='9999993', active=True)
-MRN_DATA_MGH = OIEMRNData(site='MGH', mrn='9999996', active=False)
+MRN_DATA_RVH = SourceSystemMRNData(site='RVH', mrn='9999993', active=True)
+MRN_DATA_MGH = SourceSystemMRNData(site='MGH', mrn='9999996', active=False)
 
 
 @pytest.mark.parametrize(('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'), [
@@ -528,8 +539,8 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
 
 
-def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
-    """An info message is logged when the call to the OIE to initialize a patient succeeds."""
+def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to the source system to initialize a patient succeeds."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
@@ -541,12 +552,12 @@ def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
     mock_error_logger.assert_any_call(
-        f'Successfully initialized patient via the OIE; patient_uuid = {patient_uuid}',
+        f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}',
     )
 
 
-def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
-    """An error is logged when the call to the OIE to initialize a patient fails."""
+def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to the source system to initialize a patient fails."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
     mock_error_logger = mocker.patch('logging.Logger.error')
 
@@ -557,7 +568,7 @@ def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
-    mock_error_logger.assert_any_call('Failed to initialize patient via the OIE')
+    mock_error_logger.assert_any_call('Failed to initialize patient via the source system')
 
 
 def test_create_access_request_existing() -> None:
@@ -640,7 +651,7 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
 
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
-            OIEPatientData(**patient_data),
+            SourceSystemPatientData(**patient_data),
             caregiver_profile,
             self_type,
         )
@@ -664,7 +675,7 @@ def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     relationship, _ = utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         self_type,
     )
@@ -793,7 +804,7 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
     patient_data['date_of_birth'] = date(2008, 10, 23)
 
     relationship, registration_code = utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         self_type,
     )
@@ -820,7 +831,7 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         relationship_type,
     )
@@ -849,3 +860,103 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     assert legacy_mrn_list.filter(mrn='9999996', hospital__code='MGH', is_active=False).count() == 1
 
     assert LegacyPatientControl.objects.filter(patient=legacy_patient).count() == 1
+
+
+def test_create_access_request_new_patient_and_databank_consent(
+    databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+) -> None:
+    """A new relationship and new patient with databank consent records are created."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Institution()
+
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = Patient.objects.get()
+
+    assert relationship.patient == patient
+    assert patient.first_name == 'Marge'
+    assert patient.last_name == 'Simpson'
+    assert patient.date_of_birth == date(1986, 10, 1)
+    assert patient.sex == SexType.FEMALE
+    assert patient.ramq == 'SIMM86600199'
+    assert patient.date_of_death is None
+    assert HospitalPatient.objects.count() == 0
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    # Search for the expected databank records
+    qdb_patient = qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+        external_id=patient.legacy_id,
+    )
+    inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
+        questionnaire_id=consent_form.id,
+        patient_id=qdb_patient.id,
+    )
+    inserted_sheet = LegacyEducationalMaterial.objects.get(
+        educationalmaterialcontrolsernum=info_sheet,
+        patientsernum=patient.legacy_id,
+    )
+    inserted_questionnaire = LegacyQuestionnaire.objects.get(
+        patientsernum=patient.legacy_id,
+        patient_questionnaire_db_ser_num=inserted_answer_questionnaire.id,
+    )
+    assert inserted_questionnaire.completedflag == 0
+    assert inserted_questionnaire.patientsernum.patientsernum == patient.legacy_id
+    assert inserted_questionnaire.patient_questionnaire_db_ser_num == inserted_answer_questionnaire.id
+
+    assert inserted_sheet.readstatus == 0
+    assert inserted_sheet.patientsernum.patientsernum == patient.legacy_id
+    assert inserted_sheet.educationalmaterialcontrolsernum == info_sheet
+
+    assert inserted_answer_questionnaire.status == 0
+    assert inserted_answer_questionnaire.patient_id == qdb_patient.id
+    assert inserted_answer_questionnaire.questionnaire_id == consent_form.id
+
+
+@pytest.mark.usefixtures('set_databank_disabled')
+def test_create_access_request_new_patient_databank_disabled(
+    databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+) -> None:
+    """Ensure the databank consent form is not created if databank is disabled."""
+    caregiver_profile = CaregiverProfile()
+    self_type = RelationshipType.objects.self_type()
+    Institution()
+    info_sheet = databank_consent_questionnaire_data[1]
+    relationship, registration_code = utils.create_access_request(
+        PATIENT_DATA,
+        caregiver_profile,
+        self_type,
+    )
+
+    assert registration_code is None
+    patient = Patient.objects.get()
+
+    assert relationship.patient == patient
+    assert patient.first_name == 'Marge'
+    assert patient.last_name == 'Simpson'
+    assert patient.date_of_birth == date(1986, 10, 1)
+    assert patient.sex == SexType.FEMALE
+    assert patient.ramq == 'SIMM86600199'
+    assert patient.date_of_death is None
+    assert HospitalPatient.objects.count() == 0
+    # Ensure records are not created
+    message = 'LegacyPatient matching query does not exist.'
+    with assertRaisesMessage(ObjectDoesNotExist, message):
+        qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+            external_id=patient.legacy_id,
+        )
+    message = 'LegacyEducationalMaterial matching query does not exist.'
+    with assertRaisesMessage(ObjectDoesNotExist, message):
+        LegacyEducationalMaterial.objects.get(
+            educationalmaterialcontrolsernum=info_sheet,
+            patientsernum=patient.legacy_id,
+        )
+    # We cant search for the specific answer questionnaire instance without the qdb_patient instance, so check all
+    answer_questionnaires = LegacyAnswerQuestionnaire.objects.all()
+    for qst in answer_questionnaires:
+        assert qst.created_by != 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'

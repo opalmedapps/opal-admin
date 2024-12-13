@@ -255,7 +255,8 @@ class PatientExistsView(APIView):
         Returns:
             uuid & legacy_id for the `Patient` object
         """
-        # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
+        # Make `is_active` not required for cases when source systme calling
+        # the API without knowing if Patient is active in Opal
         serializer = HospitalPatientSerializer(
             fields=('mrn', 'site_code'),
             data=request.data,

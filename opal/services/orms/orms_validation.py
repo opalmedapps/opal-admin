@@ -6,7 +6,8 @@ class ORMSValidator:
     """ORMS helper service that validates ORMS request and response data."""
 
     # TODO Raise exceptions instead of returning them in an array.
-    #   Also adjust `initialize_new_opal_patient` accordingly; its calls to ORMS, the OIE etc. should be handled and
+    #   Also adjust `initialize_new_opal_patient` accordingly;
+    #   its calls to ORMS, the source system etc. should be handled and
     #   not cause the whole function to fail.
     # TODO log or return original errors from ORMS instead of suppressing them
     def is_patient_response_valid(

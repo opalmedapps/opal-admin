@@ -27,7 +27,7 @@ repos:
   hooks:
   - id: isort
 - repo: https://github.com/DavidAnson/markdownlint-cli2
-  rev: v0.15.0
+  rev: v0.16.0
   hooks:
   - id: markdownlint-cli2
 - repo: https://github.com/asottile/pyupgrade
@@ -38,7 +38,7 @@ repos:
     # see: https://github.com/asottile/pyupgrade/issues/768
     args: ['--py311-plus']
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.22.1
+  rev: 1.22.2
   hooks:
   - id: django-upgrade
     args: [--target-version, "4.2"]
