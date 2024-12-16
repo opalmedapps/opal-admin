@@ -15,7 +15,6 @@ import pandas as pd
 import structlog
 from django_structlog import signals
 
-from ..core.audit import update_request_event_query_string
 from ..users.models import User
 from .models import QuestionnaireProfile
 from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
@@ -200,16 +199,16 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         )
 
         # Update audit query string with request parameters
-        update_request_event_query_string(
-            request,
-            parameters=[
-                'questionnaireid',
-                'start',
-                'end',
-                'patientIDs',
-                'questionIDs',
-            ],
-        )
+        # update_request_event_query_string(
+        #     request,
+        #     parameters=[
+        #         'questionnaireid',
+        #         'start',
+        #         'end',
+        #         'patientIDs',
+        #         'questionIDs',
+        #     ],
+        # )
 
         return self.render_to_response(context)
 
