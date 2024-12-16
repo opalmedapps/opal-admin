@@ -38,7 +38,7 @@ class LegacyDictionary(models.Model):
     Note that contentId is NOT actually a unique field in QuestionnaireDB.
     Django forces us to add this constraint because contentId is referenced by many tables
     as a ForeignKey, and we cannot create a UniqueConstraint on this unmanaged model.
-    This is okay as long as we only need to perform read operations on this table.
+    TODO: This is okay as long as we only need to perform read operations on this table.
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
@@ -47,13 +47,17 @@ class LegacyDictionary(models.Model):
         models.DO_NOTHING,
         db_column='tableId',
         to_field='id',
+        db_index=True,
     )
-    language_id = models.IntegerField(db_column='languageId')
-    content_id = models.IntegerField(db_column='contentId', unique=True)
-    content = models.CharField(db_column='content', max_length=255)
-    deleted = models.SmallIntegerField(db_column='deleted', default=0)
+    language_id = models.IntegerField(db_column='languageId', db_index=True)
+    content_id = models.IntegerField(db_column='contentId', db_index=True)
+    content = models.TextField(db_column='content')
+    deleted = models.SmallIntegerField(db_column='deleted', default=0, db_index=True)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True, null=True)  # noqa: DJ01
     creation_date = models.DateTimeField(db_column='creationDate')
+    created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
+    updated_by = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False
@@ -121,6 +125,7 @@ class LegacyQuestionnaire(models.Model):
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
+    oa_user_id = models.BigIntegerField(db_column='OAUserId', default=-1)
     purpose = models.ForeignKey('LegacyPurpose', models.DO_NOTHING, db_column='purposeId', to_field='id')
     respondent = models.ForeignKey('LegacyRespondent', models.DO_NOTHING, db_column='respondentId', to_field='id')
     title = models.ForeignKey(
@@ -137,6 +142,7 @@ class LegacyQuestionnaire(models.Model):
         to_field='content_id',
         related_name='+',
     )
+    category = models.IntegerField(default=-1)
     description = models.ForeignKey(
         LegacyDictionary,
         models.DO_NOTHING,
@@ -151,12 +157,21 @@ class LegacyQuestionnaire(models.Model):
         to_field='content_id',
         related_name='+',
     )
+    final = models.IntegerField(default=0)
+    version = models.IntegerField(default=1)
+    parent_id = models.BigIntegerField(db_column='parentId', default=-1)
+    private = models.IntegerField(default=0)
+    optional_feedback = models.IntegerField(db_column='optionalFeedback', default=1)
+    visualization = models.IntegerField(default=0, db_comment='0 = regular view of the answers, 1 = graph')
     logo = models.CharField(max_length=512)
+    deleted = models.IntegerField(default=0)
     deleted_by = models.CharField(db_column='deletedBy', blank=True, max_length=255)
-    creationdate = models.DateTimeField(db_column='creationDate')
+    creation_date = models.DateTimeField(db_column='creationDate')
     created_by = models.CharField(db_column='createdBy', max_length=255)
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
-    legacyname = models.CharField(db_column='legacyName', max_length=255)
+    legacy_name = models.CharField(db_column='legacyName', max_length=255)
+
     objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
     class Meta:
@@ -164,7 +179,7 @@ class LegacyQuestionnaire(models.Model):
         db_table = 'questionnaire'
 
 
-class LegacyPatient(models.Model):
+class LegacyQuestionnairePatient(models.Model):
     """Patient model from the legacy database QuestionnaireDB.
 
     The patients in this table relate to OpalDB.Patient instances through the externalId.
@@ -172,10 +187,10 @@ class LegacyPatient(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     hospital_id = models.IntegerField(db_column='hospitalId')
-    external_id = models.IntegerField(db_column='externalId')
+    external_id = models.IntegerField(db_column='externalId', unique=True)
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creation_date = models.DateTimeField(db_column='creationDate')
-    deleted_by = models.CharField(db_column='deletedBy', max_length=255)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
@@ -200,16 +215,31 @@ class LegacyAnswerQuestionnaire(models.Model):
         to_field='id',
     )
     patient = models.ForeignKey(
-        LegacyPatient,
+        LegacyQuestionnairePatient,
         models.DO_NOTHING,
         db_column='patientId',
         to_field='id',
     )
     status = models.IntegerField(db_column='status')
     creation_date = models.DateTimeField(db_column='creationDate')
+    deleted = models.IntegerField(db_column='deleted', default=0)
     deleted_by = models.CharField(db_column='deletedBy', max_length=255)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
+    respondent_username = models.CharField(
+        db_column='respondentUsername',
+        max_length=255,
+        blank=True,
+        db_comment='Firebase username of the user who answered (or is answering) the questionnaire',
+    )
+    respondent_display_name = models.CharField(
+        db_column='respondentDisplayName',
+        max_length=255,
+        blank=True,
+        db_comment='First name and last name of the respondent for display purposes.',
+    )
+
     objects: managers.LegacyAnswerQuestionnaireManager = managers.LegacyAnswerQuestionnaireManager()
 
     class Meta:
@@ -316,6 +346,7 @@ class LegacyQuestion(models.Model):
     """QuestionSection model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
+    oa_user_id = models.BigIntegerField(db_column='OAUserId', default=-1)
     display = models.ForeignKey(
         LegacyDictionary,
         models.DO_NOTHING,
@@ -339,6 +370,10 @@ class LegacyQuestion(models.Model):
     )
     version = models.IntegerField(default=1, db_column='version')
     parent_id = models.BigIntegerField(default=-1, db_column='parentId')
+    polarity = models.IntegerField(
+        default=0,
+        db_comment='0 = lowGood (the lower the score, the better the answer), 1 = highGood (the higher the score, the better the answer)',  # noqa: E501
+    )
     private = models.BooleanField(default=False, db_column='private')
     final = models.BooleanField(default=False, db_column='final')
     optional_feedback = models.BooleanField(default=False, db_column='optionalFeedback')
@@ -405,6 +440,8 @@ class LegacyCheckbox(models.Model):
         db_column='questionId',
         to_field='id',
     )
+    min_answer = models.IntegerField(db_column='minAnswer', default=1)
+    max_answer = models.IntegerField(db_column='maxAnswer', default=1)
 
     class Meta:
         db_table = 'checkbox'
@@ -428,6 +465,11 @@ class LegacyCheckboxOption(models.Model):
         models.DO_NOTHING,
         db_column='parentTableId',
         to_field='id',
+    )
+    special_action = models.IntegerField(
+        db_column='specialAction',
+        db_comment='0 = nothing special, 1 = check everything, 2 = uncheck everything',
+        default=0,
     )
 
     class Meta:
@@ -506,6 +548,33 @@ class LegacyQuestionSection(models.Model):
         managed = False
 
 
+class LegacySlider(models.Model):
+    """Slider model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(db_column='ID', primary_key=True)
+    question_id = models.ForeignKey(LegacyQuestion, models.DO_NOTHING, db_column='questionId')
+    min_value = models.FloatField(db_column='minValue')
+    max_value = models.FloatField(db_column='maxValue')
+    min_caption = models.ForeignKey(
+        LegacyDictionary,
+        models.RESTRICT,
+        db_column='minCaption',
+        to_field='content_id',
+    )
+    max_caption = models.ForeignKey(
+        LegacyDictionary,
+        models.RESTRICT,
+        db_column='maxCaption',
+        to_field='content_id',
+        related_name='slider_maxcaption_set',
+    )
+    increment = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'slider'
+
+
 class LegacyAnswerSection(models.Model):
     """AnswerSection model from the legacy database QuestionnaireDB."""
 
@@ -569,7 +638,7 @@ class LegacyAnswer(models.Model):
         to_field='id',
     )
     patient = models.ForeignKey(
-        LegacyPatient,
+        LegacyQuestionnairePatient,
         models.DO_NOTHING,
         db_column='patientId',
         to_field='id',
