@@ -191,8 +191,8 @@ class TestAppChartView:
             purpose=consent_purpose,
             respondent=respondent,
         )
-        patient_one = questionnaires_factories.LegacyPatientFactory(external_id=self.patient.patientsernum)
-        patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
+        patient_one = questionnaires_factories.LegacyQuestionnairePatientFactory(external_id=self.patient.patientsernum)
+        patient_two = questionnaires_factories.LegacyQuestionnairePatientFactory(external_id=52)
 
         # status=0 by default for new questionnaires
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(

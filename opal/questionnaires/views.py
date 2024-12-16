@@ -150,7 +150,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         requestor: User = request.user  # type: ignore[assignment]
 
         #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
-        #  the function returns a boolean indicating if the table could be succesfully created given the query params
+        #  the function returns a boolean indicating if the table could be successfully created given the query params
         complete_params_check = make_temp_tables(request.POST, LANGUAGE_MAP[requestor.language])
 
         if not complete_params_check:  # fail with 400 error if query parameters are incomplete

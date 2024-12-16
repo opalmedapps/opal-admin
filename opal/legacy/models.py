@@ -394,6 +394,7 @@ class LegacyQuestionnaire(models.Model):
     completedflag = models.IntegerField(db_column='CompletedFlag')
     date_added = models.DateTimeField(db_column='DateAdded')
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
     objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
     class Meta:

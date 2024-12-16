@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+from django.utils import timezone
+
 import pytest
 
 from opal.caregivers import factories as caregiver_factories
@@ -12,7 +14,7 @@ from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
-def test_get_questionnaire_databank_data() -> None:
+def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     """Ensure questionnaire data for databank is returned and formatted correctly.
 
     Note that the test data returned by this query is dependent on
@@ -20,9 +22,9 @@ def test_get_questionnaire_databank_data() -> None:
     See opal/tests/sql/test_QuestionnaireDB.sql
     """
     # Prepare patients and last cron run time
-    non_consenting_patient = factories.LegacyPatientFactory(external_id=52)
-    consenting_patient = factories.LegacyPatientFactory(external_id=51)
-    last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5)
+    non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
+    last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
 
     # Fetch the data
     databank_data_empty = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
@@ -52,7 +54,7 @@ def test_get_questionnaire_databank_data() -> None:
     }
 
     for questionnaire_answer in databank_data:
-        assert questionnaire_answer['last_updated'] > last_cron_sync_time
+        assert timezone.make_aware(questionnaire_answer['last_updated']) > last_cron_sync_time
         assert not (set(expected_returned_fields) - set(questionnaire_answer.keys()))
         assert 'consent' not in questionnaire_answer['questionnaire_title'].lower()
         assert re.search(r'\bmiddle\s+name\b', questionnaire_answer['question_text'], re.IGNORECASE) is None
@@ -69,7 +71,7 @@ def test_new_questionnaires_patient_caregiver() -> None:
     """
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyPatientFactory()
+    legacy_patient = factories.LegacyQuestionnairePatientFactory()
     patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
     relationship_type = patient_factories.RelationshipType(
         can_answer_questionnaire=True,
@@ -136,14 +138,14 @@ def test_new_questionnaires_patient_caregiver() -> None:
     assert not new_questionnaires
 
 
-def test_new_questionnaires_return_empty_without_rependont_matching() -> None:
+def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
     """Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
-    Get empty questionnaires with unexpected respendonts
+    Get empty questionnaires with unexpected respondents
     """
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyPatientFactory()
+    legacy_patient = factories.LegacyQuestionnairePatientFactory()
     patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
     relationship_type = patient_factories.RelationshipType(
         can_answer_questionnaire=False,

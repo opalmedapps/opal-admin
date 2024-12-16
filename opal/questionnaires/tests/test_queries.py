@@ -18,7 +18,7 @@ def test_set_test_account_string_debug_false() -> None:
 def test_set_test_account_string_debug() -> None:
     """Test the setting of test account string when in debug mode."""
     test_accounts = queries.set_test_account(True)
-    assert test_accounts == ('')
+    assert test_accounts == ('-1')
 
 
 def test_get_all_questionnaires_db_error(django_db_blocker: DjangoDbBlocker) -> None:

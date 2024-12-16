@@ -25,7 +25,7 @@ def set_test_account(debug: bool) -> str:
     """
     # When debug==True, do not exclude any data
     if debug:
-        return ('')
+        return '-1'
     # When debug==False, exclude the patients specified in the env variable
     return ', '.join(map(str, settings.TEST_PATIENTS))
 
