@@ -4,17 +4,17 @@ import datetime as dt
 
 import pytest
 
-from opal.usage_statistics.forms import GroupUsageStatisticsExportForm
+from opal.usage_statistics.forms import GroupUsageStatisticsForm, IndividualUsageStatisticsForm
 
 from .common import GroupByComponent, GroupReportType
 
 
 @pytest.fixture
-def group_usage_stats_form() -> GroupUsageStatisticsExportForm:
-    """Fixture providing a `GroupUsageStatisticsExportForm` with data.
+def group_usage_stats_form() -> GroupUsageStatisticsForm:
+    """Fixture providing data for the `GroupUsageStatisticsForm`.
 
     Returns:
-        `GroupUsageStatisticsExportForm` object
+        `GroupUsageStatisticsForm` object
     """
     form_data = {
         'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
@@ -23,4 +23,19 @@ def group_usage_stats_form() -> GroupUsageStatisticsExportForm:
         'report_type': GroupReportType.SUMMARY_REPORT.name,
     }
 
-    return GroupUsageStatisticsExportForm(data=form_data)
+    return GroupUsageStatisticsForm(data=form_data)
+
+
+@pytest.fixture
+def individual_usage_stats_form() -> IndividualUsageStatisticsForm:
+    """Fixture providing data for the `IndividualUsageStatisticsForm`.
+
+    Returns:
+        `IndividualUsageStatisticsForm` object
+    """
+    form_data = {
+        'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
+        'end_date': dt.datetime.now().date(),
+    }
+
+    return IndividualUsageStatisticsForm(data=form_data)

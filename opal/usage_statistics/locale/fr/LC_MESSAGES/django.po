@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-18 12:09-0500\n"
+"POT-Creation-Date: 2024-12-13 11:39-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,14 +57,6 @@ msgid "End Date"
 msgstr "Date de fin"
 
 #: opal/usage_statistics/forms.py
-msgid "Group By"
-msgstr "Grouper par"
-
-#: opal/usage_statistics/forms.py
-msgid "Report Type"
-msgstr "Type de rapport"
-
-#: opal/usage_statistics/forms.py
 msgid "Download CSV"
 msgstr "Télécharger CSV"
 
@@ -75,6 +67,21 @@ msgstr "Télécharger XLSX"
 #: opal/usage_statistics/forms.py
 msgid "Start date cannot be later than end date."
 msgstr "La date de début ne peut pas être postérieure à la date de fin."
+
+#: opal/usage_statistics/forms.py
+msgid "Group By"
+msgstr "Grouper par"
+
+#: opal/usage_statistics/forms.py
+msgid "Report Type"
+msgstr "Type de rapport"
+
+#: opal/usage_statistics/forms.py
+msgid ""
+"If date fields are not provided, all statistical data will be extracted."
+msgstr ""
+"Si les champs de date ne sont pas fournis, toutes les données statistiques "
+"seront extraites."
 
 #: opal/usage_statistics/models.py
 msgid "User who triggered this action"

@@ -9,8 +9,8 @@ from django.utils import timezone
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.legacy_questionnaires.models import LegacyPatient as QDB_LegacyPatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
 
 from .models import (  # noqa: WPS235
@@ -45,7 +45,7 @@ ACCESS_LEVEL_MAPPING = MappingProxyType({
 DatabankControlRecords: TypeAlias = Union[
     tuple[
         LegacyEducationalMaterialControl,
-        QDB_LegacyPatient,
+        LegacyQuestionnairePatient,
         QDB_LegacyQuestionnaire,
         LegacyQuestionnaireControl,
     ],
@@ -372,11 +372,10 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
         if not control_records:
             # If a control record can't be found we return without raising to avoid affecting the registration
             return False
-        info_sheet, qdb_patient, qdb_questionnaire_control, questionnaire_control = control_records
+        info_sheet, qdb_patient, qdb_questionnaire, questionnaire_control = control_records
 
-        # Create the AnswerQuestionnaire instance
         answer_instance = LegacyAnswerQuestionnaire.objects.create(
-            questionnaire_id=qdb_questionnaire_control.id,
+            questionnaire_id=qdb_questionnaire.id,
             patient_id=qdb_patient.id,
             status=0,
             creation_date=timezone.make_aware(dt.datetime.now()),
@@ -425,7 +424,7 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
         publish_flag=1,
         name_en__icontains='Consent Factsheet - QSCC Databank',
     ).first()
-    qdb_questionnaire_control = QDB_LegacyQuestionnaire.objects.filter(
+    qdb_questionnaire = QDB_LegacyQuestionnaire.objects.filter(
         title__content__icontains='QSCC Databank Information',
         title__language_id=2,
     ).first()
@@ -435,7 +434,7 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     ).first()
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
-    qdb_patient, _ = QDB_LegacyPatient.objects.get_or_create(
+    qdb_patient, created = LegacyQuestionnairePatient.objects.get_or_create(
         external_id=django_patient.legacy_id,
         defaults={
             'hospital_id': -1,
@@ -446,6 +445,6 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
         },
     )
     # Exit if we fail to locate the consent form or the educational material in the db
-    if not (qdb_questionnaire_control and info_sheet and questionnaire_control):
+    if not (qdb_questionnaire and info_sheet and questionnaire_control):
         return None
-    return (info_sheet, qdb_patient, qdb_questionnaire_control, questionnaire_control)
+    return (info_sheet, qdb_patient, qdb_questionnaire, questionnaire_control)
