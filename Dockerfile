@@ -61,7 +61,9 @@ RUN cp .env.sample .env \
   && rm .env \
   # ensure the uploads directory exists with appuser as the owner
   && mkdir -p ./opal/media/uploads \
-  && chown appuser:appuser ./opal/media/uploads
+  && chown appuser:appuser ./opal/media/uploads \
+  # ensure the logs directory exists for production logs
+  && mkdir /logs
 
 USER appuser
 

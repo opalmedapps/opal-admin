@@ -7,16 +7,39 @@ from types import MappingProxyType
 from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.dispatch import receiver
 from django.http import HttpRequest, HttpResponse
 from django.views.generic.base import TemplateView
 
 import pandas as pd
+import structlog
+from django_structlog import signals
 
 from ..core.audit import update_request_event_query_string
 from ..users.models import User
 from .models import QuestionnaireProfile
 from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .tables import ReportTable
+
+
+@receiver(signals.bind_extra_request_metadata)
+def bind_questionnaire(request: HttpRequest, logger: logging.Logger, **kwargs: Any) -> None:
+    """
+    Binds the questionnaire to the request context to know which questionnaire is being exported.
+
+    Args:
+        request: The request
+        logger: The logger
+        kwargs: additional keyword arguments
+    """
+    questionnaire_id = request.POST.get('questionnaireid')
+    if questionnaire_id:
+        structlog.contextvars.bind_contextvars(questionnaire_id=questionnaire_id)
+
+    questionnaire_name = request.POST.get('questionnairename')
+    if questionnaire_name:
+        structlog.contextvars.bind_contextvars(questionnaire_name=questionnaire_name)
+
 
 # All queries assume the integer representation of opal languages
 LANGUAGE_MAP = MappingProxyType({'fr': 1, 'en': 2})
@@ -89,7 +112,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:
+    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
@@ -101,21 +124,16 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
-        if 'questionnaireid' in request.POST.keys():
+        questionnaire_id = request.POST.get('questionnaireid')
+
+        if questionnaire_id:
             try:
-                qid = int(request.POST['questionnaireid'])
+                qid = int(questionnaire_id)
             except ValueError:
                 self.logger.error('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-            context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 
-            # Also update auditing service with request details
-            update_request_event_query_string(
-                request,
-                parameters=[
-                    'questionnaireid',
-                ],
-            )
+            context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 
             # Finally check if this questionnaire is currently being followed
             questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)

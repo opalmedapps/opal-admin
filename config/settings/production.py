@@ -3,6 +3,8 @@ Settings for production.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
+import structlog
+
 from .base import *
 from .base import env
 
@@ -105,9 +107,17 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'}},
     'formatters': {
-        'verbose': {
-            'format': '{levelname:^8s} {asctime} {module} {process} {thread} {message}',
-            'style': '{',
+        'console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
+        },
+        'json_formatter': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.JSONRenderer(),
+        },
+        'key_value': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.KeyValueRenderer(key_order=['timestamp', 'level', 'event', 'logger']),
         },
     },
     'handlers': {
@@ -118,8 +128,18 @@ LOGGING = {
         },
         'console': {
             'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
+        },
+        'json_file': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/logs/json.log',
+            'formatter': 'json_formatter',
+        },
+        'flat_line_file': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/logs/flat_line.log',
+            'formatter': 'key_value',
         },
     },
     'root': {'level': 'INFO', 'handlers': ['console']},
