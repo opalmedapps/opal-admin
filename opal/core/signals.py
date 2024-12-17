@@ -19,5 +19,5 @@ def bind_app_user(request: HttpRequest, logger: logging.Logger, **kwargs: Any) -
         logger: The logger
         kwargs: additional keyword arguments
     """
-    if 'Appuserid' in request.POST:
-        structlog.contextvars.bind_contextvars(app_user=request.POST.get('Appuserid'))
+    if 'Appuserid' in request.META:
+        structlog.contextvars.bind_contextvars(app_user=request.META.get('Appuserid'))
