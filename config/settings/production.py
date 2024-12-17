@@ -128,7 +128,8 @@ LOGGING = {
         },
         'console': {
             'level': 'DEBUG',
-            'handlers': ['console'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
         },
         'json_file': {
             'class': 'logging.handlers.WatchedFileHandler',
@@ -147,9 +148,13 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'opal': {
+        'django_structlog': {
+            'handlers': ['json_file'],
             'level': 'INFO',
-            'handlers': ['console'],
+        },
+        'opal': {
+            'handlers': ['json_file'],
+            'level': 'INFO',
         },
         'django.security.DisallowedHost': {
             'level': 'ERROR',
