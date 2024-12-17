@@ -142,12 +142,15 @@ LOGGING = {
             'formatter': 'key_value',
         },
     },
-    'root': {'level': 'INFO', 'handlers': ['console']},
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'opal': {
+            'level': 'INFO',
+            'handlers': ['console'],
         },
         'django.security.DisallowedHost': {
             'level': 'ERROR',

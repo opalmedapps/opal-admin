@@ -399,7 +399,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        'root': {
+        'django_structlog': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'opal': {
             'handlers': ['console'],
             'level': 'INFO',
         },
