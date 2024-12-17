@@ -416,11 +416,13 @@ LOGGING = {
     },
 }
 
+# Auditing
+# ------------------------------------------------------------------------------
+
 # django-structlog configuration
 # https://django-structlog.readthedocs.io/en/latest/getting_started.html#installation
 # https://www.structlog.org/en/stable/configuration.html
 # ------------------------------------------------------------------------------
-
 structlog.configure(
     processors=[
         structlog.contextvars.merge_contextvars,
@@ -437,6 +439,14 @@ structlog.configure(
     logger_factory=structlog.stdlib.LoggerFactory(),
     cache_logger_on_first_use=True,
 )
+
+# django-auditlog
+# ------------------------------------------------------------------------------
+# See https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
+AUDITLOG_INCLUDE_ALL_MODELS = True
+# Use the Appuserid header to correlate changes with app users
+# https://django-auditlog.readthedocs.io/en/latest/usage.html#correlation-id
+AUDITLOG_CID_HEADER = 'Appuserid'
 
 # OPAL SPECIFIC
 # ------------------------------------------------------------------------------
@@ -557,6 +567,3 @@ DJANGO_TABLES2_TABLE_ATTRS = {
         'class': 'table-light',
     },
 }
-
-AUDITLOG_INCLUDE_ALL_MODELS = True
-AUDITLOG_CID_HEADER = 'Appuserid'
