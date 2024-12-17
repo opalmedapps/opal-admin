@@ -128,8 +128,7 @@ LOGGING = {
         },
         'console': {
             'level': 'DEBUG',
-            '()': structlog.stdlib.ProcessorFormatter,
-            'processor': structlog.dev.ConsoleRenderer(),
+            'handlers': ['console'],
         },
         'json_file': {
             'class': 'logging.handlers.WatchedFileHandler',
