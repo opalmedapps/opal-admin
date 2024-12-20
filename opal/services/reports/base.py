@@ -51,9 +51,13 @@ class InstitutionData(NamedTuple):
 
     Attributes:
         institution_logo_path: file path of the instituion's logo image
+        document_number: the unique number assigned in the hospital system for this type of document
+        source_system: the name of the system that generated the document
     """
 
     institution_logo_path: Path
+    document_number: str
+    source_system: str
 
 
 class SiteData(NamedTuple):

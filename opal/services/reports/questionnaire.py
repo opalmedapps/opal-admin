@@ -1,19 +1,23 @@
 """Module providing business logic for generating questionnaire PDF reports using FPDF2."""
+import io
 import json
 import logging
 import math
 import re
-from collections.abc import Iterable
+import types
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
 
+import pandas as pd
 import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, TableBordersLayout
 from fpdf.outline import OutlineSection
+from plotly import express
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
@@ -23,6 +27,15 @@ from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, Pati
 
 if TYPE_CHECKING:
     from fpdf.fpdf import _Format, _Orientation  # noqa: WPS450
+
+
+class QuestionType(Enum):
+    """Question types and their IDs that are visualized in the questionnaire report."""
+
+    CHECKBOX = 1  # noqa: WPS115
+    NUMERIC = 2  # noqa: WPS115
+    TEXT = 3  # noqa: WPS115
+    RADIO = 4  # noqa: WPS115
 
 
 class Question(NamedTuple):
@@ -42,13 +55,13 @@ class Question(NamedTuple):
 
     question_text: str
     question_label: str
-    question_type_id: int
+    question_type_id: QuestionType
     position: int
     min_value: int | None
     max_value: int | None
     polarity: int
     section_id: int
-    values: list[tuple[int, str]]  # TODO: OP-48 - proper typing for values
+    values: list[tuple[datetime, str]]
 
 
 class QuestionnaireData(NamedTuple):
@@ -65,7 +78,7 @@ class QuestionnaireData(NamedTuple):
     questionnaire_id: int
     questionnaire_title: str
     last_updated: datetime
-    questions: Iterable[Question]
+    questions: list[Question]
 
 
 FIRST_PAGE_NUMBER: int = 1
@@ -73,6 +86,7 @@ QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
+TEXT_QUESTIONS_TABLE_HEADER = ('Date', 'Response')
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -102,6 +116,15 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.institution_data = institution_data
         self.questionnaire_data = questionnaire_data
         self.patient_name = f'{patient_data.patient_first_name} {patient_data.patient_last_name}'
+        self.QUESTION_TYPE_HANDLERS = types.MappingProxyType(
+            {
+                QuestionType.TEXT: self._draw_text_answer_question,
+                QuestionType.NUMERIC: self._draw_chart_for_numeric_question,
+                QuestionType.RADIO: self._draw_text_answer_question,
+                QuestionType.CHECKBOX: self._draw_text_answer_question,
+            },
+        )
+
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
             f'{site_mrn["site_code"]}: {site_mrn["mrn"]}'
@@ -196,7 +219,9 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             **FPDFCellDictType(
                 w=0,
                 h=5,
-                text='**Tempory text**',
+                text=f'**{self.institution_data.document_number}** '
+                + f'Source: {self.institution_data.source_system}'
+                + f'({datetime.now().strftime("%b %d, %Y")})',
                 border=0,
                 align=Align.L,
                 link='',
@@ -297,16 +322,15 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             return 1
         return math.ceil((total_questionnaires - first_page_count) / subsequent_page_count) + 1
 
-    def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
+    def _draw_questionnaire_result(self) -> None:
         for index, data in enumerate(self.questionnaire_data):
-            # TODO: Add logic to print the multiple different questions, and graph associated with the questionnaires
 
             if index > 0:  # Skip empty first page
                 self.add_page()
-            self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(data.questionnaire_title)  # For the TOC
-            self.set_y(35)
-            self._insert_paragraph(data.questionnaire_title, align=Align.C)  # To print the title in the center
+            self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=16)
+            self.start_section(data.questionnaire_title)  # create new section for table of contents
+            # Display the questionnaire title and the most recent questionnaire date, centered at the top of the page.
+            self._insert_paragraph(data.questionnaire_title, align=Align.C)
             self.ln(1)
             self._insert_paragraph(
                 f'Dernière mise à jour: {data.last_updated.strftime("%b %d, %Y %H:%M")}',
@@ -314,7 +338,144 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             )
             self.ln(6)
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
-            self._insert_paragraph('TODO: add graphs', align=Align.C)
+            self._draw_questions_results(data.questions)
+
+    def _draw_questions_results(self, questions: list[Question]) -> None:
+        """Display question based on its type.
+
+        Args:
+            questions: list of questions associated with the questionnaire
+        """
+        for question in questions:
+            question_type = QuestionType(question.question_type_id)
+            handler = self.QUESTION_TYPE_HANDLERS.get(question_type, self._draw_text_answer_question)
+            handler(question)
+
+    def _prepare_question_chart(self, question: Question) -> pd.DataFrame:
+        """Prepare the question for the chart.
+
+        Args:
+            question: question that needs to be prepared
+
+        Returns:
+            DataFrame of the question's answer values
+        """
+        if self.will_page_break(50):  # Ensure the title and chart are on the same page
+            self.add_page()
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=14)
+        self.multi_cell(
+            w=self.epw,
+            h=self.font_size,
+            text=f'{question.question_text}',
+            new_x='LMARGIN',
+            new_y='NEXT',
+            align=Align.L,
+        )
+        self.ln(5)
+        x_data = []
+        y_data = []
+        for values in question.values:
+            x_data.append(values[0])
+            y_data.append(int(values[1]))
+
+        return pd.DataFrame(
+            {
+                'Last Updated': x_data,
+                'Value': y_data,
+            },
+        )
+
+    def _draw_chart_for_numeric_question(self, question: Question) -> None:
+        """Generate a chart for a numeric question (e.g., `SLIDER`) type.
+
+        Args:
+            question: numeric question to be visualized in a chart
+        """
+        data_frame = self._prepare_question_chart(question)
+
+        chart_trace = express.line(
+            data_frame,
+            x=data_frame.iloc[:, 0],
+            y=data_frame.iloc[:, 1],
+            markers=True,
+            width=810,
+            height=310,
+            text='Value',
+            template='plotly_white',
+        )
+        chart_trace.update_traces(
+            textposition='top center',
+            marker={'size': 10},
+            textfont={'size': 15, 'weight': 'bold'},
+        )
+
+        chart_trace.update_yaxes(
+            showgrid=True,
+        )
+        # Make sure we see the max and the min value of the markers
+        if question.max_value and question.min_value is not None:
+            chart_trace.for_each_yaxis(
+                lambda var: var.update({'range': [
+                    0, question.max_value * 1.1,
+                ],
+                }),
+            )
+        chart_trace.update_layout(
+            yaxis_title=question.question_label,
+            xaxis_title=None,
+            margin={
+                'l': 40,
+                'r': 40,
+                't': 0,
+                'b': 0,
+            },
+            height=310,  # Keep height fixed
+            xaxis={
+                'tickangle': 20,  # Better readability than flat
+            },
+        )
+
+        image = io.BytesIO(chart_trace.to_image(format='PNG', engine='kaleido'))
+        self.image(image, w=self.epw, x=Align.R)
+        self.ln(10)
+
+    def _draw_text_answer_question(self, question: Question) -> None:  # noqa: WPS213
+        """Draw the table for text answer question.
+
+        Args:
+            question: text answer question to be displayed in a table
+        """
+        if self.will_page_break(30):  # Ensure the title and chart are on the same page
+            self.add_page()
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=14)
+        self.multi_cell(
+            w=self.epw,
+            h=self.font_size,
+            text=f'{question.question_text}',
+            new_x='LMARGIN',
+            new_y='NEXT',
+            align=Align.L,
+        )
+        self.ln(4)
+
+        self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
+        headings_style = FontFace(fill_color=(160, 207, 236), emphasis='BOLD')
+        with self.table(
+            borders_layout=TableBordersLayout.ALL,
+            text_align=(Align.L, Align.L),
+            col_widths=(30, 60),
+            headings_style=headings_style,
+        ) as table:
+            table.row(TEXT_QUESTIONS_TABLE_HEADER)
+            for values in reversed(question.values):
+                row = table.row()
+                row.cell(
+                    f'{values[0].strftime("%b %d, %Y %H:%M")}',
+                )
+                row.cell(
+                    f'{values[1]}',
+                )
+        self.ln(10)
 
     def _insert_toc_title(
         self,
