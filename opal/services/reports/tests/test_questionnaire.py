@@ -46,7 +46,7 @@ QUESTION_REPORT_DATA = (
         max_value=None,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 'Demo answer',
@@ -62,7 +62,7 @@ QUESTION_REPORT_DATA = (
         max_value=None,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 21, 14, 0),
                 'Demo answer',
@@ -80,7 +80,7 @@ QUESTION_REPORT_DATA_CHARTS = (
         max_value=7,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -102,7 +102,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=7,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -122,7 +122,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=None,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 'data',
@@ -170,7 +170,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=None,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -190,7 +190,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=7,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -210,7 +210,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=7,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -230,7 +230,7 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         max_value=7,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 20, 14, 0),
                 '5',
@@ -261,12 +261,6 @@ QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS = questionnaire.QuestionnaireData(
     questions=list(QUESTION_REPORT_DATA_CHARTS),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_MULTIPLE_CHARTS = questionnaire.QuestionnaireData(
-    questionnaire_id=1,
-    questionnaire_title='Questionnaire demo with charts for questions',
-    last_updated=datetime(2024, 10, 21, 14, 0),
-    questions=list(QUESTION_REPORT_DATA_MULTIPLE_CHARTS),
-)
-QUESTIONNAIRE_REPORT_DATA_EMPTY_MAX = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
     last_updated=datetime(2024, 10, 21, 14, 0),
@@ -647,8 +641,7 @@ def test_generate_pdf_multiple_pages() -> None:
 
 
 def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> None:
-    """
-    Ensure that the pdf is correctly generated with the toc being multiple pages.
+    """Ensure that the pdf is correctly generated with the toc being multiple pages.
 
     Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
     the right number of pages for the TOC.
@@ -672,6 +665,7 @@ def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> No
     assert page_count == 16, 'PDF should have the expected amount of pages'
     assert isinstance(pdf_bytes, bytearray), 'Output'
     assert pdf_bytes, 'PDF should not be empty'
+
     mock_generate.assert_has_calls([
         mocker.call(institution_data, patient_data, data),
         mocker.call(institution_data, patient_data, data, 2),

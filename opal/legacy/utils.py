@@ -1,17 +1,23 @@
 """Utility functions used by legacy API views."""
 import datetime as dt
+import json
+from datetime import datetime
+from pathlib import Path
 from types import MappingProxyType
-from typing import TypeAlias, Union
+from typing import Any, TypeAlias, Union
 
-from django.db import transaction
+from django.conf import settings
+from django.db import OperationalError, connections, models, transaction
 from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
 from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
+from opal.services.reports.base import InstitutionData, PatientData
+from opal.services.reports.questionnaire import Question, QuestionnaireData, generate_pdf
 
 from .models import (  # noqa: WPS235
     LegacyAccessLevel,
@@ -51,6 +57,10 @@ DatabankControlRecords: TypeAlias = Union[
     ],
     None,
 ]
+
+
+class DataFetchError(Exception):
+    """Class for handling error when fetching."""
 
 
 def get_patient_sernum(username: str) -> int:
@@ -448,3 +458,192 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     if not (qdb_questionnaire and info_sheet and questionnaire_control):
         return None
     return (info_sheet, qdb_patient, qdb_questionnaire, questionnaire_control)
+
+
+@transaction.atomic
+def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
+    """
+    Handle sync check for the questionnaire respondents.
+
+    Args:
+        patient: patient for data
+
+    Raises:
+        DataFetchError: error fetching the arguments
+
+    Returns:
+        list of the questionnaireData
+
+    """
+    if patient.legacy_id:
+        external_patient_id = patient.legacy_id
+    else:
+        raise DataFetchError('The patient has no legacy id.')
+
+    try:
+        query_result = _fetch_questionnaires_from_db(external_patient_id)
+    except OperationalError as exc:
+        raise DataFetchError(f'Error fetching questionnaires: {exc}') from exc
+
+    try:
+        data_list = _parse_query_result(query_result)
+    except ValueError as exc:  # noqa: WPS440
+        raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
+    return _process_questionnaire_data(data_list)
+
+
+def _fetch_questionnaires_from_db(
+    legacy_patient_id: int,
+) -> list[dict[str, Any] | list[dict[str, Any]]]:  # noqa: WPS221
+    """Fetch completed questionnaires data from the database.
+
+    Args:
+        legacy_patient_id: patient's legacy id
+
+    Returns:
+        the result of the query
+    """
+    with connections['questionnaire'].cursor() as cursor:
+        cursor.callproc(
+            'getCompletedQuestionnairesList',
+            [legacy_patient_id, 1, 'FR'],
+        )
+        return [
+            json.loads(row[0]) for row in cursor.fetchall()
+        ]
+
+
+def _parse_query_result(
+    query_result: list[dict[str, Any] | list[dict[str, Any]]],  # noqa: WPS221
+) -> list[dict[str, Any]]:
+    """Parse the raw query result into a structured list of dictionaries.
+
+    This function processes each row in the query result, expecting JSON data in the first column
+    (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
+
+    Args:
+        query_result: raw query results, each tuple represents a database row
+
+    Raises:
+        ValueError: if the JSON data cannot be deserialized
+
+    Returns:
+        structured list of dictonaries representing the query
+    """
+    data_list = []
+    for parsed_data in query_result:
+        if isinstance(parsed_data, dict):
+            data_list.append(parsed_data)
+        elif isinstance(parsed_data, list):
+            data_list.extend(parsed_data)
+        else:
+            raise ValueError(
+                f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
+            )
+    return data_list
+
+
+def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[QuestionnaireData]:
+    """Process parsed questionnaire data into QuestionnaireData objects.
+
+    Args:
+        parsed_data_list: parsed data list of the questionnaire
+
+    Raises:
+        DataFetchError: if the questionnaire data format is wrong
+
+    Returns:
+        complete answered questionnaire data list of the patient
+    """
+    questionnaire_data_list = []
+
+    for data in parsed_data_list:
+        if 'questions' not in data:
+            raise DataFetchError(f'Unexpected data format: {data!r}')
+        questions = _process_questions(data['questions'])
+        questionnaire_data_list.append(
+            QuestionnaireData(
+                questionnaire_id=data['questionnaire_id'],
+                questionnaire_title=data['questionnaire_nickname'],
+                last_updated=datetime.fromisoformat(data['last_updated']),
+                questions=questions,
+            ),
+        )
+
+    return questionnaire_data_list
+
+
+def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
+    """Process question data into Question objects.
+
+    Args:
+        questions_data: unprocessed questions data associated with the questionnaire
+
+    Raises:
+        ValueError: the answers are wrongly formatted
+
+    Returns:
+        list of questions associated with the questionnaire
+    """
+    questions = []
+
+    for question in questions_data:
+
+        answers = question.get('values') or []
+        if not isinstance(answers, list):
+            raise ValueError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
+
+        questions.append(
+            Question(
+                question_text=question['question_text'],
+                question_label=question['question_label'],
+                question_type_id=question['question_type_id'],
+                position=question['position'],
+                min_value=question['min_value'],
+                max_value=question['max_value'],
+                polarity=question['polarity'],
+                section_id=question['section_id'],
+                answers=[
+                    (
+                        datetime.fromisoformat(answer[0]),
+                        str(answer[1]),
+                    ) for answer in answers
+                ],
+            ),
+        )
+
+    return questions
+
+
+def generate_questionnaire_report(
+    patient: Patient,
+    questionnaire_data_list: list[QuestionnaireData],
+) -> bytearray:
+    """Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
+
+    Args:
+        patient: patient instance for whom a new PDF questionnaire report being generated
+        questionnaire_data_list: list of questionnaireData required to generate the PDF report
+
+    Returns:
+        bytearray: the generated questionnaire report
+    """
+    return generate_pdf(
+        institution=InstitutionData(
+            institution_logo_path=Path(Institution.objects.get().logo.path),
+            document_number=settings.REPORT_DOCUMENT_NUMBER,
+            source_system=settings.REPORT_SOURCE_SYSTEM,
+        ),
+        patient=PatientData(
+            patient_first_name=patient.first_name,
+            patient_last_name=patient.last_name,
+            patient_date_of_birth=patient.date_of_birth,
+            patient_ramq=patient.ramq,
+            patient_sites_and_mrns=list(
+                patient.hospital_patients.all().annotate(
+                    site_code=models.F('site__acronym'),
+                ).values('mrn', 'site_code'),
+            ),
+        ),
+        questionnaires=questionnaire_data_list,
+    )

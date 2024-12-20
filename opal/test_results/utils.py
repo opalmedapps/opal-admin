@@ -42,7 +42,7 @@ def generate_pathology_report(
         institution_data=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
             # TODO: clarify where to get the value (currently set as a test document)
-            document_number=settings.REPORT_SOURCE_SYSTEM,
+            document_number=settings.REPORT_DOCUMENT_NUMBER,
             source_system=settings.REPORT_SOURCE_SYSTEM,
         ),
         patient_data=PatientData(
