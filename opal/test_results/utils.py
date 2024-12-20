@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from django.conf import settings
 from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
@@ -40,6 +41,9 @@ def generate_pathology_report(
     return generate_pdf(
         institution_data=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
+            # TODO: clarify where to get the value (currently set as a test document)
+            document_number=settings.REPORT_SOURCE_SYSTEM,
+            source_system=settings.REPORT_SOURCE_SYSTEM,
         ),
         patient_data=PatientData(
             patient_first_name=patient.first_name,

@@ -422,6 +422,10 @@ INSTITUTION_CODE = env.str('INSTITUTION_CODE')
 # Questionnaires: Export Report
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
+# Name of the source system that generated PDF report
+REPORT_SOURCE_SYSTEM = env.str('REPORT_SOURCE_SYSTEM')
+# Number assigned by the hospital for the generated PDF report
+REPORT_DOCUMENT_NUMBER = env.str('REPORT_DOCUMENT_NUMBER')
 
 # ORMS SETTINGS
 # Name of the group for the ORMS users
