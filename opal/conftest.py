@@ -389,7 +389,7 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open() as handle:
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='UTF-8') as handle:
         sql_data = handle.read()
 
     with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440

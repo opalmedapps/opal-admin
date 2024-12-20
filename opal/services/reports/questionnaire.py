@@ -50,7 +50,7 @@ class Question(NamedTuple):
         max_value: maximum allowed value for the answer (if applicable)
         polarity: polarity value for the answer
         section_id: ID of the section
-        values: list of tuples representing timestamp and answer values
+        answers: list of tuples representing timestamp and answer values
     """
 
     question_text: str
@@ -61,7 +61,7 @@ class Question(NamedTuple):
     max_value: int | None
     polarity: int
     section_id: int
-    values: list[tuple[datetime, str]]
+    answers: list[tuple[datetime, str]]
 
 
 class QuestionnaireData(NamedTuple):
@@ -374,9 +374,9 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.ln(5)
         x_data = []
         y_data = []
-        for values in question.values:
-            x_data.append(values[0])
-            y_data.append(int(values[1]))
+        for answers in question.answers:
+            x_data.append(answers[0])
+            y_data.append(int(answers[1]))
 
         return pd.DataFrame(
             {
@@ -467,13 +467,13 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             headings_style=headings_style,
         ) as table:
             table.row(TEXT_QUESTIONS_TABLE_HEADER)
-            for values in reversed(question.values):
+            for answers in reversed(question.answers):
                 row = table.row()
                 row.cell(
-                    f'{values[0].strftime("%b %d, %Y %H:%M")}',
+                    f'{answers[0].strftime("%b %d, %Y %H:%M")}',
                 )
                 row.cell(
-                    f'{values[1]}',
+                    f'{answers[1]}',
                 )
         self.ln(10)
 
