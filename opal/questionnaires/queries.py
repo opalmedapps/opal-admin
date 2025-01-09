@@ -95,7 +95,7 @@ def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
                 'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in (%s)',
                 [test_accounts],
             )
-            aq = tuple([row[0] for row in conn.fetchall()])
+            aq = tuple(row[0] for row in conn.fetchall())
             conn.execute(
                 'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID in %s',
                 [lang_id, aq],
