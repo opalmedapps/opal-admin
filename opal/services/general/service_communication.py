@@ -17,7 +17,8 @@ SOURCE_SYSTEM_TIMEOUT = 15
 
 
 class ServiceHTTPCommunicationManager:
-    """Manager that provides functionality for communication with an external component.
+    """
+    Manager that provides functionality for communication with an external component.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 
@@ -65,7 +66,8 @@ class ServiceHTTPCommunicationManager:
         payload: dict[str, Any],
         metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Send data to the external component by making HTTP POST request.
+        """
+        Send data to the external component by making HTTP POST request.
 
         Args:
             endpoint (str): communication endpoint exposed by the service for communication with it through the network
@@ -106,7 +108,8 @@ class ServiceHTTPCommunicationManager:
         params: dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Retrieve data from the external component by making HTTP GET request.
+        """
+        Retrieve data from the external component by making HTTP GET request.
 
         Args:
             endpoint (str): communication endpoint exposed by the external component

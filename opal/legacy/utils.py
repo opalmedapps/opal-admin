@@ -362,7 +362,8 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
 
 @transaction.atomic
 def create_databank_patient_consent_data(django_patient: Patient) -> bool:
-    """Initialize databank consent information for a newly registered patient.
+    """
+    Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
     Note that this function explicitly does not throw any Errors to avoid affecting registration processes.
@@ -416,7 +417,8 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
 
 
 def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRecords:
-    """Fetch the required control records for databank consent creation.
+    """
+    Fetch the required control records for databank consent creation.
 
     If the QuestionnaireDB `SyncPublishQuestionnaire` event has not already populated the
     patient table, then this function will create the patient record linked to the OpalDB.Patient.
@@ -494,7 +496,8 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
 def _fetch_questionnaires_from_db(
     legacy_patient_id: int,
 ) -> list[dict[str, Any] | list[dict[str, Any]]]:
-    """Fetch completed questionnaires data from the database.
+    """
+    Fetch completed questionnaires data from the database.
 
     Args:
         legacy_patient_id: patient's legacy id
@@ -515,7 +518,8 @@ def _fetch_questionnaires_from_db(
 def _parse_query_result(
     query_result: list[dict[str, Any] | list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
-    """Parse the raw query result into a structured list of dictionaries.
+    """
+    Parse the raw query result into a structured list of dictionaries.
 
     This function processes each row in the query result, expecting JSON data in the first column
     (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
@@ -543,7 +547,8 @@ def _parse_query_result(
 
 
 def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[questionnaire.QuestionnaireData]:
-    """Process parsed questionnaire data into QuestionnaireData objects.
+    """
+    Process parsed questionnaire data into QuestionnaireData objects.
 
     Args:
         parsed_data_list: parsed data list of the questionnaire
@@ -573,7 +578,8 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
 
 def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnaire.Question]:
-    """Process question data into Question objects.
+    """
+    Process question data into Question objects.
 
     Args:
         questions_data: unprocessed questions data associated with the questionnaire
@@ -618,7 +624,8 @@ def generate_questionnaire_report(
     patient: Patient,
     questionnaire_data_list: list[questionnaire.QuestionnaireData],
 ) -> bytearray:
-    """Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
+    """
+    Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
 
     Args:
         patient: patient instance for whom a new PDF questionnaire report being generated

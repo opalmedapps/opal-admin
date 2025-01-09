@@ -10,7 +10,8 @@ from opal.hospital_settings.models import Institution
 
 
 class Command(BaseCommand):
-    """Command to find and expire the outdated registration codes outside of the duration `REGISTRATION_CODE_EXPIRY`.
+    """
+    Command to find and expire the outdated registration codes outside of the duration `REGISTRATION_CODE_EXPIRY`.
 
     The variable `REGISTRATION_CODE_EXPIRY` is set in the `constants.py` file.
 

@@ -23,7 +23,8 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
 
     @transaction.atomic
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Extract and transform the parsed data from the request.
+        """
+        Extract and transform the parsed data from the request.
 
         Args:
             request: The http request object
@@ -43,7 +44,8 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:
-        """Transform the parsed segment data dictionary into the expected structure for the serializer.
+        """
+        Transform the parsed segment data dictionary into the expected structure for the serializer.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data

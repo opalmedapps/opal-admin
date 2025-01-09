@@ -57,7 +57,8 @@ class HL7CreateView(CreateAPIView[_Model]):
     parser_classes = (HL7Parser,)
 
     def get_parser_context(self, http_request: HttpRequest) -> dict[str, Any]:
-        """Append a list of HL7 segments to be parsed to the dictionary of parser context data.
+        """
+        Append a list of HL7 segments to be parsed to the dictionary of parser context data.
 
         Each view can define segments_to_parse if desired to add specific segments to parse.
 
@@ -72,7 +73,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         return context
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Ensure the patient identified in kwargs uniquely exists and matches the PID data.
+        """
+        Ensure the patient identified in kwargs uniquely exists and matches the PID data.
 
         Args:
             request: The http request object
@@ -99,7 +101,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         parsed_data: dict[str, Any],
         url_uuid: uuid.UUID,
     ) -> bool:
-        """Ensure the PID segment parsed from the message matches the uuid from the url.
+        """
+        Ensure the PID segment parsed from the message matches the uuid from the url.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data

@@ -103,7 +103,7 @@ class Command(BaseCommand):
         relationship_type: RelationshipType,
     ) -> None:
         """
-            Check the self relationship between caregiver and patient and migrated if it does not exist.
+        Check the self relationship between caregiver and patient and migrated if it does not exist.
 
         Args:
             patient: instance of Patient model.

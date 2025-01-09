@@ -52,7 +52,8 @@ class UsageStatisticsExportFormMixin(forms.Form):
         )
 
     def clean(self) -> dict[str, Any]:
-        """Clean exporting usage statistics form.
+        """
+        Clean exporting usage statistics form.
 
         Raises:
             ValidationError: if the data is invalid.

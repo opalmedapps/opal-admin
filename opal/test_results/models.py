@@ -68,7 +68,8 @@ class PathologyObservation(AbstractObservation):
         verbose_name_plural = _('Pathology Observations')
 
     def __str__(self) -> str:
-        """Pathology observation string representation.
+        """
+        Pathology observation string representation.
 
         Returns:
             string representation of the `PathologyObservation` instance
@@ -79,7 +80,8 @@ class PathologyObservation(AbstractObservation):
         )
 
     def clean(self) -> None:
-        """Check the validation for PathologyObservation.
+        """
+        Check the validation for PathologyObservation.
 
         Raises:
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
@@ -128,7 +130,8 @@ class LabObservation(AbstractObservation):
         verbose_name_plural = _('Lab Observations')
 
     def __str__(self) -> str:
-        """Lab observation string representation.
+        """
+        Lab observation string representation.
 
         Returns:
             string repr
@@ -141,7 +144,8 @@ class LabObservation(AbstractObservation):
         )
 
     def clean(self) -> None:
-        """Check the validation for LabObservation.
+        """
+        Check the validation for LabObservation.
 
         Raises:
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
@@ -177,7 +181,8 @@ class Note(models.Model):
         verbose_name_plural = _('Notes')
 
     def __str__(self) -> str:
-        """Return the note text attached to the parent GeneralTest representation.
+        """
+        Return the note text attached to the parent GeneralTest representation.
 
         Returns:
             string repr
@@ -269,7 +274,8 @@ class GeneralTest(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return the string representation of the patient, type, and specimen collection date.
+        """
+        Return the string representation of the patient, type, and specimen collection date.
 
         Returns:
             specimen's type and collection date associated with a patient
@@ -282,7 +288,8 @@ class GeneralTest(models.Model):
 
     @property
     def observations(self) -> QuerySet[PathologyObservation] | QuerySet[LabObservation]:
-        """Return the correct Observation queryset depending on the type.
+        """
+        Return the correct Observation queryset depending on the type.
 
         Returns:
             Associated Observation model instances

@@ -25,7 +25,8 @@ class PatientData:
 
 
 class OpenScienceIdentity():
-    """This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
+    """
+    This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
 
     A unique signature is generated for a patient by taking several personal identifiers
     and feeding them into a one way hash. This allows each ID to be unique to a subject while
@@ -48,7 +49,8 @@ class OpenScienceIdentity():
     _identity_attributes = ['first_name', 'last_name', 'gender', 'date_of_birth', 'city_of_birth']
 
     def __init__(self, patient_data: PatientData) -> None:
-        """Initialize hash password attributes and convenience class data structures.
+        """
+        Initialize hash password attributes and convenience class data structures.
 
         Args:
             patient_data: dictionary of input arguments to algorithm
@@ -58,7 +60,8 @@ class OpenScienceIdentity():
         self.invalid_attributes: list[str] = []  # Easier debugging by tracking invalid inputs
 
     def to_signature(self) -> str:
-        """Validate input attributes, generate the signature (password), and produce the hash.
+        """
+        Validate input attributes, generate the signature (password), and produce the hash.
 
         Returns:
             The hex representation of hashlib's pbkdf2 derivation
@@ -76,7 +79,8 @@ class OpenScienceIdentity():
         ).hex()
 
     def _clean_general_attribute(self, attr_name: str) -> str:
-        """Generalized cleaning method for any attribute.
+        """
+        Generalized cleaning method for any attribute.
 
         Args:
             attr_name: Name of the attribute to clean.
@@ -109,7 +113,8 @@ class OpenScienceIdentity():
                 self.invalid_attributes.append('date_of_birth')
 
     def _plain_alpha(self, string: str) -> str:
-        """Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
+        """
+        Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
 
         The goal of transliterating is to unify special Unicode characters
         with their nearest 'normal' ASCII representation.
@@ -130,7 +135,8 @@ class OpenScienceIdentity():
         return ''.join(char.lower() for char in transliterated_string if char.isalnum())
 
     def _clean_and_validate(self) -> None:
-        """Implement the validity and cleaning functions for each class attribute.
+        """
+        Implement the validity and cleaning functions for each class attribute.
 
         Raises:
             ValueError: if any identify attributes are missing or otherwise invalid.
@@ -149,7 +155,8 @@ class OpenScienceIdentity():
             raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
 
     def _signature_key(self) -> str:
-        """Generate the password for the pbfkd2 function from the cleaned attributes.
+        """
+        Generate the password for the pbfkd2 function from the cleaned attributes.
 
         Example:
              male|pierre|tiberius|rioux|19211231|newyorkcity

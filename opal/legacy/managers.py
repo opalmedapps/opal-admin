@@ -217,7 +217,8 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         received_at: datetime,
         report_file_name: str,
     ) -> 'LegacyDocument':
-        """Insert a new pathology PDF document record to the OpalDB.Document table.
+        """
+        Insert a new pathology PDF document record to the OpalDB.Document table.
 
         This will indicate that a new pathology report is available for viewing in the app.
 

@@ -5,7 +5,8 @@ from ..general.service_communication import ServiceHTTPCommunicationManager
 
 
 class ORMSHTTPCommunicationManager(ServiceHTTPCommunicationManager):
-    """Manager that provides functionality for communication with the Opal Room Management System (ORMS).
+    """
+    Manager that provides functionality for communication with the Opal Room Management System (ORMS).
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 

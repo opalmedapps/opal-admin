@@ -78,7 +78,8 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
         extra_kwargs = {'is_active': {'required': True, 'default': empty}}
 
     def validate_site_code(self, value: str) -> str:
-        """Check that `site_code` exists in the database (e.g., RVH).
+        """
+        Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
             value: site acronym to be validated
@@ -193,7 +194,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
         instance: Patient,
         validated_data: dict[str, Any],
     ) -> Patient:
-        """Update `Patient` instance during patient demographic update call.
+        """
+        Update `Patient` instance during patient demographic update call.
 
         It updates `User` fields as well.
 

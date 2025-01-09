@@ -20,7 +20,8 @@ class SourceSystemValidator:
         self,
         report_data: SourceSystemReportExportData,
     ) -> bool:
-        """Check if the source system report export data is valid.
+        """
+        Check if the source system report export data is valid.
 
         Args:
             report_data (SourceSystemReportExportData): Source system report export data needed to
@@ -46,7 +47,8 @@ class SourceSystemValidator:
         self,
         response_data: Any,
     ) -> bool:
-        """Check if the source system report export response data is valid.
+        """
+        Check if the source system report export response data is valid.
 
         Args:
             response_data (Any): Source system report export response data received from the source system
@@ -63,7 +65,8 @@ class SourceSystemValidator:
         return isinstance(status, str)
 
     def is_patient_site_mrn_valid(self, mrn: str, site: str) -> bool:
-        """Check if the mrn and site are not empty.
+        """
+        Check if the mrn and site are not empty.
 
         Args:
             mrn: Medical Record Number (MRN) code (e.g., 9999993)
@@ -75,7 +78,8 @@ class SourceSystemValidator:
         return bool(mrn.strip()) and bool(site.strip())
 
     def is_patient_ramq_valid(self, ramq: str) -> bool:
-        """Check if the RAMQ value is valid.
+        """
+        Check if the RAMQ value is valid.
 
         Args:
             ramq (str): RAMQ code
@@ -90,12 +94,13 @@ class SourceSystemValidator:
         self,
         response_data: Any,
     ) -> list[str]:
-        """Check if the source system patient response data is valid.
+        """
+        Check if the source system patient response data is valid.
 
         Args:
             response_data (Any): Source system patient response data received from the source system
 
-        return:
+        Returns:
             return errors list
         """
         errors = []
@@ -128,7 +133,8 @@ class SourceSystemValidator:
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
-        """Check if the source system's new patient response data is valid.
+        """
+        Check if the source system's new patient response data is valid.
 
         Args:
             response_data: Source system new patient response data
@@ -150,7 +156,8 @@ class SourceSystemValidator:
         return success, errors
 
     def check_patient_data(self, patient_data: Any) -> list[str]:
-        """Check if the patient data is valid.
+        """
+        Check if the patient data is valid.
 
         Args:
             patient_data (Any): Source system patient data
@@ -242,7 +249,8 @@ class SourceSystemValidator:
         return errors
 
     def _check_mrn_data(self, mrn_data: Any) -> list[str]:
-        """Check if the patient MRN data is valid.
+        """
+        Check if the patient MRN data is valid.
 
         Args:
             mrn_data (Any): Source system patient MRN data

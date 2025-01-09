@@ -27,7 +27,8 @@ class Command(BaseCommand):
     help = "send consenting Patients' data to the databank"
 
     def __init__(self) -> None:
-        """Prepare some class level fields to help with last_synchronized tracking.
+        """
+        Prepare some class level fields to help with last_synchronized tracking.
 
         - called_at is the time when this command was called
         - patient_data_success_tracker will have an entry for each patient
@@ -116,7 +117,8 @@ class Command(BaseCommand):
         databank_patient: DatabankConsent,
         module: DataModuleType,
     ) -> DatabankQuerySet | None:
-        """Use model managers to retrieve databank data for a consenting patient.
+        """
+        Use model managers to retrieve databank data for a consenting patient.
 
         Args:
             databank_patient: Patient consenting for this databank module
@@ -178,7 +180,8 @@ class Command(BaseCommand):
         queryset: DatabankQuerySet,
         nesting_key: str,
     ) -> dict[str, str | CombinedModuleData]:
-        """Pull the GUID to the top element and nest the rest of the qs records into a single dict.
+        """
+        Pull the GUID to the top element and nest the rest of the qs records into a single dict.
 
         Args:
             queryset: Databank queryset with one or many rows
@@ -241,7 +244,8 @@ class Command(BaseCommand):
         data: dict[str, CombinedModuleData],
         request_timeout: int,
     ) -> Any:
-        """Send databank dataset to the source system and handle immediate response from source system.
+        """
+        Send databank dataset to the source system and handle immediate response from source system.
 
         This function should handle status and errors between Django and source system only.
         The `_parse_aggregate_databank_response` function handles the status
@@ -285,7 +289,8 @@ class Command(BaseCommand):
         aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
     ) -> None:
-        """Parse the aggregated response message from the databank and update databank models.
+        """
+        Parse the aggregated response message from the databank and update databank models.
 
         Args:
             aggregate_response: JSON object with a response code & message for each patient data
@@ -328,7 +333,8 @@ class Command(BaseCommand):
         synced_data: Any,
         message: str | None = None,
     ) -> None:
-        """Create `SharedData` instances for a given patient.
+        """
+        Create `SharedData` instances for a given patient.
 
         Args:
             databank_patient: Consent instance to be updated

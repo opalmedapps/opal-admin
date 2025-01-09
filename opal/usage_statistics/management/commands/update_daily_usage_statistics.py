@@ -49,7 +49,8 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
-        """Populate the daily application activities to the statistics models.
+        """
+        Populate the daily application activities to the statistics models.
 
         The statistics are populated to the `DailyUserAppActivity`, `DailyUserPatientActivity`
         and `DailyPatientDataReceived` models.
@@ -110,7 +111,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily users' application activity statistics records in `DailyUserAppActivity` model.
+        """
+        Create daily users' application activity statistics records in `DailyUserAppActivity` model.
 
         Args:
             start_datetime_period: the beginning of the time period of users' app activities being extracted
@@ -136,7 +138,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily user-patient application activity statistics records in `DailyUserPatientActivity` model.
+        """
+        Create daily user-patient application activity statistics records in `DailyUserPatientActivity` model.
 
         Args:
             start_datetime_period: the beginning of the time period of patients' app activities being extracted
@@ -186,7 +189,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily patients' received data statistics records in `DailyPatientDataReceived` model.
+        """
+        Create daily patients' received data statistics records in `DailyPatientDataReceived` model.
 
         Args:
             start_datetime_period: the beginning of the time period of received data statistics being extracted
@@ -207,7 +211,8 @@ class Command(BaseCommand):
         )
 
     def _delete_stored_statistics(self) -> bool:
-        """Delete daily application activity statistics data.
+        """
+        Delete daily application activity statistics data.
 
         The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`
         an `DailyPatientDataReceived` models.

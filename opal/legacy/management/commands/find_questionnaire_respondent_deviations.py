@@ -27,7 +27,8 @@ DJANGO_RESPONDENT_QUERY = """
 
 
 class Command(BaseCommand):
-    """Command to find differences in the questionnaire respondent data between legacy and new back end databases.
+    """
+    Command to find differences in the questionnaire respondent data between legacy and new back end databases.
 
     The command compares the `respondentUsername` field of the `QuestionnaireDB.answerQuestionnaire` table with the \
     `first_name` and the `last_name` of the same `CaregiverProfile` stored in the Django back end.
@@ -78,7 +79,8 @@ class Command(BaseCommand):
         legacy_respondents: list[tuple[str, ...]],
         django_respondents: list[tuple[str, ...]],
     ) -> str | None:
-        """Build error string based on the questionnaire respondents' first & last names deviations.
+        """
+        Build error string based on the questionnaire respondents' first & last names deviations.
 
         Args:
             legacy_respondents: Django's `Users'` first and last names filtered by `username`

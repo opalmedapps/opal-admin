@@ -43,7 +43,8 @@ class QuestionnaireProfile(models.Model):
         verbose_name_plural = _('Questionnaire Profiles')
 
     def __str__(self) -> str:
-        """Questionnaire profile to string.
+        """
+        Questionnaire profile to string.
 
         Returns:
             username with the following questionnaire list
@@ -52,7 +53,8 @@ class QuestionnaireProfile(models.Model):
 
     @classmethod
     def update_questionnaires_following(cls, qid: str, qname: str, user: User, toggle: bool) -> None:
-        """Update the questionnaires following list for specific user.
+        """
+        Update the questionnaires following list for specific user.
 
         Args:
             qid: questionnaire id number

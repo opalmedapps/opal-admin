@@ -5,7 +5,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Use plural form for the `general_tests`, `observations` and `notes` related fields.
+    """
+    Use plural form for the `general_tests`, `observations` and `notes` related fields.
 
     Since the `GeneralTest` -> `Patient` has many-to-one relationship, the field's name should be in plural form.
 

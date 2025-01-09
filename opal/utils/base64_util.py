@@ -8,7 +8,8 @@ class Base64Util:
     """Util that provides functionality for handling base64 encoding strings."""
 
     def encode_to_base64(self, path: Path) -> str | None:
-        """Create base64 string of a given file.
+        """
+        Create base64 string of a given file.
 
         Args:
             path (Path): file path
@@ -26,7 +27,8 @@ class Base64Util:
         return data.decode('utf-8')
 
     def is_base64(self, string: str | None) -> bool:
-        """Check if a given string is base64 encoded.
+        """
+        Check if a given string is base64 encoded.
 
         Args:
             string (str): encoded base64 string

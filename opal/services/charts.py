@@ -8,7 +8,8 @@ from plotly import express as px
 
 
 class ChartData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a chart.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a chart.
 
     Attributes:
         title: the title that is shown on top of the chart
@@ -48,7 +49,8 @@ class ChartService():
         label_error_min: str = 'min',
         label_error_max: str = 'max',
     ) -> str | None:
-        """Generate a plotly error bar chart.
+        """
+        Generate a plotly error bar chart.
 
         The DataFrame should contain x, error_max, error_min, and legend records.
 
@@ -104,7 +106,8 @@ class ChartService():
         self,
         chart_data: ChartData,
     ) -> str | None:
-        """Generate a plotly line chart.
+        """
+        Generate a plotly line chart.
 
         The DataFrame should contain x, value, and legend records.
 

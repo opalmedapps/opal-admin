@@ -21,7 +21,8 @@ class ORMSLoginView(LoginView):
     """
 
     def login(self) -> None:
-        """Check user's group and credentials.
+        """
+        Check user's group and credentials.
 
         Only superusers and users that belong to the `ORMS_GROUP_NAME` can login to the system.
 

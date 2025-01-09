@@ -1,4 +1,5 @@
-"""Module providing model factories for patients app models.
+"""
+Module providing model factories for patients app models.
 
 reference from:
 

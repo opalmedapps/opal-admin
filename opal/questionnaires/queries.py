@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def set_test_account(debug: bool) -> str:
-    """Set the test account string for report development using settings variable.
+    """
+    Set the test account string for report development using settings variable.
 
     Args:
         debug: Settings.debug (True=don't exclude any data)
@@ -34,7 +35,8 @@ test_accounts = set_test_account(settings.DEBUG)
 
 
 def _get_description(qid: int, lang_id: int) -> str:
-    """Get detailed description for selected questionnaire.
+    """
+    Get detailed description for selected questionnaire.
 
     Args:
         qid: Questionnaire id.
@@ -59,7 +61,8 @@ def _get_description(qid: int, lang_id: int) -> str:
 
 
 def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
-    """Return all rows from a cursor as a dict.
+    """
+    Return all rows from a cursor as a dict.
 
     Args:
         cursor: Database connection.
@@ -77,7 +80,8 @@ def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
 @transaction.atomic
 def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
-    """Get list of questionnaires which have non-zero number of responses.
+    """
+    Get list of questionnaires which have non-zero number of responses.
 
     Args:
         lang_id: requesting user's language preference.
@@ -109,7 +113,8 @@ def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
 
 @transaction.atomic
 def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:
-    """Get details for desired questionnaire (questions, patients, dates).
+    """
+    Get details for desired questionnaire (questions, patients, dates).
 
     Args:
         qid: questionnaire id.
@@ -184,7 +189,8 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:
 
 @transaction.atomic
 def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
-    """Query the QuestionnaireDB with the user's specific options & generate tables.
+    """
+    Query the QuestionnaireDB with the user's specific options & generate tables.
 
     Args:
         report_params: user options
@@ -365,7 +371,8 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
 
 
 def get_temp_table() -> list[dict[str, Any]]:
-    """Retrieve the previously generated report in the temporary table.
+    """
+    Retrieve the previously generated report in the temporary table.
 
     Returns:
         List of all rows of the query as dictionaries.

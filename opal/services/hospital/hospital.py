@@ -9,7 +9,8 @@ from .hospital_validation import SourceSystemValidator
 
 
 class SourceSystemService:
-    """Service that provides an interface (a.k.a., Facade) for interaction with the Integration Engine.
+    """
+    Service that provides an interface (a.k.a., Facade) for interaction with the Integration Engine.
 
     All the provided functions contain the following business logic:
         * validate the input data (a.k.a., parameters)
@@ -28,7 +29,8 @@ class SourceSystemService:
         self,
         report_data: SourceSystemReportExportData,
     ) -> Any:
-        """Send base64 encoded PDF report to the source system.
+        """
+        Send base64 encoded PDF report to the source system.
 
         Args:
             report_data (SourceSystemReportExportData): PDF report data needed to call Source System endpoint
@@ -68,7 +70,8 @@ class SourceSystemService:
         )
 
     def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:
-        """Search patient info by MRN code.
+        """
+        Search patient info by MRN code.
 
         Args:
             mrn: Medical Record Number (MRN) code (e.g., 9999993)
@@ -141,7 +144,8 @@ class SourceSystemService:
         )
 
     def find_patient_by_ramq(self, ramq: str) -> dict[str, Any]:
-        """Search patient info by RAMQ code.
+        """
+        Search patient info by RAMQ code.
 
         Args:
             ramq (str): RAMQ code
@@ -211,7 +215,8 @@ class SourceSystemService:
         )
 
     def new_opal_patient(self, active_mrn_list: list[tuple[str, str]]) -> dict[str, Any]:
-        """Notifies the source system of a new Opal patient.
+        """
+        Notifies the source system of a new Opal patient.
 
         Tries calling the source system using each of the patient's MRNs until one succeeds.
 

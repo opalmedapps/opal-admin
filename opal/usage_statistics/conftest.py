@@ -11,7 +11,8 @@ from .common import GroupByComponent, GroupReportType
 
 @pytest.fixture
 def group_usage_stats_form() -> GroupUsageStatisticsForm:
-    """Fixture providing data for the `GroupUsageStatisticsForm`.
+    """
+    Fixture providing data for the `GroupUsageStatisticsForm`.
 
     Returns:
         `GroupUsageStatisticsForm` object
@@ -28,7 +29,8 @@ def group_usage_stats_form() -> GroupUsageStatisticsForm:
 
 @pytest.fixture
 def individual_usage_stats_form() -> IndividualUsageStatisticsForm:
-    """Fixture providing data for the `IndividualUsageStatisticsForm`.
+    """
+    Fixture providing data for the `IndividualUsageStatisticsForm`.
 
     Returns:
         `IndividualUsageStatisticsForm` object

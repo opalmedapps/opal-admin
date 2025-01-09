@@ -1,4 +1,5 @@
-"""This module provides custom permissions for the Django REST framework.
+"""
+This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """

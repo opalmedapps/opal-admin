@@ -108,7 +108,8 @@ class RelationshipType(models.Model):
         verbose_name_plural = _('Relationship Types')
 
     def __str__(self) -> str:
-        """Return the string representation of the User Patient Relationship Type.
+        """
+        Return the string representation of the User Patient Relationship Type.
 
         Returns:
             the name of the user patient relationship type
@@ -116,7 +117,8 @@ class RelationshipType(models.Model):
         return self.name
 
     def clean(self) -> None:
-        """Validate the model being saved does not add an extra pre-defined role type.
+        """
+        Validate the model being saved does not add an extra pre-defined role type.
 
         If additional predefined role types are added in the future,
         add them to the predefined RoleType lists here.
@@ -293,7 +295,8 @@ class Patient(AbstractLabDelayModel):
         return f'{self.last_name}, {self.first_name}'
 
     def clean(self) -> None:
-        """Validate date fields.
+        """
+        Validate date fields.
 
         Raises:
             ValidationError: If the date of death is earlier than the date of birth.
@@ -432,7 +435,8 @@ class Relationship(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return the relationship of the User and Patient.
+        """
+        Return the relationship of the User and Patient.
 
         Returns:
             the relationship of the User and Patient
@@ -444,7 +448,8 @@ class Relationship(models.Model):
         )
 
     def validate_start_date(self) -> list[str]:
-        """Validate the `start_date` field.
+        """
+        Validate the `start_date` field.
 
         The start date has to be greater equals the patient's date of birth.
         The start date has to be earlier than the end date.
@@ -463,7 +468,8 @@ class Relationship(models.Model):
         return errors
 
     def validate_end_date(self) -> list[str]:
-        """Validate the `end_date` field.
+        """
+        Validate the `end_date` field.
 
         The end date has to be earlier than the date when the patient turns to older age period.
 
@@ -488,7 +494,8 @@ class Relationship(models.Model):
         return errors
 
     def validate_type(self) -> list[str]:
-        """Validate the `type` field.
+        """
+        Validate the `type` field.
 
         Returns:
             a list of error messages
@@ -524,7 +531,8 @@ class Relationship(models.Model):
         return errors
 
     def clean(self) -> None:
-        """Validate additionally across fields.
+        """
+        Validate additionally across fields.
 
         Raises:
             ValidationError: the error shows when entries do not comply with the validation rules.
@@ -686,7 +694,8 @@ class HospitalPatient(models.Model):
         unique_together = (('site', 'mrn'), ('patient', 'site'))
 
     def __str__(self) -> str:
-        """Return the textual representation of this instance.
+        """
+        Return the textual representation of this instance.
 
         Returns:
             the textual representation of this instance

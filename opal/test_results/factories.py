@@ -10,7 +10,8 @@ from . import models
 
 
 class GeneralTest(DjangoModelFactory):
-    """Model factory to create [opal.test_results.models.GeneralTest][] models.
+    """
+    Model factory to create [opal.test_results.models.GeneralTest][] models.
 
     Test group code and description depend on the test type.
     """

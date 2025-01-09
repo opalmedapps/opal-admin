@@ -9,7 +9,8 @@ _Model = TypeVar('_Model', bound=Model)
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer[_Model]):
-    """Dynamic fields serializer for models.
+    """
+    Dynamic fields serializer for models.
 
     A ModelSerializer that takes an additional `fields` argument that
     controls which fields should be displayed.

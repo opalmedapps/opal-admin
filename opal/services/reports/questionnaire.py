@@ -39,7 +39,8 @@ class QuestionType(Enum):
 
 
 class Question(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
         question_text: name of the question title completed by the patient
@@ -65,7 +66,8 @@ class Question(NamedTuple):
 
 
 class QuestionnaireData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
         questionnaire_id: unique ID of the questionnaire
@@ -99,7 +101,8 @@ class QuestionnairePDF(FPDF):
         questionnaire_data: list[QuestionnaireData],
         toc_pages: int | None = None,
     ) -> None:
-        """Initialize a `QuestionnairePDF` instance for generating questionnaire reports.
+        """
+        Initialize a `QuestionnairePDF` instance for generating questionnaire reports.
 
         The initialization consists of 3 steps:
             - Initialization of the `FPDF` instance
@@ -140,7 +143,8 @@ class QuestionnairePDF(FPDF):
         self._generate()
 
     def header(self) -> None:
-        """Set the questionnaire PDF's header.
+        """
+        Set the questionnaire PDF's header.
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
@@ -194,7 +198,8 @@ class QuestionnairePDF(FPDF):
         self.line(10, 26, 200, 26)  # X1, Y1, X2, Y2
 
     def footer(self) -> None:
-        """Set the questionnaire PDF's footer.
+        """
+        Set the questionnaire PDF's footer.
 
         This is automatically called by FPDF.add_page() and FPDF.output().
 
@@ -252,7 +257,8 @@ class QuestionnairePDF(FPDF):
         duration: int = 0,
         transition: Any | None = None,
     ) -> None:
-        """Add new page to the questionnaire report and set the correct spacing for the header.
+        """
+        Add new page to the questionnaire report and set the correct spacing for the header.
 
         Args:
             orientation: "portrait" or "landscape". Default to "portrait"
@@ -294,7 +300,8 @@ class QuestionnairePDF(FPDF):
         self.ln(2)
 
     def _set_report_metadata(self) -> None:
-        """Set Questionnaire PDF's metadata.
+        """
+        Set Questionnaire PDF's metadata.
 
         The following information is set:
             - Keywords associated with the report
@@ -341,7 +348,8 @@ class QuestionnairePDF(FPDF):
             self._draw_questions_results(data.questions)
 
     def _draw_questions_results(self, questions: list[Question]) -> None:
-        """Display question based on its type.
+        """
+        Display question based on its type.
 
         Args:
             questions: list of questions associated with the questionnaire
@@ -352,7 +360,8 @@ class QuestionnairePDF(FPDF):
             handler(question)
 
     def _prepare_question_chart(self, question: Question) -> pd.DataFrame:
-        """Prepare the question for the chart.
+        """
+        Prepare the question for the chart.
 
         Args:
             question: question that needs to be prepared
@@ -386,7 +395,8 @@ class QuestionnairePDF(FPDF):
         )
 
     def _draw_chart_for_numeric_question(self, question: Question) -> None:
-        """Generate a chart for a numeric question (e.g., `SLIDER`) type.
+        """
+        Generate a chart for a numeric question (e.g., `SLIDER`) type.
 
         Args:
             question: numeric question to be visualized in a chart
@@ -440,7 +450,8 @@ class QuestionnairePDF(FPDF):
         self.ln(10)
 
     def _draw_text_answer_question(self, question: Question) -> None:
-        """Draw the table for text answer question.
+        """
+        Draw the table for text answer question.
 
         Args:
             question: text answer question to be displayed in a table
@@ -493,7 +504,8 @@ class QuestionnairePDF(FPDF):
         pdf: FPDF,
         outline: list[OutlineSection],
     ) -> None:
-        """Render the table of content as a table .
+        """
+        Render the table of content as a table .
 
         Args:
             pdf: The FPDF instance
@@ -526,7 +538,8 @@ class QuestionnairePDF(FPDF):
         text: str,
         align: str | Align,
     ) -> None:
-        """Insert the paragraph related to the questionnaires.
+        """
+        Insert the paragraph related to the questionnaires.
 
         Args:
             text: text to insert
@@ -547,7 +560,8 @@ def generate_pdf(
     patient: PatientData,
     questionnaires: list[QuestionnaireData],
 ) -> bytearray:
-    """Create a questionnaire PDF report.
+    """
+    Create a questionnaire PDF report.
 
     Args:
         institution: institution data required to generate the PDF report
@@ -581,7 +595,8 @@ def _generate_pdf(
     questionnaires: list[QuestionnaireData],
     toc_pages: int | None = None,
 ) -> bytearray:
-    """Create a questionnaire PDF report.
+    """
+    Create a questionnaire PDF report.
 
     Args:
         institution: institution data required to generate the PDF report
@@ -598,7 +613,8 @@ def _generate_pdf(
 
 
 class QuestionnaireReportRequestData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
 
     Attributes:
         patient_id: the ID of an Opal patient (e.g., patient serial number)
@@ -628,7 +644,8 @@ class ReportService():
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> str | None:
-        """Create a questionnaire PDF report in encoded base64 string format.
+        """
+        Create a questionnaire PDF report in encoded base64 string format.
 
         Args:
             report_data: questionnaire data required to call the legacy PHP report service
@@ -656,7 +673,8 @@ class ReportService():
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> str | None:
-        """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
+        """
+        Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
             report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
@@ -715,7 +733,8 @@ class ReportService():
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> bool:
-        """Check if questionnaire report request data is valid.
+        """
+        Check if questionnaire report request data is valid.
 
         Args:
             report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service

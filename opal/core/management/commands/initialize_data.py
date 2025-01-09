@@ -295,7 +295,8 @@ class Command(BaseCommand):
             self._create_orms_data(**options)
 
     def _create_orms_data(self, **options: Any) -> None:
-        """Create ORMS users, group, and system user token if ORMs is enabled.
+        """
+        Create ORMS users, group, and system user token if ORMs is enabled.
 
         Args:
             options: the options keyword arguments passed to the function

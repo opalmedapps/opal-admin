@@ -81,7 +81,8 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
     queryset = Relationship.objects.select_related('caregiver__user')
 
     def get_queryset(self) -> QuerySet[Relationship]:
-        """Query set to retrieve list of caregivers for the input patient.
+        """
+        Query set to retrieve list of caregivers for the input patient.
 
         Returns:
             List of caregiver profiles for a given patient
@@ -103,7 +104,8 @@ class PatientDemographicView(UpdateAPIView[Patient]):
     serializer_class = PatientDemographicSerializer
 
     def get_object(self) -> Patient:
-        """Perform a custom lookup for a `Patient` object.
+        """
+        Perform a custom lookup for a `Patient` object.
 
         Since there is no `lookup_url` parameter in the endpoints, the lookup is performed by using the provided `mrns`.
 
@@ -219,7 +221,8 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
     },
 )
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
+    """
+    Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 

@@ -6,7 +6,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Add EmailVerification model.
+    """
+    Add EmailVerification model.
 
     Remove field email_verification_code from model RegistrationCode
     """

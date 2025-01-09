@@ -5,7 +5,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Update models after additional gateway pharmacy message testing identified several issues.
+    """
+    Update models after additional gateway pharmacy message testing identified several issues.
 
     Fixes several issues in the models:
         - Split abstract interval into interval_pattern and interval_duration

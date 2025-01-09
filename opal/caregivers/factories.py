@@ -48,7 +48,8 @@ class TokenProvider(BaseProvider):
     """Faker Provider class that generates random values."""
 
     def token(self) -> str:
-        """Generate a random hex token.
+        """
+        Generate a random hex token.
 
         Returns:
             A random hex token

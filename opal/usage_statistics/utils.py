@@ -21,7 +21,8 @@ class RelationshipMapping(UserDict[str, Any]):
         self,
         relationships: models.QuerySet[Relationship, dict[str, Any]],
     ) -> None:
-        """Build relationships dictionary for populating patients' application activities.
+        """
+        Build relationships dictionary for populating patients' application activities.
 
         The mapping contains the legacy patient IDs that map to a dictionary with patient ID and usernames.
         The username keys map to a dictionary with the relationship and user IDs.
@@ -53,7 +54,8 @@ def annotate_patient_activities(
     activities: models.QuerySet[legacy_models.LegacyPatientActivityLog, dict[str, Any]],
     relationships_dict: RelationshipMapping,
 ) -> list[DailyUserPatientActivity]:
-    """Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
+    """
+    Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
 
     For each record add `user_relationship_to_patient_id`, `action_by_user_id`, `patient_id` fields.
 
@@ -81,7 +83,8 @@ def get_aggregated_patient_received_data(
     start_datetime_period: dt.datetime,
     end_datetime_period: dt.datetime,
 ) -> models.QuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]:
-    """Retrieve aggregated patients' received data statistics for a given time period.
+    """
+    Retrieve aggregated patients' received data statistics for a given time period.
 
     The statistics are fetched from the legacy `OpalDB` tables.
 
@@ -264,7 +267,8 @@ def export_data(
     data_set: list[dict[str, Any]] | dict[str, Any],
     file_path: Path,
 ) -> None:
-    """Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
+    """
+    Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
 
     The function currently only support for csv and xlsx format, a value error will be raised for other cases.
 
@@ -298,7 +302,8 @@ def export_data(
 
 
 def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:
-    """Clean the time zone info of the input datetime data if it exists.
+    """
+    Clean the time zone info of the input datetime data if it exists.
 
     Args:
         datetime: the datetime data

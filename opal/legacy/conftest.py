@@ -8,7 +8,8 @@ from pytest_django import DjangoDbBlocker
 
 @pytest.fixture
 def clear_questionnairedb(request: SubRequest, django_db_blocker: DjangoDbBlocker) -> None:
-    """Remove specified test data from test_QuestionnaireDB.
+    """
+    Remove specified test data from test_QuestionnaireDB.
 
     Args:
         request: SubRequest object within which should be a list of tables to clear data from

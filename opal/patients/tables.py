@@ -110,7 +110,8 @@ class PatientTable(tables.Table):
         self,
         value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[SourceSystemMRNData],
     ) -> str:
-        """Render MRN column.
+        """
+        Render MRN column.
 
         Concat list of MRN/site pairs into one string.
 
@@ -305,7 +306,8 @@ class RelationshipCaregiverTable(tables.Table):
 
 
 class ConfirmPatientDetailsTable(PatientTable):
-    """Custom table for confirmation of patient data given a source system data object.
+    """
+    Custom table for confirmation of patient data given a source system data object.
 
     The goal of this table is to render data in the same way as the existing `PatientTable`
     A new table is required because the existing table is rendered using a patient queryset in

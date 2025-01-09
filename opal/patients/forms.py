@@ -258,7 +258,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
-        """Handle the response from source system service.
+        """
+        Handle the response from source system service.
 
         Args:
             response: source system service response

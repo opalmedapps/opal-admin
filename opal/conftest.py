@@ -252,7 +252,8 @@ def orms_system_user(django_user_model: User) -> User:
 
 @pytest.fixture(autouse=True)
 def set_orms_enabled(settings: LazySettings) -> None:
-    """Fixture enables ORMS by default for all unit tests.
+    """
+    Fixture enables ORMS by default for all unit tests.
 
     Args:
         settings: the fixture providing access to the Django settings
@@ -262,7 +263,8 @@ def set_orms_enabled(settings: LazySettings) -> None:
 
 @pytest.fixture
 def set_orms_disabled(settings: LazySettings) -> None:
-    """Fixture disables ORMS for the unit test.
+    """
+    Fixture disables ORMS for the unit test.
 
     Args:
         settings: the fixture providing access to the Django settings
@@ -324,7 +326,8 @@ def _manage_unmanaged_models() -> None:
 
 @pytest.fixture(autouse=True)
 def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
-    """Fixture changing the `MEDIA_ROOT` value of the settings.
+    """
+    Fixture changing the `MEDIA_ROOT` value of the settings.
 
     Args:
         tmp_path: Object to a temporary directory which is unique to each test function
@@ -413,7 +416,8 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
 @pytest.fixture
 def databank_consent_questionnaire_and_response(
 ) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
-    """Add a full databank consent questionnaire and simple response to test setup.
+    """
+    Add a full databank consent questionnaire and simple response to test setup.
 
     Returns:
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
@@ -486,7 +490,8 @@ def databank_consent_questionnaire_and_response(
 
 @pytest.fixture
 def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEducationalMaterialControl]:
-    """Add a full databank consent questionnaire to test setup.
+    """
+    Add a full databank consent questionnaire to test setup.
 
     Returns:
         Consent questionnaire
@@ -536,7 +541,8 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
 
 @pytest.fixture
 def set_databank_disabled(settings: LazySettings) -> None:
-    """Fixture disables the databank for the unit test.
+    """
+    Fixture disables the databank for the unit test.
 
     Args:
         settings: the fixture providing access to the Django settings
@@ -546,7 +552,8 @@ def set_databank_disabled(settings: LazySettings) -> None:
 
 @pytest.fixture(autouse=True)
 def set_databank_enabled(settings: LazySettings) -> None:
-    """Fixture enables databank by default for all unit tests.
+    """
+    Fixture enables databank by default for all unit tests.
 
     Args:
         settings: the fixture providing access to the Django settings

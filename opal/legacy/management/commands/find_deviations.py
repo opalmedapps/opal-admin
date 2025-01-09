@@ -104,7 +104,8 @@ DJANGO_CAREGIVER_QUERY = """
 
 
 class Command(BaseCommand):
-    """Command to find differences in data between legacy and new (Django) databases.
+    """
+    Command to find differences in data between legacy and new (Django) databases.
 
     The command compares:
 
@@ -212,7 +213,8 @@ class Command(BaseCommand):
         django_model_name: str,
         legacy_table_name: str,
     ) -> str | None:
-        """Build error string based on the model/table records deviations.
+        """
+        Build error string based on the model/table records deviations.
 
         Args:
             django_model_records: Django model's records
@@ -266,7 +268,8 @@ class Command(BaseCommand):
         unmatched_records: set[tuple[str, ...]],
         block_name: str,
     ) -> str:
-        """Create string that lists all the unmatched records.
+        """
+        Create string that lists all the unmatched records.
 
         Args:
             unmatched_records: set of the records that will be added to the string

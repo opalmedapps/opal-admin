@@ -37,7 +37,8 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Override class method and append user's followed questionnaires.
+        """
+        Override class method and append user's followed questionnaires.
 
         Args:
             kwargs: any number of key word arguments.
@@ -65,7 +66,8 @@ class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView)
     template_name = 'questionnaires/export_reports/reports-list.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Override class method and append questionnaire list to context.
+        """
+        Override class method and append questionnaire list to context.
 
         Args:
             kwargs: any number of key word arguments.
@@ -90,7 +92,8 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Override class method and fetch query parameters for the requested questionnaire.
+        """
+        Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
             request: post request data.
@@ -137,7 +140,8 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Override class method and fetch report for the requested questionnaire.
+        """
+        Override class method and fetch report for the requested questionnaire.
 
         Args:
             request: post request data.
@@ -206,7 +210,8 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Grab existing backend report and convert to csv.
+        """
+        Grab existing backend report and convert to csv.
 
         This code first generates the desired csv by writing it to media folder within
         the questionnaires app.
@@ -245,7 +250,8 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Grab existing backend report and convert to xlsx.
+        """
+        Grab existing backend report and convert to xlsx.
 
         This code first generates the desired xlsx by writing it to media folder within
         the questionnaires app.

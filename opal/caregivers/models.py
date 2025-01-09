@@ -64,7 +64,8 @@ class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]
         verbose_name_plural = _('Security Questions')
 
     def __str__(self) -> str:
-        """Return the question text.
+        """
+        Return the question text.
 
         Returns:
             the question text.
@@ -97,7 +98,8 @@ class SecurityAnswer(models.Model):
         verbose_name_plural = _('Security Answers')
 
     def __str__(self) -> str:
-        """Return the question.
+        """
+        Return the question.
 
         Returns:
             the question.

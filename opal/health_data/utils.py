@@ -22,7 +22,8 @@ SINGLE_VALUE_SAMPLE_TYPES: Final = tuple(
 
 
 def build_all_quantity_sample_charts(patient: Patient) -> dict[str, str | None]:
-    """Build all the quantity sample charts for a specific patient.
+    """
+    Build all the quantity sample charts for a specific patient.
 
     Args:
         patient: patient for whom charts are being generated

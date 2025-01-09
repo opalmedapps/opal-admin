@@ -33,7 +33,8 @@ class LegacyDefinitionTable(models.Model):
 
 
 class LegacyDictionary(models.Model):
-    """Dictionary model from the legacy database QuestionnaireDB.
+    """
+    Dictionary model from the legacy database QuestionnaireDB.
 
     Note that contentId is NOT actually a unique field in QuestionnaireDB.
     Django forces us to add this constraint because contentId is referenced by many tables
@@ -65,7 +66,8 @@ class LegacyDictionary(models.Model):
 
 
 class LegacyPurpose(models.Model):
-    """Purpose model from the legacy database QuestionnaireDB.
+    """
+    Purpose model from the legacy database QuestionnaireDB.
 
     Dictionary is the 'endpoint' for defining queries in QuestionnaireDB as
     it just provides text for the integer identifiers in other tables.
@@ -119,7 +121,8 @@ class LegacyRespondent(models.Model):
 
 
 class LegacyQuestionnaire(models.Model):
-    """Questionnaire model from the legacy database QuestionnaireDB.
+    """
+    Questionnaire model from the legacy database QuestionnaireDB.
 
     This table records import metadata and identifiers for questionnaires.
     """
@@ -180,7 +183,8 @@ class LegacyQuestionnaire(models.Model):
 
 
 class LegacyQuestionnairePatient(models.Model):
-    """Patient model from the legacy database QuestionnaireDB.
+    """
+    Patient model from the legacy database QuestionnaireDB.
 
     The patients in this table relate to OpalDB.Patient instances through the externalId.
     """
@@ -201,7 +205,8 @@ class LegacyQuestionnairePatient(models.Model):
 
 
 class LegacyAnswerQuestionnaire(models.Model):
-    """Answer Questionnaire model from the legacy database QuestionnaireDB.
+    """
+    Answer Questionnaire model from the legacy database QuestionnaireDB.
 
     This table records instances of a patient receiving a questionnaire
     and keeps track of the patient's progress on that questionnaire.

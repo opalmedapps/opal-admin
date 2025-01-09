@@ -33,7 +33,8 @@ class InstitutionListView(PermissionRequiredMixin, SingleTableView):
     template_name = 'hospital_settings/institution/institution_list.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Update the context with whether a new institution can be created.
+        """
+        Update the context with whether a new institution can be created.
 
         Args:
             kwargs: the context data

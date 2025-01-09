@@ -21,7 +21,8 @@ class LoginRequiredMiddleware():
     """
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
-        """Initialize the middleware.
+        """
+        Initialize the middleware.
 
         Args:
             get_response: the next `get_response` callable (could be a view or the next middleware)

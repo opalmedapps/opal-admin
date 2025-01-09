@@ -33,7 +33,8 @@ class SampleSourceType(models.TextChoices):
 
 
 class AbstractSample(models.Model):
-    """An abstract sample for all measurements of health data.
+    """
+    An abstract sample for all measurements of health data.
 
     This model should be inherited from by all concrete sample models.
 
@@ -70,7 +71,8 @@ class AbstractSample(models.Model):
         ]
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        """Save the current instance.
+        """
+        Save the current instance.
 
         Prevents changing an instance once it was saved the first time.
 

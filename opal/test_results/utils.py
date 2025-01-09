@@ -20,7 +20,8 @@ def generate_pathology_report(
     patient: Patient,
     pathology_data: dict[str, Any],
 ) -> Path:
-    """Generate the pathology PDF report by calling the ReportService.
+    """
+    Generate the pathology PDF report by calling the ReportService.
 
     Args:
         patient: patient instance for whom a new PDF pathology report being generated
@@ -81,7 +82,8 @@ def generate_pathology_report(
 def _parse_observations(
     observations: list[dict[str, Any]],
 ) -> dict[str, list[str]]:
-    """Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
+    """
+    Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
 
     Args:
         observations: list of observation dictionaries to be parsed
@@ -114,7 +116,8 @@ def _parse_observations(
 
 
 def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
-    """Parse the pathology notes and extract the information by whom and when the report was created.
+    """
+    Parse the pathology notes and extract the information by whom and when the report was created.
 
     Args:
         notes: _description_
@@ -147,7 +150,8 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _get_site_instance(receiving_facility: str) -> Site:
-    """Fetch Site record by given receiving_facility code.
+    """
+    Fetch Site record by given receiving_facility code.
 
     If Site cannot be found, log the incident and return a Site with empty fields.
 
@@ -179,7 +183,8 @@ def _get_site_instance(receiving_facility: str) -> Site:
 
 
 def _find_doctor_name(note_text: str) -> str:
-    """Find doctor's name in a pathology note.
+    """
+    Find doctor's name in a pathology note.
 
     Args:
         note_text: a pathology note in which doctor's name should be found
@@ -196,7 +201,8 @@ def _find_doctor_name(note_text: str) -> str:
 
 
 def _find_note_date(note_text: str) -> datetime:
-    """Find date and time in a pathology note that indicates when the doctor's comments were left.
+    """
+    Find date and time in a pathology note that indicates when the doctor's comments were left.
 
     Args:
         note_text: a pathology note in which the date and time of note creation should be found

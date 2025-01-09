@@ -36,7 +36,8 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
     """
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Update the targeted model or create if it doesn't exist.
+        """
+        Update the targeted model or create if it doesn't exist.
 
         Args:
             request: request object with parameters to update or create
@@ -62,7 +63,8 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         return Response(serializer.data)
 
     def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Set partial parameter and re-call update method.
+        """
+        Set partial parameter and re-call update method.
 
         Args:
             request: request object with parameters to update or create
@@ -76,7 +78,8 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         return self.update(request, *args, **kwargs)
 
     def _get_object_or_none(self) -> _Model | None:
-        """Attempt to retrieve object.
+        """
+        Attempt to retrieve object.
 
         If not found we use clone_request to check if the caller has the required permissions for a POST request.
 

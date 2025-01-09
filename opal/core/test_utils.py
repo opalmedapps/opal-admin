@@ -46,7 +46,8 @@ class RequestMockerTest:
         mocker: MockerFixture,
         response_data: dict[str, Any],
     ) -> MockType:
-        """Mock an HTTP POST call to a web service.
+        """
+        Mock an HTTP POST call to a web service.
 
         Args:
             mocker: object that provides the same interface to functions in the mock module
@@ -70,7 +71,8 @@ class RequestMockerTest:
         mocker: MockerFixture,
         generated_response_data: dict[str, str],
     ) -> MockType:
-        """Mock an HTTP GET call to a web service.
+        """
+        Mock an HTTP GET call to a web service.
 
         Args:
             mocker: object that provides the same interface to functions in the mock module

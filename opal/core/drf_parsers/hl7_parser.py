@@ -19,7 +19,8 @@ FORMAT_DATETIME_COMPLETE = '%Y%m%d%H%M%S'
 
 
 def parse_pid_segment(segment: Segment) -> dict[str, Any]:
-    """Extract patient data from an HL7v2 PID segment.
+    """
+    Extract patient data from an HL7v2 PID segment.
 
     Use the HL7 documentation to know which fields contain the correct data:
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/PID
@@ -49,7 +50,8 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_pv1_segment(segment: Segment) -> dict[str, Any]:
-    """Extract patient visit data from an HL7v2 PV1 segment.
+    """
+    Extract patient visit data from an HL7v2 PV1 segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/PV1
 
@@ -69,7 +71,8 @@ def parse_pv1_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_orc_segment(segment: Segment) -> dict[str, Any]:
-    """Extract common order data from an HL7v2 ORC segment.
+    """
+    Extract common order data from an HL7v2 ORC segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/ORC
 
@@ -106,7 +109,8 @@ def parse_orc_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
-    """Extract pharmacy encoding data from an HL7v2 RXE segment.
+    """
+    Extract pharmacy encoding data from an HL7v2 RXE segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
 
@@ -151,7 +155,8 @@ def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_rxc_segment(segment: Segment) -> dict[str, Any]:
-    """Extract pharmacy component data from an HL7v2 RXC segment.
+    """
+    Extract pharmacy component data from an HL7v2 RXC segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
 
@@ -175,7 +180,8 @@ def parse_rxc_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_rxr_segment(segment: Segment) -> dict[str, Any]:
-    """Extract pharmacy route data from an HL7v2 RXR segment.
+    """
+    Extract pharmacy route data from an HL7v2 RXR segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
 
@@ -204,7 +210,8 @@ def parse_rxr_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_nte_segment(segment: Segment) -> dict[str, Any]:
-    """Extract note and comment data from an HL7v2 NTE segment.
+    """
+    Extract note and comment data from an HL7v2 NTE segment.
 
     https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/NTE
 
@@ -222,7 +229,8 @@ def parse_nte_segment(segment: Segment) -> dict[str, Any]:
 
 
 def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
-    """Convert HL7-er7 format to timezone-aware datetime.
+    """
+    Convert HL7-er7 format to timezone-aware datetime.
 
     Args:
         field: Extracted HL7 field from the message
@@ -235,7 +243,8 @@ def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
 
 
 def fix_breaking_characters(field: str) -> str:
-    """Replace incorrectly encoded or interpreted characters with linebreaks.
+    """
+    Replace incorrectly encoded or interpreted characters with linebreaks.
 
     Args:
         field: The HL7 er7 data to be cleaned
@@ -266,7 +275,8 @@ class HL7Parser(BaseParser):
         media_type: str | None = None,
         parser_context: Mapping[str, Any] | None = None,
     ) -> dict[Any, list[dict[str, Any]]]:
-        """Parse the incoming bytestream as an HL7v2 message and return JSON.
+        """
+        Parse the incoming bytestream as an HL7v2 message and return JSON.
 
         Args:
             stream: Incoming byte stream of request data

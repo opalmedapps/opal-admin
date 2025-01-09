@@ -71,7 +71,8 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
     lookup_field = 'device_id'
 
     def get_queryset(self) -> QuerySet[Device]:
-        """Provide the desired object or fails with 404 error.
+        """
+        Provide the desired object or fails with 404 error.
 
         Returns:
             Device object or 404.
@@ -205,7 +206,8 @@ class RetrieveRegistrationCodeMixin:
 )
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
-    """View that initiates email verification for a given email address.
+    """
+    View that initiates email verification for a given email address.
 
     And send email to the user with the verification code.
     """
