@@ -85,9 +85,7 @@ class DatabankConsent(models.Model):
         Returns:
             The patient's consent information.
         """
-        return "{patient}'s Databank Consent".format(
-            patient=str(self.patient),
-        )
+        return f"{str(self.patient)}'s Databank Consent"
 
 
 class DataModuleType(models.TextChoices):

@@ -34,15 +34,9 @@ class Command(BaseCommand):
                     is_active=bool(legacy_question.active),
                 )
                 self.stdout.write(
-                    'Imported security question, sernum: {questionsernum}, title: {title}'.format(
-                        questionsernum=legacy_question.securityquestionsernum,
-                        title=legacy_question.questiontext_en,
-                    ),
+                    f'Imported security question, sernum: {legacy_question.securityquestionsernum}, title: {legacy_question.questiontext_en}',
                 )
                 continue
             self.stdout.write(
-                'Security question sernum: {questionsernum}, title: {title} exists already, skipping'.format(
-                    questionsernum=legacy_question.securityquestionsernum,
-                    title=legacy_question.questiontext_en,
-                ),
+                f'Security question sernum: {legacy_question.securityquestionsernum}, title: {legacy_question.questiontext_en} exists already, skipping',
             )

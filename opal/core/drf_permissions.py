@@ -91,9 +91,7 @@ class _UsernameRequired(permissions.IsAuthenticated):
         """
         if not hasattr(self, 'required_username') or not self.required_username:
             raise ImproperlyConfigured(
-                'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
-                    class_=self.__class__.__name__,
-                ),
+                f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.',
             )
 
         return super().has_permission(request, view) and (

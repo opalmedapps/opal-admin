@@ -74,10 +74,7 @@ class PathologyObservation(AbstractObservation):
         Returns:
             string representation of the `PathologyObservation` instance
         """
-        return '{code}: {observed}'.format(
-            code=str(self.identifier_code),
-            observed=str(self.observed_at),
-        )
+        return f'{str(self.identifier_code)}: {str(self.observed_at)}'
 
     def clean(self) -> None:
         """
@@ -136,12 +133,7 @@ class LabObservation(AbstractObservation):
         Returns:
             string repr
         """
-        return '{code}: {value} {units} [{flag}]'.format(
-            code=str(self.identifier_code),
-            value=str(self.value),
-            units=str(self.value_units),
-            flag=str(self.value_abnormal),
-        )
+        return f'{str(self.identifier_code)}: {str(self.value)} {str(self.value_units)} [{str(self.value_abnormal)}]'
 
     def clean(self) -> None:
         """
@@ -187,10 +179,7 @@ class Note(models.Model):
         Returns:
             string repr
         """
-        return '{generaltest} | {note}'.format(
-            generaltest=str(self.general_test),
-            note=str(self.note_text),
-        )
+        return f'{str(self.general_test)} | {str(self.note_text)}'
 
 
 class GeneralTest(models.Model):
@@ -280,11 +269,7 @@ class GeneralTest(models.Model):
         Returns:
             specimen's type and collection date associated with a patient
         """
-        return '{patient} {type} Test instance [{date}]'.format(
-            patient=str(self.patient),
-            type=str(self.get_type_display()),
-            date=str(self.collected_at),
-        )
+        return f'{str(self.patient)} {str(self.get_type_display())} Test instance [{str(self.collected_at)}]'
 
     @property
     def observations(self) -> QuerySet[PathologyObservation] | QuerySet[LabObservation]:

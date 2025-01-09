@@ -91,10 +91,7 @@ class ServiceHTTPCommunicationManager:
         except requests.exceptions.RequestException as req_exp:
             # log external component errors
             logger.exception(
-                '{component_name} error: {error_message}'.format(
-                    component_name=self.display_name,
-                    error_message=str(req_exp),
-                ),
+                f'{self.display_name} error: {str(req_exp)}',
             )
             return self.error_handler.generate_error({
                 'message': str(req_exp),

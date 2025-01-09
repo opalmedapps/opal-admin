@@ -40,7 +40,7 @@ CHART_LAYOUT: Final = MappingProxyType({
 LOGGER = logging.getLogger(__name__)
 
 
-class ChartService():
+class ChartService:
     """Service that provides functionality for generating plotly charts in HTML format."""
 
     def generate_error_bar_chart(

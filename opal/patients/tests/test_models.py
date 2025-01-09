@@ -396,9 +396,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
     relationship.start_date = calculated_end_date - relativedelta(years=2)
     relationship.end_date = calculated_end_date + timedelta(days=1)
 
-    expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
-        calculated_end_date=calculated_end_date,
-    )
+    expected_message = f'End date for Caregiver relationship cannot be later than {calculated_end_date}.'
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 

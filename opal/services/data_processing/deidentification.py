@@ -24,7 +24,7 @@ class PatientData:
     city_of_birth: str
 
 
-class OpenScienceIdentity():
+class OpenScienceIdentity:
     """
     This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
 

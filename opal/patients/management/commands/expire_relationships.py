@@ -39,11 +39,7 @@ class Command(BaseCommand):
                 relationship.save()
                 number_of_updates += 1
                 self.stdout.write(
-                    'Expired relationship: id={id} | age {age} >= {end_age} end_age'.format(
-                        id=relationship.id,
-                        age=patient_age,
-                        end_age=relationship.type.end_age,
-                    ),
+                    f'Expired relationship: id={relationship.id} | age {patient_age} >= {relationship.type.end_age} end_age',
                 )
 
         self.stdout.write(f'Updated {number_of_updates} relationship(s) from confirmed to expired.')

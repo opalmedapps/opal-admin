@@ -633,7 +633,7 @@ class QuestionnaireReportRequestData(NamedTuple):
     language: str
 
 
-class ReportService():
+class ReportService:
     """Service that provides functionality for generating PDF reports."""
 
     content_type = 'application/json'

@@ -441,11 +441,7 @@ class Relationship(models.Model):
         Returns:
             the relationship of the User and Patient
         """
-        return '{patient} <--> {caregiver} [{type}]'.format(
-            patient=str(self.patient),
-            caregiver=str(self.caregiver),
-            type=str(self.type),
-        )
+        return f'{str(self.patient)} <--> {str(self.caregiver)} [{str(self.type)}]'
 
     def validate_start_date(self) -> list[str]:
         """
@@ -700,7 +696,4 @@ class HospitalPatient(models.Model):
         Returns:
             the textual representation of this instance
         """
-        return '{site_acronym}: {mrn}'.format(
-            site_acronym=str(self.site.acronym),
-            mrn=str(self.mrn),
-        )
+        return f'{str(self.site.acronym)}: {str(self.mrn)}'

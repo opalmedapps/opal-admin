@@ -101,10 +101,7 @@ class Command(BaseCommand):
 
         except ValidationError as exception:
             self.stderr.write(self.style.ERROR(
-                'Error: {msg} when saving username: {username}'.format(
-                    msg=exception,
-                    username=clinical_staff_user.username,
-                ),
+                f'Error: {exception} when saving username: {clinical_staff_user.username}',
             ))
             return False
 

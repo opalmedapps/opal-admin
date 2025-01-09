@@ -1118,11 +1118,7 @@ def generate_pdf(
         path to the generated pathology report
     """
     generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
-    report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
-        first_name=patient_data.patient_first_name,
-        last_name=patient_data.patient_last_name,
-        date=generated_at,
-    )
+    report_file_name = f'{patient_data.patient_first_name}_{patient_data.patient_last_name}_{generated_at}_pathology'
     report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
     pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
     pathology_pdf.output(name=str(report_path))

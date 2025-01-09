@@ -235,9 +235,9 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             newly created and saved `LegacyDocument` instance for the pathology report document
         """
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
-        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')
-        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')
-        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')
+        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
+        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')  # noqa: N806
 
         try:
             legacy_document = self.create(
