@@ -5,5 +5,15 @@
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "yaml.customTags": [
     "!reference sequence"
-  ]
+  ],
+  // Use ruff to format, fix and organize imports on save
+  // https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff#configuring-vs-code
+  // "[python]": {
+  //   "editor.formatOnSave": true,
+  //   "editor.codeActionsOnSave": {
+  //     "source.fixAll": "explicit",
+  //     "source.organizeImports": "explicit"
+  //   },
+  //   "editor.defaultFormatter": "charliermarsh.ruff"
+  // }
 }

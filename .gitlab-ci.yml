@@ -84,26 +84,22 @@ pre-commit:
     - .uses_python_dependencies
   script:
     - apk add --no-cache git
-    - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
+    - SKIP=ruff,ruff-format,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
 
 
-flake8:
+ruff:
   stage: static analysis
   extends:
     - .uses_python_dependencies
   script:
-    - flake8 --version
-    # install plugin to produce code climate report
-    - pip install uv
-    - uv pip install flake8-gl-codeclimate
-    # don't fail if there are errors so the result can also be printed to the console for logs
-    - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json || true
-    # fail if JSON file does not contain empty array
-    - cat gl-code-quality-report.json | grep -q "\[\]"
+    - ruff --version
+    - ruff check --output-format gitlab > gl-code-quality-report.json
+    - ruff format --check
   artifacts:
     when: always
     reports:
       codequality: gl-code-quality-report.json
+
 
 mypy:
   stage: static analysis
