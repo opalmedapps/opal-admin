@@ -67,7 +67,7 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.'))
+            raise NotFound(_('Manager group not found.')) from None
 
         clinicalstaff_user.groups.add(group.pk)
         clinicalstaff_user.save()
@@ -95,7 +95,7 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.'))
+            raise NotFound(_('Manager group not found.')) from None
 
         clinicalstaff_user.groups.remove(group.pk)
         clinicalstaff_user.save()

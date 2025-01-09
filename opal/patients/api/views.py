@@ -128,12 +128,12 @@ class PatientDemographicView(UpdateAPIView[Patient]):
             patient = self.queryset.get_patient_by_site_mrn_list(
                 hospital_patient_serializer.validated_data,
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
             # Raise `NotFound` if `Patient` object is empty
             raise NotFound(
                 'Cannot find patient record with the provided MRNs and sites.'
                 + 'Make sure that MRN/site pairs refer to the same patient.',
-            )
+            ) from error
 
         # May raise a permission denied
         self.check_object_permissions(self.request, patient)
@@ -271,10 +271,10 @@ class PatientExistsView(APIView):
 
             try:
                 patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
-            except (ObjectDoesNotExist, MultipleObjectsReturned):
+            except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
                 raise NotFound(
                     detail='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
-                )
+                ) from error
             return Response(
                 data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,
                 status=status.HTTP_200_OK,

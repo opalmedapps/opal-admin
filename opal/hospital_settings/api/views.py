@@ -31,7 +31,7 @@ class RetrieveInstitutionView(generics.RetrieveAPIView[Institution]):
         try:
             institution: Institution = generics.get_object_or_404(self.get_queryset())
         except Institution.MultipleObjectsReturned:
-            raise exceptions.APIException('There is more than one institution')
+            raise exceptions.APIException('There is more than one institution') from None
 
         # May raise a permission denied
         self.check_object_permissions(self.request, institution)

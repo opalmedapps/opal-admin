@@ -62,17 +62,17 @@ class QuestionnairesReportView(views.APIView):
                     },
                 ],
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
             raise exceptions.ParseError(
                 detail='Could not find `Patient` record with the provided MRN and site acronym.',
-            )
+            ) from error
 
         # Generate questionnaire report
         try:
             pdf_report = generate_questionnaire_report(patient, get_questionnaire_data(patient))
         except FPDFException as exc:
             LOGGER.exception(exc)
-            raise exceptions.APIException(detail='An error occurred during report generation.')
+            raise exceptions.APIException(detail='An error occurred during report generation.') from exc
 
         encoded_report = base64.b64encode(pdf_report).decode('utf-8')
 

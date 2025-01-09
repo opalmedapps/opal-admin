@@ -438,7 +438,7 @@ class RegistrationCompletionView(APIView):
             self._send_confirmation_email(email, caregiver_data['user']['language'])
         except ValidationError as exception:
             transaction.set_rollback(True)
-            raise serializers.ValidationError({'detail': str(exception.args)})
+            raise serializers.ValidationError({'detail': str(exception.args)}) from exception
 
         return Response()
 
