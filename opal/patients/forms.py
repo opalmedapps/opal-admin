@@ -9,14 +9,12 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db.models import QuerySet
 from django.forms.fields import Field
-from django.utils.translation import gettext
+from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import override
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Div
+from crispy_forms.layout import HTML, Column, Div, Hidden, Layout, Row, Submit
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 from requests.exceptions import RequestException
 

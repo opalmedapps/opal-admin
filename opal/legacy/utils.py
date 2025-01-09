@@ -12,9 +12,8 @@ from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
-from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
-from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData

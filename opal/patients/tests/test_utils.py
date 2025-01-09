@@ -29,9 +29,8 @@ from opal.legacy.models import (
     LegacyQuestionnaire,
     LegacyUserType,
 )
-from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
-from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     PREDEFINED_ROLE_TYPES,

@@ -11,13 +11,11 @@ from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import override
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import exceptions
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 from rest_framework import serializers as drf_serializers
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
