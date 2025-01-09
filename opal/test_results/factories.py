@@ -16,7 +16,7 @@ class GeneralTest(DjangoModelFactory):
     """
 
     patient = factory.SubFactory(Patient)
-    type = factory.Iterator(models.TestType.values)  # noqa: A003
+    type = factory.Iterator(models.TestType.values)
     collected_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     received_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     reported_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())

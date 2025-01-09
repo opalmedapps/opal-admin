@@ -103,7 +103,7 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression)
+        super().__init__(*args, **kwargs)
 
         self.has_existing_data = False
 
@@ -359,7 +359,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         return cleaned_data
 
 
-class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
@@ -371,7 +371,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     form_filled = DynamicField(
         forms.BooleanField,
         label=_('The requestor filled out the request form'),
-        required=lambda form: form._form_required(),  # noqa: WPS437
+        required=lambda form: form._form_required(),
     )
 
     id_checked = forms.BooleanField(label=_('Requestor ID checked'))
@@ -410,7 +410,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(  # noqa: WPS231, WPS210 (too much cognitive complexity, too many local variables)
+    def __init__(
         self,
         patient: Patient | SourceSystemPatientData,
         existing_user: CaregiverProfile | None = None,
@@ -757,7 +757,7 @@ class AccessRequestSendSMSForm(forms.Form):
             ),
         )
 
-    def clean(self) -> dict[str, Any] | None:  # noqa: WPS210 (too many local variables)
+    def clean(self) -> dict[str, Any] | None:
         """
         Send the SMS to the phone number if the form fields are valid.
 
@@ -803,7 +803,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     last_name = forms.CharField(
         label=_('Last Name'),
     )
-    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(  # noqa: A003
+    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
@@ -841,7 +841,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Set the layout.
 
@@ -888,7 +888,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
-        self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['start_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
@@ -897,7 +897,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.patient.date_of_birth,
             ),
         })
-        self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['end_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,

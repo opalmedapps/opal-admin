@@ -143,4 +143,4 @@ class EmptyResponseSerializer(serializers.Serializer[Any]):
         - Endpoints that only need to indicate success without returning data
     """
 
-    pass  # noqa: WPS420, WPS604
+    pass

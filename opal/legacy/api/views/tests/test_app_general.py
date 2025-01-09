@@ -86,7 +86,7 @@ class TestGeneralAppView:
         announcements = models.LegacyAnnouncement.objects.get_unread_queryset([125], user.username)
         assert announcements == 0
 
-    def test_app_general_get_unread_announcement_count(  # noqa: WPS213
+    def test_app_general_get_unread_announcement_count(
         self,
         api_client: APIClient,
         listener_user: User,

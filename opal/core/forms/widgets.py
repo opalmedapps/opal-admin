@@ -68,7 +68,7 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         """
         self._option_descriptions = descriptions
 
-    def create_option(  # noqa: WPS211
+    def create_option(
         self,
         name: str,
         value: Any,

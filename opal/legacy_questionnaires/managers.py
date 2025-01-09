@@ -15,7 +15,7 @@ from django.utils import timezone
 from opal.patients.models import RelationshipType
 
 if TYPE_CHECKING:
-    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
+    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)

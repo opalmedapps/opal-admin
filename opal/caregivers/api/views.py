@@ -214,7 +214,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
     permission_classes = (IsRegistrationListener,)
 
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
+    def post(self, request: Request, code: str) -> Response:
         """
         Generate a random verification code and set up the EmailVerification instance.
 
@@ -375,7 +375,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213, WPS231
+    def post(self, request: Request, code: str) -> Response:
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -413,7 +413,7 @@ class RegistrationCompletionView(APIView):
             for hospital_patient in patient.hospital_patients.all()
         ]
 
-        try:  # noqa: WPS229
+        try:
             if relationship.patient.legacy_id is None:
                 # also creates the legacy patient and sets patient.legacy_id
                 utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)

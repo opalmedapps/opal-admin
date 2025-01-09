@@ -51,7 +51,7 @@ class TestSecurityQuestionsMigration(CommandTestMixin):
         question = SecurityQuestion.objects.all()
         assert len(question) == 1
         assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]
-        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]  # noqa: E501
+        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]
         assert message == (
             'Imported security question, sernum: 1, title: What is the name of your first pet?\n'
         )
@@ -884,7 +884,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert patient_models.CaregiverProfile.objects.count() == 3
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
-    def _create_two_fully_registered_patients(self) -> None:  # noqa: WPS213
+    def _create_two_fully_registered_patients(self) -> None:
         """Create two fully registered patients in both legacy and Django databases."""
         # create legacy user
         legacy_factories.LegacyUserFactory(
@@ -1414,7 +1414,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         assert errormsg in error
         assert 'Migrated 0 of 1 users (0 system administrators and 0 registrants)' in message
 
-    def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:  # noqa: WPS213
+    def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:
         """Test import pass for mixed type of users from Legacy OAUsers."""
         patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patients')
         anymodule = legacy_factories.LegacyModuleFactory(name_en='AnyModule')

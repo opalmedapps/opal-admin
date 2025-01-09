@@ -30,7 +30,7 @@ class ServiceHTTPCommunicationManager:
     password: str
     dump_json_payload: bool
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         base_url: str,
         display_name: str,

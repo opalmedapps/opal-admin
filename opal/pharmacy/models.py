@@ -69,7 +69,7 @@ class FormularyStatus(models.TextChoices):
     AMBULATORY = 'AMB', _('Ambulatory')
     LEAVE = 'LOA', _('Leave Of Absence')
     TAKEHOME = 'TH', _('Take Home')
-    SELF = 'SELF', _('Self Administration')  # noqa: WPS117
+    SELF = 'SELF', _('Self Administration')
 
 
 class PharmacyEncodedOrder(AbstractQuantityTiming):

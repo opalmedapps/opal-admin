@@ -26,7 +26,7 @@ class RoleType(models.TextChoices):
     """Choices for role type within the [opal.patients.models.RelationshipType][] model."""
 
     # 'self' is a reserved keyword in Python requiring a noqa here.
-    SELF = 'SELF', _('Self')  # noqa: WPS117
+    SELF = 'SELF', _('Self')
     PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
     GUARDIAN_CAREGIVER = 'GRDNCAREGIVER', _('Guardian-Caregiver')
     MANDATARY = 'MANDATARY', _('Mandatary')
@@ -35,7 +35,7 @@ class RoleType(models.TextChoices):
 
 # defined here instead of constants to avoid circular import
 #: Set of role types for which a relationship type is predefined via a data migration
-PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {  # noqa: WPS407
+PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {
     RoleType.SELF,
     RoleType.PARENT_GUARDIAN,
     RoleType.GUARDIAN_CAREGIVER,
@@ -355,7 +355,7 @@ class RelationshipStatus(models.TextChoices):
     REVOKED = 'REV', _('Revoked')
 
 
-class Relationship(models.Model):  # noqa: WPS214
+class Relationship(models.Model):
     """Relationship for user and patient model."""
 
     patient = models.ForeignKey(
@@ -372,7 +372,7 @@ class Relationship(models.Model):  # noqa: WPS214
         on_delete=models.CASCADE,
     )
 
-    type = models.ForeignKey(  # noqa: A003
+    type = models.ForeignKey(
         to=RelationshipType,
         on_delete=models.CASCADE,
         related_name='relationship',
@@ -523,7 +523,7 @@ class Relationship(models.Model):  # noqa: WPS214
 
         return errors
 
-    def clean(self) -> None:  # noqa: C901, WPS231
+    def clean(self) -> None:
         """Validate additionally across fields.
 
         Raises:

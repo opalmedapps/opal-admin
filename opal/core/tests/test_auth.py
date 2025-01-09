@@ -293,7 +293,7 @@ def test_django_authentication_integration(client: Client, mocker: MockerFixture
     # spy on FedAuthBackend.authenticate to ensure it was called
     mock_fedauth = mocker.spy(FedAuthBackend, 'authenticate')
 
-    authenticated_user = authenticate(None, username='testuser', password='testpass')  # noqa: S106
+    authenticated_user = authenticate(None, username='testuser', password='testpass')
 
     assert authenticated_user == user
     mock_fedauth.assert_called()

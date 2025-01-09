@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db(databases=['default'])
 FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 
 
-class TestHL7Parser:  # noqa: WPS338
+class TestHL7Parser:
     """Class wrapper for HL7Parser tests."""
 
     @pytest.fixture(autouse=True)
@@ -41,7 +41,7 @@ class TestHL7Parser:  # noqa: WPS338
             'phone_number': '(555)123-4567',
             'primary_language': 'English',
             'marital_status': '',
-            'mrn_sites': "[('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC'), ('12345678', 'HNAM_PERSONID')]",  # noqa: E501
+            'mrn_sites': "[('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC'), ('12345678', 'HNAM_PERSONID')]",
         }
         # Use the utility method to assert the PID segment data
         self._assert_segment_data(parsed_data['PID'], expected_values, 'PID')
@@ -126,7 +126,7 @@ class TestHL7Parser:  # noqa: WPS338
             'give_dosage_identifier': 'INJVIAL',
             'give_dosage_text': 'VIAL INJ',
             'give_dosage_coding_system': 'RxTFC',
-            'provider_administration_instruction': '50 mg = 0.5 mL SC Q24H \nBLEEDING RISK- ANTICOAGULANT\n* HIGH ALERT  *',  # noqa: E501
+            'provider_administration_instruction': '50 mg = 0.5 mL SC Q24H \nBLEEDING RISK- ANTICOAGULANT\n* HIGH ALERT  *',
             'dispense_amount': '50',
             'dispense_units': 'MG',
             'refills': '0.00',
@@ -254,10 +254,10 @@ class TestHL7Parser:  # noqa: WPS338
         stream = self._load_hl7_fixture('marge_RXE.hl7v2')
         parsed_data = self.parser.parse(stream)
         provider_administration_instruction = parsed_data['RXE'][0]['provider_administration_instruction']
-        assert '\\E\\.br\\E\\' not in provider_administration_instruction  # noqa: WPS342
+        assert '\\E\\.br\\E\\' not in provider_administration_instruction
         assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"  # noqa" E501
 
-    def _assert_segment_data(  # noqa: WPS234
+    def _assert_segment_data(
         self,
         segment_data: defaultdict[Any, list[dict[str, Any]]],
         expected_values: dict[str, str],
@@ -267,7 +267,7 @@ class TestHL7Parser:  # noqa: WPS338
         # Assert correct values for each key in the segment, which also implicitly checks for their presence
         for key, expected_value in expected_values.items():
             actual_value = segment_data.get(key, None)
-            assert str(actual_value) == expected_value, f"Expected {segment_name} segment's {key} to be {expected_value}, got {actual_value}"  # noqa: E501, WPS221
+            assert str(actual_value) == expected_value, f"Expected {segment_name} segment's {key} to be {expected_value}, got {actual_value}"
 
         # Check for any unexpected keys in the segment data
         unexpected_keys = set(segment_data.keys()) - set(expected_values.keys())

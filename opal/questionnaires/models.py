@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from opal.users.models import User
 
 
-class Questionnaire(models.Model):  # noqa: DJ08
+class Questionnaire(models.Model):
     """
     Empty model to allow for 'modelless' permissions in Questionnaires app.
 

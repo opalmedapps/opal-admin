@@ -136,7 +136,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest) -> HttpResponse:
         """Override class method and fetch report for the requested questionnaire.
 
         Args:
@@ -244,7 +244,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest) -> HttpResponse:
         """Grab existing backend report and convert to xlsx.
 
         This code first generates the desired xlsx by writing it to media folder within

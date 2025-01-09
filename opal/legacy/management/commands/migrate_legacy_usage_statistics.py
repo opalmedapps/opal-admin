@@ -15,7 +15,7 @@ from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppA
 NULL_CHARACTER = r'\N'
 
 
-class Command(BaseCommand):    # noqa: WPS214
+class Command(BaseCommand):
     """
     Command to migrate legacy usage statistics from legacy report into new backend system.
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):    # noqa: WPS214
     eg: python manage.py 'activity_log_file' 'data_received_log_file' --batch-size=1000
     """
 
-    help = 'Migrate legacy usage statistics from OpalRPT'  # noqa: A003
+    help = 'Migrate legacy usage statistics from OpalRPT'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -74,7 +74,7 @@ class Command(BaseCommand):    # noqa: WPS214
             + f'(out of {self.total_legacy_data_received_log_count})',
         )
 
-    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:    # noqa: WPS231 WPS210 C901 E501
+    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:
         """
         Migrate list of legacy patient activity logs.
 
@@ -117,7 +117,7 @@ class Command(BaseCommand):    # noqa: WPS214
                         ))
                 else:
                     if len(batch_patient_activity) == batch_size:
-                        self._create_objects_and_clear_batch(    # noqa: WPS220
+                        self._create_objects_and_clear_batch(
                             batch_patient_activity,
                             DailyUserPatientActivity.objects,
                         )
@@ -134,7 +134,7 @@ class Command(BaseCommand):    # noqa: WPS214
                         ))
                 else:
                     if len(batch_app_activity) == batch_size:
-                        self._create_objects_and_clear_batch(    # noqa: WPS220
+                        self._create_objects_and_clear_batch(
                             batch_app_activity,
                             DailyUserAppActivity.objects,
                         )
@@ -151,7 +151,7 @@ class Command(BaseCommand):    # noqa: WPS214
             )
         return legacy_activity_log_count
 
-    def _migrate_legacy_patient_data_received_logs(self, file_path: Path, batch_size: int) -> int:    # noqa: WPS210 WPS231 E501
+    def _migrate_legacy_patient_data_received_logs(self, file_path: Path, batch_size: int) -> int:
         """
         Migrate list of legacy patient data received logs.
 
@@ -191,7 +191,7 @@ class Command(BaseCommand):    # noqa: WPS214
                         ))
                 else:
                     if len(batch) == batch_size:
-                        batch = self._create_objects_and_clear_batch(batch, DailyPatientDataReceived.objects)    # noqa: WPS220 E501
+                        batch = self._create_objects_and_clear_batch(batch, DailyPatientDataReceived.objects)
                     legacy_data_received_log_count += 1
         # last batch insert
         if batch:
@@ -282,10 +282,10 @@ class Command(BaseCommand):    # noqa: WPS214
         next_appointment = None if data_received_log['Next_Appointment'] == NULL_CHARACTER else timezone.make_aware(
             datetime.strptime(data_received_log['Next_Appointment'], '%Y-%m-%d %H:%M:%S'),
         )
-        last_appointment_received = None if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER else timezone.make_aware(    # noqa: E501
+        last_appointment_received = None if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER else timezone.make_aware(
             datetime.strptime(data_received_log['Last_Appointment_Received'], '%Y-%m-%d %H:%M:%S'),
         )
-        last_document_received = None if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER else timezone.make_aware(    # noqa: E501
+        last_document_received = None if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER else timezone.make_aware(
             datetime.strptime(data_received_log['Last_Clinical_Notes_Received'], '%Y-%m-%d %H:%M:%S'),
         )
         last_lab_received = None if data_received_log['Last_Lab_Received'] == NULL_CHARACTER else timezone.make_aware(

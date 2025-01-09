@@ -10,7 +10,7 @@ from ..models import QuantitySample, QuantitySampleType, SampleSourceType
 
 pytestmark = pytest.mark.django_db
 
-QUANTITY_SAMPLE_DATA = {  # noqa: WPS407
+QUANTITY_SAMPLE_DATA = {
     'start_date': timezone.now(),
     'device': 'Test Device',
     'source': SampleSourceType.PATIENT,

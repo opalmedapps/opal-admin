@@ -52,7 +52,7 @@ FIRST_PAGE_NUMBER: int = 1
 PATHOLOGY_REPORT_FONT: str = 'helvetica'
 
 
-class PathologyPDF(FPDF):  # noqa: WPS214
+class PathologyPDF(FPDF):
     """Customized FPDF class that provides implementation for generating pathology PDF reports."""
 
     def __init__(
@@ -95,7 +95,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.add_page()
         self._generate()
 
-    def header(self) -> None:  # noqa: WPS213
+    def header(self) -> None:
         """Set the pathology PDF's header.
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
@@ -418,7 +418,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         )
         report_prepared_by_template.render()
 
-    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:   # noqa: WPS210
+    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:
         """Build a table/box that is shown at the top of the first page.
 
         The table contains site's and patient's information.

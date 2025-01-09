@@ -19,7 +19,7 @@ from opal.patients.models import Patient, Relationship
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
 
-from .models import (  # noqa: WPS235
+from .models import (
     LegacyAccessLevel,
     LegacyEducationalMaterial,
     LegacyEducationalMaterialControl,
@@ -82,7 +82,7 @@ def get_patient_sernum(username: str) -> int:
     return 0
 
 
-def create_patient(  # noqa: WPS211 (too many arguments)
+def create_patient(
     first_name: str,
     last_name: str,
     sex: LegacySexType,
@@ -154,7 +154,7 @@ def create_dummy_patient(
         last_name=last_name,
         sex=LegacySexType.UNKNOWN,
         # requires a valid date; use a temporary date
-        date_of_birth=timezone.make_aware(dt.datetime(1900, 1, 1)),  # noqa: WPS432
+        date_of_birth=timezone.make_aware(dt.datetime(1900, 1, 1)),
         email=email,
         language=language,
         ramq='',
@@ -265,7 +265,7 @@ def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> 
     Returns:
         the created user instance
     """
-    user = LegacyUsers(  # noqa: S106
+    user = LegacyUsers(
         usertype=user_type,
         usertypesernum=user_type_id,
         username=username,
@@ -289,7 +289,7 @@ def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) 
     LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
 
 
-def create_caregiver_user(  # noqa: WPS210 (too many local variables)
+def create_caregiver_user(
     relationship: Relationship,
     username: str,
     language: str,
@@ -362,7 +362,7 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
 
 
 @transaction.atomic
-def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # noqa: WPS210
+def create_databank_patient_consent_data(django_patient: Patient) -> bool:
     """Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
@@ -374,7 +374,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
     Returns:
         boolean value indicating success or failure, to help logging in registration endpoint
     """
-    try:  # noqa: WPS229
+    try:
         legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
 
         # Check for the existence of the consent form and educational materials before attempting to insert
@@ -487,14 +487,14 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
 
     try:
         data_list = _parse_query_result(query_result)
-    except ValueError as exc:  # noqa: WPS440
+    except ValueError as exc:
         raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
     return _process_questionnaire_data(data_list)
 
 
 def _fetch_questionnaires_from_db(
     legacy_patient_id: int,
-) -> list[dict[str, Any] | list[dict[str, Any]]]:  # noqa: WPS221
+) -> list[dict[str, Any] | list[dict[str, Any]]]:
     """Fetch completed questionnaires data from the database.
 
     Args:
@@ -514,7 +514,7 @@ def _fetch_questionnaires_from_db(
 
 
 def _parse_query_result(
-    query_result: list[dict[str, Any] | list[dict[str, Any]]],  # noqa: WPS221
+    query_result: list[dict[str, Any] | list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
     """Parse the raw query result into a structured list of dictionaries.
 

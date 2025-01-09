@@ -22,7 +22,7 @@ class Command(BaseCommand):
     The command populates `DailyUserAppActivity`, `DailyUserPatientActivity` and `DailyPatientDataReceived` models.
     """
 
-    help = (  # noqa: A003
+    help = (
         'Populate the daily app activity statistics per user and patient from PatientActivityLog'
         + '\nBy default the command calculates the statistics for the complete previous day'
     )

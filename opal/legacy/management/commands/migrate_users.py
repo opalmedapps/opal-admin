@@ -23,7 +23,7 @@ class Access(Enum):
 class Command(BaseCommand):
     """Command to migrate users from legacy DB to the new backend users."""
 
-    help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate OAUsers from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """

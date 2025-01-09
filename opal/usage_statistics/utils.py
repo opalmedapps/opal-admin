@@ -260,7 +260,7 @@ def get_aggregated_patient_received_data(
     )
 
 
-def export_data(    # noqa: WPS234
+def export_data(
     data_set: list[dict[str, Any]] | dict[str, Any],
     file_path: Path,
 ) -> None:

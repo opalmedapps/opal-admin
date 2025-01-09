@@ -20,7 +20,7 @@ from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffGroupSerializer, UserClinicalStaffSerializer
 
 
-class UserViewSet(  # noqa: WPS215 (too many base classes)
+class UserViewSet(
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,

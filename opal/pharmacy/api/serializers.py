@@ -239,7 +239,7 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
             'effective_at',
         )
 
-    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:  # noqa: WPS210
+    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:
         """Create new `PhysicianPrescriptionOrder` instance and related model instances.
 
         Args:

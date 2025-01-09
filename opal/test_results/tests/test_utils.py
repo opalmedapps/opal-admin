@@ -2,13 +2,13 @@ from datetime import datetime
 from typing import Any
 
 import pytest
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from _pytest.logging import LogCaptureFixture
 from pytest_mock.plugin import MockerFixture
 
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.hospital_settings.models import Site
 
-from ..utils import (  # noqa: WPS450
+from ..utils import (
     _find_doctor_name,
     _find_note_date,
     _get_site_instance,

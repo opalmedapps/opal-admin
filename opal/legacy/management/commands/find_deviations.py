@@ -41,7 +41,7 @@ LEGACY_PATIENT_QUERY = """
         CONVERT_TZ(P.DeathDate, '{timezone}', 'UTC') as DeathDate
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
-"""  # noqa: WPS323
+"""
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -76,7 +76,7 @@ DJANGO_PATIENT_QUERY = """
         PP.date_of_death as DeathDate
     FROM patients_patient PP
     WHERE PP.legacy_id IS NOT NULL;
-"""  # noqa: WPS323
+"""
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -138,11 +138,11 @@ class Command(BaseCommand):
     help = """
         Check the legacy and new back end databases
         for the data deviations in the `Patient` and `User/Caregiver` tables.
-    """  # noqa: A003
+    """
     requires_migrations_checks = True
 
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle deviation check for the `Patient` and `User/Caregiver` models/tables.
 

@@ -24,7 +24,7 @@ from opal.patients.models import Relationship, RelationshipStatus
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
-    from opal.legacy.models import (  # noqa: F401, WPS235
+    from opal.legacy.models import (
         LegacyAnnouncement,
         LegacyAppointment,
         LegacyDiagnosis,
@@ -234,9 +234,9 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             newly created and saved `LegacyDocument` instance for the pathology report document
         """
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
-        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
-        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
-        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')    # noqa: N806
+        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')
+        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')
 
         try:
             legacy_document = self.create(

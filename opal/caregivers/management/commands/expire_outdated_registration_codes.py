@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
     """
 
-    help = 'expire outdated registration code based on preset duration in constants'  # noqa: A003
+    help = 'expire outdated registration code based on preset duration in constants'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """

@@ -243,7 +243,7 @@ def fix_breaking_characters(field: str) -> str:
     Returns:
         replaced string
     """
-    return field.replace('\\E\\.br\\E\\', '\n')  # noqa: WPS342
+    return field.replace('\\E\\.br\\E\\', '\n')
 
 
 class HL7Parser(BaseParser):
@@ -260,7 +260,7 @@ class HL7Parser(BaseParser):
         'NTE': parse_nte_segment,
     }
 
-    def parse(  # noqa: WPS210, WPS234, C901
+    def parse(
         self,
         stream: IO[Any],
         media_type: str | None = None,

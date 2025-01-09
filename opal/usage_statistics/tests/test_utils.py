@@ -984,7 +984,7 @@ def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = list(query.values(*model_fields))
     assert not file_path.is_file()
     stats_utils.export_data(dict(data_set[0]), file_path)
@@ -1002,7 +1002,7 @@ def test_export_data_csv(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     assert not file_path.is_file()
     stats_utils.export_data(list(data_set), file_path)
@@ -1024,7 +1024,7 @@ def test_export_data_xlsx(tmp_path: Path) -> None:
     )
     query = stats_models.DailyPatientDataReceived.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     assert not file_path.is_file()
     stats_utils.export_data(list(data_set), file_path)
@@ -1042,7 +1042,7 @@ def test_export_data_invalid_file_name(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     expected_message = 'Invalid file format, please use either csv or xlsx'
     with assertRaisesMessage(

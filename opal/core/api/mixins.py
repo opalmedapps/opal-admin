@@ -35,7 +35,7 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
     See: https://gist.github.com/tomchristie/a2ace4577eff2c603b1b
     """
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:  # noqa: WPS210
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Update the targeted model or create if it doesn't exist.
 
         Args:

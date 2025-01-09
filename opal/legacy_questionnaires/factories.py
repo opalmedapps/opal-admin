@@ -156,7 +156,7 @@ class LegacyQuestionFactory(DjangoModelFactory):
     display = SubFactory(LegacyDictionaryFactory)
     definition = SubFactory(LegacyDictionaryFactory)
     question = Sequence(lambda number: number)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     version = 1
     parent_id = -1
     private = False
@@ -265,7 +265,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     section = SubFactory(LegacySectionFactory)
     question = SubFactory(LegacyQuestionFactory)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
     patient = SubFactory(LegacyQuestionnairePatientFactory)

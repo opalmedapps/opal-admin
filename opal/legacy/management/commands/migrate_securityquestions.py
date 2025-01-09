@@ -10,7 +10,7 @@ from opal.legacy.models import LegacySecurityQuestion
 class Command(BaseCommand):
     """Command to migrate Security Question from legacy DB to the new backend."""
 
-    help = 'migrate Security Question from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate Security Question from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """

@@ -138,7 +138,7 @@ class FormActions(CrispyFormActions):
 
     default_css_class = 'd-flex justify-content-end gap-2'
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         *fields: Any,
         css_id: str | None = None,

@@ -21,10 +21,10 @@ CombinedModuleData: TypeAlias = list[dict[str, Any]]
 DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
-class Command(BaseCommand):  # noqa: WPS214
+class Command(BaseCommand):
     """Command to send the data of consenting databank patients to the external databank."""
 
-    help = "send consenting Patients' data to the databank"  # noqa: A003
+    help = "send consenting Patients' data to the databank"
 
     def __init__(self) -> None:
         """Prepare some class level fields to help with last_synchronized tracking.
@@ -51,11 +51,11 @@ class Command(BaseCommand):  # noqa: WPS214
             '--request-timeout',
             type=int,
             required=False,
-            default=120,  # noqa: WPS432
+            default=120,
             help='Specify maximum wait time per API call to the databank [seconds]. Default 120.',
         )
 
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle sending patients de-identified data to the databank.
 
@@ -73,7 +73,7 @@ class Command(BaseCommand):  # noqa: WPS214
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
 
-        request_timeout: int = options.get('request_timeout', 120)  # noqa: WPS432
+        request_timeout: int = options.get('request_timeout', 120)
         self.stdout.write(
             f'Sending databank data with {request_timeout} seconds timeout for source system response.',
         )
@@ -163,7 +163,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if databank_data:
             # Return the data for this patient
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
+                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',
             )
         else:
             self.stdout.write(
@@ -304,7 +304,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
             # Initialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
-                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)  # noqa: WPS425
+                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)
 
             # Handle response codes
             if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
@@ -322,7 +322,7 @@ class Command(BaseCommand):  # noqa: WPS214
                     + message.strip('[]"'),
                 )
 
-    def _update_databank_patient_shared_data(  # noqa: WPS231
+    def _update_databank_patient_shared_data(
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
@@ -338,7 +338,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Extract data ids depending on module and save to SharedData instances
-        if DataModuleType.DEMOGRAPHICS in synced_data:  # noqa: WPS223
+        if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
                 databank_consent=databank_patient, data_id=sent_patient_id, data_type=DataModuleType.DEMOGRAPHICS,

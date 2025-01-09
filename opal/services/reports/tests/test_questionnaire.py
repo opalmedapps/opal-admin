@@ -4,7 +4,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 import pytest
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from _pytest.logging import LogCaptureFixture
 from fpdf import FPDFException
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture

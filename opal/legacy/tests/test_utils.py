@@ -306,7 +306,7 @@ def test_change_caregiver_user_to_patient() -> None:
 
 
 def test_databank_consent_form_fixture(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
 ) -> None:
     """Test the fixture from conftest creates a proper consent questionnaire."""
     info_sheet = databank_consent_questionnaire_data[1]
@@ -320,7 +320,7 @@ def test_databank_consent_form_fixture(
 
 
 def test_fetch_databank_control_records(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
 ) -> None:
     """Test the fetching of key foreign key data used for consent form creation."""
     # Setup patient records
@@ -331,7 +331,7 @@ def test_fetch_databank_control_records(
     info_sheet = databank_consent_questionnaire_data[1]
     result = legacy_utils.fetch_databank_control_records(django_patient)
     if result:
-        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result  # noqa: E501
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result
 
     assert all([
         result,
@@ -351,7 +351,7 @@ def test_fetch_databank_control_records(
 
 
 def test_fetch_databank_control_records_patient_creation(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
 ) -> None:
     """Test that the function will create a QDB_Patient record if one hasnt been created already."""
     # Setup patient records
@@ -361,7 +361,7 @@ def test_fetch_databank_control_records_patient_creation(
     info_sheet = databank_consent_questionnaire_data[1]
     result = legacy_utils.fetch_databank_control_records(django_patient)
     if result:
-        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result  # noqa: E501
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result
 
     assert all([
         result,
@@ -399,7 +399,7 @@ def test_create_databank_patient_consent_data_records_not_found() -> None:
 
 
 def test_create_databank_patient_consent_data(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
 ) -> None:
     """Test creation of databank consent form and information sheet for patient."""
     # Setup patient records
@@ -445,7 +445,7 @@ def test_create_databank_patient_consent_data(
 
 
 def test_legacy_patient_not_found(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
 ) -> None:
     """Test behaviour when the legacy patient record is not found."""
     # Setup patient records

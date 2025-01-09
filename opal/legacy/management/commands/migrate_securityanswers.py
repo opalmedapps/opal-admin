@@ -11,9 +11,9 @@ from opal.users.models import User
 class Command(BaseCommand):
     """Command to migrate Security Answer from legacy DB to backend DB."""
 
-    help = 'migrate Security Answer from legacy DB to backend DB'  # noqa: A003
+    help = 'migrate Security Answer from legacy DB to backend DB'
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: C901 WPS231 WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate Security Answer from legacy DB to backend DB.
 
@@ -78,7 +78,7 @@ class Command(BaseCommand):
             f'Migrated {migrated_answers} out of {legacy_answers.count()} security answers',
         ))
 
-    def _find_user(self, patientsernum: int) -> User | None:  # noqa: C901
+    def _find_user(self, patientsernum: int) -> User | None:
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 

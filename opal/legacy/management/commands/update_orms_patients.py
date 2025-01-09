@@ -19,10 +19,10 @@ class Command(BaseCommand):
     to inform ORMS about the patient's UUID.
     """
 
-    help = "Update patients' UUIDs in the ORMS"  # noqa: A003
+    help = "Update patients' UUIDs in the ORMS"
     requires_migrations_checks = True
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle the update of the patients' UUIDs in the ORMS.
 

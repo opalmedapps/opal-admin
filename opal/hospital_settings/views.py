@@ -75,7 +75,7 @@ class InstitutionDeleteView(PermissionRequiredMixin, DeleteView[Institution, Mod
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: Institution  # noqa: A003
+    object: Institution
     model = Institution
     permission_required = ('hospital_settings.can_manage_institutions',)
     template_name = 'hospital_settings/institution/institution_confirm_delete.html'
@@ -134,7 +134,7 @@ class SiteDeleteView(PermissionRequiredMixin, DeleteView[Site, ModelForm[Site]])
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: Site  # noqa: A003
+    object: Site
     model = Site
     permission_required = ('hospital_settings.can_manage_sites',)
     template_name = 'hospital_settings/site/site_confirm_delete.html'

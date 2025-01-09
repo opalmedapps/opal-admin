@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 import requests
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from _pytest.logging import LogCaptureFixture
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
@@ -468,7 +468,7 @@ def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFi
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):  # noqa: PT012
+    with pytest.raises(RequestException):
         with caplog.at_level(logging.ERROR):
             post_mock()
 
@@ -591,7 +591,7 @@ def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerF
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):  # noqa: PT012
+    with pytest.raises(RequestException):
         with caplog.at_level(logging.ERROR):
             post_mock()
 

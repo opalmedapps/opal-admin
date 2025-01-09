@@ -221,7 +221,7 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
 
 def test_userviewset_create_user_password(admin_api_client: APIClient) -> None:
     """The user is created with the correct password hash."""
-    password = '123456Opal!!'  # noqa: S105
+    password = '123456Opal!!'
     data = {
         'username': 'testuser',
         'password': password,
@@ -249,7 +249,7 @@ def test_userviewset_create_user_no_password(admin_api_client: APIClient) -> Non
     assert response.status_code == HTTPStatus.CREATED
 
     user = User.objects.get(username='testuser')
-    assert user.password == ''  # noqa: S105
+    assert user.password == ''
 
 
 def test_userviewset_create_user_password_mismatch(admin_api_client: APIClient) -> None:

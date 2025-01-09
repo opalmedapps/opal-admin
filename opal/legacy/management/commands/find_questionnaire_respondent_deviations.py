@@ -23,7 +23,7 @@ DJANGO_RESPONDENT_QUERY = """
         CONCAT_WS(' ', UU.first_name, UU.last_name) AS CaregiverName
     FROM users_user UU
     WHERE UU.username IN %s;
-"""  # noqa: WPS323
+"""
 
 
 class Command(BaseCommand):
@@ -33,14 +33,14 @@ class Command(BaseCommand):
     `first_name` and the `last_name` of the same `CaregiverProfile` stored in the Django back end.
     """
 
-    help = (  # noqa: A003
+    help = (
         'Check the `first_name` and `last_name` of the questionnaire respondents are in sync'
         + 'with those stored for the same caregiver in Django.'
     )
     requires_migrations_checks = True
 
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle sync check for the questionnaire respondents.
 

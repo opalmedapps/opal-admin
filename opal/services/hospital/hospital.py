@@ -67,7 +67,7 @@ class SourceSystemService:
             },
         )
 
-    def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:  # noqa: WPS210
+    def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:
         """Search patient info by MRN code.
 
         Args:

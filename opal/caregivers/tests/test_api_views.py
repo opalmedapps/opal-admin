@@ -27,7 +27,7 @@ from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.factories import Institution
 from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
-from opal.legacy.models import (  # noqa: WPS235
+from opal.legacy.models import (
     LegacyAccessLevel,
     LegacyEducationalMaterial,
     LegacyEducationalMaterialControl,
@@ -397,7 +397,7 @@ def test_update_device_success(api_client: APIClient, listener_user: User) -> No
     """Test updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -440,7 +440,7 @@ def test_update_device_failure(api_client: APIClient, listener_user: User) -> No
     """Test failure for updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -530,7 +530,7 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
     """Test failure for partial updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -984,7 +984,7 @@ class TestVerifyEmailView:
         assert email_verification.code != old_verification_code
 
 
-class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be first)
+class TestEmailVerificationProcess:
     """Test the email verification process."""
 
     email = 'foo@bar.ca'
@@ -1102,7 +1102,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         assert user.email == 'bar@foo.ca'
 
 
-class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be first)
+class TestRegistrationCompletionView:
     """Test class tests the api registration/<str: code>/register."""
 
     data_new_caregiver = {

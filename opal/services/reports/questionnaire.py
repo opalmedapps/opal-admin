@@ -26,16 +26,16 @@ from opal.utils.base64_util import Base64Util
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
 if TYPE_CHECKING:
-    from fpdf.fpdf import _Format, _Orientation  # noqa: WPS450
+    from fpdf.fpdf import _Format, _Orientation
 
 
 class QuestionType(Enum):
     """Question types and their IDs that are visualized in the questionnaire report."""
 
-    CHECKBOX = 1  # noqa: WPS115
-    NUMERIC = 2  # noqa: WPS115
-    TEXT = 3  # noqa: WPS115
-    RADIO = 4  # noqa: WPS115
+    CHECKBOX = 1
+    NUMERIC = 2
+    TEXT = 3
+    RADIO = 4
 
 
 class Question(NamedTuple):
@@ -89,7 +89,7 @@ TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 TEXT_QUESTIONS_TABLE_HEADER = ('Date', 'Response')
 
 
-class QuestionnairePDF(FPDF):  # noqa: WPS214
+class QuestionnairePDF(FPDF):
     """Customized FPDF class that provides implementation for generating questionnaire PDF reports."""
 
     def __init__(
@@ -139,7 +139,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.add_page()
         self._generate()
 
-    def header(self) -> None:  # noqa: WPS213
+    def header(self) -> None:
         """Set the questionnaire PDF's header.
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
@@ -244,7 +244,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, size=9)
         self.multi_cell(**footer_block, markdown=True)
 
-    def add_page(  # noqa: WPS211
+    def add_page(
         self,
         orientation: '_Orientation' = '',
         format_page: '_Format | tuple[float, float]' = '',
@@ -439,7 +439,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.image(image, w=self.epw, x=Align.R)
         self.ln(10)
 
-    def _draw_text_answer_question(self, question: Question) -> None:  # noqa: WPS213
+    def _draw_text_answer_question(self, question: Question) -> None:
         """Draw the table for text answer question.
 
         Args:
@@ -488,7 +488,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
         self.set_x(10)
 
-    def _render_toc_with_table(  # noqa: WPS210
+    def _render_toc_with_table(
         self,
         pdf: FPDF,
         outline: list[OutlineSection],

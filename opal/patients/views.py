@@ -75,7 +75,7 @@ class RelationshipTypeDeleteView(
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: RelationshipType  # noqa: A003
+    object: RelationshipType
     model = RelationshipType
     permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/confirm_delete.html'
@@ -100,7 +100,7 @@ class AccessRequestStorageMixin:
         """
         storage: dict[str, _StorageValue] = self.request.session[self.session_key_name]
 
-        return storage  # noqa: WPS331
+        return storage
 
     def _reset_storage(self) -> None:
         """Erase the storage to empty data for the user's session."""
@@ -263,7 +263,7 @@ class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorag
         return data.get('registration_code') is not None
 
 
-class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+class AccessRequestView(
     PermissionRequiredMixin,
     AccessRequestStorageMixin,
     TemplateResponseMixin,
@@ -314,7 +314,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
         ))
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
         Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid.
 
@@ -367,7 +367,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return self.get(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: C901, WPS210, WPS231
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the context data for rendering the view.
 
@@ -416,7 +416,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return context_data
 
-    def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
+    def _done(self, current_forms: list[Form]) -> HttpResponse:
         patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
         patient = patient_form.patient
 
@@ -483,7 +483,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # the data for a step is always a dict
         return storage[f'step_{step}']  # type: ignore[return-value]
 
-    def _store_form_data(  # noqa: C901, WPS210 (too complex, too many local variables)
+    def _store_form_data(
         self,
         form: Form,
         step: str,
@@ -520,8 +520,8 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
                 storage['patient'] = patient.pk
             else:
                 # convert it to a dictionary to be able to serialize it into JSON
-                data_dict = patient._asdict()  # noqa: WPS437
-                data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
+                data_dict = patient._asdict()
+                data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]
                 # use DjangoJSONEncoder which supports date/datetime
                 storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
         elif step == 'relationship':
@@ -532,7 +532,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         self.request.session.modified = True
 
-    def _get_form_kwargs(  # noqa: C901, WPS210 (too complex, too many local variables)
+    def _get_form_kwargs(
         self,
         step: str,
         is_current: bool,
@@ -596,7 +596,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return kwargs
 
-    def _get_forms(self, current_step: str) -> list[Form]:  # noqa: WPS210, WPS231
+    def _get_forms(self, current_step: str) -> list[Form]:
         """
         Return all forms up to the current step.
 
@@ -684,7 +684,7 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
     filterset_class = ManageCaregiverAccessFilter
     ordering = ['request_date']
 
-    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:  # noqa: WPS615
+    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:
         """
         Apply the filter arguments on the set of data.
 
@@ -716,7 +716,7 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
 
         return filterset_kwargs
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: WPS615
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `PendingRelationshipListView` update view.
 
@@ -779,7 +779,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
 
         return context_data
 
-    def get_success_url(self) -> str:  # noqa: WPS615
+    def get_success_url(self) -> str:
         """
         Provide the correct `success_url` that re-submits search query or default success_url.
 

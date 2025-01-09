@@ -172,7 +172,7 @@ class TestInsertTestData(CommandTestMixin):
 
 
 @pytest.mark.django_db(databases=['default', 'legacy'])
-class TestInitializeData(CommandTestMixin):  # noqa: WPS338
+class TestInitializeData(CommandTestMixin):
     """Test class to group the `initialize_data` command tests."""
 
     @pytest.fixture(autouse=True)

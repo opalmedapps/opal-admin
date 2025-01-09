@@ -56,7 +56,7 @@ def pytest_collection_modifyitems(session: Session, config: Config, items: list[
             original_items_order.append(item)
 
     # modify items in place with migration tests moved to the end
-    items[:] = original_items_order + migration_tests  # noqa: WPS362
+    items[:] = original_items_order + migration_tests
 
 
 @pytest.fixture
@@ -71,7 +71,7 @@ def api_client() -> APIClient:
 
 
 @pytest.fixture
-def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:  # noqa: WPS442
+def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in user.
 
@@ -89,7 +89,7 @@ def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient
 
 
 @pytest.fixture
-def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:  # noqa: WPS442
+def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in admin user.
 
@@ -141,7 +141,7 @@ def user_with_permission(user: User) -> Callable[[str], User]:
     Returns:
         a callable that adds a permission
     """
-    def add_permission(permission_name: str) -> User:  # noqa: WPS430
+    def add_permission(permission_name: str) -> User:
         permission_names = [permission_name]
 
         permission_tuples = [permission.split('.') for permission in permission_names]
@@ -251,7 +251,7 @@ def orms_system_user(django_user_model: User) -> User:
 
 
 @pytest.fixture(autouse=True)
-def set_orms_enabled(settings: LazySettings) -> None:  # noqa: PT004
+def set_orms_enabled(settings: LazySettings) -> None:
     """Fixture enables ORMS by default for all unit tests.
 
     Args:
@@ -261,7 +261,7 @@ def set_orms_enabled(settings: LazySettings) -> None:  # noqa: PT004
 
 
 @pytest.fixture
-def set_orms_disabled(settings: LazySettings) -> None:  # noqa: PT004
+def set_orms_disabled(settings: LazySettings) -> None:
     """Fixture disables ORMS for the unit test.
 
     Args:
@@ -299,7 +299,7 @@ def is_legacy_model(model: type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -319,7 +319,7 @@ def _manage_unmanaged_models() -> None:
     unmanaged_models = [model for model in models if is_legacy_model(model)]
 
     for model in unmanaged_models:
-        model._meta.managed = True  # noqa: WPS437
+        model._meta.managed = True
 
 
 @pytest.fixture(autouse=True)
@@ -334,8 +334,8 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def django_db_setup(  # noqa: PT004
-    django_db_setup: None,  # noqa: WPS442
+def django_db_setup(
+    django_db_setup: None,
     django_db_blocker: DjangoDbBlocker,
 ) -> Generator[None, None, None]:
     """
@@ -351,7 +351,7 @@ def django_db_setup(  # noqa: PT004
     with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:
         sql_cleanup = handle.read()
 
     with django_db_blocker.unblock():
@@ -361,15 +361,15 @@ def django_db_setup(  # noqa: PT004
     yield
 
     with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:  # noqa: WPS440
+        with connections['questionnaire'].cursor() as conn:
             conn.execute('SELECT COUNT(*) FROM questionnaire;')
             result = conn.fetchone()
-            assert result[0] == 0  # noqa: S101
+            assert result[0] == 0
             conn.execute(sql_cleanup)
 
 
 @pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:  # noqa: PT004
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:
     """
     Initialize the QuestionnaireDB with data.
 
@@ -392,7 +392,7 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='UTF-8') as handle:
         sql_data = handle.read()
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:
         sql_cleanup = handle.read()
 
     with django_db_blocker.unblock():
@@ -400,18 +400,18 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
             # safety check to ensure that there is no data already
             conn.execute('SELECT COUNT(*) FROM questionnaire;')
             result = conn.fetchone()
-            assert result[0] == 0  # noqa: S101
+            assert result[0] == 0
             conn.execute(sql_data)
 
     yield
 
     with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:  # noqa: WPS440
+        with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_cleanup)
 
 
 @pytest.fixture
-def databank_consent_questionnaire_and_response(  # noqa: WPS210, WPS213
+def databank_consent_questionnaire_and_response(
 ) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
     """Add a full databank consent questionnaire and simple response to test setup.
 
@@ -485,7 +485,7 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210, WPS213
 
 
 @pytest.fixture
-def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEducationalMaterialControl]:  # noqa: WPS210, E501
+def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEducationalMaterialControl]:
     """Add a full databank consent questionnaire to test setup.
 
     Returns:
@@ -535,7 +535,7 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
 
 
 @pytest.fixture
-def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
+def set_databank_disabled(settings: LazySettings) -> None:
     """Fixture disables the databank for the unit test.
 
     Args:
@@ -545,7 +545,7 @@ def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
 
 
 @pytest.fixture(autouse=True)
-def set_databank_enabled(settings: LazySettings) -> None:  # noqa: PT004
+def set_databank_enabled(settings: LazySettings) -> None:
     """Fixture enables databank by default for all unit tests.
 
     Args:

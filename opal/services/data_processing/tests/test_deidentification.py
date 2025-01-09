@@ -46,7 +46,7 @@ class TestOpenScienceIdentity:
     """Tests for the OpenScienceIdentity a.k.a GUID algorithm."""
 
     @pytest.mark.parametrize(('gender', 'attributes', 'expected_signature'), test_cases)
-    def test_signature_generation(self, gender: SexType, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442, E501
+    def test_signature_generation(self, gender: SexType, attributes: dict[str, str], expected_signature: str) -> None:
         """Test the successful generation of signatures/guids for patients."""
         identity = OpenScienceIdentity(PatientData(gender=gender, **attributes))
         if expected_signature == 'invalid':

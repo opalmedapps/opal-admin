@@ -250,7 +250,7 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
 
-def create_patient(  # noqa: WPS211
+def create_patient(
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -297,7 +297,7 @@ def create_patient(  # noqa: WPS211
     return patient
 
 
-def create_relationship(  # noqa: WPS211
+def create_relationship(
     patient: Patient,
     caregiver_profile: caregiver_models.CaregiverProfile,
     relationship_type: RelationshipType,
@@ -371,7 +371,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(  # noqa: WPS210, WPS213
+def initialize_new_opal_patient(
     patient: Patient,
     mrn_list: list[tuple[Site, str, bool]],
     patient_uuid: UUID,
@@ -423,7 +423,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210, WPS231, C901
+def create_access_request(
     patient: Patient | SourceSystemPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,

@@ -177,7 +177,7 @@ def test_check_patient_date_of_birth_invalid() -> None:
 
     errors = source_system_validator.check_patient_data(patient_data)
 
-    assert errors == ["dateOfBirth is invalid: time data '1953/01/01' does not match format '%Y-%m-%d'"]  # noqa: WPS323
+    assert errors == ["dateOfBirth is invalid: time data '1953/01/01' does not match format '%Y-%m-%d'"]
 
 
 def test_check_patient_first_name_non_exists() -> None:
@@ -287,7 +287,7 @@ def test_check_patient_ramq_expiration_invalid() -> None:
 
     errors = source_system_validator.check_patient_data(patient_data)
 
-    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]  # noqa: E501
+    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]
 
 
 def test_check_patient_mrns_non_exists() -> None:

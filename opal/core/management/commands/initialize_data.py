@@ -62,7 +62,7 @@ class Command(BaseCommand):
     Creates the required groups, users, security questions, tokens etc.
     """
 
-    help = (  # noqa: A003
+    help = (
         'Initialize required data for a new project.'
         + ' Can only be run at the beginning of setting up a project.'
     )
@@ -174,7 +174,7 @@ class Command(BaseCommand):
         Group.objects.all().delete()
         SecurityQuestion.objects.all().delete()
 
-    def _create_data(self, **options: Any) -> None:  # noqa: WPS210, WPS213
+    def _create_data(self, **options: Any) -> None:
         """
         Create all initial data.
 
@@ -266,7 +266,7 @@ class Command(BaseCommand):
 
         # get existing or create new tokens for the API users
         predefined_token = options['listener_token']
-        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})  # noqa: WPS204, E501
+        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})
 
         predefined_token = options['listener_registration_token']
         token_listener_registration, _ = Token.objects.get_or_create(
@@ -341,7 +341,7 @@ class Command(BaseCommand):
         message = 'Created superuser with username "admin"'
 
         if not password_option:
-            message += f' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
+            message += f' and generated password: {raw_password}'
 
         self.stdout.write(message)
 

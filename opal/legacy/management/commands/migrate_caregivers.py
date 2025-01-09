@@ -12,9 +12,9 @@ from opal.users.models import Caregiver
 class Command(BaseCommand):
     """Command to migrate Caregivers from legacy DB to Caregivers in New Backend."""
 
-    help = 'migrate Caregivers from legacy DB to New backend DB'  # noqa: A003
+    help = 'migrate Caregivers from legacy DB to New backend DB'
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate Caregivers from legacy DB to New backend DB.
 

@@ -197,7 +197,7 @@ class GeneralTest(models.Model):
         on_delete=models.CASCADE,
         related_name='general_tests',
     )
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         verbose_name=_('Type'),
         max_length=1,
         choices=TestType.choices,

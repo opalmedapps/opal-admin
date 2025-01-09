@@ -19,7 +19,7 @@ DATA_ACCESS_MAPPING = MappingProxyType({
 class Command(BaseCommand):
     """Command to migrate patients from legacy DB to the new backend patients."""
 
-    help = 'migrate Patients from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate Patients from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """

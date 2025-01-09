@@ -66,7 +66,7 @@ class Device(DjangoModelFactory):
         model = models.Device
 
     caregiver = SubFactory(CaregiverProfile)
-    type = models.DeviceType.IOS  # noqa: A003
+    type = models.DeviceType.IOS
     device_id = Faker('token')
     push_token = Faker('token')
     is_trusted = Faker('pybool')

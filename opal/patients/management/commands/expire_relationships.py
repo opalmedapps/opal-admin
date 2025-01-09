@@ -9,7 +9,7 @@ from opal.patients.models import Relationship, RelationshipStatus
 class Command(BaseCommand):
     """Command for setting relationships as expired once the patient reaches the relationship type's end age."""
 
-    help = (  # noqa: A003
+    help = (
         'Checks all confirmed relationships, and sets as expired those for which the patient '
         + "has reached or exceeded the relationship's end age."
     )

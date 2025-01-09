@@ -1,5 +1,5 @@
 import pandas as pd
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from _pytest.logging import LogCaptureFixture
 
 from opal.services.charts import ChartData, ChartService
 

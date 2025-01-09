@@ -91,7 +91,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert f'No Questionnaires data found for {pat1}' in message
         assert not error
 
-    def test_retrieve_databank_data_for_patient(  # noqa: WPS213
+    def test_retrieve_databank_data_for_patient(
         self,
         capsys: pytest.CaptureFixture[str],
         questionnaire_data: None,
@@ -431,7 +431,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         # Pre-init one patients success tracker to test the pass over works correctly in parse_aggregate_response
         command.patient_data_success_tracker['a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274'] = (
-            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+            dict.fromkeys(databank_models.DataModuleType, True)
         )
         command.handle()
         assert databank_models.SharedData.objects.all().count() == 2
@@ -606,7 +606,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         command = send_databank_data.Command()
         command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+            dict.fromkeys(databank_models.DataModuleType, True)
         )
 
         command._update_patients_last_synchronization()
@@ -633,10 +633,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         command = send_databank_data.Command()
         command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+            dict.fromkeys(databank_models.DataModuleType, True)
         )
         # Simulate a partial sender error
-        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False
 
         command._update_patients_last_synchronization()
         databank_patient1.refresh_from_db()
@@ -1107,11 +1107,11 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         # Manually intialize the success tracker for this patient
         command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)  # noqa: WPS425
+            dict.fromkeys(databank_models.DataModuleType, True)
         )
 
         # Set a failed module for the patient
-        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False  # noqa: E501
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False
 
         # synced_data would be empty in this hypothetical situation
         command._update_databank_patient_shared_data(databank_patient1, {})
@@ -1132,7 +1132,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             last_synchronized=timezone.make_aware(yesterday),
         )
         # Mock the questionnaire queryset object since we dont use a normal pytest test_QuestionnaireDB connection
-        questionnaire_answer_object = lambda idx: {  # noqa: E731
+        questionnaire_answer_object = lambda idx: {
             'answer_questionnaire_id': 190,
             'creation_date': datetime(2024, 5, 5, 13, 17, 42),
             'questionnaire_id': 12,

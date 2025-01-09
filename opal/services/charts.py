@@ -83,7 +83,7 @@ class ChartService():
                 'error_max': chart_data.label_y,
                 'legend': chart_data.label_legend,
             },
-            error_y=[0] * len(chart_data.data['error_max']),  # noqa: WPS435 list multiplication creates references
+            error_y=[0] * len(chart_data.data['error_max']),
             error_y_minus='error_diff',
             hover_data={
                 'error_min': False,

@@ -136,7 +136,7 @@ class QuantitySample(AbstractSample):
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0'))],
     )
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         _('Type'),
         choices=QuantitySampleType.choices,
         max_length=4,
