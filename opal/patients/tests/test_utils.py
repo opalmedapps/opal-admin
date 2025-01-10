@@ -370,7 +370,7 @@ def test_create_patient_hospitalpatients_error() -> None:
     # keep the asserts within the context manager
     # the alternative is enabling transactions
     # this can cause issues since it flushes the database and loses the default relationship types
-    with pytest.raises(IntegrityError):
+    with pytest.raises(IntegrityError):  # noqa: PT012
         utils.create_patient(
             first_name='Hans',
             last_name='Wurst',
