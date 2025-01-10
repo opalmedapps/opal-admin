@@ -210,7 +210,7 @@ class QuestionnairePDF(FPDF):
             'Si une version papier de ce document est reçue aux archives, avec ou sans notes manuscrites, en statut'
             + ' préliminaire ou final, **il ne sera pas numérisé.** '
             + 'Les corrections doivent être faites dans le document préliminaire'
-            + " ou via l \'addendum si le document est final.\n"
+            + " ou via l'addendum si le document est final.\n"
             + '\n'
             + 'If a printout of this document is received in Medical Records, with or without'
             + 'handwritten notes, whether it is preliminary or final, **it will not be scanned.** '
@@ -265,7 +265,7 @@ class QuestionnairePDF(FPDF):
             orientation: "portrait" or "landscape". Default to "portrait"
             format_page: "a3", "a4", "a5", "letter", "legal" or a tuple (width, height). Default to "a4"
             same: indicates to use the same page format as the previous page. Default to False
-            duration: optional page’s display duration
+            duration: optional page's display duration
             transition: optional visual transition to use when moving from another page
         """
         super().add_page(orientation, format_page, same, duration, transition)
