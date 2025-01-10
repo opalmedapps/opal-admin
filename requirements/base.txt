@@ -52,7 +52,7 @@ twilio==9.3.8  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
-fpdf2==2.8.1
+fpdf2==2.8.2
 
 # Static image generation
 #
