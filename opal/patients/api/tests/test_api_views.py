@@ -1,4 +1,6 @@
 """Test module for the `patients` app REST API endpoints."""
+
+import datetime as dt
 import json
 from collections.abc import Callable
 from datetime import datetime
@@ -576,7 +578,7 @@ class TestPatientDemographicView:
 
         api_client.force_login(interface_engine_user)
         payload = self._get_valid_input_data()
-        payload['date_of_death'] = timezone.now().replace(
+        payload['date_of_death'] = timezone.now().astimezone().replace(
             microsecond=0,
         ).isoformat()
 

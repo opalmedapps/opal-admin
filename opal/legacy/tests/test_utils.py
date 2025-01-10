@@ -675,7 +675,7 @@ def test_invalid_question_values_format() -> None:
         },
     ]
 
-    with pytest.raises(ValueError, match="Invalid type for 'answers'"):
+    with pytest.raises(TypeError, match="Invalid type for 'answers'"):
         legacy_utils._process_questions(parsed_question_list)
 
 

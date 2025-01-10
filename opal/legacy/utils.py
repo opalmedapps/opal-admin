@@ -500,7 +500,7 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
 
     try:
         data_list = _parse_query_result(query_result)
-    except ValueError as exc:
+    except TypeError as exc:
         msg = f'Error parsing questionnaires: {exc}'
         raise DataFetchError(msg) from exc
     return _process_questionnaire_data(data_list)
