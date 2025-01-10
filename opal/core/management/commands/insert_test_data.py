@@ -280,7 +280,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     Args:
         institution_option: the chosen institution for which the test data should be inserted
     """
-    today = timezone.now().date()
+    today = timezone.now()
 
     # hospital settings
     institution = create_institution(institution_option)

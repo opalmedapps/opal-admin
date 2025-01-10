@@ -128,7 +128,7 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     """
     parsed_notes: dict[str, Any] = {
         'prepared_by': '',
-        'prepared_at': datetime(1, 1, 1),  # noqa: DTZ001
+        'prepared_at': datetime(1, 1, 1, tzinfo=timezone.get_current_timezone()),
     }
     doctor_names = []
 
@@ -218,4 +218,4 @@ def _find_note_date(note_text: str) -> datetime:
     if match:
         note_date = match.group(1).strip()
         return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p').astimezone(timezone.get_current_timezone())
-    return datetime(1, 1, 1)  # noqa: DTZ001
+    return datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())

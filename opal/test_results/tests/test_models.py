@@ -52,7 +52,7 @@ def test_general_test_str() -> None:
     """Ensure the __str__ method for GeneralTest works properly."""
     general_test = factories.GeneralTest(
         type=models.TestType.PATHOLOGY,
-        collected_at=timezone.now().date(),
+        collected_at=timezone.now(),
     )
     assert str(general_test) == f'{general_test.patient} Pathology Test instance [{general_test.collected_at}]'
 
@@ -64,7 +64,7 @@ def test_pathology_observation_str() -> None:
     )
     observation = factories.PathologyObservationFactory(
         general_test=general_test,
-        observed_at=timezone.now().date(),
+        observed_at=timezone.now(),
     )
     assert str(observation) == f'SPSPECI: {observation.observed_at}'
 
@@ -87,7 +87,7 @@ def test_note_str() -> None:
     """Ensure the __str__ method for Note works properly."""
     general_test = factories.GeneralTest(
         type=models.TestType.PATHOLOGY,
-        collected_at=timezone.now().date(),
+        collected_at=timezone.now(),
     )
     note = factories.Note(
         general_test=general_test,

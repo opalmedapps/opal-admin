@@ -178,7 +178,7 @@ def test_check_patient_date_of_birth_invalid() -> None:
 
     errors = source_system_validator.check_patient_data(patient_data)
 
-    assert errors == ["dateOfBirth is invalid: time data '1953/01/01' does not match format '%Y-%m-%d'"]
+    assert errors == ["dateOfBirth is invalid: Invalid isoformat string: '1953/01/01'"]
 
 
 def test_check_patient_first_name_non_exists() -> None:

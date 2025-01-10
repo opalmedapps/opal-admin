@@ -79,10 +79,12 @@ class Command(BaseCommand):
         start_datetime_period = dt.datetime.combine(
             timezone.now() - dt.timedelta(days=days_delta),
             dt.datetime.min.time(),
+            tzinfo=timezone.get_current_timezone(),
         )
         end_datetime_period = dt.datetime.combine(
             start_datetime_period,
             dt.datetime.max.time(),
+            tzinfo=timezone.get_current_timezone(),
         )
 
         self._populate_user_app_activities(

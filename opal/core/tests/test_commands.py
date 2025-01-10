@@ -1,9 +1,10 @@
 import secrets
-from datetime import date
+from datetime import date, datetime
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import CommandError
+from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -143,12 +144,8 @@ class TestInsertTestData(CommandTestMixin):
     def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
         """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
         # set today before Bart's birth day in the year (Feb 22nd)
-        # mocking date is tricky: https://stackoverflow.com/a/55187924
-        mock_date = mocker.patch(
-            'opal.core.management.commands.insert_test_data.date',
-            wraps=date,
-        )
-        mock_date.today.return_value = date(2024, 1, 18)
+        now = datetime(2024, 1, 18, tzinfo=timezone.get_current_timezone())
+        mocker.patch.object(timezone, 'now', return_value=now)
 
         self._call_command('insert_test_data', 'OMI')
 
@@ -158,12 +155,8 @@ class TestInsertTestData(CommandTestMixin):
     def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
         """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
         # set today after Bart's birth day in the year (Feb 22nd)
-        # mocking date is tricky: https://stackoverflow.com/a/55187924
-        mock_date = mocker.patch(
-            'opal.core.management.commands.insert_test_data.date',
-            wraps=date,
-        )
-        mock_date.today.return_value = date(2024, 2, 23)
+        now = datetime(2024, 2, 23, tzinfo=timezone.get_current_timezone())
+        mocker.patch.object(timezone, 'now', return_value=now)
 
         self._call_command('insert_test_data', 'OMI')
 

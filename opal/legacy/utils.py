@@ -579,7 +579,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             questionnaire.QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
-                last_updated=datetime.fromisoformat(data['last_updated']),
+                last_updated=datetime.fromisoformat(data['last_updated']).astimezone(timezone.get_current_timezone()),
                 questions=questions,
             ),
         )
@@ -620,7 +620,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
                 section_id=question['section_id'],
                 answers=[
                     (
-                        datetime.fromisoformat(answer[0]),
+                        datetime.fromisoformat(answer[0]).astimezone(timezone.get_current_timezone()),
                         str(answer[1]),
                     ) for answer in answers
                 ],

@@ -1077,7 +1077,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = timezone.now().date()
+        date = timezone.now()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -2240,9 +2240,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             scheduledstarttime=current_day,
         )
 
-        next_appointment = timezone.make_aware(
-            timezone.now() + dt.timedelta(days=3),
-        )
+        next_appointment = timezone.now() + dt.timedelta(days=3)
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=marge,
             date_added=current_day,
@@ -3267,7 +3265,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             'parameters': parameters,
             'target_patient_id': target_patient_id,
             'username': username,
-            'date_time': timezone.localtime(timezone.now()) - dt.timedelta(days=days_delta),
+            'date_time': timezone.now() - dt.timedelta(days=days_delta),
             'app_version': app_version,
         }
         return legacy_factories.LegacyPatientActivityLogFactory(**data)

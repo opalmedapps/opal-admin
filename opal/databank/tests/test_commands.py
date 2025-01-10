@@ -60,7 +60,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
         message, error = self._call_command('send_databank_data')
         assert 'Number of Appointments-consenting patients is: 1' in message
@@ -81,7 +81,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
         message, error = self._call_command('send_databank_data')
         assert f'No Appointments data found for {pat1}' in message
@@ -109,7 +109,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyAppointmentFactory(appointmentsernum=1, checkin=1, patientsernum=legacy_pat1)
         legacy_factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=1, patientsernum=legacy_pat1)
@@ -144,7 +144,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
 
         command = send_databank_data.Command()
@@ -163,7 +163,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
 
         message = 'Legacy ID missing from Databank Patient.'
@@ -185,7 +185,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
         generated_data = {
             'status': 'error',
@@ -217,7 +217,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_data_to_send = {
             'patientList': [
@@ -262,7 +262,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_data_to_send = {
             'patientList': [
@@ -306,7 +306,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -316,7 +316,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         RequestMockerTest.mock_requests_post(
             mocker,
@@ -342,7 +342,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_patient2 = databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -352,7 +352,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
@@ -385,7 +385,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         RequestMockerTest.mock_requests_post(
@@ -412,7 +412,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -422,7 +422,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         RequestMockerTest.mock_requests_post(
             mocker,
@@ -458,7 +458,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         # Make patient1 a failed response
         RequestMockerTest.mock_requests_post(
@@ -482,7 +482,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         }
         assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
         assert databank_models.SharedData.objects.all().count() == 0
-        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+        assert databank_patient1.last_synchronized == last_sync
 
     def test_parse_aggregate_response_failure_unauthorized(
         self,
@@ -501,7 +501,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         # Make patient1 a failed response
         RequestMockerTest.mock_requests_post(
@@ -533,7 +533,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         }
         assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
         assert databank_models.SharedData.objects.all().count() == 0
-        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+        assert databank_patient1.last_synchronized == last_sync
 
     def test_parse_aggregate_response_failure_bad_request(
         self,
@@ -552,7 +552,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         # Make patient1 a failed response
         RequestMockerTest.mock_requests_post(
@@ -584,7 +584,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         }
         assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
         assert databank_models.SharedData.objects.all().count() == 0
-        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+        assert databank_patient1.last_synchronized == last_sync
 
     def test_patient_data_success_tracker_update_success(self) -> None:
         """Test updating last_syncrho times."""
@@ -599,7 +599,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -626,7 +626,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -640,7 +640,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
         command._update_patients_last_synchronization()
         databank_patient1.refresh_from_db()
-        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+        assert databank_patient1.last_synchronized == last_sync
 
     def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
         """Test behaviour when synced_data contains unknown module."""
@@ -664,7 +664,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
@@ -701,7 +701,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -711,7 +711,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         original_data_sent = [
             {
@@ -757,7 +757,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         original_data_sent = [
             {
@@ -801,7 +801,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=True,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
@@ -867,7 +867,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -877,7 +877,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
@@ -940,7 +940,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -950,7 +950,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
         legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
@@ -1011,7 +1011,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=True,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -1021,7 +1021,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=False,
             has_questionnaires=True,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         command = send_databank_data.Command()
         mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
@@ -1064,7 +1064,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_factories.DatabankConsent(
             patient=django_pat2,
@@ -1074,7 +1074,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         RequestMockerTest.mock_requests_post(
             mocker,
@@ -1098,7 +1098,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=False,
             has_labs=False,
-            last_synchronized=timezone.make_aware(last_sync),
+            last_synchronized=last_sync,
         )
         databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -1116,7 +1116,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         # synced_data would be empty in this hypothetical situation
         command._update_databank_patient_shared_data(databank_patient1, {})
         assert databank_models.SharedData.objects.all().count() == 0
-        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+        assert databank_patient1.last_synchronized == last_sync
 
     def test_nest_and_serialize_queryset_questionnaires(self) -> None:
         """Verify the custom nesting behaviour works as expected for questionnaires."""
@@ -1129,7 +1129,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
         # Mock the questionnaire queryset object since we dont use a normal pytest test_QuestionnaireDB connection
         questionnaire_answer_object = lambda idx: {
@@ -1190,7 +1190,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_demographics=True,
             has_questionnaires=True,
             has_labs=True,
-            last_synchronized=timezone.make_aware(yesterday),
+            last_synchronized=yesterday,
         )
         # Create test data
         for _ in range(5):

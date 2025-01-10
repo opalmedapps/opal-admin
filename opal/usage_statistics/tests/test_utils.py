@@ -70,10 +70,12 @@ def test_aggregated_patient_received_data_with_no_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     assert stats_utils.get_aggregated_patient_received_data(
         start_datetime_period,
@@ -130,10 +132,12 @@ def test_aggregated_patient_received_data_previous_day() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -202,10 +206,12 @@ def test_aggregated_patient_received_data_current_day() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now(),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -280,10 +286,12 @@ def test_aggregated_patient_received_data_last_appointment_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -341,10 +349,12 @@ def test_aggregated_patient_received_data_next_appointment_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -368,7 +378,7 @@ def test_aggregated_patient_received_data_received_appointments_statistics() -> 
     legacy_factories.LegacyPatientControlFactory(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
-    next_day = timezone.now() + dt.timedelta(days=1),
+    next_day = timezone.now() + dt.timedelta(days=1)
 
     legacy_factories.LegacyAppointmentFactory(
         patientsernum=marge,
@@ -399,10 +409,12 @@ def test_aggregated_patient_received_data_received_appointments_statistics() -> 
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -464,10 +476,12 @@ def test_aggregated_patient_received_data_last_document_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -528,10 +542,12 @@ def test_aggregated_patient_received_data_received_documents_statistics() -> Non
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -586,10 +602,12 @@ def test_aggregated_patient_received_data_last_educational_material_statistics()
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -642,10 +660,12 @@ def test_aggregated_patient_received_data_received_edu_materials_statistics() ->
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -695,10 +715,12 @@ def test_aggregated_patient_received_data_last_questionnaire_statistics() -> Non
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -751,10 +773,12 @@ def test_aggregated_patient_received_data_received_questionnaire_statistics() ->
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -799,10 +823,12 @@ def test_aggregated_patient_received_data_last_lab_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now(),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -859,10 +885,12 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
     start_datetime_period = dt.datetime.combine(
         timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(

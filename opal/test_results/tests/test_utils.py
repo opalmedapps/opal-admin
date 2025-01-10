@@ -43,7 +43,7 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
     """
     return {
         'prepared_by': '',
-        'prepared_at': datetime(1, 1, 1),  # noqa: DTZ001
+        'prepared_at': datetime(1, 1, 1, tzinfo=timezone.get_current_timezone()),
     }
 
 
@@ -90,9 +90,9 @@ def test_find_note_date_fail() -> None:
     note_text_miss_time = r'Electronically signed on 23-NOV-2023 am\.br\By doctor_fname doctor_lname, MD'
     note_text_miss_am = r'Electronically signed on 23-NOV-2023 09:21 \.br\By doctor_fname doctor_lname, MD'
 
-    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1)  # noqa: DTZ001
-    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1)  # noqa: DTZ001
-    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1)  # noqa: DTZ001
+    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
+    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
+    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
 def test_parse_notes_with_empty_array() -> None:

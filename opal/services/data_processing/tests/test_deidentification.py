@@ -29,7 +29,7 @@ with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_f
 
     for row in reader:
         gender_str = row[0].strip().lower()
-        gender = sex_type_mapping.get(gender_str, None)
+        gender = sex_type_mapping.get(gender_str)
 
         attributes = {
             'first_name': row[1],

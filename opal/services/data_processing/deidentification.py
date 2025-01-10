@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Final
 
+from django.utils import timezone
+
 from unidecode import unidecode
 
 from opal.patients.models import SexType
