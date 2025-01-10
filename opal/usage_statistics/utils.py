@@ -281,7 +281,8 @@ def export_data(
     """
     # Generate dataframe from the queryset given
     if not data_set:
-        raise ValueError('Invalid input, unable to export empty data')
+        msg = 'Invalid input, unable to export empty data'
+        raise ValueError(msg)
     if isinstance(data_set, list):
         data_set_columns = data_set[0].keys()
     else:
@@ -298,7 +299,8 @@ def export_data(
         case '.xlsx':
             dataframe.to_excel(file_path, index=False)
         case _:
-            raise ValueError('Invalid file format, please use either csv or xlsx')
+            msg = 'Invalid file format, please use either csv or xlsx'
+            raise ValueError(msg)
 
 
 def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:

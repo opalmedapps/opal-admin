@@ -132,7 +132,8 @@ class Command(BaseCommand):
         """
         databank_data: DatabankQuerySet | None = None
         if not databank_patient.patient.legacy_id:
-            raise ValueError('Legacy ID missing from Databank Patient.')
+            msg = 'Legacy ID missing from Databank Patient.'
+            raise ValueError(msg)
         match module:
             case DataModuleType.APPOINTMENTS:
                 databank_data = LegacyAppointment.objects.get_databank_data_for_patient(
@@ -160,7 +161,8 @@ class Command(BaseCommand):
                     last_synchronized=databank_patient.last_synchronized,
                 )
             case _:
-                raise ValueError(f'{module} not a valid databank data type.')
+                msg = f'{module} not a valid databank data type.'  # type: ignore[unreachable]
+                raise ValueError(msg)
 
         if databank_data:
             # Return the data for this patient

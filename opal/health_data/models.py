@@ -84,7 +84,8 @@ class AbstractSample(models.Model):
             ValidationError: if attempting to save an already existing instance
         """
         if self.pk:
-            raise ValidationError(f'Cannot change an existing instance of {self._meta.verbose_name}')
+            msg = f'Cannot change an existing instance of {self._meta.verbose_name}'
+            raise ValidationError(msg)
 
         super().save(*args, **kwargs)
 

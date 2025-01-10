@@ -331,7 +331,8 @@ class AccessRequestView(
         """
         management_form = forms.AccessRequestManagementForm(request.POST)
         if not management_form.is_valid():
-            raise SuspiciousOperation('ManagementForm data is missing or has been tampered with.')
+            msg = 'ManagementForm data is missing or has been tampered with.'
+            raise SuspiciousOperation(msg)
 
         current_step = management_form.cleaned_data.get(self.current_step_name)
 

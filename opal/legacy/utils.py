@@ -489,17 +489,20 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
     if patient.legacy_id:
         external_patient_id = patient.legacy_id
     else:
-        raise DataFetchError('The patient has no legacy id.')
+        msg = 'The patient has no legacy id.'
+        raise DataFetchError(msg)
 
     try:
         query_result = _fetch_questionnaires_from_db(external_patient_id)
     except OperationalError as exc:
-        raise DataFetchError(f'Error fetching questionnaires: {exc}') from exc
+        msg = f'Error fetching questionnaires: {exc}'
+        raise DataFetchError(msg) from exc
 
     try:
         data_list = _parse_query_result(query_result)
     except ValueError as exc:
-        raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
+        msg = f'Error parsing questionnaires: {exc}'
+        raise DataFetchError(msg) from exc
     return _process_questionnaire_data(data_list)
 
 
@@ -538,7 +541,7 @@ def _parse_query_result(
         query_result: raw query results, each tuple represents a database row
 
     Raises:
-        ValueError: if the JSON data cannot be deserialized
+        TypeError: if the JSON data cannot be deserialized
 
     Returns:
         structured list of dictonaries representing the query
@@ -550,9 +553,8 @@ def _parse_query_result(
         elif isinstance(parsed_data, list):
             data_list.extend(parsed_data)
         else:
-            raise ValueError(
-                f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
-            )
+            msg = f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.'  # type: ignore[unreachable]
+            raise TypeError(msg)
     return data_list
 
 
@@ -573,7 +575,8 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
     for data in parsed_data_list:
         if 'questions' not in data:
-            raise DataFetchError(f'Unexpected data format: {data!r}')
+            msg = f'Unexpected data format: {data!r}'
+            raise DataFetchError(msg)
         questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
             questionnaire.QuestionnaireData(
@@ -595,7 +598,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
         questions_data: unprocessed questions data associated with the questionnaire
 
     Raises:
-        ValueError: the answers are wrongly formatted
+        TypeError: the answers are wrongly formatted
 
     Returns:
         list of questions associated with the questionnaire
@@ -606,7 +609,8 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
 
         answers = question.get('values') or []
         if not isinstance(answers, list):
-            raise ValueError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
+            msg = f"Invalid type for 'answers' {type(answers)} for question: {question}"
+            raise TypeError(msg)
 
         questions.append(
             questionnaire.Question(

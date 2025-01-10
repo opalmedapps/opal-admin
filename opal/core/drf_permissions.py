@@ -90,9 +90,8 @@ class _UsernameRequired(permissions.IsAuthenticated):
             ImproperlyConfigured: if the `required_username` attribute is not defined in the subclass
         """
         if not hasattr(self, 'required_username') or not self.required_username:
-            raise ImproperlyConfigured(
-                f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.',
-            )
+            msg = f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.'
+            raise ImproperlyConfigured(msg)
 
         return super().has_permission(request, view) and (
             request.user.username == self.required_username or request.user.is_superuser
@@ -241,7 +240,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
         if not caregiver_profile:
-            raise exceptions.PermissionDenied('Caregiver not found.')
+            msg = 'Caregiver not found.'
+            raise exceptions.PermissionDenied(msg)
         return caregiver_profile
 
     def _check_has_relationship_with_target(
@@ -266,7 +266,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             patient__legacy_id=patient_legacy_id,
         )
         if not relationships_with_target:
-            raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
+            msg = 'Caregiver does not have a relationship with the patient.'
+            raise exceptions.PermissionDenied(msg)
         return relationships_with_target
 
     def _check_patient_not_deceased(self, patient_legacy_id: int) -> None:
@@ -282,7 +283,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         patient = Patient.objects.filter(legacy_id=patient_legacy_id).first()
 
         if patient and patient.date_of_death is not None:
-            raise exceptions.PermissionDenied('Patient has a date of death recorded')
+            msg = 'Patient has a date of death recorded'
+            raise exceptions.PermissionDenied(msg)
 
     def _check_has_valid_relationship(self, relationships_with_target: QuerySet[Relationship]) -> None:
         """
@@ -298,9 +300,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         valid_relationships = relationships_with_target.filter(status=RelationshipStatus.CONFIRMED)
         if not valid_relationships.exists():
-            raise exceptions.PermissionDenied(
-                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
-            )
+            msg = "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
+            raise exceptions.PermissionDenied(msg)
 
 
 class CaregiverSelfPermissions(CaregiverPatientPermissions):
@@ -357,6 +358,5 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         """
         valid_relationships = [rel for rel in relationships_with_target if rel.type.role_type == RoleType.SELF]
         if not valid_relationships:
-            raise exceptions.PermissionDenied(
-                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
-            )
+            msg = 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.'
+            raise exceptions.PermissionDenied(msg)

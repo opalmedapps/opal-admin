@@ -578,7 +578,7 @@ class TestPatientDemographicView:
         payload = self._get_valid_input_data()
         payload['date_of_death'] = timezone.now().replace(
             microsecond=0,
-        ).astimezone().isoformat()
+        ).isoformat()
 
         response = api_client.put(
             reverse('api:patient-demographic-update'),

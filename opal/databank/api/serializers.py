@@ -43,5 +43,6 @@ class DatabankConsentSerializer(DynamicFieldsSerializer[DatabankConsent]):
 
         """
         if not value:
-            raise serializers.ValidationError('Patient must consent to health data authorization.')
+            msg = 'Patient must consent to health data authorization.'
+            raise serializers.ValidationError(msg)
         return value

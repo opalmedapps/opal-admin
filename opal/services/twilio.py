@@ -45,4 +45,5 @@ class TwilioService:
                 body=message,
             )
         except TwilioException as exc:
-            raise TwilioServiceError('Sending SMS failed') from exc
+            msg = 'Sending SMS failed'
+            raise TwilioServiceError(msg) from exc

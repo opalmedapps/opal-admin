@@ -490,7 +490,8 @@ def create_access_request(
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
         if relationship_type.is_self:
             if not caregiver.legacy_id:
-                raise ValueError('Legacy ID is missing from Caregiver Profile')
+                msg = 'Legacy ID is missing from Caregiver Profile'
+                raise ValueError(msg)
 
             legacy_utils.update_legacy_user_type(caregiver.legacy_id, LegacyUserType.PATIENT)
 

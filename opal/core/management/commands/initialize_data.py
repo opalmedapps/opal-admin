@@ -29,7 +29,8 @@ def token(value: str) -> str:
         the token string
     """
     if len(value) != constants.TOKEN_LENGTH:
-        raise ValueError('Token must be 40 characters long')
+        msg = 'Token must be 40 characters long'
+        raise ValueError(msg)
 
     return value
 
@@ -50,7 +51,8 @@ def password(value: str) -> str:
     minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
 
     if len(value) < minimum_length:
-        raise ValueError(f'Password must be at least {minimum_length} characters long')
+        msg = f'Password must be at least {minimum_length} characters long'
+        raise ValueError(msg)
 
     return value
 

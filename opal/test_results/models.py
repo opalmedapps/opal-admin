@@ -84,7 +84,8 @@ class PathologyObservation(AbstractObservation):
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
         """
         if self.general_test.type != TestType.PATHOLOGY:
-            raise ValidationError('PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.')
+            msg = 'PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.'
+            raise ValidationError(msg)
 
 
 class LabObservation(AbstractObservation):
@@ -143,7 +144,8 @@ class LabObservation(AbstractObservation):
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
         """
         if self.general_test.type != TestType.LAB:
-            raise ValidationError('LabObservations can only be linked to GeneralTest of type LAB.')
+            msg = 'LabObservations can only be linked to GeneralTest of type LAB.'
+            raise ValidationError(msg)
 
 
 class Note(models.Model):

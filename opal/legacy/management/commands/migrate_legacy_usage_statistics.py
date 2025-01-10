@@ -229,7 +229,8 @@ class Command(BaseCommand):
             )
             patient_activity.full_clean()
             return patient_activity
-        raise ValueError(f'Patient (legacy ID: {legacy_id}) does not exist in system.')
+        msg = f'Patient (legacy ID: {legacy_id}) does not exist in system.'
+        raise ValueError(msg)
 
     def _create_legacy_app_activity_log(self, activity_log: dict[str, str]) -> DailyUserAppActivity:
         """
@@ -264,7 +265,8 @@ class Command(BaseCommand):
             )
             app_activity.full_clean()
             return app_activity
-        raise ValueError(f'Patient (legacy ID: {legacy_id}) does not exist in system.')
+        msg = f'Patient (legacy ID: {legacy_id}) does not exist in system.'
+        raise ValueError(msg)
 
     def _create_legacy_patient_data_received_log(self, data_received_log: dict[str, str]) -> DailyPatientDataReceived:
         """
@@ -309,7 +311,8 @@ class Command(BaseCommand):
             )
             migrate_record.full_clean()
             return migrate_record
-        raise ValueError(f'Patient (legacy ID: {data_received_log["PatientSerNum"]}) does not exist in system.')
+        msg = f'Patient (legacy ID: {data_received_log["PatientSerNum"]}) does not exist in system.'
+        raise ValueError(msg)
 
     def _create_objects_and_clear_batch(self, batch: list[Any], model: Manager[Any]) -> list[Any]:
         """

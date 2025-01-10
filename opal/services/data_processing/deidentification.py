@@ -154,7 +154,8 @@ class OpenScienceIdentity:
 
         # Raise error if any validation fails
         if self.invalid_attributes:
-            raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
+            msg = f"Invalid identity components {', '.join(self.invalid_attributes)}"
+            raise ValueError(msg)
 
     def _signature_key(self) -> str:
         """

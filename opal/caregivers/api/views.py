@@ -117,9 +117,8 @@ class GetCaregiverPatientsList(APIView):
         user_id = request.headers.get('Appuserid')
 
         if not user_id:
-            raise exceptions.ParseError(
-                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
-            )
+            msg = "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
+            raise exceptions.ParseError(msg)
 
         relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
         return Response(
@@ -164,9 +163,8 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
         user_id = request.headers.get('Appuserid')
 
         if not user_id:
-            raise exceptions.ParseError(
-                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
-            )
+            msg = "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
+            raise exceptions.ParseError(msg)
 
         # manually set the username kwarg since it is not provided via the URL
         self.kwargs['username'] = user_id
@@ -512,10 +510,11 @@ class RegistrationCompletionView(APIView):
             is_verified=True,
         ).order_by('-sent_at').first()
 
-        data_email: str = caregiver_data.get('email', None)
+        data_email: str = caregiver_data.get('email', '')
 
         if email_verification is None and not data_email:
-            raise drf_serializers.ValidationError('Caregiver email is not verified.')
+            msg = 'Caregiver email is not verified.'
+            raise drf_serializers.ValidationError(msg)
 
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution

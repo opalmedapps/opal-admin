@@ -91,9 +91,8 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
             ValidationError: if provided site acronym does not exist in the database
         """
         if not Site.objects.filter(acronym=value).exists():
-            raise serializers.ValidationError(
-                f'Provided "{value}" site acronym does not exist.',
-            )
+            msg = f'Provided "{value}" site acronym does not exist.'
+            raise serializers.ValidationError(msg)
         return value
 
 
