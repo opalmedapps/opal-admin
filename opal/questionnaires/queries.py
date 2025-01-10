@@ -56,8 +56,8 @@ def _get_description(qid: int, lang_id: int) -> str:
                LIMIT 1
             """, [qid, lang_id],
         )
-        description = str(conn.fetchone()[0])
-    return description
+
+        return str(conn.fetchone()[0])
 
 
 def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
@@ -392,5 +392,5 @@ def get_temp_table() -> list[dict[str, Any]]:
             ORDER BY last_updated ASC
             """,
         )
-        q_dict = _fetch_all_as_dict(conn)
-    return q_dict
+
+        return _fetch_all_as_dict(conn)

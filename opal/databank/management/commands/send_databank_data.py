@@ -245,7 +245,7 @@ class Command(BaseCommand):
         self,
         data: dict[str, CombinedModuleData],
         request_timeout: int,
-    ) -> Any:
+    ) -> dict[str, Any] | None:
         """
         Send databank dataset to the source system and handle immediate response from source system.
 
@@ -260,7 +260,6 @@ class Command(BaseCommand):
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
         """
-        response = None
         try:
             response = requests.post(
                 url=f'{settings.SOURCE_SYSTEM_HOST}/databank/post',
@@ -278,13 +277,16 @@ class Command(BaseCommand):
 
         if response and response.status_code == HTTPStatus.OK:
             # Data sent to source system successfully, parse aggregate response from databank and update models
-            return response.json()
-        else:
-            # Specific error occured between Django, Nginx, and/or source system communications
-            self.stderr.write(
-                f'{response.status_code} source system response error: '
-                + response.content.decode(),
-            )
+            response_data: dict[str, Any] = response.json()
+            return response_data
+
+        # Specific error occured between Django, Nginx, and/or source system communications
+        self.stderr.write(
+            f'{response.status_code} source system response error: '
+            + response.content.decode(),
+        )
+
+        return None
 
     def _parse_aggregate_databank_response(
         self,

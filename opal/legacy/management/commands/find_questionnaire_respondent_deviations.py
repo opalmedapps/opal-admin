@@ -71,8 +71,8 @@ class Command(BaseCommand):
 
         if respondents_err_str:
             raise CommandError(respondents_err_str)
-        else:
-            self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
+
+        self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
 
     def _get_respondents_sync_err(
         self,

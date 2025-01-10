@@ -203,8 +203,8 @@ class Command(BaseCommand):
         if err:
             # trigger a non-zero exit code
             raise CommandError(err)
-        else:
-            self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
+
+        self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
 
     def _get_deviations_err(
         self,
