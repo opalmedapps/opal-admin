@@ -2,6 +2,8 @@ import datetime
 import textwrap
 from pathlib import Path
 
+from django.utils import timezone
+
 import pytest
 from pytest_django.fixtures import SettingsWrapper
 
@@ -21,8 +23,8 @@ observation_diagnosis = """LEFT BREAST AT 3 O'CLOCK, BIOPSY\n - BENIGN BREAST TI
 
 PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
     test_number='AS-2021-62605',
-    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
-    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
+    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55, tzinfo=timezone.get_current_timezone()),
+    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52, tzinfo=timezone.get_current_timezone()),
     observation_clinical_info=[observation_clinical_info],
     observation_specimens=[observation_specimens],
     observation_descriptions=[
@@ -35,19 +37,19 @@ PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
     ],
     observation_diagnosis=[observation_diagnosis],
     prepared_by='Atilla Omeroglu, MD',
-    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
+    prepared_at=datetime.datetime(2021, 12, 29, 10, 30, tzinfo=timezone.get_current_timezone()),
 )
 
 PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
     test_number='AS-2021-62605',
-    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
-    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
+    test_collected_at=datetime.datetime(2021, 11, 25, 9, 55, tzinfo=timezone.get_current_timezone()),
+    test_reported_at=datetime.datetime(2021, 11, 28, 11, 52, tzinfo=timezone.get_current_timezone()),
     observation_clinical_info=['Clinical Information', 'Clinical Information'],
     observation_specimens=['Specimen', 'Specimen', 'Specimen', 'Specimen'],
     observation_descriptions=['Gross Description', 'Gross Description', 'Gross Description'],
     observation_diagnosis=['Diagnosis'],
     prepared_by='Atilla Omeroglu, MD',
-    prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
+    prepared_at=datetime.datetime(2021, 12, 29, 10, 30, tzinfo=timezone.get_current_timezone()),
 )
 INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
     institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),

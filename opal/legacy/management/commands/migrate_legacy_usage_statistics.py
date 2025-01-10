@@ -213,8 +213,8 @@ class Command(BaseCommand):
         """
         legacy_id = int(activity_log['PatientSerNum'])
         if (
-            legacy_id in self.patients.keys()
-            and legacy_id in self.self_caregiver.keys()
+            legacy_id in self.patients
+            and legacy_id in self.self_caregiver
         ):
             patient_activity = DailyUserPatientActivity(
                 action_by_user=self.self_caregiver[legacy_id].caregiver.user,
@@ -245,10 +245,10 @@ class Command(BaseCommand):
             activity_log: legacy patient activity log
         """
         last_login = None if activity_log['Last_Login'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(activity_log['Last_Login'], '%Y-%m-%d %H:%M:%S'),
+            datetime.fromisoformat(activity_log['Last_Login']),
         )
         legacy_id = int(activity_log['PatientSerNum'])
-        if legacy_id in self.self_caregiver.keys():
+        if legacy_id in self.self_caregiver:
             app_activity = DailyUserAppActivity(
                 action_by_user=self.self_caregiver[legacy_id].caregiver.user,
                 last_login=last_login,
@@ -280,18 +280,18 @@ class Command(BaseCommand):
             data_received_log: legacy patient data received log
         """
         next_appointment = None if data_received_log['Next_Appointment'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Next_Appointment'], '%Y-%m-%d %H:%M:%S'),
+            datetime.fromisoformat(data_received_log['Next_Appointment']),
         )
         last_appointment_received = None if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Last_Appointment_Received'], '%Y-%m-%d %H:%M:%S'),
+            datetime.fromisoformat(data_received_log['Last_Appointment_Received']),
         )
         last_document_received = None if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Last_Clinical_Notes_Received'], '%Y-%m-%d %H:%M:%S'),
+            datetime.fromisoformat(data_received_log['Last_Clinical_Notes_Received']),
         )
         last_lab_received = None if data_received_log['Last_Lab_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Last_Lab_Received'], '%Y-%m-%d %H:%M:%S'),
+            datetime.fromisoformat(data_received_log['Last_Lab_Received']),
         )
-        if int(data_received_log['PatientSerNum']) in self.patients.keys():
+        if int(data_received_log['PatientSerNum']) in self.patients:
             migrate_record = DailyPatientDataReceived(
                 patient=self.patients[int(data_received_log['PatientSerNum'])],
                 next_appointment=next_appointment,

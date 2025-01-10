@@ -20,7 +20,7 @@ def test_get_appointment_databank_data() -> None:
     """Ensure appointment data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
-    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare appointment data
     factories.LegacyAppointmentFactory(appointmentsernum=1, checkin=0, patientsernum=consenting_patient)
     factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=0, patientsernum=consenting_patient)
@@ -57,7 +57,7 @@ def test_get_demographics_databank_data() -> None:
     """Ensure demographics data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
-    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Fetch the data
     databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -84,7 +84,7 @@ def test_exclude_unknown_gender() -> None:
     """Ensure demographics data for databank does not include patients with Unknown gender."""
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory(sex='Unknown')
-    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Fetch the data
     databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -98,7 +98,7 @@ def test_get_diagnosis_databank_data() -> None:
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
     non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
-    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare diagnosis data
     factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
     factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
@@ -129,7 +129,7 @@ def test_get_labs_databank_data() -> None:
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
     non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
-    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare labs data
     factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
     factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
@@ -232,7 +232,7 @@ def test_get_unread_lab_results_queryset() -> None:
 def test_get_aggregated_user_app_no_activities() -> None:
     """Ensure that get_aggregated_user_app_activities function does not fail when there is no app statistics."""
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -260,7 +260,7 @@ def test_get_aggregated_user_app_activities_previous_day() -> None:
     _create_log_record(request='Feedback', parameters='OMITTED', username='third_user', days_delta=0)
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -295,7 +295,7 @@ def test_get_aggregated_user_app_activities_current_day() -> None:
     _create_log_record(request='Feedback', parameters='OMITTED', username='third_user')
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now(),
+        timezone.now(),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -320,7 +320,7 @@ def test_get_aggregated_user_app_activities_current_day() -> None:
 def test_get_aggregated_user_app_activities_last_login_statistics() -> None:
     """Ensure that get_aggregated_user_app_activities returns correctly last login per patient per day."""
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -385,7 +385,7 @@ def test_get_aggregated_user_app_activities_login_statistics() -> None:
     _create_log_record(username='homer', days_delta=0)
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -416,7 +416,7 @@ def test_get_aggregated_user_app_activities_feedback_statistics() -> None:
     _create_log_record(request='Feedback', parameters='OMITTED', username='homer', days_delta=0)
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -447,7 +447,7 @@ def test_get_aggregated_user_app_activities_security_answer_statistics() -> None
     _create_log_record(request='UpdateSecurityQuestionAnswer', parameters='OMITTED', username='homer', days_delta=0)
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -478,7 +478,7 @@ def test_get_aggregated_user_app_activities_password_update_statistics() -> None
     _create_log_record(request='AccountChange', parameters='OMITTED', username='homer', days_delta=0)
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -543,7 +543,7 @@ def test_get_aggregated_user_app_activities_language_update_statistics() -> None
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -656,7 +656,7 @@ def test_get_aggregated_user_app_activities_android_device_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -769,7 +769,7 @@ def test_get_aggregated_user_app_activities_ios_device_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -882,7 +882,7 @@ def test_get_aggregated_user_app_activities_browser_device_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -906,7 +906,7 @@ def test_get_aggregated_user_app_activities_browser_device_statistics() -> None:
 def test_get_aggregated_patient_app_no_activities() -> None:
     """Ensure that get_aggregated_patient_app_activities function does not fail when there is no app statistics."""
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -972,7 +972,7 @@ def test_get_aggregated_patient_app_activities_previous_day() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1046,7 +1046,7 @@ def test_get_aggregated_patient_app_activities_current_day() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now(),
+        timezone.now(),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1084,7 +1084,7 @@ def test_get_aggregated_user_app_activities_checkin_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1120,7 +1120,7 @@ def test_get_aggregated_user_app_activities_documents_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1194,7 +1194,7 @@ def test_get_aggregated_user_app_activities_edu_materials_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1284,7 +1284,7 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )
@@ -1358,7 +1358,7 @@ def test_get_aggregated_user_app_activities_labs_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
         timezone.get_current_timezone(),
     )

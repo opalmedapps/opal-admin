@@ -68,7 +68,7 @@ class DatabankConsent(models.Model):
     )
     last_synchronized = models.DateTimeField(
         verbose_name=_('Last Synchronized'),
-        default=timezone.make_aware(datetime.datetime(1970, 1, 1)),
+        default=datetime.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone()),
     )
 
     class Meta:

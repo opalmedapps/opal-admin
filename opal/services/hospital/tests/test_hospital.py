@@ -5,6 +5,8 @@ from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any
 
+from django.utils import timezone
+
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture
@@ -112,7 +114,7 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -142,7 +144,7 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -168,7 +170,7 @@ def test_export_pdf_report_response_invalid(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -197,7 +199,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -221,7 +223,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -232,7 +234,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         'site': SITE_CODE,
         'reportContent': BASE64_ENCODED_REPORT,
         'docType': DOCUMENT_NUMBER,
-        'documentDate': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'documentDate': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
     })
     # assert that the mock was called exactly once and that the call was with exactly the same
     # parameters as in the `export_pdf_report` post request.
@@ -259,7 +261,7 @@ def test_export_pdf_report_invalid_mrn(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -282,7 +284,7 @@ def test_export_pdf_report_invalid_site(mocker: MockerFixture) -> None:
             site='',
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -304,7 +306,7 @@ def test_export_pdf_report_invalid_base64(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content='',
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -326,7 +328,7 @@ def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number='invalid document type',
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -349,21 +351,19 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
         sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
         alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
         deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
-        death_date_time=datetime.strptime(
+        death_date_time=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
-            '%Y-%m-%d %H:%M:%S',
         ),
         ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
-        ramq_expiration=datetime.strptime(
+        ramq_expiration=datetime.strptime(  # noqa: DTZ007
             str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
@@ -393,9 +393,8 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
@@ -520,21 +519,19 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
         sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
         alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
         deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
-        death_date_time=datetime.strptime(
+        death_date_time=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
-            '%Y-%m-%d %H:%M:%S',
         ),
         ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
-        ramq_expiration=datetime.strptime(
+        ramq_expiration=datetime.strptime(  # noqa: DTZ007
             str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
@@ -564,9 +561,8 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),

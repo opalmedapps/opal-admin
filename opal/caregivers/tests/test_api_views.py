@@ -1257,7 +1257,7 @@ class TestRegistrationCompletionView:
             first_name='Marge',
             last_name='Simpson',
             sex=LegacySexType.FEMALE,
-            date_of_birth=timezone.make_aware(dt.datetime(1986, 10, 5)),
+            date_of_birth=dt.datetime(1986, 10, 5, tzinfo=timezone.get_current_timezone()),
             email='',
             language=LegacyLanguage.ENGLISH,
             ramq='SIMM86600599',

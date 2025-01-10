@@ -320,7 +320,7 @@ def create_relationship(
         the new relationship instance
     """
     if not request_date:
-        request_date = date.today()
+        request_date = timezone.now().date()
 
     if not start_date:
         start_date = patient.date_of_birth

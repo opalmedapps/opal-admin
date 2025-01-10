@@ -7,6 +7,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
@@ -66,7 +67,7 @@ def generate_pathology_report(
             site_phone=site.contact_telephone,
         ),
         pathology_data=PathologyData(
-            test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
+            test_number=pathology_data.get('case_number', ''),
             test_collected_at=pathology_data['collected_at'],
             test_reported_at=pathology_data['reported_at'],
             observation_clinical_info=observations['SPCI'],
@@ -127,7 +128,7 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     """
     parsed_notes: dict[str, Any] = {
         'prepared_by': '',
-        'prepared_at': datetime(1, 1, 1),
+        'prepared_at': datetime(1, 1, 1),  # noqa: DTZ001
     }
     doctor_names = []
 
@@ -216,5 +217,5 @@ def _find_note_date(note_text: str) -> datetime:
     # Extract date and time of note text
     if match:
         note_date = match.group(1).strip()
-        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p')
-    return datetime(1, 1, 1)
+        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p').astimezone(timezone.get_current_timezone())
+    return datetime(1, 1, 1)  # noqa: DTZ001

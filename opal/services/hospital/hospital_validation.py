@@ -175,7 +175,7 @@ class SourceSystemValidator:
 
         if date_of_birth:
             try:
-                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d')
+                datetime.datetime.fromisoformat(date_of_birth).date()
             except ValueError as exc:
                 errors.append(f'dateOfBirth is invalid: {exc}')
 
@@ -230,7 +230,7 @@ class SourceSystemValidator:
             errors.append('Patient data does not have the attribute ramqExpiration')
         if ramq_expiration:
             try:
-                datetime.datetime.strptime(ramq_expiration, '%Y%m')
+                datetime.datetime.strptime(ramq_expiration, '%Y%m')  # noqa: DTZ007
             except ValueError as exc:
                 errors.append(f'Patient data ramqExpiration is invalid: {exc}')
 

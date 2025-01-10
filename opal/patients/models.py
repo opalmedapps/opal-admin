@@ -338,7 +338,7 @@ class Patient(AbstractLabDelayModel):
         """
         # Get today's date object if reference date is None
         if reference_date is None:
-            reference_date = date.today()
+            reference_date = timezone.now().date()
         # A bool that represents if reference date's day/month precedes the birth day/month
         one_or_zero = (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
         # Calculate the difference in years from the date object's components
@@ -696,4 +696,4 @@ class HospitalPatient(models.Model):
         Returns:
             the textual representation of this instance
         """
-        return f'{str(self.site.acronym)}: {str(self.mrn)}'
+        return f'{self.site.acronym}: {self.mrn}'

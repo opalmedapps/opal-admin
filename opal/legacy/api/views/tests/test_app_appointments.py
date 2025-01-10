@@ -52,7 +52,7 @@ class TestAppAppointmentsView:
     ) -> None:
         """Test the return value of get appointment data."""
         # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
-        now = timezone.make_aware(datetime(2022, 11, 29, 11, 2, 3))
+        now = datetime(2022, 11, 29, 11, 2, 3, tzinfo=timezone.get_current_timezone())
         mock_timezone = mocker.patch('django.utils.timezone.now')
         mock_timezone.return_value = now
 
@@ -84,12 +84,12 @@ class TestAppAppointmentsView:
         appointment = factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 1, 22, 0)),
+            scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 2, 0, 1)),
+            scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         # mock the current timezone to simulate the UTC time already on the next day
@@ -114,12 +114,12 @@ class TestAppAppointmentsView:
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 1, 22, 0)),
+            scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 2, 0, 1)),
+            scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         # mock the current timezone to simulate the UTC time already on the next day
@@ -144,12 +144,12 @@ class TestAppAppointmentsView:
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 1, 22, 0)),
+            scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
-            scheduledstarttime=timezone.make_aware(datetime(2022, 6, 2, 0, 1)),
+            scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         # mock the current timezone to simulate the UTC time already on the next day

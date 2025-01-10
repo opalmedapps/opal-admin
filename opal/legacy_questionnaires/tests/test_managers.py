@@ -24,7 +24,7 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     # Prepare patients and last cron run time
     non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
     consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
-    last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
 
     # Fetch the data
     databank_data_empty = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(

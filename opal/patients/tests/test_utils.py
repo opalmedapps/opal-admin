@@ -60,7 +60,7 @@ PATIENT_DATA = SourceSystemPatientData(
     deceased=False,
     death_date_time=None,
     ramq='SIMM86600199',
-    ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
     mrns=[],
 )
 MRN_DATA_RVH = SourceSystemMRNData(site='RVH', mrn='9999993', active=True)
@@ -469,7 +469,7 @@ def test_create_relationship_defaults() -> None:
         RelationshipStatus.CONFIRMED,
     )
 
-    assert relationship.request_date == date.today()
+    assert relationship.request_date == timezone.now().date()
     assert relationship.start_date == patient.date_of_birth
 
 
@@ -589,7 +589,7 @@ def test_create_access_request_existing() -> None:
     assert relationship.caregiver == caregiver_profile
     assert relationship.type == self_type
     assert relationship.status == RelationshipStatus.CONFIRMED
-    assert relationship.request_date == date.today()
+    assert relationship.request_date == timezone.now().date()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date is None
     assert legacy_user.usertype == LegacyUserType.PATIENT
@@ -610,7 +610,7 @@ def test_create_access_request_non_self() -> None:
     assert registration_code is None
     assert relationship.type == parent_type
     assert relationship.status == RelationshipStatus.PENDING
-    assert relationship.request_date == date.today()
+    assert relationship.request_date == timezone.now().date()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date == date(2017, 3, 27)
 

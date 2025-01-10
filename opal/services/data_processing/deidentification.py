@@ -108,7 +108,7 @@ class OpenScienceIdentity:
                 self.invalid_attributes.append('date_of_birth')
                 return
             # Additional check for 'realistic' date_of_birth
-            today = date.today()
+            today = timezone.now().date()
             if dob.year < 1900 or today.year < dob.year:
                 self.invalid_attributes.append('date_of_birth')
 

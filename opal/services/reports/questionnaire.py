@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
+from django.utils import timezone
 
 import pandas as pd
 import requests
@@ -226,7 +227,7 @@ class QuestionnairePDF(FPDF):
                 h=5,
                 text=f'**{self.institution_data.document_number}** '
                 + f'Source: {self.institution_data.source_system}'
-                + f'({datetime.now().strftime("%b %d, %Y")})',
+                + f'({timezone.now().strftime("%b %d, %Y")})',
                 border=0,
                 align=Align.L,
                 link='',
@@ -584,7 +585,7 @@ def generate_pdf(
             if match:
                 actual_pages = int(match.group(1))
                 return _generate_pdf(institution, patient, questionnaires, actual_pages)
-        raise exc
+        raise
 
     return result
 

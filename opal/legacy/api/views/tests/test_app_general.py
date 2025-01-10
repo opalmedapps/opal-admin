@@ -108,7 +108,7 @@ class TestGeneralAppView:
             ramq=legacy_marge_patient.ramq,
             first_name=legacy_marge_patient.first_name,
             last_name=legacy_marge_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         marge_user = user_factories.Caregiver(email=legacy_marge_patient.email, username='marge_username')
         marge_caregiver = patient_factories.CaregiverProfile(
@@ -138,7 +138,7 @@ class TestGeneralAppView:
             ramq=legacy_homer_patient.ramq,
             first_name=legacy_homer_patient.first_name,
             last_name=legacy_homer_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         homer_caregiver = patient_factories.CaregiverProfile(
             legacy_id=legacy_homer_patient.patientsernum,
@@ -173,7 +173,7 @@ class TestGeneralAppView:
             ramq=legacy_bart_patient.ramq,
             first_name=legacy_bart_patient.first_name,
             last_name=legacy_bart_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         bart_caregiver = patient_factories.CaregiverProfile(
             legacy_id=legacy_bart_patient.patientsernum,

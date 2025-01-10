@@ -34,7 +34,10 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
     return {
         'first_name': segment.pid_5.pid_5_2.to_er7(),
         'last_name': segment.pid_5.pid_5_1.to_er7(),
-        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), FORMAT_DATE).date(),
+        'date_of_birth': datetime.strptime(
+            segment.pid_7.to_er7(),
+            FORMAT_DATE
+        ).astimezone(timezone.get_current_timezone()).date(),
         'sex': segment.pid_8.to_er7(),
         'ramq': segment.pid_2.pid_2_1.to_er7(),
         'mrn_sites': [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
@@ -239,7 +242,7 @@ def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
     Returns:
         Formatted datetime object
     """
-    return timezone.make_aware(datetime.strptime(field, isoformat))
+    return datetime.strptime(field, isoformat).astimezone(timezone.get_current_timezone())
 
 
 def fix_breaking_characters(field: str) -> str:

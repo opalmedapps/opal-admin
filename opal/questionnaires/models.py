@@ -1,7 +1,7 @@
 """This module provides models for questionnaires."""
-from datetime import datetime
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from opal.users.models import User
@@ -68,7 +68,7 @@ class QuestionnaireProfile(models.Model):
         if (toggle):
             questionnaires_following.questionnaire_list[qid] = {
                 'title': qname,
-                'lastviewed': datetime.now().strftime('%Y-%m-%d'),
+                'lastviewed': timezone.now().date().isoformat(),
             }
         elif qid in questionnaires_following.questionnaire_list:
             questionnaires_following.questionnaire_list.pop(qid)

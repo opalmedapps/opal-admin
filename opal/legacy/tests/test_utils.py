@@ -57,7 +57,7 @@ def test_create_patient() -> None:
     assert legacy_patient.first_name == 'Marge'
     assert legacy_patient.last_name == 'Simpson'
     assert legacy_patient.sex == models.LegacySexType.FEMALE
-    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1986, 10, 5))
+    assert legacy_patient.date_of_birth == dt.datetime(1986, 10, 5, tzinfo=timezone.get_current_timezone())
     assert legacy_patient.email == 'marge@opalmedapps.ca'
     assert legacy_patient.language == models.LegacyLanguage.FRENCH
     assert legacy_patient.ramq == 'SIMM86600599'
@@ -75,7 +75,7 @@ def test_create_dummy_patient() -> None:
 
     legacy_patient.full_clean()
 
-    date_of_birth = timezone.make_aware(dt.datetime(1900, 1, 1))
+    date_of_birth = dt.datetime(1900, 1, 1, tzinfo=timezone.get_current_timezone())
 
     assert legacy_patient.first_name == 'Marge'
     assert legacy_patient.last_name == 'Simpson'
@@ -92,12 +92,12 @@ def test_update_patient() -> None:
     # the date of birth for dummy patients is 0000-00-00 but it fails validation since it is an invalid date
     legacy_patient = factories.LegacyPatientFactory(
         ramq='',
-        date_of_birth=timezone.make_aware(dt.datetime(2000, 1, 1)),
+        date_of_birth=dt.datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
         sex=models.LegacySexType.UNKNOWN,
         age=None,
     )
 
-    date_of_birth = timezone.make_aware(dt.datetime(2008, 3, 29))
+    date_of_birth = dt.datetime(2008, 3, 29, tzinfo=timezone.get_current_timezone())
     legacy_utils.update_patient(legacy_patient, models.LegacySexType.OTHER, date_of_birth.date(), 'SIMB08032999')
 
     legacy_patient.refresh_from_db()
@@ -178,7 +178,7 @@ def test_initialize_new_patient() -> None:
     assert legacy_patient.first_name == patient.first_name
     assert legacy_patient.last_name == patient.last_name
     assert legacy_patient.sex == models.LegacySexType.MALE
-    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
+    assert legacy_patient.date_of_birth == dt.datetime(1999, 1, 1, tzinfo=timezone.get_current_timezone())
     assert legacy_patient.email == ''
     assert legacy_patient.language == models.LegacyLanguage.FRENCH
     assert legacy_patient.ramq == patient.ramq
@@ -302,7 +302,7 @@ def test_change_caregiver_user_to_patient() -> None:
     legacy_patient.refresh_from_db()
     assert legacy_patient.sex == models.LegacySexType.MALE
     assert legacy_patient.ramq == 'SIMB04100199'
-    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
+    assert legacy_patient.date_of_birth == dt.datetime(1999, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
 def test_databank_consent_form_fixture(
@@ -469,7 +469,7 @@ def test_get_questionnaire_data_no_patient(mocker: MockerFixture) -> None:
     """Test that get_questionnaire_data with wrong patient id."""
     patient = patient_factories.Patient.create(legacy_id=0)
 
-    with pytest.raises(legacy_utils.DataFetchError, match='The patient has no legacy id.'):
+    with pytest.raises(legacy_utils.DataFetchError, match='The patient has no legacy id'):
         legacy_utils.get_questionnaire_data(patient)
 
 
@@ -579,12 +579,10 @@ def test_process_questionnaire_data(mocker: MockerFixture) -> None:
     assert len(result) == 1
     assert result[0].questionnaire_id == 1
     assert result[0].questionnaire_title == 'Test Questionnaire'
-    assert result[0].last_updated == dt.datetime(
-        2024, 11, 25, 10, 0, 0,
-    )
+    assert result[0].last_updated == dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone())
     assert result[0].questions[0].question_text == 'Sample question'
     assert result[0].questions[0].answers == [
-        (dt.datetime(2024, 2, 23, 12, 0), '3'),
+        (dt.datetime(2024, 2, 23, 12, 0, tzinfo=timezone.get_current_timezone()), '3'),
     ]
 
 
@@ -657,7 +655,7 @@ def test_process_questions_valid() -> None:
     assert result[0].polarity == 1
     assert result[0].section_id == 1
     assert result[0].answers == [
-        (dt.datetime(2024, 2, 23, 12, 0), '3'),
+        (dt.datetime(2024, 2, 23, 12, 0, tzinfo=timezone.get_current_timezone()), '3'),
     ]
 
 
@@ -706,7 +704,6 @@ def test_invalid_question_date_format() -> None:
 
 
 def questionnaire_data_mock() -> list[QuestionnaireData]:
-    """Fixture to create a mock questionnaire data list."""
     question = Question(
         question_text='Sample question',
         question_label='Sample label',
@@ -718,7 +715,7 @@ def questionnaire_data_mock() -> list[QuestionnaireData]:
         section_id=1,
         answers=[
             (
-                dt.datetime(2024, 11, 25, 10, 0, 0), '3',
+                dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()), '3',
             ),
         ],
     )
@@ -726,7 +723,7 @@ def questionnaire_data_mock() -> list[QuestionnaireData]:
         QuestionnaireData(
             questionnaire_id=1,
             questionnaire_title='Test Questionnaire',
-            last_updated=dt.datetime(2024, 11, 25, 10, 0, 0),
+            last_updated=dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()),
             questions=[question],
         ),
     ]
@@ -765,7 +762,7 @@ def test_generate_questionnaire_report(mocker: MockerFixture) -> None:
     questionnaire = args['questionnaires'][0]
     assert questionnaire.questionnaire_id == 1
     assert questionnaire.questionnaire_title == 'Test Questionnaire'
-    assert questionnaire.last_updated == dt.datetime(2024, 11, 25, 10, 0, 0)
+    assert questionnaire.last_updated == dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone())
 
     # Verify questions
     question = questionnaire.questions[0]
@@ -775,7 +772,7 @@ def test_generate_questionnaire_report(mocker: MockerFixture) -> None:
     assert question.min_value == 0
     assert question.max_value == 10
     assert question.answers == [(
-        dt.datetime(2024, 11, 25, 10, 0, 0), '3',
+        dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()), '3',
     )]
 
     # Verify pdf generation

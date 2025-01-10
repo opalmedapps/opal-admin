@@ -109,7 +109,12 @@ def create_patient(
     """
     age = Patient.calculate_age(date_of_birth)
     # the legacy DB stores the date of birth as a datetime
-    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
+    datetime_of_birth = dt.datetime(
+        date_of_birth.year,
+        date_of_birth.month,
+        date_of_birth.day,
+        tzinfo=timezone.get_current_timezone(),
+    )
 
     patient = LegacyPatient(
         first_name=first_name,
@@ -153,7 +158,7 @@ def create_dummy_patient(
         last_name=last_name,
         sex=LegacySexType.UNKNOWN,
         # requires a valid date; use a temporary date
-        date_of_birth=timezone.make_aware(dt.datetime(1900, 1, 1)),
+        date_of_birth=dt.datetime(1900, 1, 1, tzinfo=timezone.get_current_timezone()),
         email=email,
         language=language,
         ramq='',
@@ -173,7 +178,12 @@ def update_patient(patient: LegacyPatient, sex: LegacySexType, date_of_birth: dt
     """
     age = Patient.calculate_age(date_of_birth)
     # the legacy DB stores the date of birth as a datetime
-    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
+    datetime_of_birth = dt.datetime(
+        date_of_birth.year,
+        date_of_birth.month,
+        date_of_birth.day,
+        tzinfo=timezone.get_current_timezone(),
+    )
 
     patient.sex = sex
     patient.date_of_birth = datetime_of_birth
@@ -388,7 +398,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             questionnaire_id=qdb_questionnaire.id,
             patient_id=qdb_patient.id,
             status=0,
-            creation_date=timezone.make_aware(dt.datetime.now()),
+            creation_date=timezone.now(),
             created_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             updated_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
         )
@@ -399,7 +409,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             patientsernum=legacy_patient,
             patient_questionnaire_db_ser_num=answer_instance.id,
             completedflag=0,
-            date_added=timezone.make_aware(dt.datetime.now()),
+            date_added=timezone.now(),
         )
 
         # Create the educational material factsheet
@@ -407,7 +417,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             educationalmaterialcontrolsernum=info_sheet,
             patientsernum=legacy_patient,
             readstatus=0,
-            date_added=timezone.make_aware(dt.datetime.now()),
+            date_added=timezone.now(),
         )
     except Exception:
         # Rollback and return empty without raising to avoid affecting registration completion
@@ -445,11 +455,11 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     ).first()
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
-    qdb_patient, created = LegacyQuestionnairePatient.objects.get_or_create(
+    qdb_patient, _created = LegacyQuestionnairePatient.objects.get_or_create(
         external_id=django_patient.legacy_id,
         defaults={
             'hospital_id': -1,
-            'creation_date': timezone.make_aware(dt.datetime.now()),
+            'creation_date': timezone.now(),
             'created_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             'updated_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             'deleted_by': '',

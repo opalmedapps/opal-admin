@@ -1,6 +1,5 @@
 """This module provides views for questionnaire settings."""
 import logging
-from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO, StringIO
 from types import MappingProxyType
@@ -8,6 +7,7 @@ from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpRequest, HttpResponse
+from django.utils import timezone
 from django.views.generic.base import TemplateView
 
 import pandas as pd
@@ -104,7 +104,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
-        if 'questionnaireid' in request.POST.keys():
+        if 'questionnaireid' in request.POST:
             try:
                 qid = int(request.POST['questionnaireid'])
             except ValueError:
@@ -162,7 +162,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         # Update questionnaire following list if user selected option
-        toggle = 'following' in request.POST.keys()
+        toggle = 'following' in request.POST
 
         QuestionnaireProfile.update_questionnaires_following(
             request.POST['questionnaireid'],
@@ -225,7 +225,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
 
         """
         qid = request.POST.get('questionnaireid')
-        datesuffix = datetime.now().strftime('%Y-%m-%d')
+        datesuffix = timezone.now().date().isoformat()
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
         df = pd.DataFrame.from_records(
             get_temp_table(),
@@ -266,8 +266,8 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         """
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
-        datesuffix = datetime.now().strftime('%Y-%m-%d')
-        filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
+        date_suffix = timezone.now().date().isoformat()
+        filename = f'questionnaire-{qid}-{date_suffix}.xlsx'
         report_dict = get_temp_table()
         df = pd.DataFrame.from_records(report_dict)
         buffer = BytesIO()

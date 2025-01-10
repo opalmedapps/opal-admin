@@ -1,5 +1,6 @@
-from datetime import datetime
 from types import MappingProxyType
+
+from django.utils import timezone
 
 from opal.services.hospital.hospital_data import SourceSystemReportExportData
 from opal.services.hospital.hospital_validation import SourceSystemValidator
@@ -38,7 +39,7 @@ def test_is_report_export_request_valid_success() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data)
@@ -51,7 +52,7 @@ def test_is_report_export_request_invalid_mrn() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -64,7 +65,7 @@ def test_is_report_export_request_invalid_site() -> None:
         site='',
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -77,7 +78,7 @@ def test_is_report_export_request_invalid_content() -> None:
         site=SITE_CODE,
         base64_content='INVALID CONTENT',
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -90,7 +91,7 @@ def test_is_report_export_request_invalid_doctype() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number='FU-INVALID DOCUMENT TYPE',
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False

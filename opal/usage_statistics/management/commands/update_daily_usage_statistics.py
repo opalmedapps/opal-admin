@@ -77,14 +77,12 @@ class Command(BaseCommand):
         # It must be converted to the local timezone since the dates stored in the legacy DB are not UTC.
         # Set the default query time period for the previous complete day (e.g., between 00:00:00 and 23:59:59)
         start_datetime_period = dt.datetime.combine(
-            dt.datetime.now() - dt.timedelta(days=days_delta),
+            timezone.now() - dt.timedelta(days=days_delta),
             dt.datetime.min.time(),
-            timezone.get_current_timezone(),
         )
         end_datetime_period = dt.datetime.combine(
             start_datetime_period,
             dt.datetime.max.time(),
-            timezone.get_current_timezone(),
         )
 
         self._populate_user_app_activities(

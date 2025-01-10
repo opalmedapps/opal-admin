@@ -201,7 +201,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     def test_import_deceased_patient(self) -> None:
         """The patient is imported with the correct data."""
         legacy_patient = legacy_factories.LegacyPatientFactory(
-            death_date=timezone.make_aware(datetime(2118, 1, 1)),
+            death_date=datetime(2118, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         self._call_command('migrate_patients')
@@ -209,7 +209,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         patient = patient_models.Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
-        assert patient.date_of_death == timezone.make_aware(datetime(2118, 1, 1))
+        assert patient.date_of_death == datetime(2118, 1, 1, tzinfo=timezone.get_current_timezone())
         assert patient.sex == patient_models.Patient.SexType.MALE
         assert patient.first_name == legacy_patient.first_name
         assert patient.last_name == legacy_patient.last_name
@@ -598,7 +598,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ33333333',
             first_name='Third First Name',
             last_name='Third Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create unregistered SELF type caregiver
         patient_factories.CaregiverProfile(
@@ -626,7 +626,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -642,7 +642,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create hospital patient
         patient_factories.HospitalPatient(
@@ -658,7 +658,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Female',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -678,7 +678,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex=patient_models.Patient.SexType.FEMALE,
         )
         # create second `HospitalPatient` record
@@ -699,7 +699,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -720,7 +720,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         assert patient.data_access == patient_models.Patient.DataAccessType.ALL
@@ -746,12 +746,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
             language='en',
-            death_date=timezone.make_aware(datetime(2024, 12, 31)),
+            death_date=datetime(2024, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
         user_factories.Caregiver(
@@ -767,8 +767,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
-            date_of_death=timezone.make_aware(datetime(2024, 12, 31)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
+            date_of_death=datetime(2024, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         message, error = self._call_command('find_deviations')
@@ -898,7 +898,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -914,7 +914,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create SELF type caregiver
         patient_factories.CaregiverProfile(
@@ -949,7 +949,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Female',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -969,7 +969,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex=patient_models.Patient.SexType.FEMALE,
         )
 
@@ -1043,7 +1043,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Bart',
             last_name='Simpson',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -1605,7 +1605,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         caregiver = caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(

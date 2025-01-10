@@ -3,6 +3,8 @@ from datetime import date, datetime
 from http import HTTPStatus
 from pathlib import Path
 
+from django.utils import timezone
+
 import pytest
 from _pytest.logging import LogCaptureFixture
 from fpdf import FPDFException
@@ -48,7 +50,7 @@ QUESTION_REPORT_DATA = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'Demo answer',
             ),
         ],
@@ -64,7 +66,7 @@ QUESTION_REPORT_DATA = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'Demo answer',
             ),
         ],
@@ -82,11 +84,11 @@ QUESTION_REPORT_DATA_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -104,11 +106,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -124,39 +126,39 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
         ],
@@ -172,11 +174,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -192,11 +194,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -212,11 +214,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -232,11 +234,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -245,25 +247,25 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
 QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='BREAST-Q Reconstruction Module',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA_CHARTS),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_MULTIPLE_CHARTS = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA_MULTIPLE_CHARTS),
 )
 

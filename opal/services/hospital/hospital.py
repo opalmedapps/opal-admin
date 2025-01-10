@@ -112,9 +112,8 @@ class SourceSystemService:
             return {
                 'status': 'success',
                 'data': SourceSystemPatientData(
-                    date_of_birth=datetime.strptime(
+                    date_of_birth=datetime.fromisoformat(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
@@ -122,13 +121,10 @@ class SourceSystemService:
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
                     death_date_time=None if patient_data['deathDateTime'] == ''
-                    else datetime.strptime(
-                        str(patient_data['deathDateTime']),
-                        '%Y-%m-%d %H:%M:%S',
-                    ),
+                    else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
                     ramq_expiration=None if patient_data['ramqExpiration'] == ''
-                    else datetime.strptime(
+                    else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',
                     ),
@@ -183,9 +179,8 @@ class SourceSystemService:
             return {
                 'status': 'success',
                 'data': SourceSystemPatientData(
-                    date_of_birth=datetime.strptime(
+                    date_of_birth=datetime.fromisoformat(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
@@ -193,13 +188,10 @@ class SourceSystemService:
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
                     death_date_time=None if patient_data['deathDateTime'] == ''
-                    else datetime.strptime(
-                        str(patient_data['deathDateTime']),
-                        '%Y-%m-%d %H:%M:%S',
-                    ),
+                    else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
                     ramq_expiration=None if patient_data['ramqExpiration'] == ''
-                    else datetime.strptime(
+                    else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',
                     ),

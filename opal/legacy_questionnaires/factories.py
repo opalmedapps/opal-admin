@@ -28,7 +28,7 @@ class LegacyDictionaryFactory(DjangoModelFactory):
     content_id = Sequence(lambda number: number + 1)
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = 'TestUser'
     updated_by = 'TestUser'
 
@@ -67,7 +67,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
     deleted_by = 'Test User'
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = 'Test User'
     updated_by = 'Test User'
     legacy_name = 'Test Questionnaire'
@@ -82,7 +82,7 @@ class LegacyQuestionnairePatientFactory(DjangoModelFactory):
 
     external_id = 51
     hospital_id = -1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
@@ -97,7 +97,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     patient = SubFactory(LegacyQuestionnairePatientFactory)
     status = 0
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
@@ -129,7 +129,7 @@ class LegacySectionFactory(DjangoModelFactory):
     order = Sequence(lambda number: number)
     deleted = False
     created_by = Faker('name')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     updated_by = Faker('name')
 
 
@@ -163,7 +163,7 @@ class LegacyQuestionFactory(DjangoModelFactory):
     final = False
     optional_feedback = False
     deleted = False
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('name')
     updated_by = Faker('name')
 
@@ -273,7 +273,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     skipped = Faker('boolean')
     deleted = Faker('boolean')
     deleted_by = Faker('word')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('word')
     updated_by = Faker('word')
 
@@ -349,4 +349,4 @@ class LegacyAnswerDateFactory(DjangoModelFactory):
         model = models.LegacyAnswerDate
 
     answer = SubFactory(LegacyAnswerFactory)
-    value = timezone.make_aware(datetime(2022, 9, 27))
+    value = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())

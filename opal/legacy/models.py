@@ -109,7 +109,7 @@ class LegacyPatientControl(models.Model):
     patientupdate = models.IntegerField(db_column='PatientUpdate', default=1)
     lasttransferred = models.DateTimeField(
         db_column='LastTransferred',
-        default=timezone.make_aware(dt.datetime(2000, 1, 1)),
+        default=dt.datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
     )
     lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
     transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)

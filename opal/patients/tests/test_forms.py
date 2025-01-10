@@ -59,7 +59,7 @@ def test_relationshippending_missing_startdate() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
+            date_of_birth=timezone.now().date() - relativedelta(
                 years=14,
             ),
         ),
@@ -101,7 +101,7 @@ def test_relationshippending_update_fail() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
+            date_of_birth=timezone.now().date() - relativedelta(
                 years=14,
             ),
         ),
@@ -136,7 +136,7 @@ def test_relationshippending_type_not_contain_self(relationship_type: str | None
     relation_type = RelationshipType.objects.get(role_type=relationship_type)
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
+            date_of_birth=timezone.now().date() - relativedelta(
                 years=14,
             ),
         ),
@@ -158,7 +158,7 @@ def test_relationshippending_form_date_validated() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
         patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
+            date_of_birth=timezone.now().date() - relativedelta(
                 years=14,
             ),
         ),
@@ -184,7 +184,7 @@ def test_relationship_pending_status_reason() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
         patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
+            date_of_birth=timezone.now().date() - relativedelta(
                 years=14,
             ),
         ),
@@ -1109,7 +1109,7 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
     )
 
     patient = SOURCE_SYSTEM_PATIENT_DATA._asdict()
-    patient['date_of_birth'] = date.today() - relativedelta(years=age)
+    patient['date_of_birth'] = timezone.now().date() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
         patient=SourceSystemPatientData(**patient),
     )
