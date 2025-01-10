@@ -26,7 +26,7 @@ drf-spectacular==0.28.0  # https://pypi.org/project/drf-spectacular/
 
 # MySQL/MariaDB
 #
-mysqlclient==2.2.6 # https://github.com/PyMySQL/mysqlclient
+mysqlclient==2.2.7 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #
