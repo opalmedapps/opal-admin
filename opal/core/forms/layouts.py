@@ -119,10 +119,7 @@ class InlineReset(Layout):
 
         url = '{{request.path}}'
 
-        if extra_css:
-            css_class = f'{self.default_css_class} {extra_css}'
-        else:
-            css_class = f'{self.default_css_class} btn-unselected'
+        css_class = f'{self.default_css_class} {extra_css}' if extra_css else f'{self.default_css_class} btn-unselected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),

@@ -1072,10 +1072,9 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
 
     def test_deviations_no_respondents(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Ensure the command does not fail if there are no questionnaires with respondents."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
-                conn.close()
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
+            conn.close()
 
         message, _error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
@@ -1085,40 +1084,39 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         django_db_blocker: DjangoDbBlocker,
     ) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                query = """
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            query = """
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT';
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_1',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
-                    WHERE ID = 184;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_1',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                WHERE ID = 184;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_2',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
-                    WHERE ID = 189;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_2',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                WHERE ID = 189;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
-                    WHERE ID = 190;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
+                WHERE ID = 190;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = '',
-                        `respondentDisplayName` = ''
-                    WHERE ID = 184;
-                """
-                conn.execute(query)
-                conn.close()
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = '',
+                    `respondentDisplayName` = ''
+                WHERE ID = 184;
+            """
+            conn.execute(query)
+            conn.close()
 
         user_factories.Caregiver(
             first_name='TEST NAME',
@@ -1151,34 +1149,33 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
 
     def test_no_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Ensure the command does not return an error if no sync deviations for respondents' names."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                query = """
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            query = """
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT';
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_1',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
-                    WHERE ID = 184;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_1',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                WHERE ID = 184;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_2',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
-                    WHERE ID = 189;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_2',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                WHERE ID = 189;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT'
-                    WHERE ID = 190;
-                """
-                conn.execute(query)
-                conn.close()
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT'
+                WHERE ID = 190;
+            """
+            conn.execute(query)
+            conn.close()
 
         user_factories.Caregiver(
             first_name='TEST NAME',

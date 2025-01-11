@@ -351,24 +351,22 @@ def django_db_setup(
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='utf-8') as handle:
         sql_content = handle.read()
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
         sql_cleanup = handle.read()
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute(sql_content)
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute(sql_content)
 
     yield
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute('SELECT COUNT(*) FROM questionnaire;')
-            result = conn.fetchone()
-            assert result[0] == 0
-            conn.execute(sql_cleanup)
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute('SELECT COUNT(*) FROM questionnaire;')
+        result = conn.fetchone()
+        assert result[0] == 0
+        conn.execute(sql_cleanup)
 
 
 @pytest.fixture
@@ -392,25 +390,23 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='UTF-8') as handle:
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='utf-8') as handle:
         sql_data = handle.read()
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
         sql_cleanup = handle.read()
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            # safety check to ensure that there is no data already
-            conn.execute('SELECT COUNT(*) FROM questionnaire;')
-            result = conn.fetchone()
-            assert result[0] == 0
-            conn.execute(sql_data)
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        # safety check to ensure that there is no data already
+        conn.execute('SELECT COUNT(*) FROM questionnaire;')
+        result = conn.fetchone()
+        assert result[0] == 0
+        conn.execute(sql_data)
 
     yield
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute(sql_cleanup)
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute(sql_cleanup)
 
 
 @pytest.fixture

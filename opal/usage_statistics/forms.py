@@ -65,11 +65,10 @@ class UsageStatisticsExportFormMixin(forms.Form):
         start_date = self.cleaned_data.get('start_date')
         end_date = self.cleaned_data.get('end_date')
 
-        if start_date and end_date:
-            if start_date > end_date:
-                raise forms.ValidationError(
-                    gettext('Start date cannot be later than end date.'),
-                )
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError(
+                gettext('Start date cannot be later than end date.'),
+            )
         return self.cleaned_data
 
 

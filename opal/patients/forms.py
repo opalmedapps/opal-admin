@@ -554,9 +554,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             existing_user = self.existing_user
             relationship_type = cleaned_data.get('relationship_type')
 
-            if existing_user:
-                if relationship_type:
-                    self._validate_relationship(patient_instance, existing_user, relationship_type)
+            if existing_user and relationship_type:
+                self._validate_relationship(patient_instance, existing_user, relationship_type)
         elif patient_instance:
             self._validate_existing_relationship(cleaned_data, patient_instance)
 

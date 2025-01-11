@@ -117,7 +117,7 @@ class HL7CreateView(CreateAPIView[_Model]):
         # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
         valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
         valid_pid_mrn_sites = [
-            mrn_site for mrn_site in parsed_data.get('PID', None)['mrn_sites'] if mrn_site[1] in valid_sites
+            mrn_site for mrn_site in parsed_data.get('PID', [])['mrn_sites'] if mrn_site[1] in valid_sites
         ]
         try:
             patient = Patient.objects.get_patient_by_site_mrn_list(

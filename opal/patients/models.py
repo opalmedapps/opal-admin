@@ -441,7 +441,7 @@ class Relationship(models.Model):
         Returns:
             the relationship of the User and Patient
         """
-        return f'{str(self.patient)} <--> {str(self.caregiver)} [{str(self.type)}]'
+        return f'{self.patient} <--> {self.caregiver} [{self.type}]'
 
     def validate_start_date(self) -> list[str]:
         """
@@ -560,18 +560,21 @@ class Relationship(models.Model):
             if type_errors:
                 errors[NON_FIELD_ERRORS].extend(type_errors)
 
-        if hasattr(self, 'patient') and hasattr(self, 'caregiver'):
-            # exclude the current instance to support updating it
-            if Relationship.objects.exclude(
+        if (
+            hasattr(self, 'patient')
+            and hasattr(self, 'caregiver')
+             # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
                 pk=self.pk,
             ).filter(
                 patient=self.patient,
                 caregiver=self.caregiver,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
-            ).exists():
-                errors[NON_FIELD_ERRORS].append(
-                    gettext('There already exists an active relationship between the patient and caregiver.'),
-                )
+            ).exists()
+        ):
+            errors[NON_FIELD_ERRORS].append(
+                gettext('There already exists an active relationship between the patient and caregiver.'),
+            )
 
         if errors:
             raise ValidationError(errors)

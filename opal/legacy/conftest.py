@@ -18,7 +18,6 @@ def clear_questionnairedb(request: SubRequest, django_db_blocker: DjangoDbBlocke
     query_string = 'SET FOREIGN_KEY_CHECKS=0;'
     for table in request.param:
         query_string = ''.join([query_string, 'DELETE FROM ', table, ';'])
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute(query_string)
-            conn.close()
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute(query_string)
+        conn.close()

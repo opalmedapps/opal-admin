@@ -467,9 +467,8 @@ def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFi
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):
-        with caplog.at_level(logging.ERROR):
-            post_mock()
+    with pytest.raises(RequestException), caplog.at_level(logging.ERROR):
+        post_mock()
 
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
 
@@ -587,9 +586,8 @@ def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerF
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):
-        with caplog.at_level(logging.ERROR):
-            post_mock()
+    with pytest.raises(RequestException), caplog.at_level(logging.ERROR):
+        post_mock()
 
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
 
