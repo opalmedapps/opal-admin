@@ -271,7 +271,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
             # instances cannot be found or multiple instances returned
             err = f'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {exp}'
-            logger.error(err)
+            logger.exception(err)
             raise DatabaseError(err) from exp
 
         legacy_document.save()

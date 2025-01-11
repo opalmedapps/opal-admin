@@ -71,7 +71,7 @@ class QuestionnairesReportView(views.APIView):
         try:
             pdf_report = generate_questionnaire_report(patient, get_questionnaire_data(patient))
         except FPDFException as exc:
-            LOGGER.exception(exc)
+            LOGGER.exception('An error occurred during report generation.')
             raise exceptions.APIException(detail='An error occurred during report generation.') from exc
 
         encoded_report = base64.b64encode(pdf_report).decode('utf-8')

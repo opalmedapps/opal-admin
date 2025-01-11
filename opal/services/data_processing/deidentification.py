@@ -128,7 +128,7 @@ class OpenScienceIdentity:
         Returns:
             Cleaned string, or empty string
         """
-        if not string or string.strip() == '':
+        if not string or not string.strip():
             return ''
 
         # Transliterate the string to its closest ASCII representation

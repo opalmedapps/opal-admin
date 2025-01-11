@@ -120,10 +120,10 @@ class SourceSystemService:
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
-                    death_date_time=None if patient_data['deathDateTime'] == ''
+                    death_date_time=None if not patient_data['deathDateTime']
                     else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
+                    ramq_expiration=None if not patient_data['ramqExpiration']
                     else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',
@@ -187,10 +187,10 @@ class SourceSystemService:
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
-                    death_date_time=None if patient_data['deathDateTime'] == ''
+                    death_date_time=None if not patient_data['deathDateTime']
                     else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
+                    ramq_expiration=None if not patient_data['ramqExpiration']
                     else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',

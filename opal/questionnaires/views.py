@@ -110,7 +110,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             try:
                 qid = int(request.POST['questionnaireid'])
             except ValueError:
-                self.logger.error('Invalid request format for questionnaireid')
+                self.logger.exception('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
             context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 

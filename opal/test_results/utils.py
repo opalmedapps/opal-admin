@@ -165,12 +165,10 @@ def _get_site_instance(receiving_facility: str) -> Site:
     try:
         return Site.objects.get(acronym=receiving_facility)
     except Site.DoesNotExist:
-        LOGGER.error(
-            (
-                'An error occurred during pathology report generation.'
-                + 'Given receiving_facility code does not exist: {0}.'
-                + 'Proceeded generation with an empty Site.'
-            ).format(receiving_facility),
+        LOGGER.exception(
+            'An error occurred during pathology report generation.'
+            + f'Given receiving_facility code does not exist: {receiving_facility}.'
+            + 'Proceeded generation with an empty Site.'
         )
 
         return Site(
