@@ -888,7 +888,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             user_form.save()
         else:
             # to show errors and display messages on the field
-            for field, _value in user_form.errors.items():
+            for field in user_form.errors:
                 form.add_error(field, user_form.errors.get(field))  # type: ignore[arg-type]
 
             return self.form_invalid(form)

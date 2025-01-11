@@ -103,11 +103,12 @@ class SourceSystemService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(SourceSystemMRNData(
+                mrn_data = SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
-                ))
+                )
+                mrns.append(mrn_data)
 
             return {
                 'status': 'success',
@@ -170,11 +171,12 @@ class SourceSystemService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(SourceSystemMRNData(
+                mrn_data = SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
-                ))
+                )
+                mrns.append(mrn_data)
 
             return {
                 'status': 'success',

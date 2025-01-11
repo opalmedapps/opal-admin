@@ -109,7 +109,7 @@ class DisableFieldsMixin(forms.Form):
 
     def disable_fields(self) -> None:
         """Disable all form fields."""
-        for _field_name, field in self.fields.items():
+        for field in self.fields.values():
             field.disabled = True
 
         self.has_existing_data = True

@@ -1684,7 +1684,7 @@ def test_accessrequestrequestorform_disable_fields() -> None:
     form.disable_fields()
 
     # assert all fields are disabled
-    for _field_name, field in form.fields.items():
+    for field in form.fields.values():
         assert field.disabled
 
 
