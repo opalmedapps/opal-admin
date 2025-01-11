@@ -486,7 +486,7 @@ def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFi
     }
 
     # assert exception and system error message
-    assert caplog.records[0].message == 'Source System error: Caused by ConnectTimeoutError.'
+    assert caplog.records[0].message == 'Source System request error'
     assert caplog.records[0].levelname == 'ERROR'
 
 
