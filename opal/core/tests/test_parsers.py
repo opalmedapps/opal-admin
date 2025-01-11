@@ -255,7 +255,7 @@ class TestHL7Parser:
         parsed_data = self.parser.parse(stream)
         provider_administration_instruction = parsed_data['RXE'][0]['provider_administration_instruction']
         assert '\\E\\.br\\E\\' not in provider_administration_instruction
-        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"  # noqa: E501
+        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"
 
     def _assert_segment_data(
         self,

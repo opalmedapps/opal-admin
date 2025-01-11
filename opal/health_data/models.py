@@ -158,7 +158,8 @@ class QuantitySample(AbstractSample):
     class Meta(AbstractSample.Meta):
         verbose_name = _('Quantity Sample')
         verbose_name_plural = _('Quantity Samples')
-        constraints = AbstractSample.Meta.constraints + [
+        constraints = [
+            *AbstractSample.Meta.constraints,
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=QuantitySampleType.values),

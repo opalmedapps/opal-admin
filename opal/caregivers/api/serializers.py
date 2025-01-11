@@ -206,7 +206,7 @@ class _NestedCaregiverSerializer(CaregiverSerializer):
         extra_kwargs = {
             'legacy_id': dict(CaregiverSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
         }
-        fields = list(CaregiverSerializer.Meta.fields) + ['email']
+        fields = [*CaregiverSerializer.Meta.fields, 'email']
 
 
 class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):

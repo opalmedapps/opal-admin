@@ -13,7 +13,7 @@ from django.test import Client
 import pytest
 from _pytest.config import Config
 from _pytest.main import Session
-from _pytest.python import Function, Module
+from _pytest.python import Function, Module  # noqa: PLC2701
 from pytest_django import DjangoDbBlocker
 from pytest_mock import MockerFixture
 from rest_framework.test import APIClient

@@ -129,11 +129,10 @@ class PatientTable(tables.Table):
             mrn_site_list = []
 
             for item in value:
-                if isinstance(item, SourceSystemMRNData):
-                    item = item._asdict()
+                data = item._asdict() if isinstance(item, SourceSystemMRNData) else item
 
                 mrn_site_list.append(
-                    f'{item.get("site")}: {item.get("mrn")}',
+                    f'{data.get("site")}: {data.get("mrn")}',
                 )
         else:
             mrn_site_list = [

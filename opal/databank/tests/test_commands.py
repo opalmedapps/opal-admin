@@ -1118,6 +1118,23 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == last_sync
 
+    def _questionnaire_answer(self, index: int) -> dict[str, Any]:
+        """Return a questionnaire answer for the given index."""
+        return {
+            'answer_questionnaire_id': 190,
+            'creation_date': datetime(2024, 5, 5, 13, 17, 42, tzinfo=timezone.get_current_timezone()),
+            'questionnaire_id': 12,
+            'questionnaire_title': 'Edmonton Symptom Assessment System',
+            'question_id': index,
+            'question_text': 'Generic question text',
+            'question_display_order': 1,
+            'question_type_id': 2,
+            'question_type_text': 'Slider',
+            'question_answer_id': index,
+            'last_updated': datetime(2024, 5, 8, 14, 11, 12, tzinfo=timezone.get_current_timezone()),
+            'answer_value': str(index),
+        }
+
     def test_nest_and_serialize_queryset_questionnaires(self) -> None:
         """Verify the custom nesting behaviour works as expected for questionnaires."""
         django_pat1 = patient_factories.Patient()
@@ -1132,21 +1149,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             last_synchronized=yesterday,
         )
         # Mock the questionnaire queryset object since we dont use a normal pytest test_QuestionnaireDB connection
-        questionnaire_answer_object = lambda idx: {
-            'answer_questionnaire_id': 190,
-            'creation_date': datetime(2024, 5, 5, 13, 17, 42, tzinfo=timezone.get_current_timezone()),
-            'questionnaire_id': 12,
-            'questionnaire_title': 'Edmonton Symptom Assessment System',
-            'question_id': idx,
-            'question_text': 'Generic question text',
-            'question_display_order': 1,
-            'question_type_id': 2,
-            'question_type_text': 'Slider',
-            'question_answer_id': idx,
-            'last_updated': datetime(2024, 5, 8, 14, 11, 12, tzinfo=timezone.get_current_timezone()),
-            'answer_value': str(idx),
-        }
-        queryset = [questionnaire_answer_object(idx) for idx in range(5)]  # type: ignore[no-untyped-call]
+        queryset = [self._questionnaire_answer(idx) for idx in range(5)]
         command = send_databank_data.Command()
         result = command._nest_and_serialize_queryset(consent_instance.guid, queryset, 'QSTN')
 

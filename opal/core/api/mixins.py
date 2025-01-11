@@ -24,10 +24,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request, clone_request
 from rest_framework.response import Response
 
-_Model = TypeVar('_Model', bound=Model, covariant=True)
+_Model_co = TypeVar('_Model_co', bound=Model, covariant=True)
 
 
-class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
+class AllowPUTAsCreateMixin(GenericAPIView[_Model_co]):
     """
     The following mixin class may be used in order to update or create records in the targeted model.
 
@@ -77,7 +77,7 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
-    def _get_object_or_none(self) -> _Model | None:
+    def _get_object_or_none(self) -> _Model_co | None:
         """
         Attempt to retrieve object.
 
