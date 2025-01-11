@@ -4,7 +4,7 @@ import secrets
 
 from django.utils import timezone
 
-from factory import Faker, Sequence, SubFactory
+from factory import Faker, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 from faker.providers import BaseProvider
 
@@ -92,4 +92,4 @@ class EmailVerification(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
     email = 'opal@muhc.mcgill.ca'
-    sent_at = timezone.now() - dt.timedelta(seconds=10)
+    sent_at = lazy_attribute(lambda _: timezone.now() - dt.timedelta(seconds=10))

@@ -257,8 +257,8 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             )
             self._send_verification_code_email(email_verification, caregiver_profile.user)
         else:
-            # in case there is an error sent_at is None, but wont happen in fact
-            time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
+            sent_at: dt.datetime = email_verification.sent_at  # type: ignore[assignment]
+            time_delta = timezone.now() - sent_at
             if time_delta.total_seconds() > constants.CODE_RESEND_TIME_DELAY:
                 input_serializer.update(
                     email_verification,

@@ -1,5 +1,6 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
 from collections.abc import Callable, Generator
+from datetime import datetime
 from pathlib import Path
 
 from django.apps import apps
@@ -14,6 +15,7 @@ from _pytest.config import Config
 from _pytest.main import Session
 from _pytest.python import Function, Module
 from pytest_django import DjangoDbBlocker
+from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from opal.core import constants
@@ -57,6 +59,16 @@ def pytest_collection_modifyitems(session: Session, config: Config, items: list[
 
     # modify items in place with migration tests moved to the end
     items[:] = original_items_order + migration_tests
+
+
+@pytest.fixture(autouse=True)
+def mock_now(mocker: MockerFixture) -> None:
+    """
+    Mock timezone.now to avoid jumping to the next day in UTC.
+
+    This is an issue when tests run late in the day where the equivalent in UTC is on the next day.
+    """
+    mocker.patch('django.utils.timezone.now', side_effect=lambda: datetime.now().astimezone().replace(hour=13))
 
 
 @pytest.fixture

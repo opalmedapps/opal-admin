@@ -979,7 +979,7 @@ class TestVerifyEmailView:
         )
 
         email_verification.refresh_from_db()
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK, response.data
         assert email_verification.code != old_verification_code
 
 

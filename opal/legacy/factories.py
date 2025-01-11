@@ -481,7 +481,7 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     result_date_time = dt.datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone())
     unit_description = 'mmol'
     read_by = ''
-    available_at = timezone.now()
+    available_at = lazy_attribute(lambda _x: timezone.now())
 
 
 class LegacyOARoleFactory(DjangoModelFactory):

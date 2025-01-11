@@ -139,7 +139,7 @@ def test_patient_str() -> None:
 @pytest.mark.parametrize(('date_of_birth', 'reference_date', 'age'), [
     (date(2004, 1, 1), date(2023, 10, 1), 19),
     (date(2004, 12, 1), date(2023, 1, 1), 18),
-    (timezone.now().date() - relativedelta(years=23), None, 23),
+    (timezone.now().date() - relativedelta(years=23, days=1), None, 23),
 ])
 def test_patient_age_calculation(date_of_birth: date, reference_date: date | None, age: int) -> None:
     """Ensure the `calculate_age` method calculates the age correctly."""
