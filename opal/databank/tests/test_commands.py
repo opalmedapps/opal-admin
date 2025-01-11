@@ -642,7 +642,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         databank_patient1.refresh_from_db()
         assert databank_patient1.last_synchronized == last_sync
 
-    def test_module_not_in_synced_data(self, mocker: MockerFixture) -> None:
+    def test_module_not_in_synced_data(self) -> None:
         """Test behaviour when synced_data contains unknown module."""
         sent_data = [
             {
@@ -1085,7 +1085,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         captured = capsys.readouterr()
         assert not captured.err
 
-    def test_update_databank_patient_shared_data_partial_sender_error(self, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_update_databank_patient_shared_data_partial_sender_error(self) -> None:
         """Test behaviour when the update metadata function is called with partially failed patient data."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)

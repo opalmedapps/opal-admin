@@ -100,7 +100,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert DailyUserPatientActivity.objects.count() == 1
         assert DailyPatientDataReceived.objects.count() == 1
 
-    def test_existing_statistics_delete_in_prod_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_existing_statistics_delete_in_prod_env(self) -> None:
         """Ensure that the command's force-delete flag is forbidden in production environment."""
         stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
         assert stdout == 'Existing usage statistics data cannot be deleted in production environment\n'

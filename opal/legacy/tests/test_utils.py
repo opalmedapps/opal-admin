@@ -455,7 +455,7 @@ def test_legacy_patient_not_found(
 
 #  Unit test for questionnaires data processing
 @pytest.mark.django_db(databases=['questionnaire', 'default'])
-def test_get_questionnaire_data_success(mocker: MockerFixture, questionnaire_data: None) -> None:
+def test_get_questionnaire_data_success(questionnaire_data: None) -> None:
     """Test that get_questionnaire_data returns the expected data."""
     patient = patient_factories.Patient.create(legacy_id=51)
     questionnaire_result = legacy_utils.get_questionnaire_data(patient)
@@ -465,7 +465,7 @@ def test_get_questionnaire_data_success(mocker: MockerFixture, questionnaire_dat
 
 
 @pytest.mark.django_db(databases=['questionnaire', 'default'])
-def test_get_questionnaire_data_no_patient(mocker: MockerFixture) -> None:
+def test_get_questionnaire_data_no_patient() -> None:
     """Test that get_questionnaire_data with wrong patient id."""
     patient = patient_factories.Patient.create(legacy_id=0)
 
@@ -505,7 +505,7 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.django_db(databases=['questionnaire'])
-def test_fetch_questionnaire_from_db(mocker: MockerFixture, questionnaire_data: None) -> None:
+def test_fetch_questionnaire_from_db(questionnaire_data: None) -> None:
     """Test successful execution of fetch_questionnaires_from_db in the test questionnaire database."""
     external_patient_id = 51
     result = legacy_utils._fetch_questionnaires_from_db(external_patient_id)
@@ -548,7 +548,7 @@ def test_parse_query_result_empty_rows() -> None:
     assert not result
 
 
-def test_process_questionnaire_data(mocker: MockerFixture) -> None:
+def test_process_questionnaire_data() -> None:
     """Test processing parsed questionnaire data into QuestionnaireData Objects."""
     parsed_data_list = [
         {
@@ -586,7 +586,7 @@ def test_process_questionnaire_data(mocker: MockerFixture) -> None:
     ]
 
 
-def test_process_questionnaire_data_missing_questions(mocker: MockerFixture) -> None:
+def test_process_questionnaire_data_missing_questions() -> None:
     """Test processing with missing `questions` key."""
     parsed_data_list = [
         {
@@ -600,7 +600,7 @@ def test_process_questionnaire_data_missing_questions(mocker: MockerFixture) -> 
         legacy_utils._process_questionnaire_data(parsed_data_list)
 
 
-def test_process_questionnaire_data_invalid_date_format(mocker: MockerFixture) -> None:
+def test_process_questionnaire_data_invalid_date_format() -> None:
     """Test processing with invalid `last_updated` date format."""
     parsed_data_list = [
         {

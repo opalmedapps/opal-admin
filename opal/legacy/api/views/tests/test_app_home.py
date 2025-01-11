@@ -112,7 +112,6 @@ class TestHomeAppView:
         self,
         api_client: APIClient,
         admin_user: User,
-        mocker: MockerFixture,
     ) -> None:
         """Test the return value of get home data when the fields are empty."""
         relationship = patient_factories.Relationship(

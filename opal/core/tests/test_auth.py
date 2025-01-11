@@ -283,7 +283,7 @@ def test_authenticate_integration_incomplete_data(mocker: MockerFixture) -> None
 
 
 @pytest.mark.django_db
-def test_django_authentication_integration(client: Client, mocker: MockerFixture) -> None:
+def test_django_authentication_integration(mocker: MockerFixture) -> None:
     """Django authenticate should return user on successful authentication using fed auth."""
     user = UserModel.objects.create(username='testuser')
 

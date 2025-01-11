@@ -208,7 +208,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
     assert report_data['data']['message'] == 'Expecting value: line 1 column 1 (char 0)'
 
 
-def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
+def test_export_pdf_report_uses_settings(mocker: MockerFixture) -> None:
     """Ensure source system export report request uses report settings."""
     # Create a new source system service that uses the mocked settings
     source_system_service_mock = _create_source_system_service_mock_settings()
