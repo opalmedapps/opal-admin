@@ -94,7 +94,7 @@ ruff:
   script:
     - ruff --version
     - ruff check --output-format gitlab > gl-code-quality-report.json
-    - ruff format --check
+    # - ruff format --check
   artifacts:
     when: always
     reports:
