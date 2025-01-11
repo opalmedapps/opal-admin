@@ -1,13 +1,12 @@
 """This module provides forms for the `patients` app."""
 import logging
 from datetime import timedelta
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.db.models import QuerySet
 from django.forms.fields import Field
 from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
@@ -38,6 +37,9 @@ from opal.users.models import Caregiver, Language, User
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,9 +85,9 @@ def get_site_empty_label(form: forms.Form) -> str:
         `Choose` if mrn is selected, `Not Required` otherwise
     """
     if is_mrn_selected(form):
-        return cast(str, _('Choose...'))
+        return cast('str', _('Choose...'))
 
-    return cast(str, _('Not required'))
+    return cast('str', _('Not required'))
 
 
 class DisableFieldsMixin(forms.Form):
@@ -937,7 +939,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
 
         caregiver_firstname: str | None = self.cleaned_data.get('first_name')
         caregiver_lastname: str | None = self.cleaned_data.get('last_name')
-        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+        type_field: RelationshipType = cast('RelationshipType', self.cleaned_data.get('type'))
 
         # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
@@ -987,8 +989,8 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type = cast(forms.ChoiceField, self.fields['card_type'])
-        site = cast(forms.ModelChoiceField[Site], self.fields['site'])
+        card_type = cast('forms.ChoiceField', self.fields['card_type'])
+        site = cast('forms.ModelChoiceField[Site]', self.fields['site'])
 
         # add up-validate to `card_type` field to trigger post on change
         card_type.widget.attrs.update({'up-validate': ''})

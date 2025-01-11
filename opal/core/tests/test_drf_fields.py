@@ -1,9 +1,11 @@
 import base64
 from pathlib import Path
-
-from django.db.models.fields.files import FieldFile
+from typing import TYPE_CHECKING
 
 from ..drf_fields import Base64FileField
+
+if TYPE_CHECKING:
+    from django.db.models.fields.files import FieldFile
 
 
 # copied from: https://github.com/Hipo/drf-extra-fields/blob/master/tests/test_fields.py

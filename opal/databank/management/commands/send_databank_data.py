@@ -1,9 +1,8 @@
 """Command for sending data to the Databank."""
 import json
 from collections import defaultdict
-from datetime import datetime
 from http import HTTPStatus
-from typing import Any, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -16,6 +15,9 @@ from requests.auth import HTTPBasicAuth
 from opal.databank.models import DatabankConsent, DataModuleType, SharedData
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 CombinedModuleData: TypeAlias = list[dict[str, Any]]
 DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData

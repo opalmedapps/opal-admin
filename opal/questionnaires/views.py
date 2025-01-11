@@ -3,7 +3,7 @@ import logging
 from http import HTTPStatus
 from io import BytesIO, StringIO
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpRequest, HttpResponse
@@ -13,10 +13,12 @@ from django.views.generic.base import TemplateView
 import pandas as pd
 
 from ..core.audit import update_request_event_query_string
-from ..users.models import User
 from .models import QuestionnaireProfile
 from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .tables import ReportTable
+
+if TYPE_CHECKING:
+    from ..users.models import User
 
 # All queries assume the integer representation of opal languages
 LANGUAGE_MAP = MappingProxyType({'fr': 1, 'en': 2})

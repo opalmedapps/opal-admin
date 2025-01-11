@@ -1,13 +1,12 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
 import datetime as dt
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models.functions import SHA512
-from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -43,6 +42,9 @@ from opal.patients.models import Relationship
 from opal.users.models import Caregiver, User
 
 from .. import constants
+
+if TYPE_CHECKING:
+    from django.db.models.manager import Manager
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
