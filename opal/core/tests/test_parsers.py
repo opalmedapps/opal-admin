@@ -255,7 +255,7 @@ class TestHL7Parser:
         parsed_data = self.parser.parse(stream)
         provider_administration_instruction = parsed_data['RXE'][0]['provider_administration_instruction']
         assert '\\E\\.br\\E\\' not in provider_administration_instruction
-        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"  # noqa" E501
+        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"  # noqa: E501
 
     def _assert_segment_data(
         self,
@@ -274,7 +274,8 @@ class TestHL7Parser:
         assert not unexpected_keys, f'Unexpected keys present in {segment_name} segment: {unexpected_keys}'
 
     def _load_hl7_fixture(self, filename: str) -> BytesIO:
-        """Load a HL7 fixture as a byte stream.
+        """
+        Load a HL7 fixture as a byte stream.
 
         Returns:
             bytestream of the fixture data

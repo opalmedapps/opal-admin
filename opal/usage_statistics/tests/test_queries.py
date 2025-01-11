@@ -2749,7 +2749,8 @@ def test_fetch_users_latest_login_year_summary_success() -> None:
 
 
 def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
-    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
+    """
+    Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
 
     The test user are same and has records in different years.
     """
@@ -2782,7 +2783,8 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
 
 
 def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None:
-    """Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
+    """
+    Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
 
     The test users are different and have records in the same year.
     """
@@ -2920,7 +2922,8 @@ def test_fetch_logins_summary_per_user_success() -> None:
 
 
 def test_fetch_logins_summary_per_user_multiple_logins() -> None:
-    """Ensure fetch_logins_summary_per_user successfully fetches login statistics.
+    """
+    Ensure fetch_logins_summary_per_user successfully fetches login statistics.
 
     The test user has multiple logins in different days.
     """
@@ -2996,7 +2999,8 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
 
 
 def _create_relationship_records() -> dict[str, Any]:
-    """Create relationships for 4 patients.
+    """
+    Create relationships for 4 patients.
 
     The records are created for Marge, Homer, Bart, and Lisa.
 

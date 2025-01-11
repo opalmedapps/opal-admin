@@ -54,7 +54,8 @@ class MockConnectionError:
     """Mock a connection error during database query to ensure api views handle errors gracefully."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Raise the error.
+        """
+        Raise the error.
 
         Args:
             args: Any number of additional arguments

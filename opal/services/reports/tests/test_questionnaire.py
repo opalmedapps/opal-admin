@@ -287,7 +287,8 @@ INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
 
 
 def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str]]:
-    """Create mock `dict` response on the `report` HTTP POST request.
+    """
+    Create mock `dict` response on the `report` HTTP POST request.
 
     Args:
         status: response status code
@@ -643,7 +644,8 @@ def test_generate_pdf_multiple_pages() -> None:
 
 
 def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> None:
-    """Ensure that the pdf is correctly generated with the toc being multiple pages.
+    """
+    Ensure that the pdf is correctly generated with the toc being multiple pages.
 
     Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
     the right number of pages for the TOC.

@@ -8,7 +8,6 @@ from django.utils.crypto import get_random_string
 import pytest
 from fpdf import FPDFException
 from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework import status
 from rest_framework.response import Response

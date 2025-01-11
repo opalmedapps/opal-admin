@@ -1,4 +1,3 @@
-from datetime import date
 from http import HTTPStatus
 
 from django.test import Client

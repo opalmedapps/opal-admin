@@ -41,7 +41,7 @@ LEGACY_PATIENT_QUERY = """
         CONVERT_TZ(P.DeathDate, '{timezone}', 'UTC') as DeathDate
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
-"""
+"""  # noqa: RUF027
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
     SELECT

@@ -2,7 +2,6 @@ import json
 from http import HTTPStatus
 
 from django.contrib.auth import authenticate
-from django.test import Client
 
 import pytest
 from pytest_django.fixtures import SettingsWrapper

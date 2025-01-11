@@ -202,7 +202,8 @@ class TestCreatePrescriptionView:
         assert not response.data['pharmacy_encoded_order']['pharmacy_route']['administration_method']
 
     def _load_hl7_fixture(self, filename: str) -> str:
-        """Load a HL7 fixture for testing.
+        """
+        Load a HL7 fixture for testing.
 
         Returns:
             string of the fixture data

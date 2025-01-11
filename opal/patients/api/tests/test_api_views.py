@@ -1,6 +1,5 @@
 """Test module for the `patients` app REST API endpoints."""
 
-import datetime as dt
 import json
 from collections.abc import Callable
 from datetime import datetime
@@ -604,7 +603,8 @@ class TestPatientDemographicView:
         assert relationships[1].end_date > timezone.now().date()
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for the patient demographic update.
+        """
+        Generate valid JSON data for the patient demographic update.
 
         Returns:
             dict: valid JSON data

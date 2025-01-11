@@ -328,7 +328,7 @@ class TestInitializeData(CommandTestMixin):
 
     def test_insert_existing_data_force_delete(self) -> None:
         """Existing data with the exception of system users is deleted before inserted."""
-        stdout, stderr = self._call_command('initialize_data')
+        stdout, _stderr = self._call_command('initialize_data')
 
         listener = User.objects.get(username='listener')
         registration_listener = User.objects.get(username='listener-registration')
@@ -342,7 +342,7 @@ class TestInitializeData(CommandTestMixin):
         token_legacy_backend = Token.objects.get(user=legacy_backend)
         token_orms = Token.objects.get(user=orms)
 
-        stdout, stderr = self._call_command('initialize_data', '--force-delete')
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
         assert User.objects.count() == 6
@@ -362,7 +362,7 @@ class TestInitializeData(CommandTestMixin):
     @pytest.mark.usefixtures('set_orms_disabled')
     def test_insert_existing_data_force_delete_orms_disabled(self) -> None:
         """Existing data with the exception of system users is deleted before inserted and skips ORMS data."""
-        stdout, stderr = self._call_command('initialize_data')
+        stdout, _stderr = self._call_command('initialize_data')
 
         listener = User.objects.get(username='listener')
         registration_listener = User.objects.get(username='listener-registration')
@@ -374,7 +374,7 @@ class TestInitializeData(CommandTestMixin):
         token_interface_engine = Token.objects.get(user=interface_engine)
         token_legacy_backend = Token.objects.get(user=legacy_backend)
 
-        stdout, stderr = self._call_command('initialize_data', '--force-delete')
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 6
         assert User.objects.count() == 5

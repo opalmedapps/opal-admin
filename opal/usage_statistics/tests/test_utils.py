@@ -904,7 +904,8 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
 
 
 def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relationship, dict[str, Any]]:
-    """Fetch annotated relationships queryset used in the `RelationshipMapping`.
+    """
+    Fetch annotated relationships queryset used in the `RelationshipMapping`.
 
     Returns:
         annotated relationships queryset

@@ -2294,7 +2294,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=homer,
             date_added=previous_day,
-            scheduledstarttime=timezone.now()+ dt.timedelta(days=7),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=7),
         )
         legacy_factories.LegacyDocumentFactory(
             documentsernum=3,
@@ -3247,7 +3247,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         app_version: str = '100.100.100',
         days_delta: int = 1,
     ) -> legacy_factories.LegacyPatientActivityLogFactory:
-        """Create `LegacyPatientActivityLog` object.
+        """
+        Create `LegacyPatientActivityLog` object.
 
         Args:
             request: request type; defaults to 'Login'

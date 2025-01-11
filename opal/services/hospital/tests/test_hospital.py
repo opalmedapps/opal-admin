@@ -10,7 +10,6 @@ from django.utils import timezone
 import pytest
 import requests
 from _pytest.logging import LogCaptureFixture
-from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
 
@@ -59,16 +58,18 @@ source_system_service = SourceSystemService()
 
 
 def _create_report_export_response_data() -> dict[str, str]:
-    """Create mock `dict` response on the `report export` HTTP POST request.
+    """
+    Create mock `dict` response on the `report export` HTTP POST request.
 
     Returns:
-        dict[str, str]: mock data response
+        mock data response
     """
     return {'status': 'success'}
 
 
 def _create_source_system_service_mock_settings() -> SourceSystemService:
-    """Create a mock SourceSystemService with specific parameters different from the default ones in settings.
+    """
+    Create a mock SourceSystemService with specific parameters different from the default ones in settings.
 
     Returns:
         A mock SourceSystemService
@@ -605,7 +606,7 @@ def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerF
     }
 
     # assert exception and system error message
-    assert caplog.records[0].message == 'Source System error: Caused by ConnectTimeoutError.'
+    assert caplog.records[0].message == 'Source System request error'
     assert caplog.records[0].levelname == 'ERROR'
 
 

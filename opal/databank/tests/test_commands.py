@@ -1235,10 +1235,11 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                     assert key2 in answer
 
     def _create_custom_source_system_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
-        """Prepare a response message according to module and success/failure.
+        """
+        Prepare a response message according to module and success/failure.
 
         Args:
-            module databank data type
+            module: databank data type
 
         Returns:
             dictionary of response data

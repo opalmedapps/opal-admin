@@ -760,7 +760,7 @@ def test_create_access_request_new_patient_caregiver() -> None:
     self_type = RelationshipType.objects.self_type()
     Institution()
 
-    relationship, registration_code = utils.create_access_request(
+    _relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
         ('Marge', 'Simpson'),
         self_type,

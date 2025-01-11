@@ -22,7 +22,8 @@ pytestmark = pytest.mark.django_db
 
 
 def _create_empty_parsed_observations() -> dict[str, list[str]]:
-    """Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
+    """
+    Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
 
     Returns:
         parsed observations dictionary
@@ -36,7 +37,8 @@ def _create_empty_parsed_observations() -> dict[str, list[str]]:
 
 
 def _create_empty_parsed_notes() -> dict[str, Any]:
-    """Create empty parsed notes dictionary with prepared_by and prepared_at fields.
+    """
+    Create empty parsed notes dictionary with prepared_by and prepared_at fields.
 
     Returns:
         parsed notes dictionary

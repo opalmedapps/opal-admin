@@ -106,5 +106,5 @@ class Command(BaseCommand):
             self.stderr.write('\nThe following patients were not updated:\n')
             for skipped_patient, reason in skipped_patients:
                 self.stderr.write(
-                    f'patient_id={skipped_patient.id}\tlegacy_id={skipped_patient.legacy_id}\t\tpatient_uuid={str(skipped_patient.uuid)} ({reason})\n',
+                    f'patient_id={skipped_patient.id}\tlegacy_id={skipped_patient.legacy_id}\t\tpatient_uuid={skipped_patient.uuid} ({reason})\n',
                 )

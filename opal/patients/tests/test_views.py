@@ -635,8 +635,8 @@ def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client)
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
-    delete_button_data = soup.find_all('a', href=re.compile('delete'))
-    update_button_data = soup.find_all('a', href=re.compile('update'))
+    delete_button_data = soup.find_all('a', href=re.compile(r'delete'))
+    update_button_data = soup.find_all('a', href=re.compile(r'update'))
 
     assert response.status_code == HTTPStatus.OK
     assert not delete_button_data
@@ -654,8 +654,8 @@ def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
-    delete_button_data = soup.find_all('a', href=re.compile('delete'))
-    update_button_data = soup.find_all('a', href=re.compile('update'))
+    delete_button_data = soup.find_all('a', href=re.compile(r'delete'))
+    update_button_data = soup.find_all('a', href=re.compile(r'update'))
 
     assert response.status_code == HTTPStatus.OK
     assert delete_button_data
@@ -1089,7 +1089,7 @@ def test_access_request_invalid_management_form(registration_user: User) -> None
     request.user = registration_user
 
     view = AccessRequestView.as_view()
-    with pytest.raises(SuspiciousOperation, match='ManagementForm data is missing or has been tampered with.'):
+    with pytest.raises(SuspiciousOperation, match='ManagementForm data is missing or has been tampered with'):
         view(request)
 
 

@@ -704,6 +704,7 @@ def test_invalid_question_date_format() -> None:
 
 
 def questionnaire_data_mock() -> list[QuestionnaireData]:
+    """Create a list of questionnaire data."""
     question = Question(
         question_text='Sample question',
         question_label='Sample label',

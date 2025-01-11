@@ -134,7 +134,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
         Returns:
             sql string content
         """
-        with Path(directory).open() as handle:
+        with Path(directory).open(encoding='utf-8') as handle:
             sql_content = handle.read()
             handle.close()
         return sql_content
