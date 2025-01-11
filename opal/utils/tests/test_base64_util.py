@@ -85,6 +85,6 @@ def test_encode_file_to_base64_invalid_path() -> None:
         assert base64_str == ''
 
     try:
-        base64_str = base64_util.encode_to_base64(Path(''))
+        base64_str = base64_util.encode_to_base64(Path())
     except OSError:
         assert base64_str == ''
