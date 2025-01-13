@@ -84,7 +84,7 @@ pre-commit:
     - .uses_python_dependencies
   script:
     - apk add --no-cache git
-    - SKIP=ruff,ruff-format,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
+    - SKIP=ruff,ruff-format,mypy,markdownlint-cli2 pre-commit run --all-files --show-diff-on-failure
 
 
 ruff:
