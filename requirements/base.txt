@@ -34,7 +34,7 @@ mysqlclient==2.2.7 # https://github.com/PyMySQL/mysqlclient
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.32.3  # https://github.com/psf/requests
 # required for ImageFields
-Pillow==10.4.0  # https://pypi.org/project/Pillow
+Pillow==11.0.0  # https://pypi.org/project/Pillow
 whitenoise[Brotli]==6.8.2  # http://whitenoise.evans.io/en/stable/index.html
 
 # Export Report functionality
