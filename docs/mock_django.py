@@ -1,4 +1,4 @@
-"""Mocks pytkdocs to workaround issues with Django and Django REST framework."""
+"""Mocks pytkdocs to workaround issues with Django and Django REST framework."""  # noqa: INP001
 
 from typing import Any
 from unittest.mock import MagicMock
@@ -47,9 +47,12 @@ def detect_field_model(loader: Loader, attr_name: str, direct_members: Any, all_
     """
     first_order_attr_name, remainder = split_attr_name(attr_name)
 
-    if remainder and first_order_attr_name in all_members:
-        if not hasattr(all_members[first_order_attr_name], remainder):
-            return False
+    if (
+        remainder
+        and first_order_attr_name in all_members
+        and not hasattr(all_members[first_order_attr_name], remainder)
+    ):
+        return False
 
     return origin_detect_field_model(loader, attr_name, direct_members, all_members)
 

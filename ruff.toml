@@ -143,6 +143,7 @@ extend-select = [
 ]
 
 [lint.per-file-ignores]
+"manage.py" = ["ALL"]
 "**/migrations/*" = [
     # allow missing docstring in public module
     "D100",
