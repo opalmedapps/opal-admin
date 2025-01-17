@@ -54,7 +54,7 @@ class LegacyDictionary(models.Model):
     content_id = models.IntegerField(db_column='contentId', db_index=True)
     content = models.TextField(db_column='content')
     deleted = models.SmallIntegerField(db_column='deleted', default=0, db_index=True)
-    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True, null=True)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True, null=True)  # noqa: DJ001
     creation_date = models.DateTimeField(db_column='creationDate')
     created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')

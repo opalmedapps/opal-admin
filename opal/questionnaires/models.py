@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from opal.users.models import User
 
 
-class Questionnaire(models.Model):
+class Questionnaire(models.Model):  # noqa: DJ008
     """
     Empty model to allow for 'modelless' permissions in Questionnaires app.
 
@@ -17,9 +17,7 @@ class Questionnaire(models.Model):
     class Meta:
         managed = False
         default_permissions = ()
-        permissions = (
-            ('export_report', 'Export Reports'),
-        )
+        permissions = (('export_report', 'Export Reports'),)
         verbose_name = _('Questionnaire')
         verbose_name_plural = _('Questionnaires')
 
@@ -65,7 +63,7 @@ class QuestionnaireProfile(models.Model):
         questionnaires_following, _ = cls.objects.get_or_create(
             user=user,
         )
-        if (toggle):
+        if toggle:
             questionnaires_following.questionnaire_list[qid] = {
                 'title': qname,
                 'lastviewed': timezone.now().date().isoformat(),

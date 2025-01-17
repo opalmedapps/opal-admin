@@ -6,18 +6,18 @@ from ..dbrouters import LegacyDbRouter
 # Create fake model classes to simulate managed and unmanaged models
 # At runtime Django's model._meta.app_label
 # does not return the fully qualified name, e.g., core instead of opal.core
-class ManagedModel(models.Model):
+class ManagedModel(models.Model):  # noqa: DJ008
     class Meta:
         app_label = 'core'
 
 
-class LegacyModel(models.Model):
+class LegacyModel(models.Model):  # noqa: DJ008
     class Meta:
         app_label = 'legacy'
         managed = False
 
 
-class LegacyQuestionnaireModel(models.Model):
+class LegacyQuestionnaireModel(models.Model):  # noqa: DJ008
     class Meta:
         app_label = 'legacy_questionnaires'
         managed = False
