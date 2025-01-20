@@ -69,6 +69,9 @@ select = [
     # flake8-implicit-str-concat
     # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
     "ISC",
+    # flake8-import-conventions
+    # https://docs.astral.sh/ruff/rules/#flake8-import-conventions-icn
+    "ICN",
     # flake8-no-pep420
     # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
     "INP",

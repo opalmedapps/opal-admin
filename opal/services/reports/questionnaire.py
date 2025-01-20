@@ -1,4 +1,5 @@
 """Module providing business logic for generating questionnaire PDF reports using FPDF2."""
+
 import io
 import json
 import logging
@@ -18,7 +19,7 @@ import requests
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, TableBordersLayout
 from fpdf.outline import OutlineSection
-from plotly import express
+from plotly import express as px
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
@@ -131,8 +132,7 @@ class QuestionnairePDF(FPDF):
 
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
-            f'{site_mrn["site_code"]}: {site_mrn["mrn"]}'
-            for site_mrn in patient_data.patient_sites_and_mrns
+            f'{site_mrn["site_code"]}: {site_mrn["mrn"]}' for site_mrn in patient_data.patient_sites_and_mrns
         ]
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
@@ -332,7 +332,6 @@ class QuestionnairePDF(FPDF):
 
     def _draw_questionnaire_result(self) -> None:
         for index, data in enumerate(self.questionnaire_data):
-
             if index > 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=16)
@@ -404,7 +403,7 @@ class QuestionnairePDF(FPDF):
         """
         data_frame = self._prepare_question_chart(question)
 
-        chart_trace = express.line(
+        chart_trace = px.line(
             data_frame,
             x=data_frame.iloc[:, 0],
             y=data_frame.iloc[:, 1],
@@ -426,9 +425,11 @@ class QuestionnairePDF(FPDF):
         # Make sure we see the max and the min value of the markers
         if question.max_value and question.min_value is not None:
             chart_trace.for_each_yaxis(
-                lambda var: var.update({'range': [
-                    0, question.max_value * 1.1,
-                ],
+                lambda var: var.update({
+                    'range': [
+                        0,
+                        question.max_value * 1.1,
+                    ],
                 }),
             )
         chart_trace.update_layout(
