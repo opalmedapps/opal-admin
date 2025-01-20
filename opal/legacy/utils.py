@@ -1,6 +1,8 @@
 """Utility functions used by legacy API views."""
+
 import datetime as dt
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
@@ -56,6 +58,8 @@ DatabankControlRecords: TypeAlias = Union[
     ],
     None,
 ]
+
+LOGGER = logging.getLogger(__name__)
 
 
 class DataFetchError(Exception):
@@ -419,7 +423,8 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             readstatus=0,
             date_added=timezone.now(),
         )
-    except Exception:
+    except LegacyPatient.DoesNotExist:
+        LOGGER.exception(f'Error while creating databank consent for patient {django_patient.uuid}')
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)
         return False
@@ -523,9 +528,7 @@ def _fetch_questionnaires_from_db(
             'getCompletedQuestionnairesList',
             [legacy_patient_id, 1, 'EN'],
         )
-        return [
-            json.loads(row[0]) for row in cursor.fetchall()
-        ]
+        return [json.loads(row[0]) for row in cursor.fetchall()]
 
 
 def _parse_query_result(
@@ -606,7 +609,6 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
     questions = []
 
     for question in questions_data:
-
         answers = question.get('values') or []
         if not isinstance(answers, list):
             msg = f"Invalid type for 'answers' {type(answers)} for question: {question}"
@@ -626,7 +628,8 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
                     (
                         datetime.fromisoformat(answer[0]).astimezone(timezone.get_current_timezone()),
                         str(answer[1]),
-                    ) for answer in answers
+                    )
+                    for answer in answers
                 ],
             ),
         )
@@ -660,9 +663,11 @@ def generate_questionnaire_report(
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq,
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all().annotate(
+                patient.hospital_patients.all()
+                .annotate(
                     site_code=models.F('site__acronym'),
-                ).values('mrn', 'site_code'),
+                )
+                .values('mrn', 'site_code'),
             ),
         ),
         questionnaires=questionnaire_data_list,
