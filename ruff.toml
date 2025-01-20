@@ -124,6 +124,9 @@ select = [
     # perflint
     # https://docs.astral.sh/ruff/rules/#perflint-perf
     "PERF",
+    # refurb
+    # https://docs.astral.sh/ruff/rules/#refurb-furb
+    "FURB",
     # pydoclint (DOC)
     # https://docs.astral.sh/ruff/rules/#pydoclint-doc
     "DOC",

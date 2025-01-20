@@ -335,9 +335,7 @@ class Command(BaseCommand):
 
         password_option: str = options['admin_password']
         raw_password = (
-            password_option
-            if password_option
-            else secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+            password_option or secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
         )
         ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
 

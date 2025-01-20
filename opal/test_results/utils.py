@@ -51,7 +51,7 @@ def generate_pathology_report(
             patient_first_name=patient.first_name,
             patient_last_name=patient.last_name,
             patient_date_of_birth=patient.date_of_birth,
-            patient_ramq=patient.ramq if patient.ramq else '',
+            patient_ramq=patient.ramq or '',
             patient_sites_and_mrns=list(
                 patient.hospital_patients.all().annotate(
                     site_code=models.F('site__acronym'),

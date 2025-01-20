@@ -137,7 +137,7 @@ class QuantitySample(AbstractSample):
         _('Value'),
         max_digits=7,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(Decimal(0))],
     )
     type = models.CharField(
         _('Type'),

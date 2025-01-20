@@ -807,7 +807,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         """
         relationship_record = self.get_object()
         http_referrer = self.request.headers.get('referer')
-        cancel_url = http_referrer if http_referrer else self.get_success_url()
+        cancel_url = http_referrer or self.get_success_url()
         if relationship_record.status == RelationshipStatus.EXPIRED:
             return render(
                 request,

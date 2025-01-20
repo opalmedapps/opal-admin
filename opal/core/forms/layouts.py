@@ -68,7 +68,7 @@ class InlineSubmit(Layout):
             extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the submit button
         """
-        the_label = label if label else self.default_label
+        the_label = label or self.default_label
 
         submit = Submit(name, the_label, **kwargs)
 
@@ -114,7 +114,7 @@ class InlineReset(Layout):
             extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the reset button
         """
-        the_label = label if label else self.default_label
+        the_label = label or self.default_label
         flat_attrs = flatatt(kwargs)
 
         url = '{{request.path}}'
