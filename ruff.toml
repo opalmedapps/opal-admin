@@ -75,6 +75,10 @@ select = [
     # flake8-no-pep420
     # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
     "INP",
+    # flake8-logging
+    # https://docs.astral.sh/ruff/rules/#flake8-logging-log
+    "LOG",
+    # TODO: Use G (logging format)?
     # flake8-pytest-style
     # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
     "PT",
@@ -92,16 +96,25 @@ select = [
     "TID",
     # flake8-type-checking
     # https://docs.astral.sh/ruff/rules/#flake8-type-checking-tch
-    "TCH",
+    "TC",
+    # flake8-gettext
+    # https://docs.astral.sh/ruff/rules/#flake8-gettext-int
+    "INT",
     # flake8-unused-arguments (ARG)
     # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
     # "ARG",
     # flake8-use-pathlib
     # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
     "PTH",
+    # TODO: flake8-todos
+    # https://docs.astral.sh/ruff/rules/#flake8-todos-td
+    # "TD",
     # eradicate
     # https://docs.astral.sh/ruff/rules/#eradicate-era
     "ERA",
+    # pandas-vet
+    # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
+    "PD",
     # pylint
     # https://docs.astral.sh/ruff/rules/#pylint-pl
     "PL",

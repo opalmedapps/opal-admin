@@ -1,4 +1,5 @@
 """This module provides views for questionnaire settings."""
+
 import logging
 from http import HTTPStatus
 from io import BytesIO, StringIO
@@ -35,7 +36,7 @@ class IndexTemplateView(TemplateView):
 class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing a user's saved questionnaires dashboard."""
 
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -64,7 +65,7 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
 class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the list of available questionnaires."""
 
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     template_name = 'questionnaires/export_reports/reports-list.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -89,7 +90,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for selecting query parameters."""
 
     template_name = 'questionnaires/export_reports/reports-filter.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
@@ -137,7 +138,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for viewing the selected report."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
@@ -207,7 +208,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     """This view returns the same page after downloading the csv to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
@@ -229,12 +230,12 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         qid = request.POST.get('questionnaireid')
         datesuffix = timezone.now().date().isoformat()
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        df = pd.DataFrame.from_records(
+        df_report = pd.DataFrame.from_records(
             get_temp_table(),
         )
 
         buffer = StringIO()
-        df.to_csv(buffer, index=False, header=True)
+        df_report.to_csv(buffer, index=False, header=True)
         return HttpResponse(
             buffer.getvalue(),
             content_type='text/csv',
@@ -247,7 +248,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     """This view returns the same page after downloading the xlsx to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
@@ -271,22 +272,22 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         date_suffix = timezone.now().date().isoformat()
         filename = f'questionnaire-{qid}-{date_suffix}.xlsx'
         report_dict = get_temp_table()
-        df = pd.DataFrame.from_records(report_dict)
+        df_report = pd.DataFrame.from_records(report_dict)
         buffer = BytesIO()
 
-        if tabs == 'none' or df.empty:
+        if tabs == 'none' or df_report.empty:
             # If df is empty return an empty download to avoid a potential key error
-            df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
+            df_report.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
         else:
             # sort by patient or question id
             column_name = 'patient_id' if tabs == 'patients' else 'question_id'
             sheet_prefix = 'patient' if tabs == 'patients' else 'question_id'
             sort_rows_column = 'question_id' if tabs == 'patients' else 'patient_id'
-            ids = df[column_name].unique()
+            ids = df_report[column_name].unique()
             ids.sort()
             with pd.ExcelWriter(buffer) as writer:
                 for current_id in ids:
-                    patient_rows = df.loc[df[column_name] == current_id]
+                    patient_rows = df_report.loc[df_report[column_name] == current_id]
                     patient_rows = patient_rows.sort_values(
                         by=['last_updated', sort_rows_column],
                         ascending=[True, True],
