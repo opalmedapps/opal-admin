@@ -74,7 +74,7 @@ class Command(BaseCommand):
             + f'(out of {self.total_legacy_data_received_log_count})',
         )
 
-    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:
+    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:  # noqa: C901
         """
         Migrate list of legacy patient activity logs.
 

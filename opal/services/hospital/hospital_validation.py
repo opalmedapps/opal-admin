@@ -155,7 +155,7 @@ class SourceSystemValidator:
 
         return success, errors
 
-    def check_patient_data(self, patient_data: Any) -> list[str]:
+    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901, PLR0912
         """
         Check if the patient data is valid.
 
@@ -242,7 +242,7 @@ class SourceSystemValidator:
             errors.append('Patient data does not have the attribute mrns')
         if mrns:
             for mrn in mrns:
-                errors = errors + self._check_mrn_data(mrn)
+                errors += self._check_mrn_data(mrn)
         elif mrns is not None and not mrns:
             errors.append('Patient data mrns is empty')
 

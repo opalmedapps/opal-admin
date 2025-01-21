@@ -152,13 +152,18 @@ ignore = [
 
 # temporary ignores during migration to ruff
 extend-ignore = [
-    # too complex
-    "C901",
     # absolute over relative imports
     "TID252",
     # mutable class attributes
     "RUF012",
-    "PLR",
+    "PLR6301",
+    "PLR0913",
+    # ignore too many local variables
+    "PLR0914",
+    # ignore too many statements
+    "PLR0915",
+    # ignore too many positional arguments
+    "PLR0917",
     "E501",
 ]
 

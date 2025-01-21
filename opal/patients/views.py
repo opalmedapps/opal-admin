@@ -392,7 +392,7 @@ class AccessRequestView(
             prefix = self._get_prefix(current_form.__class__)
             context_data[f'{prefix}_form'] = current_form
 
-        if len(current_forms) >= 2 and current_forms[0].is_valid():
+        if len(current_forms) >= 2 and current_forms[0].is_valid():  # noqa: PLR2004
             patient_form: forms.AccessRequestSearchPatientForm = current_forms[1]
             patients = [patient_form.patient]
 

@@ -143,8 +143,7 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
 
         # TODO: Decide what datetime to use in case of several notes (e.g., the latest vs oldest)
         prepared_at = _find_note_date(note['note_text'])
-        if prepared_at > parsed_notes['prepared_at']:
-            parsed_notes['prepared_at'] = prepared_at
+        parsed_notes['prepared_at'] = max(prepared_at, parsed_notes['prepared_at'])
 
     parsed_notes['prepared_by'] = '; '.join(doctor_names)
     return parsed_notes
