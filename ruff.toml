@@ -156,14 +156,8 @@ extend-ignore = [
     "TID252",
     # mutable class attributes
     "RUF012",
+    # method could be a function, class method, or static method
     "PLR6301",
-    "PLR0913",
-    # ignore too many local variables
-    "PLR0914",
-    # ignore too many statements
-    "PLR0915",
-    # ignore too many positional arguments
-    "PLR0917",
     "E501",
 ]
 
@@ -177,11 +171,11 @@ extend-select = [
 "**/legacy/models.py" = [
     # Allow nullable CharFields
     "DJ001",
-    # - Ignore __str__ method requirement for legacy API (DJ008)
+    # - Ignore __str__ method requirement for legacy API
     "DJ008",
 ]
 "**/legacy_questionnaires/models.py" = [
-    # - Ignore __str__ method requirement for legacy API (DJ008)
+    # - Ignore __str__ method requirement for legacy API
     "DJ008",
 ]
 "**/migrations/*" = [

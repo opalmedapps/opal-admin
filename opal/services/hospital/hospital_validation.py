@@ -155,7 +155,7 @@ class SourceSystemValidator:
 
         return success, errors
 
-    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901, PLR0912
+    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901, PLR0912, PLR0915
         """
         Check if the patient data is valid.
 

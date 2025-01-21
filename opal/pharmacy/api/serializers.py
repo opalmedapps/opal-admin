@@ -244,12 +244,12 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
             'effective_at',
         )
 
-    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:
+    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:  # noqa: PLR0914
         """
         Create new `PhysicianPrescriptionOrder` instance and related model instances.
 
         Args:
-            validated_data: Formattted data from the HL7Parser
+            validated_data: Formatted data from the HL7Parser
 
         Returns:
             Prescription order instance

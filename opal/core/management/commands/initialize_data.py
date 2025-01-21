@@ -176,7 +176,7 @@ class Command(BaseCommand):
         Group.objects.all().delete()
         SecurityQuestion.objects.all().delete()
 
-    def _create_data(self, **options: Any) -> None:
+    def _create_data(self, **options: Any) -> None:  # noqa: PLR0914
         """
         Create all initial data.
 

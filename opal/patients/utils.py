@@ -250,7 +250,7 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
 
-def create_patient(
+def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -297,7 +297,7 @@ def create_patient(
     return patient
 
 
-def create_relationship(
+def create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver_profile: caregiver_models.CaregiverProfile,
     relationship_type: RelationshipType,

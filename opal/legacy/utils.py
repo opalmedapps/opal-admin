@@ -85,7 +85,7 @@ def get_patient_sernum(username: str) -> int:
     return 0
 
 
-def create_patient(
+def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     sex: LegacySexType,

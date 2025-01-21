@@ -264,7 +264,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
     """
     Create all test data.
 
@@ -780,7 +780,7 @@ def create_sites(institution_option: InstitutionOption, institution: Institution
     return result
 
 
-def _create_site(
+def _create_site(  # noqa: PLR0913, PLR0917
     institution: Institution,
     name: str,
     name_fr: str,
@@ -837,7 +837,7 @@ def _create_site(
     return site
 
 
-def _create_patient(
+def _create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -896,7 +896,7 @@ def _create_patient(
     return patient
 
 
-def _create_caregiver(
+def _create_caregiver(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     username: str,
@@ -950,7 +950,7 @@ def _create_caregiver(
     return profile
 
 
-def _create_relationship(
+def _create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver: CaregiverProfile,
     relationship_type: RelationshipType,
@@ -1073,7 +1073,7 @@ def _relative_date(base_date: date, years: int) -> date:
     return base_date + relativedelta(years=years)
 
 
-def _create_pathology_result(
+def _create_pathology_result(  # noqa: PLR0913, PLR0917
     patient: Patient,
     site: Site,
     collected_at: datetime,
