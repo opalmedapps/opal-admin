@@ -26,7 +26,7 @@ class DailyUserAppActivity(DjangoModelFactory):
     count_device_ios = factory.Faker('pyint', min_value=0, max_value=5)
     count_device_android = factory.Faker('pyint', min_value=0, max_value=5)
     count_device_browser = factory.Faker('pyint', min_value=0, max_value=5)
-    action_date = timezone.now().date() - dt.timedelta(days=1)
+    action_date = lazy_attribute(lambda _x: timezone.now().date() - dt.timedelta(days=1))
 
     class Meta:
         model = models.DailyUserAppActivity
