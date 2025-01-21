@@ -423,7 +423,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             readstatus=0,
             date_added=timezone.now(),
         )
-    except LegacyPatient.DoesNotExist:
+    except (LegacyPatient.DoesNotExist, OperationalError):
         LOGGER.exception(f'Error while creating databank consent for patient {django_patient.uuid}')
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)

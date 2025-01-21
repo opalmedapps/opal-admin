@@ -8,11 +8,11 @@ from typing import Any
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import OperationalError
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
@@ -50,7 +50,7 @@ from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
 
-class MockConnectionError:
+class MockDBError:
     """Mock a connection error during database query to ensure api views handle errors gracefully."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -62,9 +62,9 @@ class MockConnectionError:
             kwargs: Any number of additional keyword arguments
 
         Raises:
-            ConnectionError: always
+            OperationalError: always
         """
-        raise requests.exceptions.ConnectionError
+        raise OperationalError
 
 
 def test_get_caregiver_patient_list_unauthenticated_unauthorized(api_client: APIClient, user: User) -> None:
@@ -1880,7 +1880,7 @@ class TestRegistrationCompletionView:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Ensure the patient is still created if there is a connection error while creating db consent."""
-        monkeypatch.setattr('opal.legacy.utils.fetch_databank_control_records', MockConnectionError)
+        monkeypatch.setattr('opal.legacy.utils.fetch_databank_control_records', MockDBError)
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
         info_sheet = databank_consent_questionnaire_data[1]

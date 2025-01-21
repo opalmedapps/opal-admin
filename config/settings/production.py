@@ -89,7 +89,7 @@ EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = env.int('EMAIL_PORT')
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-use-tls
-EMAIL_USE_TLS = EMAIL_PORT == 587
+EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: PLR2004
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-use-ssl
 EMAIL_USE_SSL = not EMAIL_USE_TLS
 
