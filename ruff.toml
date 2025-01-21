@@ -88,6 +88,9 @@ select = [
     # flake8-return
     # https://docs.astral.sh/ruff/rules/#flake8-return-ret
     "RET",
+    # flake8-self
+    # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "SLF",
     # flake8-simplify
     # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
     "SIM",
@@ -215,6 +218,8 @@ extend-select = [
     "PLR0917",
     # allow too many public methods
     "PLR0904",
+    # allow private member access
+    "SLF001",
 ]
 
 # https://docs.astral.sh/ruff/settings/#lintpydocstyle
@@ -238,6 +243,10 @@ known-first-party = ["opal"]
 
 [lint.isort.sections]
 django = ["django"]
+
+# https://docs.astral.sh/ruff/settings/#lintflake8-self
+[lint.flake8-self]
+extend-ignore-names = ["_base_manager", "_default_manager",  "_meta"]
 
 # https://docs.astral.sh/ruff/settings/#format
 [format]

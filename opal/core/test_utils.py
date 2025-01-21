@@ -60,7 +60,7 @@ class RequestMockerTest:
         response = requests.Response()
         response.status_code = HTTPStatus.OK
 
-        response._content = json.dumps(response_data).encode()
+        response._content = json.dumps(response_data).encode()  # noqa: SLF001
         mock_post.return_value = response
 
         return mock_post
@@ -85,7 +85,7 @@ class RequestMockerTest:
         response = requests.Response()
         response.status_code = HTTPStatus.OK
 
-        response._content = json.dumps(generated_response_data).encode()
+        response._content = json.dumps(generated_response_data).encode()  # noqa: SLF001
         mock_get.return_value = response
 
         return mock_get

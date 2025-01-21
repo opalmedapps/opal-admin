@@ -372,7 +372,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     form_filled = DynamicField(
         forms.BooleanField,
         label=_('The requestor filled out the request form'),
-        required=lambda form: form._form_required(),
+        required=lambda form: form._form_required(),  # noqa: SLF001
     )
 
     id_checked = forms.BooleanField(label=_('Requestor ID checked'))
