@@ -13,7 +13,7 @@ from .service_error import ServiceErrorHandler
 logger = logging.getLogger(__name__)
 
 # hard-coded source system timeout
-SOURCE_SYSTEM_TIMEOUT = 15
+SOURCE_SYSTEM_TIMEOUT = 30
 
 
 class ServiceHTTPCommunicationManager:

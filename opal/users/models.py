@@ -143,7 +143,7 @@ class CaregiverManager(UserManager['User']):
         Return a new QuerySet filtered by users of type `UserType.ClinicalStaff`.
 
         Returns:
-            a QuerySet of users
+            a QuerySet of caregivers
         """
         queryset = super().get_queryset()
         return queryset.filter(type=UserType.CAREGIVER)
