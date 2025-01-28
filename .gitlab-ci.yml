@@ -355,6 +355,9 @@ workflow:
 
 
 include:
+  - project: 'opalmedapps/engineering/ci-templates'
+    # Add reuse job
+    file: '/templates/jobs/Reuse.gitlab-ci.yml'
   - component: $CI_SERVER_FQDN/opalmedapps/engineering/ci-templates/check-thirdparty-notice@main
     inputs:
       # includes base.txt
