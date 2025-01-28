@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.databank.models import DatabankConsent
-from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.patients.factories import Patient
 from opal.users.models import User
 
@@ -25,7 +25,7 @@ class TestCreateDatabankConsentView:
 
     def test_databank_consent_form_fixture(
         self,
-        databank_consent_questionnaire_and_response: tuple[LegacyPatient, LegacyQuestionnaire],
+        databank_consent_questionnaire_and_response: tuple[LegacyQuestionnairePatient, LegacyQuestionnaire],
     ) -> None:
         """Test the fixture from conftest creates a proper consent questionnaire."""
         consenting_patient = databank_consent_questionnaire_and_response[0]

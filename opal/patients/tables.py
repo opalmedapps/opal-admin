@@ -10,7 +10,7 @@ from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
-from opal.services.hospital.hospital_data import OIEMRNData
+from opal.services.hospital.hospital_data import SourceSystemMRNData
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
@@ -108,7 +108,7 @@ class PatientTable(tables.Table):
 
     def render_mrns(
         self,
-        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[OIEMRNData],  # noqa: WPS221
+        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[SourceSystemMRNData],  # noqa: WPS221
     ) -> str:
         """Render MRN column.
 
@@ -128,7 +128,7 @@ class PatientTable(tables.Table):
             mrn_site_list = []
 
             for item in value:
-                if isinstance(item, OIEMRNData):
+                if isinstance(item, SourceSystemMRNData):
                     item = item._asdict()  # noqa: WPS437
 
                 mrn_site_list.append(
@@ -305,7 +305,7 @@ class RelationshipCaregiverTable(tables.Table):
 
 
 class ConfirmPatientDetailsTable(PatientTable):
-    """Custom table for confirmation of patient data given an OIE data object.
+    """Custom table for confirmation of patient data given a source system data object.
 
     The goal of this table is to render data in the same way as the existing `PatientTable`
     A new table is required because the existing table is rendered using a patient queryset in

@@ -37,7 +37,7 @@ def test_legacy_questionnaire_factory() -> None:
 
 def test_legacy_patient_factory() -> None:
     """Test whether the factory creates a valid legacy patient model instance."""
-    test_patient = factories.LegacyPatientFactory()
+    test_patient = factories.LegacyQuestionnairePatientFactory()
     test_patient.full_clean()
 
 

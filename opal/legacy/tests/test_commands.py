@@ -1080,7 +1080,10 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         message, error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
-    def test_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
+    def test_questionnaire_respondents_deviations(
+        self, questionnaire_data: None,
+        django_db_blocker: DjangoDbBlocker,
+    ) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
         with django_db_blocker.unblock():
             with connections['questionnaire'].cursor() as conn:
@@ -1215,6 +1218,13 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         patient_factories.Patient(id=3, ramq='RAMQ33333333')
         message, error = self._call_command('update_orms_patients')
         assert 'Updated 0 out of 3 patients.' in message
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_orms_patients_update_orms_disabled(self) -> None:
+        """Ensure the command does not fail if ORMS is disabled."""
+        message, error = self._call_command('update_orms_patients')
+        assert 'ORMS System not enabled, exiting command' in message
+        assert not error
 
     def test_orms_patients_update_with_request_exception(self, mocker: MockerFixture) -> None:
         """Ensure the command handles exceptions during POST requests to the ORMS."""

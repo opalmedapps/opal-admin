@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
 from pathlib import Path
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
@@ -58,8 +59,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
 # https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
-# allow definition of PAGE_SIZE globally while having pagination opt-in
-SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
+# W001: allow definition of PAGE_SIZE globally while having pagination opt-in
+# E311: legacy questionnaire content_id cannot be unique
+# see also: https://code.djangoproject.com/ticket/26472
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001', 'fields.E311']
 
 
 # DATABASES
@@ -80,26 +83,26 @@ DATABASES = {
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_DATABASE_NAME'),
+        'NAME': 'OpalDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': f"test_{env('LEGACY_DATABASE_NAME')}",
+            'NAME': 'test_OpalDB',
         },
     },
     'questionnaire': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_QUESTIONNAIRE_DATABASE_NAME'),
+        'NAME': 'QuestionnaireDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': f"test_{env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')}",
+            'NAME': 'test_QuestionnaireDB',
         },
     },
 }
@@ -229,7 +232,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 # https://docs.djangoproject.com/en/dev/topics/auth/passwords/#enabling-password-validation
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list[dict[str, Any]] = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -405,10 +408,10 @@ OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 # Legacy URL for generating questionnaires report
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
 
-# Opal Integration Engine (OIE)
-OIE_HOST = env.url('OIE_HOST').geturl()
-OIE_USER = env('OIE_USER')
-OIE_PASSWORD = env('OIE_PASSWORD')
+# Source System/Integration Engine
+SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
+SOURCE_SYSTEM_USER = env('SOURCE_SYSTEM_USER')
+SOURCE_SYSTEM_PASSWORD = env('SOURCE_SYSTEM_PASSWORD')
 
 # Registration
 # Opal User Registration URL
@@ -419,13 +422,20 @@ INSTITUTION_CODE = env.str('INSTITUTION_CODE')
 # Questionnaires: Export Report
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
+# Name of the source system that generated PDF report
+REPORT_SOURCE_SYSTEM = env.str('REPORT_SOURCE_SYSTEM')
+# Number assigned by the hospital for the generated PDF report
+REPORT_DOCUMENT_NUMBER = env.str('REPORT_DOCUMENT_NUMBER')
 
 # ORMS SETTINGS
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_GROUP_NAME = 'ORMS Users'
-# base URL to ORMS (no trailing slash)
-ORMS_HOST = env.url('ORMS_HOST').geturl()
+ORMS_ENABLED = env.bool('ORMS_ENABLED')
+
+if ORMS_ENABLED:
+    # base URL to ORMS (no trailing slash)
+    ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
@@ -440,6 +450,9 @@ SMS_FROM = env.str('SMS_FROM')
 # PATHOLOGY REPORTS SETTINGS
 # Path to the pathology reports folder
 PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
+
+# Databank Enabled
+DATABANK_ENABLED = env.bool('DATABANK_ENABLED')
 
 # Third party apps settings
 # ------------------------------------------------------------------------------

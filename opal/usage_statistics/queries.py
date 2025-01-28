@@ -1,29 +1,22 @@
 """Statistics queries used by usage statistics app."""
 import datetime as dt
-from enum import Enum
+from collections import Counter
 from typing import Any, TypeVar
 
 from django.conf import settings
 from django.db import models
-from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
 
+from .common import GroupByComponent
 from .models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 
 # Create a type variable to represent any model type
 _ModelT = TypeVar('_ModelT', bound=models.Model)
-
-
-class GroupByComponent(Enum):
-    """An enumeration of supported group by components."""
-
-    DATE = 'date'  # noqa: WPS115
-    MONTH = 'month'  # noqa: WPS115
-    YEAR = 'year'  # noqa: WPS115
 
 
 # GROUP REPORTING
@@ -58,7 +51,7 @@ def fetch_registration_summary(
 def fetch_grouped_registration_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch grouped registration summary from `RegistrationCode` model.
 
@@ -76,7 +69,7 @@ def fetch_grouped_registration_summary(
     )
 
     queryset = _annotate_queryset_with_grouping_field(queryset, 'created_at', group_by)
-    group_field = group_by.value
+    group_field = group_by.name.lower()
 
     return list(
         queryset.values(
@@ -260,14 +253,14 @@ def fetch_patients_received_clinical_data_summary(
 def fetch_logins_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch grouped logins summary from `DailyUserAppActivity` model.
 
     Args:
         start_date: the beginning of the time period of the logins summary (inclusive)
         end_date: the end of the time period of the logins summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped logins summary for a given time period
@@ -278,7 +271,7 @@ def fetch_logins_summary(
     )
 
     queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
+    group_field = group_by.name.lower()
 
     return list(
         queryset.values(
@@ -294,14 +287,14 @@ def fetch_logins_summary(
 def fetch_users_clicks_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch grouped users' clicks from `DailyUserAppActivity` model.
 
     Args:
         start_date: the beginning of the time period of the users' clicks summary (inclusive)
         end_date: the end of the time period of the users' clicks summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped users' clicks summary for a given time period
@@ -312,7 +305,7 @@ def fetch_users_clicks_summary(
     )
 
     queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
+    group_field = group_by.name.lower()
 
     # TODO: QSCCD-2173 - add count of the announcement clicks
     return list(
@@ -330,14 +323,14 @@ def fetch_users_clicks_summary(
 def fetch_user_patient_clicks_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch grouped user's clicks on behalf of a patient from `DailyUserPatientActivity` model.
 
     Args:
         start_date: the beginning of the time period of the patients' clicks summary (inclusive)
         end_date: the end of the time period of the patients' clicks summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped patients' clicks summary for a given time period
@@ -348,7 +341,7 @@ def fetch_user_patient_clicks_summary(
     )
 
     queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
+    group_field = group_by.name.lower()
 
     return list(
         queryset.values(
@@ -366,7 +359,7 @@ def fetch_user_patient_clicks_summary(
 def fetch_received_labs_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received lab results statistics from the `DailyPatientDataReceived` model.
 
@@ -375,7 +368,7 @@ def fetch_received_labs_summary(
     Args:
         start_date: the beginning of the time period of the received lab results summary (inclusive)
         end_date: the end of the time period of the received lab results summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received lab results summary for a given time period
@@ -398,16 +391,16 @@ def fetch_received_labs_summary(
 def fetch_received_appointments_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received appointments summary from the `DailyPatientDataReceived` model.
 
-    The results can be grouped by date (by default), by month, by year.
+    The results can be grouped by day (by default), by month, by year.
 
     Args:
         start_date: the beginning of the time period of the received appointments summary (inclusive)
         end_date: the end of the time period of the received appointments summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received appointments summary for a given time period
@@ -432,16 +425,16 @@ def fetch_received_appointments_summary(
 def fetch_received_educational_materials_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received educational materials summary from the `DailyPatientDataReceived` model.
 
-    The results can be grouped by date (by default), by month, by year.
+    The results can be grouped by day (by default), by month, by year.
 
     Args:
         start_date: the beginning of the time period of the received educational materials summary (inclusive)
         end_date: the end of the time period of the received educational materials summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received educational materials summary for a given time period
@@ -463,16 +456,16 @@ def fetch_received_educational_materials_summary(
 def fetch_received_documents_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received documents summary from the `DailyPatientDataReceived` model.
 
-    The results can be grouped by date (by default), by month, by year.
+    The results can be grouped by day (by default), by month, by year.
 
     Args:
         start_date: the beginning of the time period of the received documents summary (inclusive)
         end_date: the end of the time period of the received documents summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received documents summary for a given time period
@@ -494,16 +487,16 @@ def fetch_received_documents_summary(
 def fetch_received_questionnaires_summary(
     start_date: dt.date,
     end_date: dt.date,
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received questionnaires summary from the `DailyPatientDataReceived` model.
 
-    The results can be grouped by date (by default), by month, by year.
+    The results can be grouped by day (by default), by month, by year.
 
     Args:
         start_date: the beginning of the time period of the received questionnaires summary (inclusive)
         end_date: the end of the time period of the received questionnaires summary (inclusive)
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received questionnaires summary for a given time period
@@ -522,15 +515,167 @@ def fetch_received_questionnaires_summary(
     )
 
 
-# INDIVIDUAL REPORTING
-# TODO: implement QSCCD-2204
+def fetch_users_latest_login_year_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, int]:
+    """Fetch users' latest login statistics grouped by year.
+
+    The goal of the query is to find in a given date range how many users stopped using the app in each year.
+
+    Args:
+        start_date: the beginning of the time period of the users' latest logins summary (inclusive)
+        end_date: the end of the time period of the users' latest logins summary (inclusive)
+
+    Returns:
+        latest login statistics grouped by year for a given time period.
+    """
+    latest_logins = DailyUserAppActivity.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    ).values(
+        'action_by_user',
+    ).annotate(
+        year=ExtractYear(models.Max('last_login')),
+    )
+
+    latest_logins_by_year = Counter(str(item['year']) for item in latest_logins)
+    return dict(latest_logins_by_year)
+
+
+# INDIVIDUAL REPORTS
+def fetch_labs_summary_per_patient(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> list[dict[str, Any]]:
+    """Fetch the individual received lab results statistics from the `DailyPatientDataReceived` model.
+
+    The statistics show the number of lab results received per patient and the frequency
+    with which patients receive lab results for a given date range.
+
+    Args:
+        start_date: the starting date of the time period for lab statistics (inclusive).
+        end_date: the ending date of the time period for lab statistics (inclusive).
+
+    Returns:
+        individual lab results statistics (per patient).
+    """
+    # TODO: update the query using `lab_groups_received` statistic field once QSCCD-2209 is implemented.
+    # Update query should include `total_lab_groups_received` and `average_labs_per_test_group`.
+    return list(
+        DailyPatientDataReceived.objects.filter(
+            action_date__gte=start_date,
+            action_date__lte=end_date,
+        ).values('patient__legacy_id').annotate(
+            patient_ser_num=models.F('patient__legacy_id'),
+            first_lab_received=models.Min('last_lab_received'),
+            last_lab_received=models.Max('last_lab_received'),
+            # total_lab_groups_received=models.Sum('lab_groups_received'),   noqa: E800
+            total_labs_received=models.Sum('labs_received'),
+            # average_labs_per_test_group=models.F('total_labs_received')    noqa: E800
+            # / models.F('total_lab_groups_received'),  noqa: E800
+        ).order_by('patient_ser_num'),
+    )
+
+
+def fetch_logins_summary_per_user(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> list[dict[str, Any]]:
+    """Fetch individual user login statistics from the `DailyUserAppActivity` model.
+
+    The statistics show user's total login time and login frequency in a given date range.
+
+    Args:
+        start_date: the starting date of the time period for the user login stats (inclusive).
+        end_date: the ending date of the time period for the user login stats (inclusive).
+
+    Returns:
+        individual login statistics (per user).
+    """
+    return list(
+        DailyUserAppActivity.objects.filter(
+            action_date__gte=start_date,
+            action_date__lte=end_date,
+        ).values('action_by_user_id').annotate(
+            user_id=models.F('action_by_user_id'),
+            total_logged_in_days=models.Count('action_by_user_id'),
+            total_logins=models.Sum('count_logins'),
+            avg_logins_per_day=models.F('total_logins') / models.F('total_logged_in_days'),
+        ).values(
+            'user_id',
+            'total_logged_in_days',
+            'total_logins',
+            'avg_logins_per_day',
+        ).order_by('user_id'),
+    )
+
+
+def fetch_patient_demographic_diagnosis_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> list[dict[str, Any]]:
+    """Fetch demographic statistics and the latest diagnosis for each individual patient.
+
+    The purpose of the query is to show patient basic information and the latest diagnosis only
+    in a given date range.
+
+    Args:
+        start_date: the starting date of the time period for the demographic stats (inclusive).
+        end_date: the ending date of the time period for the demographic stats (inclusive).
+
+    Returns:
+        demographic information and latest diagnosis per patient.
+    """
+    # TODO: QSCCD-2254 - update the query when Diagnosis model is implemented in django-backend
+    latest_diagnosis_sernum_list = legacy_models.LegacyDiagnosis.objects.values(
+        'patient_ser_num',
+    ).annotate(
+        latest_diagnosis_date=models.Max('creation_date'),
+        latest_diagnosis_sernum=models.Subquery(
+            legacy_models.LegacyDiagnosis.objects.filter(
+                patient_ser_num=models.OuterRef('patient_ser_num'),
+            ).order_by('-creation_date').values('diagnosis_ser_num')[:1],
+        ),
+    ).values_list(
+        'latest_diagnosis_sernum',
+        flat=True,
+    )
+    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
+        models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
+        | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
+        patient__last_updated__date__gte=start_date,
+        patient__last_updated__date__lte=end_date,
+    ).annotate(
+        patient_ser_num=models.F('patient__patientsernum'),
+        age=models.F('patient__age'),
+        date_of_birth=models.F('patient__date_of_birth'),
+        sex=models.F('patient__sex'),
+        email=models.F('patient__email'),
+        language=models.F('patient__language'),
+        registration_date=models.F('patient__registration_date'),
+        latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
+        latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
+    ).values(
+        'patient_ser_num',
+        'age',
+        'date_of_birth',
+        'sex',
+        'email',
+        'language',
+        'registration_date',
+        'latest_diagnosis_description',
+        'latest_diagnosis_date',
+    )
+    return list(demographics_and_diagnosis)
+
 
 def _fetch_received_medical_records_summary(
     start_date: dt.date,
     end_date: dt.date,
     filters: dict[str, models.Expression],
     annotated_summary_fields: dict[str, Any],
-    group_by: GroupByComponent = GroupByComponent.DATE,
+    group_by: GroupByComponent = GroupByComponent.DAY,
 ) -> list[dict[str, Any]]:
     """Fetch received medical records summary from the `DailyPatientDataReceived` model.
 
@@ -539,14 +684,14 @@ def _fetch_received_medical_records_summary(
         - the total number of unique patients
         - the average number of received medical records per patient
 
-    The results can be grouped by date (by default), by month, by year.
+    The results can be grouped by day (by default), by month, by year.
 
     Args:
         start_date: the beginning of the time period of the received medical records summary (inclusive)
         end_date: the end of the time period of the received medical records summary (inclusive)
         filters: additional filters on the received medical records (e.g., to eliminate records where the count is 0)
         annotated_summary_fields: annotation fields with the statistics/summary aggregation
-        group_by: the date component to group by. By default is grouped by date.
+        group_by: the date component to group by. By default it is grouped by day.
 
     Returns:
         grouped received medical records summary for a given time period
@@ -558,7 +703,7 @@ def _fetch_received_medical_records_summary(
     )
 
     queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
+    group_field = group_by.name.lower()
 
     return list(
         queryset.values(
@@ -591,6 +736,6 @@ def _annotate_queryset_with_grouping_field(
     elif group_by == GroupByComponent.MONTH:
         annotated_queryset = queryset.annotate(month=TruncMonth(field_name))
     else:
-        annotated_queryset = queryset.annotate(date=TruncDay(field_name))
+        annotated_queryset = queryset.annotate(day=TruncDay(field_name))
 
     return annotated_queryset

@@ -30,7 +30,7 @@ CREATE TEMPORARY TABLE tempAnswerDetails(
 	   AND qs.sectionId = S.ID
 	   AND Q.ID=qs.questionId
 	   AND AQ.patientId=p.ID
-		AND p.externalId=%s
+	   AND p.externalId=%s
 	   AND AQ.`status` = 2
 	   AND AQ.lastUpdated>%s
 	   AND AQ.ID = aSection.answerQuestionnaireId
@@ -41,6 +41,6 @@ CREATE TEMPORARY TABLE tempAnswerDetails(
 	   AND A.typeId=t.ID
 	   AND t.description=d.contentId
 	   AND d.languageId=2
-	   AND qstnr.purposeId <> 4
+	   AND qstnr.purposeId IN (1,2)
 	)
 ;

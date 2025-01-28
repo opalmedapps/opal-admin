@@ -15,7 +15,9 @@ from opal.usage_statistics import factories as stats_factories
 from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import queries as stats_queries
 
-pytestmark = pytest.mark.django_db(databases=['default'])
+from ..common import GroupByComponent
+
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def test_empty_fetch_registration_summary() -> None:
@@ -33,6 +35,10 @@ def test_empty_fetch_registration_summary() -> None:
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
+    # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
+    now = timezone.make_aware(dt.datetime(2022, 11, 29, 11, 2, 3))
+    mock_timezone = mocker.patch('django.utils.timezone.now', return_value=now)
+
     relationships = _create_relationship_records()
 
     caregiver_models.RegistrationCode.objects.bulk_create([
@@ -92,6 +98,7 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
         start_date=today,
         end_date=today,
     )
+
     assert population_summary == {
         'uncompleted_registration': 2,
         'completed_registration': 6,
@@ -164,25 +171,25 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'date': current_datetime,
+            'day': current_datetime,
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=1),
+            'day': current_datetime - dt.timedelta(days=1),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=4),
+            'day': current_datetime - dt.timedelta(days=4),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'date': current_datetime - dt.timedelta(days=6),
+            'day': current_datetime - dt.timedelta(days=6),
         },
     ]
 
@@ -238,7 +245,7 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
     population_summary = stats_queries.fetch_grouped_registration_summary(
         start_date=dt.date(2024, 3, 1),
         end_date=dt.date(2024, 6, 20),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert population_summary == [
@@ -320,7 +327,7 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
     population_summary = stats_queries.fetch_grouped_registration_summary(
         start_date=dt.date(2021, 1, 1),
         end_date=dt.date(2024, 6, 20),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert population_summary == [
@@ -905,13 +912,13 @@ def test_fetch_logins_summary_by_date() -> None:
     )
     assert logins_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'total_logins': 18,
             'unique_user_logins': 3,
             'avg_logins_per_user': 6,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'total_logins': 8,
             'unique_user_logins': 2,
             'avg_logins_per_user': 4,
@@ -968,7 +975,7 @@ def test_fetch_logins_summary_by_month() -> None:
     logins_summary = stats_queries.fetch_logins_summary(
         start_date=dt.date(2024, 3, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert stats_models.DailyUserAppActivity.objects.count() == 8
@@ -1043,7 +1050,7 @@ def test_fetch_logins_summary_by_year() -> None:
     logins_summary = stats_queries.fetch_logins_summary(
         start_date=dt.date(2022, 2, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert stats_models.DailyUserAppActivity.objects.count() == 8
@@ -1131,14 +1138,14 @@ def test_users_clicks_summary_by_date() -> None:
     )
     assert users_clicks_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'login_count': 18,
             'feedback_count': 21,
             'update_security_answers_count': 24,
             'update_passwords_count': 27,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'login_count': 8,
             'feedback_count': 10,
             'update_security_answers_count': 12,
@@ -1220,7 +1227,7 @@ def test_users_clicks_summary_by_month() -> None:
     users_clicks_summary = stats_queries.fetch_users_clicks_summary(
         start_date=dt.date(2024, 3, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert stats_models.DailyUserAppActivity.objects.count() == 8
@@ -1322,7 +1329,7 @@ def test_users_clicks_summary_by_year() -> None:
     users_clicks_summary = stats_queries.fetch_users_clicks_summary(
         start_date=dt.date(2022, 2, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert stats_models.DailyUserAppActivity.objects.count() == 8
@@ -1452,7 +1459,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
     assert stats_models.DailyUserPatientActivity.objects.count() == 8
     assert user_patient_clicks_summary == [
         {
-            'date': current_date,
+            'day': current_date,
             'checkins_count': 4,
             'documents_count': 6,
             'educational_materials_count': 8,
@@ -1460,7 +1467,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
             'labs_count': 12,
         },
         {
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
             'checkins_count': 16,
             'documents_count': 20,
             'educational_materials_count': 24,
@@ -1468,7 +1475,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
             'labs_count': 32,
         },
         {
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
             'checkins_count': 13,
             'documents_count': 15,
             'educational_materials_count': 17,
@@ -1574,7 +1581,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
     user_patient_clicks_summary = stats_queries.fetch_user_patient_clicks_summary(
         start_date=dt.date(2024, 3, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert stats_models.DailyUserPatientActivity.objects.count() == 8
@@ -1702,7 +1709,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
     user_patient_clicks_summary = stats_queries.fetch_user_patient_clicks_summary(
         start_date=dt.date(2022, 2, 1),
         end_date=dt.date(2024, 5, 5),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert stats_models.DailyUserPatientActivity.objects.count() == 8
@@ -1788,19 +1795,19 @@ def test_received_labs_summary_by_day() -> None:
             'total_received_labs': 30,
             'total_unique_patients': 3,
             'avg_received_labs_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_labs': 10,
             'total_unique_patients': 2,
             'avg_received_labs_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_labs': 15,
             'total_unique_patients': 1,
             'avg_received_labs_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -1841,7 +1848,7 @@ def test_received_labs_summary_by_month() -> None:
     received_labs_summary = stats_queries.fetch_received_labs_summary(
         start_date=dt.date(2024, 4, 10),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert received_labs_summary == [
@@ -1902,7 +1909,7 @@ def test_received_labs_summary_by_year() -> None:
     received_labs_summary = stats_queries.fetch_received_labs_summary(
         start_date=dt.date(2022, 2, 10),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert received_labs_summary == [
@@ -1981,19 +1988,19 @@ def test_fetch_received_appointments_summary_by_day() -> None:
             'total_received_appointments': 30,
             'total_unique_patients': 3,
             'avg_received_appointments_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_appointments': 10,
             'total_unique_patients': 2,
             'avg_received_appointments_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_appointments': 15,
             'total_unique_patients': 1,
             'avg_received_appointments_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2034,7 +2041,7 @@ def test_fetch_received_appointments_summary_by_month() -> None:
     received_appointments_summary = stats_queries.fetch_received_appointments_summary(
         start_date=dt.date(2024, 4, 1),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert received_appointments_summary == [
@@ -2095,7 +2102,7 @@ def test_fetch_received_appointments_summary_by_year() -> None:
     received_appointments_summary = stats_queries.fetch_received_appointments_summary(
         start_date=dt.date(2022, 3, 1),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert received_appointments_summary == [
@@ -2174,19 +2181,19 @@ def test_fetch_received_educational_materials_summary_by_day() -> None:
             'total_received_edu_materials': 30,
             'total_unique_patients': 3,
             'avg_received_edu_materials_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_edu_materials': 10,
             'total_unique_patients': 2,
             'avg_received_edu_materials_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_edu_materials': 15,
             'total_unique_patients': 1,
             'avg_received_edu_materials_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2227,7 +2234,7 @@ def test_fetch_received_educational_materials_summary_by_month() -> None:
     received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
         start_date=dt.date(2024, 4, 3),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert received_educational_materials_summary == [
@@ -2288,7 +2295,7 @@ def test_fetch_received_educational_materials_summary_by_year() -> None:
     received_educational_materials_summary = stats_queries.fetch_received_educational_materials_summary(
         start_date=dt.date(2022, 2, 3),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert received_educational_materials_summary == [
@@ -2367,19 +2374,19 @@ def test_fetch_received_documents_summary_by_day() -> None:
             'total_received_documents': 30,
             'total_unique_patients': 3,
             'avg_received_documents_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_documents': 10,
             'total_unique_patients': 2,
             'avg_received_documents_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_documents': 15,
             'total_unique_patients': 1,
             'avg_received_documents_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2420,7 +2427,7 @@ def test_fetch_received_documents_summary_by_month() -> None:
     received_documents_summary = stats_queries.fetch_received_documents_summary(
         start_date=dt.date(2024, 4, 5),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert received_documents_summary == [
@@ -2481,7 +2488,7 @@ def test_fetch_received_documents_summary_by_year() -> None:
     received_documents_summary = stats_queries.fetch_received_documents_summary(
         start_date=dt.date(2022, 2, 5),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert received_documents_summary == [
@@ -2560,19 +2567,19 @@ def test_fetch_received_questionnaires_summary_by_day() -> None:
             'total_received_questionnaires': 30,
             'total_unique_patients': 3,
             'avg_received_questionnaires_per_patient': 10,
-            'date': current_date,
+            'day': current_date,
         },
         {
             'total_received_questionnaires': 10,
             'total_unique_patients': 2,
             'avg_received_questionnaires_per_patient': 5,
-            'date': current_date - dt.timedelta(days=1),
+            'day': current_date - dt.timedelta(days=1),
         },
         {
             'total_received_questionnaires': 15,
             'total_unique_patients': 1,
             'avg_received_questionnaires_per_patient': 15,
-            'date': current_date - dt.timedelta(days=2),
+            'day': current_date - dt.timedelta(days=2),
         },
     ]
 
@@ -2613,7 +2620,7 @@ def test_fetch_received_questionnaires_summary_by_month() -> None:
     received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
         start_date=dt.date(2024, 4, 3),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.MONTH,
+        group_by=GroupByComponent.MONTH,
     )
 
     assert received_questionnaires_summary == [
@@ -2674,7 +2681,7 @@ def test_fetch_received_questionnaires_summary_by_year() -> None:
     received_questionnaires_summary = stats_queries.fetch_received_questionnaires_summary(
         start_date=dt.date(2022, 2, 3),
         end_date=dt.date(2024, 6, 25),
-        group_by=stats_queries.GroupByComponent.YEAR,
+        group_by=GroupByComponent.YEAR,
     )
 
     assert received_questionnaires_summary == [
@@ -2697,6 +2704,295 @@ def test_fetch_received_questionnaires_summary_by_year() -> None:
             'year': dt.date(2022, 1, 1),
         },
     ]
+
+
+def test_fetch_users_latest_login_year_summary_empty() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches an empty data result without errors."""
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
+    assert not user_last_login_year_summary
+
+
+def test_fetch_users_latest_login_year_summary_success() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2023, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
+
+    assert len(user_last_login_year_summary) == 2
+    assert user_last_login_year_summary['2023'] == 1
+    assert user_last_login_year_summary['2024'] == 2
+
+
+def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
+
+    The test user are same and has records in different years.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2022, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2022, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2023, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
+
+    assert len(user_last_login_year_summary) == 1
+    assert user_last_login_year_summary['2024'] == 1
+
+
+def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
+
+    The test users are different and have records in the same year.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
+
+    assert len(user_last_login_year_summary) == 1
+    assert user_last_login_year_summary['2024'] == 3
+
+
+def test_fetch_labs_summary_per_patient_empty() -> None:
+    """Ensure fetch_labs_summary_per_patient successfully fetches an empty result without errors."""
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient(dt.date.min, dt.date.max)
+    assert not patient_lab_summary
+
+
+def test_fetch_labs_summary_per_patient_success() -> None:
+    """Ensure fetch_labs_summary_per_patient successfully fetches labs statistics per patient."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        last_lab_received=None,
+        labs_received=0,
+        action_date=dt.date(2024, 8, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 1, 10, 10, 10).astimezone(),
+        labs_received=3,
+        action_date=dt.date(2024, 8, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 2, 10, 10, 10).astimezone(),
+        labs_received=5,
+        action_date=dt.date(2024, 8, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 10, 10, 10, 10).astimezone(),
+        labs_received=10,
+        action_date=dt.date(2024, 8, 10),
+    )
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient(dt.date.min, dt.date.max)
+    assert patient_lab_summary == [
+        {
+            'patient_ser_num': 55,
+            'patient__legacy_id': 55,
+            'first_lab_received': None,
+            'last_lab_received': None,
+            'total_labs_received': 0,
+        },
+        {
+            'patient_ser_num': 56,
+            'patient__legacy_id': 56,
+            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'total_labs_received': 18,
+        },
+    ]
+
+
+def test_fetch_logins_summary_per_user_empty() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches an empty result without errors."""
+    average_login_summary = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
+    assert not average_login_summary
+
+
+def test_fetch_logins_summary_per_user_success() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches individual login statistics."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    average_login_report = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
+    assert average_login_report == [
+        {
+            'user_id': marge_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 3,
+            'avg_logins_per_day': 3,
+        },
+        {
+            'user_id': homer_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 5,
+            'avg_logins_per_day': 5,
+        },
+        {
+            'user_id': bart_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 5,
+            'avg_logins_per_day': 5,
+        },
+    ]
+
+
+def test_fetch_logins_summary_per_user_multiple_logins() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches login statistics.
+
+    The test user has multiple logins in different days.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=2,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    average_login_summary = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
+    assert average_login_summary == [
+        {
+            'user_id': marge_caregiver.user.id,
+            'total_logged_in_days': 3,
+            'total_logins': 12,
+            'avg_logins_per_day': 4,
+        },
+    ]
+
+
+def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
+    """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches an empty result without errors."""
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.min)
+    assert not demographic_diagnosis_summary
+
+
+def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
+    """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches the no empty statistics."""
+    django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+    legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+    legacy_factories.LegacyPatientControlFactory(
+        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id),
+    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat1, hospital__code='RVH', mrn=1234567)
+    django_pat2 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=52)
+    legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+    legacy_factories.LegacyPatientControlFactory(
+        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id),
+    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
+    # Create a dummy patient to ensure it is not included in the report
+    legacy_factories.LegacyPatientFactory(patientsernum=53)
+    legacy_factories.LegacyDiagnosisFactory(
+        patient_ser_num=legacy_pat1,
+        description_en='Test Diagnosis1',
+        creation_date=timezone.now() - dt.timedelta(days=1),
+    )
+    legacy_factories.LegacyDiagnosisFactory(
+        patient_ser_num=legacy_pat1,
+        description_en='Test Diagnosis2',
+        creation_date=timezone.now(),
+    )
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.max)
+    assert len(demographic_diagnosis_summary) == 2
+    assert demographic_diagnosis_summary[0]['patient_ser_num'] == 51
+    assert demographic_diagnosis_summary[1]['patient_ser_num'] == 52
+    assert demographic_diagnosis_summary[0]['latest_diagnosis_description'] == 'Test Diagnosis2'
+    assert demographic_diagnosis_summary[1]['latest_diagnosis_description'] == 'Test Diagnosis3'
 
 
 def _create_relationship_records() -> dict[str, Any]:

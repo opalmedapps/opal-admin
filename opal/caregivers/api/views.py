@@ -375,7 +375,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213, WPS231
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -417,7 +417,9 @@ class RegistrationCompletionView(APIView):
             if relationship.patient.legacy_id is None:
                 # also creates the legacy patient and sets patient.legacy_id
                 utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
-
+                # Send databank consent and infosheet automatically for new patients, if enabled
+                if settings.DATABANK_ENABLED:
+                    legacy_utils.create_databank_patient_consent_data(patient)
             if existing_caregiver:
                 email = existing_caregiver.email
                 utils.replace_caregiver(existing_caregiver, relationship)
@@ -552,7 +554,7 @@ class RegistrationCompletionView(APIView):
         utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
-class RetrieveCaregiverView(RetrieveAPIView[User]):
+class RetrieveCaregiverView(RetrieveAPIView[Caregiver]):
     """
     View that looks up a caregiver by its username.
 
