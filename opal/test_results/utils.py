@@ -20,7 +20,7 @@ def generate_pathology_report(
     patient: Patient,
     pathology_data: dict[str, Any],
 ) -> Path:
-    """Generate the pathology PDF report by calling the ReportService.
+    """Generate the pathology PDF report.
 
     Args:
         patient: patient instance for whom a new PDF pathology report being generated
