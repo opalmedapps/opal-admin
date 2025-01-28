@@ -10,7 +10,7 @@ from django.db.models.fields.files import FieldFile
 
 from rest_framework import serializers
 
-from ..utils.base64_util import Base64Util
+from ..utils import base64_utils
 
 
 class Base64FileField(serializers.Field[FieldFile, FieldFile, Optional[str], Any]):
@@ -25,5 +25,4 @@ class Base64FileField(serializers.Field[FieldFile, FieldFile, Optional[str], Any
         Returns:
             str: encoded base64 string of the file if the file path is a valid, `None` otherwise
         """
-        base64_util = Base64Util()
-        return base64_util.encode_to_base64(Path(file.path))
+        return base64_utils.file_to_base64(Path(file.path))
