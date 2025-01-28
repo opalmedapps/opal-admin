@@ -127,7 +127,7 @@ mypy:
 markdownlint:
   stage: static analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.17.1
+    name: davidanson/markdownlint-cli2:v0.17.2
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # does not need setup artifacts
