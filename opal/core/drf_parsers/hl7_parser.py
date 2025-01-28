@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
 from collections import defaultdict
 from collections.abc import Callable, Mapping

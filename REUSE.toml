@@ -1,0 +1,114 @@
+version = 1
+
+[[annotations]]
+path = [
+    "opal/core/tests/fixtures/homer_pharmacy.hl7v2",
+    "opal/core/tests/fixtures/marge_NTE.hl7v2",
+    "opal/core/tests/fixtures/marge_ORC.hl7v2",
+    "opal/core/tests/fixtures/marge_PID.hl7v2",
+    "opal/core/tests/fixtures/marge_PV1.hl7v2",
+    "opal/core/tests/fixtures/marge_RXC.hl7v2",
+    "opal/core/tests/fixtures/marge_RXE.hl7v2",
+    "opal/core/tests/fixtures/marge_RXR.hl7v2",
+    "opal/core/tests/fixtures/marge_missing_CE_pharmacy.hl7v2",
+    "opal/core/tests/fixtures/marge_pharmacy.hl7v2",
+    "opal/static/thirdparty/package-lock.json",
+    "opal/static/thirdparty/package.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+
+[[annotations]]
+path = [
+    ".vscode/extensions.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+
+[[annotations]]
+path = [
+    ".vscode/launch.json",
+    ".vscode/settings.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+
+[[annotations]]
+path = [
+    "opal/templates/email/verification_code.txt",
+    "opal/static/images/favicon.ico",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "TBD"
+
+
+[[annotations]]
+path = [
+    "opal/static/images/logo_opal.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "TBD"
+
+
+[[annotations]]
+path = [
+    "opal/templates/email/confirmation_email.txt",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "TBD"
+
+
+[[annotations]]
+path = [
+    "opal/static/thirdparty/bootstrap/css/bootstrap.min.css",
+    "opal/static/thirdparty/bootstrap/css/bootstrap.min.css.map",
+    "opal/static/thirdparty/bootstrap/js/bootstrap.bundle.min.js",
+    "opal/static/thirdparty/bootstrap/js/bootstrap.bundle.min.js.map",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2011-2025 The Bootstrap Authors"
+SPDX-License-Identifier = "MIT"
+
+
+[[annotations]]
+path = [
+    "opal/static/thirdparty/unpoly/css/unpoly-bootstrap5.min.css",
+    "opal/static/thirdparty/unpoly/css/unpoly.min.css",
+    "opal/static/thirdparty/unpoly/js/unpoly-bootstrap5.min.js",
+    "opal/static/thirdparty/unpoly/js/unpoly.min.js",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2014-2021 Henning Koch"
+SPDX-License-Identifier = "MIT"
+
+
+[[annotations]]
+path = [
+    "opal/static/thirdparty/fontawesomefree/css/fontawesome.min.css",
+    "opal/static/thirdparty/fontawesomefree/css/regular.min.css",
+    "opal/static/thirdparty/fontawesomefree/css/solid.min.css",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright 2024 Fonticons, Inc."
+SPDX-License-Identifier = "MIT"
+
+
+[[annotations]]
+path = [
+    "opal/static/thirdparty/fontawesomefree/webfonts/fa-regular-400.ttf",
+    "opal/static/thirdparty/fontawesomefree/webfonts/fa-regular-400.woff2",
+    "opal/static/thirdparty/fontawesomefree/webfonts/fa-solid-900.ttf",
+    "opal/static/thirdparty/fontawesomefree/webfonts/fa-solid-900.woff2",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright 2024 Fonticons, Inc."
+SPDX-License-Identifier = "OFL-1.1"

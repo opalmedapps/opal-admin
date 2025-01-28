@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Opal Backend
 
 [![pipeline status](https://gitlab.com/opalmedapps/backend/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/documentation-available-brightgreen.svg)](https://opalmedapps.gitlab.io/backend)
