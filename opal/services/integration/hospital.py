@@ -47,7 +47,7 @@ def find_patient_by_hin(health_insurance_number: str) -> PatientSchema:
         the patient
     """
     data = PatientByHINSchema(health_insurance_number=health_insurance_number)
-    response = _retrieve(f'{settings.OIE_HOST}/getPatientDemographicsByHIN', data=data.model_dump_json())
+    response = _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/getPatientDemographicsByHIN', data=data.model_dump_json())
 
     return PatientSchema.model_validate_json(response.content, strict=True)
 
@@ -67,7 +67,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> PatientSchema:
         the patient
     """
     data = PatientByMRNSchema(mrn=mrn, site=site)
-    response = _retrieve(f'{settings.OIE_HOST}/getPatientDemographicsByMRN', data=data.model_dump_json())
+    response = _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/getPatientDemographicsByMRN', data=data.model_dump_json())
 
     return PatientSchema.model_validate_json(response.content, strict=True)
 
@@ -84,6 +84,6 @@ def notify_new_patient(mrn: str, site: str) -> None:
         site: the site code the MRN of the patient belongs to
     """
     data = HospitalNumberSchema(mrn=mrn, site=site)
-    _retrieve(f'{settings.OIE_HOST}/newOpalPatient', data=data.model_dump_json())
+    _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/newOpalPatient', data=data.model_dump_json())
 
     # we know at this point that the request was successful

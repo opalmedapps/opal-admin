@@ -258,6 +258,7 @@ def set_orms_enabled(settings: LazySettings) -> None:  # noqa: PT004
         settings: the fixture providing access to the Django settings
     """
     settings.ORMS_ENABLED = True
+    settings.ORMS_HOST = 'http://localhost:8000'
 
 
 @pytest.fixture
@@ -268,6 +269,7 @@ def set_orms_disabled(settings: LazySettings) -> None:  # noqa: PT004
         settings: the fixture providing access to the Django settings
     """
     settings.ORMS_ENABLED = False
+    del settings.ORMS_HOST  # noqa: WPS420
 
 
 @pytest.fixture
