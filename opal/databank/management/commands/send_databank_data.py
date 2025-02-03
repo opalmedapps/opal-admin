@@ -1,4 +1,5 @@
 """Command for sending data to the Databank."""
+
 import json
 from collections import defaultdict
 from http import HTTPStatus
@@ -134,8 +135,7 @@ class Command(BaseCommand):
         """
         databank_data: DatabankQuerySet | None = None
         if not databank_patient.patient.legacy_id:
-            msg = 'Legacy ID missing from Databank Patient.'
-            raise ValueError(msg)
+            raise ValueError('Legacy ID missing from Databank Patient.')
         match module:
             case DataModuleType.APPOINTMENTS:
                 databank_data = LegacyAppointment.objects.get_databank_data_for_patient(
@@ -163,8 +163,7 @@ class Command(BaseCommand):
                     last_synchronized=databank_patient.last_synchronized,
                 )
             case _:
-                msg = f'{module} not a valid databank data type.'  # type: ignore[unreachable]
-                raise ValueError(msg)
+                raise ValueError(f'{module} not a valid databank data type.')
 
         if databank_data:
             # Return the data for this patient
@@ -284,8 +283,7 @@ class Command(BaseCommand):
 
         # Specific error occured between Django, Nginx, and/or source system communications
         self.stderr.write(
-            f'{response.status_code} source system response error: '
-            + response.content.decode(),
+            f'{response.status_code} source system response error: ' + response.content.decode(),
         )
 
         return None
@@ -329,8 +327,7 @@ class Command(BaseCommand):
             else:
                 self.patient_data_success_tracker[patient_guid][data_module] = False
                 self.stderr.write(
-                    f'{status_code} error for patient {patient_guid}: '
-                    + message.strip('[]"'),
+                    f'{status_code} error for patient {patient_guid}: ' + message.strip('[]"'),
                 )
 
     def _update_databank_patient_shared_data(
@@ -353,7 +350,9 @@ class Command(BaseCommand):
         if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
-                databank_consent=databank_patient, data_id=sent_patient_id, data_type=DataModuleType.DEMOGRAPHICS,
+                databank_consent=databank_patient,
+                data_id=sent_patient_id,
+                data_type=DataModuleType.DEMOGRAPHICS,
             )
         elif DataModuleType.LABS in synced_data:
             sent_test_result_ids = [
@@ -365,8 +364,7 @@ class Command(BaseCommand):
             self._create_shared_data_instances(databank_patient, DataModuleType.LABS, sent_test_result_ids)
         elif DataModuleType.DIAGNOSES in synced_data:
             sent_diagnosis_ids = [
-                diagnosis['diagnosis_id']
-                for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
+                diagnosis['diagnosis_id'] for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
             ]
             self._create_shared_data_instances(databank_patient, DataModuleType.DIAGNOSES, sent_diagnosis_ids)
         elif DataModuleType.QUESTIONNAIRES in synced_data:
@@ -375,12 +373,13 @@ class Command(BaseCommand):
                 for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
             self._create_shared_data_instances(
-                databank_patient, DataModuleType.QUESTIONNAIRES, sent_questionnaire_answer_ids,
+                databank_patient,
+                DataModuleType.QUESTIONNAIRES,
+                sent_questionnaire_answer_ids,
             )
         elif DataModuleType.APPOINTMENTS in synced_data:
             sent_appointment_ids = [
-                appointment['appointment_id']
-                for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
+                appointment['appointment_id'] for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
             ]
             self._create_shared_data_instances(databank_patient, DataModuleType.APPOINTMENTS, sent_appointment_ids)
 

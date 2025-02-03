@@ -1,4 +1,5 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
+
 from typing import Any
 
 from django.db import transaction
@@ -91,8 +92,7 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
             ValidationError: if provided site acronym does not exist in the database
         """
         if not Site.objects.filter(acronym=value).exists():
-            msg = f'Provided "{value}" site acronym does not exist.'
-            raise serializers.ValidationError(msg)
+            raise serializers.ValidationError(f'Provided "{value}" site acronym does not exist.')
         return value
 
 

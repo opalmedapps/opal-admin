@@ -117,9 +117,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyAppointment.objects.filter(
                 patientsernum=patient_out_ref,
                 scheduledstarttime__lt=end_datetime_period,
-            ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
+            )
+            .order_by('-scheduledstarttime')
+            .values('scheduledstarttime')[:1],
         ),
-
         'next_appointment': models.Subquery(
             # Retrieve the closest open/active appointment for every patient relatively to the requesting
             # date range, regardless of how far it might be.
@@ -129,9 +130,10 @@ def get_aggregated_patient_received_data(
                 state='Active',
                 status='Open',
                 scheduledstarttime__gt=end_datetime_period,
-            ).order_by('scheduledstarttime').values('scheduledstarttime')[:1],
+            )
+            .order_by('scheduledstarttime')
+            .values('scheduledstarttime')[:1],
         ),
-
         'appointments_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -139,24 +141,27 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyAppointment.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('appointmentsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Documents
         'last_document_received': models.Subquery(
             # Retrieve the latest received document for every patient, regardless of how old it might be.
             legacy_models.LegacyDocument.objects.filter(
                 patientsernum=patient_out_ref,
                 dateadded__lt=end_datetime_period,
-            ).order_by('-dateadded').values('dateadded')[:1],
+            )
+            .order_by('-dateadded')
+            .values('dateadded')[:1],
         ),
-
         'documents_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -164,15 +169,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyDocument.objects.filter(
                     patientsernum=patient_out_ref,
                     dateadded__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('documentsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Educational Materials
         'last_educational_material_received': models.Subquery(
             # Retrieve the latest received educational material for every patient,
@@ -180,9 +187,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyEducationalMaterial.objects.filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'educational_materials_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -190,24 +198,27 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyEducationalMaterial.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('educationalmaterialsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Questionnaires
         'last_questionnaire_received': models.Subquery(
             # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
             legacy_models.LegacyQuestionnaire.objects.filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'questionnaires_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -215,15 +226,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyQuestionnaire.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('questionnairesernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # TODO: QSCCD-2209 - add a lab_groups_received count that shows how many "complete lab groups" were received.
         # Subqueries for Labs
         'last_lab_received': models.Subquery(
@@ -231,9 +244,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyPatientTestResult.objects.filter(
                 patient_ser_num=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'labs_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -241,15 +255,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyPatientTestResult.objects.filter(
                     patient_ser_num=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patient_ser_num',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('patient_test_result_ser_num'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # NOTE! The action_date indicates the date when the patients' data were received.
         # It is not the date when the activity statistics were populated.
         'action_date': models.Value(start_datetime_period.date()),
@@ -281,8 +297,7 @@ def export_data(
     """
     # Generate dataframe from the queryset given
     if not data_set:
-        msg = 'Invalid input, unable to export empty data'
-        raise ValueError(msg)
+        raise ValueError('Invalid input, unable to export empty data')
     if isinstance(data_set, list):
         data_set_columns = data_set[0].keys()
     else:
@@ -299,8 +314,7 @@ def export_data(
         case '.xlsx':
             dataframe.to_excel(file_path, index=False)
         case _:
-            msg = 'Invalid file format, please use either csv or xlsx'
-            raise ValueError(msg)
+            raise ValueError('Invalid file format, please use either csv or xlsx')
 
 
 def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:

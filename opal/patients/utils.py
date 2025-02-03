@@ -1,4 +1,5 @@
 """App patients util functions."""
+
 import logging
 from datetime import date
 from typing import Final
@@ -46,11 +47,7 @@ def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patien
     Returns:
         the RAMQ number derived from the given arguments
     """
-    month = (
-        date_of_birth.strftime('%m')
-        if sex == Patient.SexType.MALE
-        else date_of_birth.month + RAMQ_FEMALE_INDICATOR
-    )
+    month = date_of_birth.strftime('%m') if sex == Patient.SexType.MALE else date_of_birth.month + RAMQ_FEMALE_INDICATOR
 
     data = [
         last_name[:3].upper(),
@@ -453,10 +450,7 @@ def create_access_request(
     # New patient
     if isinstance(patient, SourceSystemPatientData):
         is_new_patient = True
-        mrns = [
-            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active)
-            for mrn_data in patient.mrns
-        ]
+        mrns = [(Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active) for mrn_data in patient.mrns]
 
         patient = create_patient(
             first_name=patient.first_name,
@@ -486,8 +480,7 @@ def create_access_request(
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
         if relationship_type.is_self:
             if not caregiver.legacy_id:
-                msg = 'Legacy ID is missing from Caregiver Profile'
-                raise ValueError(msg)
+                raise ValueError('Legacy ID is missing from Caregiver Profile')
 
             legacy_utils.update_legacy_user_type(caregiver.legacy_id, LegacyUserType.PATIENT)
 

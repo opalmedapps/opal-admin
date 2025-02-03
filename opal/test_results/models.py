@@ -1,4 +1,5 @@
 """Module providing models for any type of test result."""
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.query import QuerySet
@@ -84,8 +85,7 @@ class PathologyObservation(AbstractObservation):
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
         """
         if self.general_test.type != TestType.PATHOLOGY:
-            msg = 'PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.'
-            raise ValidationError(msg)
+            raise ValidationError('PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.')
 
 
 class LabObservation(AbstractObservation):
@@ -144,8 +144,7 @@ class LabObservation(AbstractObservation):
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
         """
         if self.general_test.type != TestType.LAB:
-            msg = 'LabObservations can only be linked to GeneralTest of type LAB.'
-            raise ValidationError(msg)
+            raise ValidationError('LabObservations can only be linked to GeneralTest of type LAB.')
 
 
 class Note(models.Model):

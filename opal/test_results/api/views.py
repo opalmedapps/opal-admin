@@ -61,8 +61,9 @@ class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
             )
         except DatabaseError as db_exp:
             # Raise `ValidationError` exception if `LegacyDocument` record could not be saved to the database
-            msg = f'An error occurred while inserting `LegacyDocument` record to the database. {db_exp}'
-            raise ValidationError(msg) from db_exp
+            raise ValidationError(
+                f'An error occurred while inserting `LegacyDocument` record to the database. {db_exp}'
+            ) from db_exp
 
         # Save `GeneralTest` record to the database
         serializer.save(

@@ -11,6 +11,7 @@ The models in this module are inspired by Apple HealthKit, such as:
     * https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier
     * https://developer.apple.com/documentation/healthkit/hkelectrocardiogram
 """
+
 from decimal import Decimal
 from enum import Enum
 from typing import Any
@@ -84,8 +85,7 @@ class AbstractSample(models.Model):
             ValidationError: if attempting to save an already existing instance
         """
         if self.pk:
-            msg = f'Cannot change an existing instance of {self._meta.verbose_name}'
-            raise ValidationError(msg)
+            raise ValidationError(f'Cannot change an existing instance of {self._meta.verbose_name}')
 
         super().save(*args, **kwargs)
 

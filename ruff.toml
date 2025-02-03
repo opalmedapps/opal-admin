@@ -62,7 +62,7 @@ select = [
     "DTZ",
     # flake8-errmsg (EM)
     # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
-    "EM",
+    # "EM",
     # flake8-executable
     # https://docs.astral.sh/ruff/rules/#flake8-executable-exe
     "EXE",
@@ -151,6 +151,8 @@ ignore = [
     "FBT002",
     # explicit is better than implicit (string concatenation)
     "ISC003",
+    # Skip avoid specifying long messages outside the exception class
+    "TRY003",
 ]
 
 # temporary ignores during migration to ruff

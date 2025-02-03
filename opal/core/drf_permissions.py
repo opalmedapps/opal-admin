@@ -3,6 +3,7 @@ This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
+
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -90,8 +91,9 @@ class _UsernameRequired(permissions.IsAuthenticated):
             ImproperlyConfigured: if the `required_username` attribute is not defined in the subclass
         """
         if not hasattr(self, 'required_username') or not self.required_username:
-            msg = f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.'
-            raise ImproperlyConfigured(msg)
+            raise ImproperlyConfigured(
+                f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.'
+            )
 
         return super().has_permission(request, view) and (
             request.user.username == self.required_username or request.user.is_superuser
@@ -143,8 +145,7 @@ class IsORMSUser(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
         """
         return super().has_permission(request, view) and (
-            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
-            or request.user.is_superuser
+            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists() or request.user.is_superuser
         )
 
 
@@ -240,8 +241,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
         if not caregiver_profile:
-            msg = 'Caregiver not found.'
-            raise exceptions.PermissionDenied(msg)
+            raise exceptions.PermissionDenied('Caregiver not found.')
         return caregiver_profile
 
     def _check_has_relationship_with_target(
@@ -266,8 +266,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             patient__legacy_id=patient_legacy_id,
         )
         if not relationships_with_target:
-            msg = 'Caregiver does not have a relationship with the patient.'
-            raise exceptions.PermissionDenied(msg)
+            raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
         return relationships_with_target
 
     def _check_patient_not_deceased(self, patient_legacy_id: int) -> None:
@@ -283,8 +282,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         patient = Patient.objects.filter(legacy_id=patient_legacy_id).first()
 
         if patient and patient.date_of_death is not None:
-            msg = 'Patient has a date of death recorded'
-            raise exceptions.PermissionDenied(msg)
+            raise exceptions.PermissionDenied('Patient has a date of death recorded')
 
     def _check_has_valid_relationship(self, relationships_with_target: QuerySet[Relationship]) -> None:
         """
@@ -300,8 +298,9 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         valid_relationships = relationships_with_target.filter(status=RelationshipStatus.CONFIRMED)
         if not valid_relationships.exists():
-            msg = "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
-            raise exceptions.PermissionDenied(msg)
+            raise exceptions.PermissionDenied(
+                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
+            )
 
 
 class CaregiverSelfPermissions(CaregiverPatientPermissions):
@@ -358,5 +357,6 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         """
         valid_relationships = [rel for rel in relationships_with_target if rel.type.role_type == RoleType.SELF]
         if not valid_relationships:
-            msg = 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.'
-            raise exceptions.PermissionDenied(msg)
+            raise exceptions.PermissionDenied(
+                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.'
+            )

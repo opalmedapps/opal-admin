@@ -1,4 +1,5 @@
 """Management command for inserting test data."""
+
 import secrets
 from typing import Any
 
@@ -29,8 +30,7 @@ def token(value: str) -> str:
         the token string
     """
     if len(value) != constants.TOKEN_LENGTH:
-        msg = 'Token must be 40 characters long'
-        raise ValueError(msg)
+        raise ValueError('Token must be 40 characters long')
 
     return value
 
@@ -51,8 +51,7 @@ def password(value: str) -> str:
     minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
 
     if len(value) < minimum_length:
-        msg = f'Password must be at least {minimum_length} characters long'
-        raise ValueError(msg)
+        raise ValueError(f'Password must be at least {minimum_length} characters long')
 
     return value
 
@@ -64,10 +63,7 @@ class Command(BaseCommand):
     Creates the required groups, users, security questions, tokens etc.
     """
 
-    help = (
-        'Initialize required data for a new project.'
-        + ' Can only be run at the beginning of setting up a project.'
-    )
+    help = 'Initialize required data for a new project.' + ' Can only be run at the beginning of setting up a project.'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -334,9 +330,7 @@ class Command(BaseCommand):
         )
 
         password_option: str = options['admin_password']
-        raw_password = (
-            password_option or secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
-        )
+        raw_password = password_option or secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
         ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
 
         message = 'Created superuser with username "admin"'

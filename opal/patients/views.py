@@ -1,4 +1,5 @@
 """This module provides views for the patients app."""
+
 import base64
 import json
 from collections import OrderedDict
@@ -64,7 +65,8 @@ class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView
 
 
 class RelationshipTypeDeleteView(
-    PermissionRequiredMixin, generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
+    PermissionRequiredMixin,
+    generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
 ):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
@@ -310,9 +312,11 @@ class AccessRequestView(
         """
         self._reset_storage()
 
-        return self.render_to_response(self.get_context_data(
-            search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
-        ))
+        return self.render_to_response(
+            self.get_context_data(
+                search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
+            )
+        )
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
@@ -331,8 +335,7 @@ class AccessRequestView(
         """
         management_form = forms.AccessRequestManagementForm(request.POST)
         if not management_form.is_valid():
-            msg = 'ManagementForm data is missing or has been tampered with.'
-            raise SuspiciousOperation(msg)
+            raise SuspiciousOperation('ManagementForm data is missing or has been tampered with.')
 
         current_step = management_form.cleaned_data.get(self.current_step_name)
 
@@ -383,9 +386,11 @@ class AccessRequestView(
         next_step = kwargs.get('next_step', 'search')
         current_forms = kwargs.get('current_forms', [])
 
-        context_data['management_form'] = forms.AccessRequestManagementForm(initial={
-            'current_step': next_step,
-        })
+        context_data['management_form'] = forms.AccessRequestManagementForm(
+            initial={
+                'current_step': next_step,
+            }
+        )
         context_data['next_button_text'] = self.texts.get(next_step)
 
         for current_form in current_forms:
@@ -425,9 +430,9 @@ class AccessRequestView(
         # populate relationship type (in case it is just the ID)
         relationship_form.full_clean()
 
-        caregiver = (
-            relationship_form.existing_user
-            or (relationship_form.cleaned_data['first_name'], relationship_form.cleaned_data['last_name'])
+        caregiver = relationship_form.existing_user or (
+            relationship_form.cleaned_data['first_name'],
+            relationship_form.cleaned_data['last_name'],
         )
 
         relationship, registration_code = create_access_request(
@@ -572,10 +577,7 @@ class AccessRequestView(
                 date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
                 # convert JSON back to SourceSystemPatientData for consistency
                 # (so it is either Patient or SourceSystemPatientData)
-                patient_json['mrns'] = [
-                    SourceSystemMRNData(**mrn)
-                    for mrn in patient_json['mrns']
-                ]
+                patient_json['mrns'] = [SourceSystemMRNData(**mrn) for mrn in patient_json['mrns']]
                 patient_json['date_of_birth'] = date_of_birth
                 patient = SourceSystemPatientData(**patient_json)
 
@@ -626,10 +628,7 @@ class AccessRequestView(
             # strip it from the POST data which contains keys with the prefix
             # NOTE: this is not ideal since even the current form will get initial data this way
             # which can cause issues when the form itself has actual disabled fields
-            initial = {
-                key.replace(f'{current_step}-', ''): value
-                for key, value in data.items()
-            }
+            initial = {key.replace(f'{current_step}-', ''): value for key, value in data.items()}
 
             # use initial instead of data to avoid validating a form when up-validate is used
             if is_current_step and 'X-Up-Validate' in self.request.headers:
@@ -678,7 +677,9 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
     table_class = tables.PendingRelationshipTable
     template_name = 'patients/relationships/pending_relationship_list.html'
     queryset = Relationship.objects.select_related(
-        'patient', 'caregiver__user', 'type',
+        'patient',
+        'caregiver__user',
+        'type',
     ).prefetch_related(
         'patient__hospital_patients__site',
     )
@@ -752,7 +753,9 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
     form_class = RelationshipAccessForm
     success_url = reverse_lazy('patients:relationships-list')
     queryset = Relationship.objects.select_related(
-        'patient', 'caregiver__user', 'type',
+        'patient',
+        'caregiver__user',
+        'type',
     ).prefetch_related(
         'patient__hospital_patients__site',
     )

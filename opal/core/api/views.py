@@ -125,12 +125,12 @@ class HL7CreateView(CreateAPIView[_Model]):
                     {
                         'site': {'acronym': site},
                         'mrn': mrn,
-                    } for mrn, site in valid_pid_mrn_sites
+                    }
+                    for mrn, site in valid_pid_mrn_sites
                 ],
             )
         except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
-            msg = 'Patient identified by HL7 PID could not be uniquely found in database.'
-            raise ValidationError(msg) from None
+            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.') from None
         return url_uuid == patient.uuid
 
 

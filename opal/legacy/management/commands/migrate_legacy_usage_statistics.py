@@ -1,4 +1,5 @@
 """Management command for migrating legacy usage statistics to the new backend usage statistics system."""
+
 import csv
 from datetime import datetime
 from pathlib import Path
@@ -98,7 +99,8 @@ class Command(BaseCommand):
             legacy_activity_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_activity_logs:
                 if (
-                    last_record and last_record.patient.legacy_id
+                    last_record
+                    and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
                     and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
                 ):
@@ -114,7 +116,8 @@ class Command(BaseCommand):
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=patient_activity_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch_patient_activity) == batch_size:
                         self._create_objects_and_clear_batch(
@@ -131,7 +134,8 @@ class Command(BaseCommand):
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=app_activity_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch_app_activity) == batch_size:
                         self._create_objects_and_clear_batch(
@@ -172,7 +176,8 @@ class Command(BaseCommand):
             legacy_data_received_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_data_received_logs:
                 if (
-                    last_record and last_record.patient.legacy_id
+                    last_record
+                    and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
                     and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
                 ):
@@ -188,7 +193,8 @@ class Command(BaseCommand):
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=data_received_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch) == batch_size:
                         batch = self._create_objects_and_clear_batch(batch, DailyPatientDataReceived.objects)
@@ -212,10 +218,7 @@ class Command(BaseCommand):
             activity_log: legacy patient activity log
         """
         legacy_id = int(activity_log['PatientSerNum'])
-        if (
-            legacy_id in self.patients
-            and legacy_id in self.self_caregiver
-        ):
+        if legacy_id in self.patients and legacy_id in self.self_caregiver:
             patient_activity = DailyUserPatientActivity(
                 action_by_user=self.self_caregiver[legacy_id].caregiver.user,
                 user_relationship_to_patient=self.self_caregiver[legacy_id],
@@ -229,8 +232,7 @@ class Command(BaseCommand):
             )
             patient_activity.full_clean()
             return patient_activity
-        msg = f'Patient (legacy ID: {legacy_id}) does not exist in system.'
-        raise ValueError(msg)
+        raise ValueError(f'Patient (legacy ID: {legacy_id}) does not exist in system.')
 
     def _create_legacy_app_activity_log(self, activity_log: dict[str, str]) -> DailyUserAppActivity:
         """
@@ -245,8 +247,12 @@ class Command(BaseCommand):
         Args:
             activity_log: legacy patient activity log
         """
-        last_login = None if activity_log['Last_Login'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.fromisoformat(activity_log['Last_Login']),
+        last_login = (
+            None
+            if activity_log['Last_Login'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(activity_log['Last_Login']),
+            )
         )
         legacy_id = int(activity_log['PatientSerNum'])
         if legacy_id in self.self_caregiver:
@@ -265,8 +271,7 @@ class Command(BaseCommand):
             )
             app_activity.full_clean()
             return app_activity
-        msg = f'Patient (legacy ID: {legacy_id}) does not exist in system.'
-        raise ValueError(msg)
+        raise ValueError(f'Patient (legacy ID: {legacy_id}) does not exist in system.')
 
     def _create_legacy_patient_data_received_log(self, data_received_log: dict[str, str]) -> DailyPatientDataReceived:
         """
@@ -281,17 +286,33 @@ class Command(BaseCommand):
         Args:
             data_received_log: legacy patient data received log
         """
-        next_appointment = None if data_received_log['Next_Appointment'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.fromisoformat(data_received_log['Next_Appointment']),
+        next_appointment = (
+            None
+            if data_received_log['Next_Appointment'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Next_Appointment']),
+            )
         )
-        last_appointment_received = None if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.fromisoformat(data_received_log['Last_Appointment_Received']),
+        last_appointment_received = (
+            None
+            if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Appointment_Received']),
+            )
         )
-        last_document_received = None if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.fromisoformat(data_received_log['Last_Clinical_Notes_Received']),
+        last_document_received = (
+            None
+            if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Clinical_Notes_Received']),
+            )
         )
-        last_lab_received = None if data_received_log['Last_Lab_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.fromisoformat(data_received_log['Last_Lab_Received']),
+        last_lab_received = (
+            None
+            if data_received_log['Last_Lab_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Lab_Received']),
+            )
         )
         if int(data_received_log['PatientSerNum']) in self.patients:
             migrate_record = DailyPatientDataReceived(
@@ -311,8 +332,7 @@ class Command(BaseCommand):
             )
             migrate_record.full_clean()
             return migrate_record
-        msg = f'Patient (legacy ID: {data_received_log["PatientSerNum"]}) does not exist in system.'
-        raise ValueError(msg)
+        raise ValueError(f'Patient (legacy ID: {data_received_log["PatientSerNum"]}) does not exist in system.')
 
     def _create_objects_and_clear_batch(self, batch: list[Any], model: Manager[Any]) -> list[Any]:
         """

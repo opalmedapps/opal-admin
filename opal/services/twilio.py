@@ -1,4 +1,5 @@
 """Sending SMS service, working with Twilio."""
+
 from twilio.base.exceptions import TwilioException
 from twilio.rest import Client
 
@@ -45,5 +46,4 @@ class TwilioService:
                 body=message,
             )
         except TwilioException as exc:
-            msg = 'Sending SMS failed'
-            raise TwilioServiceError(msg) from exc
+            raise TwilioServiceError('Sending SMS failed') from exc

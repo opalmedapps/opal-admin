@@ -1,4 +1,5 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
+
 from collections import defaultdict
 from collections.abc import Callable, Mapping
 from datetime import datetime
@@ -34,10 +35,9 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
     return {
         'first_name': segment.pid_5.pid_5_2.to_er7(),
         'last_name': segment.pid_5.pid_5_1.to_er7(),
-        'date_of_birth': datetime.strptime(
-            segment.pid_7.to_er7(),
-            FORMAT_DATE
-        ).astimezone(timezone.get_current_timezone()).date(),
+        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), FORMAT_DATE)
+        .astimezone(timezone.get_current_timezone())
+        .date(),
         'sex': segment.pid_8.to_er7(),
         'ramq': segment.pid_2.pid_2_1.to_er7(),
         'mrn_sites': [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
@@ -299,15 +299,13 @@ class HL7Parser(BaseParser):
         try:
             raw_data_bytes = stream.read()
         except AttributeError as err:
-            msg = 'Request data must be application/hl7v2+er7 string stream'
-            raise exceptions.ParseError(msg) from err
+            raise exceptions.ParseError('Request data must be application/hl7v2+er7 string stream') from err
 
         # Decode the bytes object to a string for further processing
         try:
             raw_data_str = raw_data_bytes.decode('utf-8')
         except AttributeError as err:
-            msg = f'Error decoding HL7 message: {err}'
-            raise exceptions.ParseError(msg) from err
+            raise exceptions.ParseError(f'Error decoding HL7 message: {err}') from err
 
         # Normalize line endings to CR
         hl7_message = raw_data_str.replace('\r\n', '\r').replace('\n', '\r')

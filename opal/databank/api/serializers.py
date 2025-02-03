@@ -1,4 +1,5 @@
 """Serializers for the API views of the `databank` app."""
+
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
@@ -43,6 +44,5 @@ class DatabankConsentSerializer(DynamicFieldsSerializer[DatabankConsent]):
 
         """
         if not value:
-            msg = 'Patient must consent to health data authorization.'
-            raise serializers.ValidationError(msg)
+            raise serializers.ValidationError('Patient must consent to health data authorization.')
         return value

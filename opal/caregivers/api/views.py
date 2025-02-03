@@ -1,4 +1,5 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+
 import datetime as dt
 from typing import TYPE_CHECKING, Any
 
@@ -54,9 +55,12 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
         RegistrationCode.objects.select_related(
             'relationship',
             'relationship__patient',
-        ).prefetch_related(
+        )
+        .prefetch_related(
             'relationship__patient__hospital_patients',
-        ).annotate(code_sha512=SHA512('code')).filter(status=RegistrationCodeStatus.NEW)
+        )
+        .annotate(code_sha512=SHA512('code'))
+        .filter(status=RegistrationCodeStatus.NEW)
     )
     permission_classes = (IsRegistrationListener,)
     serializer_class = RegistrationEncryptionInfoSerializer
@@ -119,8 +123,9 @@ class GetCaregiverPatientsList(APIView):
         user_id = request.headers.get('Appuserid')
 
         if not user_id:
-            msg = "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
-            raise exceptions.ParseError(msg)
+            raise exceptions.ParseError(
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
+            )
 
         relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
         return Response(
@@ -165,8 +170,9 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
         user_id = request.headers.get('Appuserid')
 
         if not user_id:
-            msg = "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
-            raise exceptions.ParseError(msg)
+            raise exceptions.ParseError(
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
+            )
 
         # manually set the username kwarg since it is not provided via the URL
         self.kwargs['username'] = user_id
@@ -187,12 +193,16 @@ class RetrieveRegistrationCodeMixin:
             The queryset of RegistrationCode
         """
         code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
-        return RegistrationCode.objects.select_related(
-            'relationship__caregiver',
-            'relationship__caregiver__user',
-        ).prefetch_related(
-            'relationship__caregiver__email_verifications',
-        ).filter(code=code, status=RegistrationCodeStatus.NEW)
+        return (
+            RegistrationCode.objects.select_related(
+                'relationship__caregiver',
+                'relationship__caregiver__user',
+            )
+            .prefetch_related(
+                'relationship__caregiver__email_verifications',
+            )
+            .filter(code=code, status=RegistrationCodeStatus.NEW)
+        )
 
 
 @extend_schema(
@@ -508,15 +518,18 @@ class RegistrationCompletionView(APIView):
         # a user can potentially verify multiple email address during the same process
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
-        email_verification = email_verifications.filter(
-            is_verified=True,
-        ).order_by('-sent_at').first()
+        email_verification = (
+            email_verifications.filter(
+                is_verified=True,
+            )
+            .order_by('-sent_at')
+            .first()
+        )
 
         data_email: str = caregiver_data.get('email', '')
 
         if email_verification is None and not data_email:
-            msg = 'Caregiver email is not verified.'
-            raise drf_serializers.ValidationError(msg)
+            raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution

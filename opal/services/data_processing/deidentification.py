@@ -1,4 +1,5 @@
 """Module providing algorithms and functions related to the de-identification of patient data."""
+
 import hashlib
 import logging
 from dataclasses import dataclass
@@ -155,8 +156,7 @@ class OpenScienceIdentity:
 
         # Raise error if any validation fails
         if self.invalid_attributes:
-            msg = f"Invalid identity components {', '.join(self.invalid_attributes)}"
-            raise ValueError(msg)
+            raise ValueError(f'Invalid identity components {", ".join(self.invalid_attributes)}')
 
     def _signature_key(self) -> str:
         """

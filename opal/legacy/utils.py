@@ -494,20 +494,17 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
     if patient.legacy_id:
         external_patient_id = patient.legacy_id
     else:
-        msg = 'The patient has no legacy id.'
-        raise DataFetchError(msg)
+        raise DataFetchError('The patient has no legacy id.')
 
     try:
         query_result = _fetch_questionnaires_from_db(external_patient_id)
     except OperationalError as exc:
-        msg = f'Error fetching questionnaires: {exc}'
-        raise DataFetchError(msg) from exc
+        raise DataFetchError(f'Error fetching questionnaires: {exc}') from exc
 
     try:
         data_list = _parse_query_result(query_result)
     except TypeError as exc:
-        msg = f'Error parsing questionnaires: {exc}'
-        raise DataFetchError(msg) from exc
+        raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
     return _process_questionnaire_data(data_list)
 
 
@@ -556,8 +553,7 @@ def _parse_query_result(
         elif isinstance(parsed_data, list):
             data_list.extend(parsed_data)
         else:
-            msg = f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.'  # type: ignore[unreachable]
-            raise TypeError(msg)
+            raise TypeError(f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.')
     return data_list
 
 
@@ -578,8 +574,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
     for data in parsed_data_list:
         if 'questions' not in data:
-            msg = f'Unexpected data format: {data!r}'
-            raise DataFetchError(msg)
+            raise DataFetchError(f'Unexpected data format: {data!r}')
         questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
             questionnaire.QuestionnaireData(
@@ -611,8 +606,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
     for question in questions_data:
         answers = question.get('values') or []
         if not isinstance(answers, list):
-            msg = f"Invalid type for 'answers' {type(answers)} for question: {question}"
-            raise TypeError(msg)
+            raise TypeError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
 
         questions.append(
             questionnaire.Question(
