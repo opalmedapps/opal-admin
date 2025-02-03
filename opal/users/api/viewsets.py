@@ -1,4 +1,5 @@
 """This module provides `ViewSets` for the users app."""
+
 from http import HTTPStatus
 
 from django.contrib.auth.models import Group
@@ -67,7 +68,7 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.')) from None
+            raise NotFound(_('User manager group not found.')) from None
 
         clinicalstaff_user.groups.add(group.pk)
         clinicalstaff_user.save()
@@ -95,7 +96,7 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.')) from None
+            raise NotFound(_('User manager group not found.')) from None
 
         clinicalstaff_user.groups.remove(group.pk)
         clinicalstaff_user.save()
