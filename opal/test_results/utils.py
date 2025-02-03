@@ -1,4 +1,5 @@
 """Utility functions used by the test results app."""
+
 import logging
 import re
 from datetime import datetime
@@ -22,7 +23,7 @@ def generate_pathology_report(
     pathology_data: dict[str, Any],
 ) -> Path:
     """
-    Generate the pathology PDF report by calling the ReportService.
+    Generate the pathology PDF report.
 
     Args:
         patient: patient instance for whom a new PDF pathology report being generated
@@ -53,9 +54,11 @@ def generate_pathology_report(
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq or '',
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all().annotate(
+                patient.hospital_patients.all()
+                .annotate(
                     site_code=models.F('site__acronym'),
-                ).values('mrn', 'site_code'),
+                )
+                .values('mrn', 'site_code'),
             ),
         ),
         site_data=SiteData(
