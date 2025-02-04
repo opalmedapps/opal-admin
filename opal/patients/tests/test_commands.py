@@ -34,84 +34,84 @@ class TestExpireRelationshipsCommand(CommandTestMixin):
         """Mock `Patient.calculate_age` with a fixed date in place of `date.today()`."""
         return mocker.patch.object(Patient, 'calculate_age', side_effect=calculate_age_fixed_date)
 
-    def test_not_expired(self, mocker: MockerFixture) -> None:
+    def test_not_expired(self) -> None:
         """Test patient born shortly before today's date (relationship is not expired)."""
         relationship = self._create_relationship(date(2010, 12, 31))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.CONFIRMED
 
-    def test_expired(self, mocker: MockerFixture) -> None:
+    def test_expired(self) -> None:
         """Test patient born long before today's date (relationship is expired)."""
         relationship = self._create_relationship(date(1960, 12, 31))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.EXPIRED
 
-    def test_born_today(self, mocker: MockerFixture) -> None:
+    def test_born_today(self) -> None:
         """Test patient born today (relationship is not expired)."""
         relationship = self._create_relationship(date(2014, 1, 15))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.CONFIRMED
 
-    def test_future_birthday(self, mocker: MockerFixture) -> None:
+    def test_future_birthday(self) -> None:
         """Test patient born in the future (relationship is not expired)."""
         relationship = self._create_relationship(date(2024, 1, 15))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.CONFIRMED
 
-    def test_birthday_yesterday(self, mocker: MockerFixture) -> None:
+    def test_birthday_yesterday(self) -> None:
         """Test a patient close to the expiry age, whose birthday was yesterday (relationship has just expired)."""
         relationship = self._create_relationship(date(2000, 1, 14))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.EXPIRED
 
-    def test_birthday_today(self, mocker: MockerFixture) -> None:
+    def test_birthday_today(self) -> None:
         """Test a patient close to the expiry age, whose birthday is today (relationship has just expired today)."""
         relationship = self._create_relationship(date(2000, 1, 15))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.EXPIRED
 
-    def test_birthday_tomorrow(self, mocker: MockerFixture) -> None:
+    def test_birthday_tomorrow(self) -> None:
         """Test a patient close to the expiry age, whose birthday is tomorrow (relationship isn't expired just yet)."""
         relationship = self._create_relationship(date(2000, 1, 16))
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.CONFIRMED
 
-    def test_no_end_age(self, mocker: MockerFixture) -> None:
+    def test_no_end_age(self) -> None:
         """Test a relationship with no end age, which shouldn't be affected."""
         relationship = self._create_relationship(date(1900, 1, 1), end_age=None)
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.CONFIRMED
 
-    def test_pending_unaffected(self, mocker: MockerFixture) -> None:
+    def test_pending_unaffected(self) -> None:
         """Test a relationship with pending status, which shouldn't be affected."""
         relationship = self._create_relationship(date(1900, 1, 1), status=RelationshipStatus.PENDING)
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.PENDING
 
-    def test_denied_unaffected(self, mocker: MockerFixture) -> None:
+    def test_denied_unaffected(self) -> None:
         """Test a relationship with denied status, which shouldn't be affected."""
         relationship = self._create_relationship(date(1900, 1, 1), status=RelationshipStatus.DENIED)
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.DENIED
 
-    def test_expired_unaffected(self, mocker: MockerFixture) -> None:
+    def test_expired_unaffected(self) -> None:
         """Test a relationship with already expired status, which shouldn't be affected."""
         relationship = self._create_relationship(date(1900, 1, 1), status=RelationshipStatus.EXPIRED)
         self._call_command('expire_relationships')
         relationship.refresh_from_db()
         assert relationship.status == RelationshipStatus.EXPIRED
 
-    def test_revoked_unaffected(self, mocker: MockerFixture) -> None:
+    def test_revoked_unaffected(self) -> None:
         """Test a relationship with revoked status, which shouldn't be affected."""
         relationship = self._create_relationship(date(1900, 1, 1), status=RelationshipStatus.REVOKED)
         self._call_command('expire_relationships')

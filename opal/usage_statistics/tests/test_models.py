@@ -53,9 +53,7 @@ def test_daily_user_patient_activity_str() -> None:
         patient=patient,
     )
 
-    assert str(patient_data) == 'Daily activity by user Marge, Simpson on behalf of patient {patient}'.format(
-        patient=patient,
-    )
+    assert str(patient_data) == f'Daily activity by user Marge, Simpson on behalf of patient {patient}'
 
 
 def test_daily_user_app_activity_str() -> None:
@@ -65,9 +63,7 @@ def test_daily_user_app_activity_str() -> None:
         action_by_user=caregiver,
     )
 
-    assert str(user_data) == 'Daily activity by {caregiver.first_name}, {caregiver.last_name}'.format(
-        caregiver=caregiver,
-    )
+    assert str(user_data) == f'Daily activity by {caregiver.first_name}, {caregiver.last_name}'
 
 
 def test_daily_user_app_activity_new_can_save() -> None:

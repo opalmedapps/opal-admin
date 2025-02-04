@@ -108,9 +108,10 @@ class PatientTable(tables.Table):
 
     def render_mrns(
         self,
-        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[SourceSystemMRNData],  # noqa: WPS221
+        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[SourceSystemMRNData],
     ) -> str:
-        """Render MRN column.
+        """
+        Render MRN column.
 
         Concat list of MRN/site pairs into one string.
 
@@ -128,11 +129,10 @@ class PatientTable(tables.Table):
             mrn_site_list = []
 
             for item in value:
-                if isinstance(item, SourceSystemMRNData):
-                    item = item._asdict()  # noqa: WPS437
+                data = item._asdict() if isinstance(item, SourceSystemMRNData) else item
 
                 mrn_site_list.append(
-                    f'{item.get("site")}: {item.get("mrn")}',
+                    f'{data.get("site")}: {data.get("mrn")}',
                 )
         else:
             mrn_site_list = [
@@ -164,11 +164,11 @@ class PendingRelationshipTable(tables.Table):
         template_name='tables/action_column.html',
         orderable=False,
     )
-    type = tables.Column(  # noqa: A003
+    type = tables.Column(
         verbose_name=_('Relationship'),
     )
     status = tables.Column(
-        verbose_name=Relationship._meta.get_field('status').verbose_name,  # noqa: WPS437
+        verbose_name=Relationship._meta.get_field('status').verbose_name,
         order_by='request_date',
     )
 
@@ -192,8 +192,8 @@ class PendingRelationshipTable(tables.Table):
             today = timezone.now().date()
             number_of_days = (today - record.request_date).days
             pending_since_text = ngettext(
-                '%(number_of_days)d day',  # noqa: WPS323
-                '%(number_of_days)d days',  # noqa: WPS323
+                '%(number_of_days)d day',
+                '%(number_of_days)d days',
                 number_of_days,
             ) % {
                 'number_of_days': number_of_days,
@@ -305,7 +305,8 @@ class RelationshipCaregiverTable(tables.Table):
 
 
 class ConfirmPatientDetailsTable(PatientTable):
-    """Custom table for confirmation of patient data given a source system data object.
+    """
+    Custom table for confirmation of patient data given a source system data object.
 
     The goal of this table is to render data in the same way as the existing `PatientTable`
     A new table is required because the existing table is rendered using a patient queryset in

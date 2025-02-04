@@ -15,7 +15,8 @@ pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
 def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
-    """Ensure questionnaire data for databank is returned and formatted correctly.
+    """
+    Ensure questionnaire data for databank is returned and formatted correctly.
 
     Note that the test data returned by this query is dependent on
     what is hard coded in our test_QuestionnaireDB setup.
@@ -24,7 +25,7 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     # Prepare patients and last cron run time
     non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
     consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
-    last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
+    last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
 
     # Fetch the data
     databank_data_empty = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
@@ -64,7 +65,8 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
 
 
 def test_new_questionnaires_patient_caregiver() -> None:
-    """Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
+    """
+    Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
     Get questionnaires  with respendonts 'Caregiver' and 'Patient'
     Get empty return with incorrect username
@@ -139,7 +141,8 @@ def test_new_questionnaires_patient_caregiver() -> None:
 
 
 def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
-    """Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
+    """
+    Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
     Get empty questionnaires with unexpected respondents
     """

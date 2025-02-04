@@ -29,7 +29,7 @@ class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.Gener
     permission_classes = (FullDjangoModelPermissions,)
 
 
-class SecurityAnswerViewSet(  # noqa: WPS215
+class SecurityAnswerViewSet(
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -44,7 +44,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     permission_classes = (IsListener,)
     queryset = SecurityAnswer.objects.none()
 
-    def get_queryset(self) -> QuerySet[SecurityAnswer]:  # noqa: WPS615
+    def get_queryset(self) -> QuerySet[SecurityAnswer]:
         """
         Override get_queryset to filter security answers by caregiver uuid.
 

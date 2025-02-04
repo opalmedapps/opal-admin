@@ -44,7 +44,8 @@ class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
     # Django Admin deletion privileges discussion:
     # https://stackoverflow.com/questions/38127581/django-admin-has-delete-permission-ignored-for-delete-action
     def has_delete_permission(self, request: HttpRequest, obj: models.RelationshipType | None = None) -> bool:
-        """Override default default permission behaviour for restricted role types.
+        """
+        Override default default permission behaviour for restricted role types.
 
         Args:
             request: Http request details.

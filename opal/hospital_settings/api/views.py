@@ -1,4 +1,5 @@
 """This module provides views for the hospital-specific settings REST API."""
+
 from rest_framework import exceptions, generics
 
 from opal.core.drf_permissions import FullDjangoModelPermissions
@@ -30,8 +31,8 @@ class RetrieveInstitutionView(generics.RetrieveAPIView[Institution]):
         """
         try:
             institution: Institution = generics.get_object_or_404(self.get_queryset())
-        except Institution.MultipleObjectsReturned:
-            raise exceptions.APIException('There is more than one institution')
+        except Institution.MultipleObjectsReturned as exc:
+            raise exceptions.APIException('There is more than one institution') from exc
 
         # May raise a permission denied
         self.check_object_permissions(self.request, institution)

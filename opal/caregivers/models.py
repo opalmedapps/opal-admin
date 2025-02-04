@@ -64,7 +64,8 @@ class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]
         verbose_name_plural = _('Security Questions')
 
     def __str__(self) -> str:
-        """Return the question text.
+        """
+        Return the question text.
 
         Returns:
             the question text.
@@ -97,7 +98,8 @@ class SecurityAnswer(models.Model):
         verbose_name_plural = _('Security Answers')
 
     def __str__(self) -> str:
-        """Return the question.
+        """
+        Return the question.
 
         Returns:
             the question.
@@ -123,7 +125,7 @@ class Device(models.Model):
         on_delete=models.CASCADE,
     )
 
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         verbose_name=_('Device Type'),
         max_length=3,
         choices=DeviceType.choices,
@@ -156,11 +158,11 @@ class Device(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=DeviceType.values),
             ),
             models.UniqueConstraint(
-                name='%(app_label)s_%(class)s_unique_caregiver_device',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_unique_caregiver_device',
                 fields=['caregiver_id', 'device_id'],
             ),
         ]
@@ -225,7 +227,7 @@ class RegistrationCode(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_status_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_status_valid',
                 check=models.Q(status__in=RegistrationCodeStatus.values),
             ),
         ]

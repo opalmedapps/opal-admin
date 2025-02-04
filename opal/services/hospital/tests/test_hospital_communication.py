@@ -13,7 +13,8 @@ communication_manager = SourceSystemHTTPCommunicationManager()
 
 
 def _create_response_data() -> dict[str, str]:
-    """Create mock `dict` response on the HTTP POST request.
+    """
+    Create mock `dict` response on the HTTP POST request.
 
     Returns:
         dict[str, str]: mock data response

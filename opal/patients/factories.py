@@ -1,4 +1,5 @@
-"""Module providing model factories for patients app models.
+"""
+Module providing model factories for patients app models.
 
 reference from:
 
@@ -8,6 +9,8 @@ reference from:
 """
 
 import datetime
+
+from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 from factory import Sequence, SubFactory, lazy_attribute
@@ -58,10 +61,10 @@ class Relationship(DjangoModelFactory):
 
     patient = SubFactory(Patient)
     caregiver = SubFactory(CaregiverProfile)
-    type = SubFactory(RelationshipType)  # noqa: A003
-    request_date = datetime.date.today()
+    type = SubFactory(RelationshipType)
+    request_date = timezone.now().date()
     start_date = lazy_attribute(lambda relationship: relationship.patient.date_of_birth)
-    end_date = datetime.date.today() + relativedelta(years=2)
+    end_date = timezone.now().date() + relativedelta(years=2)
     reason = ''
 
 

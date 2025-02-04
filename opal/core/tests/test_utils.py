@@ -224,8 +224,8 @@ def test_dict_to_csv_unicode_characters() -> None:
 def test_dict_to_csv_large_numbers() -> None:
     """Ensure dict_to_csv successfully converts very large numbers."""
     input_dict = [
-        {'big_int': 12345678901234567890, 'big_float': 1.2345678901234567890},  # noqa: WPS339
-        {'big_int': 98765432109876543210, 'big_float': 9.8765432109876543210},  # noqa: WPS339
+        {'big_int': 12345678901234567890, 'big_float': 1.2345678901234567890},
+        {'big_int': 98765432109876543210, 'big_float': 9.8765432109876543210},
     ]
     expected_csv = (
         'big_int,big_float\r\n'

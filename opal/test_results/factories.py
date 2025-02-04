@@ -10,13 +10,14 @@ from . import models
 
 
 class GeneralTest(DjangoModelFactory):
-    """Model factory to create [opal.test_results.models.GeneralTest][] models.
+    """
+    Model factory to create [opal.test_results.models.GeneralTest][] models.
 
     Test group code and description depend on the test type.
     """
 
     patient = factory.SubFactory(Patient)
-    type = factory.Iterator(models.TestType.values)  # noqa: A003
+    type = factory.Iterator(models.TestType.values)
     collected_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     received_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     reported_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())

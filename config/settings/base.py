@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
+
 from pathlib import Path
 from typing import Any
 
@@ -77,7 +78,7 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': f"test_{env('DATABASE_NAME')}",
+            'NAME': f'test_{env("DATABASE_NAME")}',
         },
         'ATOMIC_REQUESTS': True,
     },
@@ -370,7 +371,7 @@ ADMIN_URL = 'admin/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # ADMINS =
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
-# MANAGERS = ADMINS  # noqa: E800
+# MANAGERS = ADMINS  # noqa: ERA001
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -515,7 +516,7 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 # Propagate exceptions during debug
 DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
 # Disable extra DB calls to check whether user exists
-DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
+DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False
 
 # django-tables2
 # ------------------------------------------------------------------------------

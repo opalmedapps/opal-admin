@@ -24,7 +24,7 @@ from opal.patients.models import Relationship, RelationshipStatus
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
-    from opal.legacy.models import (  # noqa: F401, WPS235
+    from opal.legacy.models import (
         LegacyAnnouncement,
         LegacyAppointment,
         LegacyDiagnosis,
@@ -217,7 +217,8 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         received_at: datetime,
         report_file_name: str,
     ) -> 'LegacyDocument':
-        """Insert a new pathology PDF document record to the OpalDB.Document table.
+        """
+        Insert a new pathology PDF document record to the OpalDB.Document table.
 
         This will indicate that a new pathology report is available for viewing in the app.
 
@@ -236,7 +237,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
         LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
         LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
-        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')    # noqa: N806
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')  # noqa: N806
 
         try:
             legacy_document = self.create(
@@ -270,8 +271,8 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
             # instances cannot be found or multiple instances returned
             err = f'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {exp}'
-            logger.error(err)
-            raise DatabaseError(err)
+            logger.exception(err)
+            raise DatabaseError(err) from exp
 
         legacy_document.save()
 

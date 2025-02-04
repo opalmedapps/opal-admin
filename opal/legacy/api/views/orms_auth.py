@@ -1,4 +1,6 @@
 """Collection of API views used to handle ORMS authentication."""
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 
 from dj_rest_auth.views import LoginView
@@ -10,7 +12,9 @@ from rest_framework.views import APIView
 
 from opal.core.drf_permissions import IsORMSUser
 from opal.users.api.serializers import ClinicalStaffDetailSerializer
-from opal.users.models import ClinicalStaff
+
+if TYPE_CHECKING:
+    from opal.users.models import ClinicalStaff
 
 
 class ORMSLoginView(LoginView):
@@ -21,7 +25,8 @@ class ORMSLoginView(LoginView):
     """
 
     def login(self) -> None:
-        """Check user's group and credentials.
+        """
+        Check user's group and credentials.
 
         Only superusers and users that belong to the `ORMS_GROUP_NAME` can login to the system.
 

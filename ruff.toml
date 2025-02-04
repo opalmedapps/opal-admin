@@ -1,0 +1,256 @@
+# ruff settings
+# https://docs.astral.sh/ruff/settings/
+
+# https://docs.astral.sh/ruff/settings/#line-length
+line-length = 120
+# https://docs.astral.sh/ruff/settings/#show-fixes
+show-fixes = true
+# enable preview mode
+# https://docs.astral.sh/ruff/preview/
+preview = true
+
+# https://docs.astral.sh/ruff/settings/#lint
+[lint]
+# https://docs.astral.sh/ruff/settings/#lint_select
+# Rules: https://docs.astral.sh/ruff/rules/
+select = [
+    # pycodestyle
+    # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+    "E",
+    "W",
+    # Pyflakes
+    # https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "F",
+    # mccabe
+    # https://docs.astral.sh/ruff/rules/#mccabe-c90
+    "C90",
+    # isort
+    # https://docs.astral.sh/ruff/rules/#isort-i
+    "I",
+    # pep8-naming
+    # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+    "N",
+    # pydocstyle
+    # https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    "D",
+    # pyupgrade
+    # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "UP",
+    # flake8-bandit
+    # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
+    "S",
+    # flake8-blind-except
+    # https://docs.astral.sh/ruff/rules/#flake8-blind-except-ble
+    "BLE",
+    # flake8-boolean-trap
+    # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+    "FBT",
+    # flake8-bugbear
+    # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "B",
+    # flake8-builtins
+    # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+    "A",
+    # flake8-comprehensions
+    # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "C4",
+    # flake8-django
+    # https://docs.astral.sh/ruff/rules/#flake8-django-dj
+    "DJ",
+    # flake8-datetimez
+    # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+    "DTZ",
+    # flake8-errmsg (EM)
+    # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
+    # "EM",
+    # flake8-executable
+    # https://docs.astral.sh/ruff/rules/#flake8-executable-exe
+    "EXE",
+    # flake8-implicit-str-concat
+    # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
+    "ISC",
+    # flake8-import-conventions
+    # https://docs.astral.sh/ruff/rules/#flake8-import-conventions-icn
+    "ICN",
+    # flake8-no-pep420
+    # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
+    "INP",
+    # flake8-logging
+    # https://docs.astral.sh/ruff/rules/#flake8-logging-log
+    "LOG",
+    # TODO: Use G (logging format)?
+    # flake8-pytest-style
+    # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
+    "PT",
+    # flake8-quotes
+    # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
+    "Q",
+    # flake8-return
+    # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+    "RET",
+    # flake8-self
+    # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "SLF",
+    # flake8-simplify
+    # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
+    "SIM",
+    # flake8-tidy-imports
+    # https://docs.astral.sh/ruff/rules/#flake8-tidy-imports-tid
+    "TID",
+    # flake8-type-checking
+    # https://docs.astral.sh/ruff/rules/#flake8-type-checking-tch
+    "TC",
+    # flake8-gettext
+    # https://docs.astral.sh/ruff/rules/#flake8-gettext-int
+    "INT",
+    # flake8-unused-arguments (ARG)
+    # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
+    # "ARG",
+    # flake8-use-pathlib
+    # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+    "PTH",
+    # TODO: flake8-todos
+    # https://docs.astral.sh/ruff/rules/#flake8-todos-td
+    # "TD",
+    # eradicate
+    # https://docs.astral.sh/ruff/rules/#eradicate-era
+    "ERA",
+    # pandas-vet
+    # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
+    "PD",
+    # pylint
+    # https://docs.astral.sh/ruff/rules/#pylint-pl
+    "PL",
+    # tryceratops
+    # https://docs.astral.sh/ruff/rules/#tryceratops-try
+    "TRY",
+    # perflint
+    # https://docs.astral.sh/ruff/rules/#perflint-perf
+    "PERF",
+    # refurb
+    # https://docs.astral.sh/ruff/rules/#refurb-furb
+    "FURB",
+    # pydoclint (DOC)
+    # https://docs.astral.sh/ruff/rules/#pydoclint-doc
+    "DOC",
+    # ruff
+    # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+    "RUF",
+]
+# https://docs.astral.sh/ruff/settings/#lint_ignore
+ignore = [
+    # Skip missing docstring in public package
+    "D104",
+    # allow missing docstring in public nested class (Meta)
+    "D106",
+    # Skip docstring summary on first line (prefer D213)
+    "D212",
+    # Skip no blank line before class (prefer D203)
+    "D211",
+    "FBT001",
+    "FBT002",
+    # explicit is better than implicit (string concatenation)
+    "ISC003",
+    # Skip avoid specifying long messages outside the exception class
+    "TRY003",
+]
+
+# temporary ignores during migration to ruff
+extend-ignore = [
+    # absolute over relative imports
+    "TID252",
+    # mutable class attributes
+    "RUF012",
+    # method could be a function, class method, or static method
+    "PLR6301",
+    "E501",
+]
+
+extend-select = [
+    # This rule is disabled by default (https://docs.astral.sh/ruff/rules/multi-line-summary-second-line/)
+    "D213",
+]
+
+[lint.per-file-ignores]
+"manage.py" = ["ALL"]
+"**/legacy/models.py" = [
+    # Allow nullable CharFields
+    "DJ001",
+    # - Ignore __str__ method requirement for legacy API
+    "DJ008",
+]
+"**/legacy_questionnaires/models.py" = [
+    # - Ignore __str__ method requirement for legacy API
+    "DJ008",
+]
+"**/migrations/*" = [
+    # allow missing docstring in public module
+    "D100",
+    # ignore mutable class attributes error
+    "RUF012",
+]
+"**/conftest.py" = [
+    # allow assert
+    "S101",
+]
+"**/tests/*" = [
+    # don't require docstrings in tests
+    "D100",
+    "D101",
+    "DOC201",
+    # allow assert
+    "S101",
+    # allow hardcoded password assignment
+    "S105",
+    # allow hardcoded password argument
+    "S106",
+    # ignore simplification of empty string checks
+    "PLC1901",
+    # allow magic values
+    "PLR2004",
+    # ignore method could be function etc.
+    "PLR6301",
+    # ignore too many arguments
+    "PLR0913",
+    # ignore too many local variables
+    "PLR0914",
+    # ignore too many statements
+    "PLR0915",
+    # ignore too many positional arguments
+    "PLR0917",
+    # allow too many public methods
+    "PLR0904",
+    # allow private member access
+    "SLF001",
+]
+
+# https://docs.astral.sh/ruff/settings/#lintpydocstyle
+[lint.pydocstyle]
+# Use Google-style docstrings.
+convention = "google"
+
+# https://docs.astral.sh/ruff/settings/#lintpyflakes
+[lint.pyflakes]
+# see: https://github.com/astral-sh/ruff/issues/9298
+extend-generics = ["django.db.models.Manager"]
+
+# https://docs.astral.sh/ruff/settings/#lintflake8-quotes
+[lint.flake8-quotes]
+inline-quotes = "single"
+
+# https://docs.astral.sh/ruff/settings/#lintisort
+[lint.isort]
+section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
+known-first-party = ["opal"]
+
+[lint.isort.sections]
+django = ["django"]
+
+# https://docs.astral.sh/ruff/settings/#lintflake8-self
+[lint.flake8-self]
+extend-ignore-names = ["_base_manager", "_default_manager",  "_meta"]
+
+# https://docs.astral.sh/ruff/settings/#format
+[format]
+quote-style = "single"
+indent-style = "space"

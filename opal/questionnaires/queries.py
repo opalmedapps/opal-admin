@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def set_test_account(debug: bool) -> str:
-    """Set the test account string for report development using settings variable.
+    """
+    Set the test account string for report development using settings variable.
 
     Args:
         debug: Settings.debug (True=don't exclude any data)
@@ -34,7 +35,8 @@ test_accounts = set_test_account(settings.DEBUG)
 
 
 def _get_description(qid: int, lang_id: int) -> str:
-    """Get detailed description for selected questionnaire.
+    """
+    Get detailed description for selected questionnaire.
 
     Args:
         qid: Questionnaire id.
@@ -54,12 +56,13 @@ def _get_description(qid: int, lang_id: int) -> str:
                LIMIT 1
             """, [qid, lang_id],
         )
-        description = str(conn.fetchone()[0])
-    return description
+
+        return str(conn.fetchone()[0])
 
 
 def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
-    """Return all rows from a cursor as a dict.
+    """
+    Return all rows from a cursor as a dict.
 
     Args:
         cursor: Database connection.
@@ -77,7 +80,8 @@ def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
 @transaction.atomic
 def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
-    """Get list of questionnaires which have non-zero number of responses.
+    """
+    Get list of questionnaires which have non-zero number of responses.
 
     Args:
         lang_id: requesting user's language preference.
@@ -91,7 +95,7 @@ def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
                 'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in (%s)',
                 [test_accounts],
             )
-            aq = tuple([row[0] for row in conn.fetchall()])
+            aq = tuple(row[0] for row in conn.fetchall())
             conn.execute(
                 'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID in %s',
                 [lang_id, aq],
@@ -102,14 +106,15 @@ def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
             'DatabaseError: No questionnaires found, are you sure you are connected to a'
             + ' production database?\nError:  {error}',
         ).format(error=error)
-        logger.error(message)
+        logger.exception(message)
         return [{}]
     return qs
 
 
 @transaction.atomic
-def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:  # noqa: WPS210
-    """Get details for desired questionnaire (questions, patients, dates).
+def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:
+    """
+    Get details for desired questionnaire (questions, patients, dates).
 
     Args:
         qid: questionnaire id.
@@ -183,8 +188,9 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:  # noqa:
 
 
 @transaction.atomic
-def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: WPS210
-    """Query the QuestionnaireDB with the user's specific options & generate tables.
+def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
+    """
+    Query the QuestionnaireDB with the user's specific options & generate tables.
 
     Args:
         report_params: user options
@@ -365,7 +371,8 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
 
 
 def get_temp_table() -> list[dict[str, Any]]:
-    """Retrieve the previously generated report in the temporary table.
+    """
+    Retrieve the previously generated report in the temporary table.
 
     Returns:
         List of all rows of the query as dictionaries.
@@ -385,5 +392,5 @@ def get_temp_table() -> list[dict[str, Any]]:
             ORDER BY last_updated ASC
             """,
         )
-        q_dict = _fetch_all_as_dict(conn)
-    return q_dict
+
+        return _fetch_all_as_dict(conn)

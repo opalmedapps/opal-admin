@@ -1,5 +1,6 @@
-from datetime import datetime
 from types import MappingProxyType
+
+from django.utils import timezone
 
 from opal.services.hospital.hospital_data import SourceSystemReportExportData
 from opal.services.hospital.hospital_validation import SourceSystemValidator
@@ -38,7 +39,7 @@ def test_is_report_export_request_valid_success() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data)
@@ -51,7 +52,7 @@ def test_is_report_export_request_invalid_mrn() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -64,7 +65,7 @@ def test_is_report_export_request_invalid_site() -> None:
         site='',
         base64_content=BASE64_ENCODED_REPORT,
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -77,7 +78,7 @@ def test_is_report_export_request_invalid_content() -> None:
         site=SITE_CODE,
         base64_content='INVALID CONTENT',
         document_number=DOCUMENT_NUMBER,
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -90,7 +91,7 @@ def test_is_report_export_request_invalid_doctype() -> None:
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
         document_number='FU-INVALID DOCUMENT TYPE',
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
     assert source_system_validator.is_report_export_request_valid(report_data) is False
@@ -177,7 +178,7 @@ def test_check_patient_date_of_birth_invalid() -> None:
 
     errors = source_system_validator.check_patient_data(patient_data)
 
-    assert errors == ["dateOfBirth is invalid: time data '1953/01/01' does not match format '%Y-%m-%d'"]  # noqa: WPS323
+    assert errors == ["dateOfBirth is invalid: Invalid isoformat string: '1953/01/01'"]
 
 
 def test_check_patient_first_name_non_exists() -> None:
@@ -287,7 +288,7 @@ def test_check_patient_ramq_expiration_invalid() -> None:
 
     errors = source_system_validator.check_patient_data(patient_data)
 
-    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]  # noqa: E501
+    assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]
 
 
 def test_check_patient_mrns_non_exists() -> None:

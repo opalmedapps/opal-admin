@@ -15,7 +15,7 @@ from django.utils import timezone
 from opal.patients.models import RelationshipType
 
 if TYPE_CHECKING:
-    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
+    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
@@ -30,7 +30,8 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         username: str,
         purpose_id: int,
     ) -> models.QuerySet['LegacyQuestionnaire']:
-        """Get the queryset of new questionnaires for a given user.
+        """
+        Get the queryset of new questionnaires for a given user.
 
         Note the input sernum for this query is the OpalDB PatientSerNum, we use the
         foreign key relationship from LegacyAnswerQuestionnaire-->LegacyPatient
@@ -107,7 +108,8 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
             return self._fetch_all_as_dict(conn)
 
     def _fetch_all_as_dict(self, cursor: CursorWrapper) -> list[dict[str, Any]]:
-        """Return all rows from a cursor as a dict.
+        """
+        Return all rows from a cursor as a dict.
 
         Args:
             cursor: Database connection.
@@ -123,7 +125,8 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
         ]
 
     def _read_local_sql(self, directory: Path) -> str:
-        """Open and read SQL content from a local directory.
+        """
+        Open and read SQL content from a local directory.
 
         Args:
             directory: Path object pointing to location of SQL to be read
@@ -131,7 +134,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
         Returns:
             sql string content
         """
-        with Path(directory).open() as handle:
+        with Path(directory).open(encoding='utf-8') as handle:
             sql_content = handle.read()
             handle.close()
         return sql_content

@@ -13,14 +13,15 @@ from .hospital_data import SourceSystemReportExportData
 # TODO: translate error messages add _(message) that will be shown to the user.
 
 
-class SourceSystemValidator:  # noqa: WPS214
+class SourceSystemValidator:
     """Source system helper service that validates source system request and response data."""
 
     def is_report_export_request_valid(
         self,
         report_data: SourceSystemReportExportData,
     ) -> bool:
-        """Check if the source system report export data is valid.
+        """
+        Check if the source system report export data is valid.
 
         Args:
             report_data (SourceSystemReportExportData): Source system report export data needed to
@@ -31,7 +32,7 @@ class SourceSystemValidator:  # noqa: WPS214
         """
         # TODO: Add more validation/checks for the MRN and Site fields once the requirements are clarified
         # TODO: Confirm the regex pattern for the document number
-        reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)|(^MU-[a-zA-Z0-9]+$)')
+        reg_exp = re.compile(r'(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)|(^MU-[a-zA-Z0-9]+$)')
         return (  # check if MRN is not empty
             bool(report_data.mrn.strip())
             # check if site is not empty
@@ -46,7 +47,8 @@ class SourceSystemValidator:  # noqa: WPS214
         self,
         response_data: Any,
     ) -> bool:
-        """Check if the source system report export response data is valid.
+        """
+        Check if the source system report export response data is valid.
 
         Args:
             response_data (Any): Source system report export response data received from the source system
@@ -63,7 +65,8 @@ class SourceSystemValidator:  # noqa: WPS214
         return isinstance(status, str)
 
     def is_patient_site_mrn_valid(self, mrn: str, site: str) -> bool:
-        """Check if the mrn and site are not empty.
+        """
+        Check if the mrn and site are not empty.
 
         Args:
             mrn: Medical Record Number (MRN) code (e.g., 9999993)
@@ -75,7 +78,8 @@ class SourceSystemValidator:  # noqa: WPS214
         return bool(mrn.strip()) and bool(site.strip())
 
     def is_patient_ramq_valid(self, ramq: str) -> bool:
-        """Check if the RAMQ value is valid.
+        """
+        Check if the RAMQ value is valid.
 
         Args:
             ramq (str): RAMQ code
@@ -86,16 +90,17 @@ class SourceSystemValidator:  # noqa: WPS214
         reg_exp = re.compile(r'^[A-Z]{4}\d{8}$')
         return bool(reg_exp.match(ramq))
 
-    def is_patient_response_valid(  # noqa: C901, WPS231
+    def is_patient_response_valid(
         self,
         response_data: Any,
     ) -> list[str]:
-        """Check if the source system patient response data is valid.
+        """
+        Check if the source system patient response data is valid.
 
         Args:
             response_data (Any): Source system patient response data received from the source system
 
-        return:
+        Returns:
             return errors list
         """
         errors = []
@@ -128,7 +133,8 @@ class SourceSystemValidator:  # noqa: WPS214
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
-        """Check if the source system's new patient response data is valid.
+        """
+        Check if the source system's new patient response data is valid.
 
         Args:
             response_data: Source system new patient response data
@@ -149,8 +155,9 @@ class SourceSystemValidator:  # noqa: WPS214
 
         return success, errors
 
-    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901 WPS210 WPS213 WPS231
-        """Check if the patient data is valid.
+    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901, PLR0912, PLR0915
+        """
+        Check if the patient data is valid.
 
         Args:
             patient_data (Any): Source system patient data
@@ -168,7 +175,7 @@ class SourceSystemValidator:  # noqa: WPS214
 
         if date_of_birth:
             try:
-                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d')
+                datetime.datetime.fromisoformat(date_of_birth).date()
             except ValueError as exc:
                 errors.append(f'dateOfBirth is invalid: {exc}')
 
@@ -223,8 +230,8 @@ class SourceSystemValidator:  # noqa: WPS214
             errors.append('Patient data does not have the attribute ramqExpiration')
         if ramq_expiration:
             try:
-                datetime.datetime.strptime(ramq_expiration, '%Y%m')
-            except ValueError as exc:  # noqa: WPS440 (exc from other tr-except is undefined here)
+                datetime.datetime.strptime(ramq_expiration, '%Y%m')  # noqa: DTZ007
+            except ValueError as exc:
                 errors.append(f'Patient data ramqExpiration is invalid: {exc}')
 
         # check mrns
@@ -235,14 +242,15 @@ class SourceSystemValidator:  # noqa: WPS214
             errors.append('Patient data does not have the attribute mrns')
         if mrns:
             for mrn in mrns:
-                errors = errors + self._check_mrn_data(mrn)
+                errors += self._check_mrn_data(mrn)
         elif mrns is not None and not mrns:
             errors.append('Patient data mrns is empty')
 
         return errors
 
-    def _check_mrn_data(self, mrn_data: Any) -> list[str]:  # noqa: C901
-        """Check if the patient MRN data is valid.
+    def _check_mrn_data(self, mrn_data: Any) -> list[str]:
+        """
+        Check if the patient MRN data is valid.
 
         Args:
             mrn_data (Any): Source system patient MRN data

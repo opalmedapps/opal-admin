@@ -68,14 +68,14 @@ def test_relationship_mapping_with_multiple_usernames() -> None:
 def test_aggregated_patient_received_data_with_no_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data function does not fail when there is no statistics."""
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     assert stats_utils.get_aggregated_patient_received_data(
         start_datetime_period,
@@ -87,24 +87,22 @@ def test_aggregated_patient_received_data_previous_day() -> None:
     """Ensure that get_aggregated_patient_received_data returns patients' received data for the previous day."""
     patient = legacy_factories.LegacyPatientFactory()
     legacy_factories.LegacyPatientControlFactory(patient=patient)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
+    previous_day = timezone.now() - dt.timedelta(days=1)
 
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=3)),
-        scheduledstarttime=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=2)),
+        date_added=timezone.now() - dt.timedelta(days=3),
+        scheduledstarttime=timezone.now() - dt.timedelta(days=2),
         status='Completed',
         state='Closed',
     )
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=2)),
+        date_added=timezone.now() - dt.timedelta(days=2),
         scheduledstarttime=previous_day,
         checkin=0,
     )
-    next_appointment = timezone.make_aware(dt.datetime.now())
+    next_appointment = timezone.now()
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=1)),
+        date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=next_appointment,
         state='Active',
         status='Open',
@@ -127,19 +125,19 @@ def test_aggregated_patient_received_data_previous_day() -> None:
 
     # current day records should not be included to the final queryset
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now()),
-        scheduledstarttime=timezone.make_aware(dt.datetime.now() + dt.timedelta(days=1)),
+        date_added=timezone.now(),
+        scheduledstarttime=timezone.now() + dt.timedelta(days=1),
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -164,21 +162,21 @@ def test_aggregated_patient_received_data_current_day() -> None:
     """Ensure that get_aggregated_patient_received_data returns patients' received data for the current day."""
     patient = legacy_factories.LegacyPatientFactory()
     legacy_factories.LegacyPatientControlFactory(patient=patient)
-    current_day = timezone.make_aware(dt.datetime.now())
+    current_day = timezone.now()
 
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=3)),
-        scheduledstarttime=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=2)),
+        date_added=timezone.now() - dt.timedelta(days=3),
+        scheduledstarttime=timezone.now() - dt.timedelta(days=2),
         status='Completed',
         state='Closed',
     )
     legacy_factories.LegacyAppointmentFactory(
         date_added=current_day,
-        scheduledstarttime=timezone.make_aware(dt.datetime.now() + dt.timedelta(days=2)),
+        scheduledstarttime=timezone.now() + dt.timedelta(days=2),
         checkin=0,
     )
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=1)),
+        date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=current_day,
         state='Active',
         status='Open',
@@ -197,7 +195,7 @@ def test_aggregated_patient_received_data_current_day() -> None:
     # previous day records should not be included to the final queryset
     next_appointment = current_day + dt.timedelta(days=1)
     legacy_factories.LegacyAppointmentFactory(
-        date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=1)),
+        date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=next_appointment,
     )
     legacy_factories.LegacyQuestionnaireFactory(
@@ -206,14 +204,14 @@ def test_aggregated_patient_received_data_current_day() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now(),
+        timezone.now(),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -244,13 +242,9 @@ def test_aggregated_patient_received_data_last_appointment_statistics() -> None:
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
-    next_day = timezone.make_aware(
-        dt.datetime.now() + dt.timedelta(days=1),
-    )
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
+    next_day = timezone.now() + dt.timedelta(days=1)
 
     legacy_factories.LegacyAppointmentFactory(
         patientsernum=marge,
@@ -290,14 +284,14 @@ def test_aggregated_patient_received_data_last_appointment_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -318,10 +312,8 @@ def test_aggregated_patient_received_data_next_appointment_statistics() -> None:
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    current_day = timezone.make_aware(dt.datetime.now())
-    next_day = timezone.make_aware(
-        dt.datetime.now() + dt.timedelta(days=1),
-    )
+    current_day = timezone.now()
+    next_day = timezone.now() + dt.timedelta(days=1)
 
     legacy_factories.LegacyAppointmentFactory(
         patientsernum=marge,
@@ -355,14 +347,14 @@ def test_aggregated_patient_received_data_next_appointment_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -384,13 +376,9 @@ def test_aggregated_patient_received_data_received_appointments_statistics() -> 
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
-    next_day = timezone.make_aware(
-        dt.datetime.now() + dt.timedelta(days=1),
-    )
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
+    next_day = timezone.now() + dt.timedelta(days=1)
 
     legacy_factories.LegacyAppointmentFactory(
         patientsernum=marge,
@@ -419,14 +407,14 @@ def test_aggregated_patient_received_data_received_appointments_statistics() -> 
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -447,13 +435,9 @@ def test_aggregated_patient_received_data_last_document_statistics() -> None:
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
-    next_day = timezone.make_aware(
-        dt.datetime.now() + dt.timedelta(days=1),
-    )
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
+    next_day = timezone.now() + dt.timedelta(days=1)
     homer_last_document_date = previous_day - dt.timedelta(days=1)
 
     legacy_factories.LegacyDocumentFactory(
@@ -490,14 +474,14 @@ def test_aggregated_patient_received_data_last_document_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -518,13 +502,9 @@ def test_aggregated_patient_received_data_received_documents_statistics() -> Non
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
-    next_day = timezone.make_aware(
-        dt.datetime.now() + dt.timedelta(days=1),
-    )
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
+    next_day = timezone.now() + dt.timedelta(days=1)
 
     legacy_factories.LegacyDocumentFactory(
         documentsernum=1,
@@ -560,14 +540,14 @@ def test_aggregated_patient_received_data_received_documents_statistics() -> Non
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -588,13 +568,9 @@ def test_aggregated_patient_received_data_last_educational_material_statistics()
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    two_days_ago = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=2),
-    )
-    three_days_ago = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=3),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
+    two_days_ago = timezone.now() - dt.timedelta(days=2)
+    three_days_ago = timezone.now() - dt.timedelta(days=3)
+    current_day = timezone.now()
 
     legacy_factories.LegacyEducationalMaterialFactory(
         patientsernum=marge,
@@ -624,14 +600,14 @@ def test_aggregated_patient_received_data_last_educational_material_statistics()
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -652,10 +628,8 @@ def test_aggregated_patient_received_data_received_edu_materials_statistics() ->
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
 
     legacy_factories.LegacyEducationalMaterialFactory(
         patientsernum=marge,
@@ -684,14 +658,14 @@ def test_aggregated_patient_received_data_received_edu_materials_statistics() ->
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -712,13 +686,9 @@ def test_aggregated_patient_received_data_last_questionnaire_statistics() -> Non
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    two_days_ago = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=2),
-    )
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
+    two_days_ago = timezone.now() - dt.timedelta(days=2)
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
 
     legacy_factories.LegacyQuestionnaireFactory(
         patientsernum=marge,
@@ -743,14 +713,14 @@ def test_aggregated_patient_received_data_last_questionnaire_statistics() -> Non
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -771,10 +741,8 @@ def test_aggregated_patient_received_data_received_questionnaire_statistics() ->
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
 
     legacy_factories.LegacyQuestionnaireFactory(
         patientsernum=homer,
@@ -803,14 +771,14 @@ def test_aggregated_patient_received_data_received_questionnaire_statistics() ->
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -831,7 +799,7 @@ def test_aggregated_patient_received_data_last_lab_statistics() -> None:
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
     legacy_factories.LegacyPatientControlFactory(patient=homer)
-    current_day = timezone.make_aware(dt.datetime.now())
+    current_day = timezone.now()
 
     legacy_factories.LegacyPatientTestResultFactory(
         patient_ser_num=marge,
@@ -853,14 +821,14 @@ def test_aggregated_patient_received_data_last_lab_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now(),
+        timezone.now(),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -884,10 +852,8 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
     homer = legacy_factories.LegacyPatientFactory(
         patientsernum=52, first_name='Homer', email='homer@simpson.com',
     )
-    previous_day = timezone.make_aware(
-        dt.datetime.now() - dt.timedelta(days=1),
-    )
-    current_day = timezone.make_aware(dt.datetime.now())
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    current_day = timezone.now()
     legacy_factories.LegacyPatientControlFactory(patient=homer)
 
     legacy_factories.LegacyPatientTestResultFactory(
@@ -917,14 +883,14 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
     )
 
     start_datetime_period = dt.datetime.combine(
-        dt.datetime.now() - dt.timedelta(days=1),
+        timezone.now() - dt.timedelta(days=1),
         dt.datetime.min.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
     end_datetime_period = dt.datetime.combine(
         start_datetime_period,
         dt.datetime.max.time(),
-        timezone.get_current_timezone(),
+        tzinfo=timezone.get_current_timezone(),
     )
 
     received_data = stats_utils.get_aggregated_patient_received_data(
@@ -938,12 +904,13 @@ def test_aggregated_patient_received_data_received_lab_statistics() -> None:
 
 
 def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relationship, dict[str, Any]]:
-    """Fetch annotated relationships queryset used in the `RelationshipMapping`.
+    """
+    Fetch annotated relationships queryset used in the `RelationshipMapping`.
 
     Returns:
         annotated relationships queryset
     """
-    date_time = dt.datetime.now()
+    date_time = timezone.now()
     relationships_queryset = patient_models.Relationship.objects.all()
     return relationships_queryset.select_related(
         'patient',
@@ -976,7 +943,7 @@ def test_export_data_empty_data(tmp_path: Path) -> None:
         stats_utils.export_data([], file_path)
 
 
-def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
+def test_export_data_simple_dictionary(tmp_path: Path) -> None:
     """Ensure the export function handle the input in form of dictionnary."""
     file_path = tmp_path / 'test_dict.csv'
     stats_factories.DailyUserPatientActivity(
@@ -984,7 +951,7 @@ def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = list(query.values(*model_fields))
     assert not file_path.is_file()
     stats_utils.export_data(dict(data_set[0]), file_path)
@@ -1002,7 +969,7 @@ def test_export_data_csv(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     assert not file_path.is_file()
     stats_utils.export_data(list(data_set), file_path)
@@ -1020,11 +987,11 @@ def test_export_data_xlsx(tmp_path: Path) -> None:
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     query = stats_models.DailyPatientDataReceived.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     assert not file_path.is_file()
     stats_utils.export_data(list(data_set), file_path)
@@ -1042,7 +1009,7 @@ def test_export_data_invalid_file_name(tmp_path: Path) -> None:
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
-    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    model_fields = [field.name for field in model_name._meta.get_fields()]
     data_set = query.values(*model_fields)
     expected_message = 'Invalid file format, please use either csv or xlsx'
     with assertRaisesMessage(
