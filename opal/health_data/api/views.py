@@ -101,7 +101,8 @@ class UnviewedQuantitySampleView(APIView):
     permission_classes = (IsORMSUser,)
 
     def post(self, request: Request) -> Response:
-        """Retrieve a list of patient's unviewed `QuantitySample` records.
+        """
+        Retrieve a list of patient's unviewed `QuantitySample` records.
 
         The method returns the counts (a.k.a. badges) of unviewed quantities for each patient.
 
@@ -141,7 +142,8 @@ class MarkQuantitySampleAsViewedView(APIView):
     serializer_class = EmptyResponseSerializer
 
     def patch(self, request: Request, uuid: str) -> Response:
-        """Set patient's `QuantitySample` records as viewed.
+        """
+        Set patient's `QuantitySample` records as viewed.
 
         Args:
             request: HTTP request

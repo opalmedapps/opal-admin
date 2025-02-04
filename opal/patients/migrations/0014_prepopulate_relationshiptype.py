@@ -2,8 +2,9 @@
 from django.apps.registry import Apps
 from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from opal.patients.models import RoleType
+
 from opal.patients import constants
+from opal.patients.models import RoleType
 
 
 def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:

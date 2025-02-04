@@ -51,7 +51,7 @@ class TestSecurityQuestionsMigration(CommandTestMixin):
         question = SecurityQuestion.objects.all()
         assert len(question) == 1
         assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]
-        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]  # noqa: E501
+        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]
         assert message == (
             'Imported security question, sernum: 1, title: What is the name of your first pet?\n'
         )
@@ -188,7 +188,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """The patient is imported with the correct data."""
         legacy_patient = legacy_factories.LegacyPatientFactory()
 
-        message, error = self._call_command('migrate_patients')
+        self._call_command('migrate_patients')
 
         patient = patient_models.Patient.objects.get(legacy_id=51)
 
@@ -201,15 +201,15 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     def test_import_deceased_patient(self) -> None:
         """The patient is imported with the correct data."""
         legacy_patient = legacy_factories.LegacyPatientFactory(
-            death_date=timezone.make_aware(datetime(2118, 1, 1)),
+            death_date=datetime(2118, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
-        message, error = self._call_command('migrate_patients')
+        self._call_command('migrate_patients')
 
         patient = patient_models.Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
-        assert patient.date_of_death == timezone.make_aware(datetime(2118, 1, 1))
+        assert patient.date_of_death == datetime(2118, 1, 1, tzinfo=timezone.get_current_timezone())
         assert patient.sex == patient_models.Patient.SexType.MALE
         assert patient.first_name == legacy_patient.first_name
         assert patient.last_name == legacy_patient.last_name
@@ -226,14 +226,14 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """The patient is imported with the data access level."""
         legacy_factories.LegacyPatientFactory(access_level=legacy_data_access)
 
-        message, error = self._call_command('migrate_patients')
+        self._call_command('migrate_patients')
 
         patient = patient_models.Patient.objects.get(legacy_id=51)
         assert patient.data_access == data_access
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
         """Test import fails no legacy patient exists."""
-        message, error = self._call_command('migrate_patients')
+        _message, error = self._call_command('migrate_patients')
 
         assert error.strip() == (
             'No legacy patients exist'
@@ -243,13 +243,13 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import fails patient already exists."""
         legacy_factories.LegacyPatientFactory(patientsernum=51)
         patient_factories.Patient(legacy_id=51)
-        message, error = self._call_command('migrate_patients')
+        message, _error = self._call_command('migrate_patients')
         assert 'Patient with legacy_id: 51 already exists, skipping\n' in message
 
     def test_import_patient_pass_no_identifier_exists(self) -> None:
         """Test import pass for patient fail for patient identifier."""
         legacy_factories.LegacyPatientFactory()
-        message, error = self._call_command('migrate_patients')
+        message, _error = self._call_command('migrate_patients')
         assert 'No hospital patient identifiers for patient with legacy_id: 51 exists, skipping\n' in message
 
     def test_import_patient_patientidentifier_pass(self) -> None:
@@ -259,7 +259,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         patient_factories.Patient()
         hospital_settings_factories.Site(acronym='RVH')
 
-        message, error = self._call_command('migrate_patients')
+        message, _error = self._call_command('migrate_patients')
 
         assert 'Number of imported patients is: 1 (out of 1)\n' in message
 
@@ -270,7 +270,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
         hospital_settings_factories.Site(acronym='RVH')
 
-        message, error = self._call_command('migrate_patients')
+        message, _error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
         assert 'Number of imported patients is: 0 (out of 1)\n' in message
@@ -292,7 +292,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
             mrn='9999996',
         )
 
-        message, error = self._call_command('migrate_patients')
+        message, _error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 99 already exists, skipping\n' in message
         assert 'Patient identifier legacy_id: 99, mrn: 9999996 already exists, skipping\n' in message
@@ -330,7 +330,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Number of imported caregivers is: 0' in message
 
@@ -338,7 +338,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import fails, a corresponding patient in new backend does not exist."""
         legacy_factories.LegacyUserFactory(usertypesernum=99)
 
-        message, error = self._call_command('migrate_caregivers')
+        _message, error = self._call_command('migrate_caregivers')
 
         assert 'Patient with sernum: 99, does not exist, skipping.\n' in error
 
@@ -353,7 +353,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             user__last_name=patient.last_name,
         )
 
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
@@ -371,7 +371,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
@@ -388,7 +388,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             user__last_name=patient.last_name,
         )
 
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported caregivers is: 0 (out of 1)\n' in message
@@ -402,7 +402,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             first_name=legacy_patient.first_name,
             last_name=legacy_patient.last_name,
         )
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Number of imported caregivers is: 1 (out of 1)\n' in message
 
@@ -423,7 +423,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             first_name=legacy_patient2.first_name,
             last_name=legacy_patient2.last_name,
         )
-        message, error = self._call_command('migrate_caregivers')
+        message, _error = self._call_command('migrate_caregivers')
 
         assert 'Number of imported caregivers is: 2 (out of 2)\n' in message
 
@@ -463,7 +463,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
     def test_no_deviations(self) -> None:
         """Ensure the command does not fail if there are no patient and caregiver records."""
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_deviations_uneven_patient_records(self) -> None:
@@ -583,7 +583,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         """Ensure the command does not return an error if there are no deviations in "Patient" records."""
         self._create_two_fully_registered_patients()
 
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
         assert patient_models.Patient.objects.count() == 2
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -598,7 +598,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ33333333',
             first_name='Third First Name',
             last_name='Third Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create unregistered SELF type caregiver
         patient_factories.CaregiverProfile(
@@ -613,7 +613,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             legacy_id=None,
         )
 
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
         assert patient_models.Patient.objects.count() == 3
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -626,7 +626,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -642,7 +642,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create hospital patient
         patient_factories.HospitalPatient(
@@ -658,7 +658,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Female',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -678,7 +678,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex=patient_models.Patient.SexType.FEMALE,
         )
         # create second `HospitalPatient` record
@@ -688,7 +688,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(acronym='MGH'),
         )
 
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_patient_records_deviations_access_level(self) -> None:
@@ -699,7 +699,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -720,7 +720,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         assert patient.data_access == patient_models.Patient.DataAccessType.ALL
@@ -746,12 +746,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
             language='en',
-            death_date=timezone.make_aware(datetime(2024, 12, 31)),
+            death_date=datetime(2024, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
         user_factories.Caregiver(
@@ -767,8 +767,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
-            date_of_death=timezone.make_aware(datetime(2024, 12, 31)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
+            date_of_death=datetime(2024, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         message, error = self._call_command('find_deviations')
@@ -853,7 +853,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         """Ensure the command does not return an error if there are no deviations in "Caregiver" records."""
         self._create_two_fully_registered_caregivers()
 
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
 
         assert legacy_models.LegacyUsers.objects.count() == 2
         assert patient_models.CaregiverProfile.objects.count() == 2
@@ -879,12 +879,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             user=caregiver_user,
         )
 
-        message, error = self._call_command('find_deviations')
+        message, _error = self._call_command('find_deviations')
         assert legacy_models.LegacyUsers.objects.count() == 2
         assert patient_models.CaregiverProfile.objects.count() == 3
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
-    def _create_two_fully_registered_patients(self) -> None:  # noqa: WPS213
+    def _create_two_fully_registered_patients(self) -> None:
         """Create two fully registered patients in both legacy and Django databases."""
         # create legacy user
         legacy_factories.LegacyUserFactory(
@@ -898,7 +898,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149995555',
             email='opal@example.com',
@@ -914,7 +914,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         # create SELF type caregiver
         patient_factories.CaregiverProfile(
@@ -949,7 +949,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Female',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -969,7 +969,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Second First Name',
             last_name='Second Last Name',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex=patient_models.Patient.SexType.FEMALE,
         )
 
@@ -1043,7 +1043,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             ramq='RAMQ87654321',
             first_name='Bart',
             last_name='Simpson',
-            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
             sex='Male',
             tel_num='5149991111',
             email='second.opal@example.com',
@@ -1072,12 +1072,11 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
 
     def test_deviations_no_respondents(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Ensure the command does not fail if there are no questionnaires with respondents."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
-                conn.close()
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
+            conn.close()
 
-        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        message, _error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
     def test_questionnaire_respondents_deviations(
@@ -1085,40 +1084,39 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         django_db_blocker: DjangoDbBlocker,
     ) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                query = """
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            query = """
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT';
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_1',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
-                    WHERE ID = 184;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_1',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                WHERE ID = 184;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_2',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
-                    WHERE ID = 189;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_2',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                WHERE ID = 189;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
-                    WHERE ID = 190;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
+                WHERE ID = 190;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = '',
-                        `respondentDisplayName` = ''
-                    WHERE ID = 184;
-                """
-                conn.execute(query)
-                conn.close()
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = '',
+                    `respondentDisplayName` = ''
+                WHERE ID = 184;
+            """
+            conn.execute(query)
+            conn.close()
 
         user_factories.Caregiver(
             first_name='TEST NAME',
@@ -1151,34 +1149,33 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
 
     def test_no_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Ensure the command does not return an error if no sync deviations for respondents' names."""
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                query = """
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+        with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+            query = """
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT';
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_1',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
-                    WHERE ID = 184;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_1',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                WHERE ID = 184;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID_2',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
-                    WHERE ID = 189;
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID_2',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                WHERE ID = 189;
 
-                    UPDATE answerQuestionnaire
-                    SET
-                        `respondentUsername` = 'firebase hashed user UID',
-                        `respondentDisplayName` = 'TEST NAME RESPONDENT'
-                    WHERE ID = 190;
-                """
-                conn.execute(query)
-                conn.close()
+                UPDATE answerQuestionnaire
+                SET
+                    `respondentUsername` = 'firebase hashed user UID',
+                    `respondentDisplayName` = 'TEST NAME RESPONDENT'
+                WHERE ID = 190;
+            """
+            conn.execute(query)
+            conn.close()
 
         user_factories.Caregiver(
             first_name='TEST NAME',
@@ -1198,7 +1195,7 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
             username='firebase hashed user UID_2',
         )
 
-        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        message, _error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
 
@@ -1207,7 +1204,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
     def test_orms_patients_update_with_no_patients(self) -> None:
         """Ensure the command does not fail if there are no patient records."""
-        message, error = self._call_command('update_orms_patients')
+        message, _error = self._call_command('update_orms_patients')
         assert 'Updated 0 out of 0 patients.' in message
 
     def test_orms_patients_update_with_no_hospital_patients(self) -> None:
@@ -1216,7 +1213,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         patient_factories.Patient(id=1, ramq='RAMQ11111111')
         patient_factories.Patient(id=2, ramq='RAMQ22222222')
         patient_factories.Patient(id=3, ramq='RAMQ33333333')
-        message, error = self._call_command('update_orms_patients')
+        message, _error = self._call_command('update_orms_patients')
         assert 'Updated 0 out of 3 patients.' in message
 
     @pytest.mark.usefixtures('set_orms_disabled')
@@ -1255,7 +1252,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         mock_post.side_effect = requests.RequestException('request failed')
         mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
         # Call the command
-        message, error = self._call_command('update_orms_patients')
+        _message, error = self._call_command('update_orms_patients')
 
         number_of_patients = patient_models.Patient.objects.all().count()
         assert error.count("An error occurred during patient's UUID update!") == number_of_patients
@@ -1344,7 +1341,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         legacy_factories.LegacyOAUserFactory(oa_role=role)
 
         legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module)
-        message, error = self._call_command('migrate_users')
+        message, _error = self._call_command('migrate_users')
 
         assert 'Migrated 2 of 2 users (2 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
@@ -1366,7 +1363,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         legacy_factories.LegacyOAUserFactory(oa_role=role)
 
         legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module, access=3)
-        message, error = self._call_command('migrate_users')
+        message, _error = self._call_command('migrate_users')
 
         assert 'Migrated 2 of 2 users (0 system administrators and 2 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
@@ -1386,7 +1383,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         legacy_factories.LegacyOAUserFactory(oa_role=role)
 
         legacy_factories.LegacyOARoleModuleFactory(oa_role=role, module=module)
-        message, error = self._call_command('migrate_users')
+        message, _error = self._call_command('migrate_users')
 
         assert 'Migrated 2 of 2 users (0 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 2
@@ -1414,7 +1411,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         assert errormsg in error
         assert 'Migrated 0 of 1 users (0 system administrators and 0 registrants)' in message
 
-    def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:  # noqa: WPS213
+    def test_migrate_users_alltypes_legacyoauser_pass(self) -> None:
         """Test import pass for mixed type of users from Legacy OAUsers."""
         patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patients')
         anymodule = legacy_factories.LegacyModuleFactory(name_en='AnyModule')
@@ -1438,7 +1435,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         legacy_factories.LegacyOAUserFactory(oa_role=nonadminrole_nonpatient)
         legacy_factories.LegacyOARoleModuleFactory(oa_role=nonadminrole_nonpatient, module=anymodule)
 
-        message, error = self._call_command('migrate_users')
+        message, _error = self._call_command('migrate_users')
 
         assert 'Migrated 6 of 6 users (2 system administrators and 2 registrants)' in message
         assert ClinicalStaff.objects.all().count() == 6
@@ -1478,7 +1475,7 @@ class TestMigrateUsersCommand(CommandTestMixin):
         deleted_user = legacy_factories.LegacyOAUserFactory(oa_role=role, is_deleted=True)
         actual_user = legacy_factories.LegacyOAUserFactory(oa_role=role)
 
-        message, error = self._call_command('migrate_users')
+        message, _error = self._call_command('migrate_users')
 
         assert 'Migrated 1 of 1 users (0 system administrators and 0 registrants)' in message
         assert ClinicalStaff.objects.count() == 1
@@ -1491,7 +1488,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
 
     def test_migrate_legacy_usage_statistics_with_no_legacy_statistics(self) -> None:
         """Test import success but no legacy statistics exist."""
-        message, error = self._call_command(
+        message, _error = self._call_command(
             'migrate_legacy_usage_statistics',
             'opal/tests/fixtures/test_empty_file.csv',
             'opal/tests/fixtures/test_empty_file.csv',
@@ -1507,7 +1504,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
         """Ensure the command handle the legacy usage statistics migration with success."""
         self._create_test_self_registered_patient(99)
 
-        message, error = self._call_command(
+        message, _error = self._call_command(
             'migrate_legacy_usage_statistics',
             'opal/tests/fixtures/test_activity_log.csv',
             'opal/tests/fixtures/test_data_received_log.csv',
@@ -1523,7 +1520,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
         """Ensure the command handle the legacy usage statistics migration using no date test data."""
         self._create_test_self_registered_patient(99)
 
-        message, error = self._call_command(
+        message, _error = self._call_command(
             'migrate_legacy_usage_statistics',
             'opal/tests/fixtures/test_activity_log.csv',
             'opal/tests/fixtures/test_data_received_log_no_date.csv',
@@ -1559,7 +1556,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
         """Ensure the command handle the legacy usage statistics migration using large test data."""
         self._create_test_self_registered_patient(99)
 
-        message, error = self._call_command(
+        message, _error = self._call_command(
             'migrate_legacy_usage_statistics',
             'opal/tests/fixtures/test_activity_log_large_data.csv',
             'opal/tests/fixtures/test_data_received_log_large_data.csv',
@@ -1581,7 +1578,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
             'opal/tests/fixtures/test_activity_log.csv',
             'opal/tests/fixtures/test_data_received_log.csv',
         )
-        message, error = self._call_command(
+        message, _error = self._call_command(
             'migrate_legacy_usage_statistics',
             'opal/tests/fixtures/test_activity_log.csv',
             'opal/tests/fixtures/test_data_received_log.csv',
@@ -1605,7 +1602,7 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
             ramq='RAMQ12345678',
             first_name='First Name',
             last_name='Last Name',
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         caregiver = caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(

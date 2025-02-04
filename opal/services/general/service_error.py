@@ -9,7 +9,8 @@ class ServiceErrorHandler:
         self,
         response_data: dict[str, Any],
     ) -> dict[str, Any]:
-        """Create error response in a JSON format that contains `data` field with the specific details.
+        """
+        Create error response in a JSON format that contains `data` field with the specific details.
 
         Args:
             response_data (dict[str, Any]): data that needs to be included into error response message

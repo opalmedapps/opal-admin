@@ -80,8 +80,9 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
     permission_classes = (IsListener, CaregiverSelfPermissions)
     queryset = Relationship.objects.select_related('caregiver__user')
 
-    def get_queryset(self) -> QuerySet[Relationship]:  # noqa: WPS615
-        """Query set to retrieve list of caregivers for the input patient.
+    def get_queryset(self) -> QuerySet[Relationship]:
+        """
+        Query set to retrieve list of caregivers for the input patient.
 
         Returns:
             List of caregiver profiles for a given patient
@@ -103,7 +104,8 @@ class PatientDemographicView(UpdateAPIView[Patient]):
     serializer_class = PatientDemographicSerializer
 
     def get_object(self) -> Patient:
-        """Perform a custom lookup for a `Patient` object.
+        """
+        Perform a custom lookup for a `Patient` object.
 
         Since there is no `lookup_url` parameter in the endpoints, the lookup is performed by using the provided `mrns`.
 
@@ -126,12 +128,12 @@ class PatientDemographicView(UpdateAPIView[Patient]):
             patient = self.queryset.get_patient_by_site_mrn_list(
                 hospital_patient_serializer.validated_data,
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
             # Raise `NotFound` if `Patient` object is empty
             raise NotFound(
                 'Cannot find patient record with the provided MRNs and sites.'
                 + 'Make sure that MRN/site pairs refer to the same patient.',
-            )
+            ) from error
 
         # May raise a permission denied
         self.check_object_permissions(self.request, patient)
@@ -219,7 +221,8 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
     },
 )
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
+    """
+    Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 
@@ -268,10 +271,10 @@ class PatientExistsView(APIView):
 
             try:
                 patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
-            except (ObjectDoesNotExist, MultipleObjectsReturned):
+            except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
                 raise NotFound(
                     detail='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
-                )
+                ) from error
             return Response(
                 data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,
                 status=status.HTTP_200_OK,

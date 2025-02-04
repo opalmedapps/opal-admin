@@ -4,7 +4,8 @@ Generate the code reference pages and navigation.
 Taken inspiration from:
     * https://github.com/mkdocstrings/mkdocstrings/blob/master/docs/gen_ref_nav.py
     * https://github.com/liquidinvestigations/hoover-snoop2/blob/master/docs/gen.py
-"""
+"""  # noqa: INP001
+
 from pathlib import Path
 
 import mkdocs_gen_files

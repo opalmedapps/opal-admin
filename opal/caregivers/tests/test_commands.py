@@ -30,7 +30,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code2.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -58,7 +58,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code3.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -81,7 +81,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code2.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -107,7 +107,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code3.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions

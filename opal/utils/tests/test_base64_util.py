@@ -9,6 +9,7 @@ TXT_FILE_PATH = Path('opal/tests/fixtures/test_txt.txt')
 
 # is_base64 function tests
 
+
 def test_is_base64_valid_string_returns_true() -> None:
     """Ensure `True` value is returned for a valid base64 string."""
     base64_bytes = base64.b64encode(b'TEST')
@@ -68,6 +69,7 @@ def test_is_base64_non_base64_error() -> None:
 
 # encode_file_to_base64 function tests
 
+
 def test_encode_file_to_base64() -> None:
     """Ensure function returns encoded base64 string of the file."""
     base64_str = base64_utils.file_to_base64(LOGO_PATH)
@@ -83,6 +85,6 @@ def test_encode_file_to_base64_invalid_path() -> None:
         assert base64_str == ''
 
     try:
-        base64_str = base64_utils.file_to_base64(Path(''))
+        base64_str = base64_utils.file_to_base64(Path())
     except OSError:
         assert base64_str == ''

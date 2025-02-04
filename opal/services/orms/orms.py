@@ -8,7 +8,8 @@ from .orms_validation import ORMSValidator
 
 
 class ORMSService:
-    """Service that provides an interface for interaction with the Opal Room Management System (ORMS).
+    """
+    Service that provides an interface for interaction with the Opal Room Management System (ORMS).
 
     All the provided functions contain the following business logic:
         * validate the input data (parameters)
@@ -28,7 +29,8 @@ class ORMSService:
         active_mrn_list: list[tuple[str, str]],
         patient_uuid: UUID,
     ) -> dict[str, Any]:
-        """Mark a patient as an Opal patient in ORMS.
+        """
+        Mark a patient as an Opal patient in ORMS.
 
         Tries calling ORMS using each of the patient's MRNs until one succeeds.
 

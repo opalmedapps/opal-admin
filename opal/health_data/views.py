@@ -12,7 +12,8 @@ from .utils import build_all_quantity_sample_charts
 
 
 class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
-    """A page for visualizing a patient's health data samples.
+    """
+    A page for visualizing a patient's health data samples.
 
     Note: This page is currently not accessible from the Django UI as it is meant to be directly linked to.
           The keyword argument in the URL refers to the uuid of the patient of interest.
@@ -25,7 +26,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
     http_method_names = ['get', 'head', 'options', 'trace']
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Update the context with patient identifiers and wearables plot HTML strings.
+        """
+        Update the context with patient identifiers and wearables plot HTML strings.
 
         Args:
             kwargs: the context data

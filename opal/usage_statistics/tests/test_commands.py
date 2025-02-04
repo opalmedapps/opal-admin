@@ -100,7 +100,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert DailyUserPatientActivity.objects.count() == 1
         assert DailyPatientDataReceived.objects.count() == 1
 
-    def test_existing_statistics_delete_in_prod_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_existing_statistics_delete_in_prod_env(self) -> None:
         """Ensure that the command's force-delete flag is forbidden in production environment."""
         stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
         assert stdout == 'Existing usage statistics data cannot be deleted in production environment\n'
@@ -171,7 +171,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert user_app_activity.count_update_security_answers == 1
         assert user_app_activity.count_update_passwords == 1
         assert user_app_activity.count_update_language == 2
-        current_day = dt.datetime.now().date()
+        current_day = timezone.now().date()
         previous_day = current_day - dt.timedelta(days=1)
         assert user_app_activity.action_date == previous_day
 
@@ -247,7 +247,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert user_app_activity.count_update_security_answers == 1
         assert user_app_activity.count_update_passwords == 1
         assert user_app_activity.count_update_language == 2
-        assert user_app_activity.action_date == dt.datetime.now().date()
+        assert user_app_activity.action_date == timezone.now().date()
 
     def test_populate_last_login_user_statistics(self) -> None:
         """Ensure that the command correctly populates the last login time per user per day."""
@@ -261,7 +261,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             legacy_id=2,
         )
         start_datetime_period = dt.datetime.combine(
-            dt.datetime.now(),
+            timezone.now(),
             dt.datetime.min.time(),
             timezone.get_current_timezone(),
         )
@@ -386,7 +386,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -440,7 +440,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -510,7 +510,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -604,7 +604,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -698,7 +698,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -792,7 +792,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -934,7 +934,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -1077,7 +1077,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        date = dt.datetime.now().date()
+        date = timezone.now()
         statistics_factory.DailyUserAppActivity(
             action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
@@ -1458,7 +1458,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
             action_by_user=caregiver_factories.Caregiver(
@@ -1584,7 +1584,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
             action_by_user=caregiver_factories.Caregiver(
@@ -1710,7 +1710,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
             action_by_user=caregiver_factories.Caregiver(
@@ -1836,7 +1836,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
             action_by_user=caregiver_factories.Caregiver(
@@ -1978,7 +1978,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
-        date = dt.datetime.now().date()
+        date = timezone.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
             action_by_user=caregiver_factories.Caregiver(
@@ -2093,25 +2093,21 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
         django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
-        previous_day = timezone.make_aware(
-            dt.datetime.now() - dt.timedelta(days=1),
-        )
-        current_day = timezone.make_aware(dt.datetime.now())
+        previous_day = timezone.now() - dt.timedelta(days=1)
+        current_day = timezone.now()
 
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=marge,
-            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=previous_day,
         )
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=homer,
-            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=previous_day,
         )
 
-        next_appointment = timezone.make_aware(
-            dt.datetime.now() + dt.timedelta(days=3),
-        )
+        next_appointment = timezone.now() + dt.timedelta(days=3)
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=marge,
             date_added=previous_day,
@@ -2165,9 +2161,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=homer,
             date_added=current_day,
-            scheduledstarttime=timezone.make_aware(
-                dt.datetime.now() + dt.timedelta(days=7),
-            ),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=7),
         )
         legacy_factories.LegacyDocumentFactory(
             documentsernum=3,
@@ -2232,25 +2226,21 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
         django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
-        previous_day = timezone.make_aware(
-            dt.datetime.now() - dt.timedelta(days=1),
-        )
-        current_day = timezone.make_aware(dt.datetime.now())
+        previous_day = timezone.now() - dt.timedelta(days=1)
+        current_day = timezone.now()
 
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=marge,
-            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=current_day,
         )
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=homer,
-            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=current_day,
         )
 
-        next_appointment = timezone.make_aware(
-            dt.datetime.now() + dt.timedelta(days=3),
-        )
+        next_appointment = timezone.now() + dt.timedelta(days=3)
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=marge,
             date_added=current_day,
@@ -2304,9 +2294,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(
             patientsernum=homer,
             date_added=previous_day,
-            scheduledstarttime=timezone.make_aware(
-                dt.datetime.now() + dt.timedelta(days=7),
-            ),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=7),
         )
         legacy_factories.LegacyDocumentFactory(
             documentsernum=3,
@@ -2377,7 +2365,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         homer_last_appointment = current_datetime - dt.timedelta(days=3)
         marge_last_appointment = current_datetime - dt.timedelta(days=3)
         bart_last_appointment = current_datetime - dt.timedelta(days=1)
@@ -2456,7 +2444,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         marge_next_appointment = current_datetime + dt.timedelta(days=1)
         homer_next_appointment = current_datetime + dt.timedelta(days=5)
         bart_next_appointment = current_datetime + dt.timedelta(days=10)
@@ -2547,7 +2535,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_day = timezone.make_aware(dt.datetime.now())
+        current_day = timezone.now()
         previous_day = current_day - dt.timedelta(days=1)
 
         legacy_factories.LegacyAppointmentFactory(
@@ -2632,7 +2620,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
         legacy_factories.LegacyDocumentFactory(
@@ -2709,7 +2697,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
         legacy_factories.LegacyDocumentFactory(
@@ -2801,7 +2789,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
 
         legacy_factories.LegacyEducationalMaterialFactory(
             patientsernum=marge,
@@ -2871,7 +2859,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
         legacy_factories.LegacyEducationalMaterialFactory(
@@ -2956,7 +2944,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
 
         legacy_factories.LegacyQuestionnaireFactory(
             patientsernum=marge,
@@ -3028,7 +3016,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
         legacy_factories.LegacyQuestionnaireFactory(
@@ -3113,7 +3101,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
 
         legacy_factories.LegacyPatientTestResultFactory(
             patient_ser_num=marge,
@@ -3185,7 +3173,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
         django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
-        current_datetime = timezone.make_aware(dt.datetime.now())
+        current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
         legacy_factories.LegacyPatientTestResultFactory(
@@ -3259,7 +3247,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         app_version: str = '100.100.100',
         days_delta: int = 1,
     ) -> legacy_factories.LegacyPatientActivityLogFactory:
-        """Create `LegacyPatientActivityLog` object.
+        """
+        Create `LegacyPatientActivityLog` object.
 
         Args:
             request: request type; defaults to 'Login'
@@ -3277,7 +3266,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             'parameters': parameters,
             'target_patient_id': target_patient_id,
             'username': username,
-            'date_time': timezone.localtime(timezone.now()) - dt.timedelta(days=days_delta),
+            'date_time': timezone.now() - dt.timedelta(days=days_delta),
             'app_version': app_version,
         }
         return legacy_factories.LegacyPatientActivityLogFactory(**data)

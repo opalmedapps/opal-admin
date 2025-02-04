@@ -1,6 +1,8 @@
 """Utility functions used by legacy API views."""
+
 import datetime as dt
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
@@ -12,14 +14,13 @@ from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
-from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
-from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
 
-from .models import (  # noqa: WPS235
+from .models import (
     LegacyAccessLevel,
     LegacyEducationalMaterial,
     LegacyEducationalMaterialControl,
@@ -58,6 +59,8 @@ DatabankControlRecords: TypeAlias = Union[
     None,
 ]
 
+LOGGER = logging.getLogger(__name__)
+
 
 class DataFetchError(Exception):
     """Class for handling error when fetching."""
@@ -82,7 +85,7 @@ def get_patient_sernum(username: str) -> int:
     return 0
 
 
-def create_patient(  # noqa: WPS211 (too many arguments)
+def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     sex: LegacySexType,
@@ -110,7 +113,12 @@ def create_patient(  # noqa: WPS211 (too many arguments)
     """
     age = Patient.calculate_age(date_of_birth)
     # the legacy DB stores the date of birth as a datetime
-    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
+    datetime_of_birth = dt.datetime(
+        date_of_birth.year,
+        date_of_birth.month,
+        date_of_birth.day,
+        tzinfo=timezone.get_current_timezone(),
+    )
 
     patient = LegacyPatient(
         first_name=first_name,
@@ -154,7 +162,7 @@ def create_dummy_patient(
         last_name=last_name,
         sex=LegacySexType.UNKNOWN,
         # requires a valid date; use a temporary date
-        date_of_birth=timezone.make_aware(dt.datetime(1900, 1, 1)),  # noqa: WPS432
+        date_of_birth=dt.datetime(1900, 1, 1, tzinfo=timezone.get_current_timezone()),
         email=email,
         language=language,
         ramq='',
@@ -174,7 +182,12 @@ def update_patient(patient: LegacyPatient, sex: LegacySexType, date_of_birth: dt
     """
     age = Patient.calculate_age(date_of_birth)
     # the legacy DB stores the date of birth as a datetime
-    datetime_of_birth = timezone.make_aware(dt.datetime(date_of_birth.year, date_of_birth.month, date_of_birth.day))
+    datetime_of_birth = dt.datetime(
+        date_of_birth.year,
+        date_of_birth.month,
+        date_of_birth.day,
+        tzinfo=timezone.get_current_timezone(),
+    )
 
     patient.sex = sex
     patient.date_of_birth = datetime_of_birth
@@ -265,7 +278,7 @@ def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> 
     Returns:
         the created user instance
     """
-    user = LegacyUsers(  # noqa: S106
+    user = LegacyUsers(
         usertype=user_type,
         usertypesernum=user_type_id,
         username=username,
@@ -289,7 +302,7 @@ def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) 
     LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
 
 
-def create_caregiver_user(  # noqa: WPS210 (too many local variables)
+def create_caregiver_user(
     relationship: Relationship,
     username: str,
     language: str,
@@ -362,8 +375,9 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
 
 
 @transaction.atomic
-def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # noqa: WPS210
-    """Initialize databank consent information for a newly registered patient.
+def create_databank_patient_consent_data(django_patient: Patient) -> bool:
+    """
+    Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
     Note that this function explicitly does not throw any Errors to avoid affecting registration processes.
@@ -374,7 +388,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
     Returns:
         boolean value indicating success or failure, to help logging in registration endpoint
     """
-    try:  # noqa: WPS229
+    try:
         legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
 
         # Check for the existence of the consent form and educational materials before attempting to insert
@@ -388,7 +402,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
             questionnaire_id=qdb_questionnaire.id,
             patient_id=qdb_patient.id,
             status=0,
-            creation_date=timezone.make_aware(dt.datetime.now()),
+            creation_date=timezone.now(),
             created_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             updated_by='DJANGO_AUTO_CREATE_DATABANK_CONSENT',
         )
@@ -399,7 +413,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
             patientsernum=legacy_patient,
             patient_questionnaire_db_ser_num=answer_instance.id,
             completedflag=0,
-            date_added=timezone.make_aware(dt.datetime.now()),
+            date_added=timezone.now(),
         )
 
         # Create the educational material factsheet
@@ -407,9 +421,10 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
             educationalmaterialcontrolsernum=info_sheet,
             patientsernum=legacy_patient,
             readstatus=0,
-            date_added=timezone.make_aware(dt.datetime.now()),
+            date_added=timezone.now(),
         )
-    except Exception:
+    except (LegacyPatient.DoesNotExist, OperationalError):
+        LOGGER.exception(f'Error while creating databank consent for patient {django_patient.uuid}')
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)
         return False
@@ -417,7 +432,8 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
 
 
 def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRecords:
-    """Fetch the required control records for databank consent creation.
+    """
+    Fetch the required control records for databank consent creation.
 
     If the QuestionnaireDB `SyncPublishQuestionnaire` event has not already populated the
     patient table, then this function will create the patient record linked to the OpalDB.Patient.
@@ -444,11 +460,11 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     ).first()
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
-    qdb_patient, created = LegacyQuestionnairePatient.objects.get_or_create(
+    qdb_patient, _created = LegacyQuestionnairePatient.objects.get_or_create(
         external_id=django_patient.legacy_id,
         defaults={
             'hospital_id': -1,
-            'creation_date': timezone.make_aware(dt.datetime.now()),
+            'creation_date': timezone.now(),
             'created_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             'updated_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
             'deleted_by': '',
@@ -487,15 +503,16 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
 
     try:
         data_list = _parse_query_result(query_result)
-    except ValueError as exc:  # noqa: WPS440
+    except TypeError as exc:
         raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
     return _process_questionnaire_data(data_list)
 
 
 def _fetch_questionnaires_from_db(
     legacy_patient_id: int,
-) -> list[dict[str, Any] | list[dict[str, Any]]]:  # noqa: WPS221
-    """Fetch completed questionnaires data from the database.
+) -> list[dict[str, Any] | list[dict[str, Any]]]:
+    """
+    Fetch completed questionnaires data from the database.
 
     Args:
         legacy_patient_id: patient's legacy id
@@ -508,15 +525,14 @@ def _fetch_questionnaires_from_db(
             'getCompletedQuestionnairesList',
             [legacy_patient_id, 1, 'EN'],
         )
-        return [
-            json.loads(row[0]) for row in cursor.fetchall()
-        ]
+        return [json.loads(row[0]) for row in cursor.fetchall()]
 
 
 def _parse_query_result(
-    query_result: list[dict[str, Any] | list[dict[str, Any]]],  # noqa: WPS221
+    query_result: list[dict[str, Any] | list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
-    """Parse the raw query result into a structured list of dictionaries.
+    """
+    Parse the raw query result into a structured list of dictionaries.
 
     This function processes each row in the query result, expecting JSON data in the first column
     (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
@@ -525,7 +541,7 @@ def _parse_query_result(
         query_result: raw query results, each tuple represents a database row
 
     Raises:
-        ValueError: if the JSON data cannot be deserialized
+        TypeError: if the JSON data cannot be deserialized
 
     Returns:
         structured list of dictonaries representing the query
@@ -537,14 +553,13 @@ def _parse_query_result(
         elif isinstance(parsed_data, list):
             data_list.extend(parsed_data)
         else:
-            raise ValueError(
-                f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
-            )
+            raise TypeError(f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.')
     return data_list
 
 
 def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[questionnaire.QuestionnaireData]:
-    """Process parsed questionnaire data into QuestionnaireData objects.
+    """
+    Process parsed questionnaire data into QuestionnaireData objects.
 
     Args:
         parsed_data_list: parsed data list of the questionnaire
@@ -565,7 +580,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             questionnaire.QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
-                last_updated=datetime.fromisoformat(data['last_updated']),
+                last_updated=datetime.fromisoformat(data['last_updated']).astimezone(timezone.get_current_timezone()),
                 questions=questions,
             ),
         )
@@ -574,13 +589,14 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
 
 def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnaire.Question]:
-    """Process question data into Question objects.
+    """
+    Process question data into Question objects.
 
     Args:
         questions_data: unprocessed questions data associated with the questionnaire
 
     Raises:
-        ValueError: the answers are wrongly formatted
+        TypeError: the answers are wrongly formatted
 
     Returns:
         list of questions associated with the questionnaire
@@ -588,10 +604,9 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
     questions = []
 
     for question in questions_data:
-
         answers = question.get('values') or []
         if not isinstance(answers, list):
-            raise ValueError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
+            raise TypeError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
 
         questions.append(
             questionnaire.Question(
@@ -605,9 +620,10 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
                 section_id=question['section_id'],
                 answers=[
                     (
-                        datetime.fromisoformat(answer[0]),
+                        datetime.fromisoformat(answer[0]).astimezone(timezone.get_current_timezone()),
                         str(answer[1]),
-                    ) for answer in answers
+                    )
+                    for answer in answers
                 ],
             ),
         )
@@ -619,7 +635,8 @@ def generate_questionnaire_report(
     patient: Patient,
     questionnaire_data_list: list[questionnaire.QuestionnaireData],
 ) -> bytearray:
-    """Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
+    """
+    Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
 
     Args:
         patient: patient instance for whom a new PDF questionnaire report being generated
@@ -640,9 +657,11 @@ def generate_questionnaire_report(
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq,
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all().annotate(
+                patient.hospital_patients.all()
+                .annotate(
                     site_code=models.F('site__acronym'),
-                ).values('mrn', 'site_code'),
+                )
+                .values('mrn', 'site_code'),
             ),
         ),
         questionnaires=questionnaire_data_list,

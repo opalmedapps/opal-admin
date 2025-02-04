@@ -106,7 +106,7 @@ class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCod
     )
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:  # noqa: WPS615
+    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:
         """
         Get a single institution data.
 
@@ -142,7 +142,7 @@ class SecurityAnswerQuestionSerializer(serializers.ModelSerializer[SecurityAnswe
 class VerifySecurityAnswerSerializer(serializers.ModelSerializer[SecurityAnswer]):
     """Serializer for Verify security answers."""
 
-    answer = serializers.CharField(max_length=128)  # noqa: WPS432
+    answer = serializers.CharField(max_length=128)
 
     class Meta:
         model = SecurityAnswer
@@ -206,11 +206,12 @@ class _NestedCaregiverSerializer(CaregiverSerializer):
         extra_kwargs = {
             'legacy_id': dict(CaregiverSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
         }
-        fields = list(CaregiverSerializer.Meta.fields) + ['email']
+        fields = [*CaregiverSerializer.Meta.fields, 'email']
 
 
 class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information for new users.
+    """
+    RegistrationCode serializer used to get patient and caregiver information for new users.
 
     The information include Patient and Caregiver data.
     """
@@ -231,7 +232,8 @@ class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registration
 
 
 class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information for existing users.
+    """
+    RegistrationCode serializer used to get patient and caregiver information for existing users.
 
     The information include Patient and Caregiver data.
     """
@@ -257,11 +259,11 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
     caregivers = serializers.SerializerMethodField()
     institution = serializers.SerializerMethodField()
 
-    class _InstitutionData(TypedDict):  # noqa: WPS431
+    class _InstitutionData(TypedDict):
         acronym_en: str
         acronym_fr: str
 
-    def get_institution(self, obj: Patient) -> _InstitutionData:  # noqa: WPS615
+    def get_institution(self, obj: Patient) -> _InstitutionData:
         """
         Get a single institution acronym.
 
@@ -273,7 +275,7 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
         """
         return Institution.objects.values('acronym_en', 'acronym_fr').get()
 
-    def get_caregivers(self, obj: Patient) -> dict[str, Any]:  # noqa: WPS615
+    def get_caregivers(self, obj: Patient) -> dict[str, Any]:
         """
         Return the active caregivers of the patient.
 

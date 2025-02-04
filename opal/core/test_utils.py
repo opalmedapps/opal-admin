@@ -46,7 +46,8 @@ class RequestMockerTest:
         mocker: MockerFixture,
         response_data: dict[str, Any],
     ) -> MockType:
-        """Mock an HTTP POST call to a web service.
+        """
+        Mock an HTTP POST call to a web service.
 
         Args:
             mocker: object that provides the same interface to functions in the mock module
@@ -59,7 +60,7 @@ class RequestMockerTest:
         response = requests.Response()
         response.status_code = HTTPStatus.OK
 
-        response._content = json.dumps(response_data).encode()
+        response._content = json.dumps(response_data).encode()  # noqa: SLF001
         mock_post.return_value = response
 
         return mock_post
@@ -70,7 +71,8 @@ class RequestMockerTest:
         mocker: MockerFixture,
         generated_response_data: dict[str, str],
     ) -> MockType:
-        """Mock an HTTP GET call to a web service.
+        """
+        Mock an HTTP GET call to a web service.
 
         Args:
             mocker: object that provides the same interface to functions in the mock module
@@ -83,7 +85,7 @@ class RequestMockerTest:
         response = requests.Response()
         response.status_code = HTTPStatus.OK
 
-        response._content = json.dumps(generated_response_data).encode()
+        response._content = json.dumps(generated_response_data).encode()  # noqa: SLF001
         mock_get.return_value = response
 
         return mock_get

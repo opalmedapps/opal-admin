@@ -2,6 +2,8 @@ from datetime import date, datetime
 from http import HTTPStatus
 from pathlib import Path
 
+from django.utils import timezone
+
 import pytest
 from fpdf import FPDFException
 from pytest_mock.plugin import MockerFixture
@@ -29,7 +31,7 @@ QUESTION_REPORT_DATA = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'Demo answer',
             ),
         ],
@@ -45,7 +47,7 @@ QUESTION_REPORT_DATA = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'Demo answer',
             ),
         ],
@@ -63,11 +65,11 @@ QUESTION_REPORT_DATA_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -85,11 +87,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -105,39 +107,39 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 'data',
             ),
         ],
@@ -153,11 +155,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -173,11 +175,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -193,11 +195,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -213,11 +215,11 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
         section_id=1,
         answers=[
             (
-                datetime(2024, 10, 20, 14, 0),
+                datetime(2024, 10, 20, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '5',
             ),
             (
-                datetime(2024, 10, 21, 14, 0),
+                datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
                 '7',
             ),
         ],
@@ -226,25 +228,25 @@ QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
 QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='BREAST-Q Reconstruction Module',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA_CHARTS),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_MULTIPLE_CHARTS = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
-    last_updated=datetime(2024, 10, 21, 14, 0),
+    last_updated=datetime(2024, 10, 21, 14, 0, tzinfo=timezone.get_current_timezone()),
     questions=list(QUESTION_REPORT_DATA_MULTIPLE_CHARTS),
 )
 
@@ -266,7 +268,8 @@ INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
 
 
 def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str]]:
-    """Create mock `dict` response on the `report` HTTP POST request.
+    """
+    Create mock `dict` response on the `report` HTTP POST request.
 
     Args:
         status: response status code
@@ -334,7 +337,8 @@ def test_generate_pdf_multiple_pages() -> None:
 
 
 def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> None:
-    """Ensure that the pdf is correctly generated with the toc being multiple pages.
+    """
+    Ensure that the pdf is correctly generated with the toc being multiple pages.
 
     Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
     the right number of pages for the TOC.
@@ -444,12 +448,8 @@ def test_draw_text_answer_and_charts_question_page_break(mocker: MockerFixture) 
 
     pdf_instance = will_page_break.call_args[0][0]
 
-    count_page_break_charts = sum(
-        1 for call in will_page_break.call_args_list if call.args == (pdf_instance, 50)
-    )
-    count_page_break_text = sum(
-        1 for call in will_page_break.call_args_list if call.args == (pdf_instance, 30)
-    )
+    count_page_break_charts = sum(1 for call in will_page_break.call_args_list if call.args == (pdf_instance, 50))
+    count_page_break_text = sum(1 for call in will_page_break.call_args_list if call.args == (pdf_instance, 30))
     assert count_page_break_charts == 3
     assert count_page_break_text == 3
 

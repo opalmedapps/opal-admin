@@ -17,7 +17,8 @@ class Base64FileField(serializers.Field[FieldFile, FieldFile, Optional[str], Any
     """This class is a reuseable field for encoding the file and return the base64 encoded file contents."""
 
     def to_representation(self, file: FieldFile) -> str | None:
-        """Represent a file content in base64 encoded form.
+        """
+        Represent a file content in base64 encoded form.
 
         Args:
             file: The file object

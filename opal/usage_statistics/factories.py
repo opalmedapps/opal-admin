@@ -4,6 +4,7 @@ import datetime as dt
 from django.utils import timezone
 
 import factory
+from factory import lazy_attribute
 from factory.django import DjangoModelFactory
 
 from opal.patients.factories import Patient, Relationship
@@ -25,7 +26,7 @@ class DailyUserAppActivity(DjangoModelFactory):
     count_device_ios = factory.Faker('pyint', min_value=0, max_value=5)
     count_device_android = factory.Faker('pyint', min_value=0, max_value=5)
     count_device_browser = factory.Faker('pyint', min_value=0, max_value=5)
-    action_date = dt.date.today() - dt.timedelta(days=1)
+    action_date = lazy_attribute(lambda _x: timezone.now().date() - dt.timedelta(days=1))
 
     class Meta:
         model = models.DailyUserAppActivity
@@ -42,7 +43,7 @@ class DailyUserPatientActivity(DjangoModelFactory):
     count_educational_materials = factory.Faker('pyint', min_value=0, max_value=10)
     count_questionnaires_complete = factory.Faker('pyint', min_value=0, max_value=10)
     count_labs = factory.Faker('pyint', min_value=0, max_value=20)
-    action_date = dt.date.today() - dt.timedelta(days=1)
+    action_date = lazy_attribute(lambda _x: timezone.now().date() - dt.timedelta(days=1))
 
     class Meta:
         model = models.DailyUserPatientActivity
@@ -63,7 +64,7 @@ class DailyPatientDataReceived(DjangoModelFactory):
     questionnaires_received = factory.Faker('pyint', min_value=0, max_value=20)
     last_lab_received = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     labs_received = factory.Faker('pyint', min_value=0, max_value=50)
-    action_date = dt.date.today() - dt.timedelta(days=1)
+    action_date = lazy_attribute(lambda _x: timezone.now().date() - dt.timedelta(days=1))
 
     class Meta:
         model = models.DailyPatientDataReceived

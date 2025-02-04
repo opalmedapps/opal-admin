@@ -59,7 +59,7 @@ def test_loginrequired_unauthenticated_open_url(client: Client, settings: Settin
     assert response.status_code == HTTPStatus.OK
 
 
-def test_loginrequired_unauthenticated_favicon(client: Client, settings: SettingsWrapper) -> None:
+def test_loginrequired_unauthenticated_favicon(client: Client) -> None:
     """Ensure that open URLs are exempted for unauthenticated requests."""
     response = client.get(reverse('favicon.ico'))
 

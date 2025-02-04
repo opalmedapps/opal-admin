@@ -5,7 +5,8 @@ from pathlib import Path
 
 
 def file_to_base64(path: Path) -> str | None:
-    """Create a base64 string of a given file.
+    """
+    Create a base64 string of a given file.
 
     Args:
         path: file path
@@ -23,7 +24,8 @@ def file_to_base64(path: Path) -> str | None:
 
 
 def is_base64(string: str | None) -> bool:
-    """Check if a given string is base64 encoded.
+    """
+    Check if a given string is base64 encoded.
 
     Args:
         string: encoded base64 string
@@ -36,8 +38,6 @@ def is_base64(string: str | None) -> bool:
         return False
 
     try:
-        return (
-            base64.b64encode(base64.b64decode(string, validate=True)) == bytes(string, 'ascii')
-        )
+        return base64.b64encode(base64.b64decode(string, validate=True)) == bytes(string, 'ascii')
     except (ValueError, TypeError):
         return False

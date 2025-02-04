@@ -1,4 +1,5 @@
 """Serializers for the API views of the `databank` app."""
+
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
