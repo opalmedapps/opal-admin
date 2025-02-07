@@ -12,11 +12,11 @@ from typing import Any
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import OperationalError
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
@@ -31,7 +31,7 @@ from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.factories import Institution
 from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
-from opal.legacy.models import (  # noqa: WPS235
+from opal.legacy.models import (
     LegacyAccessLevel,
     LegacyEducationalMaterial,
     LegacyEducationalMaterialControl,
@@ -44,9 +44,8 @@ from opal.legacy.models import (  # noqa: WPS235
     LegacyUsers,
     LegacyUserType,
 )
-from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
-from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients import factories as patient_factories
 from opal.patients import utils
 from opal.patients.factories import Relationship
@@ -55,20 +54,21 @@ from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
 
-class MockConnectionError:
+class MockDBError:
     """Mock a connection error during database query to ensure api views handle errors gracefully."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Raise the error.
+        """
+        Raise the error.
 
         Args:
             args: Any number of additional arguments
             kwargs: Any number of additional keyword arguments
 
         Raises:
-            ConnectionError: always
+            OperationalError: always
         """
-        raise requests.exceptions.ConnectionError
+        raise OperationalError
 
 
 def test_get_caregiver_patient_list_unauthenticated_unauthorized(api_client: APIClient, user: User) -> None:
@@ -401,7 +401,7 @@ def test_update_device_success(api_client: APIClient, listener_user: User) -> No
     """Test updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -444,7 +444,7 @@ def test_update_device_failure(api_client: APIClient, listener_user: User) -> No
     """Test failure for updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -534,7 +534,7 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
     """Test failure for partial updating a device model."""
     api_client.force_login(listener_user)
     caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(  # noqa: S106
+    device = caregiver_factories.Device(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -984,11 +984,11 @@ class TestVerifyEmailView:
         )
 
         email_verification.refresh_from_db()
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK, response.data
         assert email_verification.code != old_verification_code
 
 
-class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be first)
+class TestEmailVerificationProcess:
     """Test the email verification process."""
 
     email = 'foo@bar.ca'
@@ -1106,7 +1106,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         assert user.email == 'bar@foo.ca'
 
 
-class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be first)
+class TestRegistrationCompletionView:
     """Test class tests the api registration/<str: code>/register."""
 
     data_new_caregiver = {
@@ -1262,7 +1262,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             first_name='Marge',
             last_name='Simpson',
             sex=LegacySexType.FEMALE,
-            date_of_birth=timezone.make_aware(dt.datetime(1986, 10, 5)),
+            date_of_birth=dt.datetime(1986, 10, 5, tzinfo=timezone.get_current_timezone()),
             email='',
             language=LegacyLanguage.ENGLISH,
             ramq='SIMM86600599',
@@ -1884,7 +1884,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Ensure the patient is still created if there is a connection error while creating db consent."""
-        monkeypatch.setattr('opal.legacy.utils.fetch_databank_control_records', MockConnectionError)
+        monkeypatch.setattr('opal.legacy.utils.fetch_databank_control_records', MockDBError)
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
         info_sheet = databank_consent_questionnaire_data[1]

@@ -12,15 +12,15 @@ from django.utils.translation import gettext_lazy as _
 class MedicalCard(Enum):
     """An enumeration of supported medical card types."""
 
-    MRN = _('Hospital Card (MRN)')  # noqa: WPS115
-    RAMQ = _('Medicare Card (RAMQ)')  # noqa: WPS115
+    MRN = _('Hospital Card (MRN)')
+    RAMQ = _('Medicare Card (RAMQ)')
 
 
 class UserType(Enum):
     """An enumeration of user types."""
 
-    NEW = _('New Opal User')  # noqa: WPS115
-    EXISTING = _('Existing Opal User')  # noqa: WPS115
+    NEW = _('New Opal User')
+    EXISTING = _('Existing Opal User')
 
 
 #: Choices for the type of the medical cards

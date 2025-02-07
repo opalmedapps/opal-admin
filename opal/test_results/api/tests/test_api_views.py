@@ -191,7 +191,8 @@ class TestCreatePathologyView:
         assert pathology_report.is_file()
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for creating pathology record.
+        """
+        Generate valid JSON data for creating pathology record.
 
         Returns:
             dict: valid JSON data

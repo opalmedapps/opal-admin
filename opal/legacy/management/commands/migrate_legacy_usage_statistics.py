@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Management command for migrating legacy usage statistics to the new backend usage statistics system."""
+
 import csv
 from datetime import datetime
 from pathlib import Path
@@ -19,7 +20,7 @@ from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppA
 NULL_CHARACTER = r'\N'
 
 
-class Command(BaseCommand):    # noqa: WPS214
+class Command(BaseCommand):
     """
     Command to migrate legacy usage statistics from legacy report into new backend system.
 
@@ -27,7 +28,7 @@ class Command(BaseCommand):    # noqa: WPS214
     eg: python manage.py 'activity_log_file' 'data_received_log_file' --batch-size=1000
     """
 
-    help = 'Migrate legacy usage statistics from OpalRPT'  # noqa: A003
+    help = 'Migrate legacy usage statistics from OpalRPT'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -78,7 +79,7 @@ class Command(BaseCommand):    # noqa: WPS214
             + f'(out of {self.total_legacy_data_received_log_count})',
         )
 
-    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:    # noqa: WPS231 WPS210 C901 E501
+    def _migrate_legacy_patient_activity_logs(self, file_path: Path, batch_size: int) -> int:  # noqa: C901
         """
         Migrate list of legacy patient activity logs.
 
@@ -102,7 +103,8 @@ class Command(BaseCommand):    # noqa: WPS214
             legacy_activity_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_activity_logs:
                 if (
-                    last_record and last_record.patient.legacy_id
+                    last_record
+                    and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
                     and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
                 ):
@@ -118,10 +120,11 @@ class Command(BaseCommand):    # noqa: WPS214
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=patient_activity_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch_patient_activity) == batch_size:
-                        self._create_objects_and_clear_batch(    # noqa: WPS220
+                        self._create_objects_and_clear_batch(
                             batch_patient_activity,
                             DailyUserPatientActivity.objects,
                         )
@@ -135,10 +138,11 @@ class Command(BaseCommand):    # noqa: WPS214
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=app_activity_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch_app_activity) == batch_size:
-                        self._create_objects_and_clear_batch(    # noqa: WPS220
+                        self._create_objects_and_clear_batch(
                             batch_app_activity,
                             DailyUserAppActivity.objects,
                         )
@@ -155,7 +159,7 @@ class Command(BaseCommand):    # noqa: WPS214
             )
         return legacy_activity_log_count
 
-    def _migrate_legacy_patient_data_received_logs(self, file_path: Path, batch_size: int) -> int:    # noqa: WPS210 WPS231 E501
+    def _migrate_legacy_patient_data_received_logs(self, file_path: Path, batch_size: int) -> int:
         """
         Migrate list of legacy patient data received logs.
 
@@ -176,7 +180,8 @@ class Command(BaseCommand):    # noqa: WPS214
             legacy_data_received_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_data_received_logs:
                 if (
-                    last_record and last_record.patient.legacy_id
+                    last_record
+                    and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
                     and last_record.action_date.strftime('%Y-%m-%d') >= row['Date_Added']
                 ):
@@ -192,10 +197,11 @@ class Command(BaseCommand):    # noqa: WPS214
                         ).format(
                             patient_id=row['PatientSerNum'],
                             detail=data_received_exc,
-                        ))
+                        )
+                    )
                 else:
                     if len(batch) == batch_size:
-                        batch = self._create_objects_and_clear_batch(batch, DailyPatientDataReceived.objects)    # noqa: WPS220 E501
+                        batch = self._create_objects_and_clear_batch(batch, DailyPatientDataReceived.objects)
                     legacy_data_received_log_count += 1
         # last batch insert
         if batch:
@@ -216,10 +222,7 @@ class Command(BaseCommand):    # noqa: WPS214
             activity_log: legacy patient activity log
         """
         legacy_id = int(activity_log['PatientSerNum'])
-        if (
-            legacy_id in self.patients.keys()
-            and legacy_id in self.self_caregiver.keys()
-        ):
+        if legacy_id in self.patients and legacy_id in self.self_caregiver:
             patient_activity = DailyUserPatientActivity(
                 action_by_user=self.self_caregiver[legacy_id].caregiver.user,
                 user_relationship_to_patient=self.self_caregiver[legacy_id],
@@ -248,11 +251,15 @@ class Command(BaseCommand):    # noqa: WPS214
         Args:
             activity_log: legacy patient activity log
         """
-        last_login = None if activity_log['Last_Login'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(activity_log['Last_Login'], '%Y-%m-%d %H:%M:%S'),
+        last_login = (
+            None
+            if activity_log['Last_Login'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(activity_log['Last_Login']),
+            )
         )
         legacy_id = int(activity_log['PatientSerNum'])
-        if legacy_id in self.self_caregiver.keys():
+        if legacy_id in self.self_caregiver:
             app_activity = DailyUserAppActivity(
                 action_by_user=self.self_caregiver[legacy_id].caregiver.user,
                 last_login=last_login,
@@ -283,19 +290,35 @@ class Command(BaseCommand):    # noqa: WPS214
         Args:
             data_received_log: legacy patient data received log
         """
-        next_appointment = None if data_received_log['Next_Appointment'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Next_Appointment'], '%Y-%m-%d %H:%M:%S'),
+        next_appointment = (
+            None
+            if data_received_log['Next_Appointment'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Next_Appointment']),
+            )
         )
-        last_appointment_received = None if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER else timezone.make_aware(    # noqa: E501
-            datetime.strptime(data_received_log['Last_Appointment_Received'], '%Y-%m-%d %H:%M:%S'),
+        last_appointment_received = (
+            None
+            if data_received_log['Last_Appointment_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Appointment_Received']),
+            )
         )
-        last_document_received = None if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER else timezone.make_aware(    # noqa: E501
-            datetime.strptime(data_received_log['Last_Clinical_Notes_Received'], '%Y-%m-%d %H:%M:%S'),
+        last_document_received = (
+            None
+            if data_received_log['Last_Clinical_Notes_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Clinical_Notes_Received']),
+            )
         )
-        last_lab_received = None if data_received_log['Last_Lab_Received'] == NULL_CHARACTER else timezone.make_aware(
-            datetime.strptime(data_received_log['Last_Lab_Received'], '%Y-%m-%d %H:%M:%S'),
+        last_lab_received = (
+            None
+            if data_received_log['Last_Lab_Received'] == NULL_CHARACTER
+            else timezone.make_aware(
+                datetime.fromisoformat(data_received_log['Last_Lab_Received']),
+            )
         )
-        if int(data_received_log['PatientSerNum']) in self.patients.keys():
+        if int(data_received_log['PatientSerNum']) in self.patients:
             migrate_record = DailyPatientDataReceived(
                 patient=self.patients[int(data_received_log['PatientSerNum'])],
                 next_appointment=next_appointment,

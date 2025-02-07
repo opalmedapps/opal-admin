@@ -18,12 +18,13 @@ class ORMSValidator:
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
-        """Check if the ORMS patient response data is valid.
+        """
+        Check if the ORMS patient response data is valid.
 
         Args:
             response_data (Any): ORMS patient response data received from ORMS
 
-        return:
+        Returns:
             return a boolean indicating validity (true if valid, false otherwise) and an errors list
         """
         errors = []

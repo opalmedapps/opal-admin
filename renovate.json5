@@ -36,11 +36,6 @@
       "matchDatasources": ["docker", "docker-compose"],
       "semanticCommitType": "build"
     },
-    // Group flake8-related updates
-    {
-      "matchPackagePatterns": ["flake8"],
-      "groupName": "flake8 packages"
-    },
     // Combine mkdocs-material updates for Python and Docker
     {
       "matchPackagePatterns": ["mkdocs-material"],
@@ -60,6 +55,11 @@
     {
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
+    },
+    // Combine ruff and ruff-pre-commit
+    {
+      "matchPackagePatterns": "ruff-pre-commit|ruff$",
+      "groupName": "ruff",
     },
   ],
 }

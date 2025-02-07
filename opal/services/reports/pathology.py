@@ -27,7 +27,8 @@ from opal.services.reports.base import (
 
 
 class PathologyData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:
         test_number: the report number (e.g., AS-2021-62605)
@@ -56,7 +57,7 @@ FIRST_PAGE_NUMBER: int = 1
 PATHOLOGY_REPORT_FONT: str = 'helvetica'
 
 
-class PathologyPDF(FPDF):  # noqa: WPS214
+class PathologyPDF(FPDF):
     """Customized FPDF class that provides implementation for generating pathology PDF reports."""
 
     def __init__(
@@ -66,7 +67,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         site_data: SiteData,
         pathology_data: PathologyData,
     ) -> None:
-        """Initialize a `PathologyPDF` instance for generating pathology reports.
+        """
+        Initialize a `PathologyPDF` instance for generating pathology reports.
 
         The initialization consists of 3 steps:
             - Initialization of the `FPDF` instance
@@ -99,8 +101,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.add_page()
         self._generate()
 
-    def header(self) -> None:  # noqa: WPS213
-        """Set the pathology PDF's header.
+    def header(self) -> None:
+        """
+        Set the pathology PDF's header.
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
@@ -148,7 +151,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             self.cell(**header_patient_info)
 
     def footer(self) -> None:
-        """Set the pathology PDF's footer.
+        """
+        Set the pathology PDF's footer.
 
         This is automatically called by FPDF.add_page() and FPDF.output().
 
@@ -185,7 +189,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.cell(**footer_page)
 
     def add_page(self, *args: Any, **kwargs: Any) -> None:
-        """Add new page to the pathology report and draw the frame if not the first page.
+        """
+        Add new page to the pathology report and draw the frame if not the first page.
 
         Args:
             args: varied amount of non-keyword arguments
@@ -199,7 +204,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             self.set_y(header_cursor_abscissa_position_in_mm)
 
     def _draw_other_pages_frame(self, height_of_section: int) -> None:
-        """Draw the pathology section frame for the pages except the first page.
+        """
+        Draw the pathology section frame for the pages except the first page.
 
         Args:
             height_of_section: the height of the section to be added
@@ -225,7 +231,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self._draw_report_prepared_by()
 
     def _set_report_metadata(self) -> None:
-        """Set pathology PDF's metadata.
+        """
+        Set pathology PDF's metadata.
 
         The following information is set:
             - Keywords associated with the report
@@ -363,7 +370,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         section_title: str,
         section_content: list[str],
     ) -> None:
-        """Draw pathology table section.
+        """
+        Draw pathology table section.
 
         Args:
             section_title: the title of the section
@@ -422,8 +430,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         )
         report_prepared_by_template.render()
 
-    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:   # noqa: WPS210
-        """Build a table/box that is shown at the top of the first page.
+    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:
+        """
+        Build a table/box that is shown at the top of the first page.
 
         The table contains site's and patient's information.
 
@@ -590,7 +599,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         ]
 
     def _get_report_number_and_date_table(self) -> list[dict[str, Any]]:
-        """Build a report number table that is shown inside the main pathology table.
+        """
+        Build a report number table that is shown inside the main pathology table.
 
         It contains report number, specimen collected, and specimen report fields.
 
@@ -823,7 +833,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         ]
 
     def _get_report_prepared_by_table(self) -> list[dict[str, Any]]:
-        """Build a "prepared by" table template.
+        """
+        Build a "prepared by" table template.
 
         It is shown at the end of the PDF report after the main content.
 
@@ -1096,7 +1107,8 @@ def generate_pdf(
     site_data: SiteData,
     pathology_data: PathologyData,
 ) -> Path:
-    """Create a pathology PDF report.
+    """
+    Create a pathology PDF report.
 
     The generated report is saved in the directory specified in the PATHOLOGY_REPORTS_PATH environment variable.
 
@@ -1110,11 +1122,7 @@ def generate_pdf(
         path to the generated pathology report
     """
     generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
-    report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
-        first_name=patient_data.patient_first_name,
-        last_name=patient_data.patient_last_name,
-        date=generated_at,
-    )
+    report_file_name = f'{patient_data.patient_first_name}_{patient_data.patient_last_name}_{generated_at}_pathology'
     report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
     pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
     pathology_pdf.output(name=str(report_path))

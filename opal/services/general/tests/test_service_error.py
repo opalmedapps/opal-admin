@@ -9,6 +9,7 @@ service_error = ServiceErrorHandler()
 
 # generate_error
 
+
 def test_generate_error() -> None:
     """Ensure error message is in JSON format and has specific fields."""
     error_message = {'message1': 'message1', 'message2': 'message2'}
@@ -27,9 +28,7 @@ def test_generate_error_empty() -> None:
 
 def test_generate_error_none() -> None:
     """Ensure non-dictionary type does not cause an error."""
-    try:
-        error = service_error.generate_error(123)  # type: ignore[arg-type]
-    except Exception:
-        assert error['data'] == 123
+    error = service_error.generate_error(123)  # type: ignore[arg-type]
 
+    assert error['data'] == 123
     assert error['status'] == 'error'

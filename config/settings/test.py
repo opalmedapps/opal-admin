@@ -7,7 +7,8 @@ With these settings, tests run faster.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
-from .base import *
+
+from .base import *  # noqa: F403
 from .base import env
 
 # GENERAL

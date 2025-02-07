@@ -86,11 +86,11 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
                 source_system_id=source_system_id,
                 source_database=source_database,
             )
-        except (models.LegacyAppointment.DoesNotExist, models.LegacyAppointment.MultipleObjectsReturned):
+        except (models.LegacyAppointment.DoesNotExist, models.LegacyAppointment.MultipleObjectsReturned) as error:
             # Ensure only one appointment is found
             raise NotFound(
                 detail='Cannot find a unique appointment matching criteria.',
-            )
+            ) from error
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """

@@ -5,22 +5,19 @@
 """This module provides forms for the `patients` app."""
 import logging
 from datetime import timedelta
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.db.models import QuerySet
 from django.forms.fields import Field
-from django.utils.translation import gettext
+from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import override
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Div
+from crispy_forms.layout import HTML, Column, Div, Hidden, Layout, Row, Submit
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 from requests.exceptions import RequestException
 
@@ -44,6 +41,9 @@ from opal.users.models import Caregiver, Language, User
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,9 +89,9 @@ def get_site_empty_label(form: forms.Form) -> str:
         `Choose` if mrn is selected, `Not Required` otherwise
     """
     if is_mrn_selected(form):
-        return cast(str, _('Choose...'))
+        return cast('str', _('Choose...'))
 
-    return cast(str, _('Not required'))
+    return cast('str', _('Not required'))
 
 
 class DisableFieldsMixin(forms.Form):
@@ -107,13 +107,13 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression)
+        super().__init__(*args, **kwargs)
 
         self.has_existing_data = False
 
     def disable_fields(self) -> None:
         """Disable all form fields."""
-        for _field_name, field in self.fields.items():
+        for field in self.fields.values():
             field.disabled = True
 
         self.has_existing_data = True
@@ -264,7 +264,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
-        """Handle the response from source system service.
+        """
+        Handle the response from source system service.
 
         Args:
             response: source system service response
@@ -363,7 +364,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         return cleaned_data
 
 
-class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
@@ -375,7 +376,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     form_filled = DynamicField(
         forms.BooleanField,
         label=_('The requestor filled out the request form'),
-        required=lambda form: form._form_required(),  # noqa: WPS437
+        required=lambda form: form._form_required(),  # noqa: SLF001
     )
 
     id_checked = forms.BooleanField(label=_('Requestor ID checked'))
@@ -414,7 +415,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(  # noqa: WPS231, WPS210 (too much cognitive complexity, too many local variables)
+    def __init__(
         self,
         patient: Patient | SourceSystemPatientData,
         existing_user: CaregiverProfile | None = None,
@@ -467,7 +468,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
                 Column(
                     # make it appear like a label
-                    HTML(f'<p class=\"fw-semibold\">{validation_text}</p>'),
+                    HTML(f'<p class="fw-semibold">{validation_text}</p>'),
                     'form_filled',
                     'id_checked',
                 ),
@@ -559,9 +560,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             existing_user = self.existing_user
             relationship_type = cleaned_data.get('relationship_type')
 
-            if existing_user:
-                if relationship_type:
-                    self._validate_relationship(patient_instance, existing_user, relationship_type)
+            if existing_user and relationship_type:
+                self._validate_relationship(patient_instance, existing_user, relationship_type)
         elif patient_instance:
             self._validate_existing_relationship(cleaned_data, patient_instance)
 
@@ -761,7 +761,7 @@ class AccessRequestSendSMSForm(forms.Form):
             ),
         )
 
-    def clean(self) -> dict[str, Any] | None:  # noqa: WPS210 (too many local variables)
+    def clean(self) -> dict[str, Any] | None:
         """
         Send the SMS to the phone number if the form fields are valid.
 
@@ -807,7 +807,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     last_name = forms.CharField(
         label=_('Last Name'),
     )
-    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(  # noqa: A003
+    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
@@ -845,7 +845,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Set the layout.
 
@@ -892,7 +892,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
-        self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['start_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
@@ -901,7 +901,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.patient.date_of_birth,
             ),
         })
-        self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['end_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
@@ -943,7 +943,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
 
         caregiver_firstname: str | None = self.cleaned_data.get('first_name')
         caregiver_lastname: str | None = self.cleaned_data.get('last_name')
-        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+        type_field: RelationshipType = cast('RelationshipType', self.cleaned_data.get('type'))
 
         # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
@@ -993,8 +993,8 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type = cast(forms.ChoiceField, self.fields['card_type'])
-        site = cast(forms.ModelChoiceField[Site], self.fields['site'])
+        card_type = cast('forms.ChoiceField', self.fields['card_type'])
+        site = cast('forms.ModelChoiceField[Site]', self.fields['site'])
 
         # add up-validate to `card_type` field to trigger post on change
         card_type.widget.attrs.update({'up-validate': ''})

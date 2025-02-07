@@ -15,6 +15,7 @@ The models in this module are inspired by Apple HealthKit, such as:
     * https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier
     * https://developer.apple.com/documentation/healthkit/hkelectrocardiogram
 """
+
 from decimal import Decimal
 from enum import Enum
 from typing import Any
@@ -37,7 +38,8 @@ class SampleSourceType(models.TextChoices):
 
 
 class AbstractSample(models.Model):
-    """An abstract sample for all measurements of health data.
+    """
+    An abstract sample for all measurements of health data.
 
     This model should be inherited from by all concrete sample models.
 
@@ -74,7 +76,8 @@ class AbstractSample(models.Model):
         ]
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        """Save the current instance.
+        """
+        Save the current instance.
 
         Prevents changing an instance once it was saved the first time.
 
@@ -138,9 +141,9 @@ class QuantitySample(AbstractSample):
         _('Value'),
         max_digits=7,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0'))],
+        validators=[MinValueValidator(Decimal(0))],
     )
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         _('Type'),
         choices=QuantitySampleType.choices,
         max_length=4,
@@ -159,7 +162,8 @@ class QuantitySample(AbstractSample):
     class Meta(AbstractSample.Meta):
         verbose_name = _('Quantity Sample')
         verbose_name_plural = _('Quantity Samples')
-        constraints = AbstractSample.Meta.constraints + [
+        constraints = [
+            *AbstractSample.Meta.constraints,
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=QuantitySampleType.values),

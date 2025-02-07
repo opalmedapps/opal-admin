@@ -30,7 +30,7 @@ class RoleType(models.TextChoices):
     """Choices for role type within the [opal.patients.models.RelationshipType][] model."""
 
     # 'self' is a reserved keyword in Python requiring a noqa here.
-    SELF = 'SELF', _('Self')  # noqa: WPS117
+    SELF = 'SELF', _('Self')
     PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
     GUARDIAN_CAREGIVER = 'GRDNCAREGIVER', _('Guardian-Caregiver')
     MANDATARY = 'MANDATARY', _('Mandatary')
@@ -39,7 +39,7 @@ class RoleType(models.TextChoices):
 
 # defined here instead of constants to avoid circular import
 #: Set of role types for which a relationship type is predefined via a data migration
-PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {  # noqa: WPS407
+PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {
     RoleType.SELF,
     RoleType.PARENT_GUARDIAN,
     RoleType.GUARDIAN_CAREGIVER,
@@ -112,7 +112,8 @@ class RelationshipType(models.Model):
         verbose_name_plural = _('Relationship Types')
 
     def __str__(self) -> str:
-        """Return the string representation of the User Patient Relationship Type.
+        """
+        Return the string representation of the User Patient Relationship Type.
 
         Returns:
             the name of the user patient relationship type
@@ -120,7 +121,8 @@ class RelationshipType(models.Model):
         return self.name
 
     def clean(self) -> None:
-        """Validate the model being saved does not add an extra pre-defined role type.
+        """
+        Validate the model being saved does not add an extra pre-defined role type.
 
         If additional predefined role types are added in the future,
         add them to the predefined RoleType lists here.
@@ -297,7 +299,8 @@ class Patient(AbstractLabDelayModel):
         return f'{self.last_name}, {self.first_name}'
 
     def clean(self) -> None:
-        """Validate date fields.
+        """
+        Validate date fields.
 
         Raises:
             ValidationError: If the date of death is earlier than the date of birth.
@@ -339,7 +342,7 @@ class Patient(AbstractLabDelayModel):
         """
         # Get today's date object if reference date is None
         if reference_date is None:
-            reference_date = date.today()
+            reference_date = timezone.now().date()
         # A bool that represents if reference date's day/month precedes the birth day/month
         one_or_zero = (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
         # Calculate the difference in years from the date object's components
@@ -359,7 +362,7 @@ class RelationshipStatus(models.TextChoices):
     REVOKED = 'REV', _('Revoked')
 
 
-class Relationship(models.Model):  # noqa: WPS214
+class Relationship(models.Model):
     """Relationship for user and patient model."""
 
     patient = models.ForeignKey(
@@ -376,7 +379,7 @@ class Relationship(models.Model):  # noqa: WPS214
         on_delete=models.CASCADE,
     )
 
-    type = models.ForeignKey(  # noqa: A003
+    type = models.ForeignKey(
         to=RelationshipType,
         on_delete=models.CASCADE,
         related_name='relationship',
@@ -436,19 +439,17 @@ class Relationship(models.Model):  # noqa: WPS214
         ]
 
     def __str__(self) -> str:
-        """Return the relationship of the User and Patient.
+        """
+        Return the relationship of the User and Patient.
 
         Returns:
             the relationship of the User and Patient
         """
-        return '{patient} <--> {caregiver} [{type}]'.format(
-            patient=str(self.patient),
-            caregiver=str(self.caregiver),
-            type=str(self.type),
-        )
+        return f'{self.patient} <--> {self.caregiver} [{self.type}]'
 
     def validate_start_date(self) -> list[str]:
-        """Validate the `start_date` field.
+        """
+        Validate the `start_date` field.
 
         The start date has to be greater equals the patient's date of birth.
         The start date has to be earlier than the end date.
@@ -467,7 +468,8 @@ class Relationship(models.Model):  # noqa: WPS214
         return errors
 
     def validate_end_date(self) -> list[str]:
-        """Validate the `end_date` field.
+        """
+        Validate the `end_date` field.
 
         The end date has to be earlier than the date when the patient turns to older age period.
 
@@ -492,7 +494,8 @@ class Relationship(models.Model):  # noqa: WPS214
         return errors
 
     def validate_type(self) -> list[str]:
-        """Validate the `type` field.
+        """
+        Validate the `type` field.
 
         Returns:
             a list of error messages
@@ -527,8 +530,9 @@ class Relationship(models.Model):  # noqa: WPS214
 
         return errors
 
-    def clean(self) -> None:  # noqa: C901, WPS231
-        """Validate additionally across fields.
+    def clean(self) -> None:
+        """
+        Validate additionally across fields.
 
         Raises:
             ValidationError: the error shows when entries do not comply with the validation rules.
@@ -560,18 +564,21 @@ class Relationship(models.Model):  # noqa: WPS214
             if type_errors:
                 errors[NON_FIELD_ERRORS].extend(type_errors)
 
-        if hasattr(self, 'patient') and hasattr(self, 'caregiver'):
-            # exclude the current instance to support updating it
-            if Relationship.objects.exclude(
+        if (
+            hasattr(self, 'patient')
+            and hasattr(self, 'caregiver')
+             # exclude the current instance to support updating it
+            and Relationship.objects.exclude(
                 pk=self.pk,
             ).filter(
                 patient=self.patient,
                 caregiver=self.caregiver,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
-            ).exists():
-                errors[NON_FIELD_ERRORS].append(
-                    gettext('There already exists an active relationship between the patient and caregiver.'),
-                )
+            ).exists()
+        ):
+            errors[NON_FIELD_ERRORS].append(
+                gettext('There already exists an active relationship between the patient and caregiver.'),
+            )
 
         if errors:
             raise ValidationError(errors)
@@ -690,12 +697,10 @@ class HospitalPatient(models.Model):
         unique_together = (('site', 'mrn'), ('patient', 'site'))
 
     def __str__(self) -> str:
-        """Return the textual representation of this instance.
+        """
+        Return the textual representation of this instance.
 
         Returns:
             the textual representation of this instance
         """
-        return '{site_acronym}: {mrn}'.format(
-            site_acronym=str(self.site.acronym),
-            mrn=str(self.mrn),
-        )
+        return f'{self.site.acronym}: {self.mrn}'

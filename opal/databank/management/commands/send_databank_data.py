@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for sending data to the Databank."""
+
 import json
 from collections import defaultdict
-from datetime import datetime
 from http import HTTPStatus
-from typing import Any, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -21,17 +21,21 @@ from opal.databank.models import DatabankConsent, DataModuleType, SharedData
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 CombinedModuleData: TypeAlias = list[dict[str, Any]]
 DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
-class Command(BaseCommand):  # noqa: WPS214
+class Command(BaseCommand):
     """Command to send the data of consenting databank patients to the external databank."""
 
-    help = "send consenting Patients' data to the databank"  # noqa: A003
+    help = "send consenting Patients' data to the databank"
 
     def __init__(self) -> None:
-        """Prepare some class level fields to help with last_synchronized tracking.
+        """
+        Prepare some class level fields to help with last_synchronized tracking.
 
         - called_at is the time when this command was called
         - patient_data_success_tracker will have an entry for each patient
@@ -55,11 +59,11 @@ class Command(BaseCommand):  # noqa: WPS214
             '--request-timeout',
             type=int,
             required=False,
-            default=120,  # noqa: WPS432
+            default=120,
             help='Specify maximum wait time per API call to the databank [seconds]. Default 120.',
         )
 
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle sending patients de-identified data to the databank.
 
@@ -77,7 +81,7 @@ class Command(BaseCommand):  # noqa: WPS214
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
 
-        request_timeout: int = options.get('request_timeout', 120)  # noqa: WPS432
+        request_timeout: int = options.get('request_timeout', 120)
         self.stdout.write(
             f'Sending databank data with {request_timeout} seconds timeout for source system response.',
         )
@@ -120,7 +124,8 @@ class Command(BaseCommand):  # noqa: WPS214
         databank_patient: DatabankConsent,
         module: DataModuleType,
     ) -> DatabankQuerySet | None:
-        """Use model managers to retrieve databank data for a consenting patient.
+        """
+        Use model managers to retrieve databank data for a consenting patient.
 
         Args:
             databank_patient: Patient consenting for this databank module
@@ -167,7 +172,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if databank_data:
             # Return the data for this patient
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
+                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',
             )
         else:
             self.stdout.write(
@@ -182,7 +187,8 @@ class Command(BaseCommand):  # noqa: WPS214
         queryset: DatabankQuerySet,
         nesting_key: str,
     ) -> dict[str, str | CombinedModuleData]:
-        """Pull the GUID to the top element and nest the rest of the qs records into a single dict.
+        """
+        Pull the GUID to the top element and nest the rest of the qs records into a single dict.
 
         Args:
             queryset: Databank queryset with one or many rows
@@ -244,8 +250,9 @@ class Command(BaseCommand):  # noqa: WPS214
         self,
         data: dict[str, CombinedModuleData],
         request_timeout: int,
-    ) -> Any:
-        """Send databank dataset to the source system and handle immediate response from source system.
+    ) -> dict[str, Any] | None:
+        """
+        Send databank dataset to the source system and handle immediate response from source system.
 
         This function should handle status and errors between Django and source system only.
         The `_parse_aggregate_databank_response` function handles the status
@@ -258,7 +265,6 @@ class Command(BaseCommand):  # noqa: WPS214
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
         """
-        response = None
         try:
             response = requests.post(
                 url=f'{settings.SOURCE_SYSTEM_HOST}/databank/post',
@@ -276,20 +282,23 @@ class Command(BaseCommand):  # noqa: WPS214
 
         if response and response.status_code == HTTPStatus.OK:
             # Data sent to source system successfully, parse aggregate response from databank and update models
-            return response.json()
-        else:
-            # Specific error occured between Django, Nginx, and/or source system communications
-            self.stderr.write(
-                f'{response.status_code} source system response error: '
-                + response.content.decode(),
-            )
+            response_data: dict[str, Any] = response.json()
+            return response_data
+
+        # Specific error occured between Django, Nginx, and/or source system communications
+        self.stderr.write(
+            f'{response.status_code} source system response error: ' + response.content.decode(),
+        )
+
+        return None
 
     def _parse_aggregate_databank_response(
         self,
         aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
     ) -> None:
-        """Parse the aggregated response message from the databank and update databank models.
+        """
+        Parse the aggregated response message from the databank and update databank models.
 
         Args:
             aggregate_response: JSON object with a response code & message for each patient data
@@ -308,7 +317,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
             # Initialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
-                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)  # noqa: WPS425
+                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)
 
             # Handle response codes
             if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
@@ -322,17 +331,17 @@ class Command(BaseCommand):  # noqa: WPS214
             else:
                 self.patient_data_success_tracker[patient_guid][data_module] = False
                 self.stderr.write(
-                    f'{status_code} error for patient {patient_guid}: '
-                    + message.strip('[]"'),
+                    f'{status_code} error for patient {patient_guid}: ' + message.strip('[]"'),
                 )
 
-    def _update_databank_patient_shared_data(  # noqa: WPS231
+    def _update_databank_patient_shared_data(
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
         message: str | None = None,
     ) -> None:
-        """Create `SharedData` instances for a given patient.
+        """
+        Create `SharedData` instances for a given patient.
 
         Args:
             databank_patient: Consent instance to be updated
@@ -342,10 +351,12 @@ class Command(BaseCommand):  # noqa: WPS214
         if message:
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Extract data ids depending on module and save to SharedData instances
-        if DataModuleType.DEMOGRAPHICS in synced_data:  # noqa: WPS223
+        if DataModuleType.DEMOGRAPHICS in synced_data:
             sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
-                databank_consent=databank_patient, data_id=sent_patient_id, data_type=DataModuleType.DEMOGRAPHICS,
+                databank_consent=databank_patient,
+                data_id=sent_patient_id,
+                data_type=DataModuleType.DEMOGRAPHICS,
             )
         elif DataModuleType.LABS in synced_data:
             sent_test_result_ids = [
@@ -357,8 +368,7 @@ class Command(BaseCommand):  # noqa: WPS214
             self._create_shared_data_instances(databank_patient, DataModuleType.LABS, sent_test_result_ids)
         elif DataModuleType.DIAGNOSES in synced_data:
             sent_diagnosis_ids = [
-                diagnosis['diagnosis_id']
-                for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
+                diagnosis['diagnosis_id'] for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
             ]
             self._create_shared_data_instances(databank_patient, DataModuleType.DIAGNOSES, sent_diagnosis_ids)
         elif DataModuleType.QUESTIONNAIRES in synced_data:
@@ -367,12 +377,13 @@ class Command(BaseCommand):  # noqa: WPS214
                 for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
             self._create_shared_data_instances(
-                databank_patient, DataModuleType.QUESTIONNAIRES, sent_questionnaire_answer_ids,
+                databank_patient,
+                DataModuleType.QUESTIONNAIRES,
+                sent_questionnaire_answer_ids,
             )
         elif DataModuleType.APPOINTMENTS in synced_data:
             sent_appointment_ids = [
-                appointment['appointment_id']
-                for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
+                appointment['appointment_id'] for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
             ]
             self._create_shared_data_instances(databank_patient, DataModuleType.APPOINTMENTS, sent_appointment_ids)
 

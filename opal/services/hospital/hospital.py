@@ -13,7 +13,8 @@ from .hospital_validation import SourceSystemValidator
 
 
 class SourceSystemService:
-    """Service that provides an interface (a.k.a., Facade) for interaction with the Integration Engine.
+    """
+    Service that provides an interface (a.k.a., Facade) for interaction with the Integration Engine.
 
     All the provided functions contain the following business logic:
         * validate the input data (a.k.a., parameters)
@@ -32,7 +33,8 @@ class SourceSystemService:
         self,
         report_data: SourceSystemReportExportData,
     ) -> Any:
-        """Send base64 encoded PDF report to the source system.
+        """
+        Send base64 encoded PDF report to the source system.
 
         Args:
             report_data (SourceSystemReportExportData): PDF report data needed to call Source System endpoint
@@ -71,8 +73,9 @@ class SourceSystemService:
             },
         )
 
-    def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:  # noqa: WPS210
-        """Search patient info by MRN code.
+    def find_patient_by_mrn(self, mrn: str, site: str) -> dict[str, Any]:
+        """
+        Search patient info by MRN code.
 
         Args:
             mrn: Medical Record Number (MRN) code (e.g., 9999993)
@@ -104,32 +107,29 @@ class SourceSystemService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(SourceSystemMRNData(
+                mrn_data = SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
-                ))
+                )
+                mrns.append(mrn_data)
 
             return {
                 'status': 'success',
                 'data': SourceSystemPatientData(
-                    date_of_birth=datetime.strptime(
+                    date_of_birth=datetime.fromisoformat(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
-                    death_date_time=None if patient_data['deathDateTime'] == ''
-                    else datetime.strptime(
-                        str(patient_data['deathDateTime']),
-                        '%Y-%m-%d %H:%M:%S',
-                    ),
+                    death_date_time=None if not patient_data['deathDateTime']
+                    else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
-                    else datetime.strptime(
+                    ramq_expiration=None if not patient_data['ramqExpiration']
+                    else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',
                     ),
@@ -145,7 +145,8 @@ class SourceSystemService:
         )
 
     def find_patient_by_ramq(self, ramq: str) -> dict[str, Any]:
-        """Search patient info by RAMQ code.
+        """
+        Search patient info by RAMQ code.
 
         Args:
             ramq (str): RAMQ code
@@ -174,32 +175,29 @@ class SourceSystemService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(SourceSystemMRNData(
+                mrn_data = SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
-                ))
+                )
+                mrns.append(mrn_data)
 
             return {
                 'status': 'success',
                 'data': SourceSystemPatientData(
-                    date_of_birth=datetime.strptime(
+                    date_of_birth=datetime.fromisoformat(
                         str(patient_data['dateOfBirth']),
-                        '%Y-%m-%d',
                     ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
                     deceased=patient_data['deceased'],
-                    death_date_time=None if patient_data['deathDateTime'] == ''
-                    else datetime.strptime(
-                        str(patient_data['deathDateTime']),
-                        '%Y-%m-%d %H:%M:%S',
-                    ),
+                    death_date_time=None if not patient_data['deathDateTime']
+                    else datetime.fromisoformat(str(patient_data['deathDateTime'])),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
-                    else datetime.strptime(
+                    ramq_expiration=None if not patient_data['ramqExpiration']
+                    else datetime.strptime(  # noqa: DTZ007
                         str(patient_data['ramqExpiration']),
                         '%Y%m',
                     ),
@@ -215,7 +213,8 @@ class SourceSystemService:
         )
 
     def new_opal_patient(self, active_mrn_list: list[tuple[str, str]]) -> dict[str, Any]:
-        """Notifies the source system of a new Opal patient.
+        """
+        Notifies the source system of a new Opal patient.
 
         Tries calling the source system using each of the patient's MRNs until one succeeds.
 

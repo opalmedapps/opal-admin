@@ -17,16 +17,17 @@ SPLIT_LENGTH = 120
 
 
 class Command(BaseCommand):
-    """Command to update patients' UUIDs in the ORMS.
+    """
+    Command to update patients' UUIDs in the ORMS.
 
     The command goes through all the patients and for each patient calls the ORMS API \
     to inform ORMS about the patient's UUID.
     """
 
-    help = "Update patients' UUIDs in the ORMS"  # noqa: A003
+    help = "Update patients' UUIDs in the ORMS"
     requires_migrations_checks = True
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle the update of the patients' UUIDs in the ORMS.
 
@@ -99,7 +100,8 @@ class Command(BaseCommand):
         self._print_skipped_patients(skipped_patients)
 
     def _print_skipped_patients(self, skipped_patients: list[tuple[Patient, str]]) -> None:
-        """Print the patients' UUIDs that were not updated in the ORMS.
+        """
+        Print the patients' UUIDs that were not updated in the ORMS.
 
         Args:
             skipped_patients: patients that were not updated
@@ -108,10 +110,5 @@ class Command(BaseCommand):
             self.stderr.write('\nThe following patients were not updated:\n')
             for skipped_patient, reason in skipped_patients:
                 self.stderr.write(
-                    'patient_id={patient_id}\tlegacy_id={legacy_id}\t\tpatient_uuid={patient_uuid} ({reason})\n'.format(
-                        patient_id=skipped_patient.id,
-                        legacy_id=skipped_patient.legacy_id,
-                        patient_uuid=str(skipped_patient.uuid),
-                        reason=reason,
-                    ),
+                    f'patient_id={skipped_patient.id}\tlegacy_id={skipped_patient.legacy_id}\t\tpatient_uuid={skipped_patient.uuid} ({reason})\n',
                 )

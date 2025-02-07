@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Sending SMS service, working with Twilio."""
+
 from twilio.base.exceptions import TwilioException
 from twilio.rest import Client
 
@@ -38,7 +39,7 @@ class TwilioService:
         Raises:
             TwilioServiceError: if there is an error sending the SMS
         """
-        try:  # noqa: WPS229 (much easier to deal with one try-except block here)
+        try:
             # can raise a TwilioException if the credentials are empty strings
             # NOTE: if ever this module gets bigger,
             # consider adding a Django check to ensure that the credential is not falsy during startup

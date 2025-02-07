@@ -51,7 +51,8 @@ class FPDFRectDictType(TypedDict):
 
 
 class InstitutionData(NamedTuple):
-    """Information about an institution from which a report was received.
+    """
+    Information about an institution from which a report was received.
 
     Attributes:
         institution_logo_path: file path of the instituion's logo image
@@ -65,7 +66,8 @@ class InstitutionData(NamedTuple):
 
 
 class SiteData(NamedTuple):
-    """Information about a hospital site from which a report was received.
+    """
+    Information about a hospital site from which a report was received.
 
     Attributes:
         site_name: the name of the site (e.g., Royal Victoria Hospital)
@@ -85,7 +87,8 @@ class SiteData(NamedTuple):
 
 
 class PatientData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields for storing patient's personal information.
+    """
+    Typed `NamedTuple` that describes data fields for storing patient's personal information.
 
     Attributes:
         patient_first_name: patient's first name (e.g., Marge)

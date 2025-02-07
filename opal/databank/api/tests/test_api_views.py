@@ -274,7 +274,8 @@ class TestCreateDatabankConsentView:
         assert DatabankConsent.objects.count() == 0
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for a DatabankConsent record.
+        """
+        Generate valid JSON data for a DatabankConsent record.
 
         Returns:
             dict: valid JSON data

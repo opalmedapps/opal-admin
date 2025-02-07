@@ -40,7 +40,7 @@ def test_empty_fetch_registration_summary() -> None:
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
     # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
-    now = timezone.make_aware(dt.datetime(2022, 11, 29, 11, 2, 3))
+    now = dt.datetime(2022, 11, 29, 11, 2, 3, tzinfo=timezone.get_current_timezone())
     mock_timezone = mocker.patch('django.utils.timezone.now', return_value=now)
 
     relationships = _create_relationship_records()
@@ -203,43 +203,43 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
     relationships = _create_relationship_records()
 
     mock_timezone = mocker.patch('django.utils.timezone.now')
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 6, 20))
+    mock_timezone.return_value = dt.datetime(2024, 6, 20, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_code',
         relationship=relationships['marge_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 5, 15))
+    mock_timezone.return_value = dt.datetime(2024, 5, 15, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_homer',
         relationship=relationships['marge_homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 5, 10))
+    mock_timezone.return_value = dt.datetime(2024, 5, 10, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='homer_self',
         relationship=relationships['homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.BLOCKED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 4, 10))
+    mock_timezone.return_value = dt.datetime(2024, 4, 10, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_bart',
         relationship=relationships['marge_bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 4, 5))
+    mock_timezone.return_value = dt.datetime(2024, 4, 5, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='bart_self',
         relationship=relationships['bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 3, 4))
+    mock_timezone.return_value = dt.datetime(2024, 3, 4, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='homer_lisa',
         relationship=relationships['homer_lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 3, 1))
+    mock_timezone.return_value = dt.datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='lisa_self',
         relationship=relationships['lisa_pending_relationship'],
@@ -257,25 +257,25 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'month': timezone.make_aware(dt.datetime(2024, 6, 1)),
+            'month': dt.datetime(2024, 6, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 5, 1)),
+            'month': dt.datetime(2024, 5, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 4, 1)),
+            'month': dt.datetime(2024, 4, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 3, 1)),
+            'month': dt.datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone()),
         },
     ]
 
@@ -285,43 +285,43 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
     relationships = _create_relationship_records()
 
     mock_timezone = mocker.patch('django.utils.timezone.now')
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2024, 6, 20))
+    mock_timezone.return_value = dt.datetime(2024, 6, 20, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_code',
         relationship=relationships['marge_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2023, 5, 15))
+    mock_timezone.return_value = dt.datetime(2023, 5, 15, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_homer',
         relationship=relationships['marge_homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2023, 4, 10))
+    mock_timezone.return_value = dt.datetime(2023, 4, 10, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='homer_self',
         relationship=relationships['homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.BLOCKED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2022, 4, 10))
+    mock_timezone.return_value = dt.datetime(2022, 4, 10, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='marge_bart',
         relationship=relationships['marge_bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2022, 3, 5))
+    mock_timezone.return_value = dt.datetime(2022, 3, 5, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='bart_self',
         relationship=relationships['bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2021, 2, 4))
+    mock_timezone.return_value = dt.datetime(2021, 2, 4, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='homer_lisa',
         relationship=relationships['homer_lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    mock_timezone.return_value = timezone.make_aware(dt.datetime(2021, 1, 1))
+    mock_timezone.return_value = dt.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone())
     caregiver_factories.RegistrationCode(
         code='lisa_self',
         relationship=relationships['lisa_pending_relationship'],
@@ -339,25 +339,25 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'year': timezone.make_aware(dt.datetime(2024, 1, 1)),
+            'year': dt.datetime(2024, 1, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2023, 1, 1)),
+            'year': dt.datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2022, 1, 1)),
+            'year': dt.datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2021, 1, 1)),
+            'year': dt.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
         },
     ]
 
@@ -536,28 +536,28 @@ def test_patients_received_data_no_appointment_labs_note() -> None:
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the no_appointments_labs_notes count
@@ -610,26 +610,26 @@ def test_patients_received_data_has_appointments_only() -> None:
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['homer_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['lisa_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the has_appointments_only count
@@ -678,26 +678,26 @@ def test_patients_received_data_has_labs_only() -> None:
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the has_labs_only count
@@ -746,26 +746,26 @@ def test_patients_received_data_has_clinical_notes_only() -> None:
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the has_clinical_notes_only count
@@ -814,23 +814,23 @@ def test_patients_received_data_using_app_after_receiving_new_data() -> None:
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
     stats_factories.DailyPatientDataReceived(
         patient=relationships['lisa_relationship'].patient,
-        action_date=dt.date.today(),
+        action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the using_app_after_receiving_new_data count
@@ -883,7 +883,7 @@ def test_fetch_logins_summary_by_date() -> None:
     marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
     homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
     bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=3,
@@ -1094,7 +1094,7 @@ def test_users_clicks_summary_by_date() -> None:
     marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
     homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
     bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=3,
@@ -1365,7 +1365,7 @@ def test_users_clicks_summary_by_year() -> None:
 def test_user_patient_clicks_summary_by_date() -> None:
     """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by date."""
     relationships = _create_relationship_records()
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyUserPatientActivity(
         user_relationship_to_patient=relationships['homer_relationship'],
@@ -1756,7 +1756,7 @@ def test_empty_received_labs_summary() -> None:
 
 def test_received_labs_summary_by_day() -> None:
     """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by day."""
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
@@ -1949,7 +1949,7 @@ def test_empty_received_appointments_summary() -> None:
 
 def test_fetch_received_appointments_summary_by_day() -> None:
     """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by day."""
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
@@ -2142,7 +2142,7 @@ def test_empty_received_educational_materials_summary() -> None:
 
 def test_fetch_received_educational_materials_summary_by_day() -> None:
     """Ensure received_edu_materials_summary() successfully aggregates received edu materials summary grouped by day."""
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
@@ -2335,7 +2335,7 @@ def test_empty_received_documents_summary() -> None:
 
 def test_fetch_received_documents_summary_by_day() -> None:
     """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by day."""
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
@@ -2528,7 +2528,7 @@ def test_empty_received_questionnaires_summary() -> None:
 
 def test_fetch_received_questionnaires_summary_by_day() -> None:
     """Ensure received_questionnaires_summary successfully aggregates received questionnaires summary grouped by day."""
-    current_date = dt.datetime.now().date()
+    current_date = timezone.now().date()
 
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
@@ -2728,19 +2728,19 @@ def test_fetch_users_latest_login_year_summary_success() -> None:
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2023, 8, 20),
+        action_date=dt.datetime(2023, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
@@ -2753,7 +2753,8 @@ def test_fetch_users_latest_login_year_summary_success() -> None:
 
 
 def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
-    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
+    """
+    Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
 
     The test user are same and has records in different years.
     """
@@ -2762,19 +2763,19 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2022, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
-        action_date=dt.datetime(2022, 8, 20),
+        action_date=dt.datetime(2022, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2023, 8, 20),
+        action_date=dt.datetime(2023, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
@@ -2786,7 +2787,8 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
 
 
 def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None:
-    """Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
+    """
+    Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
 
     The test users are different and have records in the same year.
     """
@@ -2797,19 +2799,19 @@ def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
@@ -2886,19 +2888,19 @@ def test_fetch_logins_summary_per_user_success() -> None:
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     average_login_report = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
     assert average_login_report == [
@@ -2924,7 +2926,8 @@ def test_fetch_logins_summary_per_user_success() -> None:
 
 
 def test_fetch_logins_summary_per_user_multiple_logins() -> None:
-    """Ensure fetch_logins_summary_per_user successfully fetches login statistics.
+    """
+    Ensure fetch_logins_summary_per_user successfully fetches login statistics.
 
     The test user has multiple logins in different days.
     """
@@ -2933,19 +2936,19 @@ def test_fetch_logins_summary_per_user_multiple_logins() -> None:
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=2,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
-        action_date=dt.datetime(2024, 8, 20),
+        action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
     average_login_summary = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
     assert average_login_summary == [
@@ -3000,7 +3003,8 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
 
 
 def _create_relationship_records() -> dict[str, Any]:
-    """Create relationships for 4 patients.
+    """
+    Create relationships for 4 patients.
 
     The records are created for Marge, Homer, Bart, and Lisa.
 

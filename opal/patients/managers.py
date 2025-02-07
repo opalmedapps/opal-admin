@@ -88,7 +88,8 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
     """Manager class for the `RelationshipType` model."""
 
     def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
-        """Return a new QuerySet filtered by the patient age between start_age and end_age.
+        """
+        Return a new QuerySet filtered by the patient age between start_age and end_age.
 
         Args:
             patient_age: patient's ages.

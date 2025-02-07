@@ -8,7 +8,8 @@ from typing import NamedTuple
 
 
 class SourceSystemReportExportData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the Source System.
+    """
+    Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs for the site
@@ -26,7 +27,8 @@ class SourceSystemReportExportData(NamedTuple):
 
 
 class SourceSystemMRNData(NamedTuple):
-    """Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the Source System.
+    """
+    Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs associated with a particular site
@@ -40,7 +42,8 @@ class SourceSystemMRNData(NamedTuple):
 
 
 class SourceSystemPatientData(NamedTuple):
-    """Typed `NamedTuple` that describes Patient fields (a.k.a., Patient data structure) returned from the SourceSystem.
+    """
+    Typed `NamedTuple` that describes Patient fields (a.k.a., Patient data structure) returned from the SourceSystem.
 
     Attributes:
         date_of_birth: the date of birth

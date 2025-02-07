@@ -10,7 +10,8 @@ from ..general.service_communication import ServiceHTTPCommunicationManager
 
 
 class SourceSystemHTTPCommunicationManager(ServiceHTTPCommunicationManager):
-    """Manager that provides functionality for communication with Opal Integration Engine.
+    """
+    Manager that provides functionality for communication with Opal Integration Engine.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 

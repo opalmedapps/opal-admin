@@ -9,14 +9,16 @@ from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any
 
+from django.utils import timezone
+
 import pytest
 import requests
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
-from pytest_django.fixtures import SettingsWrapper
+from _pytest.logging import LogCaptureFixture
 from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_communication import SOURCE_SYSTEM_TIMEOUT
 from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital import (
     SourceSystemMRNData,
@@ -61,16 +63,18 @@ source_system_service = SourceSystemService()
 
 
 def _create_report_export_response_data() -> dict[str, str]:
-    """Create mock `dict` response on the `report export` HTTP POST request.
+    """
+    Create mock `dict` response on the `report export` HTTP POST request.
 
     Returns:
-        dict[str, str]: mock data response
+        mock data response
     """
     return {'status': 'success'}
 
 
 def _create_source_system_service_mock_settings() -> SourceSystemService:
-    """Create a mock SourceSystemService with specific parameters different from the default ones in settings.
+    """
+    Create a mock SourceSystemService with specific parameters different from the default ones in settings.
 
     Returns:
         A mock SourceSystemService
@@ -116,7 +120,7 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -146,7 +150,7 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -172,7 +176,7 @@ def test_export_pdf_report_response_invalid(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -201,7 +205,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -210,7 +214,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
     assert report_data['data']['message'] == 'Expecting value: line 1 column 1 (char 0)'
 
 
-def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
+def test_export_pdf_report_uses_settings(mocker: MockerFixture) -> None:
     """Ensure source system export report request uses report settings."""
     # Create a new source system service that uses the mocked settings
     source_system_service_mock = _create_source_system_service_mock_settings()
@@ -225,7 +229,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -236,7 +240,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         'site': SITE_CODE,
         'reportContent': BASE64_ENCODED_REPORT,
         'docType': DOCUMENT_NUMBER,
-        'documentDate': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'documentDate': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
     })
     # assert that the mock was called exactly once and that the call was with exactly the same
     # parameters as in the `export_pdf_report` post request.
@@ -246,7 +250,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         auth=requests.auth.HTTPBasicAuth(SOURCE_SYSTEM_CREDENTIALS_USER, SOURCE_SYSTEM_CREDENTIALS),
         headers=None,
         json=payload,
-        timeout=15,
+        timeout=SOURCE_SYSTEM_TIMEOUT,
     )
 
 
@@ -263,7 +267,7 @@ def test_export_pdf_report_invalid_mrn(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -286,7 +290,7 @@ def test_export_pdf_report_invalid_site(mocker: MockerFixture) -> None:
             site='',
             base64_content=BASE64_ENCODED_REPORT,
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -308,7 +312,7 @@ def test_export_pdf_report_invalid_base64(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content='',
             document_number=DOCUMENT_NUMBER,
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -330,7 +334,7 @@ def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
             site=SITE_CODE,
             base64_content=BASE64_ENCODED_REPORT,
             document_number='invalid document type',
-            document_date=datetime.now(),
+            document_date=timezone.now(),
         ),
     )
 
@@ -353,21 +357,19 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
         sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
         alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
         deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
-        death_date_time=datetime.strptime(
+        death_date_time=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
-            '%Y-%m-%d %H:%M:%S',
         ),
         ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
-        ramq_expiration=datetime.strptime(
+        ramq_expiration=datetime.strptime(  # noqa: DTZ007
             str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
@@ -397,9 +399,8 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
@@ -472,9 +473,8 @@ def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFi
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):  # noqa: PT012
-        with caplog.at_level(logging.ERROR):
-            post_mock()
+    with pytest.raises(RequestException), caplog.at_level(logging.ERROR):
+        post_mock()
 
     response = source_system_service.find_patient_by_mrn(MRN, SITE_CODE)
 
@@ -492,7 +492,7 @@ def test_find_patient_by_mrn_failure(caplog: LogCaptureFixture, mocker: MockerFi
     }
 
     # assert exception and system error message
-    assert caplog.records[0].message == 'Source System error: Caused by ConnectTimeoutError.'
+    assert caplog.records[0].message == 'Source System request error'
     assert caplog.records[0].levelname == 'ERROR'
 
 
@@ -524,21 +524,19 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
         sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
         alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
         deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
-        death_date_time=datetime.strptime(
+        death_date_time=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
-            '%Y-%m-%d %H:%M:%S',
         ),
         ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
-        ramq_expiration=datetime.strptime(
+        ramq_expiration=datetime.strptime(  # noqa: DTZ007
             str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
@@ -568,9 +566,8 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
     assert response['status'] == 'success'
     assert response['data'] == SourceSystemPatientData(
-        date_of_birth=datetime.strptime(
+        date_of_birth=datetime.fromisoformat(
             str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
-            '%Y-%m-%d',
         ).date(),
         first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
         last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
@@ -595,9 +592,8 @@ def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerF
     # mock the post request and pretend it raises `RequestException`
     post_mock = mocker.patch('requests.post', side_effect=RequestException('Caused by ConnectTimeoutError.'))
 
-    with pytest.raises(RequestException):  # noqa: PT012
-        with caplog.at_level(logging.ERROR):
-            post_mock()
+    with pytest.raises(RequestException), caplog.at_level(logging.ERROR):
+        post_mock()
 
     response = source_system_service.find_patient_by_ramq(RAMQ_VALID)
 
@@ -615,7 +611,7 @@ def test_find_patient_by_ramq_failure(caplog: LogCaptureFixture, mocker: MockerF
     }
 
     # assert exception and system error message
-    assert caplog.records[0].message == 'Source System error: Caused by ConnectTimeoutError.'
+    assert caplog.records[0].message == 'Source System request error'
     assert caplog.records[0].levelname == 'ERROR'
 
 

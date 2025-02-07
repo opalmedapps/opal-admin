@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing models for any type of test result."""
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.query import QuerySet
@@ -72,18 +73,17 @@ class PathologyObservation(AbstractObservation):
         verbose_name_plural = _('Pathology Observations')
 
     def __str__(self) -> str:
-        """Pathology observation string representation.
+        """
+        Pathology observation string representation.
 
         Returns:
             string representation of the `PathologyObservation` instance
         """
-        return '{code}: {observed}'.format(
-            code=str(self.identifier_code),
-            observed=str(self.observed_at),
-        )
+        return f'{self.identifier_code}: {self.observed_at}'
 
     def clean(self) -> None:
-        """Check the validation for PathologyObservation.
+        """
+        Check the validation for PathologyObservation.
 
         Raises:
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
@@ -132,20 +132,17 @@ class LabObservation(AbstractObservation):
         verbose_name_plural = _('Lab Observations')
 
     def __str__(self) -> str:
-        """Lab observation string representation.
+        """
+        Lab observation string representation.
 
         Returns:
             string repr
         """
-        return '{code}: {value} {units} [{flag}]'.format(
-            code=str(self.identifier_code),
-            value=str(self.value),
-            units=str(self.value_units),
-            flag=str(self.value_abnormal),
-        )
+        return f'{self.identifier_code}: {self.value} {self.value_units} [{self.value_abnormal}]'
 
     def clean(self) -> None:
-        """Check the validation for LabObservation.
+        """
+        Check the validation for LabObservation.
 
         Raises:
             ValidationError: if attempting to save mismatching Observation & GeneralTest types
@@ -181,15 +178,13 @@ class Note(models.Model):
         verbose_name_plural = _('Notes')
 
     def __str__(self) -> str:
-        """Return the note text attached to the parent GeneralTest representation.
+        """
+        Return the note text attached to the parent GeneralTest representation.
 
         Returns:
             string repr
         """
-        return '{generaltest} | {note}'.format(
-            generaltest=str(self.general_test),
-            note=str(self.note_text),
-        )
+        return f'{self.general_test} | {self.note_text}'
 
 
 class GeneralTest(models.Model):
@@ -201,7 +196,7 @@ class GeneralTest(models.Model):
         on_delete=models.CASCADE,
         related_name='general_tests',
     )
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         verbose_name=_('Type'),
         max_length=1,
         choices=TestType.choices,
@@ -273,20 +268,18 @@ class GeneralTest(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return the string representation of the patient, type, and specimen collection date.
+        """
+        Return the string representation of the patient, type, and specimen collection date.
 
         Returns:
             specimen's type and collection date associated with a patient
         """
-        return '{patient} {type} Test instance [{date}]'.format(
-            patient=str(self.patient),
-            type=str(self.get_type_display()),
-            date=str(self.collected_at),
-        )
+        return f'{self.patient} {self.get_type_display()} Test instance [{self.collected_at}]'
 
     @property
     def observations(self) -> QuerySet[PathologyObservation] | QuerySet[LabObservation]:
-        """Return the correct Observation queryset depending on the type.
+        """
+        Return the correct Observation queryset depending on the type.
 
         Returns:
             Associated Observation model instances

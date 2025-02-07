@@ -3,24 +3,27 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides views for questionnaire settings."""
+
 import logging
-from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO, StringIO
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpRequest, HttpResponse
+from django.utils import timezone
 from django.views.generic.base import TemplateView
 
 import pandas as pd
 
 from ..core.audit import update_request_event_query_string
-from ..users.models import User
 from .models import QuestionnaireProfile
 from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .tables import ReportTable
+
+if TYPE_CHECKING:
+    from ..users.models import User
 
 # All queries assume the integer representation of opal languages
 LANGUAGE_MAP = MappingProxyType({'fr': 1, 'en': 2})
@@ -37,11 +40,12 @@ class IndexTemplateView(TemplateView):
 class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing a user's saved questionnaires dashboard."""
 
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Override class method and append user's followed questionnaires.
+        """
+        Override class method and append user's followed questionnaires.
 
         Args:
             kwargs: any number of key word arguments.
@@ -65,11 +69,12 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
 class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the list of available questionnaires."""
 
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     template_name = 'questionnaires/export_reports/reports-list.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Override class method and append questionnaire list to context.
+        """
+        Override class method and append questionnaire list to context.
 
         Args:
             kwargs: any number of key word arguments.
@@ -89,12 +94,13 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for selecting query parameters."""
 
     template_name = 'questionnaires/export_reports/reports-filter.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Override class method and fetch query parameters for the requested questionnaire.
+        """
+        Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
             request: post request data.
@@ -105,11 +111,11 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
-        if 'questionnaireid' in request.POST.keys():
+        if 'questionnaireid' in request.POST:
             try:
                 qid = int(request.POST['questionnaireid'])
             except ValueError:
-                self.logger.error('Invalid request format for questionnaireid')
+                self.logger.exception('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
             context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 
@@ -136,12 +142,13 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for viewing the selected report."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
-        """Override class method and fetch report for the requested questionnaire.
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """
+        Override class method and fetch report for the requested questionnaire.
 
         Args:
             request: post request data.
@@ -162,7 +169,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         # Update questionnaire following list if user selected option
-        toggle = 'following' in request.POST.keys()
+        toggle = 'following' in request.POST
 
         QuestionnaireProfile.update_questionnaires_following(
             request.POST['questionnaireid'],
@@ -205,12 +212,13 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     """This view returns the same page after downloading the csv to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Grab existing backend report and convert to csv.
+        """
+        Grab existing backend report and convert to csv.
 
         This code first generates the desired csv by writing it to media folder within
         the questionnaires app.
@@ -224,14 +232,14 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
 
         """
         qid = request.POST.get('questionnaireid')
-        datesuffix = datetime.now().strftime('%Y-%m-%d')
+        datesuffix = timezone.now().date().isoformat()
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        df = pd.DataFrame.from_records(
+        df_report = pd.DataFrame.from_records(
             get_temp_table(),
         )
 
         buffer = StringIO()
-        df.to_csv(buffer, index=False, header=True)
+        df_report.to_csv(buffer, index=False, header=True)
         return HttpResponse(
             buffer.getvalue(),
             content_type='text/csv',
@@ -244,12 +252,13 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     """This view returns the same page after downloading the xlsx to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    permission_required = ('questionnaires.export_report')
+    permission_required = 'questionnaires.export_report'
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
-        """Grab existing backend report and convert to xlsx.
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """
+        Grab existing backend report and convert to xlsx.
 
         This code first generates the desired xlsx by writing it to media folder within
         the questionnaires app.
@@ -264,25 +273,25 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         """
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
-        datesuffix = datetime.now().strftime('%Y-%m-%d')
-        filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
+        date_suffix = timezone.now().date().isoformat()
+        filename = f'questionnaire-{qid}-{date_suffix}.xlsx'
         report_dict = get_temp_table()
-        df = pd.DataFrame.from_records(report_dict)
+        df_report = pd.DataFrame.from_records(report_dict)
         buffer = BytesIO()
 
-        if tabs == 'none' or df.empty:
+        if tabs == 'none' or df_report.empty:
             # If df is empty return an empty download to avoid a potential key error
-            df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
+            df_report.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
         else:
             # sort by patient or question id
             column_name = 'patient_id' if tabs == 'patients' else 'question_id'
             sheet_prefix = 'patient' if tabs == 'patients' else 'question_id'
             sort_rows_column = 'question_id' if tabs == 'patients' else 'patient_id'
-            ids = df[column_name].unique()
+            ids = df_report[column_name].unique()
             ids.sort()
             with pd.ExcelWriter(buffer) as writer:
                 for current_id in ids:
-                    patient_rows = df.loc[df[column_name] == current_id]
+                    patient_rows = df_report.loc[df_report[column_name] == current_id]
                     patient_rows = patient_rows.sort_values(
                         by=['last_updated', sort_rows_column],
                         ascending=[True, True],

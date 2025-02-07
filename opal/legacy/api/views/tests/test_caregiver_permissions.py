@@ -112,4 +112,4 @@ class TestCaregiverPermissionsView:
         response = self.make_request(api_client, relationship.patient.legacy_id)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == {}  # noqa: WPS520
+        assert response.data == {}

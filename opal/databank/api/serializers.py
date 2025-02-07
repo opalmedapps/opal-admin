@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Serializers for the API views of the `databank` app."""
+
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer

@@ -10,7 +10,8 @@ from easyaudit.models import RequestEvent
 
 
 def update_request_event_query_string(request: HttpRequest, parameters: list[str]) -> None:
-    """Get the request event attached to this request path and update query string with POST arguments.
+    """
+    Get the request event attached to this request path and update query string with POST arguments.
 
     Args:
         request: The POST request data

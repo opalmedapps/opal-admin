@@ -2,11 +2,11 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from datetime import date
 from http import HTTPStatus
 
 from django.test import Client
 from django.urls.base import reverse
+from django.utils import timezone
 
 import pytest
 from bs4 import BeautifulSoup
@@ -309,7 +309,7 @@ def test_detail_template_download_csv(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.OK
     headers = response.headers
     assert headers.get('Content-Type') == 'text/csv'
-    filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.csv'
+    filename = f'attachment; filename = questionnaire-11-{timezone.now().date().isoformat()}.csv'
     assert headers.get('Content-Disposition') == filename
     assert int(headers.get('Content-Length', 0)) > 0
 
@@ -355,7 +355,7 @@ def test_detail_template_download_xlsx(admin_client: Client, questionnaire_data:
         assert resp.status_code == HTTPStatus.OK
     for header in (response_one.headers, response_two.headers, response_three.headers):
         assert header.get('Content-Type') == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'
+        filename = f'attachment; filename = questionnaire-11-{timezone.now().date().isoformat()}.xlsx'
         assert header.get('Content-Disposition') == filename
         assert int(header.get('Content-Length', 0)) > 0
 

@@ -19,6 +19,7 @@ Examples:
         1. Import the include() function: from django.urls import include, path
         2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -36,20 +37,17 @@ from opal.core.views import LoginView
 urlpatterns = [
     # REST API
     path('api/', include('opal.core.api_urls', namespace='api')),
-
     # DRF SPECTACULAR API URLS
     # JSON-based schema for external system requests
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Swagger web-based API UI
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-
     # apps
     path('health-data/', include('opal.health_data.urls')),
     path('hospital-settings/', include('opal.hospital_settings.urls')),
     path('patients/', include('opal.patients.urls')),
     path('questionnaires/', include('opal.questionnaires.urls')),
     path('usage-statistics/', include('opal.usage_statistics.urls')),
-
     # global config
     path(settings.ADMIN_URL, admin.site.urls),
     # define simple login view reusing the admin template
@@ -64,7 +62,8 @@ urlpatterns = [
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
         name='favicon.ico',
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+]
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')

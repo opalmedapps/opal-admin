@@ -17,7 +17,8 @@ class SuperUserPermissionsFormViewMixin(UserPassesTestMixin, generic.FormView[Fo
     """`FormView` mixin that ensures the request is coming from a user with a `superuser` permissions."""
 
     def test_func(self) -> bool:
-        """Check if the request is coming from `superuser`.
+        """
+        Check if the request is coming from `superuser`.
 
         The request is rejected for non-superusers.
 

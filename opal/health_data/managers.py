@@ -15,7 +15,7 @@ from typing_extensions import TypedDict
 from . import models as quantity_sample_models
 
 if TYPE_CHECKING:
-    from opal.health_data.models import QuantitySample  # noqa: F401
+    from opal.health_data.models import QuantitySample
     from opal.patients.models import Patient
 
 

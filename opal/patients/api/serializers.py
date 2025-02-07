@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides Django REST framework serializers related to the `patients` app's models."""
+
 from typing import Any
 
 from django.db import transaction
@@ -82,7 +83,8 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
         extra_kwargs = {'is_active': {'required': True, 'default': empty}}
 
     def validate_site_code(self, value: str) -> str:
-        """Check that `site_code` exists in the database (e.g., RVH).
+        """
+        Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
             value: site acronym to be validated
@@ -94,9 +96,7 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
             ValidationError: if provided site acronym does not exist in the database
         """
         if not Site.objects.filter(acronym=value).exists():
-            raise serializers.ValidationError(
-                f'Provided "{value}" site acronym does not exist.',
-            )
+            raise serializers.ValidationError(f'Provided "{value}" site acronym does not exist.')
         return value
 
 
@@ -197,7 +197,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
         instance: Patient,
         validated_data: dict[str, Any],
     ) -> Patient:
-        """Update `Patient` instance during patient demographic update call.
+        """
+        Update `Patient` instance during patient demographic update call.
 
         It updates `User` fields as well.
 

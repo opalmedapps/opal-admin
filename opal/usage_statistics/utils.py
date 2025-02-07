@@ -25,7 +25,8 @@ class RelationshipMapping(UserDict[str, Any]):
         self,
         relationships: models.QuerySet[Relationship, dict[str, Any]],
     ) -> None:
-        """Build relationships dictionary for populating patients' application activities.
+        """
+        Build relationships dictionary for populating patients' application activities.
 
         The mapping contains the legacy patient IDs that map to a dictionary with patient ID and usernames.
         The username keys map to a dictionary with the relationship and user IDs.
@@ -57,7 +58,8 @@ def annotate_patient_activities(
     activities: models.QuerySet[legacy_models.LegacyPatientActivityLog, dict[str, Any]],
     relationships_dict: RelationshipMapping,
 ) -> list[DailyUserPatientActivity]:
-    """Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
+    """
+    Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
 
     For each record add `user_relationship_to_patient_id`, `action_by_user_id`, `patient_id` fields.
 
@@ -85,7 +87,8 @@ def get_aggregated_patient_received_data(
     start_datetime_period: dt.datetime,
     end_datetime_period: dt.datetime,
 ) -> models.QuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]:
-    """Retrieve aggregated patients' received data statistics for a given time period.
+    """
+    Retrieve aggregated patients' received data statistics for a given time period.
 
     The statistics are fetched from the legacy `OpalDB` tables.
 
@@ -118,9 +121,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyAppointment.objects.filter(
                 patientsernum=patient_out_ref,
                 scheduledstarttime__lt=end_datetime_period,
-            ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
+            )
+            .order_by('-scheduledstarttime')
+            .values('scheduledstarttime')[:1],
         ),
-
         'next_appointment': models.Subquery(
             # Retrieve the closest open/active appointment for every patient relatively to the requesting
             # date range, regardless of how far it might be.
@@ -130,9 +134,10 @@ def get_aggregated_patient_received_data(
                 state='Active',
                 status='Open',
                 scheduledstarttime__gt=end_datetime_period,
-            ).order_by('scheduledstarttime').values('scheduledstarttime')[:1],
+            )
+            .order_by('scheduledstarttime')
+            .values('scheduledstarttime')[:1],
         ),
-
         'appointments_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -140,24 +145,27 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyAppointment.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('appointmentsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Documents
         'last_document_received': models.Subquery(
             # Retrieve the latest received document for every patient, regardless of how old it might be.
             legacy_models.LegacyDocument.objects.filter(
                 patientsernum=patient_out_ref,
                 dateadded__lt=end_datetime_period,
-            ).order_by('-dateadded').values('dateadded')[:1],
+            )
+            .order_by('-dateadded')
+            .values('dateadded')[:1],
         ),
-
         'documents_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -165,15 +173,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyDocument.objects.filter(
                     patientsernum=patient_out_ref,
                     dateadded__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('documentsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Educational Materials
         'last_educational_material_received': models.Subquery(
             # Retrieve the latest received educational material for every patient,
@@ -181,9 +191,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyEducationalMaterial.objects.filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'educational_materials_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -191,24 +202,27 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyEducationalMaterial.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('educationalmaterialsernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # Subqueries for Questionnaires
         'last_questionnaire_received': models.Subquery(
             # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
             legacy_models.LegacyQuestionnaire.objects.filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'questionnaires_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -216,15 +230,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyQuestionnaire.objects.filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patientsernum',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('questionnairesernum'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # TODO: QSCCD-2209 - add a lab_groups_received count that shows how many "complete lab groups" were received.
         # Subqueries for Labs
         'last_lab_received': models.Subquery(
@@ -232,9 +248,10 @@ def get_aggregated_patient_received_data(
             legacy_models.LegacyPatientTestResult.objects.filter(
                 patient_ser_num=patient_out_ref,
                 date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
+            )
+            .order_by('-date_added')
+            .values('date_added')[:1],
         ),
-
         'labs_received': models.functions.Coalesce(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
@@ -242,15 +259,17 @@ def get_aggregated_patient_received_data(
                 legacy_models.LegacyPatientTestResult.objects.filter(
                     patient_ser_num=patient_out_ref,
                     date_added__range=date_added_range,
-                ).values(
+                )
+                .values(
                     'patient_ser_num',
-                ).annotate(
+                )
+                .annotate(
                     count=models.Count('patient_test_result_ser_num'),
-                ).values('count'),
+                )
+                .values('count'),
             ),
             zero_count,
         ),
-
         # NOTE! The action_date indicates the date when the patients' data were received.
         # It is not the date when the activity statistics were populated.
         'action_date': models.Value(start_datetime_period.date()),
@@ -264,11 +283,12 @@ def get_aggregated_patient_received_data(
     )
 
 
-def export_data(    # noqa: WPS234
+def export_data(
     data_set: list[dict[str, Any]] | dict[str, Any],
     file_path: Path,
 ) -> None:
-    """Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
+    """
+    Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
 
     The function currently only support for csv and xlsx format, a value error will be raised for other cases.
 
@@ -302,7 +322,8 @@ def export_data(    # noqa: WPS234
 
 
 def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:
-    """Clean the time zone info of the input datetime data if it exists.
+    """
+    Clean the time zone info of the input datetime data if it exists.
 
     Args:
         datetime: the datetime data

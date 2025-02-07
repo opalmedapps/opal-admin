@@ -246,7 +246,8 @@ def test_hl7_create_view_patient_not_found_by_pid_data(
 
 
 def _load_hl7_fixture(filename: str) -> str:
-    """Load a HL7 fixture for testing.
+    """
+    Load a HL7 fixture for testing.
 
     Returns:
         string of the fixture data

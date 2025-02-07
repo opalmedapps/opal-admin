@@ -32,7 +32,7 @@ def rsubstring(text: str, separator: str) -> str:
     """
     first, _separator, last = text.rpartition(separator)
 
-    return first if first else last
+    return first or last
 
 
 @register.filter('startswith')

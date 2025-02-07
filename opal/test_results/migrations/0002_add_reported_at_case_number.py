@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.db import migrations, models
 import django.utils.timezone
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

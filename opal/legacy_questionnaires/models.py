@@ -37,7 +37,8 @@ class LegacyDefinitionTable(models.Model):
 
 
 class LegacyDictionary(models.Model):
-    """Dictionary model from the legacy database QuestionnaireDB.
+    """
+    Dictionary model from the legacy database QuestionnaireDB.
 
     Note that contentId is NOT actually a unique field in QuestionnaireDB.
     Django forces us to add this constraint because contentId is referenced by many tables
@@ -57,7 +58,7 @@ class LegacyDictionary(models.Model):
     content_id = models.IntegerField(db_column='contentId', db_index=True)
     content = models.TextField(db_column='content')
     deleted = models.SmallIntegerField(db_column='deleted', default=0, db_index=True)
-    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True, null=True)  # noqa: DJ01
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True, null=True)  # noqa: DJ001
     creation_date = models.DateTimeField(db_column='creationDate')
     created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
@@ -69,7 +70,8 @@ class LegacyDictionary(models.Model):
 
 
 class LegacyPurpose(models.Model):
-    """Purpose model from the legacy database QuestionnaireDB.
+    """
+    Purpose model from the legacy database QuestionnaireDB.
 
     Dictionary is the 'endpoint' for defining queries in QuestionnaireDB as
     it just provides text for the integer identifiers in other tables.
@@ -123,7 +125,8 @@ class LegacyRespondent(models.Model):
 
 
 class LegacyQuestionnaire(models.Model):
-    """Questionnaire model from the legacy database QuestionnaireDB.
+    """
+    Questionnaire model from the legacy database QuestionnaireDB.
 
     This table records import metadata and identifiers for questionnaires.
     """
@@ -184,7 +187,8 @@ class LegacyQuestionnaire(models.Model):
 
 
 class LegacyQuestionnairePatient(models.Model):
-    """Patient model from the legacy database QuestionnaireDB.
+    """
+    Patient model from the legacy database QuestionnaireDB.
 
     The patients in this table relate to OpalDB.Patient instances through the externalId.
     """
@@ -205,7 +209,8 @@ class LegacyQuestionnairePatient(models.Model):
 
 
 class LegacyAnswerQuestionnaire(models.Model):
-    """Answer Questionnaire model from the legacy database QuestionnaireDB.
+    """
+    Answer Questionnaire model from the legacy database QuestionnaireDB.
 
     This table records instances of a patient receiving a questionnaire
     and keeps track of the patient's progress on that questionnaire.
@@ -376,7 +381,7 @@ class LegacyQuestion(models.Model):
     parent_id = models.BigIntegerField(default=-1, db_column='parentId')
     polarity = models.IntegerField(
         default=0,
-        db_comment='0 = lowGood (the lower the score, the better the answer), 1 = highGood (the higher the score, the better the answer)',  # noqa: E501
+        db_comment='0 = lowGood (the lower the score, the better the answer), 1 = highGood (the higher the score, the better the answer)',
     )
     private = models.BooleanField(default=False, db_column='private')
     final = models.BooleanField(default=False, db_column='final')

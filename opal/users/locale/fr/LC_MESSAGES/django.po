@@ -31,8 +31,8 @@ msgid "The two password fields don't match."
 msgstr "Les deux mots de passe ne correspondent pas."
 
 #: opal/users/api/viewsets.py
-msgid "Manager group not found."
-msgstr "Groupe de gestionnaires introuvable."
+msgid "User manager group not found."
+msgstr "Groupe de gestionnaire d'utilisateurs introuvable."
 
 #: opal/users/api/viewsets.py
 msgid "User was added to the managers group successfully."

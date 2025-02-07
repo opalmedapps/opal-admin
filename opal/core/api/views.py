@@ -61,7 +61,8 @@ class HL7CreateView(CreateAPIView[_Model]):
     parser_classes = (HL7Parser,)
 
     def get_parser_context(self, http_request: HttpRequest) -> dict[str, Any]:
-        """Append a list of HL7 segments to be parsed to the dictionary of parser context data.
+        """
+        Append a list of HL7 segments to be parsed to the dictionary of parser context data.
 
         Each view can define segments_to_parse if desired to add specific segments to parse.
 
@@ -76,7 +77,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         return context
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Ensure the patient identified in kwargs uniquely exists and matches the PID data.
+        """
+        Ensure the patient identified in kwargs uniquely exists and matches the PID data.
 
         Args:
             request: The http request object
@@ -103,7 +105,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         parsed_data: dict[str, Any],
         url_uuid: uuid.UUID,
     ) -> bool:
-        """Ensure the PID segment parsed from the message matches the uuid from the url.
+        """
+        Ensure the PID segment parsed from the message matches the uuid from the url.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data
@@ -118,7 +121,7 @@ class HL7CreateView(CreateAPIView[_Model]):
         # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
         valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
         valid_pid_mrn_sites = [
-            mrn_site for mrn_site in parsed_data.get('PID', None)['mrn_sites'] if mrn_site[1] in valid_sites
+            mrn_site for mrn_site in parsed_data.get('PID', [])['mrn_sites'] if mrn_site[1] in valid_sites
         ]
         try:
             patient = Patient.objects.get_patient_by_site_mrn_list(
@@ -126,11 +129,12 @@ class HL7CreateView(CreateAPIView[_Model]):
                     {
                         'site': {'acronym': site},
                         'mrn': mrn,
-                    } for mrn, site in valid_pid_mrn_sites
+                    }
+                    for mrn, site in valid_pid_mrn_sites
                 ],
             )
         except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
-            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.')
+            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.') from None
         return url_uuid == patient.uuid
 
 
@@ -147,4 +151,4 @@ class EmptyResponseSerializer(serializers.Serializer[Any]):
         - Endpoints that only need to indicate success without returning data
     """
 
-    pass  # noqa: WPS420, WPS604
+    pass
