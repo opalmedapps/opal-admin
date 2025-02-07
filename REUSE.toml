@@ -42,20 +42,10 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 [[annotations]]
 path = [
     "opal/templates/email/verification_code.txt",
-    "opal/static/images/favicon.ico",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
-SPDX-License-Identifier = "TBD"
-
-
-[[annotations]]
-path = [
-    "opal/static/images/logo_opal.png",
-]
-precedence = "override"
-SPDX-FileCopyrightText = "Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
-SPDX-License-Identifier = "TBD"
+SPDX-License-Identifier = "LicenseRef-OpalTrademarks"
 
 
 [[annotations]]
@@ -64,6 +54,16 @@ path = [
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "LicenseRef-OpalTrademarks"
+
+
+[[annotations]]
+path = [
+    "opal/static/images/favicon.ico",
+    "opal/static/images/logo_opal.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "TBD"
 SPDX-License-Identifier = "TBD"
 
 
