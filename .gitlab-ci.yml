@@ -149,7 +149,8 @@ pytest:
   services:
     - mariadb:10.11.10-jammy
   script:
-    - pip show kaleido
+    - uv pip list
+    - uv pip show kaleido
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apk add --no-cache mariadb-client chromium
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
