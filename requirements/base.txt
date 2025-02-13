@@ -56,6 +56,7 @@ fpdf2==2.8.2
 
 # Static image generation
 #
+choreographer==0.99.7  # https://pypi.org/project/choreographer/#history
 kaleido==1.0.0rc0  # https://pypi.org/project/kaleido/1.0.0rc0
 
 # Unidecode for transliterating special characters during de-identification
