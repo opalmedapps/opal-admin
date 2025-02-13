@@ -150,6 +150,7 @@ pytest:
     - mariadb:10.11.10-jammy
   script:
     - pip install uv
+    - pip install kaleido
     - uv pip list
     - uv pip show kaleido
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
