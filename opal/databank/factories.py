@@ -1,4 +1,5 @@
 """Module providing model factories for databank app models."""
+
 import string
 
 from django.utils import timezone
@@ -12,7 +13,7 @@ from opal.patients.factories import Patient
 from . import models
 
 
-class DatabankConsent(DjangoModelFactory):
+class DatabankConsent(DjangoModelFactory[models.DatabankConsent]):
     """Model factory to create [opal.databank.models.DatabankConsent][] models."""
 
     patient = factory.SubFactory(Patient)
@@ -28,7 +29,7 @@ class DatabankConsent(DjangoModelFactory):
         model = models.DatabankConsent
 
 
-class SharedData(DjangoModelFactory):
+class SharedData(DjangoModelFactory[models.SharedData]):
     """Model factory to create [opal.databank.models.SharedData][] models."""
 
     databank_consent = factory.SubFactory(DatabankConsent)

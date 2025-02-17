@@ -6,6 +6,7 @@ Inspired by:
   * https://adamj.eu/tech/2014/09/03/factory-boy-fun/
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 
@@ -15,7 +16,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-class User(DjangoModelFactory):
+class User(DjangoModelFactory[models.User]):
     """Model factory to create [opal.users.models.User][] models."""
 
     class Meta:
@@ -45,7 +46,7 @@ class ClinicalStaff(User):
         model = models.ClinicalStaff
 
 
-class GroupFactory(DjangoModelFactory):
+class GroupFactory(DjangoModelFactory[Group]):
     """Model factory to create Groups."""
 
     class Meta:

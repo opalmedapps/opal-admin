@@ -1,4 +1,5 @@
 """Module providing model factories for usage statistics app models."""
+
 import datetime as dt
 
 from django.utils import timezone
@@ -13,7 +14,7 @@ from opal.users.factories import Caregiver
 from . import models
 
 
-class DailyUserAppActivity(DjangoModelFactory):
+class DailyUserAppActivity(DjangoModelFactory[models.DailyUserAppActivity]):
     """Model factory to create [opal.usage_statistics.models.DailyUserAppActivity][] models."""
 
     action_by_user = factory.SubFactory(Caregiver)
@@ -32,7 +33,7 @@ class DailyUserAppActivity(DjangoModelFactory):
         model = models.DailyUserAppActivity
 
 
-class DailyUserPatientActivity(DjangoModelFactory):
+class DailyUserPatientActivity(DjangoModelFactory[models.DailyUserPatientActivity]):
     """Model factory to create [opal.usage_statistics.models.DailyUserPatientActivity][] models."""
 
     user_relationship_to_patient = factory.SubFactory(Relationship)
@@ -49,7 +50,7 @@ class DailyUserPatientActivity(DjangoModelFactory):
         model = models.DailyUserPatientActivity
 
 
-class DailyPatientDataReceived(DjangoModelFactory):
+class DailyPatientDataReceived(DjangoModelFactory[models.DailyPatientDataReceived]):
     """Model factory to create [opal.usage_statistics.models.DailyPatientDataReceived][] models."""
 
     patient = factory.SubFactory(Patient)

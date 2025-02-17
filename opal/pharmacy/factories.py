@@ -1,4 +1,5 @@
 """Module prividing model factories for pharmacy models."""
+
 from django.utils import timezone
 
 import factory
@@ -9,7 +10,7 @@ from opal.patients.factories import Patient
 from . import models
 
 
-class CodedElementFactory(DjangoModelFactory):
+class CodedElementFactory(DjangoModelFactory[models.CodedElement]):
     """Model factory to create [opal.pharmacy.models.CodedElement][] models."""
 
     identifier = factory.Faker('word')
@@ -23,7 +24,7 @@ class CodedElementFactory(DjangoModelFactory):
         model = models.CodedElement
 
 
-class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
+class PhysicianPrescriptionOrderFactory(DjangoModelFactory[models.PhysicianPrescriptionOrder]):
     """Model factory to create [opal.pharmacy.models.PhysicianPrescriptionOrder][] models."""
 
     patient = factory.SubFactory(Patient)
@@ -49,13 +50,13 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
         model = models.PhysicianPrescriptionOrder
 
 
-class PharmacyEncodedOrderFactory(DjangoModelFactory):
+class PharmacyEncodedOrderFactory(DjangoModelFactory[models.PharmacyEncodedOrder]):
     """Model factory to create [opal.pharmacy.models.PharmacyEncodedOrder][] models."""
 
     physician_prescription_order = factory.SubFactory(PhysicianPrescriptionOrderFactory)
     quantity = factory.Faker('pydecimal', left_digits=2, right_digits=2, min_value=0)
     unit = 'mg'
-    interval_pattern = 'Q6H'   # Every 6 hours
+    interval_pattern = 'Q6H'  # Every 6 hours
     interval_duration = ''
     duration = 'D4'  # For a duration of 4 days
     service_start = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
@@ -76,7 +77,7 @@ class PharmacyEncodedOrderFactory(DjangoModelFactory):
         model = models.PharmacyEncodedOrder
 
 
-class PharmacyRouteFactory(DjangoModelFactory):
+class PharmacyRouteFactory(DjangoModelFactory[models.PharmacyRoute]):
     """Model factory to create [opal.pharmacy.models.PharmacyRoute][] models."""
 
     pharmacy_encoded_order = factory.SubFactory(PharmacyEncodedOrderFactory)
@@ -87,7 +88,7 @@ class PharmacyRouteFactory(DjangoModelFactory):
         model = models.PharmacyRoute
 
 
-class PharmacyComponentFactory(DjangoModelFactory):
+class PharmacyComponentFactory(DjangoModelFactory[models.PharmacyComponent]):
     """Model factory to create [opal.pharmacy.models.PharmacyComponent][] models."""
 
     pharmacy_encoded_order = factory.SubFactory(PharmacyEncodedOrderFactory)

@@ -1,4 +1,5 @@
 """Module providing model factories for health data app models."""
+
 from django.utils import timezone
 
 import factory
@@ -9,7 +10,7 @@ from opal.patients.factories import Patient
 from . import models
 
 
-class QuantitySample(DjangoModelFactory):
+class QuantitySample(DjangoModelFactory[models.QuantitySample]):
     """Model factory to create [opal.health_data.models.QuantitySample][] models."""
 
     patient = factory.SubFactory(Patient)

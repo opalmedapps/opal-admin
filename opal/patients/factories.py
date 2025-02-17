@@ -22,7 +22,7 @@ from opal.hospital_settings.factories import Site
 from . import models
 
 
-class RelationshipType(DjangoModelFactory):
+class RelationshipType(DjangoModelFactory[models.RelationshipType]):
     """Model factory to create [opal.patients.models.RelationshipType][] models."""
 
     class Meta:
@@ -38,7 +38,7 @@ class RelationshipType(DjangoModelFactory):
     can_answer_questionnaire = False
 
 
-class Patient(DjangoModelFactory):
+class Patient(DjangoModelFactory[models.Patient]):
     """Model factory to create [opal.patients.models.Patient][] models."""
 
     class Meta:
@@ -53,7 +53,7 @@ class Patient(DjangoModelFactory):
     legacy_id = Sequence(lambda number: number + 1)
 
 
-class Relationship(DjangoModelFactory):
+class Relationship(DjangoModelFactory[models.Relationship]):
     """Model factory to create [opal.patients.models.Relationship][] models."""
 
     class Meta:
@@ -68,7 +68,7 @@ class Relationship(DjangoModelFactory):
     reason = ''
 
 
-class HospitalPatient(DjangoModelFactory):
+class HospitalPatient(DjangoModelFactory[models.HospitalPatient]):
     """Model factory to create [opal.patients.models.HospitalPatient][] models."""
 
     class Meta:

@@ -1,4 +1,5 @@
 """Module providing model factories for Legacy QuestionnaireDB models."""
+
 from datetime import datetime
 
 from django.utils import timezone
@@ -9,7 +10,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-class LegacyDefinitionTableFactory(DjangoModelFactory):
+class LegacyDefinitionTableFactory(DjangoModelFactory[models.LegacyDefinitionTable]):
     """DefinitionTable factory from the legacy questionnaire database."""
 
     class Meta:
@@ -18,7 +19,7 @@ class LegacyDefinitionTableFactory(DjangoModelFactory):
     name = 'questionnaire'
 
 
-class LegacyDictionaryFactory(DjangoModelFactory):
+class LegacyDictionaryFactory(DjangoModelFactory[models.LegacyDictionary]):
     """Dictionary factory from the legacy questionnaire database."""
 
     class Meta:
@@ -33,7 +34,7 @@ class LegacyDictionaryFactory(DjangoModelFactory):
     updated_by = 'TestUser'
 
 
-class LegacyPurposeFactory(DjangoModelFactory):
+class LegacyPurposeFactory(DjangoModelFactory[models.LegacyPurpose]):
     """Purpose factory from the legacy questionnaire database."""
 
     class Meta:
@@ -43,7 +44,7 @@ class LegacyPurposeFactory(DjangoModelFactory):
     description = SubFactory(LegacyDictionaryFactory)
 
 
-class LegacyRespondentFactory(DjangoModelFactory):
+class LegacyRespondentFactory(DjangoModelFactory[models.LegacyRespondent]):
     """Respondent factory from the legacy questionnaire database."""
 
     class Meta:
@@ -53,7 +54,7 @@ class LegacyRespondentFactory(DjangoModelFactory):
     description = SubFactory(LegacyDictionaryFactory)
 
 
-class LegacyQuestionnaireFactory(DjangoModelFactory):
+class LegacyQuestionnaireFactory(DjangoModelFactory[models.LegacyQuestionnaire]):
     """Questionnaire factory from the legacy questionnaire database."""
 
     class Meta:
@@ -73,7 +74,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     legacy_name = 'Test Questionnaire'
 
 
-class LegacyQuestionnairePatientFactory(DjangoModelFactory):
+class LegacyQuestionnairePatientFactory(DjangoModelFactory[models.LegacyQuestionnairePatient]):
     """Patient factory from the legacy questionnaire database."""
 
     class Meta:
@@ -88,7 +89,7 @@ class LegacyQuestionnairePatientFactory(DjangoModelFactory):
     updated_by = 'Test User'
 
 
-class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
+class LegacyAnswerQuestionnaireFactory(DjangoModelFactory[models.LegacyAnswerQuestionnaire]):
     """AnswerQuestionnaire factory from the legacy questionnaire database."""
 
     class Meta:
@@ -103,7 +104,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     updated_by = 'Test User'
 
 
-class LegacyLanguageFactory(DjangoModelFactory):
+class LegacyLanguageFactory(DjangoModelFactory[models.LegacyLanguage]):
     """Language factory from the legacy questionnaire database."""
 
     class Meta:
@@ -117,7 +118,7 @@ class LegacyLanguageFactory(DjangoModelFactory):
     updated_by = Faker('name')
 
 
-class LegacySectionFactory(DjangoModelFactory):
+class LegacySectionFactory(DjangoModelFactory[models.LegacySection]):
     """Section factory from the legacy questionnaire database."""
 
     class Meta:
@@ -133,7 +134,7 @@ class LegacySectionFactory(DjangoModelFactory):
     updated_by = Faker('name')
 
 
-class LegacyTypeFactory(DjangoModelFactory):
+class LegacyTypeFactory(DjangoModelFactory[models.LegacyType]):
     """Type factory from the legacy questionnaire database."""
 
     class Meta:
@@ -146,7 +147,7 @@ class LegacyTypeFactory(DjangoModelFactory):
     template_sub_table = SubFactory(LegacyDefinitionTableFactory)
 
 
-class LegacyQuestionFactory(DjangoModelFactory):
+class LegacyQuestionFactory(DjangoModelFactory[models.LegacyQuestion]):
     """Question factory from the legacy questionnaire database."""
 
     class Meta:
@@ -168,7 +169,7 @@ class LegacyQuestionFactory(DjangoModelFactory):
     updated_by = Faker('name')
 
 
-class LegacyRadioButtonFactory(DjangoModelFactory):
+class LegacyRadioButtonFactory(DjangoModelFactory[models.LegacyRadioButton]):
     """RadioButton factory from the legacy questionnaire database."""
 
     class Meta:
@@ -177,7 +178,7 @@ class LegacyRadioButtonFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyRadioButtonOptionFactory(DjangoModelFactory):
+class LegacyRadioButtonOptionFactory(DjangoModelFactory[models.LegacyRadioButtonOption]):
     """RadioButtonOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -188,7 +189,7 @@ class LegacyRadioButtonOptionFactory(DjangoModelFactory):
     order = Sequence(lambda number: number)
 
 
-class LegacyCheckboxFactory(DjangoModelFactory):
+class LegacyCheckboxFactory(DjangoModelFactory[models.LegacyCheckbox]):
     """CheckBox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -197,7 +198,7 @@ class LegacyCheckboxFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyCheckboxOptionFactory(DjangoModelFactory):
+class LegacyCheckboxOptionFactory(DjangoModelFactory[models.LegacyCheckboxOption]):
     """CheckBoxOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -208,7 +209,7 @@ class LegacyCheckboxOptionFactory(DjangoModelFactory):
     parent_table = SubFactory(LegacyCheckboxFactory)
 
 
-class LegacyLabelFactory(DjangoModelFactory):
+class LegacyLabelFactory(DjangoModelFactory[models.LegacyLabel]):
     """Label factory from the legacy questionnaire database."""
 
     class Meta:
@@ -217,7 +218,7 @@ class LegacyLabelFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyLabelOptionFactory(DjangoModelFactory):
+class LegacyLabelOptionFactory(DjangoModelFactory[models.LegacyLabelOption]):
     """LabelOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -233,7 +234,7 @@ class LegacyLabelOptionFactory(DjangoModelFactory):
     parent_table = SubFactory(LegacyLabelFactory)
 
 
-class LegacyQuestionSectionFactory(DjangoModelFactory):
+class LegacyQuestionSectionFactory(DjangoModelFactory[models.LegacyQuestionSection]):
     """Type factory from the legacy questionnaire database."""
 
     class Meta:
@@ -246,7 +247,7 @@ class LegacyQuestionSectionFactory(DjangoModelFactory):
     optional = False
 
 
-class LegacyAnswerSectionFactory(DjangoModelFactory):
+class LegacyAnswerSectionFactory(DjangoModelFactory[models.LegacyAnswerSection]):
     """AnswerSection factory from the legacy questionnaire database."""
 
     class Meta:
@@ -256,7 +257,7 @@ class LegacyAnswerSectionFactory(DjangoModelFactory):
     section = SubFactory(LegacySectionFactory)
 
 
-class LegacyAnswerFactory(DjangoModelFactory):
+class LegacyAnswerFactory(DjangoModelFactory[models.LegacyAnswer]):
     """Answer factory from the legacy questionnaire database."""
 
     class Meta:
@@ -278,7 +279,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     updated_by = Faker('word')
 
 
-class LegacyAnswerSliderFactory(DjangoModelFactory):
+class LegacyAnswerSliderFactory(DjangoModelFactory[models.LegacyAnswerSlider]):
     """AnswerSlider factory from the legacy questionnaire database."""
 
     class Meta:
@@ -288,7 +289,7 @@ class LegacyAnswerSliderFactory(DjangoModelFactory):
     value = Faker('pyfloat', positive=True, min_value=1, max_value=10)
 
 
-class LegacyAnswerTextBoxFactory(DjangoModelFactory):
+class LegacyAnswerTextBoxFactory(DjangoModelFactory[models.LegacyAnswerTextBox]):
     """AnswerTextBox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -298,7 +299,7 @@ class LegacyAnswerTextBoxFactory(DjangoModelFactory):
     value = Faker('text', max_nb_chars=200)
 
 
-class LegacyAnswerTimeFactory(DjangoModelFactory):
+class LegacyAnswerTimeFactory(DjangoModelFactory[models.LegacyAnswerTime]):
     """AnswerTime factory from the legacy questionnaire database."""
 
     class Meta:
@@ -308,7 +309,7 @@ class LegacyAnswerTimeFactory(DjangoModelFactory):
     value = Faker('time')
 
 
-class LegacyAnswerLabelFactory(DjangoModelFactory):
+class LegacyAnswerLabelFactory(DjangoModelFactory[models.LegacyAnswerLabel]):
     """AnswerLabel factory from the legacy questionnaire database."""
 
     class Meta:
@@ -322,7 +323,7 @@ class LegacyAnswerLabelFactory(DjangoModelFactory):
     value = Faker('pyint')
 
 
-class LegacyAnswerRadioButtonFactory(DjangoModelFactory):
+class LegacyAnswerRadioButtonFactory(DjangoModelFactory[models.LegacyAnswerRadioButton]):
     """AnswerRadioButton factory from the legacy questionnaire database."""
 
     class Meta:
@@ -332,7 +333,7 @@ class LegacyAnswerRadioButtonFactory(DjangoModelFactory):
     value = Faker('random_int')
 
 
-class LegacyAnswerCheckboxFactory(DjangoModelFactory):
+class LegacyAnswerCheckboxFactory(DjangoModelFactory[models.LegacyAnswerCheckbox]):
     """AnswerCheckbox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -342,7 +343,7 @@ class LegacyAnswerCheckboxFactory(DjangoModelFactory):
     value = Faker('random_int')
 
 
-class LegacyAnswerDateFactory(DjangoModelFactory):
+class LegacyAnswerDateFactory(DjangoModelFactory[models.LegacyAnswerDate]):
     """AnswerDate factory from the legacy questionnaire database."""
 
     class Meta:
