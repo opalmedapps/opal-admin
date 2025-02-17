@@ -16,7 +16,7 @@ variables:
   FF_SCRIPT_SECTIONS: "true"
 
 default:
-  image: python:3.11.11-alpine3.20
+  image: python:3.12.9-alpine3.20
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
@@ -151,12 +151,12 @@ pytest:
     - .uses_django
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.11.10-jammy
+    - mariadb:10.11.11-jammy
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apk add --no-cache mariadb-client chromium
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mariadb --skip-ssl -u root -h mariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mariadb --skip-ssl -u root -h mariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
     # -m "" runs all tests, even the ones marked as slow
     - coverage run -m pytest -m "" --junitxml=report.xml
