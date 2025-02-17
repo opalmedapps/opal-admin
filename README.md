@@ -7,7 +7,7 @@
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.11
+* Python 3.12
 * [Git LFS](https://git-lfs.com/)
 
 ## Getting Started
@@ -50,7 +50,7 @@ In order for linting, type checking, unit testing etc. to be available in your I
 === "macOS/Linux"
 
     ```sh
-    python3.11 -m venv --prompt 'opal' .venv
+    python3.12 -m venv --prompt 'opal' .venv
     source .venv/bin/activate
     ```
 
