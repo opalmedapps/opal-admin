@@ -12,7 +12,7 @@ variables:
   FF_SCRIPT_SECTIONS: "true"
 
 default:
-  image: python:3.11.11-alpine3.20
+  image: python:3.12.8-alpine3.20
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
@@ -147,7 +147,7 @@ pytest:
     - .uses_django
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.11.10-jammy
+    - mariadb:10.11.11-jammy
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apk add --no-cache mariadb-client chromium
