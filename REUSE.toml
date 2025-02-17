@@ -2,12 +2,6 @@ version = 1
 
 [[annotations]]
 path = [
-    "opal/core/management/commands/files/muhc/terms_of_use_en.pdf",
-    "opal/core/management/commands/files/muhc/terms_of_use_fr.pdf",
-    "opal/core/management/commands/files/ohigph/terms_of_use_en.pdf",
-    "opal/core/management/commands/files/ohigph/terms_of_use_fr.pdf",
-    "opal/core/management/commands/files/omi/terms_of_use_en.pdf",
-    "opal/core/management/commands/files/omi/terms_of_use_fr.pdf",
     "opal/core/tests/fixtures/homer_pharmacy.hl7v2",
     "opal/core/tests/fixtures/marge_NTE.hl7v2",
     "opal/core/tests/fixtures/marge_ORC.hl7v2",
@@ -129,8 +123,6 @@ SPDX-License-Identifier = "OFL-1.1"
 
 [[annotations]]
 path = [
-    "opal/core/management/commands/files/muhc/logo.png",
-    "opal/core/management/commands/files/omi/logo.png",
     "opal/tests/fixtures/test_logo.png",
 ]
 precedence = "override"
@@ -145,7 +137,12 @@ SPDX-License-Identifier = "NONE"
 [[annotations]]
 path = [
     "opal/core/management/commands/files/ohigph/logo.png",
+    "opal/core/management/commands/files/ohigph/terms_of_use_en.pdf",
+    "opal/core/management/commands/files/ohigph/terms_of_use_fr.pdf",
+    "opal/core/management/commands/files/omi/logo.png",
+    "opal/core/management/commands/files/omi/terms_of_use_en.pdf",
+    "opal/core/management/commands/files/omi/terms_of_use_fr.pdf",
 ]
 precedence = "override"
-SPDX-FileCopyrightText = "Copyright (C) 2015 Centre Hospitalier Universitaire Sainte-Justine"
-SPDX-License-Identifier = "NONE"
+SPDX-FileCopyrightText = "Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
