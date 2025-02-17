@@ -89,7 +89,7 @@ plugins:
             - import docs.mock_django
           import:
             # import Sphinx objects inventories to support referencing other elements in docs
-            - https://docs.python.org/3.11/objects.inv
+            - https://docs.python.org/3.12/objects.inv
             - https://docs.djangoproject.com/en/4.2/_objects/
             - https://django-modeltranslation.readthedocs.io/en/latest/objects.inv
 
