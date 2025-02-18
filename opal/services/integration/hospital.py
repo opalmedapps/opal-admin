@@ -82,7 +82,6 @@ def notify_new_patient(mrn: str, site: str) -> None:
     Notify the integration engine that a patient is now an Opal patient.
 
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
-    Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
     Args:
         mrn: the MRN of the patient

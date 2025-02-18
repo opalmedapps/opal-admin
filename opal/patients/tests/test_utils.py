@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""App patient utils test functions."""
 import datetime as dt
 import uuid
 from datetime import date, datetime
@@ -46,7 +45,7 @@ from opal.patients.models import (
     RoleType,
     SexType,
 )
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
@@ -55,28 +54,28 @@ from .. import utils
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
-PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date.fromisoformat('1986-10-01'),
+PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    deceased=False,
-    death_date_time=None,
-    ramq='SIMM86600199',
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    sex=SexTypeSchema.FEMALE,
+    date_of_birth=date.fromisoformat('1986-10-01'),
+    date_of_death=None,
+    health_insurance_number='SIMM86600199',
     mrns=[],
 )
-MRN_DATA_RVH = SourceSystemMRNData(site='RVH', mrn='9999993', active=True)
-MRN_DATA_MGH = SourceSystemMRNData(site='MGH', mrn='9999996', active=False)
+MRN_DATA_RVH = HospitalNumberSchema(site='RVH', mrn='9999993')
+MRN_DATA_MGH = HospitalNumberSchema(site='MGH', mrn='9999996')
 
 
-@pytest.mark.parametrize(('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'), [
-    # one-digit month
-    ('Bart', 'Wayne', date(2013, 2, 23), SexType.MALE, 'WAYB13022399'),
-    # one-digit day (and female)
-    ('Marge', 'Simpson', date(1986, 10, 1), SexType.FEMALE, 'SIMM86600199'),
-])
+@pytest.mark.parametrize(
+    ('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'),
+    [
+        # one-digit month
+        ('Bart', 'Wayne', date(2013, 2, 23), SexType.MALE, 'WAYB13022399'),
+        # one-digit day (and female)
+        ('Marge', 'Simpson', date(1986, 10, 1), SexType.FEMALE, 'SIMM86600199'),
+    ],
+)
 def test_build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: SexType, ramq: str) -> None:
     """The RAMQ is derived correctly."""
     assert utils.build_ramq(first_name, last_name, date_of_birth, sex) == ramq
@@ -638,7 +637,7 @@ def test_create_access_request_new_patient() -> None:
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexType.FEMALE
+    assert patient.sex == SexTypeSchema.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
@@ -649,12 +648,12 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
-            SourceSystemPatientData(**patient_data),
+            patient_data,
             caregiver_profile,
             self_type,
         )
@@ -674,11 +673,11 @@ def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     relationship, _ = utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         self_type,
     )
@@ -802,12 +801,12 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
     LegacyHospitalIdentifierType(code='MGH')
     institution = Institution(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
-    patient_data['date_of_birth'] = date(2008, 10, 23)
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data.date_of_death = datetime(2008, 10, 23, tzinfo=timezone.get_current_timezone())
 
     relationship, registration_code = utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         self_type,
     )
@@ -830,22 +829,22 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     LegacyHospitalIdentifierType(code='MGH')
     caregiver_profile = CaregiverProfile()
     relationship_type = RelationshipType.objects.get(role_type=role_type)
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         relationship_type,
     )
 
-    legacy_patient = LegacyPatient.objects.get(ramq=patient_data['ramq'])
-    patient = Patient.objects.get(ramq=patient_data['ramq'])
+    legacy_patient = LegacyPatient.objects.get(ramq=patient_data.health_insurance_number)
+    patient = Patient.objects.get(ramq=patient_data.health_insurance_number)
     legacy_mrn_list = LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient)
 
     assert patient.legacy_id == legacy_patient.patientsernum
-    assert legacy_patient.first_name == patient_data['first_name']
-    assert legacy_patient.last_name == patient_data['last_name']
+    assert legacy_patient.first_name == patient_data.first_name
+    assert legacy_patient.last_name == patient_data.last_name
     assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
     assert legacy_patient.sex == 'Female'
     assert legacy_patient.death_date is None
@@ -888,7 +887,7 @@ def test_create_access_request_new_patient_and_databank_consent(
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexType.FEMALE
+    assert patient.sex == SexTypeSchema.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
@@ -945,7 +944,7 @@ def test_create_access_request_new_patient_databank_disabled(
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexType.FEMALE
+    assert patient.sex == SexTypeSchema.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0

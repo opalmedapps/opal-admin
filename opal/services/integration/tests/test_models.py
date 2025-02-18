@@ -34,8 +34,8 @@ def test_hospital_number_non_empty() -> None:
     assert exc.value.error_count() == 2
 
 
-@pytest.mark.parametrize('sex', schemas.SexType)
-def test_patient_minimal(sex: schemas.SexType) -> None:
+@pytest.mark.parametrize('sex', schemas.SexTypeSchema)
+def test_patient_minimal(sex: schemas.SexTypeSchema) -> None:
     """Test the PatientSchema with minimal data."""
     data = {
         'first_name': 'Marge',
@@ -61,7 +61,7 @@ def test_patient_mrns_non_empty() -> None:
     data: dict[str, Any] = {
         'first_name': 'Marge',
         'last_name': 'Simpson',
-        'sex': schemas.SexType.MALE,
+        'sex': schemas.SexTypeSchema.MALE,
         'date_of_birth': '1986-10-05',
         'health_insurance_number': None,
         'date_of_death': None,
