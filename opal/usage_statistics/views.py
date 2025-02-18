@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides views for the usage statistics application."""
 
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -13,7 +17,8 @@ class SuperUserPermissionsFormViewMixin(UserPassesTestMixin, generic.FormView[Fo
     """`FormView` mixin that ensures the request is coming from a user with a `superuser` permissions."""
 
     def test_func(self) -> bool:
-        """Check if the request is coming from `superuser`.
+        """
+        Check if the request is coming from `superuser`.
 
         The request is rejected for non-superusers.
 

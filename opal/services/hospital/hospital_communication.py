@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for the hospital's internal communication (e.g., Opal Integration Engine)."""
 
 from django.conf import settings
@@ -6,7 +10,8 @@ from ..general.service_communication import ServiceHTTPCommunicationManager
 
 
 class SourceSystemHTTPCommunicationManager(ServiceHTTPCommunicationManager):
-    """Manager that provides functionality for communication with Opal Integration Engine.
+    """
+    Manager that provides functionality for communication with Opal Integration Engine.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 

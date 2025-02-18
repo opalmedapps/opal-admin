@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import date, datetime
 
 from django.utils import timezone
@@ -15,9 +19,9 @@ CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
     sex='F',
     alias='',
     deceased=False,
-    death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+    death_date_time=datetime.fromisoformat('2054-05-09 09:20:30'),
     ramq='MARG99991313',
-    ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
     mrns=[
         SourceSystemMRNData(
             site='MGH',

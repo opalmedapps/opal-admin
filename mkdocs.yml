@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Project information
 site_name: Backend
 site_url: https://opalmedapps.gitlab.io/backend
@@ -89,7 +93,7 @@ plugins:
             - import docs.mock_django
           import:
             # import Sphinx objects inventories to support referencing other elements in docs
-            - https://docs.python.org/3.11/objects.inv
+            - https://docs.python.org/3.12/objects.inv
             - https://docs.djangoproject.com/en/4.2/_objects/
             - https://django-modeltranslation.readthedocs.io/en/latest/objects.inv
 

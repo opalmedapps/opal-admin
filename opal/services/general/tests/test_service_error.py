@@ -1,9 +1,14 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from opal.services.general.service_error import ServiceErrorHandler
 
 service_error = ServiceErrorHandler()
 
 
 # generate_error
+
 
 def test_generate_error() -> None:
     """Ensure error message is in JSON format and has specific fields."""
@@ -23,9 +28,7 @@ def test_generate_error_empty() -> None:
 
 def test_generate_error_none() -> None:
     """Ensure non-dictionary type does not cause an error."""
-    try:
-        error = service_error.generate_error(123)  # type: ignore[arg-type]
-    except Exception:
-        assert error['data'] == 123
+    error = service_error.generate_error(123)  # type: ignore[arg-type]
 
+    assert error['data'] == 123
     assert error['status'] == 'error'

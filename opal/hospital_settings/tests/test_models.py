@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from django.core.exceptions import ValidationError
 from django.db.utils import DataError, IntegrityError
 from django.utils.crypto import get_random_string

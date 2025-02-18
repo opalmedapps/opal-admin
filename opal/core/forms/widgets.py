@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Reusable form widgets."""
 from typing import Any
 
@@ -68,7 +72,7 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         """
         self._option_descriptions = descriptions
 
-    def create_option(  # noqa: WPS211
+    def create_option(  # noqa: PLR0913, PLR0917
         self,
         name: str,
         value: Any,

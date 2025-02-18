@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import datetime
 
 from django.urls import reverse
@@ -86,7 +90,7 @@ class TestGeneralAppView:
         announcements = models.LegacyAnnouncement.objects.get_unread_queryset([125], user.username)
         assert announcements == 0
 
-    def test_app_general_get_unread_announcement_count(  # noqa: WPS213
+    def test_app_general_get_unread_announcement_count(
         self,
         api_client: APIClient,
         listener_user: User,
@@ -108,7 +112,7 @@ class TestGeneralAppView:
             ramq=legacy_marge_patient.ramq,
             first_name=legacy_marge_patient.first_name,
             last_name=legacy_marge_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         marge_user = user_factories.Caregiver(email=legacy_marge_patient.email, username='marge_username')
         marge_caregiver = patient_factories.CaregiverProfile(
@@ -138,7 +142,7 @@ class TestGeneralAppView:
             ramq=legacy_homer_patient.ramq,
             first_name=legacy_homer_patient.first_name,
             last_name=legacy_homer_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         homer_caregiver = patient_factories.CaregiverProfile(
             legacy_id=legacy_homer_patient.patientsernum,
@@ -173,7 +177,7 @@ class TestGeneralAppView:
             ramq=legacy_bart_patient.ramq,
             first_name=legacy_bart_patient.first_name,
             last_name=legacy_bart_patient.last_name,
-            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         bart_caregiver = patient_factories.CaregiverProfile(
             legacy_id=legacy_bart_patient.patientsernum,

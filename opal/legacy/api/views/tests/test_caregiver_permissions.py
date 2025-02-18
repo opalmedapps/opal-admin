@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from django.urls import reverse
 from django.utils import timezone
 
@@ -108,4 +112,4 @@ class TestCaregiverPermissionsView:
         response = self.make_request(api_client, relationship.patient.legacy_id)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == {}  # noqa: WPS520
+        assert response.data == {}

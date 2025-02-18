@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing collection of managers and custom querysets for the health_data app."""
 
 import datetime
@@ -11,7 +15,7 @@ from typing_extensions import TypedDict
 from . import models as quantity_sample_models
 
 if TYPE_CHECKING:
-    from opal.health_data.models import QuantitySample  # noqa: F401
+    from opal.health_data.models import QuantitySample
     from opal.patients.models import Patient
 
 

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing models for the usage statistics app."""
 
 from django.core.validators import MinValueValidator
@@ -71,11 +75,7 @@ class DailyUserPatientActivity(models.Model):
         Returns:
             String representing the activity.
         """
-        return 'Daily activity by user {first_name}, {last_name} on behalf of patient {patient}'.format(
-            first_name=self.action_by_user.first_name,
-            last_name=self.action_by_user.last_name,
-            patient=self.patient,
-        )
+        return f'Daily activity by user {self.action_by_user.first_name}, {self.action_by_user.last_name} on behalf of patient {self.patient}'
 
 
 class DailyUserAppActivity(models.Model):

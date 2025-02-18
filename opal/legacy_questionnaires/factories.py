@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing model factories for Legacy QuestionnaireDB models."""
 from datetime import datetime
 
@@ -28,7 +32,7 @@ class LegacyDictionaryFactory(DjangoModelFactory):
     content_id = Sequence(lambda number: number + 1)
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = 'TestUser'
     updated_by = 'TestUser'
 
@@ -67,7 +71,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
     deleted_by = 'Test User'
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = 'Test User'
     updated_by = 'Test User'
     legacy_name = 'Test Questionnaire'
@@ -82,7 +86,7 @@ class LegacyQuestionnairePatientFactory(DjangoModelFactory):
 
     external_id = 51
     hospital_id = -1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
@@ -97,7 +101,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     patient = SubFactory(LegacyQuestionnairePatientFactory)
     status = 0
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
@@ -129,7 +133,7 @@ class LegacySectionFactory(DjangoModelFactory):
     order = Sequence(lambda number: number)
     deleted = False
     created_by = Faker('name')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     updated_by = Faker('name')
 
 
@@ -156,14 +160,14 @@ class LegacyQuestionFactory(DjangoModelFactory):
     display = SubFactory(LegacyDictionaryFactory)
     definition = SubFactory(LegacyDictionaryFactory)
     question = Sequence(lambda number: number)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     version = 1
     parent_id = -1
     private = False
     final = False
     optional_feedback = False
     deleted = False
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('name')
     updated_by = Faker('name')
 
@@ -265,7 +269,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     section = SubFactory(LegacySectionFactory)
     question = SubFactory(LegacyQuestionFactory)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
     patient = SubFactory(LegacyQuestionnairePatientFactory)
@@ -273,7 +277,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     skipped = Faker('boolean')
     deleted = Faker('boolean')
     deleted_by = Faker('word')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('word')
     updated_by = Faker('word')
 
@@ -349,4 +353,4 @@ class LegacyAnswerDateFactory(DjangoModelFactory):
         model = models.LegacyAnswerDate
 
     answer = SubFactory(LegacyAnswerFactory)
-    value = timezone.make_aware(datetime(2022, 9, 27))
+    value = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())

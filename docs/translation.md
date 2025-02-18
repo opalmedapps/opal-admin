@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Translation
 
 This project utilizes Django's native internationalization hooks called translation strings. For more information see the [Django's Translation Documentation](https://docs.djangoproject.com/en/4.0/topics/i18n/translation/).

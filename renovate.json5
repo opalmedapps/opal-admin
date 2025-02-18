@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
@@ -6,6 +10,9 @@
     ":separateMultipleMajorReleases",
     // https://docs.renovatebot.com/presets-default/#separatepatchreleases
     ":separatePatchReleases",
+    // https://docs.renovatebot.com/modules/manager/pre-commit/
+    // https://docs.renovatebot.com/presets-default/#enableprecommit
+    ":enablePreCommit",
     "gitlab>opalmedapps/renovate-bot//presets/docker-alpine.json5",
   ],
   // https://docs.renovatebot.com/python/#alternative-file-names
@@ -13,7 +20,7 @@
     "fileMatch": ["^requirements/.*\\.txt$"]
   },
   // https://docs.renovatebot.com/configuration-options/#assignees
-  "assignees": ["mschoettle", "Napparific"],
+  "assignees": ["mschoettle"],
   // https://docs.renovatebot.com/configuration-options/#labels
   "labels": ["dependencies"],
   // https://docs.renovatebot.com/configuration-options/#packagerules
@@ -28,11 +35,6 @@
     {
       "matchDatasources": ["docker", "docker-compose"],
       "semanticCommitType": "build"
-    },
-    // Group flake8-related updates
-    {
-      "matchPackagePatterns": ["flake8"],
-      "groupName": "flake8 packages"
     },
     // Combine mkdocs-material updates for Python and Docker
     {
@@ -54,10 +56,10 @@
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
     },
+    // Combine ruff and ruff-pre-commit
+    {
+      "matchPackagePatterns": "ruff-pre-commit|ruff$",
+      "groupName": "ruff",
+    },
   ],
-  // enable updates for pre-commit
-  // see: https://docs.renovatebot.com/modules/manager/pre-commit/
-  "pre-commit": {
-    "enabled": true
-  }
 }

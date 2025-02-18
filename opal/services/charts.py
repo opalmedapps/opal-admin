@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for generating charts using plotly library."""
 import logging
 from types import MappingProxyType
@@ -8,7 +12,8 @@ from plotly import express as px
 
 
 class ChartData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a chart.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a chart.
 
     Attributes:
         title: the title that is shown on top of the chart
@@ -39,7 +44,7 @@ CHART_LAYOUT: Final = MappingProxyType({
 LOGGER = logging.getLogger(__name__)
 
 
-class ChartService():
+class ChartService:
     """Service that provides functionality for generating plotly charts in HTML format."""
 
     def generate_error_bar_chart(
@@ -48,7 +53,8 @@ class ChartService():
         label_error_min: str = 'min',
         label_error_max: str = 'max',
     ) -> str | None:
-        """Generate a plotly error bar chart.
+        """
+        Generate a plotly error bar chart.
 
         The DataFrame should contain x, error_max, error_min, and legend records.
 
@@ -83,7 +89,7 @@ class ChartService():
                 'error_max': chart_data.label_y,
                 'legend': chart_data.label_legend,
             },
-            error_y=[0] * len(chart_data.data['error_max']),  # noqa: WPS435 list multiplication creates references
+            error_y=[0] * len(chart_data.data['error_max']),
             error_y_minus='error_diff',
             hover_data={
                 'error_min': False,
@@ -104,7 +110,8 @@ class ChartService():
         self,
         chart_data: ChartData,
     ) -> str | None:
-        """Generate a plotly line chart.
+        """
+        Generate a plotly line chart.
 
         The DataFrame should contain x, value, and legend records.
 

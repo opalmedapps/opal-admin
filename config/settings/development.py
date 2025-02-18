@@ -1,9 +1,14 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Settings for development.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
-from .base import *
+
+from .base import *  # noqa: F403
 from .base import env
 
 # GENERAL
@@ -37,7 +42,7 @@ EMAIL_BACKEND = env.str('EMAIL_BACKEND', default='django.core.mail.backends.cons
 # WhiteNoise
 # ------------------------------------------------------------------------------
 # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
-INSTALLED_APPS = ['whitenoise.runserver_nostatic'] + INSTALLED_APPS  # noqa: F405
+INSTALLED_APPS = ['whitenoise.runserver_nostatic', *INSTALLED_APPS]  # noqa: F405
 
 
 # django-extensions

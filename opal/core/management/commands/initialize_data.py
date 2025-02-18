@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Management command for inserting test data."""
+
 import secrets
 from typing import Any
 
@@ -62,10 +67,7 @@ class Command(BaseCommand):
     Creates the required groups, users, security questions, tokens etc.
     """
 
-    help = (  # noqa: A003
-        'Initialize required data for a new project.'
-        + ' Can only be run at the beginning of setting up a project.'
-    )
+    help = 'Initialize required data for a new project.' + ' Can only be run at the beginning of setting up a project.'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -174,7 +176,7 @@ class Command(BaseCommand):
         Group.objects.all().delete()
         SecurityQuestion.objects.all().delete()
 
-    def _create_data(self, **options: Any) -> None:  # noqa: WPS210, WPS213
+    def _create_data(self, **options: Any) -> None:  # noqa: PLR0914
         """
         Create all initial data.
 
@@ -266,7 +268,7 @@ class Command(BaseCommand):
 
         # get existing or create new tokens for the API users
         predefined_token = options['listener_token']
-        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})  # noqa: WPS204, E501
+        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})
 
         predefined_token = options['listener_registration_token']
         token_listener_registration, _ = Token.objects.get_or_create(
@@ -295,7 +297,8 @@ class Command(BaseCommand):
             self._create_orms_data(**options)
 
     def _create_orms_data(self, **options: Any) -> None:
-        """Create ORMS users, group, and system user token if ORMs is enabled.
+        """
+        Create ORMS users, group, and system user token if ORMs is enabled.
 
         Args:
             options: the options keyword arguments passed to the function
@@ -331,17 +334,13 @@ class Command(BaseCommand):
         )
 
         password_option: str = options['admin_password']
-        raw_password = (
-            password_option
-            if password_option
-            else secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
-        )
+        raw_password = password_option or secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
         ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
 
         message = 'Created superuser with username "admin"'
 
         if not password_option:
-            message += f' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
+            message += f' and generated password: {raw_password}'
 
         self.stdout.write(message)
 

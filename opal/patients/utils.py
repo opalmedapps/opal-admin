@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """App patients util functions."""
+
 import logging
 from datetime import date
 from typing import Final
@@ -28,10 +33,6 @@ RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
 
-# Initialize services to communicate with external components
-source_system_service: SourceSystemService = SourceSystemService()
-orms_service: ORMSService = ORMSService()
-
 logger = logging.getLogger(__name__)
 
 
@@ -50,11 +51,7 @@ def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patien
     Returns:
         the RAMQ number derived from the given arguments
     """
-    month = (
-        date_of_birth.strftime('%m')
-        if sex == Patient.SexType.MALE
-        else date_of_birth.month + RAMQ_FEMALE_INDICATOR
-    )
+    month = date_of_birth.strftime('%m') if sex == Patient.SexType.MALE else date_of_birth.month + RAMQ_FEMALE_INDICATOR
 
     data = [
         last_name[:3].upper(),
@@ -250,7 +247,7 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
 
-def create_patient(  # noqa: WPS211
+def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -297,7 +294,7 @@ def create_patient(  # noqa: WPS211
     return patient
 
 
-def create_relationship(  # noqa: WPS211
+def create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver_profile: caregiver_models.CaregiverProfile,
     relationship_type: RelationshipType,
@@ -320,7 +317,7 @@ def create_relationship(  # noqa: WPS211
         the new relationship instance
     """
     if not request_date:
-        request_date = date.today()
+        request_date = timezone.now().date()
 
     if not start_date:
         start_date = patient.date_of_birth
@@ -371,7 +368,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(  # noqa: WPS210, WPS213
+def initialize_new_opal_patient(
     patient: Patient,
     mrn_list: list[tuple[Site, str, bool]],
     patient_uuid: UUID,
@@ -398,7 +395,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
     # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
-    source_system_response = source_system_service.new_opal_patient(active_mrn_list)
+    source_system_response = SourceSystemService().new_opal_patient(active_mrn_list)
 
     if source_system_response['status'] == 'success':
         logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
@@ -409,7 +406,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
         )
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
-        orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+        orms_response = ORMSService().set_opal_patient(active_mrn_list, patient_uuid)
 
         if orms_response['status'] == 'success':
             logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
@@ -423,7 +420,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210, WPS231, C901
+def create_access_request(
     patient: Patient | SourceSystemPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
@@ -457,10 +454,7 @@ def create_access_request(  # noqa: WPS210, WPS231, C901
     # New patient
     if isinstance(patient, SourceSystemPatientData):
         is_new_patient = True
-        mrns = [
-            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active)
-            for mrn_data in patient.mrns
-        ]
+        mrns = [(Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active) for mrn_data in patient.mrns]
 
         patient = create_patient(
             first_name=patient.first_name,
@@ -471,7 +465,7 @@ def create_access_request(  # noqa: WPS210, WPS231, C901
             mrns=mrns,
         )
 
-        # set the two fields according to the institution’s field values if the patient is a pediatric patient
+        # set the two fields according to the institution's field values if the patient is a pediatric patient
         institution = Institution.objects.get()
         if patient.age < institution.adulthood_age:
             patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay

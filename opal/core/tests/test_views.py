@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import json
 from http import HTTPStatus
 from pathlib import Path
@@ -242,7 +246,8 @@ def test_hl7_create_view_patient_not_found_by_pid_data(
 
 
 def _load_hl7_fixture(filename: str) -> str:
-    """Load a HL7 fixture for testing.
+    """
+    Load a HL7 fixture for testing.
 
     Returns:
         string of the fixture data

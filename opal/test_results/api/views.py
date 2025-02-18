@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `APIViews` for the `test-results` app REST APIs."""
 
 from django.db import DatabaseError, transaction
@@ -62,8 +66,8 @@ class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
         except DatabaseError as db_exp:
             # Raise `ValidationError` exception if `LegacyDocument` record could not be saved to the database
             raise ValidationError(
-                f'An error occurred while inserting `LegacyDocument` record to the database. {db_exp}',
-            )
+                f'An error occurred while inserting `LegacyDocument` record to the database. {db_exp}'
+            ) from db_exp
 
         # Save `GeneralTest` record to the database
         serializer.save(

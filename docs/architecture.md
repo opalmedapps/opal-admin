@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Architecture
 
 The overall project setup is influenced by [Cookiecutter Django](https://cookiecutter-django.readthedocs.io/en/latest/) as well as the *Two Scoops of Django* book.

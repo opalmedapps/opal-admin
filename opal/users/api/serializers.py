@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides Django REST framework serializers for User-specific models."""
 from typing import Any
 
@@ -124,7 +128,7 @@ class UserClinicalStaffSerializer(serializers.ModelSerializer[ClinicalStaff]):
         # handle passwords if provided
         if 'password' in self.validated_data:
             self.validated_data.pop('password2')
-            self.validated_data['password'] = make_password(self.validated_data['password'])  # noqa: WPS529
+            self.validated_data['password'] = make_password(self.validated_data['password'])
 
         return super().save(**kwargs)
 

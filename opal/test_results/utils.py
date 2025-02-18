@@ -1,11 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Utility functions used by the test results app."""
+
 import logging
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
@@ -19,7 +26,8 @@ def generate_pathology_report(
     patient: Patient,
     pathology_data: dict[str, Any],
 ) -> Path:
-    """Generate the pathology PDF report by calling the ReportService.
+    """
+    Generate the pathology PDF report.
 
     Args:
         patient: patient instance for whom a new PDF pathology report being generated
@@ -40,16 +48,21 @@ def generate_pathology_report(
     return generate_pdf(
         institution_data=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
+            # TODO: clarify where to get the value (currently set as a test document)
+            document_number=settings.REPORT_DOCUMENT_NUMBER,
+            source_system=settings.REPORT_SOURCE_SYSTEM,
         ),
         patient_data=PatientData(
             patient_first_name=patient.first_name,
             patient_last_name=patient.last_name,
             patient_date_of_birth=patient.date_of_birth,
-            patient_ramq=patient.ramq if patient.ramq else '',
+            patient_ramq=patient.ramq or '',
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all().annotate(
+                patient.hospital_patients.all()
+                .annotate(
                     site_code=models.F('site__acronym'),
-                ).values('mrn', 'site_code'),
+                )
+                .values('mrn', 'site_code'),
             ),
         ),
         site_data=SiteData(
@@ -61,7 +74,7 @@ def generate_pathology_report(
             site_phone=site.contact_telephone,
         ),
         pathology_data=PathologyData(
-            test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
+            test_number=pathology_data.get('case_number', ''),
             test_collected_at=pathology_data['collected_at'],
             test_reported_at=pathology_data['reported_at'],
             observation_clinical_info=observations['SPCI'],
@@ -77,7 +90,8 @@ def generate_pathology_report(
 def _parse_observations(
     observations: list[dict[str, Any]],
 ) -> dict[str, list[str]]:
-    """Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
+    """
+    Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
 
     Args:
         observations: list of observation dictionaries to be parsed
@@ -110,7 +124,8 @@ def _parse_observations(
 
 
 def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
-    """Parse the pathology notes and extract the information by whom and when the report was created.
+    """
+    Parse the pathology notes and extract the information by whom and when the report was created.
 
     Args:
         notes: _description_
@@ -120,7 +135,7 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     """
     parsed_notes: dict[str, Any] = {
         'prepared_by': '',
-        'prepared_at': datetime(1, 1, 1),
+        'prepared_at': datetime(1, 1, 1, tzinfo=timezone.get_current_timezone()),
     }
     doctor_names = []
 
@@ -135,15 +150,15 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
 
         # TODO: Decide what datetime to use in case of several notes (e.g., the latest vs oldest)
         prepared_at = _find_note_date(note['note_text'])
-        if prepared_at > parsed_notes['prepared_at']:
-            parsed_notes['prepared_at'] = prepared_at
+        parsed_notes['prepared_at'] = max(prepared_at, parsed_notes['prepared_at'])
 
     parsed_notes['prepared_by'] = '; '.join(doctor_names)
     return parsed_notes
 
 
 def _get_site_instance(receiving_facility: str) -> Site:
-    """Fetch Site record by given receiving_facility code.
+    """
+    Fetch Site record by given receiving_facility code.
 
     If Site cannot be found, log the incident and return a Site with empty fields.
 
@@ -156,12 +171,10 @@ def _get_site_instance(receiving_facility: str) -> Site:
     try:
         return Site.objects.get(acronym=receiving_facility)
     except Site.DoesNotExist:
-        LOGGER.error(
-            (
-                'An error occurred during pathology report generation.'
-                + 'Given receiving_facility code does not exist: {0}.'
-                + 'Proceeded generation with an empty Site.'
-            ).format(receiving_facility),
+        LOGGER.exception(
+            'An error occurred during pathology report generation.'
+            + f'Given receiving_facility code does not exist: {receiving_facility}.'
+            + 'Proceeded generation with an empty Site.'
         )
 
         return Site(
@@ -175,7 +188,8 @@ def _get_site_instance(receiving_facility: str) -> Site:
 
 
 def _find_doctor_name(note_text: str) -> str:
-    """Find doctor's name in a pathology note.
+    """
+    Find doctor's name in a pathology note.
 
     Args:
         note_text: a pathology note in which doctor's name should be found
@@ -192,7 +206,8 @@ def _find_doctor_name(note_text: str) -> str:
 
 
 def _find_note_date(note_text: str) -> datetime:
-    """Find date and time in a pathology note that indicates when the doctor's comments were left.
+    """
+    Find date and time in a pathology note that indicates when the doctor's comments were left.
 
     Args:
         note_text: a pathology note in which the date and time of note creation should be found
@@ -206,5 +221,5 @@ def _find_note_date(note_text: str) -> datetime:
     # Extract date and time of note text
     if match:
         note_date = match.group(1).strip()
-        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p')
-    return datetime(1, 1, 1)
+        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p').astimezone(timezone.get_current_timezone())
+    return datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())

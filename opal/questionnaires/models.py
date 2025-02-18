@@ -1,13 +1,17 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides models for questionnaires."""
-from datetime import datetime
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from opal.users.models import User
 
 
-class Questionnaire(models.Model):  # noqa: DJ08
+class Questionnaire(models.Model):  # noqa: DJ008
     """
     Empty model to allow for 'modelless' permissions in Questionnaires app.
 
@@ -17,9 +21,7 @@ class Questionnaire(models.Model):  # noqa: DJ08
     class Meta:
         managed = False
         default_permissions = ()
-        permissions = (
-            ('export_report', 'Export Reports'),
-        )
+        permissions = (('export_report', 'Export Reports'),)
         verbose_name = _('Questionnaire')
         verbose_name_plural = _('Questionnaires')
 
@@ -43,7 +45,8 @@ class QuestionnaireProfile(models.Model):
         verbose_name_plural = _('Questionnaire Profiles')
 
     def __str__(self) -> str:
-        """Questionnaire profile to string.
+        """
+        Questionnaire profile to string.
 
         Returns:
             username with the following questionnaire list
@@ -52,7 +55,8 @@ class QuestionnaireProfile(models.Model):
 
     @classmethod
     def update_questionnaires_following(cls, qid: str, qname: str, user: User, toggle: bool) -> None:
-        """Update the questionnaires following list for specific user.
+        """
+        Update the questionnaires following list for specific user.
 
         Args:
             qid: questionnaire id number
@@ -63,10 +67,10 @@ class QuestionnaireProfile(models.Model):
         questionnaires_following, _ = cls.objects.get_or_create(
             user=user,
         )
-        if (toggle):
+        if toggle:
             questionnaires_following.questionnaire_list[qid] = {
                 'title': qname,
-                'lastviewed': datetime.now().strftime('%Y-%m-%d'),
+                'lastviewed': timezone.now().date().isoformat(),
             }
         elif qid in questionnaires_following.questionnaire_list:
             questionnaires_following.questionnaire_list.pop(qid)

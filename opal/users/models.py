@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing models for the users app.
 
@@ -11,7 +15,7 @@ This is based on Two Scoops of Django, Section 22.3.
 
 If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
-"""  # noqa: E501
+"""
 from typing import Any, ClassVar, TypeAlias
 
 from django.conf import settings
@@ -63,7 +67,7 @@ class User(AbstractUser):
         validators=[RegexValidator(r'^\+[1-9]\d{6,14}(x\d{1,5})?$')],
         help_text=_('Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"'),
     )
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         verbose_name=_('Type'),
         max_length=10,
         choices=UserType.choices,
@@ -143,7 +147,7 @@ class CaregiverManager(UserManager['User']):
         Return a new QuerySet filtered by users of type `UserType.ClinicalStaff`.
 
         Returns:
-            a QuerySet of users
+            a QuerySet of caregivers
         """
         queryset = super().get_queryset()
         return queryset.filter(type=UserType.CAREGIVER)
@@ -163,7 +167,7 @@ class Caregiver(User):
 
 
 @receiver(signal=m2m_changed, sender=ClinicalStaff.groups.through)
-def post_save_user_signal_handler(  # noqa: WPS211
+def post_save_user_signal_handler(
     instance: ClinicalStaff,
     action: str,
     model: type[models.Model],

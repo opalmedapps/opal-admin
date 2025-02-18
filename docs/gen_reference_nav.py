@@ -1,3 +1,8 @@
+# noqa: INP001
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Generate the code reference pages and navigation.
 
@@ -5,6 +10,7 @@ Taken inspiration from:
     * https://github.com/mkdocstrings/mkdocstrings/blob/master/docs/gen_ref_nav.py
     * https://github.com/liquidinvestigations/hoover-snoop2/blob/master/docs/gen.py
 """
+
 from pathlib import Path
 
 import mkdocs_gen_files

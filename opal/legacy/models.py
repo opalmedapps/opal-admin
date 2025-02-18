@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing legacy models to provide access to the legacy DB.
 
@@ -109,7 +113,7 @@ class LegacyPatientControl(models.Model):
     patientupdate = models.IntegerField(db_column='PatientUpdate', default=1)
     lasttransferred = models.DateTimeField(
         db_column='LastTransferred',
-        default=timezone.make_aware(dt.datetime(2000, 1, 1)),
+        default=dt.datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
     )
     lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
     transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)
@@ -359,8 +363,8 @@ class LegacyEducationalMaterialControl(models.Model):
         db_column='EducationalMaterialCategoryId',
     )
     # These columns are configured to allow NULL in the database
-    url_en = models.CharField(db_column='URL_EN', max_length=2000, null=True, blank=True)  # noqa: DJ01
-    url_fr = models.CharField(db_column='URL_FR', max_length=2000, null=True, blank=True)  # noqa: DJ01
+    url_en = models.CharField(db_column='URL_EN', max_length=2000, null=True, blank=True)
+    url_fr = models.CharField(db_column='URL_FR', max_length=2000, null=True, blank=True)
 
     class Meta:
         managed = False
@@ -370,7 +374,7 @@ class LegacyEducationalMaterialControl(models.Model):
 class LegacyEducationalMaterialCategory(models.Model):
     """EducationalMaterialCategory model from the legacy database OpalDB."""
 
-    id = models.AutoField(db_column='ID', primary_key=True)  # noqa: A003
+    id = models.AutoField(db_column='ID', primary_key=True)
     title_en = models.CharField(db_column='title_EN', max_length=128)
     title_fr = models.CharField(db_column='title_FR', max_length=128)
 
@@ -536,7 +540,7 @@ class LegacyHospitalMap(models.Model):
 class LegacyMasterSourceAlias(models.Model):
     """MasterSourceAlias from the legacy database OpalDB."""
 
-    id = models.AutoField(primary_key=True, db_column='ID')  # noqa: A003
+    id = models.AutoField(primary_key=True, db_column='ID')
     external_id = models.CharField(db_column='externalId', max_length=512)
     code = models.CharField(db_column='code', max_length=128)
     description = models.CharField(db_column='description', max_length=128)
@@ -590,8 +594,8 @@ class LegacyDiagnosis(models.Model):
     diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=100)
     description_en = models.CharField(db_column='Description_EN', max_length=200)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
-    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
+    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)
+    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)
     creation_date = models.DateTimeField(db_column='CreationDate')
 
     objects: managers.LegacyDiagnosisManager = managers.LegacyDiagnosisManager()

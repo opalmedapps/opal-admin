@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Users migration."""
 from enum import Enum
 from typing import Any
@@ -23,7 +27,7 @@ class Access(Enum):
 class Command(BaseCommand):
     """Command to migrate users from legacy DB to the new backend users."""
 
-    help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate OAUsers from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -101,10 +105,7 @@ class Command(BaseCommand):
 
         except ValidationError as exception:
             self.stderr.write(self.style.ERROR(
-                'Error: {msg} when saving username: {username}'.format(
-                    msg=exception,
-                    username=clinical_staff_user.username,
-                ),
+                f'Error: {exception} when saving username: {clinical_staff_user.username}',
             ))
             return False
 

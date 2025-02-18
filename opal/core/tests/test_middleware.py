@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 from django.test import Client
@@ -59,7 +63,7 @@ def test_loginrequired_unauthenticated_open_url(client: Client, settings: Settin
     assert response.status_code == HTTPStatus.OK
 
 
-def test_loginrequired_unauthenticated_favicon(client: Client, settings: SettingsWrapper) -> None:
+def test_loginrequired_unauthenticated_favicon(client: Client) -> None:
     """Ensure that open URLs are exempted for unauthenticated requests."""
     response = client.get(reverse('favicon.ico'))
 

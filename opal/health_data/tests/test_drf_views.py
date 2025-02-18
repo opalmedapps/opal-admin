@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import timedelta
 from decimal import Decimal
 from http import HTTPStatus
@@ -389,11 +393,11 @@ def test_unviewed_health_data_success(api_client: APIClient, orms_user: User) ->
 
     assertContains(
         response=response,
-        text=f'{{"count":3,"patient_uuid":"{str(marge_patient.uuid)}"}}',
+        text=f'{{"count":3,"patient_uuid":"{marge_patient.uuid}"}}',
     )
     assertContains(
         response=response,
-        text=f'{{"count":1,"patient_uuid":"{str(homer_patient.uuid)}"}}',
+        text=f'{{"count":1,"patient_uuid":"{homer_patient.uuid}"}}',
     )
 
 
@@ -465,5 +469,5 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
     assert QuantitySample.objects.count() == 3
     assertContains(
         response=response,
-        text=f'[{{"count":3,"patient_uuid":"{str(patient.uuid)}"}}]',
+        text=f'[{{"count":3,"patient_uuid":"{patient.uuid}"}}]',
     )

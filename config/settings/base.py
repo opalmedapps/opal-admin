@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Django base settings to build other settings files upon.
 
@@ -9,6 +13,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
+
 from pathlib import Path
 from typing import Any
 
@@ -78,7 +83,7 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': f"test_{env('DATABASE_NAME')}",
+            'NAME': f'test_{env("DATABASE_NAME")}',
         },
         'ATOMIC_REQUESTS': True,
     },
@@ -373,7 +378,7 @@ ADMIN_URL = 'admin/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # ADMINS =
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
-# MANAGERS = ADMINS  # noqa: E800
+# MANAGERS = ADMINS  # noqa: ERA001
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -455,9 +460,6 @@ AUDITLOG_CID_HEADER = 'Appuserid'
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 
-# Legacy URL for generating questionnaires report
-LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
-
 # Source System/Integration Engine
 SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
 SOURCE_SYSTEM_USER = env('SOURCE_SYSTEM_USER')
@@ -472,6 +474,10 @@ INSTITUTION_CODE = env.str('INSTITUTION_CODE')
 # Questionnaires: Export Report
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
+# Name of the source system that generated PDF report
+REPORT_SOURCE_SYSTEM = env.str('REPORT_SOURCE_SYSTEM')
+# Number assigned by the hospital for the generated PDF report
+REPORT_DOCUMENT_NUMBER = env.str('REPORT_DOCUMENT_NUMBER')
 
 # ORMS SETTINGS
 # Name of the group for the ORMS users

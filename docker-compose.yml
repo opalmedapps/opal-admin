@@ -1,6 +1,10 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 services:
   db:
-    image: mariadb:10.11.10-jammy
+    image: mariadb:10.11.11-jammy
     environment:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_USER=${DATABASE_USER}

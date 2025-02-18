@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Standard and Custom Permissions in Django
 
 This section explains the user permissions management and the convention of adding new permissions. The design and structure of such convention are inspired by standard Django project documentation.

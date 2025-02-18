@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Custom mixins for the Django REST framework.
 
@@ -24,10 +28,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request, clone_request
 from rest_framework.response import Response
 
-_Model = TypeVar('_Model', bound=Model, covariant=True)
+_Model_co = TypeVar('_Model_co', bound=Model, covariant=True)
 
 
-class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
+class AllowPUTAsCreateMixin(GenericAPIView[_Model_co]):
     """
     The following mixin class may be used in order to update or create records in the targeted model.
 
@@ -35,8 +39,9 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
     See: https://gist.github.com/tomchristie/a2ace4577eff2c603b1b
     """
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:  # noqa: WPS210
-        """Update the targeted model or create if it doesn't exist.
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Update the targeted model or create if it doesn't exist.
 
         Args:
             request: request object with parameters to update or create
@@ -62,7 +67,8 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         return Response(serializer.data)
 
     def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Set partial parameter and re-call update method.
+        """
+        Set partial parameter and re-call update method.
 
         Args:
             request: request object with parameters to update or create
@@ -75,8 +81,9 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
-    def _get_object_or_none(self) -> _Model | None:
-        """Attempt to retrieve object.
+    def _get_object_or_none(self) -> _Model_co | None:
+        """
+        Attempt to retrieve object.
 
         If not found we use clone_request to check if the caller has the required permissions for a POST request.
 

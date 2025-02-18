@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing DB routers for multi-database scenarios.
 
@@ -33,7 +37,7 @@ class LegacyDbRouter:
         """
         if model._meta.app_label == self.legacy_app_label:
             return self.legacy_db_name
-        elif model._meta.app_label == self.legacy_questionnaire_app_label:
+        if model._meta.app_label == self.legacy_questionnaire_app_label:
             return self.legacy_questionnaire_db_name
 
         return None
@@ -51,7 +55,8 @@ class LegacyDbRouter:
         """
         if model._meta.app_label == self.legacy_app_label:
             return self.legacy_db_name
-        elif model._meta.app_label == self.legacy_questionnaire_app_label:
+
+        if model._meta.app_label == self.legacy_questionnaire_app_label:
             return self.legacy_questionnaire_db_name
 
         return None
