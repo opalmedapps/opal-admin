@@ -3,6 +3,7 @@ Module containing Pydantic models that define schemas for APIs that an integrati
 
 To avoid confusion with the actual models, the Pydantic models are named with a Schema suffix.
 """
+
 from datetime import date, datetime
 from enum import StrEnum, auto
 
@@ -53,4 +54,4 @@ class PatientByHINSchema(BaseModel):
 class PatientByMRNSchema(HospitalNumberSchema):
     """The request to search for a patient by hospital number (MRN and site code)."""
 
-    pass  # noqa: WPS420, WPS604
+    pass

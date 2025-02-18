@@ -72,7 +72,7 @@ def test_patient_mrns_non_empty() -> None:
 
     data.update({'mrns': []})
 
-    with pytest.raises(ValidationError) as exc:  # noqa: WPS440
+    with pytest.raises(ValidationError) as exc:
         schemas.PatientSchema.model_validate(data)
 
     assert exc.value.error_count() == 1
