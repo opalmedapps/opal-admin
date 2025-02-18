@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Functions in this module provide the ability to communicate with an institution's integration engine."""
+
 from http import HTTPStatus
 from typing import Any
 
