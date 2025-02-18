@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _

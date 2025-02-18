@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Legacy DB Connection
 
 During the migration period from the legacy backend to this backend there exists a second database connection in this project. This is to facilitate retrieval of data out of the legacy database(s). It is especially useful for new functionality that does not exist yet.

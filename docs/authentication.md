@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Authentication & Permissions
 
 The default permissions policy is defined in [FullDjangoModelPermissions][opal.core.drf_permissions.FullDjangoModelPermissions]. It restricts accesses to at least require the `view` model permissions (for `GET` requests).
