@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing models for pharmacy data."""
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -6,7 +10,8 @@ from opal.patients.models import Patient
 
 
 class AbstractQuantityTiming(models.Model):
-    """Describes the quantity and timing information for a given prescription/order.
+    """
+    Describes the quantity and timing information for a given prescription/order.
 
     Quantity/Timing specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Fields/ORC.7
 
@@ -28,7 +33,8 @@ class AbstractQuantityTiming(models.Model):
 
 
 class PhysicianPrescriptionOrder(AbstractQuantityTiming):
-    """Describes the physician's prescription/order in its original state.
+    """
+    Describes the physician's prescription/order in its original state.
 
     Common Order Segment specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/ORC
     """
@@ -54,7 +60,8 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
         verbose_name_plural = _('Physician Prescriptions')
 
     def __str__(self) -> str:
-        """Instance of a physician's order for a patient.
+        """
+        Instance of a physician's order for a patient.
 
         Returns:
             string representation
@@ -69,11 +76,12 @@ class FormularyStatus(models.TextChoices):
     AMBULATORY = 'AMB', _('Ambulatory')
     LEAVE = 'LOA', _('Leave Of Absence')
     TAKEHOME = 'TH', _('Take Home')
-    SELF = 'SELF', _('Self Administration')  # noqa: WPS117
+    SELF = 'SELF', _('Self Administration')
 
 
 class PharmacyEncodedOrder(AbstractQuantityTiming):
-    """Describes the final prescription/order after any alterations mandated by the pharmacy provider.
+    """
+    Describes the final prescription/order after any alterations mandated by the pharmacy provider.
 
     Pharmacy Encoded Order specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
     """
@@ -111,7 +119,8 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
         verbose_name_plural = _('Pharmacy Encodings')
 
     def __str__(self) -> str:
-        """Instance of pharmacy encoding of a physician's original order.
+        """
+        Instance of pharmacy encoding of a physician's original order.
 
         Returns:
             string representation
@@ -120,7 +129,8 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
 
 
 class CodedElement(models.Model):
-    """A uniquely identified substance within some pharmaceutical coding system.
+    """
+    A uniquely identified substance within some pharmaceutical coding system.
 
     Coded Element Data Type specifications:https://hl7-definition.caristix.com/v2/HL7v2.3/DataTypes/CE
     """
@@ -138,7 +148,8 @@ class CodedElement(models.Model):
         unique_together = (('identifier', 'text', 'coding_system'),)
 
     def __str__(self) -> str:
-        """Instance of the unique identifiers for a coded element.
+        """
+        Instance of the unique identifiers for a coded element.
 
         Returns:
             string representation
@@ -147,7 +158,8 @@ class CodedElement(models.Model):
 
 
 class PharmacyRoute(models.Model):
-    """Special pharmacy-provided instructions for the method of delivery of a prescription/order.
+    """
+    Special pharmacy-provided instructions for the method of delivery of a prescription/order.
 
     Pharmacy Route specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
     """
@@ -179,7 +191,8 @@ class PharmacyRoute(models.Model):
         verbose_name_plural = _('Pharmacy Routes')
 
     def __str__(self) -> str:
-        """Instance of a pharmacy route id.
+        """
+        Instance of a pharmacy route id.
 
         Returns:
             string representation
@@ -196,7 +209,8 @@ class ComponentType(models.TextChoices):
 
 
 class PharmacyComponent(models.Model):
-    """Special instructions or compound specifications to produce a requested prescription/order.
+    """
+    Special instructions or compound specifications to produce a requested prescription/order.
 
     Pharmacy Component specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
     """
@@ -222,7 +236,8 @@ class PharmacyComponent(models.Model):
         verbose_name_plural = _('Pharmacy Components')
 
     def __str__(self) -> str:
-        """Instance of a pharmacy component type and id.
+        """
+        Instance of a pharmacy component type and id.
 
         Returns:
             string representation

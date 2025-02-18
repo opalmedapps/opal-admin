@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import timedelta
 
 from django.utils import timezone
@@ -30,7 +34,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code2.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -58,7 +62,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code3.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -81,7 +85,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code2.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions
@@ -107,7 +111,7 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code3.save()
 
         # run management command
-        message, error = self._call_command('expire_outdated_registration_codes')
+        message, _error = self._call_command('expire_outdated_registration_codes')
         registration_codes = RegistrationCode.objects.filter(status=RegistrationCodeStatus.EXPIRED)
 
         # assertions

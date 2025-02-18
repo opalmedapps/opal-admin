@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 exclude: |
   (?x)(
     ^(
@@ -15,6 +19,7 @@ repos:
   - id: check-merge-conflict
   - id: check-shebang-scripts-are-executable
   - id: check-json
+  - id: check-toml
   - id: check-yaml
     args: ['--unsafe']
   - id: name-tests-test
@@ -22,10 +27,15 @@ repos:
   - id: double-quote-string-fixer
   - id: end-of-file-fixer
   - id: trailing-whitespace
-- repo: https://github.com/PyCQA/isort
-  rev: 5.13.2
+# https://docs.astral.sh/ruff/integrations/#pre-commit
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.6
   hooks:
-  - id: isort
+    # Run the linter with fixes
+    - id: ruff
+      args: [--fix]
+#     # Run the formatter
+#     - id: ruff-format
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   rev: v0.17.2
   hooks:
@@ -38,7 +48,7 @@ repos:
     # see: https://github.com/asottile/pyupgrade/issues/768
     args: ['--py311-plus']
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.22.2
+  rev: 1.23.1
   hooks:
   - id: django-upgrade
     args: [--target-version, "4.2"]
@@ -62,13 +72,6 @@ repos:
     # derived from this answer: https://stackoverflow.com/a/17204198
     entry: |
       <form(?=\s|>)(?!(?:[^>=]|=(['"])(?:(?!\1).)*\1)*?\snovalidate)[^>]*>
-  - id: flake8
-    name: flake8
-    description: wemake-python-styleguide++ enforcement
-    entry: flake8
-    args: ["--config=setup.cfg"]
-    language: python
-    types: [python]
   - id: mypy
     name: mypy
     description: static type checking

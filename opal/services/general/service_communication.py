@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for communication with an external component."""
 
 import json
@@ -17,7 +21,8 @@ SOURCE_SYSTEM_TIMEOUT = 30
 
 
 class ServiceHTTPCommunicationManager:
-    """Manager that provides functionality for communication with an external component.
+    """
+    Manager that provides functionality for communication with an external component.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 
@@ -30,7 +35,7 @@ class ServiceHTTPCommunicationManager:
     password: str
     dump_json_payload: bool
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         base_url: str,
         display_name: str,
@@ -65,7 +70,8 @@ class ServiceHTTPCommunicationManager:
         payload: dict[str, Any],
         metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Send data to the external component by making HTTP POST request.
+        """
+        Send data to the external component by making HTTP POST request.
 
         Args:
             endpoint (str): communication endpoint exposed by the service for communication with it through the network
@@ -89,10 +95,7 @@ class ServiceHTTPCommunicationManager:
         except requests.exceptions.RequestException as req_exp:
             # log external component errors
             logger.exception(
-                '{component_name} error: {error_message}'.format(
-                    component_name=self.display_name,
-                    error_message=str(req_exp),
-                ),
+                f'{self.display_name} request error',
             )
             return self.error_handler.generate_error({
                 'message': str(req_exp),
@@ -106,7 +109,8 @@ class ServiceHTTPCommunicationManager:
         params: dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Retrieve data from the external component by making HTTP GET request.
+        """
+        Retrieve data from the external component by making HTTP GET request.
 
         Args:
             endpoint (str): communication endpoint exposed by the external component

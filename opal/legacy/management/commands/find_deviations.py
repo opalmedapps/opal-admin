@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
 from typing import Any
 
@@ -41,7 +45,7 @@ LEGACY_PATIENT_QUERY = """
         CONVERT_TZ(P.DeathDate, '{timezone}', 'UTC') as DeathDate
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
-"""  # noqa: WPS323
+"""  # noqa: RUF027
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -76,7 +80,7 @@ DJANGO_PATIENT_QUERY = """
         PP.date_of_death as DeathDate
     FROM patients_patient PP
     WHERE PP.legacy_id IS NOT NULL;
-"""  # noqa: WPS323
+"""
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
     SELECT
@@ -104,7 +108,8 @@ DJANGO_CAREGIVER_QUERY = """
 
 
 class Command(BaseCommand):
-    """Command to find differences in data between legacy and new (Django) databases.
+    """
+    Command to find differences in data between legacy and new (Django) databases.
 
     The command compares:
 
@@ -138,11 +143,11 @@ class Command(BaseCommand):
     help = """
         Check the legacy and new back end databases
         for the data deviations in the `Patient` and `User/Caregiver` tables.
-    """  # noqa: A003
+    """
     requires_migrations_checks = True
 
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle deviation check for the `Patient` and `User/Caregiver` models/tables.
 
@@ -202,8 +207,8 @@ class Command(BaseCommand):
         if err:
             # trigger a non-zero exit code
             raise CommandError(err)
-        else:
-            self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
+
+        self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
 
     def _get_deviations_err(
         self,
@@ -212,7 +217,8 @@ class Command(BaseCommand):
         django_model_name: str,
         legacy_table_name: str,
     ) -> str | None:
-        """Build error string based on the model/table records deviations.
+        """
+        Build error string based on the model/table records deviations.
 
         Args:
             django_model_records: Django model's records
@@ -266,7 +272,8 @@ class Command(BaseCommand):
         unmatched_records: set[tuple[str, ...]],
         block_name: str,
     ) -> str:
-        """Create string that lists all the unmatched records.
+        """
+        Create string that lists all the unmatched records.
 
         Args:
             unmatched_records: set of the records that will be added to the string

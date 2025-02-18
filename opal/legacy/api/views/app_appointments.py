@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used to get and update appointment details."""
 from typing import Any
 
@@ -82,11 +86,11 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
                 source_system_id=source_system_id,
                 source_database=source_database,
             )
-        except (models.LegacyAppointment.DoesNotExist, models.LegacyAppointment.MultipleObjectsReturned):
+        except (models.LegacyAppointment.DoesNotExist, models.LegacyAppointment.MultipleObjectsReturned) as error:
             # Ensure only one appointment is found
             raise NotFound(
                 detail='Cannot find a unique appointment matching criteria.',
-            )
+            ) from error
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """

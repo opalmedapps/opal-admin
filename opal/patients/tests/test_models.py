@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import date, datetime, timedelta
 
 from django.core.exceptions import ValidationError
@@ -139,7 +143,7 @@ def test_patient_str() -> None:
 @pytest.mark.parametrize(('date_of_birth', 'reference_date', 'age'), [
     (date(2004, 1, 1), date(2023, 10, 1), 19),
     (date(2004, 12, 1), date(2023, 1, 1), 18),
-    (date.today() - relativedelta(years=23), None, 23),
+    (timezone.now().date() - relativedelta(years=23, days=1), None, 23),
 ])
 def test_patient_age_calculation(date_of_birth: date, reference_date: date | None, age: int) -> None:
     """Ensure the `calculate_age` method calculates the age correctly."""
@@ -173,7 +177,7 @@ def test_patient_uuid_unique() -> None:
 
 def test_patient_age() -> None:
     """Ensure that the field age of the patient is calculated correctly."""
-    date_of_birth = date.today() - relativedelta(years=42)
+    date_of_birth = timezone.now().date() - relativedelta(years=42)
     patient = factories.Patient(date_of_birth=date_of_birth)
 
     assert patient.age == 42
@@ -183,7 +187,7 @@ def test_patient_age() -> None:
 def test_patient_is_adult(adulthood_age: int) -> None:
     """Ensure that a patient is considered an adult."""
     hospital_settings_factories.Institution(adulthood_age=adulthood_age)
-    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    date_of_birth = timezone.now().date() - relativedelta(years=adulthood_age)
     patient = factories.Patient(date_of_birth=date_of_birth)
 
     assert patient.is_adult is True
@@ -193,7 +197,7 @@ def test_patient_is_adult(adulthood_age: int) -> None:
 def test_patient_is_adult_pediatric(adulthood_age: int) -> None:
     """Ensure that a patient is considered an adult."""
     hospital_settings_factories.Institution(adulthood_age=adulthood_age)
-    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    date_of_birth = timezone.now().date() - relativedelta(years=adulthood_age)
     date_of_birth += relativedelta(days=1)
     patient = factories.Patient(date_of_birth=date_of_birth)
 
@@ -396,9 +400,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
     relationship.start_date = calculated_end_date - relativedelta(years=2)
     relationship.end_date = calculated_end_date + timedelta(days=1)
 
-    expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
-        calculated_end_date=calculated_end_date,
-    )
+    expected_message = f'End date for Caregiver relationship cannot be later than {calculated_end_date}.'
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
@@ -735,7 +737,7 @@ def test_invalid_date_of_death() -> None:
     """Ensure that the date of death is invalid if date of birth is later."""
     patient = factories.Patient()
     patient.date_of_birth = date(2022, 11, 20)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 10, 20))
+    patient.date_of_death = datetime(2022, 10, 20, tzinfo=timezone.get_current_timezone())
 
     expected_message = 'Date of death cannot be earlier than date of birth.'
     with assertRaisesMessage(ValidationError, expected_message):
@@ -746,7 +748,7 @@ def test_valid_date_of_death() -> None:
     """Ensure that the date of death is entered and valid."""
     patient = factories.Patient()
     patient.date_of_birth = date(2022, 10, 20)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 11, 20))
+    patient.date_of_death = datetime(2022, 11, 20, tzinfo=timezone.get_current_timezone())
 
     patient.clean()
 
@@ -755,7 +757,7 @@ def test_same_birth_and_death_date() -> None:
     """Ensure that the date of death is valid if same as date of birth."""
     patient = factories.Patient()
     patient.date_of_birth = date(2022, 1, 23)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 1, 23))
+    patient.date_of_death = datetime(2022, 1, 23, tzinfo=timezone.get_current_timezone())
 
     patient.clean()
 

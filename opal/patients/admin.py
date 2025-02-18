@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides admin options for patient models."""
 from django.contrib import admin
 from django.http import HttpRequest
@@ -44,7 +48,8 @@ class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
     # Django Admin deletion privileges discussion:
     # https://stackoverflow.com/questions/38127581/django-admin-has-delete-permission-ignored-for-delete-action
     def has_delete_permission(self, request: HttpRequest, obj: models.RelationshipType | None = None) -> bool:
-        """Override default default permission behaviour for restricted role types.
+        """
+        Override default default permission behaviour for restricted role types.
 
         Args:
             request: Http request details.

@@ -1,6 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module is used to provide configuration, fixtures, and plugins for pytest within usage-statistics app."""
 
 import datetime as dt
+
+from django.utils import timezone
 
 import pytest
 
@@ -11,14 +17,15 @@ from .common import GroupByComponent, GroupReportType
 
 @pytest.fixture
 def group_usage_stats_form() -> GroupUsageStatisticsForm:
-    """Fixture providing data for the `GroupUsageStatisticsForm`.
+    """
+    Fixture providing data for the `GroupUsageStatisticsForm`.
 
     Returns:
         `GroupUsageStatisticsForm` object
     """
     form_data = {
-        'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
-        'end_date': dt.datetime.now().date(),
+        'start_date': timezone.now().date() - dt.timedelta(days=7),
+        'end_date': timezone.now().date(),
         'group_by': GroupByComponent.YEAR.name,
         'report_type': GroupReportType.SUMMARY_REPORT.name,
     }
@@ -28,14 +35,15 @@ def group_usage_stats_form() -> GroupUsageStatisticsForm:
 
 @pytest.fixture
 def individual_usage_stats_form() -> IndividualUsageStatisticsForm:
-    """Fixture providing data for the `IndividualUsageStatisticsForm`.
+    """
+    Fixture providing data for the `IndividualUsageStatisticsForm`.
 
     Returns:
         `IndividualUsageStatisticsForm` object
     """
     form_data = {
-        'start_date': dt.datetime.now().date() - dt.timedelta(days=7),
-        'end_date': dt.datetime.now().date(),
+        'start_date': timezone.now().date() - dt.timedelta(days=7),
+        'end_date': timezone.now().date(),
     }
 
     return IndividualUsageStatisticsForm(data=form_data)

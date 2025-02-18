@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 <!-- markdownlint-disable-next-line first-line-heading -->
 **By submitting this merge request, I confirm the following:** _please fill any appropriate checkboxes, e.g: [x]_
 

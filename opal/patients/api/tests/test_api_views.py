@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for the `patients` app REST API endpoints."""
+
 import json
 from collections.abc import Callable
 from datetime import datetime
@@ -174,7 +179,7 @@ class TestRetrieveRegistrationDetailsView:
         """Test api registration code with summary serializer not retrieve deceased patient."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
-        date_of_death = timezone.make_aware(datetime(2099, 9, 27))
+        date_of_death = datetime(2099, 9, 27, tzinfo=timezone.get_current_timezone())
         patient = Patient(date_of_death=date_of_death)
         relationship = Relationship(patient=patient)
         registration_code = RegistrationCode(relationship=relationship)
@@ -576,9 +581,9 @@ class TestPatientDemographicView:
 
         api_client.force_login(interface_engine_user)
         payload = self._get_valid_input_data()
-        payload['date_of_death'] = datetime.now().replace(
+        payload['date_of_death'] = timezone.now().astimezone().replace(
             microsecond=0,
-        ).astimezone().isoformat()
+        ).isoformat()
 
         response = api_client.put(
             reverse('api:patient-demographic-update'),
@@ -597,12 +602,13 @@ class TestPatientDemographicView:
         assert relationships[0].status == patient_models.RelationshipStatus.CONFIRMED
         assert relationships[1].status == patient_models.RelationshipStatus.PENDING
         assert relationships[0].end_date is not None
-        assert relationships[0].end_date > datetime.now().date()
+        assert relationships[0].end_date > timezone.now().date()
         assert relationships[1].end_date is not None
-        assert relationships[1].end_date > datetime.now().date()
+        assert relationships[1].end_date > timezone.now().date()
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for the patient demographic update.
+        """
+        Generate valid JSON data for the patient demographic update.
 
         Returns:
             dict: valid JSON data

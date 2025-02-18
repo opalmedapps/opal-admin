@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import datetime
 
 from django.utils import timezone
@@ -10,7 +14,7 @@ from ..models import QuantitySample, QuantitySampleType, SampleSourceType
 
 pytestmark = pytest.mark.django_db
 
-QUANTITY_SAMPLE_DATA = {  # noqa: WPS407
+QUANTITY_SAMPLE_DATA = {
     'start_date': timezone.now(),
     'device': 'Test Device',
     'source': SampleSourceType.PATIENT,

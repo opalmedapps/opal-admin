@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for the REST API endpoints of the `pharmacy` app."""
 from pathlib import Path
 from uuid import uuid4
@@ -25,7 +29,7 @@ FIXTURES_DIR = Path(__file__).resolve().parents[3].joinpath(
 PATIENT_UUID = uuid4()
 
 
-class TestCreatePrescriptionView:  # noqa: WPS338
+class TestCreatePrescriptionView:
     """Class wrapper for pharmacy endpoint tests."""
 
     @pytest.fixture(autouse=True)
@@ -199,10 +203,11 @@ class TestCreatePrescriptionView:  # noqa: WPS338
             content_type='application/hl7-v2+er7',
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert not response.data['pharmacy_encoded_order']['pharmacy_route']['administration_method']  # noqa: E501
+        assert not response.data['pharmacy_encoded_order']['pharmacy_route']['administration_method']
 
     def _load_hl7_fixture(self, filename: str) -> str:
-        """Load a HL7 fixture for testing.
+        """
+        Load a HL7 fixture for testing.
 
         Returns:
             string of the fixture data

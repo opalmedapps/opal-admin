@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import base64
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -8,7 +12,6 @@ from django.utils.crypto import get_random_string
 import pytest
 from fpdf import FPDFException
 from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework import status
 from rest_framework.response import Response
@@ -177,7 +180,6 @@ class TestQuestionnairesReportView:
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
-        settings: SettingsWrapper,
         questionnaire_data: None,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
@@ -189,7 +191,7 @@ class TestQuestionnairesReportView:
             site=patient_factories.Site(acronym='RVH'),
         )
 
-        message = 'An error occurred during report generation.'
+        message = 'An error occurred during questionnaire report generation.'
         error_response = {'detail': message}
 
         mock_generate = mocker.patch(
@@ -200,7 +202,7 @@ class TestQuestionnairesReportView:
         response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
         mock_generate.assert_called_once()
-        assert caplog.records[0].message == 'some PDF error'
+        assert caplog.records[0].message == 'An error occurred during questionnaire report generation'
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data == error_response
 
@@ -290,8 +292,47 @@ class TestQuestionnairesReportView:
                 site=hospital_patient.site.acronym,
                 base64_content=base64.b64encode(b'pdf').decode('utf-8'),
                 document_number='MU-8624',  # TODO: clarify where to get the value
-                document_date=mocker.ANY,  # TODO: get the exact time of the report creation
+                document_date=document_date,
             ),
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data is None
+
+    # Marking this slow since the test uses chromium
+    @pytest.mark.slow
+    # Allow hosts to make the test work for Windows, Linux and Unix-based environements
+    @pytest.mark.allow_hosts(['127.0.0.1'])
+    @pytest.mark.django_db(databases=['default', 'questionnaire'])
+    def test_pdf_generation(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+        questionnaire_data: None,
+    ) -> None:
+        """Test that PDF report is created successfully."""
+        hospital_settings_factories.Institution(pk=1)
+        patient = patient_factories.Patient(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient(
+            patient=patient,
+            site=patient_factories.Site(acronym='RVH'),
+        )
+
+        mock_export_pdf_report = mocker.patch(
+            'opal.services.hospital.hospital.SourceSystemService.export_pdf_report',
+            return_value={'status': 'success'},
+        )
+
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data is None
+        calls = mock_export_pdf_report.call_args_list
+
+        assert len(calls) == 1
+        encoded_pdf = calls[0].args[0].base64_content
+
+        assert encoded_pdf
+        base64_pdf = base64.b64decode(encoded_pdf)
+
+        assert base64_pdf.startswith(b'%PDF-')

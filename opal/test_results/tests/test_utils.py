@@ -1,14 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import datetime
 from typing import Any
 
+from django.utils import timezone
+
 import pytest
-from _pytest.logging import LogCaptureFixture  # noqa: WPS436
+from _pytest.logging import LogCaptureFixture
 from pytest_mock.plugin import MockerFixture
 
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.hospital_settings.models import Site
 
-from ..utils import (  # noqa: WPS450
+from ..utils import (
     _find_doctor_name,
     _find_note_date,
     _get_site_instance,
@@ -20,7 +26,8 @@ pytestmark = pytest.mark.django_db
 
 
 def _create_empty_parsed_observations() -> dict[str, list[str]]:
-    """Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
+    """
+    Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
 
     Returns:
         parsed observations dictionary
@@ -34,14 +41,15 @@ def _create_empty_parsed_observations() -> dict[str, list[str]]:
 
 
 def _create_empty_parsed_notes() -> dict[str, Any]:
-    """Create empty parsed notes dictionary with prepared_by and prepared_at fields.
+    """
+    Create empty parsed notes dictionary with prepared_by and prepared_at fields.
 
     Returns:
         parsed notes dictionary
     """
     return {
         'prepared_by': '',
-        'prepared_at': datetime(1, 1, 1),
+        'prepared_at': datetime(1, 1, 1, tzinfo=timezone.get_current_timezone()),
     }
 
 
@@ -72,8 +80,14 @@ def test_find_note_date_success() -> None:
     note_text_before_midday = r'Electronically signed on 23-NOV-2023 09:21 am\.br\By doctor_fname doctor_lname, MD'
     note_text_after_midday = r'Electronically signed on 23-NOV-2023 09:21 pm\.br\By doctor_fname doctor_lname, MD'
 
-    assert _find_note_date(note_text_before_midday) == datetime(2023, 11, 23, 9, 21, 0)
-    assert _find_note_date(note_text_after_midday) == datetime(2023, 11, 23, 21, 21, 0)
+    assert _find_note_date(note_text_before_midday) == datetime(
+        2023, 11, 23, 9, 21, 0,
+        tzinfo=timezone.get_current_timezone(),
+    )
+    assert _find_note_date(note_text_after_midday) == datetime(
+        2023, 11, 23, 21, 21, 0,
+        tzinfo=timezone.get_current_timezone(),
+    )
 
 
 def test_find_note_date_fail() -> None:
@@ -82,9 +96,9 @@ def test_find_note_date_fail() -> None:
     note_text_miss_time = r'Electronically signed on 23-NOV-2023 am\.br\By doctor_fname doctor_lname, MD'
     note_text_miss_am = r'Electronically signed on 23-NOV-2023 09:21 \.br\By doctor_fname doctor_lname, MD'
 
-    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1)
-    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1)
-    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1)
+    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
+    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
+    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
 def test_parse_notes_with_empty_array() -> None:
@@ -107,7 +121,7 @@ def test_parse_notes_with_no_note_text() -> None:
 def test_parse_notes_success(mocker: MockerFixture) -> None:
     """Ensure that parse_notes() successfully parses notes list of dictionaries."""
     # TODO: update the unit test once _parse_notes() is finalized
-    prepared_at = datetime.now()
+    prepared_at = timezone.now()
     mocker.patch(
         'opal.test_results.utils._find_doctor_name',
         return_value='Atilla Omeroglu, MD',

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for the REST API endpoints of the `databank` app."""
 import json
 from typing import Any
@@ -270,7 +274,8 @@ class TestCreateDatabankConsentView:
         assert DatabankConsent.objects.count() == 0
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for a DatabankConsent record.
+        """
+        Generate valid JSON data for a DatabankConsent record.
 
         Returns:
             dict: valid JSON data

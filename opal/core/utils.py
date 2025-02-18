@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """App core util functions."""
 import csv
 import io
@@ -25,7 +29,8 @@ SHEET_TITLE_MAX_LENGTH = 31
 
 
 def generate_random_number(length: int) -> str:
-    """Generate random number with the parameter length.
+    """
+    Generate random number with the parameter length.
 
     Args:
         length: length of the number.
@@ -37,7 +42,8 @@ def generate_random_number(length: int) -> str:
 
 
 def generate_random_uuid(length: int) -> str:
-    """Generate a random uuid hexadecimal string with a given length.
+    """
+    Generate a random uuid hexadecimal string with a given length.
 
     Args:
         length: length of a random uuid hexadecimal string.
@@ -49,7 +55,8 @@ def generate_random_uuid(length: int) -> str:
 
 
 def generate_random_registration_code(institution_code: str, length: int) -> str:
-    """Generate a random alphanumeric string with a given length.
+    """
+    Generate a random alphanumeric string with a given length.
 
     Args:
         institution_code: intitution code for registration.
@@ -96,7 +103,8 @@ def qr_code(text: str) -> bytes:
 
 
 def create_zip(files: dict[str, bytes]) -> bytes:
-    """Create a ZIP file from a mapping of files.
+    """
+    Create a ZIP file from a mapping of files.
 
     The ZIP file is returned as bytes.
 
@@ -114,7 +122,8 @@ def create_zip(files: dict[str, bytes]) -> bytes:
 
 
 def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
-    """Convert a list of dictionaries to a CSV in byte format.
+    """
+    Convert a list of dictionaries to a CSV in byte format.
 
     Each dictionary is expected to have the same keys, as the CSV header is
     determined by the keys of the first dictionary.
@@ -142,7 +151,8 @@ def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
 
 
 def dict_to_xlsx(dicts: WorkbookData) -> bytes:
-    """Create an XLSX file from a mapping of dictionaries and return it as bytes.
+    """
+    Create an XLSX file from a mapping of dictionaries and return it as bytes.
 
     Each `RowData` dictionary is expected to have the same keys, as the sheet header is
     determined by the keys of the first dictionary.
@@ -174,7 +184,8 @@ def dict_to_xlsx(dicts: WorkbookData) -> bytes:
 
 
 def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData) -> None:
-    """Add a sheet with the given name and rows to the workbook.
+    """
+    Add a sheet with the given name and rows to the workbook.
 
     Args:
         workbook: the workbook to add the sheet to.

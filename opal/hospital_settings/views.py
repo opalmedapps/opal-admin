@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides views for hospital-specific settings."""
 from typing import Any
 
@@ -33,7 +37,8 @@ class InstitutionListView(PermissionRequiredMixin, SingleTableView):
     template_name = 'hospital_settings/institution/institution_list.html'
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        """Update the context with whether a new institution can be created.
+        """
+        Update the context with whether a new institution can be created.
 
         Args:
             kwargs: the context data
@@ -75,7 +80,7 @@ class InstitutionDeleteView(PermissionRequiredMixin, DeleteView[Institution, Mod
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: Institution  # noqa: A003
+    object: Institution
     model = Institution
     permission_required = ('hospital_settings.can_manage_institutions',)
     template_name = 'hospital_settings/institution/institution_confirm_delete.html'
@@ -134,7 +139,7 @@ class SiteDeleteView(PermissionRequiredMixin, DeleteView[Site, ModelForm[Site]])
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: Site  # noqa: A003
+    object: Site
     model = Site
     permission_required = ('hospital_settings.can_manage_sites',)
     template_name = 'hospital_settings/site/site_confirm_delete.html'

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Management command for inserting test data."""
 from datetime import date, datetime
 from decimal import Decimal
@@ -186,7 +190,7 @@ class Command(BaseCommand):
     Inserts an institution, sites, patients, caregivers and relationships between the patients and caregivers.
     """
 
-    help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'  # noqa: A003
+    help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -264,7 +268,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
     """
     Create all test data.
 
@@ -280,13 +284,13 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     Args:
         institution_option: the chosen institution for which the test data should be inserted
     """
-    today = date.today()
+    today = timezone.now()
 
     # hospital settings
     institution = create_institution(institution_option)
     sites = create_sites(institution_option, institution)
 
-    mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
+    mrn_data: dict[str, list[tuple[Site, str]]] = {}
 
     for key, value in MRN_DATA[institution_option].items():
         new_value = [(sites[site], mrn) for site, mrn in value]
@@ -637,104 +641,62 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         _create_pathology_result(
             patient=marge,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=2),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=2),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=2),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=2),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=2),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=2),
             legacy_document_id=7,
         )
         _create_pathology_result(
             patient=marge,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             legacy_document_id=8,
         )
         # Homer received his pathology 8 days ago
         _create_pathology_result(
             patient=homer,
             site=sites['MGH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=8),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=8),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=8),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=8),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=8),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=8),
             legacy_document_id=6,
         )
         # Fred received his pathology 4 days ago
         _create_pathology_result(
             patient=fred,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             legacy_document_id=12,
         )
         # Bart received his pathology 5 days ago
         _create_pathology_result(
             patient=bart,
             site=sites['MCH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=5),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=5),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=5),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=5),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             legacy_document_id=5,
         )
         # Pebbles received her pathology 4 days ago
         _create_pathology_result(
             patient=pebbles,
             site=sites['MCH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=4),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             legacy_document_id=13,
         )
         # Wednesday received her pathology 15 days ago
         _create_pathology_result(
             patient=wednesday,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=15),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=15),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=15),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=15),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=15),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=15),
             legacy_document_id=16,
         )
         # Create a fake pathology for laurie as well to complete her dataset
@@ -742,30 +704,18 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         _create_pathology_result(
             patient=laurie,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=6, months=0, days=15),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=6, months=0, days=15),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=6, months=0, days=15),
-            ),
+            collected_at=timezone.now() - relativedelta(years=6, months=0, days=15),
+            received_at=timezone.now() - relativedelta(years=6, months=0, days=15),
+            reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             legacy_document_id=31,
         )
         # Rory pathology 12 days ago
         _create_pathology_result(
             patient=rory,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
-            received_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
-            reported_at=timezone.make_aware(
-                datetime.now() - relativedelta(years=0, months=0, days=12),
-            ),
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             legacy_document_id=32,
         )
 
@@ -834,7 +784,7 @@ def create_sites(institution_option: InstitutionOption, institution: Institution
     return result
 
 
-def _create_site(
+def _create_site(  # noqa: PLR0913, PLR0917
     institution: Institution,
     name: str,
     name_fr: str,
@@ -891,7 +841,7 @@ def _create_site(
     return site
 
 
-def _create_patient(
+def _create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -950,7 +900,7 @@ def _create_patient(
     return patient
 
 
-def _create_caregiver(
+def _create_caregiver(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     username: str,
@@ -1004,7 +954,7 @@ def _create_caregiver(
     return profile
 
 
-def _create_relationship(
+def _create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver: CaregiverProfile,
     relationship_type: RelationshipType,
@@ -1072,17 +1022,17 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
     _create_security_answer(
         caregiver,
         question1,
-        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',  # noqa: E501
+        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',
     )
     _create_security_answer(
         caregiver,
         question2,
-        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',  # noqa: E501
+        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',
     )
     _create_security_answer(
         caregiver,
         question3,
-        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',  # noqa: E501
+        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',
     )
 
 
@@ -1101,11 +1051,11 @@ def _create_date(relative_years: int, month: int, day: int) -> date:
     Returns:
         the date with the given month and day and the year the given number of years before today
     """
-    current_year = date.today().year
+    current_year = timezone.now().year
 
     # is the current date before the birth date
     # if so, to have the correct age, we need to add an extra year
-    before_birth_date = date.today() < date(current_year, month, day)
+    before_birth_date = timezone.now().date() < date(current_year, month, day)
     relative_years += before_birth_date
 
     return date(current_year, month, day) - relativedelta(years=relative_years)
@@ -1127,7 +1077,7 @@ def _relative_date(base_date: date, years: int) -> date:
     return base_date + relativedelta(years=years)
 
 
-def _create_pathology_result(
+def _create_pathology_result(  # noqa: PLR0913, PLR0917
     patient: Patient,
     site: Site,
     collected_at: datetime,

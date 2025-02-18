@@ -1,7 +1,13 @@
-"""This module provides custom permissions for the Django REST framework.
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""
+This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
+
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -90,9 +96,7 @@ class _UsernameRequired(permissions.IsAuthenticated):
         """
         if not hasattr(self, 'required_username') or not self.required_username:
             raise ImproperlyConfigured(
-                'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
-                    class_=self.__class__.__name__,
-                ),
+                f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.'
             )
 
         return super().has_permission(request, view) and (
@@ -145,8 +149,7 @@ class IsORMSUser(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
         """
         return super().has_permission(request, view) and (
-            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
-            or request.user.is_superuser
+            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists() or request.user.is_superuser
         )
 
 
@@ -300,7 +303,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         valid_relationships = relationships_with_target.filter(status=RelationshipStatus.CONFIRMED)
         if not valid_relationships.exists():
             raise exceptions.PermissionDenied(
-                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
+                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
             )
 
 
@@ -359,5 +362,5 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         valid_relationships = [rel for rel in relationships_with_target if rel.type.role_type == RoleType.SELF]
         if not valid_relationships:
             raise exceptions.PermissionDenied(
-                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
+                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.'
             )

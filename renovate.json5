@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
@@ -32,11 +36,6 @@
       "matchDatasources": ["docker", "docker-compose"],
       "semanticCommitType": "build"
     },
-    // Group flake8-related updates
-    {
-      "matchPackagePatterns": ["flake8"],
-      "groupName": "flake8 packages"
-    },
     // Combine mkdocs-material updates for Python and Docker
     {
       "matchPackagePatterns": ["mkdocs-material"],
@@ -56,6 +55,11 @@
     {
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
+    },
+    // Combine ruff and ruff-pre-commit
+    {
+      "matchPackagePatterns": "ruff-pre-commit|ruff$",
+      "groupName": "ruff",
     },
   ],
 }

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 from rest_framework import viewsets
 from rest_framework.request import Request

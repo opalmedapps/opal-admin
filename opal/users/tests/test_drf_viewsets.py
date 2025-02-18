@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for the `users` app REST API viewsets endpoints."""
+
 import secrets
 from collections.abc import Callable
 from http import HTTPStatus
@@ -67,10 +72,12 @@ def test_userviewset_retrieve_user_in_group_pass(
     user = user_factories.ClinicalStaff()
     group.user_set.add(user)
 
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': user.username},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        )
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.data == {'groups': [group.pk]}
@@ -88,10 +95,12 @@ def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_use
     group2.user_set.add(user)
 
     # test retrieve
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': user.username},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -137,10 +146,12 @@ def test_userviewset_add_multiple_groups_to_user_pass(api_client: APIClient, adm
     group2.user_set.add(user)
 
     # test retrieve
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': user.username},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -187,10 +198,12 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
     group2.user_set.add(user)
 
     # test retrieve
-    response = api_client.get(reverse(
-        'api:users-detail',
-        kwargs={'username': user.username},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -221,7 +234,7 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
 
 def test_userviewset_create_user_password(admin_api_client: APIClient) -> None:
     """The user is created with the correct password hash."""
-    password = '123456Opal!!'  # noqa: S105
+    password = '123456Opal!!'
     data = {
         'username': 'testuser',
         'password': password,
@@ -249,7 +262,7 @@ def test_userviewset_create_user_no_password(admin_api_client: APIClient) -> Non
     assert response.status_code == HTTPStatus.CREATED
 
     user = User.objects.get(username='testuser')
-    assert user.password == ''  # noqa: S105
+    assert user.password == ''
 
 
 def test_userviewset_create_user_password_mismatch(admin_api_client: APIClient) -> None:
@@ -489,10 +502,12 @@ def test_userviewset_set_manager_user_action_pass(api_client: APIClient, admin_u
     # assert user does not have any group yet
     assert not clinical_user.groups.all()
 
-    response = api_client.put(reverse(
-        'api:users-set-manager-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-set-manager-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -511,10 +526,12 @@ def test_userviewset_unset_manager_user_action_pass(api_client: APIClient, admin
     clinical_user = user_factories.ClinicalStaff()
     clinical_user.groups.add(manager_group)
 
-    response = api_client.put(reverse(
-        'api:users-unset-manager-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-unset-manager-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -529,10 +546,12 @@ def test_userviewset_set_manager_wrong_user_action_fail(api_client: APIClient, a
     user_factories.GroupFactory()
     user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
 
-    response = api_client.put(reverse(
-        'api:users-set-manager-user',
-        kwargs={'username': 'not_exist_user'},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-set-manager-user',
+            kwargs={'username': 'not_exist_user'},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -546,10 +565,12 @@ def test_userviewset_unset_manager_wrong_user_action_fail(api_client: APIClient,
     user_factories.GroupFactory()
     user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
 
-    response = api_client.put(reverse(
-        'api:users-unset-manager-user',
-        kwargs={'username': 'not_exist_user'},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-unset-manager-user',
+            kwargs={'username': 'not_exist_user'},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -563,14 +584,16 @@ def test_userviewset_set_manager_no_group_action_fail(api_client: APIClient, adm
     user_factories.GroupFactory()
     clinical_user = user_factories.ClinicalStaff()
 
-    response = api_client.put(reverse(
-        'api:users-set-manager-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-set-manager-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'Manager group not found.'
+    assert str(response.data['detail']) == 'User manager group not found.'
 
 
 def test_userviewset_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -580,14 +603,16 @@ def test_userviewset_unset_manager_no_group_action_fail(api_client: APIClient, a
     user_factories.GroupFactory()
     clinical_user = user_factories.ClinicalStaff()
 
-    response = api_client.put(reverse(
-        'api:users-unset-manager-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-unset-manager-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'Manager group not found.'
+    assert str(response.data['detail']) == 'User manager group not found.'
 
 
 def test_api_deactivate_user_action_pass(api_client: APIClient, admin_user: User) -> None:
@@ -597,10 +622,12 @@ def test_api_deactivate_user_action_pass(api_client: APIClient, admin_user: User
     # add one user
     clinical_user = user_factories.ClinicalStaff()
 
-    response = api_client.put(reverse(
-        'api:users-deactivate-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-deactivate-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -612,10 +639,12 @@ def test_api_deactivate_user_action_fail(api_client: APIClient, admin_user: User
     """Test the fail case of deactivating a non-exist user using the action `deactivate-user`."""
     api_client.force_login(user=admin_user)
 
-    response = api_client.put(reverse(
-        'api:users-deactivate-user',
-        kwargs={'username': 'not_exist_user'},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-deactivate-user',
+            kwargs={'username': 'not_exist_user'},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -629,10 +658,12 @@ def test_api_reactivate_user_action_pass(api_client: APIClient, admin_user: User
     # add one user
     clinical_user = user_factories.ClinicalStaff(is_active=False)
 
-    response = api_client.put(reverse(
-        'api:users-reactivate-user',
-        kwargs={'username': clinical_user.username},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-reactivate-user',
+            kwargs={'username': clinical_user.username},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
@@ -644,10 +675,12 @@ def test_api_reactivate_user_action_fail(api_client: APIClient, admin_user: User
     """Test the fail case of reactivating a non-exist user using the action `reactivate-user`."""
     api_client.force_login(user=admin_user)
 
-    response = api_client.put(reverse(
-        'api:users-reactivate-user',
-        kwargs={'username': 'not_exist_user'},
-    ))
+    response = api_client.put(
+        reverse(
+            'api:users-reactivate-user',
+            kwargs={'username': 'not_exist_user'},
+        )
+    )
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND

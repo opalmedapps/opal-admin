@@ -1,4 +1,10 @@
-from datetime import date, datetime, timedelta
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from datetime import timedelta
+
+from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
@@ -16,22 +22,22 @@ def test_report_data_type() -> None:
         site='RVH',
         base64_content='base64',
         document_number='FMU',
-        document_date=datetime.now(),
+        document_date=timezone.now(),
     )
 
 
 def test_patient_data_type() -> None:
     """Ensure `SourceSystemPatientData` NamedTuple and `SourceSystemMRNData` NamedTuple can be instantiated."""
     assert SourceSystemPatientData(
-        date_of_birth=date.today(),
+        date_of_birth=timezone.now().date(),
         first_name='aaa',
         last_name='bbb',
         sex='M',
         alias='',
         deceased=True,
-        death_date_time=datetime.now() + relativedelta(years=70),
+        death_date_time=timezone.now() + relativedelta(years=70),
         ramq='RAMQ12345678',
-        ramq_expiration=datetime.now() + timedelta(days=100),
+        ramq_expiration=timezone.now() + timedelta(days=100),
         mrns=[
             SourceSystemMRNData(
                 site='RVH',

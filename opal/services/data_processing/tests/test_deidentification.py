@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import csv
 from pathlib import Path
 
@@ -29,7 +33,7 @@ with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_f
 
     for row in reader:
         gender_str = row[0].strip().lower()
-        gender = sex_type_mapping.get(gender_str, None)
+        gender = sex_type_mapping.get(gender_str)
 
         attributes = {
             'first_name': row[1],
@@ -46,7 +50,7 @@ class TestOpenScienceIdentity:
     """Tests for the OpenScienceIdentity a.k.a GUID algorithm."""
 
     @pytest.mark.parametrize(('gender', 'attributes', 'expected_signature'), test_cases)
-    def test_signature_generation(self, gender: SexType, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442, E501
+    def test_signature_generation(self, gender: SexType, attributes: dict[str, str], expected_signature: str) -> None:
         """Test the successful generation of signatures/guids for patients."""
         identity = OpenScienceIdentity(PatientData(gender=gender, **attributes))
         if expected_signature == 'invalid':

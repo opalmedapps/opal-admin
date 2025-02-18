@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # App Structure
 
 Each app should follow the following structure (based on the example of the `hospital_settings` app):

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for populating the application activity statistics to the statistics models on daily basis."""
 
 import datetime as dt
@@ -22,7 +26,7 @@ class Command(BaseCommand):
     The command populates `DailyUserAppActivity`, `DailyUserPatientActivity` and `DailyPatientDataReceived` models.
     """
 
-    help = (  # noqa: A003
+    help = (
         'Populate the daily app activity statistics per user and patient from PatientActivityLog'
         + '\nBy default the command calculates the statistics for the complete previous day'
     )
@@ -49,7 +53,8 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
-        """Populate the daily application activities to the statistics models.
+        """
+        Populate the daily application activities to the statistics models.
 
         The statistics are populated to the `DailyUserAppActivity`, `DailyUserPatientActivity`
         and `DailyPatientDataReceived` models.
@@ -76,14 +81,14 @@ class Command(BaseCommand):
         # It must be converted to the local timezone since the dates stored in the legacy DB are not UTC.
         # Set the default query time period for the previous complete day (e.g., between 00:00:00 and 23:59:59)
         start_datetime_period = dt.datetime.combine(
-            dt.datetime.now() - dt.timedelta(days=days_delta),
+            timezone.now() - dt.timedelta(days=days_delta),
             dt.datetime.min.time(),
-            timezone.get_current_timezone(),
+            tzinfo=timezone.get_current_timezone(),
         )
         end_datetime_period = dt.datetime.combine(
             start_datetime_period,
             dt.datetime.max.time(),
-            timezone.get_current_timezone(),
+            tzinfo=timezone.get_current_timezone(),
         )
 
         self._populate_user_app_activities(
@@ -110,7 +115,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily users' application activity statistics records in `DailyUserAppActivity` model.
+        """
+        Create daily users' application activity statistics records in `DailyUserAppActivity` model.
 
         Args:
             start_datetime_period: the beginning of the time period of users' app activities being extracted
@@ -136,7 +142,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily user-patient application activity statistics records in `DailyUserPatientActivity` model.
+        """
+        Create daily user-patient application activity statistics records in `DailyUserPatientActivity` model.
 
         Args:
             start_datetime_period: the beginning of the time period of patients' app activities being extracted
@@ -186,7 +193,8 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Create daily patients' received data statistics records in `DailyPatientDataReceived` model.
+        """
+        Create daily patients' received data statistics records in `DailyPatientDataReceived` model.
 
         Args:
             start_datetime_period: the beginning of the time period of received data statistics being extracted
@@ -207,7 +215,8 @@ class Command(BaseCommand):
         )
 
     def _delete_stored_statistics(self) -> bool:
-        """Delete daily application activity statistics data.
+        """
+        Delete daily application activity statistics data.
 
         The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`
         an `DailyPatientDataReceived` models.

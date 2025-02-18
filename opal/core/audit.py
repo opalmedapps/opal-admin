@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides support functionality for the django easy audit system."""
 
 from django.http import HttpRequest
@@ -6,7 +10,8 @@ from easyaudit.models import RequestEvent
 
 
 def update_request_event_query_string(request: HttpRequest, parameters: list[str]) -> None:
-    """Get the request event attached to this request path and update query string with POST arguments.
+    """
+    Get the request event attached to this request path and update query string with POST arguments.
 
     Args:
         request: The POST request data

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Users App
 
 The `users` app provides a custom user model for Django. Besides specifying additional fields it also adds a user type. This allows us to differentiate between different kinds of users. The design follows *Two Scoops of Django* Chapter 22 (specifically section 22.3).

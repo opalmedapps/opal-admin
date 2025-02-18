@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Django base settings to build other settings files upon.
 
@@ -9,6 +13,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
+
 from pathlib import Path
 from typing import Any
 
@@ -77,7 +82,7 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': f"test_{env('DATABASE_NAME')}",
+            'NAME': f'test_{env("DATABASE_NAME")}',
         },
         'ATOMIC_REQUESTS': True,
     },
@@ -370,7 +375,7 @@ ADMIN_URL = 'admin/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # ADMINS =
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
-# MANAGERS = ADMINS  # noqa: E800
+# MANAGERS = ADMINS  # noqa: ERA001
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -404,9 +409,6 @@ LOGGING = {
 #
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
-
-# Legacy URL for generating questionnaires report
-LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
 
 # Source System/Integration Engine
 SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
@@ -518,7 +520,7 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 # Propagate exceptions during debug
 DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
 # Disable extra DB calls to check whether user exists
-DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
+DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False
 
 # django-tables2
 # ------------------------------------------------------------------------------

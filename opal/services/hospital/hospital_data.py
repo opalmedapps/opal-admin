@@ -1,10 +1,15 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing custom data structures (a.k.a., named tuples) for the Source System Service."""
 from datetime import date, datetime
 from typing import NamedTuple
 
 
 class SourceSystemReportExportData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the Source System.
+    """
+    Typed `NamedTuple` that describes data fields needed for exporting a PDF report to the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs for the site
@@ -22,7 +27,8 @@ class SourceSystemReportExportData(NamedTuple):
 
 
 class SourceSystemMRNData(NamedTuple):
-    """Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the Source System.
+    """
+    Typed `NamedTuple` that describes MRN fields (a.k.a., MRN data structure) returned from the Source System.
 
     Attributes:
         mrn (str): one of the patient's MRNs associated with a particular site
@@ -36,7 +42,8 @@ class SourceSystemMRNData(NamedTuple):
 
 
 class SourceSystemPatientData(NamedTuple):
-    """Typed `NamedTuple` that describes Patient fields (a.k.a., Patient data structure) returned from the SourceSystem.
+    """
+    Typed `NamedTuple` that describes Patient fields (a.k.a., Patient data structure) returned from the SourceSystem.
 
     Attributes:
         date_of_birth: the date of birth

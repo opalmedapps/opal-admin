@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
@@ -29,7 +33,7 @@ class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.Gener
     permission_classes = (FullDjangoModelPermissions,)
 
 
-class SecurityAnswerViewSet(  # noqa: WPS215
+class SecurityAnswerViewSet(
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -44,7 +48,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     permission_classes = (IsListener,)
     queryset = SecurityAnswer.objects.none()
 
-    def get_queryset(self) -> QuerySet[SecurityAnswer]:  # noqa: WPS615
+    def get_queryset(self) -> QuerySet[SecurityAnswer]:
         """
         Override get_queryset to filter security answers by caregiver uuid.
 

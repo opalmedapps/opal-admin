@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import sys
 from importlib import reload
 from uuid import uuid4
@@ -58,29 +62,21 @@ def test_api_app_chart_defined(settings: SettingsWrapper) -> None:
     PatientSernum 51 is define in DBV for testing purpose.
     """
     legacy_db_patient_sernum = 51
-    app_chart_path = '/{api_root}/app/chart/{legacy_id}/'.format(
-        api_root=settings.API_ROOT,
-        legacy_id=legacy_db_patient_sernum,
-    )
+    app_chart_path = f'/{settings.API_ROOT}/app/chart/{legacy_db_patient_sernum}/'
     assert reverse('api:app-chart', kwargs={'legacy_id': legacy_db_patient_sernum}) == app_chart_path
     assert resolve(app_chart_path).view_name == 'api:app-chart'
 
 
 def test_api_app_appointments_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API app appointments endpoints are defined."""
-    app_apointments_path = '/{api_root}/app/appointments/'.format(
-        api_root=settings.API_ROOT,
-    )
+    app_apointments_path = f'/{settings.API_ROOT}/app/appointments/'
     assert reverse('api:app-appointments') == app_apointments_path
     assert resolve(app_apointments_path).view_name == 'api:app-appointments'
 
 
 def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API check-permissions endpoint is defined."""
-    check_permissions_path = '/{api_root}/patients/legacy/{legacy_id}/check-permissions/'.format(
-        api_root=settings.API_ROOT,
-        legacy_id=1,
-    )
+    check_permissions_path = f'/{settings.API_ROOT}/patients/legacy/{1}/check-permissions/'
     assert reverse('api:caregiver-permissions', kwargs={'legacy_id': 1}) == check_permissions_path
     assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'
 
@@ -196,10 +192,7 @@ def test_questionnaires_reviewed(settings: SettingsWrapper) -> None:
 def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
     """Ensure `registration/<str:code>/` endpoint is defined."""
     registration_code = 'ABCD12345678'
-    url_path = '/{api_root}/registration/{code}/'.format(
-        api_root=settings.API_ROOT,
-        code=registration_code,
-    )
+    url_path = f'/{settings.API_ROOT}/registration/{registration_code}/'
     assert reverse('api:registration-code', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:registration-code'
 
@@ -207,10 +200,7 @@ def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
 def test_retrieve_registration_register(settings: SettingsWrapper) -> None:
     """Ensure `registration/<str:code>/register/` endpoint is defined."""
     registration_code = 'ABCD12345678'
-    url_path = '/{api_root}/registration/{code}/register/'.format(
-        api_root=settings.API_ROOT,
-        code=registration_code,
-    )
+    url_path = f'/{settings.API_ROOT}/registration/{registration_code}/register/'
     assert reverse('api:registration-register', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:registration-register'
 
@@ -218,10 +208,7 @@ def test_retrieve_registration_register(settings: SettingsWrapper) -> None:
 def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/caregivers/` is defined."""
     patient_id = 52
-    url_path = '/{api_root}/patients/legacy/{legacy_id}/caregivers/'.format(
-        api_root=settings.API_ROOT,
-        legacy_id=patient_id,
-    )
+    url_path = f'/{settings.API_ROOT}/patients/legacy/{patient_id}/caregivers/'
     assert reverse('api:caregivers-list', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:caregivers-list'
 
@@ -229,10 +216,7 @@ def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
 def test_patient_caregiver_devices(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/caregiver-devices/` is defined."""
     patient_id = 52
-    url_path = '/{api_root}/patients/legacy/{legacy_id}/caregiver-devices/'.format(
-        api_root=settings.API_ROOT,
-        legacy_id=patient_id,
-    )
+    url_path = f'/{settings.API_ROOT}/patients/legacy/{patient_id}/caregiver-devices/'
     assert reverse('api:patient-caregiver-devices', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:patient-caregiver-devices'
 
@@ -240,10 +224,7 @@ def test_patient_caregiver_devices(settings: SettingsWrapper) -> None:
 def test_patient_caregivers(settings: SettingsWrapper) -> None:
     """Ensure `patients/legacy/<int:legacy_id>/` is defined."""
     patient_id = 52
-    url_path = '/{api_root}/patients/legacy/{legacy_id}/'.format(
-        api_root=settings.API_ROOT,
-        legacy_id=patient_id,
-    )
+    url_path = f'/{settings.API_ROOT}/patients/legacy/{patient_id}/'
     assert reverse('api:patients-legacy', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:patients-legacy'
 
@@ -251,10 +232,7 @@ def test_patient_caregivers(settings: SettingsWrapper) -> None:
 def test_verify_email(settings: SettingsWrapper) -> None:
     """Ensure `registration/<str:code>/verify-email/` is defined."""
     registration_code = 'CODE12345678'
-    url_path = '/{api_root}/registration/{code}/verify-email/'.format(
-        api_root=settings.API_ROOT,
-        code=registration_code,
-    )
+    url_path = f'/{settings.API_ROOT}/registration/{registration_code}/verify-email/'
     assert reverse('api:verify-email', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:verify-email'
 
@@ -262,10 +240,7 @@ def test_verify_email(settings: SettingsWrapper) -> None:
 def test_verify_email_code(settings: SettingsWrapper) -> None:
     """Ensure `registration/<str:code>/verify-email-code/` is defined."""
     registration_code = 'CODE12345678'
-    url_path = '/{api_root}/registration/{code}/verify-email-code/'.format(
-        api_root=settings.API_ROOT,
-        code=registration_code,
-    )
+    url_path = f'/{settings.API_ROOT}/registration/{registration_code}/verify-email-code/'
     assert reverse('api:verify-email-code', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:verify-email-code'
 
@@ -311,10 +286,7 @@ def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
 def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     """Ensure that the endpoint for creating/adding pathology records is defined."""
     patient_uuid = uuid4()
-    url_path = '/{api_root}/patients/{patient_uuid}/pathology-reports/'.format(
-        api_root=settings.API_ROOT,
-        patient_uuid=patient_uuid,
-    )
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/pathology-reports/'
     assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
 

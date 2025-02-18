@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 import requests
@@ -13,7 +17,8 @@ communication_manager = SourceSystemHTTPCommunicationManager()
 
 
 def _create_response_data() -> dict[str, str]:
-    """Create mock `dict` response on the HTTP POST request.
+    """
+    Create mock `dict` response on the HTTP POST request.
 
     Returns:
         dict[str, str]: mock data response

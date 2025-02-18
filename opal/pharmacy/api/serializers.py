@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Serializers for the API views of the `pharmacy` app."""
 from typing import Any
 
@@ -13,7 +17,8 @@ def clean_coded_element_internal_blanks(
     serializer_data: dict[str, Any],
     coded_element_fields: list[str],
 ) -> dict[str, Any]:
-    """Check if all subfields of a CodedElement instance field are blank and set it to None if true.
+    """
+    Check if all subfields of a CodedElement instance field are blank and set it to None if true.
 
     This is required because for the majority of pharmacy data (and in the RxTFC docs), CodedElement fields
     are required and are generally sent correctly in the source system HL7.
@@ -54,7 +59,8 @@ class CodedElementSerializer(DynamicFieldsSerializer[CodedElement]):
 
 
 class _NestedCodedElementSerializer(CodedElementSerializer):
-    """`CodedElement` serializer that supports nested updates.
+    """
+    `CodedElement` serializer that supports nested updates.
 
     The uniqueness constraint on identifer, text, coding_system gets
     evaluated before we can call get_or_create in the parent serializer(s).
@@ -104,7 +110,8 @@ class PharmacyRouteSerializer(serializers.ModelSerializer[PharmacyRoute]):
         )
 
     def to_internal_value(self, data: Any) -> Any:
-        """Properly `None` any optional CE elements before internal validation occurs to avoid error.
+        """
+        Properly `None` any optional CE elements before internal validation occurs to avoid error.
 
         Args:
             data: initial_data to be passed to the internal serializer validation
@@ -135,7 +142,8 @@ class PharmacyComponentSerializer(serializers.ModelSerializer[PharmacyComponent]
         )
 
     def to_internal_value(self, data: Any) -> Any:
-        """Properly `None` any optional CE elements before internal validation occurs to avoid error.
+        """
+        Properly `None` any optional CE elements before internal validation occurs to avoid error.
 
         Args:
             data: initial_data to be passed to the internal serializer validation
@@ -195,7 +203,8 @@ class PharmacyEncodedOrderSerializer(serializers.ModelSerializer[PharmacyEncoded
         )
 
     def to_internal_value(self, data: Any) -> Any:
-        """Properly `None` any optional CE elements before internal validation occurs to avoid error.
+        """
+        Properly `None` any optional CE elements before internal validation occurs to avoid error.
 
         Args:
             data: initial_data to be passed to the internal serializer validation
@@ -239,11 +248,12 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
             'effective_at',
         )
 
-    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:  # noqa: WPS210
-        """Create new `PhysicianPrescriptionOrder` instance and related model instances.
+    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:  # noqa: PLR0914
+        """
+        Create new `PhysicianPrescriptionOrder` instance and related model instances.
 
         Args:
-            validated_data: Formattted data from the HL7Parser
+            validated_data: Formatted data from the HL7Parser
 
         Returns:
             Prescription order instance

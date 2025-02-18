@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing validation rules for the data being sent/received to/from ORMS."""
 from typing import Any
 
@@ -14,12 +18,13 @@ class ORMSValidator:
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
-        """Check if the ORMS patient response data is valid.
+        """
+        Check if the ORMS patient response data is valid.
 
         Args:
             response_data (Any): ORMS patient response data received from ORMS
 
-        return:
+        Returns:
             return a boolean indicating validity (true if valid, false otherwise) and an errors list
         """
         errors = []

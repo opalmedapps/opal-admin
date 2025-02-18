@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used to send questionnaire PDF reports to the source system."""
 
 import base64
@@ -62,17 +66,17 @@ class QuestionnairesReportView(views.APIView):
                     },
                 ],
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
             raise exceptions.ParseError(
                 detail='Could not find `Patient` record with the provided MRN and site acronym.',
-            )
+            ) from error
 
         # Generate questionnaire report
         try:
             pdf_report = generate_questionnaire_report(patient, get_questionnaire_data(patient))
         except FPDFException as exc:
-            LOGGER.exception(exc)
-            raise exceptions.APIException(detail='An error occurred during report generation.')
+            LOGGER.exception('An error occurred during questionnaire report generation')
+            raise exceptions.APIException(detail='An error occurred during questionnaire report generation.') from exc
 
         encoded_report = base64.b64encode(pdf_report).decode('utf-8')
 
@@ -87,11 +91,7 @@ class QuestionnairesReportView(views.APIView):
             ),
         )
 
-        if (
-            not export_result
-            or 'status' not in export_result
-            or export_result['status'] == 'error'
-        ):
+        if not export_result or 'status' not in export_result or export_result['status'] == 'error':
             LOGGER.error(f'An error occurred while exporting a PDF report to the source system: {export_result}')
             raise exceptions.APIException(detail='An error occurred while exporting a PDF report to the source system')
 

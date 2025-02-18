@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from django.db.models import Model
 
 import pytest
@@ -155,7 +159,7 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
 
 def _create_patient(model: type[Model], ramq: str = '') -> Model:
     # see: https://docs.djangoproject.com/en/dev/topics/db/managers/#django.db.models.Model._default_manager
-    return model._default_manager.create(  # noqa: WPS437
+    return model._default_manager.create(
         first_name='Marge',
         last_name='Simpson',
         date_of_birth='1987-03-19',
@@ -194,7 +198,7 @@ def test_migration_patient_uuid_reverse(migrator: Migrator) -> None:
     migrator.apply_tested_migration(('patients', '0016_add_manage_relationshiptype_permission'))
 
 
-def test_migration_relationshiptype_existing_role_types_updated(migrator: Migrator) -> None:  # noqa: WPS218
+def test_migration_relationshiptype_existing_role_types_updated(migrator: Migrator) -> None:
     """Ensure the migration correctly updates the existing relationshiptypes."""
     old_state = migrator.apply_initial_migration(('patients', '0017_add_patient_uuid'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
@@ -237,7 +241,7 @@ def test_migration_relationshiptype_add_remaining_types(migrator: Migrator) -> N
     assert RelationshipType.objects.count() == 4
 
 
-def test_migration_relationshiptype_update_existing_types(migrator: Migrator) -> None:  # noqa: WPS218
+def test_migration_relationshiptype_update_existing_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes for Guardian-Caregiver and Mandatary."""
     old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')

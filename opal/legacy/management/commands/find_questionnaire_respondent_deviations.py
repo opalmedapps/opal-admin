@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
 from typing import Any
 
@@ -23,24 +27,25 @@ DJANGO_RESPONDENT_QUERY = """
         CONCAT_WS(' ', UU.first_name, UU.last_name) AS CaregiverName
     FROM users_user UU
     WHERE UU.username IN %s;
-"""  # noqa: WPS323
+"""
 
 
 class Command(BaseCommand):
-    """Command to find differences in the questionnaire respondent data between legacy and new back end databases.
+    """
+    Command to find differences in the questionnaire respondent data between legacy and new back end databases.
 
     The command compares the `respondentUsername` field of the `QuestionnaireDB.answerQuestionnaire` table with the \
     `first_name` and the `last_name` of the same `CaregiverProfile` stored in the Django back end.
     """
 
-    help = (  # noqa: A003
+    help = (
         'Check the `first_name` and `last_name` of the questionnaire respondents are in sync'
         + 'with those stored for the same caregiver in Django.'
     )
     requires_migrations_checks = True
 
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle sync check for the questionnaire respondents.
 
@@ -70,15 +75,16 @@ class Command(BaseCommand):
 
         if respondents_err_str:
             raise CommandError(respondents_err_str)
-        else:
-            self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
+
+        self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
 
     def _get_respondents_sync_err(
         self,
         legacy_respondents: list[tuple[str, ...]],
         django_respondents: list[tuple[str, ...]],
     ) -> str | None:
-        """Build error string based on the questionnaire respondents' first & last names deviations.
+        """
+        Build error string based on the questionnaire respondents' first & last names deviations.
 
         Args:
             legacy_respondents: Django's `Users'` first and last names filtered by `username`

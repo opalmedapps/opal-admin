@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing different middlewares for the whole project."""
 from collections.abc import Callable
 
@@ -6,7 +10,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse
 
 
-class LoginRequiredMiddleware():
+class LoginRequiredMiddleware:
     """
     Middleware that requires a user to be authenticated to view any page other than LOGIN_URL.
 
@@ -21,7 +25,8 @@ class LoginRequiredMiddleware():
     """
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
-        """Initialize the middleware.
+        """
+        Initialize the middleware.
 
         Args:
             get_response: the next `get_response` callable (could be a view or the next middleware)
@@ -47,10 +52,7 @@ class LoginRequiredMiddleware():
             and not request.path.startswith(f'/{self.api_root}/')
             and self._resolve_route(request) not in settings.AUTH_EXEMPT_ROUTES
         ):
-            redirect_to = '{login_url}?next={next_url}'.format(
-                login_url=reverse(settings.LOGIN_URL),
-                next_url=request.path_info,
-            )
+            redirect_to = f'{reverse(settings.LOGIN_URL)}?next={request.path_info}'
 
             return HttpResponseRedirect(redirect_to)
 
