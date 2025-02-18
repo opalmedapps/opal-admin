@@ -14,7 +14,7 @@ pytestmark = pytest.mark.django_db()
 
 def test_quantitysample_factory() -> None:
     """Ensure the `QuantitySample` factory creates a valid model."""
-    sample = factories.QuantitySample()
+    sample = factories.QuantitySample.create()
 
     sample.full_clean()
 
@@ -28,7 +28,7 @@ def test_quantitysample_str_no_type() -> None:
 
 def test_quantitysample_str() -> None:
     """Ensure the `__str__` method is defined for the `QuantitySample` model."""
-    sample = factories.QuantitySample(type=QuantitySampleType.HEART_RATE, value=60)
+    sample = factories.QuantitySample.create(type=QuantitySampleType.HEART_RATE, value=60)
     sample.full_clean()
 
     assert str(sample) == '60 bpm'
@@ -50,7 +50,7 @@ def test_quantitysampletype_unit_defined(sample_type: str) -> None:
 
 def test_quantitysample_type_constraint() -> None:
     """Ensure the valid choices for the sample's `type` are validated using a constraint."""
-    patient = Patient()
+    patient = Patient.create()
     sample = factories.QuantitySample.build(patient=patient, type='INV')
 
     constraint_name = 'health_data_quantitysample_type_valid'
@@ -60,7 +60,7 @@ def test_quantitysample_type_constraint() -> None:
 
 def test_quantitysample_source_constraint() -> None:
     """Ensure the valid choices for the sample's `source` are validated using a constraint."""
-    patient = Patient()
+    patient = Patient.create()
     sample = factories.QuantitySample.build(patient=patient, source='I')
 
     constraint_name = 'health_data_quantitysample_source_valid'
@@ -70,7 +70,7 @@ def test_quantitysample_source_constraint() -> None:
 
 def test_quantitysample_new_can_save() -> None:
     """Ensure a new instance can be saved."""
-    patient = Patient()
+    patient = Patient.create()
     sample = factories.QuantitySample.build(patient=patient)
 
     sample.save()
@@ -78,7 +78,7 @@ def test_quantitysample_new_can_save() -> None:
 
 def test_quantitysample_existing_cannot_save() -> None:
     """Ensure an existing instance cannot be saved."""
-    sample = factories.QuantitySample()
+    sample = factories.QuantitySample.create()
 
     with pytest.raises(ValidationError, match='Cannot change an existing instance of Quantity Sample'):
         sample.save()
@@ -86,9 +86,9 @@ def test_quantitysample_existing_cannot_save() -> None:
 
 def test_quantitysample_multiple_per_patient() -> None:
     """Ensure a patient can have multiple samples."""
-    patient = Patient()
+    patient = Patient.create()
 
-    factories.QuantitySample(patient=patient)
-    factories.QuantitySample(patient=patient)
+    factories.QuantitySample.create(patient=patient)
+    factories.QuantitySample.create(patient=patient)
 
     assert QuantitySample.objects.count() == 2

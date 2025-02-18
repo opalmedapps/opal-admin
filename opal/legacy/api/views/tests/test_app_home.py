@@ -25,7 +25,7 @@ class TestHomeAppView:
 
     def test_get_home_data_request(self, api_client: APIClient, admin_user: User) -> None:
         """Test if the response as the required keys."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
         response = api_client.get(reverse('api:app-home'))
@@ -40,18 +40,18 @@ class TestHomeAppView:
         mock_timezone = mocker.patch('django.utils.timezone.now')
         mock_timezone.return_value = now
 
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
         username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=username)
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient, readby=username)
         appointment_time = timezone.now() + dt.timedelta(hours=2)
-        appointment = factories.LegacyAppointmentFactory(
+        appointment = factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             checkin=1,
             scheduledstarttime=appointment_time,
@@ -65,14 +65,14 @@ class TestHomeAppView:
 
     def test_get_unread_notification_count(self) -> None:
         """Test if function returns number of unread notifications."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
         username = relationship.caregiver.user.username
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient, readby=username)
         notifications = models.LegacyNotification.objects.get_unread_queryset(
             patient.patientsernum,
             username,
@@ -81,19 +81,19 @@ class TestHomeAppView:
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
         """Test daily appointment according to their dates."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        alias = factories.LegacyAliasFactory.create()
+        alias_expression = factories.LegacyAliasExpressionFactory.create(aliassernum=alias)
         # create an appointment close to the end of the day
-        appointment = factories.LegacyAppointmentFactory(
+        appointment = factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
@@ -114,13 +114,13 @@ class TestHomeAppView:
         admin_user: User,
     ) -> None:
         """Test the return value of get home data when the fields are empty."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
         username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=username)
-        factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
 
         response = api_client.get(reverse('api:app-home'))
 

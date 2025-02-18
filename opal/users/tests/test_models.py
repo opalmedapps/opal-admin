@@ -58,54 +58,60 @@ def test_user_save_existing() -> None:
 
 def test_user_factory() -> None:
     """The factory for `User` creates a valid user instance."""
-    user = factories.User()
+    user = factories.User.create()
     user.full_clean()
 
 
 def test_user_objects() -> None:
     """All users are returned by the user manager."""
-    factories.User()
-    factories.Caregiver()
+    factories.User.create()
+    factories.Caregiver.create()
 
     assert UserModel.objects.count() == 2
 
 
 def test_user_phone_number_optional() -> None:
     """User phone number is optional and if not set is stored as an empty string."""
-    user = factories.User()
+    user = factories.User.create()
 
     assert user.phone_number == ''
 
 
-@pytest.mark.parametrize('phone_number', [
-    # min number of digits
-    '+1514123',
-    # max number of digits
-    '+151412345678901',
-    # international number
-    '+49745812345',
-])
+@pytest.mark.parametrize(
+    'phone_number',
+    [
+        # min number of digits
+        '+1514123',
+        # max number of digits
+        '+151412345678901',
+        # international number
+        '+49745812345',
+    ],
+)
 def test_user_phone_number_regex(phone_number: str) -> None:
     """Phone number regex handles E.164 format."""
-    user = factories.User()
+    user = factories.User.create()
 
     user.phone_number = phone_number
     user.full_clean()
 
 
-@pytest.mark.parametrize('phone_number', [
-    # not enough number of digits
-    '+151412',
-    # too many digits
-    '+1514123456789012',
-    # needs international country code prefix
-    '5141234567',
-    # country codes don't start with a zero
-    '+01234567',
-])
+@pytest.mark.parametrize(
+    'phone_number',
+    [
+        # not enough number of digits
+        '+151412',
+        # too many digits
+        '+1514123456789012',
+        # needs international country code prefix
+        '5141234567',
+        # country codes don't start with a zero
+        '+01234567',
+    ],
+)
 def test_user_phone_number_regex_invalid(phone_number: str) -> None:
     """Phone number regex excludes invalid cases."""
-    user = factories.User()
+    user = factories.User.create()
 
     user.phone_number = phone_number
 
@@ -113,35 +119,41 @@ def test_user_phone_number_regex_invalid(phone_number: str) -> None:
         user.full_clean()
 
 
-@pytest.mark.parametrize('phone_number', [
-    # min number of digits
-    '+1514123x1',
-    # max number of digits
-    '+151412345678901x12345',
-    # international number
-    '+49745812345x0',
-    # extension with leading zeros
-    '+15141234567x00010',
-])
+@pytest.mark.parametrize(
+    'phone_number',
+    [
+        # min number of digits
+        '+1514123x1',
+        # max number of digits
+        '+151412345678901x12345',
+        # international number
+        '+49745812345x0',
+        # extension with leading zeros
+        '+15141234567x00010',
+    ],
+)
 def test_user_phone_number_ext_regex(phone_number: str) -> None:
     """Phone number regex handles extension."""
-    user = factories.User()
+    user = factories.User.create()
 
     user.phone_number = phone_number
     user.full_clean()
 
 
-@pytest.mark.parametrize('phone_number', [
-    # no extension digits
-    '+1514123x',
-    # too many extension digits
-    '+1514123x123456',
-    # invalid separator
-    '+49745812345ext0',
-])
+@pytest.mark.parametrize(
+    'phone_number',
+    [
+        # no extension digits
+        '+1514123x',
+        # too many extension digits
+        '+1514123x123456',
+        # invalid separator
+        '+49745812345ext0',
+    ],
+)
 def test_user_phone_number_ext_regex_invalid(phone_number: str) -> None:
     """Phone number regex excludes invalid cases for the extension."""
-    user = factories.User()
+    user = factories.User.create()
 
     user.phone_number = phone_number
 
@@ -159,15 +171,15 @@ def test_caregiver_correct_type() -> None:
 
 def test_caregiver_factory() -> None:
     """The factory for `Caregiver` creates a valid instance."""
-    caregiver = factories.Caregiver()
+    caregiver = factories.Caregiver.create()
 
     caregiver.full_clean()
 
 
 def test_caregiver_objects() -> None:
     """All users with type `CAREGIVER` are returned by the caregiver manager."""
-    factories.User()
-    caregiver = factories.Caregiver()
+    factories.User.create()
+    caregiver = factories.Caregiver.create()
 
     assert Caregiver.objects.count() == 1
     assert Caregiver.objects.first() == caregiver
@@ -183,8 +195,8 @@ def test_clinicalstaff_correct_type() -> None:
 
 def test_clinicalstaff_objects() -> None:
     """All users with type `CLINICAL_STAFF` are returned by the clinical staff manager."""
-    clinical_staff = factories.User()
-    factories.Caregiver()
+    clinical_staff = factories.User.create()
+    factories.Caregiver.create()
 
     assert ClinicalStaff.objects.count() == 1
     assert ClinicalStaff.objects.first() == clinical_staff
@@ -192,9 +204,9 @@ def test_clinicalstaff_objects() -> None:
 
 def test_user_admin_group_add_signal() -> None:
     """User properties `is_staff` and `is_superuser` are activated when added to the defined admin Group ."""
-    clinical_staff = factories.User()
+    clinical_staff = factories.User.create()
     # create an admin group
-    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+    admingroup = factories.GroupFactory.create(name=ADMIN_GROUP_NAME)
 
     # add user to the created admin group
     clinical_staff.groups.add(admingroup)
@@ -207,10 +219,10 @@ def test_user_admin_group_add_signal() -> None:
 def test_user_admin_group_remove_signal() -> None:
     """User properties `is_staff` and `is_superuser` are deactivated when removed from the defined admin group."""
     # create a user
-    clinical_staff = factories.User(is_superuser=True, is_staff=True)
+    clinical_staff = factories.User.create(is_superuser=True, is_staff=True)
     # activate superuser and staff properties
     # create admin group
-    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+    admingroup = factories.GroupFactory.create(name=ADMIN_GROUP_NAME)
 
     # add user to admin group
     clinical_staff.groups.add(admingroup)
@@ -225,9 +237,9 @@ def test_user_admin_group_remove_signal() -> None:
 def test_user_group_add_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are not changed when another group is added."""
     # create a user
-    clinical_staff = factories.User(is_superuser=True, is_staff=True)
+    clinical_staff = factories.User.create(is_superuser=True, is_staff=True)
     # create a group
-    group = factories.GroupFactory(name=ORMS_GROUP_NAME)
+    group = factories.GroupFactory.create(name=ORMS_GROUP_NAME)
 
     # add user to admin group
     clinical_staff.groups.add(group)
@@ -240,9 +252,9 @@ def test_user_group_add_not_change_status() -> None:
 def test_user_group_remove_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are not changed when another group is removed."""
     # create a user
-    clinical_staff = factories.User(is_superuser=True, is_staff=True)
+    clinical_staff = factories.User.create(is_superuser=True, is_staff=True)
     # create a group
-    group = factories.GroupFactory(name=ORMS_GROUP_NAME)
+    group = factories.GroupFactory.create(name=ORMS_GROUP_NAME)
 
     # add user to non-admin group
     clinical_staff.groups.add(group)
@@ -256,9 +268,9 @@ def test_user_group_remove_not_change_status() -> None:
 def test_user_nonclinical_user_add_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are unaffected when nonclinical user is added to admingroup."""
     # create a user
-    clinical_staff = factories.Caregiver()
+    clinical_staff = factories.Caregiver.create()
     # create a group
-    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+    admingroup = factories.GroupFactory.create(name=ADMIN_GROUP_NAME)
 
     # add user to admin group
     clinical_staff.groups.add(admingroup)
@@ -271,9 +283,9 @@ def test_user_nonclinical_user_add_not_change_status() -> None:
 def test_user_nonclinical_user_remove_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are unaffected when nonclinical user is removed from admingroup."""
     # create a user
-    clinical_staff = factories.Caregiver(is_staff=True, is_superuser=True)
+    clinical_staff = factories.Caregiver.create(is_staff=True, is_superuser=True)
     # create a group
-    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+    admingroup = factories.GroupFactory.create(name=ADMIN_GROUP_NAME)
 
     # add user to admin group
     clinical_staff.groups.add(admingroup)
@@ -287,11 +299,11 @@ def test_user_nonclinical_user_remove_not_change_status() -> None:
 def test_user_group_remove_add_multiple_groups() -> None:
     """User properties `is_staff` and `is_superuser` changed when multiple groups are added and removed."""
     # create a user
-    clinical_staff = factories.User()
+    clinical_staff = factories.User.create()
     # create a group
-    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
-    ormsgroup = factories.GroupFactory(name=ORMS_GROUP_NAME)
-    testgroup = factories.GroupFactory(name='test_group')
+    admingroup = factories.GroupFactory.create(name=ADMIN_GROUP_NAME)
+    ormsgroup = factories.GroupFactory.create(name=ORMS_GROUP_NAME)
+    testgroup = factories.GroupFactory.create(name='test_group')
 
     clinical_staff.groups.add(admingroup)
     clinical_staff.groups.add(ormsgroup)

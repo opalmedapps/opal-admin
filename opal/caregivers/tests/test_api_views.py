@@ -1,4 +1,5 @@
 """Test module for registration api endpoints."""
+
 import copy
 import datetime as dt
 from datetime import datetime
@@ -93,7 +94,7 @@ def test_get_caregiver_patient_list_missing_user_id_header(api_client: APIClient
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, listener_user: User) -> None:
     """Test patient list endpoint to return an empty list if there is no relationship."""
     api_client.force_login(user=listener_user)
-    caregiver = caregiver_factories.Caregiver()
+    caregiver = caregiver_factories.Caregiver.create()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
 
     response = api_client.get(reverse('api:caregivers-patient-list'))
@@ -105,8 +106,8 @@ def test_get_caregiver_patient_list_no_patient(api_client: APIClient, listener_u
 def test_get_caregiver_patient_list_patient_id(api_client: APIClient, listener_user: User) -> None:
     """Test patient list endpoint to return a list of patients with the correct patient_id and relationship type."""
     api_client.force_login(user=listener_user)
-    relationship_type = patient_factories.RelationshipType(name='Mother')
-    relationship = patient_factories.Relationship(type=relationship_type)
+    relationship_type = patient_factories.RelationshipType.create(name='Mother')
+    relationship = patient_factories.Relationship.create(type=relationship_type)
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
 
@@ -121,8 +122,8 @@ def test_get_caregiver_patient_list_patient_id(api_client: APIClient, listener_u
 def test_get_caregiver_patient_list_fields(api_client: APIClient, listener_user: User) -> None:
     """Test patient list endpoint to return a list of patients with the correct response fields."""
     api_client.force_login(user=listener_user)
-    relationship_type = patient_factories.RelationshipType(name='Mother')
-    patient_factories.Relationship(type=relationship_type)
+    relationship_type = patient_factories.RelationshipType.create(name='Mother')
+    patient_factories.Relationship.create(type=relationship_type)
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
 
@@ -131,7 +132,8 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, listener_user:
     data_fields = [
         'patient_uuid',
         'patient_legacy_id',
-        'first_name', 'last_name',
+        'first_name',
+        'last_name',
         'status',
         'relationship_type',
         'data_access',
@@ -160,7 +162,7 @@ def test_caregiver_profile_unauthenticated_unauthorized(api_client: APIClient, u
 
 def test_caregiver_profile(api_client: APIClient, listener_user: User) -> None:
     """The caregiver's profile is returned."""
-    caregiver_profile = caregiver_factories.CaregiverProfile(user__username='johnwaynedabest')
+    caregiver_profile = caregiver_factories.CaregiverProfile.create(user__username='johnwaynedabest')
 
     api_client.force_login(user=listener_user)
     api_client.credentials(HTTP_APPUSERID=caregiver_profile.user.username)
@@ -232,8 +234,8 @@ def test_registration_encryption_unauthenticated_unauthorized(
 def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
     """Test status code and registration code value."""
     api_client.force_login(user=admin_user)
-    registration_code = caregiver_factories.RegistrationCode()
-    patient_factories.HospitalPatient(patient=registration_code.relationship.patient)
+    registration_code = caregiver_factories.RegistrationCode.create()
+    patient_factories.HospitalPatient.create(patient=registration_code.relationship.patient)
     request_hash = sha512(registration_code.code.encode()).hexdigest()
 
     response = api_client.get(reverse('api:registration-by-hash', kwargs={'hash': request_hash}))
@@ -245,8 +247,8 @@ def test_registration_encryption_return_values(api_client: APIClient, admin_user
 def test_registration_encryption_invalid_hash(api_client: APIClient, admin_user: User) -> None:
     """Return 404 if the hash is invalid."""
     api_client.force_login(user=admin_user)
-    registration_code = caregiver_factories.RegistrationCode()
-    patient_factories.HospitalPatient(patient=registration_code.relationship.patient)
+    registration_code = caregiver_factories.RegistrationCode.create()
+    patient_factories.HospitalPatient.create(patient=registration_code.relationship.patient)
     invalid_hash = sha512(b'badcode').hexdigest()
 
     response = api_client.get(reverse('api:registration-by-hash', kwargs={'hash': invalid_hash}))
@@ -271,7 +273,7 @@ def test_device_unauthenticated_unauthorized(api_client: APIClient, user: User) 
 def test_device_put_create(api_client: APIClient, listener_user: User) -> None:
     """Test creating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
 
     device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
 
@@ -300,8 +302,8 @@ def test_device_put_create(api_client: APIClient, listener_user: User) -> None:
 def test_device_put_update(api_client: APIClient, listener_user: User) -> None:
     """Test updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(caregiver=caregiver)
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(caregiver=caregiver)
     last_modified = device.modified
 
     data = {
@@ -337,10 +339,10 @@ def test_device_put_two_caregivers(api_client: APIClient, listener_user: User) -
     api_client.force_login(listener_user)
     device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
 
-    caregiver = caregiver_factories.CaregiverProfile()
-    caregiver2 = caregiver_factories.CaregiverProfile()
-    device = caregiver_factories.Device(caregiver=caregiver, device_id=device_id)
-    device2 = caregiver_factories.Device(caregiver=caregiver2, device_id=device_id)
+    caregiver = caregiver_factories.CaregiverProfile.create()
+    caregiver2 = caregiver_factories.CaregiverProfile.create()
+    device = caregiver_factories.Device.create(caregiver=caregiver, device_id=device_id)
+    device2 = caregiver_factories.Device.create(caregiver=caregiver2, device_id=device_id)
 
     last_modified = device.modified
     last_modified2 = device2.modified
@@ -373,8 +375,8 @@ def test_device_put_two_caregivers(api_client: APIClient, listener_user: User) -
 def test_create_device_failure(api_client: APIClient, listener_user: User) -> None:
     """Test failure for creating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(caregiver=caregiver)
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(caregiver=caregiver)
 
     data = {
         'device_id': device.device_id,
@@ -396,8 +398,8 @@ def test_create_device_failure(api_client: APIClient, listener_user: User) -> No
 def test_update_device_success(api_client: APIClient, listener_user: User) -> None:
     """Test updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -439,8 +441,8 @@ def test_update_device_success(api_client: APIClient, listener_user: User) -> No
 def test_update_device_failure(api_client: APIClient, listener_user: User) -> None:
     """Test failure for updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -482,7 +484,7 @@ def test_update_device_failure(api_client: APIClient, listener_user: User) -> No
 def test_partial_update_device_not_found(api_client: APIClient, listener_user: User) -> None:
     """Test partial updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
 
     device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
 
@@ -507,8 +509,8 @@ def test_partial_update_device_not_found(api_client: APIClient, listener_user: U
 def test_partial_update_device_success(api_client: APIClient, listener_user: User) -> None:
     """Test partial updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(caregiver=caregiver)
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(caregiver=caregiver)
     data_one = {
         'device_id': device.device_id,
         'type': device.type,
@@ -529,8 +531,8 @@ def test_partial_update_device_success(api_client: APIClient, listener_user: Use
 def test_partial_update_device_failure(api_client: APIClient, listener_user: User) -> None:
     """Test failure for partial updating a device model."""
     api_client.force_login(listener_user)
-    caregiver = caregiver_factories.CaregiverProfile(id=1)
-    device = caregiver_factories.Device(
+    caregiver = caregiver_factories.CaregiverProfile.create(id=1)
+    device = caregiver_factories.Device.create(
         caregiver=caregiver,
         type=caregiver_models.DeviceType.IOS,
         push_token='aaaa1111',
@@ -570,7 +572,7 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
 def test_verify_existing_caregiver(api_client: APIClient, admin_user: User) -> None:
     """Test the verification of the existence of a caregiver in database."""
     api_client.force_login(user=admin_user)
-    caregiver_factories.Caregiver(username='johnwaynedabest')
+    caregiver_factories.Caregiver.create(username='johnwaynedabest')
     response_one = api_client.get(reverse('api:caregivers-detail', kwargs={'username': 'johnwaynedabest'}))
 
     assert response_one.status_code == HTTPStatus.OK
@@ -617,9 +619,9 @@ class TestVerifyEmailCodeView:
     ) -> None:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver_profile)
-        email_verification = caregiver_factories.EmailVerification(caregiver=caregiver_profile)
+        caregiver_profile = caregiver_factories.CaregiverProfile.create()
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver=caregiver_profile)
+        email_verification = caregiver_factories.EmailVerification.create(caregiver=caregiver_profile)
         user_email = caregiver_profile.user.email
 
         assert caregiver_models.EmailVerification.objects.count() == 1
@@ -646,7 +648,7 @@ class TestVerifyEmailCodeView:
     def test_verify_code_format_incorrect(self, api_client: APIClient, admin_user: User) -> None:
         """Test verification code format is incorrect."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
 
         response = api_client.post(
             reverse(
@@ -669,7 +671,7 @@ class TestVerifyEmailCodeView:
     def test_verify_code_invalid(self, api_client: APIClient, admin_user: User) -> None:
         """Test verification code invalid."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
 
         response = api_client.post(
             reverse(
@@ -690,9 +692,9 @@ class TestVerifyEmailCodeView:
     def test_code_expired(self, api_client: APIClient, admin_user: User) -> None:
         """Test that an expired code returns a not found error."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
         # pretend that the the verification was requested 10 minutes ago
-        email_verification = caregiver_factories.EmailVerification(
+        email_verification = caregiver_factories.EmailVerification.create(
             caregiver=registration_code.relationship.caregiver,
             email='foo@bar.com',
             sent_at=timezone.now() - dt.timedelta(minutes=constants.EMAIL_VERIFICATION_TIMEOUT),
@@ -769,7 +771,7 @@ class TestVerifyEmailView:
         mocker.patch.object(timezone, 'now', return_value=current_time)
 
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
         email = 'test@muhc.mcgill.ca'
 
         response = api_client.post(
@@ -798,7 +800,7 @@ class TestVerifyEmailView:
     ) -> None:
         """Test that the email is sent when verifying an email address."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
         email = 'test@muhc.mcgill.ca'
 
         api_client.post(
@@ -824,8 +826,8 @@ class TestVerifyEmailView:
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: User) -> None:
         """Test resend verify email within 10 sec."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
-        email_verification = caregiver_factories.EmailVerification(
+        registration_code = caregiver_factories.RegistrationCode.create()
+        email_verification = caregiver_factories.EmailVerification.create(
             caregiver=registration_code.relationship.caregiver,
             sent_at=timezone.now() - dt.timedelta(seconds=9),
         )
@@ -849,8 +851,8 @@ class TestVerifyEmailView:
     def test_resend_verify_email_after_ten_sec(self, api_client: APIClient, admin_user: User) -> None:
         """Test resending the code after 10 sec."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
-        email_verification = caregiver_factories.EmailVerification(
+        registration_code = caregiver_factories.RegistrationCode.create()
+        email_verification = caregiver_factories.EmailVerification.create(
             caregiver=registration_code.relationship.caregiver,
             sent_at=timezone.now() - dt.timedelta(seconds=constants.CODE_RESEND_TIME_DELAY),
         )
@@ -877,8 +879,8 @@ class TestVerifyEmailView:
         api_client.force_login(user=admin_user)
         email = 'test@muhc.mcgill.ca'
         caregiver = Caregiver.objects.create(email=email)
-        relationship = patient_factories.Relationship(caregiver__user=caregiver)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        relationship = patient_factories.Relationship.create(caregiver__user=caregiver)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship=relationship)
 
         response = api_client.post(
             reverse(
@@ -899,7 +901,7 @@ class TestVerifyEmailView:
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration code not exists."""
         api_client.force_login(user=admin_user)
-        caregiver_factories.RegistrationCode()
+        caregiver_factories.RegistrationCode.create()
 
         response = api_client.post(
             reverse(
@@ -920,7 +922,7 @@ class TestVerifyEmailView:
     def test_registration_code_registered(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration code is already registered."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode(
+        registration_code = caregiver_factories.RegistrationCode.create(
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         )
         response = api_client.post(
@@ -942,7 +944,7 @@ class TestVerifyEmailView:
     def test_input_email_format_incorrect(self, api_client: APIClient, admin_user: User) -> None:
         """Test input email format is incorrect."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
+        registration_code = caregiver_factories.RegistrationCode.create()
 
         response = api_client.post(
             reverse(
@@ -965,10 +967,10 @@ class TestVerifyEmailView:
     def test_input_email_exists(self, api_client: APIClient, admin_user: User) -> None:
         """Test input email does exist already."""
         api_client.force_login(user=admin_user)
-        caregiver_profile = caregiver_factories.CaregiverProfile()
-        relationship = patient_factories.Relationship(caregiver=caregiver_profile)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
-        email_verification = caregiver_factories.EmailVerification(caregiver=caregiver_profile)
+        caregiver_profile = caregiver_factories.CaregiverProfile.create()
+        relationship = patient_factories.Relationship.create(caregiver=caregiver_profile)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship=relationship)
+        email_verification = caregiver_factories.EmailVerification.create(caregiver=caregiver_profile)
         old_verification_code = email_verification.code
 
         response = api_client.post(
@@ -994,12 +996,12 @@ class TestEmailVerificationProcess:
     def _prepare(self, api_client: APIClient, admin_user: User) -> None:
         """Prepare by requesting to verify an email address."""
         api_client.force_login(user=admin_user)
-        skeleton = user_factories.Caregiver(
+        skeleton = user_factories.Caregiver.create(
             first_name='Foo',
             last_name='Bar',
             is_active=False,
         )
-        self.registration_code = caregiver_factories.RegistrationCode(
+        self.registration_code = caregiver_factories.RegistrationCode.create(
             relationship__caregiver__user=skeleton,
             code=self.code,
         )
@@ -1074,7 +1076,7 @@ class TestEmailVerificationProcess:
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verify_email_multiple(self, api_client: APIClient, admin_user: User) -> None:
         """Ensure that the registration process still works when a user verifies two different emails."""
-        Institution(support_email='support@testhospital.com')
+        Institution.create(support_email='support@testhospital.com')
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
 
         # verify the first email address
@@ -1136,14 +1138,14 @@ class TestRegistrationCompletionView:
         self_relationship: bool = False,
     ) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
         # Build relationships: code -> relationship -> patient
-        skeleton = user_factories.Caregiver(
+        skeleton = user_factories.Caregiver.create(
             username='skeleton-username',
             first_name='skeleton',
             last_name='test',
             is_active=False,
         )
-        Institution(support_email='support@testhospital.com')
-        registration_code = caregiver_factories.RegistrationCode(
+        Institution.create(support_email='support@testhospital.com')
+        registration_code = caregiver_factories.RegistrationCode.create(
             relationship__caregiver__legacy_id=None,
             relationship__caregiver__user=skeleton,
             relationship__patient__legacy_id=None if new_patient else 42,
@@ -1157,7 +1159,9 @@ class TestRegistrationCompletionView:
             relationship.save()
 
         if email_verified:
-            caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+            caregiver_factories.EmailVerification.create(
+                caregiver=registration_code.relationship.caregiver, is_verified=True
+            )
 
         return (registration_code, skeleton)
 
@@ -1307,12 +1311,12 @@ class TestRegistrationCompletionView:
 
         patient = registration_code.relationship.patient
 
-        rvh = hospital_factories.Site(acronym='RVH')
-        mch = hospital_factories.Site(acronym='MCH')
-        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='RVH')
-        legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MCH')
-        patient_factories.HospitalPatient(patient=patient, site=rvh, mrn='9999996')
-        patient_factories.HospitalPatient(patient=patient, site=mch, mrn='9999996', is_active=False)
+        rvh = hospital_factories.Site.create(acronym='RVH')
+        mch = hospital_factories.Site.create(acronym='MCH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
+        legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
+        patient_factories.HospitalPatient.create(patient=patient, site=rvh, mrn='9999996')
+        patient_factories.HospitalPatient.create(patient=patient, site=mch, mrn='9999996', is_active=False)
 
         response = api_client.post(
             reverse(
@@ -1386,12 +1390,12 @@ class TestRegistrationCompletionView:
 
         api_client.force_login(user=admin_user)
         # Build existing caregiver
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             username='test-username',
             first_name='Marge',
             last_name='Simpson',
         )
-        caregiver_factories.CaregiverProfile(user=caregiver, legacy_id=legacy_user.usersernum)
+        caregiver_factories.CaregiverProfile.create(user=caregiver, legacy_id=legacy_user.usersernum)
         registration_code, _ = self._build_access_request(self_relationship=True)
         patient = registration_code.relationship.patient
 
@@ -1419,7 +1423,7 @@ class TestRegistrationCompletionView:
     def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Existing patient and caregiver don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
-        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
+        Relationship.create(patient__legacy_id=1, caregiver__legacy_id=1)
 
         response = api_client.post(
             reverse(
@@ -1450,12 +1454,12 @@ class TestRegistrationCompletionView:
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             username='test-username',
             first_name='caregiver',
             last_name='test',
         )
-        caregiver_factories.CaregiverProfile(user=caregiver)
+        caregiver_factories.CaregiverProfile.create(user=caregiver)
         registration_code, _ = self._build_access_request()
 
         url = reverse('api:registration-register', kwargs={'code': registration_code.code})
@@ -1471,7 +1475,7 @@ class TestRegistrationCompletionView:
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
         api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode(
+        registration_code = caregiver_factories.RegistrationCode.create(
             status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         )
 
@@ -1509,14 +1513,16 @@ class TestRegistrationCompletionView:
         """Test validation of the phone number."""
         api_client.force_login(user=admin_user)
 
-        skeleton = user_factories.Caregiver(
+        skeleton = user_factories.Caregiver.create(
             username='skeleton-username',
             first_name='skeleton',
             last_name='test',
             is_active=False,
         )
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver__user=skeleton)
+        caregiver_factories.EmailVerification.create(
+            caregiver=registration_code.relationship.caregiver, is_verified=True
+        )
 
         invalid_data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         invalid_data['caregiver']['phone_number'] = '1234567890'
@@ -1543,12 +1549,12 @@ class TestRegistrationCompletionView:
         """Test api registration register remove skeleton caregiver."""
         api_client.force_login(user=admin_user)
         # Build existing caregiver
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             username='test-username',
             first_name='caregiver',
             last_name='test',
         )
-        caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
+        caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
         registration_code, skeleton = self._build_access_request()
         relationship = registration_code.relationship
 
@@ -1573,13 +1579,13 @@ class TestRegistrationCompletionView:
         """When registering with an existing caregiver, the existing security answers are kept."""
         api_client.force_login(user=admin_user)
         # Build existing caregiver
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             username='test-username',
             first_name='caregiver',
             last_name='test',
         )
-        caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-        caregiver_factories.SecurityAnswer(user=caregiver_profile, answer='anser1')
+        caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
+        caregiver_factories.SecurityAnswer.create(user=caregiver_profile, answer='anser1')
         registration_code, _ = self._build_access_request()
 
         response = api_client.post(
@@ -1596,9 +1602,9 @@ class TestRegistrationCompletionView:
     def test_email_not_verified_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration fails if the email address wasn't verified when it is a new caregiver."""
         api_client.force_login(user=admin_user)
-        caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
-        caregiver_factories.EmailVerification(
+        caregiver = caregiver_factories.CaregiverProfile.create(user__email='', user__is_active=False)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver=caregiver)
+        caregiver_factories.EmailVerification.create(
             caregiver=registration_code.relationship.caregiver,
             email='foo@bar.com',
             is_verified=False,
@@ -1624,10 +1630,10 @@ class TestRegistrationCompletionView:
         admin_user: User,
     ) -> None:
         """It succeeds if the email address is unverified for a caregiver who already has a Firebase account."""
-        Institution(support_email='support@testhospital.com')
+        Institution.create(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
-        caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
+        caregiver = caregiver_factories.CaregiverProfile.create(user__email='', user__is_active=False)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver=caregiver)
 
         data: dict[str, Any] = copy.deepcopy(self.data_new_caregiver)
         data['caregiver'].update({'email': 'hans@wurst.com'})
@@ -1648,17 +1654,17 @@ class TestRegistrationCompletionView:
 
     def test_email_not_verified_existing_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration succeeds with no email verification when it is an existing caregiver."""
-        Institution(support_email='support@testhospital.com')
+        Institution.create(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # create an existing caregiver
-        caregiver_factories.CaregiverProfile(user__username='test-username')
-        caregiver = caregiver_factories.CaregiverProfile(
+        caregiver_factories.CaregiverProfile.create(user__username='test-username')
+        caregiver = caregiver_factories.CaregiverProfile.create(
             user__first_name='Ske',
             user__last_name='leton',
             user__username='skeleton',
             user__email='',
         )
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver=caregiver)
 
         response = api_client.post(
             reverse(
@@ -1676,11 +1682,11 @@ class TestRegistrationCompletionView:
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
         """The verified email is copied to the caregiver."""
-        Institution(support_email='support@testhospital.com')
+        Institution.create(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
-        caregiver_user = user_factories.Caregiver(email='', is_active=False)
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=caregiver_user)
-        caregiver_factories.EmailVerification(
+        caregiver_user = user_factories.Caregiver.create(email='', is_active=False)
+        registration_code = caregiver_factories.RegistrationCode.create(relationship__caregiver__user=caregiver_user)
+        caregiver_factories.EmailVerification.create(
             caregiver=registration_code.relationship.caregiver,
             email='foo@bar.com',
             is_verified=True,
@@ -1740,12 +1746,12 @@ class TestRegistrationCompletionView:
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             username='test-username',
             first_name='caregiver',
             last_name='test',
         )
-        caregiver_factories.CaregiverProfile(user=caregiver)
+        caregiver_factories.CaregiverProfile.create(user=caregiver)
         registration_code, _ = self._build_access_request(new_patient=False)
 
         url = reverse('api:registration-register', kwargs={'code': registration_code.code})

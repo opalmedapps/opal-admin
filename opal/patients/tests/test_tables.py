@@ -18,7 +18,7 @@ pytestmark = pytest.mark.django_db
 
 def test_patienttable_render_date_of_birth_patient() -> None:
     """Ensure that the date of birth is rendered correctly for a `Patient`."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
 
     table = tables.PatientTable([])
 
@@ -34,11 +34,11 @@ def test_patienttable_render_date_of_birth_str() -> None:
 
 def test_patienttable_render_mrns_patient() -> None:
     """Ensure that MRNs are rendered in the form `SITE: MRN` in `PatientTable` for a `Patient`."""
-    patient = factories.Patient()
-    site = factories.Site(name='TEST_SITE', acronym='TSITE')
-    site2 = factories.Site(name='Test2', acronym='TST2')
-    factories.HospitalPatient(patient=patient, site=site, mrn='999999')
-    factories.HospitalPatient(patient=patient, site=site2, mrn='1234567')
+    patient = factories.Patient.create()
+    site = factories.Site.create(name='TEST_SITE', acronym='TSITE')
+    site2 = factories.Site.create(name='Test2', acronym='TST2')
+    factories.HospitalPatient.create(patient=patient, site=site, mrn='999999')
+    factories.HospitalPatient.create(patient=patient, site=site2, mrn='1234567')
 
     hospital_patients = models.HospitalPatient.objects.filter(patient=patient)
 
@@ -83,7 +83,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
 
     # in case of `zero` number of days
     today_date = date(2022, 6, 2)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -93,7 +93,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
 
     # in case of `one` number of days
     today_date = date(2022, 6, 1)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -107,7 +107,7 @@ def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -
     _mock_datetime(mocker)
 
     today_date = date(2022, 6, 2) - timedelta(days=5)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -118,8 +118,8 @@ def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -
 
 def test_relationships_table_readonly_url(relationship_user: Client) -> None:
     """Ensures Relationships action buttons use readonly url for expired status."""
-    hospital_patient = factories.HospitalPatient()
-    factories.Relationship(
+    hospital_patient = factories.HospitalPatient.create()
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.mandatary(),
         status=models.RelationshipStatus.EXPIRED,
@@ -148,9 +148,9 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
 def test_relationships_table_update_url(relationship_user: Client) -> None:
     """Ensures Relationships action uses edit url for statuses other than expired."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.parent_guardian(),
         status=models.RelationshipStatus.PENDING,

@@ -7,6 +7,8 @@ Inspired by:
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 
+from typing import TypeVar
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 
@@ -15,8 +17,10 @@ from factory.django import DjangoModelFactory
 
 from . import models
 
+_T = TypeVar('_T', bound=models.User)
 
-class User(DjangoModelFactory[models.User]):
+
+class User(DjangoModelFactory[_T]):
     """Model factory to create [opal.users.models.User][] models."""
 
     class Meta:
@@ -32,14 +36,14 @@ class User(DjangoModelFactory[models.User]):
     phone_number = ''
 
 
-class Caregiver(User):
+class Caregiver(User[models.Caregiver]):
     """Model factory to create [opal.users.models.Caregiver][] models."""
 
     class Meta:
         model = models.Caregiver
 
 
-class ClinicalStaff(User):
+class ClinicalStaff(User[models.ClinicalStaff]):
     """Model factory to create [opal.users.models.ClinicalStaff][] models."""
 
     class Meta:

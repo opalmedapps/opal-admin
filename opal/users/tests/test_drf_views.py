@@ -1,4 +1,5 @@
 """Test module for the `users` app REST API views endpoints."""
+
 from collections.abc import Callable
 from http import HTTPStatus
 
@@ -31,12 +32,14 @@ def test_groups_list_unauthenticated_unauthorized(api_client: APIClient, user: U
 def test_groups_list_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of the retrieving list of groups."""
     api_client.force_login(user=admin_user)
-    group = user_factories.GroupFactory(name='group1')
-    user_factories.GroupFactory(name='group2')
+    group = user_factories.GroupFactory.create(name='group1')
+    user_factories.GroupFactory.create(name='group2')
 
-    response = api_client.get(reverse(
-        'api:groups-list',
-    ))
+    response = api_client.get(
+        reverse(
+            'api:groups-list',
+        )
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 2
@@ -49,11 +52,13 @@ def test_groups_list_permission_pass(
 ) -> None:
     """Test the pass of the retrieving list of groups when right permissions are granted."""
     api_client.force_login(user_with_permission('auth.view_group'))
-    group = user_factories.GroupFactory(name='group1')
+    group = user_factories.GroupFactory.create(name='group1')
 
-    response = api_client.get(reverse(
-        'api:groups-list',
-    ))
+    response = api_client.get(
+        reverse(
+            'api:groups-list',
+        )
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 1
@@ -92,7 +97,7 @@ class TestUserCaregiverUpdateView:
         username = 'test123456'
         original_email = 'email_original@opalmedapps.ca'
         updated_email = 'email_updated@opalmedapps.ca'
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             email=original_email,
             username='test123456',
             is_superuser=True,
@@ -117,7 +122,7 @@ class TestUserCaregiverUpdateView:
         username = 'test123456'
         original_email = 'email_original@opalmedapps.ca'
         updated_email = 'email_updated@opalmedapps.ca'
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             email=original_email,
             username='test123456',
             is_superuser=True,
@@ -141,7 +146,7 @@ class TestUserCaregiverUpdateView:
         api_client.force_login(user=permission_user)
         username = 'test123456'
         original_email = 'email_original@opalmedapps.ca'
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             email=original_email,
             username='test123456',
             is_superuser=True,
@@ -157,9 +162,7 @@ class TestUserCaregiverUpdateView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert caregiver.email == original_email
-        assert str(response.data['email']) == (
-            "[ErrorDetail(string='This field may not be blank.', code='blank')]"
-        )
+        assert str(response.data['email']) == ("[ErrorDetail(string='This field may not be blank.', code='blank')]")
 
     @pytest.mark.parametrize('permission_name', ['change_caregiver'])
     def test_users_caregivers_without_email(self, api_client: APIClient, permission_user: User) -> None:
@@ -167,7 +170,7 @@ class TestUserCaregiverUpdateView:
         api_client.force_login(user=permission_user)
         username = 'test123456'
         original_email = 'email_original@opalmedapps.ca'
-        caregiver = user_factories.Caregiver(
+        caregiver = user_factories.Caregiver.create(
             email=original_email,
             username='test123456',
             is_superuser=True,

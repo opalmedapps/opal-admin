@@ -62,10 +62,10 @@ def test_userviewset_retrieve_user_in_group_pass(
     """Test the pass of the retrieving user and their group(s)."""
     api_client.force_login(user_with_permission('users.view_clinicalstaff'))
     # add two groups to add a user to one of them
-    user_factories.GroupFactory()
-    group = user_factories.GroupFactory(name='group')
+    user_factories.GroupFactory.create()
+    group = user_factories.GroupFactory.create(name='group')
     # add clinical staff user
-    user = user_factories.ClinicalStaff()
+    user = user_factories.ClinicalStaff.create()
     group.user_set.add(user)
 
     response = api_client.get(
@@ -84,10 +84,10 @@ def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_use
     """Test the pass of the updating a user and add to a group."""
     api_client.force_login(user=admin_user)
     # add two groups
-    group1 = user_factories.GroupFactory(name='group1')
-    group2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory.create(name='group1')
+    group2 = user_factories.GroupFactory.create(name='group2')
     # add one user and add it to one group
-    user = user_factories.ClinicalStaff(username='test_clinical_user')
+    user = user_factories.ClinicalStaff.create(username='test_clinical_user')
     group2.user_set.add(user)
 
     # test retrieve
@@ -133,12 +133,12 @@ def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_use
 def test_userviewset_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of editing a user and add to multiple groups."""
     api_client.force_login(user=admin_user)
-    group1 = user_factories.GroupFactory(name='group1')
-    group2 = user_factories.GroupFactory(name='group2')
-    group3 = user_factories.GroupFactory(name='group3')
+    group1 = user_factories.GroupFactory.create(name='group1')
+    group2 = user_factories.GroupFactory.create(name='group2')
+    group3 = user_factories.GroupFactory.create(name='group3')
 
     # add one user and add it to one group
-    user = user_factories.ClinicalStaff()
+    user = user_factories.ClinicalStaff.create()
     group2.user_set.add(user)
 
     # test retrieve
@@ -186,10 +186,10 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
     """Test the pass of removing a user from a group."""
     api_client.force_login(user=admin_user)
     # add two groups
-    group1 = user_factories.GroupFactory(name='group1')
-    group2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory.create(name='group1')
+    group2 = user_factories.GroupFactory.create(name='group2')
     # add one user and add it to one group
-    user = user_factories.ClinicalStaff()
+    user = user_factories.ClinicalStaff.create()
     group1.user_set.add(user)
     group2.user_set.add(user)
 
@@ -292,7 +292,7 @@ def test_userviewset_create_user_password_invalid(admin_api_client: APIClient) -
 @pytest.mark.xfail
 def test_userviewset_create_user_deactivated(admin_api_client: APIClient) -> None:
     """The user is created with no password."""
-    user_factories.ClinicalStaff(username='testuser', is_active=False)
+    user_factories.ClinicalStaff.create(username='testuser', is_active=False)
 
     data = {
         'username': 'testuser',
@@ -326,7 +326,7 @@ def test_userviewset_create_user_in_group_pass(
 ) -> None:
     """Test the pass of the creation of a new user and adding it to a group."""
     api_client.force_login(user_with_permission('users.add_clinicalstaff'))
-    group = user_factories.GroupFactory(name='group1')
+    group = user_factories.GroupFactory.create(name='group1')
     # new user
     data = {
         'username': 'test_user',
@@ -351,8 +351,8 @@ def test_userviewset_create_user_in_group_pass(
 def test_userviewset_create_user_in_multiple_groups_pass(api_client: APIClient, admin_user: User) -> None:
     """Test the pass of the creation of a new user and adding it to multiple groups."""
     api_client.force_login(user=admin_user)
-    group1 = user_factories.GroupFactory(name='group1')
-    group2 = user_factories.GroupFactory(name='Group2')
+    group1 = user_factories.GroupFactory.create(name='group1')
+    group2 = user_factories.GroupFactory.create(name='Group2')
 
     # new user
     data = {
@@ -376,7 +376,7 @@ def test_userviewset_create_user_in_multiple_groups_pass(api_client: APIClient, 
 
 def test_userviewset_update_user_password(admin_api_client: APIClient) -> None:
     """The user can be updated with a new password."""
-    user: ClinicalStaff = user_factories.ClinicalStaff(username='testuser')
+    user: ClinicalStaff = user_factories.ClinicalStaff.create(username='testuser')
     assert user.check_password('thisisatest')
 
     token = secrets.token_urlsafe(9)
@@ -404,7 +404,7 @@ def test_userviewset_update_user_password(admin_api_client: APIClient) -> None:
 
 def test_userviewset_update_user_password_unchanged(admin_api_client: APIClient) -> None:
     """The user can be updated without changing the password."""
-    user: ClinicalStaff = user_factories.ClinicalStaff(username='testuser')
+    user: ClinicalStaff = user_factories.ClinicalStaff.create(username='testuser')
 
     data = {
         'username': 'testuser',
@@ -433,11 +433,11 @@ def test_userviewset_update_user_in_group_with_permission(
     api_client.force_login(user_with_permission('users.change_clinicalstaff'))
 
     # add two groups
-    group1 = user_factories.GroupFactory(name='group1')
-    group2 = user_factories.GroupFactory(name='group2')
+    group1 = user_factories.GroupFactory.create(name='group1')
+    group2 = user_factories.GroupFactory.create(name='group2')
 
     # add one user
-    clinical_user = user_factories.ClinicalStaff()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     # adding clinical user to another group
     data = {
@@ -464,10 +464,10 @@ def test_userviewset_update_user_in_group_with_permission(
 def test_userviewset_create_user_in_group_existing_user(admin_api_client: APIClient) -> None:
     """Test the fail of the creating when user already exists."""
     # add one user
-    clinical_user = user_factories.ClinicalStaff()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     # add one group
-    group = user_factories.GroupFactory(name='group1')
+    group = user_factories.GroupFactory.create(name='group1')
     # preparing data for existing user and assign a group to it
     data = {
         'username': clinical_user.username,
@@ -489,11 +489,11 @@ def test_userviewset_set_manager_user_action_pass(api_client: APIClient, admin_u
     """Test the pass of setting a user group using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    manager_group = user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+    user_factories.GroupFactory.create()
+    manager_group = user_factories.GroupFactory.create(name=USER_MANAGER_GROUP_NAME)
 
     # add one user
-    clinical_user = user_factories.ClinicalStaff()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     # assert user does not have any group yet
     assert not clinical_user.groups.all()
@@ -515,11 +515,11 @@ def test_userviewset_unset_manager_user_action_pass(api_client: APIClient, admin
     """Test the pass of unsetting a user group using the action `unset_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    manager_group = user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+    user_factories.GroupFactory.create()
+    manager_group = user_factories.GroupFactory.create(name=USER_MANAGER_GROUP_NAME)
 
     # add one user
-    clinical_user = user_factories.ClinicalStaff()
+    clinical_user = user_factories.ClinicalStaff.create()
     clinical_user.groups.add(manager_group)
 
     response = api_client.put(
@@ -539,8 +539,8 @@ def test_userviewset_set_manager_wrong_user_action_fail(api_client: APIClient, a
     """Test the fail of setting manager group of a wrong user using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+    user_factories.GroupFactory.create()
+    user_factories.GroupFactory.create(name=USER_MANAGER_GROUP_NAME)
 
     response = api_client.put(
         reverse(
@@ -558,8 +558,8 @@ def test_userviewset_unset_manager_wrong_user_action_fail(api_client: APIClient,
     """Test the fail of unsetting manager group of a wrong user using the action `unset_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+    user_factories.GroupFactory.create()
+    user_factories.GroupFactory.create(name=USER_MANAGER_GROUP_NAME)
 
     response = api_client.put(
         reverse(
@@ -577,8 +577,8 @@ def test_userviewset_set_manager_no_group_action_fail(api_client: APIClient, adm
     """Test the fail of setting a user group when manager group does not exist using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    clinical_user = user_factories.ClinicalStaff()
+    user_factories.GroupFactory.create()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     response = api_client.put(
         reverse(
@@ -596,8 +596,8 @@ def test_userviewset_unset_manager_no_group_action_fail(api_client: APIClient, a
     """Test the fail of unsetting a user group when manager group does not exist using the action `set_manager_user`."""
     api_client.force_login(user=admin_user)
 
-    user_factories.GroupFactory()
-    clinical_user = user_factories.ClinicalStaff()
+    user_factories.GroupFactory.create()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     response = api_client.put(
         reverse(
@@ -616,7 +616,7 @@ def test_api_deactivate_user_action_pass(api_client: APIClient, admin_user: User
     api_client.force_login(user=admin_user)
 
     # add one user
-    clinical_user = user_factories.ClinicalStaff()
+    clinical_user = user_factories.ClinicalStaff.create()
 
     response = api_client.put(
         reverse(
@@ -652,7 +652,7 @@ def test_api_reactivate_user_action_pass(api_client: APIClient, admin_user: User
     api_client.force_login(user=admin_user)
 
     # add one user
-    clinical_user = user_factories.ClinicalStaff(is_active=False)
+    clinical_user = user_factories.ClinicalStaff.create(is_active=False)
 
     response = api_client.put(
         reverse(

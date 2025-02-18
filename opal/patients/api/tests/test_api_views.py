@@ -31,7 +31,7 @@ def test_my_caregiver_list_unauthenticated_unauthorized(
     listener_user: User,
 ) -> None:
     """Ensure that the API to create quantity samples requires an authenticated user."""
-    patient = Patient()
+    patient = Patient.create()
     url = reverse('api:caregivers-list', kwargs={'legacy_id': patient.legacy_id})
 
     response = api_client.options(url)
@@ -55,26 +55,28 @@ def test_my_caregiver_list_unauthenticated_unauthorized(
 def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     """Test the return of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
-    patient = Patient()
-    caregiver1 = CaregiverProfile()
-    caregiver2 = CaregiverProfile()
-    relationship1 = Relationship(patient=patient, caregiver=caregiver1)
-    relationship2 = Relationship(
+    patient = Patient.create()
+    caregiver1 = CaregiverProfile.create()
+    caregiver2 = CaregiverProfile.create()
+    relationship1 = Relationship.create(patient=patient, caregiver=caregiver1)
+    relationship2 = Relationship.create(
         patient=patient,
         caregiver=caregiver2,
         status=patient_models.RelationshipStatus.CONFIRMED,
         type=patient_models.RelationshipType.objects.self_type(),
     )
     # Create relationship with a different patient that should not appear in the response
-    patient2 = Patient(ramq='TEST12345678')
-    Relationship(patient=patient2, caregiver=caregiver1)
+    patient2 = Patient.create(ramq='TEST12345678')
+    Relationship.create(patient=patient2, caregiver=caregiver1)
 
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
 
-    response = api_client.get(reverse(
-        'api:caregivers-list',
-        kwargs={'legacy_id': patient.legacy_id},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:caregivers-list',
+            kwargs={'legacy_id': patient.legacy_id},
+        )
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert len(response.json()) == 2
@@ -97,17 +99,19 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
 def test_my_caregiver_list_failure(api_client: APIClient, admin_user: User) -> None:
     """Test the failure of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
-    patient = Patient()
-    caregiver1 = CaregiverProfile()
-    caregiver2 = CaregiverProfile()
-    Relationship(patient=patient, caregiver=caregiver1)
-    Relationship(patient=patient, caregiver=caregiver2)
+    patient = Patient.create()
+    caregiver1 = CaregiverProfile.create()
+    caregiver2 = CaregiverProfile.create()
+    Relationship.create(patient=patient, caregiver=caregiver1)
+    Relationship.create(patient=patient, caregiver=caregiver2)
     api_client.credentials(HTTP_APPUSERID=caregiver1.user.username)
 
-    response = api_client.get(reverse(
-        'api:caregivers-list',
-        kwargs={'legacy_id': 1654161},
-    ))
+    response = api_client.get(
+        reverse(
+            'api:caregivers-list',
+            kwargs={'legacy_id': 1654161},
+        )
+    )
     assert response.data['detail'] == 'Caregiver does not have a relationship with the patient.'
     assert response.status_code == HTTPStatus.FORBIDDEN
 
@@ -142,19 +146,21 @@ class TestRetrieveRegistrationDetailsView:
         """Test api registration code with summary serializer."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        relationship = Relationship(patient=patient)
-        registration_code = RegistrationCode(relationship=relationship)
+        patient = Patient.create()
+        relationship = Relationship.create(patient=patient)
+        registration_code = RegistrationCode.create(relationship=relationship)
 
         # Build relationships: hospital_patient -> site -> institution
-        institution = Institution()
-        site = Site(institution=institution)
-        hospital_patient = HospitalPatient(patient=patient, site=site)
+        institution = Institution.create()
+        site = Site.create(institution=institution)
+        hospital_patient = HospitalPatient.create(patient=patient, site=site)
 
-        response = api_client.get(reverse(
-            'api:registration-code',
-            kwargs={'code': registration_code.code},
-        ))
+        response = api_client.get(
+            reverse(
+                'api:registration-code',
+                kwargs={'code': registration_code.code},
+            )
+        )
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
             'caregiver': {
@@ -176,14 +182,16 @@ class TestRetrieveRegistrationDetailsView:
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         date_of_death = datetime(2099, 9, 27, tzinfo=timezone.get_current_timezone())
-        patient = Patient(date_of_death=date_of_death)
-        relationship = Relationship(patient=patient)
-        registration_code = RegistrationCode(relationship=relationship)
+        patient = Patient.create(date_of_death=date_of_death)
+        relationship = Relationship.create(patient=patient)
+        registration_code = RegistrationCode.create(relationship=relationship)
 
-        response = api_client.get(reverse(
-            'api:registration-code',
-            kwargs={'code': registration_code.code},
-        ))
+        response = api_client.get(
+            reverse(
+                'api:registration-code',
+                kwargs={'code': registration_code.code},
+            )
+        )
         assert response.status_code == HTTPStatus.FORBIDDEN
         assert response.json() == {'detail': 'You do not have permission to perform this action.'}
 
@@ -284,11 +292,13 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=[{
-                'mrn': ['This field is required.'],
-                'is_active': ['This field is required.'],
-                'site_code': ['This field is required.'],
-            }],
+            expected_data=[
+                {
+                    'mrn': ['This field is required.'],
+                    'is_active': ['This field is required.'],
+                    'site_code': ['This field is required.'],
+                }
+            ],
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -304,9 +314,11 @@ class TestPatientDemographicView:
 
         assertJSONEqual(
             raw=json.dumps(response.json()),
-            expected_data=[{
-                'site_code': ['This field is required.'],
-            }],
+            expected_data=[
+                {
+                    'site_code': ['This field is required.'],
+                }
+            ],
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -363,8 +375,8 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if provided MRN/site pairs do not exist."""
-        Site(acronym='RVH')
-        Site(acronym='MGH')
+        Site.create(acronym='RVH')
+        Site.create(acronym='MGH')
 
         api_client.force_login(interface_engine_user)
 
@@ -404,18 +416,18 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if MRNs referring to different patients."""
-        patient_one = Patient()
-        patient_two = Patient(ramq='TEST01161972')
+        patient_one = Patient.create()
+        patient_two = Patient.create(ramq='TEST01161972')
 
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient_one,
             mrn='9999996',
-            site=Site(acronym='RVH'),
+            site=Site.create(acronym='RVH'),
         )
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient_two,
             mrn='9999997',
-            site=Site(acronym='MGH'),
+            site=Site.create(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -456,22 +468,22 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info with no errors."""
-        patient = Patient(ramq='TEST01161972')
+        patient = Patient.create(ramq='TEST01161972')
 
-        Relationship(
+        Relationship.create(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
         )
 
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999996',
-            site=Site(acronym='RVH'),
+            site=Site.create(acronym='RVH'),
         )
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999997',
-            site=Site(acronym='MGH'),
+            site=Site.create(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -505,16 +517,16 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info when the patient does not have a self relationship (no user)."""
-        rvh_site = Site(acronym='RVH')
-        mgh_site = Site(acronym='MGH')
-        patient = Patient(ramq='TEST01161972')
+        rvh_site = Site.create(acronym='RVH')
+        mgh_site = Site.create(acronym='MGH')
+        patient = Patient.create(ramq='TEST01161972')
 
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999996',
             site=rvh_site,
         )
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999997',
             site=mgh_site,
@@ -551,35 +563,40 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint keeps the relationships as is."""
-        patient = Patient(ramq='TEST01161972')
+        patient = Patient.create(ramq='TEST01161972')
 
-        Relationship(
+        Relationship.create(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
             status=patient_models.RelationshipStatus.CONFIRMED,
         ).save()
-        Relationship(
+        Relationship.create(
             patient=patient,
-            caregiver=CaregiverProfile(),
+            caregiver=CaregiverProfile.create(),
             type=patient_models.RelationshipType.objects.guardian_caregiver(),
         ).save()
 
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999996',
-            site=Site(acronym='RVH'),
+            site=Site.create(acronym='RVH'),
         )
-        HospitalPatient(
+        HospitalPatient.create(
             patient=patient,
             mrn='9999997',
-            site=Site(acronym='MGH'),
+            site=Site.create(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
         payload = self._get_valid_input_data()
-        payload['date_of_death'] = timezone.now().astimezone().replace(
-            microsecond=0,
-        ).isoformat()
+        payload['date_of_death'] = (
+            timezone.now()
+            .astimezone()
+            .replace(
+                microsecond=0,
+            )
+            .isoformat()
+        )
 
         response = api_client.put(
             reverse('api:patient-demographic-update'),
@@ -653,24 +670,26 @@ class TestPatientCaregiverDevicesView:
         """Test get patient caregiver devices success."""
         api_client.force_login(user=admin_user)
 
-        patient = Patient()
+        patient = Patient.create()
 
-        user1 = caregiver_factories.Caregiver(language='en', phone_number='+11234567890')
-        user2 = caregiver_factories.Caregiver(language='fr', phone_number='+11234567891')
-        caregiver1 = CaregiverProfile(user=user1)
-        caregiver2 = CaregiverProfile(user=user2)
-        Relationship(caregiver=caregiver1, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
-        Relationship(caregiver=caregiver2, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
-        Relationship(patient=patient, caregiver=caregiver1, status=patient_models.RelationshipStatus.EXPIRED)
-        Relationship(patient=patient, status=patient_models.RelationshipStatus.PENDING)
-        device1 = Device(caregiver=caregiver1)
-        device2 = Device(caregiver=caregiver2)
-        institution = Institution()
+        user1 = caregiver_factories.Caregiver.create(language='en', phone_number='+11234567890')
+        user2 = caregiver_factories.Caregiver.create(language='fr', phone_number='+11234567891')
+        caregiver1 = CaregiverProfile.create(user=user1)
+        caregiver2 = CaregiverProfile.create(user=user2)
+        Relationship.create(caregiver=caregiver1, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship.create(caregiver=caregiver2, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship.create(patient=patient, caregiver=caregiver1, status=patient_models.RelationshipStatus.EXPIRED)
+        Relationship.create(patient=patient, status=patient_models.RelationshipStatus.PENDING)
+        device1 = Device.create(caregiver=caregiver1)
+        device2 = Device.create(caregiver=caregiver2)
+        institution = Institution.create()
 
-        response = api_client.get(reverse(
-            'api:patient-caregiver-devices',
-            kwargs={'legacy_id': patient.legacy_id},
-        ))
+        response = api_client.get(
+            reverse(
+                'api:patient-caregiver-devices',
+                kwargs={'legacy_id': patient.legacy_id},
+            )
+        )
 
         assert response.status_code == HTTPStatus.OK
         # ensure only confirmed relationships are returned
@@ -743,7 +762,7 @@ class TestPatientView:
     def test_retrieve(self, admin_api_client: APIClient) -> None:
         """Test that patient data is returned."""
         legacy_id = 42
-        patient = Patient(legacy_id=legacy_id)
+        patient = Patient.create(legacy_id=legacy_id)
 
         response = admin_api_client.get(reverse('api:patients-legacy', kwargs={'legacy_id': legacy_id}))
 
@@ -757,7 +776,7 @@ class TestPatientView:
         """Test patient updates data access success with superuser."""
         api_client.force_login(user=admin_user)
         legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        patient = Patient.create(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
                 'api:patients-legacy',
@@ -775,7 +794,7 @@ class TestPatientView:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        patient = Patient.create(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
                 'api:patients-legacy',
@@ -793,7 +812,7 @@ class TestPatientView:
         """Test patient updates only updates data access even if extra data is supplied."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        patient = Patient.create(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
                 'api:patients-legacy',
@@ -814,7 +833,7 @@ class TestPatientView:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        patient = Patient.create(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
                 'api:patients-legacy',
@@ -834,7 +853,7 @@ class TestPatientView:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        patient = Patient.create(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
                 'api:patients-legacy',
@@ -846,9 +865,7 @@ class TestPatientView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         patient.refresh_from_db()
         assert patient.data_access == 'NTK'
-        assert str(response.data['data_access']) == (
-            "[ErrorDetail(string='This field is required.', code='required')]"
-        )
+        assert str(response.data['data_access']) == ("[ErrorDetail(string='This field is required.', code='required')]")
 
 
 class TestPatientExistsView:
@@ -918,10 +935,7 @@ class TestPatientExistsView:
             reverse('api:patient-exists'),
             data=self.input_data_cases['patient_not_found'],
         )
-        expected_error = (
-            'Cannot find patient record with the provided MRNs and sites or'
-            + ' multiple patients found.'
-        )
+        expected_error = 'Cannot find patient record with the provided MRNs and sites or' + ' multiple patients found.'
         assert expected_error in response.data['detail']
         assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -933,9 +947,7 @@ class TestPatientExistsView:
             reverse('api:patient-exists'),
             data=self.input_data_cases['multiple_patients'],
         )
-        expected_error = (
-            'Cannot find patient record with the provided MRNs and sites or multiple patients found.'
-        )
+        expected_error = 'Cannot find patient record with the provided MRNs and sites or multiple patients found.'
         assert expected_error in response.data['detail']
         assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -964,15 +976,15 @@ class TestPatientExistsView:
 
     def _create_patient_identifiers(self) -> None:
         """Set up patients with required identifiers."""
-        site = Site(acronym='RVH')
-        Site(acronym='LAC')
-        HospitalPatient(
-            patient=Patient(),
+        site = Site.create(acronym='RVH')
+        Site.create(acronym='LAC')
+        HospitalPatient.create(
+            patient=Patient.create(),
             mrn='9999996',
             site=site,
         )
-        HospitalPatient(
-            patient=Patient(ramq='OTES12345678'),
+        HospitalPatient.create(
+            patient=Patient.create(ramq='OTES12345678'),
             mrn='9999993',
             site=site,
         )
@@ -1004,7 +1016,7 @@ def test_relationship_types_list(api_client: APIClient, listener_user: User) -> 
     """Test the return of the relationship types list."""
     api_client.force_login(user=listener_user)
 
-    relationship_type = RelationshipType()
+    relationship_type = RelationshipType.create()
 
     response = api_client.get(reverse('api:relationship-types-list'))
 

@@ -1,4 +1,5 @@
 """Test module for the REST API endpoints of the `pharmacy` app."""
+
 from pathlib import Path
 from uuid import uuid4
 
@@ -17,10 +18,15 @@ from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
-FIXTURES_DIR = Path(__file__).resolve().parents[3].joinpath(
-    'core',
-    'tests',
-    'fixtures',
+FIXTURES_DIR = (
+    Path(__file__)
+    .resolve()
+    .parents[3]
+    .joinpath(
+        'core',
+        'tests',
+        'fixtures',
+    )
 )
 PATIENT_UUID = uuid4()
 
@@ -31,10 +37,10 @@ class TestCreatePrescriptionView:
     @pytest.fixture(autouse=True)
     def _before_each(self) -> None:
         """Fixture for pre-creating the valid site acronyms for the pytest env."""
-        hospital_factories.Site(acronym='RVH')
-        hospital_factories.Site(acronym='MGH')
-        hospital_factories.Site(acronym='MCH')
-        hospital_factories.Site(acronym='LAC')
+        hospital_factories.Site.create(acronym='RVH')
+        hospital_factories.Site.create(acronym='MGH')
+        hospital_factories.Site.create(acronym='MCH')
+        hospital_factories.Site.create(acronym='LAC')
 
     def test_pharmacy_create_unauthenticated(
         self,
@@ -90,11 +96,11 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can create pharmacy for a full input with no errors."""
-        patient = patient_factories.Patient(
+        patient = patient_factories.Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient_factories.HospitalPatient(
+        patient_factories.HospitalPatient.create(
             patient=patient,
             site=Site.objects.get(acronym='RVH'),
             mrn='9999996',
@@ -119,11 +125,11 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can create pharmacy for an input missing optional CE elements with no errors."""
-        patient = patient_factories.Patient(
+        patient = patient_factories.Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient_factories.HospitalPatient(
+        patient_factories.HospitalPatient.create(
             patient=patient,
             site=Site.objects.get(acronym='RVH'),
             mrn='9999996',
@@ -149,11 +155,11 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can create several pharmacy, and re-uses CodedElements."""
-        patient = patient_factories.Patient(
+        patient = patient_factories.Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient_factories.HospitalPatient(
+        patient_factories.HospitalPatient.create(
             patient=patient,
             site=Site.objects.get(acronym='RVH'),
             mrn='9999996',
@@ -182,11 +188,11 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure administration_method is properly None-ed if all subfields are blank."""
-        patient = patient_factories.Patient(
+        patient = patient_factories.Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient_factories.HospitalPatient(
+        patient_factories.HospitalPatient.create(
             patient=patient,
             site=Site.objects.get(acronym='MGH'),
             mrn='9999998',
