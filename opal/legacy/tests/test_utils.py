@@ -433,6 +433,7 @@ def test_create_databank_patient_consent_data(
     info_sheet = databank_consent_questionnaire_data[1]
     response = legacy_utils.create_databank_patient_consent_data(django_patient)
 
+    assert django_patient.legacy_id is not None
     qdb_patient = questionnaire_models.LegacyQuestionnairePatient.objects.get(
         external_id=django_patient.legacy_id,
     )

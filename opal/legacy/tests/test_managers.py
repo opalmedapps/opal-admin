@@ -1466,7 +1466,7 @@ def _create_log_record(
     username: str = 'username',
     app_version: str = '100.100.100',
     days_delta: int = 1,
-) -> legacy_factories.LegacyPatientActivityLogFactory:
+) -> legacy_models.LegacyPatientActivityLog:
     data = {
         'request': request,
         'parameters': parameters,

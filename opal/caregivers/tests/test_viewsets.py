@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from http import HTTPStatus
+from typing import Any
 
 from django.urls import reverse
 
@@ -89,7 +90,7 @@ def test_securityanswer_unauthenticated_unauthorized(
     user: User,
 ) -> None:
     """Test that unauthenticated and unauthorized users cannot access the API."""
-    kwargs = {'username': user.username}
+    kwargs: dict[str, Any] = {'username': user.username}
     if is_detail:
         kwargs['pk'] = factories.SecurityAnswer.create().pk
 

@@ -26,10 +26,10 @@ class GeneralTest(DjangoModelFactory[models.GeneralTest]):
     message_event = 'R01'
     # Adjust the code and description based on test type
     # Pathology always has RQSTPTISS code, labs can have many different possible codes
-    test_group_code: str = factory.LazyAttribute(
+    test_group_code = factory.LazyAttribute(
         lambda test: 'RQSTPTISS' if test.type == models.TestType.PATHOLOGY else 'CBC',
     )
-    test_group_code_description: str = factory.LazyAttribute(
+    test_group_code_description = factory.LazyAttribute(
         lambda test: 'Request Pathology Tissue' if test.type == models.TestType.PATHOLOGY else 'COMPLETE BLOOD COUNT',
     )
     legacy_document_id = factory.Sequence(lambda number: number + 1)

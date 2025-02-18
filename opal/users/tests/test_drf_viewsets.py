@@ -508,7 +508,7 @@ def test_userviewset_set_manager_user_action_pass(api_client: APIClient, admin_u
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
     assert response.data['detail'] == 'User was added to the managers group successfully.'
-    assert clinical_user.groups.get(pk=manager_group.pk)
+    clinical_user.groups.get(pk=manager_group.pk)
 
 
 def test_userviewset_unset_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:

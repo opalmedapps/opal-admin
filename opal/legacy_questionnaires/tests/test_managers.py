@@ -103,7 +103,7 @@ def test_new_questionnaires_patient_caregiver() -> None:
         purpose=legacy_purpose,
         respondent=legacy_respondent1,
     )
-    legacy_questionnaire1 = factories.LegacyAnswerQuestionnaireFactory.create(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire1,
         patient=legacy_patient,
     )
@@ -178,7 +178,7 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
         purpose=legacy_purpose,
         respondent=legacy_respondent1,
     )
-    legacy_questionnaire1 = factories.LegacyAnswerQuestionnaireFactory.create(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire1,
         patient=legacy_patient,
     )

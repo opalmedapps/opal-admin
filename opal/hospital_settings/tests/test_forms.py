@@ -242,7 +242,7 @@ def test_site_update_with_missing_field() -> None:
         assert not form.is_valid()
 
     site.refresh_from_db()
-    assert site.name_en != form.data['name_en']
+    assert site.name_en != form.data['name_en']  # type: ignore[attr-defined]
 
 
 def test_site_update_nonnumeric_location_fields() -> None:

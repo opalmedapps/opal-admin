@@ -929,6 +929,7 @@ def test_relationship_calculate_end_date_with_end_age_set() -> None:
     date_of_birth = date(2013, 4, 3)
     relationship_type = factories.RelationshipType.create(name='Guardian-Caregiver', start_age=14, end_age=18)
 
+    assert relationship_type.end_age is not None
     assert Relationship.calculate_end_date(
         date_of_birth=date_of_birth,
         relationship_type=relationship_type,

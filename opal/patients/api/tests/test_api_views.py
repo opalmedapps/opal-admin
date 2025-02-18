@@ -698,8 +698,8 @@ class TestPatientCaregiverDevicesView:
             'first_name': patient.first_name,
             'last_name': patient.last_name,
             'institution': {
-                'acronym_en': institution.acronym_en,
-                'acronym_fr': institution.acronym_fr,
+                'acronym_en': institution.acronym_en,  # type: ignore[attr-defined]
+                'acronym_fr': institution.acronym_fr,  # type: ignore[attr-defined]
             },
             'data_access': 'ALL',
             'caregivers': [
