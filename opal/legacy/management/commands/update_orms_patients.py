@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for updating patients' UUIDs in the Online Room Management System (a.k.a. ORMS)."""
 from http import HTTPStatus
 from typing import Any

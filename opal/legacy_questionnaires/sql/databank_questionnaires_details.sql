@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+
 -- Temp details table just contains questionnaire details plus the answer ids, not the answer values themselves
 DROP TABLE IF EXISTS `tempAnswerDetails`;
 CREATE TEMPORARY TABLE tempAnswerDetails(
