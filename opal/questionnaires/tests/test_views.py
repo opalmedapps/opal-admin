@@ -272,7 +272,7 @@ def test_update_request_event_detail_template(admin_client: Client, caplog: LogC
         },
     )
     q_string = (
-        "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27',"
+        "{'questionnaireID': '11', 'questionnaireName': 'Test Qst', 'start': '2016-11-25', 'end': '2020-02-27',"
         + " 'patientIDs': '3', 'questionIDs': '832'}"
     )
 

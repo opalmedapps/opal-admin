@@ -177,6 +177,17 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
+        structlog.contextvars.bind_contextvars(
+            request_data={
+                'questionnaireID': request.POST.get('questionnaireid'),
+                'questionnaireName': request.POST.get('questionnairename'),
+                'start': request.POST.get('start'),
+                'end': request.POST.get('end'),
+                'patientIDs': request.POST.get('patientIDs'),
+                'questionIDs': request.POST.get('questionIDs'),
+            }
+        )
+
         #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
         #  the function returns a boolean indicating if the table could be successfully created given the query params
         complete_params_check = make_temp_tables(request.POST, LANGUAGE_MAP[requestor.language])
