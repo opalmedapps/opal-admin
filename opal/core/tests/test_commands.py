@@ -44,10 +44,10 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 13
-        assert CaregiverProfile.objects.count() == 7
-        assert Relationship.objects.count() == 12
-        assert SecurityAnswer.objects.count() == 18
+        assert HospitalPatient.objects.count() == 14
+        assert CaregiverProfile.objects.count() == 8
+        assert Relationship.objects.count() == 13
+        assert SecurityAnswer.objects.count() == 21
         assert GeneralTest.objects.count() == 9
         assert PathologyObservation.objects.count() == 9
         assert Note.objects.count() == 9
@@ -112,10 +112,10 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 13
-        assert CaregiverProfile.objects.count() == 7
-        assert Relationship.objects.count() == 12
-        assert SecurityAnswer.objects.count() == 18
+        assert HospitalPatient.objects.count() == 14
+        assert CaregiverProfile.objects.count() == 8
+        assert Relationship.objects.count() == 13
+        assert SecurityAnswer.objects.count() == 21
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
