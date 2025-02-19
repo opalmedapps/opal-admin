@@ -11,19 +11,41 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.dispatch import receiver
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.views.generic.base import TemplateView
 
 import pandas as pd
+import structlog
+from django_structlog import signals
 
-from ..core.audit import update_request_event_query_string
 from .models import QuestionnaireProfile
 from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .tables import ReportTable
 
 if TYPE_CHECKING:
     from ..users.models import User
+
+
+@receiver(signals.bind_extra_request_metadata)
+def bind_questionnaire(request: HttpRequest, logger: logging.Logger, **kwargs: Any) -> None:
+    """
+    Binds the questionnaire to the request context to know which questionnaire is being exported.
+
+    Args:
+        request: The request
+        logger: The logger
+        kwargs: additional keyword arguments
+    """
+    questionnaire_id = request.POST.get('questionnaireid')
+    if questionnaire_id:
+        structlog.contextvars.bind_contextvars(questionnaire_id=questionnaire_id)
+
+    questionnaire_name = request.POST.get('questionnairename')
+    if questionnaire_name:
+        structlog.contextvars.bind_contextvars(questionnaire_name=questionnaire_name)
+
 
 # All queries assume the integer representation of opal languages
 LANGUAGE_MAP = MappingProxyType({'fr': 1, 'en': 2})
@@ -111,21 +133,16 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
-        if 'questionnaireid' in request.POST:
+        questionnaire_id = request.POST.get('questionnaireid')
+
+        if questionnaire_id:
             try:
-                qid = int(request.POST['questionnaireid'])
+                qid = int(questionnaire_id)
             except ValueError:
                 self.logger.exception('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-            context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 
-            # Also update auditing service with request details
-            update_request_event_query_string(
-                request,
-                parameters=[
-                    'questionnaireid',
-                ],
-            )
+            context.update(get_questionnaire_detail(qid, LANGUAGE_MAP[requestor.language]))
 
             # Finally check if this questionnaire is currently being followed
             questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)
@@ -160,6 +177,17 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
 
+        structlog.contextvars.bind_contextvars(
+            request_data={
+                'questionnaireID': request.POST.get('questionnaireid'),
+                'questionnaireName': request.POST.get('questionnairename'),
+                'start': request.POST.get('start'),
+                'end': request.POST.get('end'),
+                'patientIDs': request.POST.get('patientIDs'),
+                'questionIDs': request.POST.get('questionIDs'),
+            }
+        )
+
         #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
         #  the function returns a boolean indicating if the table could be successfully created given the query params
         complete_params_check = make_temp_tables(request.POST, LANGUAGE_MAP[requestor.language])
@@ -190,18 +218,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
                 'start': request.POST.get('start'),
                 'end': request.POST.get('end'),
             },
-        )
-
-        # Update audit query string with request parameters
-        update_request_event_query_string(
-            request,
-            parameters=[
-                'questionnaireid',
-                'start',
-                'end',
-                'patientIDs',
-                'questionIDs',
-            ],
         )
 
         return self.render_to_response(context)
