@@ -202,7 +202,7 @@ class TestQuestionnairesReportView:
         response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
 
         mock_generate.assert_called_once()
-        assert caplog.records[0].message == 'An error occurred during questionnaire report generation'
+        assert caplog.records[1].message == 'An error occurred during questionnaire report generation'
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data == error_response
 
@@ -247,7 +247,7 @@ class TestQuestionnairesReportView:
 
         mock_export_pdf_report.assert_called_once()
         mock_generate.assert_called_once()
-        assert caplog.records[0].message == f'{message}: some error'
+        assert caplog.records[1].message == f'{message}: some error'
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.data == error_response
 
