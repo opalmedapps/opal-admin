@@ -32,7 +32,6 @@ class InstitutionOption(Enum):
 
     omi = 'OMI'
     ohigph = 'OHIGPH'
-    muhc = 'MUHC'
 
     def __str__(self) -> str:
         """
@@ -56,12 +55,6 @@ INSTITUTION_DATA = MappingProxyType({
         'name_fr': 'Démo de Opal 2',
         'acronym_fr': 'HPOHIG',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
-    },
-    InstitutionOption.muhc: {
-        'name': 'Opal Demo 3',
-        'name_fr': 'Démo de Opal 3',
-        'acronym_fr': 'CUSM',
-        'support_email': 'opal@muhc.mcgill.ca',
     },
 })
 
@@ -391,7 +384,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             last_name='Jones',
             date_of_birth=date(1985, 1, 1),
             sex=Patient.SexType.MALE,
-            ramq='JONB85010199',
+            ramq='',
             legacy_id=93,
             mrns=mrn_data['Bobby Jones'],
         )
