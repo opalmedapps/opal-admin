@@ -26,6 +26,7 @@ class HospitalNumberSchema(BaseModel):
 
     mrn: str = Field(min_length=1, max_length=10)
     site: str = Field(min_length=3, max_length=10)
+    is_active: bool = True
 
 
 class SexTypeSchema(StrEnum):

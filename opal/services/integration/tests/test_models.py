@@ -24,6 +24,14 @@ def test_hospital_number() -> None:
 
     assert hospital_number.mrn == '1234'
     assert hospital_number.site == 'TEST'
+    assert hospital_number.is_active is True
+
+
+def test_hospital_number_inactive() -> None:
+    """Test the HospitalNumberSchema with inactive status."""
+    hospital_number = schemas.HospitalNumberSchema(mrn='1234', site='TEST', is_active=False)
+
+    assert hospital_number.is_active is False
 
 
 def test_hospital_number_non_empty() -> None:
@@ -116,12 +124,13 @@ def test_patient_mrns() -> None:
         'mrns': [
             {'mrn': '9999996', 'site': 'OMI'},
             {'mrn': '1234', 'site': 'OHIGPH'},
+            {'mrn': '4321', 'site': 'OHIGPH', 'is_active': False},
         ],
     }
 
     patient = schemas.PatientSchema.model_validate(data)
 
-    assert len(patient.mrns) == 2
+    assert len(patient.mrns) == 3
 
 
 def test_patient_by_hin_request() -> None:
