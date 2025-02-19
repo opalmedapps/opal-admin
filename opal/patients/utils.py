@@ -33,7 +33,7 @@ RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -391,34 +391,35 @@ def initialize_new_opal_patient(
     legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
     patient.legacy_id = legacy_patient.patientsernum
     patient.save()
-    logger.info(f'Successfully initialized patient in legacy DB; legacy_id = {patient.legacy_id}')
+    LOGGER.info(f'Successfully initialized patient in legacy DB; legacy_id = {patient.legacy_id}')
 
     # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
     for site_code, mrn in active_mrn_list:
+        print(site_code, mrn)
         try:
             hospital.notify_new_patient(mrn, site_code)
-        except hospital.NonOKResponseError as exc:  # noqa: PERF203
+        except hospital.NonOKResponseError as exc:
             print(exc)
-            logger.exception(
+            LOGGER.exception(
                 f'Failed to initialize patient via the source system ({mrn=}, {site_code=}, {patient_uuid=}: {exc.error}'
             )
         else:
-            logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
+            LOGGER.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
 
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
         orms_response = ORMSService().set_opal_patient(active_mrn_list, patient_uuid)
 
         if orms_response['status'] == 'success':
-            logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
+            LOGGER.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
         else:
-            logger.error('Failed to initialize patient via ORMS')
-            logger.error(
+            LOGGER.error('Failed to initialize patient via ORMS')
+            LOGGER.error(
                 f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, ORMS response = {orms_response}',
             )
     else:
-        logger.info(f'ORMS System not enabled, skipping notification of new patient; patient_uuid {patient_uuid}')
+        LOGGER.info(f'ORMS System not enabled, skipping notification of new patient; patient_uuid {patient_uuid}')
 
 
 @transaction.atomic

@@ -3,8 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime as dt
+import json
+import logging
 import uuid
 from datetime import date, datetime
+from http import HTTPStatus
 from typing import Any
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -12,6 +15,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
@@ -65,6 +69,17 @@ PATIENT_DATA = PatientSchema(
 )
 MRN_DATA_RVH = HospitalNumberSchema(site='RVH', mrn='9999993')
 MRN_DATA_MGH = HospitalNumberSchema(site='MGH', mrn='9999996', is_active=False)
+
+
+class _MockResponse(requests.Response):
+    def __init__(self, status_code: HTTPStatus, data: Any) -> None:
+        self.status_code = status_code
+        self.data = data or {}
+        self.encoding = 'utf-8'
+
+    @property
+    def content(self) -> Any:
+        return json.dumps(self.data).encode()
 
 
 @pytest.mark.parametrize(
@@ -543,7 +558,7 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
 
 def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture) -> None:
     """An info message is logged when the call to the source system to initialize a patient succeeds."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    RequestMockerTest.mock_requests_post(mocker, {})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
     rvh_site: hospital_models.Site = Site(acronym='RVH')
@@ -558,10 +573,13 @@ def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture
     )
 
 
-def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) -> None:
+def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture, set_orms_disabled: None) -> None:
     """An error is logged when the call to the source system to initialize a patient fails."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
-    mock_error_logger = mocker.patch('logging.Logger.error')
+    mocker.patch(
+        'requests.post',
+        return_value=_MockResponse(HTTPStatus.BAD_REQUEST, {'status_code': HTTPStatus.BAD_REQUEST, 'message': 'error'}),
+    )
+    log_exception = mocker.spy(logging.Logger, 'exception')
 
     rvh_site: hospital_models.Site = Site(acronym='RVH')
     LegacyHospitalIdentifierType(code='RVH')
@@ -570,7 +588,9 @@ def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) 
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
-    mock_error_logger.assert_any_call('Failed to initialize patient via the source system')
+    log_exception.assert_called_once()
+    message = log_exception.call_args_list[0].args[1]
+    assert 'Failed to initialize patient via the source system' in message
 
 
 def test_create_access_request_existing() -> None:
