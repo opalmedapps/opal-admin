@@ -479,7 +479,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
         user_bobby = _create_caregiver(
             first_name='Bobby',
-            last_name="O'Brien",
+            last_name='Jones',
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
             email='bobbyjones@demo.opalmedapps.ca',
             language='en',
