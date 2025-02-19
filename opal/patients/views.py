@@ -5,16 +5,13 @@
 """This module provides views for the patients app."""
 
 import base64
-import json
 from collections import OrderedDict
-from datetime import date
 from http import HTTPStatus
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Model
 from django.forms import Form
 from django.forms.models import ModelForm
@@ -33,7 +30,7 @@ from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.schemas import PatientSchema
 
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
@@ -530,10 +527,7 @@ class AccessRequestView(
                 storage['patient'] = patient.pk
             else:
                 # convert it to a dictionary to be able to serialize it into JSON
-                data_dict = patient._asdict()
-                data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]
-                # use DjangoJSONEncoder which supports date/datetime
-                storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
+                storage['patient'] = PatientSchema.model_dump_json(patient)
         elif step == 'relationship':
             caregiver: CaregiverProfile | None = form.existing_user  # type: ignore[attr-defined]
 
@@ -572,18 +566,14 @@ class AccessRequestView(
         if step in {'patient', 'relationship'}:
             # TODO: might be better to refactor into a function so it can be tested easier
             patient_data: str | int = storage.get('patient', '[]')  # type: ignore[assignment]
-            patient: SourceSystemPatientData | Patient
+            patient: PatientSchema | Patient
 
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
             else:
-                patient_json = json.loads(patient_data)
-                date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
-                # convert JSON back to SourceSystemPatientData for consistency
-                # (so it is either Patient or SourceSystemPatientData)
-                patient_json['mrns'] = [SourceSystemMRNData(**mrn) for mrn in patient_json['mrns']]
-                patient_json['date_of_birth'] = date_of_birth
-                patient = SourceSystemPatientData(**patient_json)
+                # convert JSON back to PatientSchema for consistency
+                # (so it is either Patient or PatientSchema)
+                patient = PatientSchema.model_validate_json(patient_data)
 
             kwargs.update({
                 'patient': patient,

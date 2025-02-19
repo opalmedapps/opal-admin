@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from datetime import date, datetime
+from datetime import date
 
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
@@ -16,7 +16,7 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.hospital_settings import factories as hospital_factories
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver, User
 
@@ -27,18 +27,15 @@ from ..tables import ExistingUserTable
 
 pytestmark = pytest.mark.django_db
 
-SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date(1986, 10, 1),
+SOURCE_SYSTEM_PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    ramq='SIMM86600199',
-    deceased=False,
-    death_date_time=None,
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    date_of_birth=date(1986, 10, 1),
+    sex=SexTypeSchema.FEMALE,
+    health_insurance_number='SIMM86600199',
+    date_of_death=None,
     mrns=[
-        SourceSystemMRNData(site='MGH', mrn='9999993', active=True),
+        HospitalNumberSchema(site='MGH', mrn='9999993'),
     ],
 )
 
@@ -63,16 +60,20 @@ def test_relationshippending_missing_startdate() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=timezone.now().date() - relativedelta(
+            date_of_birth=timezone.now().date()
+            - relativedelta(
                 years=14,
             ),
         ),
         type=relationship_type,
     )
-    form_data = model_to_dict(relationship_info, exclude=[
-        'start_date',
-        'end_date',
-    ])
+    form_data = model_to_dict(
+        relationship_info,
+        exclude=[
+            'start_date',
+            'end_date',
+        ],
+    )
 
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
@@ -105,16 +106,20 @@ def test_relationshippending_update_fail() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=timezone.now().date() - relativedelta(
+            date_of_birth=timezone.now().date()
+            - relativedelta(
                 years=14,
             ),
         ),
         type=relationship_type,
     )
-    form_data = model_to_dict(relationship_info, exclude=[
-        'start_date',
-        'end_date',
-    ])
+    form_data = model_to_dict(
+        relationship_info,
+        exclude=[
+            'start_date',
+            'end_date',
+        ],
+    )
 
     message = 'This field is required.'
     relationshippending_form = forms.RelationshipAccessForm(
@@ -128,7 +133,8 @@ def test_relationshippending_update_fail() -> None:
 
 
 @pytest.mark.parametrize(
-    'relationship_type', [
+    'relationship_type',
+    [
         RoleType.GUARDIAN_CAREGIVER,
         RoleType.PARENT_GUARDIAN,
         RoleType.MANDATARY,
@@ -140,7 +146,8 @@ def test_relationshippending_type_not_contain_self(relationship_type: str | None
     relation_type = RelationshipType.objects.get(role_type=relationship_type)
     relationship_info = factories.Relationship(
         patient=factories.Patient(
-            date_of_birth=timezone.now().date() - relativedelta(
+            date_of_birth=timezone.now().date()
+            - relativedelta(
                 years=14,
             ),
         ),
@@ -162,7 +169,8 @@ def test_relationshippending_form_date_validated() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
         patient=factories.Patient(
-            date_of_birth=timezone.now().date() - relativedelta(
+            date_of_birth=timezone.now().date()
+            - relativedelta(
                 years=14,
             ),
         ),
@@ -188,7 +196,8 @@ def test_relationship_pending_status_reason() -> None:
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
         patient=factories.Patient(
-            date_of_birth=timezone.now().date() - relativedelta(
+            date_of_birth=timezone.now().date()
+            - relativedelta(
                 years=14,
             ),
         ),
@@ -1025,8 +1034,7 @@ def test_accessrequestconfirmpatientform_init() -> None:
 
 def test_accessrequestconfirmpatientform_is_deceased_source_system() -> None:
     """Ensure that proper error message is added to form error list when source system patient is deceased."""
-    source_system_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(deceased=True)
-    form = forms.AccessRequestConfirmPatientForm(patient=source_system_patient)
+    form = forms.AccessRequestConfirmPatientForm(patient=SOURCE_SYSTEM_PATIENT_DATA)
     err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
 
     form.is_valid()
@@ -1048,25 +1056,21 @@ def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
 
 def test_accessrequestconfirmpatientform_has_multiple_mrns_source_system() -> None:
     """Ensure that proper error message is added to form error list when source patient has more than one `MRN`."""
-    source_system_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(
-        mrns=[
-            SourceSystemMRNData(
-                site='MCH',
-                mrn='9999993',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
+    source_system_patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    source_system_patient.mrns = [
+        HospitalNumberSchema(
+            site='MCH',
+            mrn='9999993',
+        ),
+        HospitalNumberSchema(
+            site='MCH',
+            mrn='9999994',
+        ),
+        HospitalNumberSchema(
+            site='RVH',
+            mrn='9999993',
+        ),
+    ]
     form = forms.AccessRequestConfirmPatientForm(patient=source_system_patient)
     err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
 
@@ -1099,31 +1103,32 @@ def test_accessrequestrequestorform_form_filled_required_type(role_type: RoleTyp
     assert form.fields['form_filled'].required == relationship_type.form_required
 
 
-@pytest.mark.parametrize(('age', 'enabled_options'), [
-    (13, [RoleType.PARENT_GUARDIAN, RoleType.MANDATARY]),
-    (14, [RoleType.GUARDIAN_CAREGIVER, RoleType.MANDATARY, RoleType.SELF]),
-    (18, [RoleType.SELF, RoleType.MANDATARY]),
-])
+@pytest.mark.parametrize(
+    ('age', 'enabled_options'),
+    [
+        (13, [RoleType.PARENT_GUARDIAN, RoleType.MANDATARY]),
+        (14, [RoleType.GUARDIAN_CAREGIVER, RoleType.MANDATARY, RoleType.SELF]),
+        (18, [RoleType.SELF, RoleType.MANDATARY]),
+    ],
+)
 def test_accessrequestrequestorform_relationship_type(age: int, enabled_options: list[RoleType]) -> None:
     """Ensure the relationship_type field has the correct options enabled/disabled based on the patient's age."""
     relationship_types = list(
         RelationshipType.objects.filter(
             role_type__in=enabled_options,
-        ).values_list('name', flat=True).reverse(),
+        )
+        .values_list('name', flat=True)
+        .reverse(),
     )
 
-    patient = SOURCE_SYSTEM_PATIENT_DATA._asdict()
-    patient['date_of_birth'] = timezone.now().date() - relativedelta(years=age)
+    patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    patient.date_of_birth = timezone.now().date() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
-        patient=SourceSystemPatientData(**patient),
+        patient=patient,
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    actual_enabled = [
-        option['label']
-        for option in options
-        if option['attrs'].get('disabled', '') != 'disabled'
-    ]
+    actual_enabled = [option['label'] for option in options if option['attrs'].get('disabled', '') != 'disabled']
 
     assert len(actual_enabled) == len(relationship_types)
     assert actual_enabled == relationship_types
@@ -1139,11 +1144,7 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    disabled_options = [
-        option['label']
-        for option in options
-        if option['attrs'].get('disabled', '') == 'disabled'
-    ]
+    disabled_options = [option['label'] for option in options if option['attrs'].get('disabled', '') == 'disabled']
 
     disabled_types = list(
         RelationshipType.objects.filter(
@@ -1152,7 +1153,9 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
                 RoleType.GUARDIAN_CAREGIVER,
                 RoleType.PARENT_GUARDIAN,
             ],
-        ).values_list('name', flat=True).reverse(),
+        )
+        .values_list('name', flat=True)
+        .reverse(),
     )
 
     assert disabled_options == disabled_types
@@ -1168,21 +1171,21 @@ def test_requestor_form_relationship_type_description() -> None:
     )
 
     options = form.fields['relationship_type'].widget.option_descriptions
-    assert options[1] == (
-        'The patient is the requestor and is caring for themselves, Age: 14 and older'
-    )
+    assert options[1] == ('The patient is the requestor and is caring for themselves, Age: 14 and older')
 
     assert options[3] == (
-        'A parent or guardian of a minor who is considered'
-        + ' incapacitated in terms of self-care, Age: 14-18'
+        'A parent or guardian of a minor who is considered' + ' incapacitated in terms of self-care, Age: 14-18'
     )
 
 
-@pytest.mark.parametrize('user_type', [
-    None,
-    constants.UserType.NEW.name,
-    constants.UserType.EXISTING.name,
-])
+@pytest.mark.parametrize(
+    'user_type',
+    [
+        None,
+        constants.UserType.NEW.name,
+        constants.UserType.EXISTING.name,
+    ],
+)
 def test_accessrequestrequestorform_is_existing_user_selected(user_type: str | None) -> None:
     """Ensure the existing user is not selected by default."""
     data = None
@@ -1198,10 +1201,13 @@ def test_accessrequestrequestorform_is_existing_user_selected(user_type: str | N
     assert form['user_type'].value() == expected_type
 
 
-@pytest.mark.parametrize('user_type', [
-    constants.UserType.NEW,
-    constants.UserType.EXISTING,
-])
+@pytest.mark.parametrize(
+    'user_type',
+    [
+        constants.UserType.NEW,
+        constants.UserType.EXISTING,
+    ],
+)
 def test_accessrequestrequestorform_validate_user_types(user_type: constants.UserType) -> None:
     """Ensure the form is validated with different `user_types`."""
     relationshiptype = RelationshipType.objects.guardian_caregiver()
@@ -1514,9 +1520,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_patient_exists()
     )
 
     assert not form.is_valid()
-    assert form.non_field_errors()[0] == (
-        'The patient already has a self-relationship.'
-    )
+    assert form.non_field_errors()[0] == ('The patient already has a self-relationship.')
 
 
 def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists() -> None:
@@ -1546,9 +1550,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
     )
 
     assert not form.is_valid()
-    assert form.non_field_errors()[0] == (
-        'The caregiver already has a self-relationship.'
-    )
+    assert form.non_field_errors()[0] == ('The caregiver already has a self-relationship.')
 
 
 def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
@@ -1740,7 +1742,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
     patient = factories.Patient(
         first_name='Test',
         last_name='Simpson',
-        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1766,7 +1768,7 @@ def test_validate_existing_relationship_missing_first_name() -> None:
     patient = factories.Patient(
         first_name='Test',
         last_name='Simpson',
-        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1809,9 +1811,12 @@ def test_accessrequestconfirmform_invalid_password(admin_user: User, mocker: Moc
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
-    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
-        'password': 'invalid',
-    })
+    form = forms.AccessRequestConfirmForm(
+        username=admin_user.username,
+        data={
+            'password': 'invalid',
+        },
+    )
 
     assert not form.is_valid()
     assert form.has_error('password')
@@ -1819,9 +1824,12 @@ def test_accessrequestconfirmform_invalid_password(admin_user: User, mocker: Moc
 
 def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
     """Ensure that a valid user's password makes the form valid."""
-    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
-        'password': 'password',
-    })
+    form = forms.AccessRequestConfirmForm(
+        username=admin_user.username,
+        data={
+            'password': 'password',
+        },
+    )
 
     assert form.is_valid()
 
