@@ -36,7 +36,6 @@ class InstitutionOption(Enum):
 
     omi = 'OMI'
     ohigph = 'OHIGPH'
-    muhc = 'MUHC'
 
     def __str__(self) -> str:
         """
@@ -50,22 +49,16 @@ class InstitutionOption(Enum):
 
 INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'name': 'Opal Medical Institution',
-        'name_fr': 'Établissement Médical Opal',
+        'name': 'Opal Demo',
+        'name_fr': 'Démo de Opal',
         'acronym_fr': 'ÉMO',
         'support_email': 'opal@muhc.mcgill.ca',
     },
     InstitutionOption.ohigph: {
-        'name': 'OHIG Pediatric Hospital',
-        'name_fr': 'Hôpital Pédiatrique OHIG',
+        'name': 'Opal Demo 2',
+        'name_fr': 'Démo de Opal 2',
         'acronym_fr': 'HPOHIG',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
-    },
-    InstitutionOption.muhc: {
-        'name': 'McGill University Health Centre',
-        'name_fr': 'Centre universitaire de santé McGill',
-        'acronym_fr': 'CUSM',
-        'support_email': 'opal@muhc.mcgill.ca',
     },
 })
 
@@ -175,6 +168,7 @@ MRN_DATA = MappingProxyType({
             ('MGH', '5024737'),
         ],
         "Rory O'Brien": [('RVH', '9999989')],
+        'Bobby Jones': [('RVH', '9999994')],
     },
     InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -389,6 +383,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=59,
             mrns=mrn_data["Rory O'Brien"],
         )
+        bobby = _create_patient(
+            first_name='Bobby',
+            last_name='Jones',
+            date_of_birth=date(1985, 1, 1),
+            sex=Patient.SexType.MALE,
+            ramq='',
+            legacy_id=93,
+            mrns=mrn_data['Bobby Jones'],
+        )
     # Bart exists at both institutions
     bart = _create_patient(
         first_name='Bart',
@@ -473,6 +476,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             language='en',
             phone_number='+15557654321',
             legacy_id=7,
+        )
+        user_bobby = _create_caregiver(
+            first_name='Bobby',
+            last_name="O'Brien",
+            username='hIMnEXkedPMxYnXeqNXzphklu4V2',
+            email='bobbyjones@demo.opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=8,
         )
     # get relationship types
     type_self = RelationshipType.objects.self_type()
@@ -601,6 +613,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             request_date=_relative_date(today, -14),
             start_date=_relative_date(today, -14),
         )
+
+        # Bobby --> Bobby: Self
+        _create_relationship(
+            patient=bobby,
+            caregiver=user_bobby,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
     # The rest of the relationships exist at both institutions
 
     # Marge --> Bart: Guardian-Caregiver
@@ -630,6 +652,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_fred)
         _create_security_answers(user_laurie)
         _create_security_answers(user_rory)
+        _create_security_answers(user_bobby)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
