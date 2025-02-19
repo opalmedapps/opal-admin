@@ -29,8 +29,20 @@ class NonOKResponseError(Exception):
         super().__init__(message)
 
 
+class PatientNotFoundError(Exception):
+    """Error when a patient is not found."""
+
+    def __init__(self) -> None:
+        """Initialize the error for the given response."""
+        message = 'Patient could not be found'
+        super().__init__(message)
+
+
 def _retrieve(url: str, data: Any | None) -> requests.Response:
     response = requests.post(url, data=data, timeout=5)
+
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        raise PatientNotFoundError()
 
     if response.status_code != HTTPStatus.OK:
         raise NonOKResponseError(response)
@@ -42,6 +54,7 @@ def find_patient_by_hin(health_insurance_number: str) -> PatientSchema:
     """
     Find a patient by their health insurance number.
 
+    Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
     Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
@@ -61,6 +74,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> PatientSchema:
     """
     Find a patient by their hospital number (MRN and site code).
 
+    Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
     Raises [pydantic.ValidationError][] if the data in the response is not valid.
 
@@ -81,6 +95,7 @@ def notify_new_patient(mrn: str, site: str) -> None:
     """
     Notify the integration engine that a patient is now an Opal patient.
 
+    Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
 
     Args:
