@@ -24,7 +24,7 @@ from opal.services.integration.schemas import PatientSchema
 from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
-from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
@@ -456,13 +456,16 @@ def create_access_request(
     # New patient
     if isinstance(patient, PatientSchema):
         is_new_patient = True
-        mrns = [(Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, True) for mrn_data in patient.mrns]
+        mrns = [
+            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.is_active) for mrn_data in patient.mrns
+        ]
+        sex = SexType[patient.sex.name]
 
         patient = create_patient(
             first_name=patient.first_name,
             last_name=patient.last_name,
             date_of_birth=patient.date_of_birth,
-            sex=Patient.SexType(patient.sex),
+            sex=sex,
             ramq=patient.health_insurance_number or '',
             mrns=mrns,
         )

@@ -47,7 +47,7 @@ class PatientSchema(BaseModel):
     date_of_birth: date
     date_of_death: datetime | None
     health_insurance_number: str | None = Field(min_length=1, max_length=12)
-    mrns: list[HospitalNumberSchema] = Field(min_length=1)
+    mrns: list[HospitalNumberSchema]
 
 
 class PatientByHINSchema(BaseModel):

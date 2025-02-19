@@ -64,7 +64,7 @@ PATIENT_DATA = PatientSchema(
     mrns=[],
 )
 MRN_DATA_RVH = HospitalNumberSchema(site='RVH', mrn='9999993')
-MRN_DATA_MGH = HospitalNumberSchema(site='MGH', mrn='9999996')
+MRN_DATA_MGH = HospitalNumberSchema(site='MGH', mrn='9999996', is_active=False)
 
 
 @pytest.mark.parametrize(
@@ -637,7 +637,7 @@ def test_create_access_request_new_patient() -> None:
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexTypeSchema.FEMALE
+    assert patient.sex == SexType.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
@@ -887,7 +887,7 @@ def test_create_access_request_new_patient_and_databank_consent(
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexTypeSchema.FEMALE
+    assert patient.sex == SexType.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
@@ -944,7 +944,7 @@ def test_create_access_request_new_patient_databank_disabled(
     assert patient.first_name == 'Marge'
     assert patient.last_name == 'Simpson'
     assert patient.date_of_birth == date(1986, 10, 1)
-    assert patient.sex == SexTypeSchema.FEMALE
+    assert patient.sex == SexType.FEMALE
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
