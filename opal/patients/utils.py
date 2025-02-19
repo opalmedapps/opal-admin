@@ -459,13 +459,12 @@ def create_access_request(
         mrns = [
             (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.is_active) for mrn_data in patient.mrns
         ]
-        sex = SexType[patient.sex.name]
 
         patient = create_patient(
             first_name=patient.first_name,
             last_name=patient.last_name,
             date_of_birth=patient.date_of_birth,
-            sex=sex,
+            sex=SexType[patient.sex.name],
             ramq=patient.health_insurance_number or '',
             mrns=mrns,
         )
