@@ -45,7 +45,6 @@ def _retrieve(url: str, data: Any | None) -> requests.Response:
         raise PatientNotFoundError()
 
     if response.status_code != HTTPStatus.OK:
-        print(response)
         raise NonOKResponseError(response)
 
     return response
@@ -104,7 +103,6 @@ def notify_new_patient(mrn: str, site: str) -> None:
         site: the site code the MRN of the patient belongs to
     """
     data = HospitalNumberSchema(mrn=mrn, site=site)
-    res = _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/newOpalPatient', data=data.model_dump_json())
-    print(res)
+    _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/newOpalPatient', data=data.model_dump_json())
 
     # we know at this point that the request was successful

@@ -264,7 +264,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         site: str | None = None,
     ) -> PatientSchema | None:
         patient = None
-        print('finding patient in source system...')
+
         try:
             if card_type == constants.MedicalCard.RAMQ:
                 patient = hospital.find_patient_by_hin(medical_number)
