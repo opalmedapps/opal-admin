@@ -810,20 +810,15 @@ def test_create_access_request_missing_legacy_id() -> None:
         )
 
 
-def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture) -> None:
-    """A new pediatric set delay values following corresponding institution field values."""
+def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture, set_orms_disabled: None) -> None:
+    """A new pediatric patient gets lab delay values according to the institution settings."""
     RequestMockerTest.mock_requests_post(mocker, {})
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
-    Site(acronym='RVH')
-    Site(acronym='MGH')
-    LegacyHospitalIdentifierType(code='RVH')
-    LegacyHospitalIdentifierType(code='MGH')
     institution = Institution(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
 
     patient_data = PatientSchema.model_copy(PATIENT_DATA)
-    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
-    patient_data.date_of_death = datetime(2008, 10, 23, tzinfo=timezone.get_current_timezone())
+    patient_data.date_of_birth = datetime(2008, 10, 23, tzinfo=timezone.get_current_timezone())
 
     relationship, registration_code = utils.create_access_request(
         patient_data,

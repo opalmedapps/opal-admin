@@ -20,6 +20,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div, Hidden, Layout, Row, Submit
 from crispy_forms.layout import Field as CrispyField
 from dynamic_forms import DynamicField, DynamicFormMixin
+from pydantic import ValidationError as PydanticValidationError
 from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
@@ -263,7 +264,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         site: str | None = None,
     ) -> PatientSchema | None:
         patient = None
-
+        print('finding patient in source system...')
         try:
             if card_type == constants.MedicalCard.RAMQ:
                 patient = hospital.find_patient_by_hin(medical_number)
@@ -277,6 +278,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         except hospital.NonOKResponseError as error:
             self.add_error(NON_FIELD_ERRORS, error.error.message)
             LOGGER.exception('Error while connecting to hospital interface to find patient')
+        except PydanticValidationError:
+            self.add_error(NON_FIELD_ERRORS, _('Hospital patient contains invalid data.'))
+            LOGGER.exception('Source system returned in valid patient data')
 
         return patient
 
@@ -289,11 +293,6 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     This form can be validated after initialization to give early user feedback.
     Submitting the form (assuming it is valid) confirms that the correct patient was found.
     """
-
-    # TODO: checkbox will be needed to be added at the end
-    # move search buttons to inline with search
-    # make form continue when clicking checkbox
-    # "The correct patient was found and the patient data is correct"
 
     def __init__(self, patient: Patient | PatientSchema, *args: Any, **kwargs: Any) -> None:
         """
