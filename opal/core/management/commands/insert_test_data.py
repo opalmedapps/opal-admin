@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Management command for inserting test data."""
+
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
@@ -481,7 +482,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Bobby',
             last_name='Jones',
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
-            email='bobbyjones@demo.opalmedapps.ca',
+            email='bobbyjones@opalmedapps.ca',
             language='en',
             phone_number='',
             legacy_id=8,
@@ -1027,20 +1028,17 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
     question1 = (
         'What is the name of your first pet?'
         if language == 'en'
-        else
-        'Quel est le nom de votre premier animal de compagnie?'
+        else 'Quel est le nom de votre premier animal de compagnie?'
     )
     question2 = (
         'What was the name of your favorite superhero as a child?'
         if language == 'en'
-        else
-        'Quel était le nom de votre super-héros préféré durant votre enfance?'
+        else 'Quel était le nom de votre super-héros préféré durant votre enfance?'
     )
     question3 = (
         'What was the color of your first car?'
         if language == 'en'
-        else
-        'Quelle était la couleur de votre première voiture?'
+        else 'Quelle était la couleur de votre première voiture?'
     )
     _create_security_answer(
         caregiver,
