@@ -951,7 +951,7 @@ def test_requestor_form_relationship_type_description() -> None:
     assert options[1] == ('The patient is the requestor and is caring for themselves, Age: 14 and older')
 
     assert options[3] == (
-        'A parent or guardian of a minor who is considered' + ' incapacitated in terms of self-care, Age: 14-18'
+        'A parent or guardian of a minor who is considered incapacitated in terms of self-care, Age: 14-18'
     )
 
 
