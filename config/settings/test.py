@@ -29,14 +29,6 @@ PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
-# django-easy-audit
-# ------------------------------------------------------------------------------
-# Don't watch model events by default.
-# Also helps suppressing data migration errors during test initialization.
-DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = False
-# Don't log login events since not every test has a request.
-DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = False
-
 # Whitenoise
 # ------------------------------------------------------------------------------
 # Get rid of whitenoise "No directory at" warning, as it's not helpful when running tests.

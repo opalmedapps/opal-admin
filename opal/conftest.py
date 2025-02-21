@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
+
 from collections.abc import Callable, Generator
 from datetime import datetime
 from pathlib import Path
@@ -157,6 +158,7 @@ def user_with_permission(user: User) -> Callable[[str], User]:
     Returns:
         a callable that adds a permission
     """
+
     def add_permission(permission_name: str) -> User:
         permission_names = [permission_name]
 
@@ -275,7 +277,7 @@ def set_orms_enabled(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.ORMS_ENABLED = True
-    settings.ORMS_HOST = 'http://localhost:8000'
+    settings.ORMS_HOST = 'http://localhost:8086'
 
 
 @pytest.fixture
@@ -428,8 +430,7 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
 
 
 @pytest.fixture
-def databank_consent_questionnaire_and_response(
-) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
+def databank_consent_questionnaire_and_response() -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
     """
     Add a full databank consent questionnaire and simple response to test setup.
 
