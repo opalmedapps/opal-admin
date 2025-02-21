@@ -828,7 +828,7 @@ def test_accessrequestsearchform_non_ok(mocker: MockerFixture) -> None:
     assert not form.is_valid()
     assert form.patient is None
     assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Error while communicating with the hospital interface'
+    assert form.non_field_errors()[0] == 'Error while communicating with the hospital interface.'
 
 
 def test_accessrequestconfirmpatientform_init() -> None:
