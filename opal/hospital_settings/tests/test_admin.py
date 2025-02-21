@@ -28,7 +28,7 @@ def test_institutionadmin_can_add(admin_user: User) -> None:
 
 def test_institutionadmin_existing_institution_cannot_add() -> None:
     """No new institution can be added if there is already an institution."""
-    factories.Institution()
+    factories.Institution.create()
     admin = InstitutionAdmin(Institution, site)
     request = HttpRequest()
 

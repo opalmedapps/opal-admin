@@ -36,7 +36,7 @@ class TestAppChartView:
     def test_get_unread_appointment_count(self, admin_api_client: APIClient) -> None:
         """Test if function returns number of unread appointments."""
         # Insert appointment with different state, status and read status.
-        alias_expression = factories.LegacyAliasExpressionFactory()
+        alias_expression = factories.LegacyAliasExpressionFactory.create()
         # List of all possible appointment status
         possible_appt_status = [
             'Open',
@@ -48,19 +48,19 @@ class TestAppChartView:
             'Cancelled - Patient No-Show',
         ]
         for status in possible_appt_status:
-            factories.LegacyAppointmentFactory(
+            factories.LegacyAppointmentFactory.create(
                 patientsernum=self.patient,
                 aliasexpressionsernum=alias_expression,
                 status=status,
                 state='Active',
             )
-            factories.LegacyAppointmentFactory(
+            factories.LegacyAppointmentFactory.create(
                 patientsernum=self.patient,
                 aliasexpressionsernum=alias_expression,
                 status=status,
                 state='Deleted',
             )
-            factories.LegacyAppointmentFactory(
+            factories.LegacyAppointmentFactory.create(
                 patientsernum=self.patient,
                 aliasexpressionsernum=alias_expression,
                 status=status,
@@ -81,9 +81,9 @@ class TestAppChartView:
 
     def test_get_unread_labs_count(self, admin_api_client: APIClient) -> None:
         """Test whether the right number of unread lab results is returned."""
-        factories.LegacyPatientTestResultFactory(patient_ser_num=self.patient)
-        factories.LegacyPatientTestResultFactory(patient_ser_num=self.patient)
-        factories.LegacyPatientTestResultFactory(patient_ser_num=self.patient, read_by=self.user.username)
+        factories.LegacyPatientTestResultFactory.create(patient_ser_num=self.patient)
+        factories.LegacyPatientTestResultFactory.create(patient_ser_num=self.patient)
+        factories.LegacyPatientTestResultFactory.create(patient_ser_num=self.patient, read_by=self.user.username)
 
         # Direct function call
         unread_labs = models.LegacyPatientTestResult.objects.get_unread_queryset(
@@ -98,9 +98,9 @@ class TestAppChartView:
 
     def test_get_unread_document_count(self, admin_api_client: APIClient) -> None:
         """Test whether the right number of unread documents is returned."""
-        factories.LegacyDocumentFactory(patientsernum=self.patient)
-        factories.LegacyDocumentFactory(patientsernum=self.patient)
-        factories.LegacyDocumentFactory(patientsernum=self.patient, readby=self.user.username)
+        factories.LegacyDocumentFactory.create(patientsernum=self.patient)
+        factories.LegacyDocumentFactory.create(patientsernum=self.patient)
+        factories.LegacyDocumentFactory.create(patientsernum=self.patient, readby=self.user.username)
 
         # Direct function call
         unread_documents = models.LegacyDocument.objects.get_unread_queryset(
@@ -115,9 +115,9 @@ class TestAppChartView:
 
     def test_get_unread_txteammessage_count(self, admin_api_client: APIClient) -> None:
         """Test if function returns number of unread txteammessages."""
-        factories.LegacyTxTeamMessageFactory(patientsernum=self.patient)
-        factories.LegacyTxTeamMessageFactory(patientsernum=self.patient)
-        factories.LegacyTxTeamMessageFactory(patientsernum=self.patient, readby=self.user.username)
+        factories.LegacyTxTeamMessageFactory.create(patientsernum=self.patient)
+        factories.LegacyTxTeamMessageFactory.create(patientsernum=self.patient)
+        factories.LegacyTxTeamMessageFactory.create(patientsernum=self.patient, readby=self.user.username)
 
         # Direct function call
         txteammessages = models.LegacyTxTeamMessage.objects.get_unread_queryset(
@@ -132,19 +132,23 @@ class TestAppChartView:
 
     def test_get_unread_clinical_edumaterial_count(self, admin_api_client: APIClient) -> None:
         """Test if function returns the right number of unread clinical educational materials."""
-        self._get_new_clinical_material(patient_ser_num=self.patient)
-        self._get_new_clinical_material(patient_ser_num=self.patient)
-        self._get_new_clinical_material(patient_ser_num=self.patient, read_by=self.user.username)
-        self._get_new_research_material(patient_ser_num=self.patient)
-        self._get_new_research_material(patient_ser_num=self.patient, read_by=self.user.username)
+        self._get_new_clinical_material(patient=self.patient)
+        self._get_new_clinical_material(patient=self.patient)
+        self._get_new_clinical_material(patient=self.patient, read_by=self.user.username)
+        self._get_new_research_material(patient=self.patient)
+        self._get_new_research_material(patient=self.patient, read_by=self.user.username)
 
         # Direct function call
-        edumaterials = models.LegacyEducationalMaterial.objects.get_unread_queryset(
-            self.patient.patientsernum,
-            self.user.username,
-        ).filter(
-            educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
-        ).count()
+        edumaterials = (
+            models.LegacyEducationalMaterial.objects.get_unread_queryset(
+                self.patient.patientsernum,
+                self.user.username,
+            )
+            .filter(
+                educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
+            )
+            .count()
+        )
         assert edumaterials == 2
 
         # API results
@@ -153,19 +157,23 @@ class TestAppChartView:
 
     def test_get_unread_research_edumaterial_count(self, admin_api_client: APIClient) -> None:
         """Test if function returns the right number of unread research educational materials."""
-        self._get_new_research_material(patient_ser_num=self.patient)
-        self._get_new_research_material(patient_ser_num=self.patient)
-        self._get_new_research_material(patient_ser_num=self.patient, read_by=self.user.username)
-        self._get_new_clinical_material(patient_ser_num=self.patient)
-        self._get_new_clinical_material(patient_ser_num=self.patient, read_by=self.user.username)
+        self._get_new_research_material(patient=self.patient)
+        self._get_new_research_material(patient=self.patient)
+        self._get_new_research_material(patient=self.patient, read_by=self.user.username)
+        self._get_new_clinical_material(patient=self.patient)
+        self._get_new_clinical_material(patient=self.patient, read_by=self.user.username)
 
         # Direct function call
-        edumaterials = models.LegacyEducationalMaterial.objects.get_unread_queryset(
-            self.patient.patientsernum,
-            self.user.username,
-        ).filter(
-            educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Research',
-        ).count()
+        edumaterials = (
+            models.LegacyEducationalMaterial.objects.get_unread_queryset(
+                self.patient.patientsernum,
+                self.user.username,
+            )
+            .filter(
+                educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Research',
+            )
+            .count()
+        )
         assert edumaterials == 2
 
         # API results
@@ -179,45 +187,49 @@ class TestAppChartView:
     )
     def test_get_unread_questionnaire_count(self, clear_questionnairedb: None, admin_api_client: APIClient) -> None:
         """Test if function returns number of new clinical questionnaires."""
-        respondent = questionnaires_factories.LegacyRespondentFactory(title__content='Caregiver', title__language_id=2)
-        clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
-        research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
-        consent_purpose = questionnaires_factories.LegacyPurposeFactory(id=4)
-        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+        respondent = questionnaires_factories.LegacyRespondentFactory.create(
+            title__content='Caregiver', title__language_id=2
+        )
+        clinical_purpose = questionnaires_factories.LegacyPurposeFactory.create(id=1)
+        research_purpose = questionnaires_factories.LegacyPurposeFactory.create(id=2)
+        consent_purpose = questionnaires_factories.LegacyPurposeFactory.create(id=4)
+        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory.create(
             purpose=clinical_purpose,
             respondent=respondent,
         )
-        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory.create(
             purpose=research_purpose,
             respondent=respondent,
         )
-        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory.create(
             purpose=consent_purpose,
             respondent=respondent,
         )
-        patient_one = questionnaires_factories.LegacyQuestionnairePatientFactory(external_id=self.patient.patientsernum)
-        patient_two = questionnaires_factories.LegacyQuestionnairePatientFactory(external_id=52)
+        patient_one = questionnaires_factories.LegacyQuestionnairePatientFactory.create(
+            external_id=self.patient.patientsernum
+        )
+        patient_two = questionnaires_factories.LegacyQuestionnairePatientFactory.create(external_id=52)
 
         # status=0 by default for new questionnaires
-        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory.create(
             questionnaire=clinical_questionnaire,
             patient=patient_one,
         )
         # status=1 indicates in progress
-        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory.create(
             questionnaire=clinical_questionnaire,
             patient=patient_one,
             status=1,
         )
-        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory.create(
             questionnaire=research_questionnaire,
             patient=patient_one,
         )
-        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory.create(
             questionnaire=consent_questionnaire,
             patient=patient_one,
         )
-        questionnaires_factories.LegacyAnswerQuestionnaireFactory(
+        questionnaires_factories.LegacyAnswerQuestionnaireFactory.create(
             questionnaire=clinical_questionnaire,
             patient=patient_two,
         )
@@ -251,26 +263,30 @@ class TestAppChartView:
     @pytest.fixture(autouse=True)
     def _before_each(self) -> None:
         """Create patient and user objects for each test."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
             type__can_answer_questionnaire=True,
         )
-        self.patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
+        self.patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
         self.user = relationship.caregiver.user
 
-    def _get_new_research_material(self, patient_ser_num: int, read_by: str = '[]') -> models.LegacyEducationalMaterial:
+    def _get_new_research_material(
+        self, patient: models.LegacyPatient, read_by: str = '[]'
+    ) -> models.LegacyEducationalMaterial:
         """Create and return a new research material."""
-        return factories.LegacyEducationalMaterialFactory(
+        return factories.LegacyEducationalMaterialFactory.create(
             educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Research',
-            patientsernum=patient_ser_num,
+            patientsernum=patient,
             readby=read_by,
         )
 
-    def _get_new_clinical_material(self, patient_ser_num: int, read_by: str = '[]') -> models.LegacyEducationalMaterial:
+    def _get_new_clinical_material(
+        self, patient: models.LegacyPatient, read_by: str = '[]'
+    ) -> models.LegacyEducationalMaterial:
         """Create and return a new clinical educational material."""
-        return factories.LegacyEducationalMaterialFactory(
+        return factories.LegacyEducationalMaterialFactory.create(
             educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
-            patientsernum=patient_ser_num,
+            patientsernum=patient,
             readby=read_by,
         )
 

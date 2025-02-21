@@ -17,21 +17,21 @@ pytestmark = pytest.mark.django_db()
 
 def test_daily_patient_data_received_factory() -> None:
     """Ensure the `DailyPatientDataReceived` factory creates a valid model."""
-    patient_data = factories.DailyPatientDataReceived()
+    patient_data = factories.DailyPatientDataReceived.create()
 
     patient_data.full_clean()
 
 
 def test_daily_user_app_activity_factory() -> None:
     """Ensure the `DailyUserAppActivity` factory creates a valid model."""
-    patient_data = factories.DailyUserAppActivity()
+    patient_data = factories.DailyUserAppActivity.create()
 
     patient_data.full_clean()
 
 
 def test_daily_user_patient_activity_factory() -> None:
     """Ensure the `DailyUserPatientActivity` factory creates a valid model."""
-    patient_data = factories.DailyUserPatientActivity()
+    patient_data = factories.DailyUserPatientActivity.create()
 
     patient_data.full_clean()
 
@@ -40,7 +40,7 @@ def test_daily_patient_data_received_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyPatientDataReceived` model."""
     action_date = timezone.now()
     patient_data = DailyPatientDataReceived(
-        patient=Patient(),
+        patient=Patient.create(),
         action_date=action_date,
     )
 
@@ -51,9 +51,9 @@ def test_daily_patient_data_received_str() -> None:
 
 def test_daily_user_patient_activity_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyUserPatientActivity` model."""
-    patient = Patient()
+    patient = Patient.create()
     patient_data = DailyUserPatientActivity(
-        action_by_user=Caregiver(),
+        action_by_user=Caregiver.create(),
         patient=patient,
     )
 
@@ -62,7 +62,7 @@ def test_daily_user_patient_activity_str() -> None:
 
 def test_daily_user_app_activity_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyUserAppActivity` model."""
-    caregiver = Caregiver()
+    caregiver = Caregiver.create()
     user_data = DailyUserAppActivity(
         action_by_user=caregiver,
     )
@@ -73,7 +73,7 @@ def test_daily_user_app_activity_str() -> None:
 def test_daily_user_app_activity_new_can_save() -> None:
     """Ensure a new `DailyUserAppActivity` instance can be saved."""
     patient_data = factories.DailyUserAppActivity.build(
-        action_by_user=Caregiver(),
+        action_by_user=Caregiver.create(),
     )
 
     patient_data.save()
@@ -81,11 +81,11 @@ def test_daily_user_app_activity_new_can_save() -> None:
 
 def test_daily_user_patient_activity_new_can_save() -> None:
     """Ensure a new `DailyUserPatientActivity` instance can be saved."""
-    relationship = Relationship()
+    relationship = Relationship.create()
 
     patient_data = factories.DailyUserPatientActivity.build(
         user_relationship_to_patient=relationship,
-        action_by_user=Caregiver(),
+        action_by_user=Caregiver.create(),
         patient=relationship.patient,
     )
 
@@ -94,7 +94,7 @@ def test_daily_user_patient_activity_new_can_save() -> None:
 
 def test_daily_patient_data_received_new_can_save() -> None:
     """Ensure a new `DailyPatientDataReceived` instance can be saved."""
-    patient = Patient()
+    patient = Patient.create()
 
     patient_data = factories.DailyPatientDataReceived.build(
         patient=patient,
@@ -105,11 +105,11 @@ def test_daily_patient_data_received_new_can_save() -> None:
 
 def test_daily_user_app_activity_multiple_per_patient() -> None:
     """Ensure a relationship can have multiple `DailyUserAppActivity` records."""
-    factories.DailyUserAppActivity(
-        action_by_user=Caregiver(),
+    factories.DailyUserAppActivity.create(
+        action_by_user=Caregiver.create(),
     )
-    factories.DailyUserAppActivity(
-        action_by_user=Caregiver(),
+    factories.DailyUserAppActivity.create(
+        action_by_user=Caregiver.create(),
     )
 
     assert DailyUserAppActivity.objects.count() == 2
@@ -117,9 +117,9 @@ def test_daily_user_app_activity_multiple_per_patient() -> None:
 
 def test_daily_patient_data_received_multiple_per_patient() -> None:
     """Ensure a patient can have multiple `DailyPatientDataReceived` records."""
-    patient = Patient()
+    patient = Patient.create()
 
-    factories.DailyPatientDataReceived(patient=patient)
-    factories.DailyPatientDataReceived(patient=patient)
+    factories.DailyPatientDataReceived.create(patient=patient)
+    factories.DailyPatientDataReceived.create(patient=patient)
 
     assert DailyPatientDataReceived.objects.count() == 2

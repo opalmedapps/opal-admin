@@ -50,7 +50,7 @@ def test_dashboard_empty_profile(admin_client: Client) -> None:
 
 def test_dashboard_forms_exist(user_client: Client) -> None:
     """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -63,7 +63,7 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
 
 def test_dashboard_multi_questionnaire_profile(user_client: Client) -> None:
     """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()
     test_questionnaire_profile.user.is_superuser = True
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -93,7 +93,7 @@ def test_filter_report_form_exists(admin_client: Client) -> None:
 
 def test_detail_report_form_exists(user_client: Client, questionnaire_data: None) -> None:
     """Ensure that a form exists in the reports filter page pointing to the detail page."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -242,7 +242,7 @@ def test_update_request_event_filter_template(
     caplog: LogCaptureFixture,
 ) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)

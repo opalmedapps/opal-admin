@@ -12,7 +12,7 @@ from opal.users.factories import User
 from . import models
 
 
-class QuestionnaireProfile(DjangoModelFactory):
+class QuestionnaireProfile(DjangoModelFactory[models.QuestionnaireProfile]):
     """Model factory to create [opal.questionnaires.models.QuestionnaireProfile][] models."""
 
     class Meta:

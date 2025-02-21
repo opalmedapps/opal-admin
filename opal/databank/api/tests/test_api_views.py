@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Test module for the REST API endpoints of the `databank` app."""
+
 import json
 from typing import Any
 from uuid import uuid4
@@ -101,7 +102,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept partial data."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -133,7 +134,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept a blank city of birth."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -166,7 +167,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint allows blank middle name (middle name not required for GUID)."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -195,7 +196,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint can create databank consent for a full input with no errors."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -215,7 +216,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept a blank health data authorization response."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -247,7 +248,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't create a consent instance if the patient declines health form auth."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )

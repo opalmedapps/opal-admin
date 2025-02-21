@@ -41,7 +41,7 @@ class TestAppAppointmentsView:
 
     def test_get_appointment_data_request(self, api_client: APIClient, listener_user: User) -> None:
         """Test if the response as the required keys."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
         response = api_client.get(reverse('api:app-appointments'))
@@ -60,37 +60,37 @@ class TestAppAppointmentsView:
         mock_timezone = mocker.patch('django.utils.timezone.now')
         mock_timezone.return_value = now
 
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
         username = relationship.caregiver.user.username
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=username)
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient)
+        factories.LegacyNotificationFactory.create(patientsernum=patient, readby=username)
         appointment_time = timezone.now() + dt.timedelta(hours=2)
-        factories.LegacyAppointmentFactory(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
+        factories.LegacyAppointmentFactory.create(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
         response = api_client.get(reverse('api:app-appointments'))
 
         assert len(response.data['daily_appointments']) == 1
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
         """Test daily appointment according to their dates."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        alias = factories.LegacyAliasFactory.create()
+        alias_expression = factories.LegacyAliasExpressionFactory.create(aliassernum=alias)
         # create an appointment close to the end of the day
-        appointment = factories.LegacyAppointmentFactory(
+        appointment = factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
@@ -108,19 +108,19 @@ class TestAppAppointmentsView:
 
     def test_get_appointment_data_from_not_confirmed_patient(self, mocker: MockerFixture) -> None:
         """Test get daily appointment fails from not confirmed patient."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.PENDING,
         )
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        alias = factories.LegacyAliasFactory.create()
+        alias_expression = factories.LegacyAliasExpressionFactory.create(aliassernum=alias)
         # create an appointment close to the end of the day
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
@@ -137,20 +137,20 @@ class TestAppAppointmentsView:
 
     def test_get_daily_appointments_details(self, mocker: MockerFixture) -> None:
         """Test daily appointment details."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        hospital_map = factories.LegacyHospitalMapFactory()
-        alias = factories.LegacyAliasFactory(hospitalmapsernum=hospital_map)
-        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
+        patient = factories.LegacyPatientFactory.create(patientsernum=relationship.patient.legacy_id)
+        hospital_map = factories.LegacyHospitalMapFactory.create()
+        alias = factories.LegacyAliasFactory.create(hospitalmapsernum=hospital_map)
+        alias_expression = factories.LegacyAliasExpressionFactory.create(aliassernum=alias)
         # create an appointment close to the end of the day
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 1, 22, 0, tzinfo=timezone.get_current_timezone()),
         )
-        factories.LegacyAppointmentFactory(
+        factories.LegacyAppointmentFactory.create(
             patientsernum=patient,
             aliasexpressionsernum=alias_expression,
             scheduledstarttime=datetime(2022, 6, 2, 0, 1, tzinfo=timezone.get_current_timezone()),
@@ -213,11 +213,11 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_success_listener(self, api_client: APIClient, listener_user: User) -> None:
         """Test a successful update of the checkin field."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        appointment = factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        appointment = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
@@ -239,8 +239,8 @@ class TestUpdateAppointmentCheckinView:
     def test_update_checkin_success_orms(self, api_client: APIClient, orms_system_user: User) -> None:
         """Test a successful update of the checkin field."""
         api_client.force_login(user=orms_system_user)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        appointment = factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        appointment = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
@@ -261,16 +261,16 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_multiple_found(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of finding multiple appointments matching search."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        appointment1 = factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        appointment1 = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
         )
-        appointment2 = factories.LegacyAppointmentFactory(
+        appointment2 = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=1,
@@ -291,11 +291,11 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_invalid_checkin_value(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of supplying invalid checkin value to endpoint."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        appointment1 = factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        appointment1 = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
@@ -315,11 +315,11 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_missing_sourcedb(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending incomplete data to endpoint."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
@@ -337,11 +337,11 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_missing_sourceid(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending incomplete data to endpoint."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,
@@ -359,11 +359,11 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_missing_checkin(self, api_client: APIClient, listener_user: User) -> None:
         """Test response of sending missing checkin field data to endpoint."""
-        user = factories.LegacyUserFactory()
+        user = factories.LegacyUserFactory.create()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        medivisit = factories.LegacySourceDatabaseFactory()
-        appointment1 = factories.LegacyAppointmentFactory(
+        medivisit = factories.LegacySourceDatabaseFactory.create()
+        appointment1 = factories.LegacyAppointmentFactory.create(
             source_system_id='2024A21342134',
             source_database=medivisit,
             checkin=0,

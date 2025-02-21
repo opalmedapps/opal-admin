@@ -134,8 +134,8 @@ class TestExpireRelationshipsCommand(CommandTestMixin):
         Returns:
             New Relationship with provided parameters.
         """
-        return patient_factories.Relationship(
-            patient=patient_factories.Patient(date_of_birth=patient_date_of_birth),
-            type=patient_factories.RelationshipType(end_age=end_age),
+        return patient_factories.Relationship.create(
+            patient=patient_factories.Patient.create(date_of_birth=patient_date_of_birth),
+            type=patient_factories.RelationshipType.create(end_age=end_age),
             status=status,
         )

@@ -10,7 +10,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-class Institution(DjangoModelFactory):
+class Institution(DjangoModelFactory[models.Institution]):
     """Model factory to create [opal.hospital_settings.models.Institution][] models."""
 
     class Meta:
@@ -32,7 +32,7 @@ class Institution(DjangoModelFactory):
     registration_code_valid_period = 72
 
 
-class Site(DjangoModelFactory):
+class Site(DjangoModelFactory[models.Site]):
     """Model factory to create [opal.hospital_settings.models.Site][] models."""
 
     class Meta:
