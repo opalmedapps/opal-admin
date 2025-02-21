@@ -88,7 +88,10 @@ def test_relationshiptypes_list_table(relationshiptype_user: Client) -> None:
 
 def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
     """Relationship types are listed."""
-    types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
+    types = [
+        factories.RelationshipType.create(),
+        factories.RelationshipType.create(name='Second'),
+    ]
 
     response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
@@ -122,7 +125,7 @@ def test_relationshiptype_create(relationshiptype_user: Client) -> None:
 
 def test_relationshiptype_update_get(relationshiptype_user: Client) -> None:
     """An existing relationship type can be edited."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     response = relationshiptype_user.get(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
@@ -133,7 +136,7 @@ def test_relationshiptype_update_get(relationshiptype_user: Client) -> None:
 
 def test_relationshiptype_update_post(relationshiptype_user: Client) -> None:
     """An existing relationship type can be updated."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
 
     relationship_type.end_age = 100
 
@@ -147,7 +150,7 @@ def test_relationshiptype_update_post(relationshiptype_user: Client) -> None:
 
 def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
     """Deleting a relationship type needs to be confirmed."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
 
     response = relationshiptype_user.get(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
@@ -158,7 +161,7 @@ def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
 
 def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
     """An existing relationship type can be deleted."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
 
     relationshiptype_user.delete(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
@@ -169,7 +172,7 @@ def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
 
 def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
-    factories.Relationship(status=models.RelationshipStatus.PENDING)
+    factories.Relationship.create(status=models.RelationshipStatus.PENDING)
 
     response = relationship_user.get(reverse('patients:relationships-list'))
 
@@ -187,11 +190,11 @@ def test_relationships_list_empty(relationship_user: Client) -> None:
 
 def test_relationships_pending_list(relationship_user: Client) -> None:
     """Ensures Relationships with pending status are listed."""
-    caregivertype2 = factories.RelationshipType(name='caregiver_2')
-    caregivertype3 = factories.RelationshipType(name='caregiver_3')
+    caregivertype2 = factories.RelationshipType.create(name='caregiver_2')
+    caregivertype3 = factories.RelationshipType.create(name='caregiver_3')
     relationships = [
-        factories.Relationship(type=caregivertype2, request_date=date.fromisoformat('2017-01-01')),
-        factories.Relationship(type=caregivertype3, request_date=date.fromisoformat('2016-01-01')),
+        factories.Relationship.create(type=caregivertype2, request_date=date.fromisoformat('2017-01-01')),
+        factories.Relationship.create(type=caregivertype3, request_date=date.fromisoformat('2016-01-01')),
     ]
 
     response = relationship_user.get(reverse('patients:relationships-list'))
@@ -204,12 +207,12 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
 
 def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     """Ensures that only Relationships with pending status are listed."""
-    caregivertype1 = factories.RelationshipType(name='caregiver_1')
-    caregivertype2 = factories.RelationshipType(name='caregiver_2')
-    caregivertype3 = factories.RelationshipType(name='caregiver_3')
-    factories.Relationship(status=models.RelationshipStatus.CONFIRMED, type=caregivertype1)
-    factories.Relationship(type=caregivertype2)
-    factories.Relationship(type=caregivertype3)
+    caregivertype1 = factories.RelationshipType.create(name='caregiver_1')
+    caregivertype2 = factories.RelationshipType.create(name='caregiver_2')
+    caregivertype3 = factories.RelationshipType.create(name='caregiver_3')
+    factories.Relationship.create(status=models.RelationshipStatus.CONFIRMED, type=caregivertype1)
+    factories.Relationship.create(type=caregivertype2)
+    factories.Relationship.create(type=caregivertype3)
 
     response = relationship_user.get(reverse('patients:relationships-list'))
 
@@ -225,9 +228,9 @@ def test_relationships_pending_list_table(relationship_user: Client) -> None:
 
 def test_form_pending_update_urls(relationship_user: Client) -> None:
     """Ensure that the correct cancel url and success url are provided in the response."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['cancel_url'] == reverse('patients:relationships-list')
@@ -236,10 +239,10 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
 
 def test_form_pending_readonly_update_template(relationship_user: Client) -> None:
     """Ensure that the correct html template appears in update and readonly requests."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    hospital_patient = factories.HospitalPatient()
-    caregiver = factories.CaregiverProfile()
-    relationship_record = factories.Relationship(
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    hospital_patient = factories.HospitalPatient.create()
+    caregiver = factories.CaregiverProfile.create()
+    relationship_record = factories.Relationship.create(
         pk=1,
         patient=hospital_patient.patient,
         type=relationshiptype,
@@ -258,7 +261,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 
-    relationship_record = factories.Relationship(
+    relationship_record = factories.Relationship.create(
         pk=2,
         patient=hospital_patient.patient,
         type=relationshiptype,
@@ -287,8 +290,8 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
 )
 def test_relationships_search_result_form(relationship_user: Client, status: models.RelationshipStatus) -> None:
     """Ensures that edit search results uses the right form for each all relationship statuses."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    factories.Relationship(pk=1, type=relationshiptype, status=status)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    factories.Relationship.create(pk=1, type=relationshiptype, status=status)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
@@ -296,9 +299,9 @@ def test_relationships_search_result_form(relationship_user: Client, status: mod
 
 def test_relationships_search_result_content(relationship_user: Client) -> None:
     """Ensures that search relationships result passed info is correct."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
@@ -306,9 +309,11 @@ def test_relationships_search_result_content(relationship_user: Client) -> None:
 
 def test_form_search_result_update(relationship_user: Client) -> None:
     """Ensures that the form can update a record in search result."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    factories.Relationship.create(
+        pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING
+    )
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # assert getter
@@ -331,9 +336,11 @@ def test_form_search_result_update(relationship_user: Client) -> None:
 
 def test_form_search_result_update_view(relationship_user: Client) -> None:
     """Ensures that the correct view and form are used in search result."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    factories.Relationship.create(
+        pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING
+    )
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm  # type: ignore[attr-defined]
@@ -342,9 +349,11 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
 
 def test_form_search_result_default_success_url(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    factories.Relationship.create(
+        pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING
+    )
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
@@ -357,9 +366,9 @@ def test_form_search_result_default_success_url(relationship_user: Client) -> No
 
 def test_form_search_result_http_referrer(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
-    relationshiptype = factories.RelationshipType(pk=11, name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationshiptype = factories.RelationshipType.create(pk=11, name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver)
     response_get = relationship_user.get(
         reverse(
             'patients:relationships-view-update',
@@ -392,9 +401,11 @@ def test_form_search_result_http_referrer(relationship_user: Client) -> None:
 
 def test_caregiver_access_update_form_name_changed(relationship_user: Client) -> None:
     """Ensures that changing the caregiver's name for a self-relationship is caught (readonly fields)."""
-    patient = factories.Patient()
-    self_type = factories.RelationshipType(role_type=models.RoleType.SELF.name)
-    relationship = factories.Relationship(patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED)
+    patient = factories.Patient.create()
+    self_type = factories.RelationshipType.create(role_type=models.RoleType.SELF.name)
+    relationship = factories.Relationship.create(
+        patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED
+    )
 
     form_data = model_to_dict(relationship)
     form_data['pk'] = relationship.pk
@@ -421,9 +432,9 @@ def test_caregiver_access_update_form_name_changed(relationship_user: Client) ->
 )
 def test_caregiver_access_update_form_pass(relationship_user: Client, role_type: models.RoleType) -> None:
     """Ensure patient can have different name from caregiver in non-self relationship."""
-    patient = factories.Patient()
-    relationshiptype = factories.RelationshipType(role_type=role_type)
-    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+    patient = factories.Patient.create()
+    relationshiptype = factories.RelationshipType.create(role_type=role_type)
+    relationship = factories.Relationship.create(patient=patient, type=relationshiptype)
 
     cancel_url = 'patient/test/?search-query'
     form_data = model_to_dict(relationship)
@@ -449,9 +460,9 @@ def test_caregiver_access_update_form_pass(relationship_user: Client, role_type:
 
 def test_caregiver_access_update_form_self_name_mismatch(relationship_user: Client) -> None:
     """Ensure patient can have different name from caregiver in self relationship."""
-    patient = factories.Patient(first_name='John', last_name='Wayne')
-    relationshiptype = factories.RelationshipType(role_type=models.RoleType.SELF)
-    relationship = factories.Relationship(
+    patient = factories.Patient.create(first_name='John', last_name='Wayne')
+    relationshiptype = factories.RelationshipType.create(role_type=models.RoleType.SELF)
+    relationship = factories.Relationship.create(
         patient=patient,
         type=relationshiptype,
         status=models.RelationshipStatus.CONFIRMED,
@@ -486,9 +497,9 @@ def test_valid_relationship_contain_role_type_being_updated(
     role_type: models.RoleType,
 ) -> None:
     """Ensure to include type being updated in the valid types list."""
-    relationshiptype = factories.RelationshipType(role_type=role_type, name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationshiptype = factories.RelationshipType.create(role_type=role_type, name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver)
     response_get = relationship_user.get(
         reverse(
             'patients:relationships-view-update',
@@ -507,9 +518,9 @@ def test_valid_relationship_contain_role_type_being_updated(
 
 def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Client) -> None:
     """Ensures that post is not allowed for readonly pending even if front-end is bypassed."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(
         pk=1,
         type=relationshiptype,
         caregiver=caregiver,
@@ -542,9 +553,9 @@ def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Clie
 
 def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> None:
     """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(
         pk=1,
         type=relationshiptype,
         caregiver=caregiver,
@@ -578,9 +589,9 @@ def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> 
 
 def test_relationship_update_success(relationship_user: Client) -> None:
     """Ensures that post is successful for correct entries."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(
         pk=1,
         type=relationshiptype,
         caregiver=caregiver,
@@ -611,7 +622,7 @@ def test_relationship_update_success(relationship_user: Client) -> None:
 
 def test_relationship_update_up_validate(relationship_user: Client) -> None:
     """The manage caregiver access update view handles up-validate requests and does not validate the form."""
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         type=models.RelationshipType.objects.parent_guardian(),
         status=models.RelationshipStatus.PENDING,
     )
@@ -648,7 +659,7 @@ def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client)
 
 def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -> None:
     """Ensure the delete and update buttons do appear for regular relationship types."""
-    new_relationship_type = factories.RelationshipType()
+    new_relationship_type = factories.RelationshipType.create()
     relationshiptype_user.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(new_relationship_type, exclude=['id', 'end_age']),
@@ -667,8 +678,8 @@ def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -
 
 def test_relationships_pending_form(relationship_user: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    factories.Relationship(pk=1, type=relationshiptype)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    factories.Relationship.create(pk=1, type=relationshiptype)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
@@ -676,9 +687,9 @@ def test_relationships_pending_form(relationship_user: Client) -> None:
 
 def test_relationships_pending_form_content(relationship_user: Client) -> None:
     """Ensures that pending relationships passed info is correct."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    relationship = factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
@@ -686,10 +697,10 @@ def test_relationships_pending_form_content(relationship_user: Client) -> None:
 
 def test_relationships_pending_form_response(relationship_user: Client) -> None:
     """Ensures that pending relationships displayed info is correct."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    patient = factories.Patient()
-    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
+    relationshiptype = factories.RelationshipType.create(name='relationshiptype')
+    caregiver = factories.CaregiverProfile.create()
+    patient = factories.Patient.create()
+    relationship = factories.Relationship.create(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assertContains(response, relationship.caregiver.user.first_name)
@@ -707,7 +718,7 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
 def test_relationship_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
     """Ensure that `Relationship` permission denied error is raised when not having privilege."""
     user = django_user_model.objects.create(username='test_relationship_user')
-    factories.Relationship(pk=1)
+    factories.Relationship.create(pk=1)
     user_client.force_login(user)
     response = user_client.get(url_name)
     request = RequestFactory().get(response)  # type: ignore[arg-type]
@@ -729,7 +740,7 @@ def test_relationship_permission_required_success(user_client: Client, django_us
     user_client.force_login(user)
     permission = Permission.objects.get(codename='can_manage_relationships')
     user.user_permissions.add(permission)
-    factories.Relationship(pk=1)
+    factories.Relationship.create(pk=1)
 
     response = user_client.get(url_name)
 
@@ -764,7 +775,7 @@ def test_relationships_response_contains_menu(user_client: Client, django_user_m
 def test_relationshiptype_perm_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
     """Ensure that `RelationshipType` permission denied error is raised when not having privilege."""
     user = django_user_model.objects.create(username='test_relationshiptype_user')
-    factories.RelationshipType(pk=11)
+    factories.RelationshipType.create(pk=11)
     user_client.force_login(user)
 
     response = user_client.get(url_name)
@@ -789,7 +800,7 @@ def test_relationshiptype_perm_required_success(
     url_name: str,
 ) -> None:
     """Ensure that `RelationshipType` can be accessed with the required permission."""
-    factories.RelationshipType(pk=11)
+    factories.RelationshipType.create(pk=11)
 
     response = relationshiptype_user.get(url_name)
 
@@ -820,21 +831,21 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client) -> 
 
     The search is performed by using MRN number.
     """
-    hospital_patient = factories.HospitalPatient()
-    factories.Relationship(
+    hospital_patient = factories.HospitalPatient.create()
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.self_type(),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.guardian_caregiver(),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.mandatary(),
     )
-    factories.Relationship(
-        patient=factories.Patient(ramq='TEST123'),
+    factories.Relationship.create(
+        patient=factories.Patient.create(ramq='TEST123'),
         type=models.RelationshipType.objects.parent_guardian(),
     )
 
@@ -875,23 +886,23 @@ def test_not_display_duplicated_patients(relationship_user: Client) -> None:
 
     The search is performed by using MRN number and Site name.
     """
-    patient1 = factories.Patient(first_name='aaa', ramq='OTES01161973')
-    patient2 = factories.Patient(first_name='bbb', ramq='OTES01161972')
+    patient1 = factories.Patient.create(first_name='aaa', ramq='OTES01161973')
+    patient2 = factories.Patient.create(first_name='bbb', ramq='OTES01161972')
 
-    site1 = factories.Site(name='MCH')
-    site2 = factories.Site(name='RVH')
+    site1 = factories.Site.create(name='MCH')
+    site2 = factories.Site.create(name='RVH')
 
-    hospital_patient1 = factories.HospitalPatient(mrn='9999991', site=site1, patient=patient1)
-    factories.HospitalPatient(mrn='9999992', site=site2, patient=patient1)
-    factories.HospitalPatient(mrn='9999991', site=site2, patient=patient2)
+    hospital_patient1 = factories.HospitalPatient.create(mrn='9999991', site=site1, patient=patient1)
+    factories.HospitalPatient.create(mrn='9999992', site=site2, patient=patient1)
+    factories.HospitalPatient.create(mrn='9999991', site=site2, patient=patient2)
 
-    caregiver_profile = factories.CaregiverProfile()
-    factories.Relationship(
+    caregiver_profile = factories.CaregiverProfile.create()
+    factories.Relationship.create(
         caregiver=caregiver_profile,
         patient=patient1,
         type=models.RelationshipType.objects.self_type(),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         caregiver=caregiver_profile,
         patient=patient2,
         type=models.RelationshipType.objects.guardian_caregiver(),
@@ -942,24 +953,24 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
 
     The search is performed by using RAMQ number.
     """
-    hospital_patient = factories.HospitalPatient(
-        patient=factories.Patient(ramq='OTES01161973'),
+    hospital_patient = factories.HospitalPatient.create(
+        patient=factories.Patient.create(ramq='OTES01161973'),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.self_type(),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.mandatary(),
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.parent_guardian(),
     )
-    factories.Relationship(
-        patient=factories.Patient(ramq='TEST123'),
-        type=factories.RelationshipType(),
+    factories.Relationship.create(
+        patient=factories.Patient.create(ramq='TEST123'),
+        type=factories.RelationshipType.create(),
     )
 
     form_data = {
@@ -1134,7 +1145,7 @@ def _initialize_session(client: Client, extra_data: dict[str, Any] | None = None
 def test_access_request_search_existing_patient(client: Client, registration_user: User) -> None:
     """Ensure that the patient search form finds the patient and moves to the next step."""
     _initialize_session(client)
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
     form_data = {
         'current_step': 'search',
@@ -1171,7 +1182,7 @@ def test_access_request_search_existing_patient(client: Client, registration_use
 def test_access_request_search_up_validate(client: Client, registration_user: User) -> None:
     """Ensure that the access request can handle up-validate events."""
     _initialize_session(client)
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
     form_data = {
         'current_step': 'search',
@@ -1204,7 +1215,7 @@ def test_access_request_search_up_validate(client: Client, registration_user: Us
 def test_access_request_search_fields_disabled(client: Client, registration_user: User) -> None:
     """Ensure that the patient search form fields are disabled when moving to the next step."""
     _initialize_session(client)
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
     form_data = {
         'current_step': 'search',
@@ -1301,7 +1312,7 @@ def test_access_request_search_not_found(client: Client, registration_user: User
 
 def test_access_request_confirm_patient(client: Client, registration_user: User) -> None:
     """Ensure that a patient can be confirmed and moved to the requestor step."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     data = {
         'step_search': {
             'card_type': constants.MedicalCard.MRN.name,
@@ -1330,7 +1341,7 @@ def test_access_request_confirm_patient(client: Client, registration_user: User)
 
 def test_access_request_requestor_new_user(client: Client, registration_user: User) -> None:
     """The relationship step handles a new user and moves to the confirm password step."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     self_type = models.RelationshipType.objects.self_type()
     data = {
         'step_search': {
@@ -1380,7 +1391,7 @@ def test_access_request_requestor_new_user(client: Client, registration_user: Us
 
 def test_access_request_requestor_existing_user_not_found(client: Client, registration_user: User) -> None:
     """The relationship step handles an existing user search and does not continue if the user has not been found."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     data = {
         'step_search': {
             'card_type': constants.MedicalCard.MRN.name,
@@ -1414,8 +1425,8 @@ def test_access_request_requestor_existing_user_not_found(client: Client, regist
 
 def test_access_request_requestor_existing_user_found(client: Client, registration_user: User) -> None:
     """The relationship step handles an existing user search and does not continue if the user has been found."""
-    hospital_patient = factories.HospitalPatient()
-    caregiver = factories.CaregiverProfile(
+    hospital_patient = factories.HospitalPatient.create()
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1448,9 +1459,9 @@ def test_access_request_requestor_existing_user_found(client: Client, registrati
 
 def test_access_request_requestor_existing_user(client: Client, registration_user: User) -> None:
     """The relationship step handles an existing user search and continues to the confirm password step."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1510,9 +1521,9 @@ def test_access_request_confirm_password_invalid(
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1567,9 +1578,9 @@ def test_access_request_confirm_password_existing_user(
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1630,7 +1641,7 @@ def test_access_request_confirm_password_new_user(
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     data = {
         'step_search': {
@@ -1723,7 +1734,7 @@ def test_access_request_confirmation_no_code(client: Client, registration_user: 
         'registration_code': None,
     }
     session.save()
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
 
     # initialize the session storage
     response = client.get(reverse('patients:access-request-confirmation'))
@@ -1746,7 +1757,7 @@ def test_access_request_confirmation_code(client: Client, registration_user: Use
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1792,7 +1803,7 @@ def test_access_request_confirmation_post_no_data(client: Client, registration_u
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()
@@ -1818,7 +1829,7 @@ def test_access_request_confirmation_post_success(
         'requestor': 'John Wayne',
         'registration_code': '123456',
     }
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     session = client.session
     session[AccessRequestView.session_key_name] = data
     session.save()

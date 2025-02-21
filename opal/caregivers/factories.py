@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing model factories for caregiver app models."""
+
 import datetime as dt
 import secrets
 
@@ -17,7 +18,7 @@ from opal.users.factories import Caregiver
 from . import models
 
 
-class CaregiverProfile(DjangoModelFactory):
+class CaregiverProfile(DjangoModelFactory[models.CaregiverProfile]):
     """Model factory to create [opal.caregivers.models.CaregiverProfile][] models."""
 
     class Meta:
@@ -27,7 +28,7 @@ class CaregiverProfile(DjangoModelFactory):
     legacy_id = Sequence(lambda number: number + 1)
 
 
-class SecurityQuestion(DjangoModelFactory):
+class SecurityQuestion(DjangoModelFactory[models.SecurityQuestion]):
     """Model factory to create [opal.caregivers.models.SecurityQuestion][] models."""
 
     class Meta:
@@ -37,7 +38,7 @@ class SecurityQuestion(DjangoModelFactory):
     title_fr = 'Pomme'
 
 
-class SecurityAnswer(DjangoModelFactory):
+class SecurityAnswer(DjangoModelFactory[models.SecurityAnswer]):
     """Model factory to create [opal.caregivers.models.SecurityAnswer][] models."""
 
     class Meta:
@@ -64,7 +65,7 @@ class TokenProvider(BaseProvider):
 Faker.add_provider(TokenProvider)
 
 
-class Device(DjangoModelFactory):
+class Device(DjangoModelFactory[models.Device]):
     """Model factory to create [opal.caregivers.models.Device][] models."""
 
     class Meta:
@@ -77,17 +78,18 @@ class Device(DjangoModelFactory):
     is_trusted = Faker('pybool')
 
 
-class RegistrationCode(DjangoModelFactory):
+class RegistrationCode(DjangoModelFactory[models.RegistrationCode]):
     """Model factory to create [opal.caregivers.models.RegistrationCode][] models."""
 
     class Meta:
         model = models.RegistrationCode
+
     # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
 
 
-class EmailVerification(DjangoModelFactory):
+class EmailVerification(DjangoModelFactory[models.EmailVerification]):
     """Model factory to create [opal.caregivers.models.EmailVerification][] models."""
 
     class Meta:

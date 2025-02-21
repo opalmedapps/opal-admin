@@ -55,9 +55,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_consenting_patients_found_message(self) -> None:
         """Verify correct errors show in stderr for no patients found."""
-        pat1 = patient_factories.Patient(ramq='SIMM87654321')
+        pat1 = patient_factories.Patient.create(ramq='SIMM87654321')
         yesterday = timezone.now() - timedelta(days=1)
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -76,9 +76,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_no_data_found_for_consenting_patient(self) -> None:
         """Verify correct message shows for no data found for patient."""
-        pat1 = patient_factories.Patient(first_name='Bart', last_name='Simpson')
+        pat1 = patient_factories.Patient.create(first_name='Bart', last_name='Simpson')
         yesterday = timezone.now() - timedelta(days=1)
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -101,12 +101,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         questionnaire_data: None,
     ) -> None:
         """Test fetching the existing data of patients who have consented."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        legacy_questionnaire_factories.LegacyQuestionnairePatientFactory(external_id=51)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        legacy_questionnaire_factories.LegacyQuestionnairePatientFactory.create(external_id=51)
         # Must set the last sync date to before the hardcoded last_updated date in our test_QuestionnaireDB.sql data
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_patient = databank_factories.DatabankConsent(
+        databank_patient = databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -115,12 +115,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyAppointmentFactory(appointmentsernum=1, checkin=1, patientsernum=legacy_pat1)
-        legacy_factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=1, patientsernum=legacy_pat1)
-        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory.create(appointmentsernum=1, checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory.create(appointmentsernum=2, checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
 
         command = send_databank_data.Command()
         command._retrieve_databank_data_for_patient(databank_patient, databank_models.DataModuleType.APPOINTMENTS)
@@ -139,9 +139,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_invalid_databank_module(self) -> None:
         """Ensure only the approved databank modules can be passed to the command's protected function."""
-        django_pat1 = patient_factories.Patient()
+        django_pat1 = patient_factories.Patient.create()
         yesterday = timezone.now() - timedelta(days=1)
-        databank_patient = databank_factories.DatabankConsent(
+        databank_patient = databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -158,9 +158,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_legacy_id_missing_from_databank_patient(self) -> None:
         """Ensure a value error is raised if a patient doesn't have their legacy id created."""
-        django_pat1 = patient_factories.Patient(legacy_id=None)
+        django_pat1 = patient_factories.Patient.create(legacy_id=None)
         yesterday = timezone.now() - timedelta(days=1)
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -180,9 +180,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Verify the request exception is handled when connection details for the source system are wrong."""
-        django_pat1 = patient_factories.Patient()
+        django_pat1 = patient_factories.Patient.create()
         yesterday = timezone.now() - timedelta(days=1)
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -211,9 +211,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Verify bad gateway error is logged to stderr."""
-        django_pat1 = patient_factories.Patient()
+        django_pat1 = patient_factories.Patient.create()
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -256,9 +256,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Verify resource not found (missing endpoint in nginx) is logged."""
-        django_pat1 = patient_factories.Patient()
+        django_pat1 = patient_factories.Patient.create()
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -297,12 +297,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_demographics_success_response(self, mocker: MockerFixture) -> None:
         """Test the expected response for demographics data sending."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id, first_name='Homer')
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id, first_name='Homer')
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -312,7 +312,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
             has_appointments=False,
@@ -333,12 +333,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_labs_success_response(self, mocker: MockerFixture) -> None:
         """Test the expected response for labs data sending."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
-        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMH12345678', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_patient1 = databank_factories.DatabankConsent(
+        databank_patient1 = databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -348,7 +348,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        databank_patient2 = databank_factories.DatabankConsent(
+        databank_patient2 = databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
             has_appointments=False,
@@ -358,12 +358,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat2)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat2)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat2)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat2)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat2)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat2)
         response = RequestMockerTest.mock_requests_post(
             mocker,
             response_data=self._create_custom_source_system_response(databank_models.DataModuleType.LABS),
@@ -378,10 +378,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_unrecognized_module_prefix_in_source_system_response(self, mocker: MockerFixture) -> None:
         """Ensure an error is logged when the data type is unrecognized in the response data."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -391,7 +391,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
         RequestMockerTest.mock_requests_post(
             mocker,
             response_data={
@@ -403,12 +403,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_last_synchronized_updated_success(self, mocker: MockerFixture) -> None:
         """Ensure the last_synchro time is updated if there were no sender errors."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id, first_name='Homer')
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id, first_name='Homer')
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -418,7 +418,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
             has_appointments=False,
@@ -451,10 +451,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_last_synchronized_not_updated_failure(self, mocker: MockerFixture) -> None:
         """Ensure the last_synchro time is not updated if there was at least one sender error."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -494,10 +494,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Ensure method not allowed/unauthorized error is correctly handled and SharedData not updated."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -545,10 +545,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Ensure bad request databank response error is correctly handled and SharedData not updated."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -592,10 +592,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_patient_data_success_tracker_update_success(self) -> None:
         """Test updating last_syncrho times."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -609,8 +609,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
         command = send_databank_data.Command()
-        command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)
+        command.patient_data_success_tracker[databank_patient1.guid] = dict.fromkeys(
+            databank_models.DataModuleType, True
         )
 
         command._update_patients_last_synchronization()
@@ -619,10 +619,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_patient_data_success_tracker_update_failure(self) -> None:
         """Test failure results in not updating last_syncrho time."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -636,11 +636,13 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
         command = send_databank_data.Command()
-        command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)
+        command.patient_data_success_tracker[databank_patient1.guid] = dict.fromkeys(
+            databank_models.DataModuleType, True
         )
         # Simulate a partial sender error
-        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = (
+            False
+        )
 
         command._update_patients_last_synchronization()
         databank_patient1.refresh_from_db()
@@ -657,10 +659,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 ],
             },
         ]
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -670,8 +672,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
         command = send_databank_data.Command()
         mock_databank_patient = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -692,12 +694,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
     def test_update_databank_patient_shared_data_call(self, mocker: MockerFixture) -> None:
         """Test correct calling of the metatdata update."""
         response_data = self._create_custom_source_system_response(databank_models.DataModuleType.DEMOGRAPHICS)
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -707,7 +709,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
             has_appointments=False,
@@ -750,10 +752,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         response_data = {
             'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
         }
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -794,10 +796,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 ],
             },
         ]
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -807,8 +809,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=True,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
         command = send_databank_data.Command()
         mock_databank_patient = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -858,12 +860,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 ],
             },
         ]
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
-        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMM12345677', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -873,7 +875,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -883,10 +885,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
-        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2)
+        legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat2)
         command = send_databank_data.Command()
         mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -931,12 +933,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 ],
             },
         ]
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
-        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMM12345677', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=True,
@@ -946,7 +948,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=True,
@@ -956,10 +958,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
-        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
-        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat1)
-        legacy_factories.LegacyAppointmentFactory(patientsernum=legacy_pat2)
+        legacy_factories.LegacyAppointmentFactory.create(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory.create(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory.create(patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory.create(patientsernum=legacy_pat2)
         command = send_databank_data.Command()
         mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
@@ -1004,10 +1006,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 ],
             },
         ]
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMM12345677', legacy_id=52)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -1017,7 +1019,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -1055,12 +1057,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_empty_source_system_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that execution doesnt fail if source system response is empty."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient.create(ramq='SIMH12345678', legacy_id=52)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -1070,7 +1072,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_labs=False,
             last_synchronized=last_sync,
         )
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat2,
             guid='93265ef54c8026a70a9e385b0ada9f30b5daaa06eb39d2ec0d4e092255f9380d',
             has_appointments=False,
@@ -1091,10 +1093,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_update_databank_patient_shared_data_partial_sender_error(self) -> None:
         """Test behaviour when the update metadata function is called with partially failed patient data."""
-        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone())
-        databank_factories.DatabankConsent(
+        databank_factories.DatabankConsent.create(
             patient=django_pat1,
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
             has_appointments=False,
@@ -1110,12 +1112,14 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
         command = send_databank_data.Command()
         # Manually intialize the success tracker for this patient
-        command.patient_data_success_tracker[databank_patient1.guid] = (
-            dict.fromkeys(databank_models.DataModuleType, True)
+        command.patient_data_success_tracker[databank_patient1.guid] = dict.fromkeys(
+            databank_models.DataModuleType, True
         )
 
         # Set a failed module for the patient
-        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = False
+        command.patient_data_success_tracker[databank_patient1.guid][databank_models.DataModuleType.DEMOGRAPHICS] = (
+            False
+        )
 
         # synced_data would be empty in this hypothetical situation
         command._update_databank_patient_shared_data(databank_patient1, {})
@@ -1141,9 +1145,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_nest_and_serialize_queryset_questionnaires(self) -> None:
         """Verify the custom nesting behaviour works as expected for questionnaires."""
-        django_pat1 = patient_factories.Patient()
+        django_pat1 = patient_factories.Patient.create()
         yesterday = timezone.now() - timedelta(days=1)
-        consent_instance = databank_factories.DatabankConsent(
+        consent_instance = databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -1187,10 +1191,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_nest_and_serialize_queryset_labs(self) -> None:
         """Verify the custom nesting behaviour works as expected for labs."""
-        django_pat1 = patient_factories.Patient()
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat1 = patient_factories.Patient.create()
+        legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
         yesterday = timezone.now() - timedelta(days=1)
-        consent_instance = databank_factories.DatabankConsent(
+        consent_instance = databank_factories.DatabankConsent.create(
             patient=django_pat1,
             has_appointments=True,
             has_diagnoses=True,
@@ -1201,9 +1205,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         # Create test data
         for _ in range(5):
-            legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+            legacy_factories.LegacyPatientTestResultFactory.create(patient_ser_num=legacy_pat1)
 
         # Mock the labs queryset
+        assert consent_instance.patient.legacy_id
         queryset = LegacyPatientTestResult.objects.get_databank_data_for_patient(
             patient_ser_num=consent_instance.patient.legacy_id,
             last_synchronized=consent_instance.last_synchronized,

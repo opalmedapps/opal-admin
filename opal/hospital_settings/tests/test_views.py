@@ -69,7 +69,7 @@ def test_institution_urls_exist(
     template: str,
 ) -> None:
     """Ensure that `Institution` pages exists at desired URL address."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse(url_name, args=(institution.id,))
     response = client.get(url)
 
@@ -84,7 +84,7 @@ def test_institution_urls_use_correct_template(
     template: str,
 ) -> None:
     """Ensure that `Institution` pages exists at desired URL address."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse(url_name, args=(institution.id,))
     response = client.get(url)
 
@@ -93,9 +93,9 @@ def test_institution_urls_use_correct_template(
 
 def test_institution_list_displays_all(client: Client, institution_user: User) -> None:
     """Ensure that the institution list page template displays all the institutions."""
-    factories.Institution(name='INS1')
-    factories.Institution(name='INS2')
-    factories.Institution(name='INS3')
+    factories.Institution.create(name='INS1')
+    factories.Institution.create(name='INS2')
+    factories.Institution.create(name='INS3')
 
     url = reverse('hospital-settings:institution-list')
     response = client.get(url)
@@ -119,7 +119,7 @@ def test_institution_list_create_shown(client: Client, institution_user: User) -
 
 def test_institution_list_create_not_shown(user_client: Client) -> None:
     """Ensure that the institution list page does not display the create button when there is an institution."""
-    factories.Institution()
+    factories.Institution.create()
     url = reverse('hospital-settings:institution-list')
 
     response = user_client.get(url)
@@ -131,7 +131,7 @@ def test_institution_list_create_not_shown(user_client: Client) -> None:
 
 def test_institution_update_object_displayed(client: Client, institution_user: User) -> None:
     """Ensure that the institution detail page displays all fields."""
-    institution = factories.Institution(name='TEST1_EN', name_fr='TEST1_FR')
+    institution = factories.Institution.create(name='TEST1_EN', name_fr='TEST1_FR')
 
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     response = client.get(url)
@@ -157,7 +157,7 @@ def test_site_urls_exist(
     template: str,
 ) -> None:
     """Ensure that `Site` pages exist at desired URL address."""
-    site = factories.Site()
+    site = factories.Site.create()
     url = reverse(url_name, args=(site.id,))
     response = site_user.get(url)
 
@@ -171,7 +171,7 @@ def test_site_urls_use_correct_template(
     template: str,
 ) -> None:
     """Ensure that `Site` pages uses appropriate templates."""
-    site = factories.Site()
+    site = factories.Site.create()
     url = reverse(url_name, args=(site.id,))
     response = site_user.get(url)
     assertTemplateUsed(response, template)
@@ -179,9 +179,9 @@ def test_site_urls_use_correct_template(
 
 def test_list_all_sites(site_user: Client) -> None:
     """Ensure that the site list page template displays all the institutions."""
-    factories.Site(name='ST1')
-    factories.Site(name='ST2')
-    factories.Site(name='ST3')
+    factories.Site.create(name='ST1')
+    factories.Site.create(name='ST2')
+    factories.Site.create(name='ST3')
 
     url = reverse('hospital-settings:site-list')
     response = site_user.get(url)
@@ -194,7 +194,7 @@ def test_list_all_sites(site_user: Client) -> None:
 
 def test_site_update_object_displayed(site_user: Client) -> None:
     """Ensure that the site detail page displays all the fields."""
-    site = factories.Site(
+    site = factories.Site.create(
         name_en='TEST1_EN',
         name_fr='TEST1_FR',
         parking_url_en='http://127.0.0.1:8000/hospital-settings/site/1/fr',
@@ -552,7 +552,7 @@ def test_institution_successful_update_redirects(
 
 def test_institution_successful_delete_redirects(client: Client, institution_user: User) -> None:
     """Ensure that after a successful delete of an institution, the page is redirected to the list page."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
     response = client.delete(url)
 
@@ -561,7 +561,7 @@ def test_institution_successful_delete_redirects(client: Client, institution_use
 
 def test_institution_deleted(client: Client, institution_user: User) -> None:
     """Ensure that an institution is deleted from the database."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse('hospital-settings:institution-delete', args=(institution.id,))
     client.delete(url)
 
@@ -570,7 +570,7 @@ def test_institution_deleted(client: Client, institution_user: User) -> None:
 
 def test_site_created(site_user: Client) -> None:
     """Ensure that a site can be successfully created."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
@@ -583,7 +583,7 @@ def test_site_created(site_user: Client) -> None:
 
 def test_site_successful_create_redirects(site_user: Client) -> None:
     """Ensure that after a successful creation of a site, the page is redirected to the list page."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
@@ -595,7 +595,7 @@ def test_site_successful_create_redirects(site_user: Client) -> None:
 
 def test_site_updated(site_user: Client) -> None:
     """Ensure that a site can be successfully updated."""
-    site = factories.Site()
+    site = factories.Site.create()
 
     url = reverse('hospital-settings:site-update', args=(site.id,))
     site.name = 'updated'
@@ -609,7 +609,7 @@ def test_site_successful_update_redirects(
     site_user: Client,
 ) -> None:
     """Ensure that after a successful update of a site, the page is redirected to the list page."""
-    site = factories.Site()
+    site = factories.Site.create()
     url = reverse('hospital-settings:site-update', args=(site.id,))
     form_data = model_to_dict(site)
 
@@ -620,7 +620,7 @@ def test_site_successful_update_redirects(
 
 def test_site_successful_delete_redirects(site_user: Client) -> None:
     """Ensure that after a successful delete of a site, the page is redirected to the list page."""
-    site = factories.Site()
+    site = factories.Site.create()
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
     response = site_user.delete(url)
@@ -630,7 +630,7 @@ def test_site_successful_delete_redirects(site_user: Client) -> None:
 
 def test_site_deleted(site_user: Client) -> None:
     """Ensure that a site is deleted from the database."""
-    site = factories.Site()
+    site = factories.Site.create()
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
     site_user.delete(url)
@@ -639,7 +639,8 @@ def test_site_deleted(site_user: Client) -> None:
 
 
 @pytest.mark.parametrize(
-    'url_name', [
+    'url_name',
+    [
         reverse('hospital-settings:institution-list'),
         reverse('hospital-settings:institution-update', args=(1,)),
         reverse('hospital-settings:institution-create'),
@@ -650,7 +651,7 @@ def test_institution_permission_required_fail(user_client: Client, django_user_m
     """Ensure that `institution` permission denied error is raised when not having privilege."""
     user = django_user_model.objects.create(username='test_institution_user')
     user_client.force_login(user)
-    factories.Institution(pk=1)
+    factories.Institution.create(pk=1)
     response = user_client.get(url_name)
     request = RequestFactory().get(response)  # type: ignore[arg-type]
     request.user = user
@@ -660,7 +661,8 @@ def test_institution_permission_required_fail(user_client: Client, django_user_m
 
 
 @pytest.mark.parametrize(
-    'url_name', [
+    'url_name',
+    [
         reverse('hospital-settings:institution-list'),
         reverse('hospital-settings:institution-update', args=(1,)),
         reverse('hospital-settings:institution-create'),
@@ -673,7 +675,7 @@ def test_institution_permission_required_success(user_client: Client, django_use
     user_client.force_login(user)
     permission = Permission.objects.get(codename='can_manage_institutions')
     user.user_permissions.add(permission)
-    factories.Institution(pk=1)
+    factories.Institution.create(pk=1)
 
     response = user_client.get(url_name)
 
@@ -704,7 +706,8 @@ def test_institution_response_no_menu(user_client: Client, django_user_model: Us
 
 
 @pytest.mark.parametrize(
-    'url_name', [
+    'url_name',
+    [
         reverse('hospital-settings:site-list'),
         reverse('hospital-settings:site-update', args=(1,)),
         reverse('hospital-settings:site-create'),
@@ -715,7 +718,7 @@ def test_site_permission_required_fail(user_client: Client, django_user_model: U
     """Ensure that `site` permission denied error is raised when not having privilege."""
     user = django_user_model.objects.create(username='test_site_user')
     user_client.force_login(user)
-    factories.Site(pk=1)
+    factories.Site.create(pk=1)
     response = user_client.get(url_name)
     request = RequestFactory().get(response)  # type: ignore[arg-type]
     request.user = user
@@ -725,7 +728,8 @@ def test_site_permission_required_fail(user_client: Client, django_user_model: U
 
 
 @pytest.mark.parametrize(
-    'url_name', [
+    'url_name',
+    [
         reverse('hospital-settings:site-list'),
         reverse('hospital-settings:site-update', args=(1,)),
         reverse('hospital-settings:site-create'),
@@ -738,7 +742,7 @@ def test_site_permission_required_success(user_client: Client, django_user_model
     user_client.force_login(user)
     permission = Permission.objects.get(codename='can_manage_sites')
     user.user_permissions.add(permission)
-    factories.Site(pk=1)
+    factories.Site.create(pk=1)
 
     response = user_client.get(url_name)
 

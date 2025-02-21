@@ -27,8 +27,8 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     See opal/tests/sql/test_QuestionnaireDB.sql
     """
     # Prepare patients and last cron run time
-    non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
-    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
+    non_consenting_patient = factories.LegacyQuestionnairePatientFactory.create(external_id=52)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory.create(external_id=51)
     last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
 
     # Fetch the data
@@ -75,54 +75,54 @@ def test_new_questionnaires_patient_caregiver() -> None:
     Get questionnaires  with respendonts 'Caregiver' and 'Patient'
     Get empty return with incorrect username
     """
-    caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
-    caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyQuestionnairePatientFactory()
-    patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
-    relationship_type = patient_factories.RelationshipType(
+    caregiver = caregiver_factories.Caregiver.create(username='test_new_questionnaires')
+    caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
+    legacy_patient = factories.LegacyQuestionnairePatientFactory.create()
+    patient = patient_factories.Patient.create(legacy_id=legacy_patient.external_id)
+    relationship_type = patient_factories.RelationshipType.create(
         can_answer_questionnaire=True,
         role_type='GRDNCAREGIVER',
     )
-    patient_factories.Relationship(
+    patient_factories.Relationship.create(
         type=relationship_type,
         caregiver=caregiver_profile,
         patient=patient,
     )
 
     # legacy factory instances
-    legacy_dictionary = factories.LegacyDictionaryFactory(
+    legacy_dictionary = factories.LegacyDictionaryFactory.create(
         content='RESEARCH',
         content_id=1,
         language_id=2,
     )
-    legacy_purpose = factories.LegacyPurposeFactory(title=legacy_dictionary)
+    legacy_purpose = factories.LegacyPurposeFactory.create(title=legacy_dictionary)
 
-    legacy_dictionary1 = factories.LegacyDictionaryFactory(
+    legacy_dictionary1 = factories.LegacyDictionaryFactory.create(
         content='Patient',
         content_id=3,
         language_id=2,
     )
-    legacy_respondent1 = factories.LegacyRespondentFactory(title=legacy_dictionary1)
-    legacy_questionnaire1 = factories.LegacyQuestionnaireFactory(
+    legacy_respondent1 = factories.LegacyRespondentFactory.create(title=legacy_dictionary1)
+    legacy_questionnaire1 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
         respondent=legacy_respondent1,
     )
-    legacy_questionnaire1 = factories.LegacyAnswerQuestionnaireFactory(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire1,
         patient=legacy_patient,
     )
 
-    legacy_dictionary2 = factories.LegacyDictionaryFactory(
+    legacy_dictionary2 = factories.LegacyDictionaryFactory.create(
         content='Caregiver',
         content_id=4,
         language_id=2,
     )
-    legacy_respondent2 = factories.LegacyRespondentFactory(title=legacy_dictionary2)
-    legacy_questionnaire2 = factories.LegacyQuestionnaireFactory(
+    legacy_respondent2 = factories.LegacyRespondentFactory.create(title=legacy_dictionary2)
+    legacy_questionnaire2 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
         respondent=legacy_respondent2,
     )
-    factories.LegacyAnswerQuestionnaireFactory(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire2,
         patient=legacy_patient,
     )
@@ -150,54 +150,54 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
 
     Get empty questionnaires with unexpected respondents
     """
-    caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
-    caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyQuestionnairePatientFactory()
-    patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
-    relationship_type = patient_factories.RelationshipType(
+    caregiver = caregiver_factories.Caregiver.create(username='test_new_questionnaires')
+    caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
+    legacy_patient = factories.LegacyQuestionnairePatientFactory.create()
+    patient = patient_factories.Patient.create(legacy_id=legacy_patient.external_id)
+    relationship_type = patient_factories.RelationshipType.create(
         can_answer_questionnaire=False,
         role_type='SELF',
     )
-    patient_factories.Relationship(
+    patient_factories.Relationship.create(
         type=relationship_type,
         caregiver=caregiver_profile,
         patient=patient,
     )
 
     # legacy factory instances
-    legacy_dictionary = factories.LegacyDictionaryFactory(
+    legacy_dictionary = factories.LegacyDictionaryFactory.create(
         content='RESEARCH',
         content_id=1,
         language_id=2,
     )
-    legacy_purpose = factories.LegacyPurposeFactory(title=legacy_dictionary)
+    legacy_purpose = factories.LegacyPurposeFactory.create(title=legacy_dictionary)
 
-    legacy_dictionary1 = factories.LegacyDictionaryFactory(
+    legacy_dictionary1 = factories.LegacyDictionaryFactory.create(
         content='Patient',
         content_id=3,
         language_id=2,
     )
-    legacy_respondent1 = factories.LegacyRespondentFactory(title=legacy_dictionary1)
-    legacy_questionnaire1 = factories.LegacyQuestionnaireFactory(
+    legacy_respondent1 = factories.LegacyRespondentFactory.create(title=legacy_dictionary1)
+    legacy_questionnaire1 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
         respondent=legacy_respondent1,
     )
-    legacy_questionnaire1 = factories.LegacyAnswerQuestionnaireFactory(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire1,
         patient=legacy_patient,
     )
 
-    legacy_dictionary2 = factories.LegacyDictionaryFactory(
+    legacy_dictionary2 = factories.LegacyDictionaryFactory.create(
         content='Caregiver',
         content_id=4,
         language_id=2,
     )
-    legacy_respondent2 = factories.LegacyRespondentFactory(title=legacy_dictionary2)
-    legacy_questionnaire2 = factories.LegacyQuestionnaireFactory(
+    legacy_respondent2 = factories.LegacyRespondentFactory.create(title=legacy_dictionary2)
+    legacy_questionnaire2 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
         respondent=legacy_respondent2,
     )
-    factories.LegacyAnswerQuestionnaireFactory(
+    factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire2,
         patient=legacy_patient,
     )

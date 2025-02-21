@@ -35,28 +35,28 @@ def test_empty_relationship_mapping() -> None:
 
 def test_relationship_mapping_with_multiple_usernames() -> None:
     """Ensure RelationshipMapping successfully creates relationships mapping with multiple usernames."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user=caregiver_factories.Caregiver(username='marge'),
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(
+        user=caregiver_factories.Caregiver.create(username='marge'),
         legacy_id=1,
     )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user=caregiver_factories.Caregiver(username='homer'),
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(
+        user=caregiver_factories.Caregiver.create(username='homer'),
         legacy_id=2,
     )
-    patient_factories.Relationship(
+    patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
-    patient_factories.Relationship(
+    homer_patient = patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973')
+    patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=homer_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    patient_factories.Relationship(
+    patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
@@ -81,54 +81,57 @@ def test_aggregated_patient_received_data_with_no_statistics() -> None:
         dt.datetime.max.time(),
         tzinfo=timezone.get_current_timezone(),
     )
-    assert stats_utils.get_aggregated_patient_received_data(
-        start_datetime_period,
-        end_datetime_period,
-    ).count() == 0
+    assert (
+        stats_utils.get_aggregated_patient_received_data(
+            start_datetime_period,
+            end_datetime_period,
+        ).count()
+        == 0
+    )
 
 
 def test_aggregated_patient_received_data_previous_day() -> None:
     """Ensure that get_aggregated_patient_received_data returns patients' received data for the previous day."""
-    patient = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=patient)
+    patient = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=patient)
     previous_day = timezone.now() - dt.timedelta(days=1)
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=3),
         scheduledstarttime=timezone.now() - dt.timedelta(days=2),
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=2),
         scheduledstarttime=previous_day,
         checkin=0,
     )
     next_appointment = timezone.now()
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=next_appointment,
         state='Active',
         status='Open',
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         patientsernum=patient,
         dateadded=previous_day,
     )
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=patient,
         date_added=previous_day,
     )
 
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=patient,
         date_added=previous_day,
     )
 
     # current day records should not be included to the final queryset
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now(),
         scheduledstarttime=timezone.now() + dt.timedelta(days=1),
     )
@@ -164,45 +167,45 @@ def test_aggregated_patient_received_data_previous_day() -> None:
 
 def test_aggregated_patient_received_data_current_day() -> None:
     """Ensure that get_aggregated_patient_received_data returns patients' received data for the current day."""
-    patient = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=patient)
+    patient = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=patient)
     current_day = timezone.now()
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=3),
         scheduledstarttime=timezone.now() - dt.timedelta(days=2),
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=current_day,
         scheduledstarttime=timezone.now() + dt.timedelta(days=2),
         checkin=0,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=current_day,
         state='Active',
         status='Open',
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         patientsernum=patient,
         dateadded=current_day,
     )
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=patient,
         date_added=current_day,
     )
 
     # previous day records should not be included to the final queryset
     next_appointment = current_day + dt.timedelta(days=1)
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         date_added=timezone.now() - dt.timedelta(days=1),
         scheduledstarttime=next_appointment,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=patient,
         date_added=current_day - dt.timedelta(days=1),
     )
@@ -240,47 +243,49 @@ def test_aggregated_patient_received_data_current_day() -> None:
 
 def test_aggregated_patient_received_data_last_appointment_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data correctly aggregates last appointment statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
     next_day = timezone.now() + dt.timedelta(days=1)
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=previous_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=previous_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=current_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=current_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=next_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=next_day,
         status='Completed',
@@ -310,42 +315,44 @@ def test_aggregated_patient_received_data_last_appointment_statistics() -> None:
 
 def test_aggregated_patient_received_data_next_appointment_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data correctly aggregates next appointment statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     current_day = timezone.now()
     next_day = timezone.now() + dt.timedelta(days=1)
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=current_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=current_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=next_day,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=next_day,
         status='Completed',
         state='Closed',
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=next_day + dt.timedelta(days=1),
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=next_day + dt.timedelta(days=1),
     )
@@ -374,38 +381,40 @@ def test_aggregated_patient_received_data_next_appointment_statistics() -> None:
 
 def test_aggregated_patient_received_data_received_appointments_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data correctly aggregates received appointments statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
     next_day = timezone.now() + dt.timedelta(days=1)
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
 
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=current_day,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=marge,
         scheduledstarttime=next_day,
     )
-    legacy_factories.LegacyAppointmentFactory(
+    legacy_factories.LegacyAppointmentFactory.create(
         patientsernum=homer,
         scheduledstarttime=next_day,
     )
@@ -433,45 +442,47 @@ def test_aggregated_patient_received_data_received_appointments_statistics() -> 
 
 def test_aggregated_patient_received_data_last_document_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data correctly aggregates last document statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
     next_day = timezone.now() + dt.timedelta(days=1)
     homer_last_document_date = previous_day - dt.timedelta(days=1)
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=1,
         patientsernum=marge,
         dateadded=previous_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=2,
         patientsernum=homer,
         dateadded=homer_last_document_date,
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=3,
         patientsernum=marge,
         dateadded=current_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=4,
         patientsernum=homer,
         dateadded=current_day,
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=5,
         patientsernum=marge,
         dateadded=next_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=6,
         patientsernum=homer,
         dateadded=next_day,
@@ -500,44 +511,46 @@ def test_aggregated_patient_received_data_last_document_statistics() -> None:
 
 def test_aggregated_patient_received_data_received_documents_statistics() -> None:
     """Ensure that get_aggregated_patient_received_data correctly aggregates received documents statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
     next_day = timezone.now() + dt.timedelta(days=1)
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=1,
         patientsernum=marge,
         dateadded=previous_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=2,
         patientsernum=homer,
         dateadded=previous_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=3,
         patientsernum=homer,
         dateadded=previous_day,
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=4,
         patientsernum=marge,
         dateadded=current_day,
     )
 
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=5,
         patientsernum=marge,
         dateadded=next_day,
     )
-    legacy_factories.LegacyDocumentFactory(
+    legacy_factories.LegacyDocumentFactory.create(
         documentsernum=6,
         patientsernum=homer,
         dateadded=next_day,
@@ -566,39 +579,41 @@ def test_aggregated_patient_received_data_received_documents_statistics() -> Non
 
 def test_aggregated_patient_received_data_last_educational_material_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates last educational material statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     two_days_ago = timezone.now() - dt.timedelta(days=2)
     three_days_ago = timezone.now() - dt.timedelta(days=3)
     current_day = timezone.now()
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=two_days_ago,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=two_days_ago,
     )
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=three_days_ago,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=three_days_ago,
     )
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=current_day,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=current_day,
     )
@@ -626,37 +641,39 @@ def test_aggregated_patient_received_data_last_educational_material_statistics()
 
 def test_aggregated_patient_received_data_received_edu_materials_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates received edu materials statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
 
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=marge,
         date_added=current_day,
     )
-    legacy_factories.LegacyEducationalMaterialFactory(
+    legacy_factories.LegacyEducationalMaterialFactory.create(
         patientsernum=homer,
         date_added=current_day,
     )
@@ -684,34 +701,36 @@ def test_aggregated_patient_received_data_received_edu_materials_statistics() ->
 
 def test_aggregated_patient_received_data_last_questionnaire_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates last questionnaire statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     two_days_ago = timezone.now() - dt.timedelta(days=2)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
 
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=marge,
         date_added=two_days_ago,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=two_days_ago,
     )
 
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=marge,
         date_added=current_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=current_day,
     )
@@ -739,37 +758,39 @@ def test_aggregated_patient_received_data_last_questionnaire_statistics() -> Non
 
 def test_aggregated_patient_received_data_received_questionnaire_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates received questionnaire statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
 
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=previous_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=marge,
         date_added=previous_day,
     )
 
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=marge,
         date_added=current_day,
     )
-    legacy_factories.LegacyQuestionnaireFactory(
+    legacy_factories.LegacyQuestionnaireFactory.create(
         patientsernum=homer,
         date_added=current_day,
     )
@@ -797,30 +818,32 @@ def test_aggregated_patient_received_data_received_questionnaire_statistics() ->
 
 def test_aggregated_patient_received_data_last_lab_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates last lab statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
     current_day = timezone.now()
 
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=homer,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=homer,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=homer,
     )
 
@@ -841,47 +864,55 @@ def test_aggregated_patient_received_data_last_lab_statistics() -> None:
     )
 
     assert received_data.count() == 2
-    assert received_data.filter(
-        patient=marge,
-    )[0]['last_lab_received'].date() == current_day.date()
-    assert received_data.filter(
-        patient=homer,
-    )[0]['last_lab_received'].date() == current_day.date()
+    assert (
+        received_data.filter(
+            patient=marge,
+        )[0]['last_lab_received'].date()
+        == current_day.date()
+    )
+    assert (
+        received_data.filter(
+            patient=homer,
+        )[0]['last_lab_received'].date()
+        == current_day.date()
+    )
 
 
 def test_aggregated_patient_received_data_received_lab_statistics() -> None:
     """Ensure get_aggregated_patient_received_data correctly aggregates received lab statistics."""
-    marge = legacy_factories.LegacyPatientFactory()
-    legacy_factories.LegacyPatientControlFactory(patient=marge)
-    homer = legacy_factories.LegacyPatientFactory(
-        patientsernum=52, first_name='Homer', email='homer@simpson.com',
+    marge = legacy_factories.LegacyPatientFactory.create()
+    legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+    homer = legacy_factories.LegacyPatientFactory.create(
+        patientsernum=52,
+        first_name='Homer',
+        email='homer@simpson.com',
     )
     previous_day = timezone.now() - dt.timedelta(days=1)
     current_day = timezone.now()
-    legacy_factories.LegacyPatientControlFactory(patient=homer)
+    legacy_factories.LegacyPatientControlFactory.create(patient=homer)
 
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
         date_added=previous_day,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=homer,
         date_added=previous_day,
     )
 
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=marge,
         date_added=current_day,
     )
-    legacy_factories.LegacyPatientTestResultFactory(
+    legacy_factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=homer,
         date_added=current_day,
     )
@@ -916,23 +947,30 @@ def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relations
     """
     date_time = timezone.now()
     relationships_queryset = patient_models.Relationship.objects.all()
-    return relationships_queryset.select_related(
-        'patient',
-        'caregiver__user',
-    ).filter(
-        models.Q(end_date__gte=date_time) | models.Q(end_date=None)
-        | models.Q(status=patient_models.RelationshipStatus.CONFIRMED),
-    ).exclude(
-        models.Q(status=patient_models.RelationshipStatus.PENDING)
-        | models.Q(status=patient_models.RelationshipStatus.DENIED),
-    ).values(
-        'patient__legacy_id',
-        'patient__id',
-        'caregiver__user__username',
-        'caregiver__user__id',
-        'id',
-    ).annotate(
-        end_date=models.Max('end_date'),
+    return (
+        relationships_queryset.select_related(
+            'patient',
+            'caregiver__user',
+        )
+        .filter(
+            models.Q(end_date__gte=date_time)
+            | models.Q(end_date=None)
+            | models.Q(status=patient_models.RelationshipStatus.CONFIRMED),
+        )
+        .exclude(
+            models.Q(status=patient_models.RelationshipStatus.PENDING)
+            | models.Q(status=patient_models.RelationshipStatus.DENIED),
+        )
+        .values(
+            'patient__legacy_id',
+            'patient__id',
+            'caregiver__user__username',
+            'caregiver__user__id',
+            'id',
+        )
+        .annotate(
+            end_date=models.Max('end_date'),
+        )
     )
 
 
@@ -950,8 +988,8 @@ def test_export_data_empty_data(tmp_path: Path) -> None:
 def test_export_data_simple_dictionary(tmp_path: Path) -> None:
     """Ensure the export function handle the input in form of dictionnary."""
     file_path = tmp_path / 'test_dict.csv'
-    stats_factories.DailyUserPatientActivity(
-        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    stats_factories.DailyUserPatientActivity.create(
+        action_by_user=caregiver_factories.Caregiver.create(username='marge'),
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
@@ -968,8 +1006,8 @@ def test_export_data_simple_dictionary(tmp_path: Path) -> None:
 def test_export_data_csv(tmp_path: Path) -> None:
     """Ensure the export function generate csv file with model queryset."""
     file_path = tmp_path / 'test.csv'
-    stats_factories.DailyUserPatientActivity(
-        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    stats_factories.DailyUserPatientActivity.create(
+        action_by_user=caregiver_factories.Caregiver.create(username='marge'),
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model
@@ -986,8 +1024,8 @@ def test_export_data_csv(tmp_path: Path) -> None:
 def test_export_data_xlsx(tmp_path: Path) -> None:
     """Ensure the export_data generate excel file with model queryset."""
     file_path = tmp_path / 'test.xlsx'
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
@@ -1008,8 +1046,8 @@ def test_export_data_xlsx(tmp_path: Path) -> None:
 def test_export_data_invalid_file_name(tmp_path: Path) -> None:
     """Ensure the export_data handle the invalid file format."""
     file_path = tmp_path / 'test.random'
-    stats_factories.DailyUserPatientActivity(
-        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    stats_factories.DailyUserPatientActivity.create(
+        action_by_user=caregiver_factories.Caregiver.create(username='marge'),
     )
     query = stats_models.DailyUserPatientActivity.objects.all()
     model_name = query.model

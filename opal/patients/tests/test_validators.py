@@ -119,7 +119,7 @@ def test_patient_validator_is_deceased_source_system_patient() -> None:
 @pytest.mark.django_db
 def test_patient_validator_is_deceased_patient_model() -> None:
     """Ensure deceased patients are caught in the validator for patients of `Patient` model."""
-    patient = factories.Patient(date_of_death=timezone.now())
+    patient = factories.Patient.create(date_of_death=timezone.now())
 
     assert validators.is_deceased(patient) is True
 
@@ -127,6 +127,6 @@ def test_patient_validator_is_deceased_patient_model() -> None:
 @pytest.mark.django_db
 def test_patient_validator_not_deceased_patient_model() -> None:
     """Ensure `is_deceased` returns False when patients are not deceased in `Patient` model."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
 
     assert validators.is_deceased(patient) is False

@@ -81,11 +81,21 @@ def test_find_note_date_success() -> None:
     note_text_after_midday = r'Electronically signed on 23-NOV-2023 09:21 pm\.br\By doctor_fname doctor_lname, MD'
 
     assert _find_note_date(note_text_before_midday) == datetime(
-        2023, 11, 23, 9, 21, 0,
+        2023,
+        11,
+        23,
+        9,
+        21,
+        0,
         tzinfo=timezone.get_current_timezone(),
     )
     assert _find_note_date(note_text_after_midday) == datetime(
-        2023, 11, 23, 21, 21, 0,
+        2023,
+        11,
+        23,
+        21,
+        21,
+        0,
         tzinfo=timezone.get_current_timezone(),
     )
 
@@ -243,7 +253,7 @@ def test_parse_observations_success() -> None:
 
 def test_get_site_instance_success() -> None:
     """Ensure that _get_site_instance() successfully return Site instance."""
-    hospital_settings_factories.Site(acronym='RVH')
+    hospital_settings_factories.Site.create(acronym='RVH')
     site = _get_site_instance(receiving_facility='RVH')
 
     assert Site.objects.filter(pk=site.pk).exists()
@@ -251,7 +261,7 @@ def test_get_site_instance_success() -> None:
 
 def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
     """Ensure that _get_site_instance() returns an empty Site for non-existent receiving facility."""
-    hospital_settings_factories.Site(acronym='RVH')
+    hospital_settings_factories.Site.create(acronym='RVH')
     receiving_facility = ''
     error = (
         'An error occurred during pathology report generation.'

@@ -36,16 +36,16 @@ def test_relationshiptype_manager_mandatary_type() -> None:
 
 def test_get_patient_id_list_for_any_caregiver() -> None:
     """Get Patient is list from caregivers with any relationship status."""
-    caregiver = user_factories.Caregiver()
-    profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    patient1 = patient_factories.Patient()
-    patient_factories.Relationship(
+    caregiver = user_factories.Caregiver.create()
+    profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
+    patient1 = patient_factories.Patient.create()
+    patient_factories.Relationship.create(
         patient=patient1,
         caregiver=profile,
         status=patient_models.RelationshipStatus.REVOKED,
     )
-    patient2 = patient_factories.Patient()
-    patient_factories.Relationship(
+    patient2 = patient_factories.Patient.create()
+    patient_factories.Relationship.create(
         patient=patient2,
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,
@@ -57,16 +57,16 @@ def test_get_patient_id_list_for_any_caregiver() -> None:
 
 def test_get_patient_id_list_for_confirmed_caregiver() -> None:
     """Get Patient is list from caregivers with confirmed relationship status only."""
-    caregiver = user_factories.Caregiver()
-    profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    patient1 = patient_factories.Patient()
-    patient_factories.Relationship(
+    caregiver = user_factories.Caregiver.create()
+    profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
+    patient1 = patient_factories.Patient.create()
+    patient_factories.Relationship.create(
         patient=patient1,
         caregiver=profile,
         status=patient_models.RelationshipStatus.REVOKED,
     )
-    patient2 = patient_factories.Patient()
-    patient_factories.Relationship(
+    patient2 = patient_factories.Patient.create()
+    patient_factories.Relationship.create(
         patient=patient2,
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,

@@ -10,16 +10,22 @@ Inspired by:
   * https://adamj.eu/tech/2014/09/03/factory-boy-fun/
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
 
+# TypeVar.default backported from Python 3.13
+from typing_extensions import TypeVar
+
 from . import models
 
+_T = TypeVar('_T', bound=models.User, default=models.User)
 
-class User(DjangoModelFactory):
+
+class User(DjangoModelFactory[_T]):
     """Model factory to create [opal.users.models.User][] models."""
 
     class Meta:
@@ -35,21 +41,21 @@ class User(DjangoModelFactory):
     phone_number = ''
 
 
-class Caregiver(User):
+class Caregiver(User[models.Caregiver]):
     """Model factory to create [opal.users.models.Caregiver][] models."""
 
     class Meta:
         model = models.Caregiver
 
 
-class ClinicalStaff(User):
+class ClinicalStaff(User[models.ClinicalStaff]):
     """Model factory to create [opal.users.models.ClinicalStaff][] models."""
 
     class Meta:
         model = models.ClinicalStaff
 
 
-class GroupFactory(DjangoModelFactory):
+class GroupFactory(DjangoModelFactory[Group]):
     """Model factory to create Groups."""
 
     class Meta:

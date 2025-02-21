@@ -18,12 +18,13 @@ from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
-from opal.caregivers.factories import CaregiverProfile
+from opal.caregivers.factories import CaregiverProfile as CaregiverProfileFactory
 from opal.hospital_settings import factories as hospital_factories
 from opal.services.integration import hospital
 from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.services.twilio import TwilioServiceError
-from opal.users.factories import Caregiver, User
+from opal.users.factories import Caregiver as CaregiverFactory
+from opal.users.models import User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -77,8 +78,8 @@ def test_relationshippending_form_is_valid() -> None:
 def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship(
-        patient=factories.Patient(
+    relationship_info = factories.Relationship.create(
+        patient=factories.Patient.create(
             date_of_birth=timezone.now().date()
             - relativedelta(
                 years=14,
@@ -123,8 +124,8 @@ def test_relationshippending_update() -> None:
 def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship(
-        patient=factories.Patient(
+    relationship_info = factories.Relationship.create(
+        patient=factories.Patient.create(
             date_of_birth=timezone.now().date()
             - relativedelta(
                 years=14,
@@ -163,8 +164,8 @@ def test_relationshippending_type_not_contain_self(relationship_type: str | None
     """Ensure that the `type` field does not contain self but contains the relationship type being updated."""
     self_type = RelationshipType.objects.self_type()
     relation_type = RelationshipType.objects.get(role_type=relationship_type)
-    relationship_info = factories.Relationship(
-        patient=factories.Patient(
+    relationship_info = factories.Relationship.create(
+        patient=factories.Patient.create(
             date_of_birth=timezone.now().date()
             - relativedelta(
                 years=14,
@@ -187,13 +188,13 @@ def test_relationshippending_form_date_validated() -> None:
     """Ensure that the `RelationshipPendingAccess` form is validated for startdate>enddate."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(
+        patient=factories.Patient.create(
             date_of_birth=timezone.now().date()
             - relativedelta(
                 years=14,
             ),
         ),
-        caregiver=factories.CaregiverProfile(),
+        caregiver=factories.CaregiverProfile.create(),
         type=relationship_type,
         start_date=date(2022, 6, 1),
         end_date=date(2022, 5, 1),
@@ -214,13 +215,13 @@ def test_relationship_pending_status_reason() -> None:
     """Ensure that the `RelationshipPendingAccess` form is validated for reason is not empty when status is denied."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(
+        patient=factories.Patient.create(
             date_of_birth=timezone.now().date()
             - relativedelta(
                 years=14,
             ),
         ),
-        caregiver=factories.CaregiverProfile(),
+        caregiver=factories.CaregiverProfile.create(),
         type=relationship_type,
         status=RelationshipStatus.DENIED,
         start_date=date(2022, 5, 1),
@@ -254,7 +255,7 @@ def test_filter_managecaregiver_missing_site() -> None:
 
 def test_filter_managecaregiver_missing_mrn() -> None:
     """Ensure that `medical_number` is required when filtering caregiver access by `mrn`."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
@@ -280,8 +281,8 @@ def test_filter_managecaregiver_missing_ramq() -> None:
 
 def test_filter_managecaregiver_valid_mrn() -> None:
     """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
-    hospital_patient = factories.HospitalPatient()
-    factories.Site()
+    hospital_patient = factories.HospitalPatient.create()
+    factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
@@ -302,8 +303,8 @@ def test_filter_managecaregiver_valid_mrn() -> None:
 
 def test_form_common_functions_mrn_selected() -> None:
     """Ensure common functions defined reused in forms produce expected results when `MRN` is selected."""
-    hospital_patient = factories.HospitalPatient()
-    factories.Site()
+    hospital_patient = factories.HospitalPatient.create()
+    factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
@@ -319,7 +320,7 @@ def test_form_common_functions_mrn_selected() -> None:
 
 def test_form_common_functions_mrn_selected_single_site() -> None:
     """Ensure common functions defined reused in forms produce expected results when `MRN` is selected."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
@@ -334,8 +335,8 @@ def test_form_common_functions_mrn_selected_single_site() -> None:
 
 def test_form_common_functions_ramq_selected() -> None:
     """Ensure common functions defined reused in forms produce expected results when `RAMQ` is selected."""
-    factories.HospitalPatient()
-    factories.Site()
+    factories.HospitalPatient.create()
+    factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
         'site': '',
@@ -351,8 +352,8 @@ def test_form_common_functions_ramq_selected() -> None:
 
 def test_filter_managecaregiver_valid_ramq() -> None:
     """Ensure that filtering caregiver access by `ramq` does not require `site` and disabled it."""
-    factories.HospitalPatient()
-    factories.Site()
+    factories.HospitalPatient.create()
+    factories.Site.create()
 
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
@@ -372,7 +373,7 @@ def test_filter_managecaregiver_valid_ramq() -> None:
 
 def test_filter_managecaregiver_valid_ramq_single_site() -> None:
     """Ensure that filtering caregiver access by `ramq` when there is single site, hides `site`."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
         'site': '',
@@ -392,7 +393,7 @@ def test_filter_managecaregiver_valid_ramq_single_site() -> None:
 
 def test_filter_managecaregiver_valid_mrn_single_site() -> None:
     """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
@@ -439,10 +440,10 @@ def test_caregiver_first_last_name_invalid() -> None:
 
 def test_caregiver_access_form_update_self() -> None:
     """Ensure that `first_name` and `last_name` are readonly, `end_date` is not required and `type` is disabled."""
-    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
-    patient = factories.Patient()
+    self_type = factories.RelationshipType.create(role_type=RoleType.SELF.name)
+    patient = factories.Patient.create()
 
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient=patient,
         type=self_type,
         status=RelationshipStatus.CONFIRMED,
@@ -466,17 +467,17 @@ def test_caregiver_access_form_update_self() -> None:
 
 def test_caregiver_access_form_update_self_pending() -> None:
     """Ensure that a self-relationship cannot have the pending status."""
-    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
-    patient = factories.Patient()
+    self_type = factories.RelationshipType.create(role_type=RoleType.SELF.name)
+    patient = factories.Patient.create()
 
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient=patient,
         type=self_type,
         status=RelationshipStatus.PENDING,
     )
 
     form_data = model_to_dict(relationship)
-    user: User = relationship.caregiver.user
+    user = relationship.caregiver.user
     form_data['first_name'] = user.first_name
     form_data['last_name'] = user.last_name
 
@@ -489,10 +490,10 @@ def test_caregiver_access_form_update_self_pending() -> None:
 
 def test_caregiver_access_form_update_self_name_not_changed() -> None:
     """Ensure that different patient and caregiver names and non-confirmed status raise error for self-relationship."""
-    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
-    patient = factories.Patient()
+    self_type = factories.RelationshipType.create(role_type=RoleType.SELF.name)
+    patient = factories.Patient.create()
 
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient=patient,
         type=self_type,
         status=RelationshipStatus.PENDING,
@@ -511,9 +512,9 @@ def test_caregiver_access_form_update_self_name_not_changed() -> None:
 
 def test_caregiver_access_form_update_non_self() -> None:
     """Ensure that non-self `first_name`,`last_name` are editable, `end_date` is required and `type` is enabled."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
 
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient=patient,
         status=RelationshipStatus.PENDING,
     )
@@ -561,7 +562,7 @@ def test_accessrequestsearchform_ramq() -> None:
 
 def test_accessrequestsearchform_ramq_single_site() -> None:
     """Ensure the `Site` field is initialized as expected without setting any value."""
-    factories.Site()
+    factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
     }
@@ -574,7 +575,7 @@ def test_accessrequestsearchform_ramq_single_site() -> None:
 
 def test_accessrequestsearchform_single_site_mrn() -> None:
     """Ensure that site field is disabled and hidden when there is only one site."""
-    site = factories.Site()
+    site = factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
     }
@@ -589,8 +590,8 @@ def test_accessrequestsearchform_single_site_mrn() -> None:
 
 def test_accessrequestsearchform_more_than_site() -> None:
     """Ensure that site field is not disabled and not hidden when there is more than one site."""
-    site = factories.Site()
-    factories.Site()
+    site = factories.Site.create()
+    factories.Site.create()
 
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
@@ -636,9 +637,9 @@ def test_accessrequestsearchform_mrn_validation_fail() -> None:
 
 def test_accessrequestsearchform_mrn_found_patient_model() -> None:
     """Ensure that patient is found by mrn in Patient model if it exists."""
-    patient = factories.Patient()
-    site = factories.Site()
-    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
+    patient = factories.Patient.create()
+    site = factories.Site.create()
+    hospital_patient = factories.HospitalPatient.create(mrn='9999996', patient=patient, site=site)
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'medical_number': hospital_patient.mrn,
@@ -662,7 +663,7 @@ def test_accessrequestsearchform_mrn_fail_source_system(mocker: MockerFixture) -
         'opal.services.integration.hospital.find_patient_by_mrn',
         side_effect=RequestException(),
     )
-    site = factories.Site()
+    site = factories.Site.create()
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
         'medical_number': '9999993',
@@ -687,7 +688,7 @@ def test_accessrequestsearchform_mrn_success_source_system(mocker: MockerFixture
         return_value=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
-    site = factories.Site(acronym='MGH')
+    site = factories.Site.create(acronym='MGH')
 
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,
@@ -705,7 +706,7 @@ def test_accessrequestsearchform_mrn_success_source_system(mocker: MockerFixture
 
 def test_accessrequestsearchform_ramq_found_patient_model() -> None:
     """Ensure that patient is found by ramq in Patient model if it exists."""
-    patient = factories.Patient(ramq='RAMQ12345678')
+    patient = factories.Patient.create(ramq='RAMQ12345678')
     form_data = {
         'card_type': constants.MedicalCard.RAMQ.name,
         'medical_number': patient.ramq,
@@ -851,7 +852,7 @@ def test_accessrequestconfirmpatientform_is_deceased_source_system() -> None:
 
 def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
     """Ensure that proper error message is added to form error list when `Patient` model patient is deceased."""
-    patient = factories.Patient(date_of_death=timezone.now())
+    patient = factories.Patient.create(date_of_death=timezone.now())
 
     form = forms.AccessRequestConfirmPatientForm(patient=patient)
     err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
@@ -943,8 +944,8 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
 
 def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     """Ensure that the self option is disabled when the patient already has a self relationship."""
-    patient = factories.Patient()
-    factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
+    patient = factories.Patient.create()
+    factories.Relationship.create(patient=patient, type=RelationshipType.objects.self_type())
 
     form = forms.AccessRequestRequestorForm(
         patient=patient,
@@ -970,8 +971,8 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
 
 def test_requestor_form_relationship_type_description() -> None:
     """Ensure that the relationship type descriptions are set correctly to AvailableRadioSelect."""
-    patient = factories.Patient()
-    factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
+    patient = factories.Patient.create()
+    factories.Relationship.create(patient=patient, type=RelationshipType.objects.self_type())
 
     form = forms.AccessRequestRequestorForm(
         patient=patient,
@@ -1018,7 +1019,7 @@ def test_accessrequestrequestorform_is_existing_user_selected(user_type: str | N
 def test_accessrequestrequestorform_validate_user_types(user_type: constants.UserType) -> None:
     """Ensure the form is validated with different `user_types`."""
     relationshiptype = RelationshipType.objects.guardian_caregiver()
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1048,7 +1049,7 @@ def test_accessrequestrequestorform_validate_user_types(user_type: constants.Use
 
 def test_accessrequestrequestorform_clean_existing_user_no_type() -> None:
     """Ensure `clean` can handle a missing relationship type."""
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
         user__phone_number='+15141234567',
     )
@@ -1191,7 +1192,7 @@ def test_accessrequestrequestorform_existing_user_empty_data() -> None:
 
 def test_accessrequestrequestorform_existing_user_found() -> None:
     """Ensure `clean()` finds an existing caregiver."""
-    caregiver = CaregiverProfile(
+    caregiver = CaregiverProfileFactory.create(
         user__first_name='Marge',
         user__last_name='Simpson',
         user__email='marge@opalmedapps.ca',
@@ -1216,7 +1217,7 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
 
 def test_accessrequestrequestorform_existing_user_validate_self() -> None:
     """Ensure `clean()` validates a self relationship to match names."""
-    caregiver = CaregiverProfile(
+    caregiver = CaregiverProfileFactory.create(
         user__first_name='Marge',
         user__last_name='Simpson',
         user__email='marge@opalmedapps.ca',
@@ -1240,7 +1241,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
     """Ensure `clean()` can handle a name mismatch for self relationships for existing users."""
-    CaregiverProfile(
+    CaregiverProfileFactory.create(
         user__first_name='Ned',
         user__last_name='Flanders',
         user__email='marge@opalmedapps.ca',
@@ -1248,7 +1249,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
     form = forms.AccessRequestRequestorForm(
-        patient=factories.Patient(),
+        patient=factories.Patient.create(),
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1281,7 +1282,7 @@ def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> No
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_new_patient() -> None:
     """Ensure `clean()` can handle a name mismatch for self relationships when the patient is new."""
-    caregiver = factories.CaregiverProfile(
+    caregiver = factories.CaregiverProfile.create(
         user__email='homer@opalmedapps.ca',
         user__phone_number='+15141234567',
         user__first_name='Homer',
@@ -1302,16 +1303,16 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
 
 def test_accessrequestrequestorform_existing_user_validate_self_patient_exists() -> None:
     """Ensure `clean()` handles an existing patient already having a self relationship."""
-    caregiver = Caregiver(
+    caregiver = CaregiverFactory.create(
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
         phone_number='+15141234567',
     )
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient__first_name='Marge',
         patient__last_name='Simpson',
-        caregiver=CaregiverProfile(user=caregiver),
+        caregiver=CaregiverProfileFactory.create(user=caregiver),
         type=RelationshipType.objects.self_type(),
     )
 
@@ -1332,16 +1333,16 @@ def test_accessrequestrequestorform_existing_user_validate_self_patient_exists()
 
 def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists() -> None:
     """Ensure `clean()` handles an existing caregiver already having a self relationship."""
-    caregiver = Caregiver(
+    caregiver = CaregiverFactory.create(
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
         phone_number='+15141234567',
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient__first_name='Marge',
         patient__last_name='Simpson',
-        caregiver=CaregiverProfile(user=caregiver),
+        caregiver=CaregiverProfileFactory.create(user=caregiver),
         type=RelationshipType.objects.self_type(),
     )
 
@@ -1362,14 +1363,14 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
 
 def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
     """Ensure clean handles a caregiver already having a CONFIRMED or PENDING relationship to the patient."""
-    caregiver = Caregiver(
+    caregiver = CaregiverFactory.create(
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
         phone_number='+15141234567',
     )
-    relationship = factories.Relationship(
-        caregiver=CaregiverProfile(user=caregiver),
+    relationship = factories.Relationship.create(
+        caregiver=CaregiverProfileFactory.create(user=caregiver),
         type=RelationshipType.objects.mandatary(),
         status=RelationshipStatus.CONFIRMED,
     )
@@ -1503,16 +1504,16 @@ def test_accessrequestrequestorform_disable_fields() -> None:
 
 def test_accessrequestrequestorform_existing_relationship() -> None:
     """Ensure the `clean()` handles an existing caregiver already having a relationship."""
-    caregiver = Caregiver(
+    caregiver = CaregiverFactory.create(
         first_name='Test',
         last_name='Caregiver',
         email='test@opalmedapps.ca',
         phone_number='+15141234567',
     )
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient__first_name='Marge',
         patient__last_name='Simpson',
-        caregiver=CaregiverProfile(user=caregiver),
+        caregiver=CaregiverProfileFactory.create(user=caregiver),
         type=RelationshipType.objects.mandatary(),
     )
 
@@ -1533,20 +1534,20 @@ def test_accessrequestrequestorform_existing_relationship() -> None:
 
 def test_accessrequestrequestorform_existing_relationship_diff_patients() -> None:
     """Ensure be able to add duplicated user name for 2 different patients."""
-    caregiver = Caregiver(
+    caregiver = CaregiverFactory.create(
         first_name='Test',
         last_name='Caregiver',
         email='test@opalmedapps.ca',
         phone_number='+15141234567',
     )
-    factories.Relationship(
+    factories.Relationship.create(
         patient__first_name='Marge',
         patient__last_name='Simpson',
-        caregiver=CaregiverProfile(user=caregiver),
+        caregiver=CaregiverProfileFactory.create(user=caregiver),
         type=RelationshipType.objects.mandatary(),
     )
 
-    patient = factories.Patient(
+    patient = factories.Patient.create(
         first_name='Test',
         last_name='Simpson',
         ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
@@ -1572,7 +1573,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
 
 def test_validate_existing_relationship_missing_first_name() -> None:
     """Ensure be able to add duplicated user name for 2 different patients."""
-    patient = factories.Patient(
+    patient = factories.Patient.create(
         first_name='Test',
         last_name='Simpson',
         ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
@@ -1643,7 +1644,7 @@ def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
 
 def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
     """Ensure that the SMS is not sent when the form is incomplete."""
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     form = forms.AccessRequestSendSMSForm(
@@ -1660,7 +1661,7 @@ def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None
 
 def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
     """Ensure that the SMS is sent successfully."""
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     form = forms.AccessRequestSendSMSForm(
@@ -1679,7 +1680,7 @@ def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
 
 def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if sending the SMS failed."""
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
@@ -1704,7 +1705,7 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
 
 def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if the connection to Twilio fails."""
-    hospital_factories.Institution()
+    hospital_factories.Institution.create()
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=RequestException('SSL key too weak'),

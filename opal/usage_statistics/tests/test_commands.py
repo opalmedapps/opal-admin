@@ -44,40 +44,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     def test_existing_statistics_delete_yes(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Ensure that the command's force-delete flag deletes the data in models."""
         monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(username='marge'),
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(username='marge'),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(username='homer'),
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(username='homer'),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(username='bart'),
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(username='bart'),
         )
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
         )
-        caregiver_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        caregiver_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.CAREGIVER),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=marge_caregiver,
         )
-        mandatry_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.MANDATARY),
-            patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        mandatry_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.MANDATARY),
+            patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
             caregiver=marge_caregiver,
         )
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=caregiver_relationship)
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=mandatry_relationship)
-        statistics_factory.DailyPatientDataReceived()
-        statistics_factory.DailyPatientDataReceived()
-        statistics_factory.DailyPatientDataReceived()
+        statistics_factory.DailyUserPatientActivity.create(user_relationship_to_patient=self_relationship)
+        statistics_factory.DailyUserPatientActivity.create(user_relationship_to_patient=caregiver_relationship)
+        statistics_factory.DailyUserPatientActivity.create(user_relationship_to_patient=mandatry_relationship)
+        statistics_factory.DailyPatientDataReceived.create()
+        statistics_factory.DailyPatientDataReceived.create()
+        statistics_factory.DailyPatientDataReceived.create()
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
         stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
         assert stdout == 'Deleting existing usage statistics data\nSuccessfully populated daily statistics data\n'
@@ -87,15 +87,15 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_existing_statistics_delete_no(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Ensure that the command's force-delete stops execution if user enters 'no' to the prompt."""
-        self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(username='marge'),
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(username='marge'),
         )
-        statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
-        statistics_factory.DailyPatientDataReceived()
+        statistics_factory.DailyUserPatientActivity.create(user_relationship_to_patient=self_relationship)
+        statistics_factory.DailyPatientDataReceived.create()
         monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
         monkeypatch.setattr('builtins.input', lambda _: 'no')
         stdout, _stderr = self._call_command('update_daily_usage_statistics', '--force-delete')
@@ -113,12 +113,14 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_previous_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics per user."""
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
 
         self._create_log_record(username=caregiver.user.username)
         self._create_log_record(request='Feedback', parameters='OMITTED', username=caregiver.user.username)
         self._create_log_record(
-            request='UpdateSecurityQuestionAnswer', parameters='OMITTED', username=caregiver.user.username,
+            request='UpdateSecurityQuestionAnswer',
+            parameters='OMITTED',
+            username=caregiver.user.username,
         )
         self._create_log_record(request='AccountChange', parameters='OMITTED', username=caregiver.user.username)
         self._create_log_record(
@@ -150,7 +152,10 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         # current day records should not be populated to the `DailyUserAppActivity`
         self._create_log_record(username=caregiver.user.username, days_delta=0)
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=caregiver.user.username, days_delta=0,
+            request='Feedback',
+            parameters='OMITTED',
+            username=caregiver.user.username,
+            days_delta=0,
         )
         self._create_log_record(
             request='UpdateSecurityQuestionAnswer',
@@ -181,7 +186,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_current_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the current day app statistics per user."""
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
         self._create_log_record(username=caregiver.user.username, days_delta=0)
         self._create_log_record(
             request='Feedback',
@@ -256,12 +261,12 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     def test_populate_last_login_user_statistics(self) -> None:
         """Ensure that the command correctly populates the last login time per user per day."""
         fake = Faker()
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         start_datetime_period = dt.datetime.combine(
@@ -275,81 +280,108 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             timezone.get_current_timezone(),
         )
         marge_two_days_ago_date_time = fake.date_time_between(
-            start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
+            start_datetime_period,
+            end_datetime_period,
+            timezone.get_current_timezone(),
         ) - dt.timedelta(days=2)
         homer_two_days_ago_date_time = fake.date_time_between(
-            start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
+            start_datetime_period,
+            end_datetime_period,
+            timezone.get_current_timezone(),
         ) - dt.timedelta(days=2)
         marge_previous_day_date_time = fake.date_time_between(
-            start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
+            start_datetime_period,
+            end_datetime_period,
+            timezone.get_current_timezone(),
         ) - dt.timedelta(days=1)
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             last_login=marge_two_days_ago_date_time,
             action_date=start_datetime_period.date() - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             last_login=homer_two_days_ago_date_time,
             action_date=start_datetime_period.date() - dt.timedelta(days=2),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
-            username=marge_caregiver.user.username, target_patient_id=None, date_time=marge_previous_day_date_time,
+        legacy_factories.LegacyPatientActivityLogFactory.create(
+            username=marge_caregiver.user.username,
+            target_patient_id=None,
+            date_time=marge_previous_day_date_time,
         )
         previous_day_min_time = dt.datetime.combine(
-            marge_previous_day_date_time, dt.datetime.min.time(), timezone.get_current_timezone(),
+            marge_previous_day_date_time,
+            dt.datetime.min.time(),
+            timezone.get_current_timezone(),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=marge_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                previous_day_min_time, marge_previous_day_date_time, timezone.get_current_timezone(),
+                previous_day_min_time,
+                marge_previous_day_date_time,
+                timezone.get_current_timezone(),
             ),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=marge_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                previous_day_min_time, marge_previous_day_date_time, timezone.get_current_timezone(),
+                previous_day_min_time,
+                marge_previous_day_date_time,
+                timezone.get_current_timezone(),
             ),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=marge_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
+                start_datetime_period,
+                end_datetime_period,
+                timezone.get_current_timezone(),
             ),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=homer_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
-            ) - dt.timedelta(days=1),
+                start_datetime_period,
+                end_datetime_period,
+                timezone.get_current_timezone(),
+            )
+            - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=homer_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
-            ) - dt.timedelta(days=1),
+                start_datetime_period,
+                end_datetime_period,
+                timezone.get_current_timezone(),
+            )
+            - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=homer_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
-            ) - dt.timedelta(days=1),
+                start_datetime_period,
+                end_datetime_period,
+                timezone.get_current_timezone(),
+            )
+            - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyPatientActivityLogFactory(
+        legacy_factories.LegacyPatientActivityLogFactory.create(
             username=homer_caregiver.user.username,
             target_patient_id=None,
             date_time=fake.date_time_between(
-                start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
+                start_datetime_period,
+                end_datetime_period,
+                timezone.get_current_timezone(),
             ),
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
@@ -366,12 +398,16 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=start_datetime_period.date() - dt.timedelta(days=1),
         ).first()
         assert marge_previous_day_app_activity
-        marge_last_login_previous_day = legacy_models.LegacyPatientActivityLog.objects.filter(
-            username=marge_caregiver.user,
-            date_time__date=marge_previous_day_app_activity.action_date,
-        ).order_by(
-            '-date_time',
-        ).first()
+        marge_last_login_previous_day = (
+            legacy_models.LegacyPatientActivityLog.objects.filter(
+                username=marge_caregiver.user,
+                date_time__date=marge_previous_day_app_activity.action_date,
+            )
+            .order_by(
+                '-date_time',
+            )
+            .first()
+        )
         assert marge_last_login_previous_day
         assert marge_previous_day_app_activity.last_login == marge_last_login_previous_day.date_time
         marge_current_day_app_activity = DailyUserAppActivity.objects.filter(
@@ -382,24 +418,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_login_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates logins count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_logins=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_logins=1,
@@ -436,52 +472,76 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_feedback_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates feedback count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_feedback=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_feedback=1,
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=marge_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=marge_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=marge_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=marge_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=marge_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=marge_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=marge_caregiver.user.username, days_delta=0,
+            request='Feedback',
+            parameters='OMITTED',
+            username=marge_caregiver.user.username,
+            days_delta=0,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=homer_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=homer_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=homer_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=homer_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=homer_caregiver.user.username, days_delta=1,
+            request='Feedback',
+            parameters='OMITTED',
+            username=homer_caregiver.user.username,
+            days_delta=1,
         )
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=homer_caregiver.user.username, days_delta=0,
+            request='Feedback',
+            parameters='OMITTED',
+            username=homer_caregiver.user.username,
+            days_delta=0,
         )
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
         assert stdout == 'Successfully populated daily statistics data\n'
@@ -506,24 +566,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_security_answer_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates updated security answers count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_update_security_answers=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_update_security_answers=1,
@@ -600,24 +660,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_password_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates updated passwords count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_update_passwords=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_update_passwords=1,
@@ -694,24 +754,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_language_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates language updates count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_update_language=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_update_language=1,
@@ -788,24 +848,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_android_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates android devices count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_device_android=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_device_android=1,
@@ -930,24 +990,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_ios_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates iOS devices count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now().date()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_device_ios=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_device_ios=1,
@@ -1073,24 +1133,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_browser_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates browser devices count per user per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
         date = timezone.now()
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             count_device_browser=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserAppActivity(
-            action_by_user=caregiver_factories.Caregiver(
+        statistics_factory.DailyUserAppActivity.create(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             count_device_browser=1,
@@ -1217,14 +1277,14 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_previous_day_patient_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics per patient."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
 
-        patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1259,7 +1319,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '1',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1267,7 +1329,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '2', 'new_status': '1', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '2',
+                'new_status': '1',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1303,7 +1367,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '3',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1324,21 +1390,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_current_day_patient_statistics(self) -> None:
         """Ensure that the command successfully populates the current day app statistics per patient."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
 
-        patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         self._create_log_record(username=marge_caregiver.user.username, days_delta=0)
         self._create_log_record(
-            request='Feedback', parameters='OMITTED', username=marge_caregiver.user.username, days_delta=0,
+            request='Feedback',
+            parameters='OMITTED',
+            username=marge_caregiver.user.username,
+            days_delta=0,
         )
 
         self._create_log_record(
@@ -1372,7 +1441,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '1',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1381,7 +1452,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '2', 'new_status': '1', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '2',
+                'new_status': '1',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1421,7 +1494,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '3',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1441,40 +1516,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_checkin_statistics(self) -> None:
         """Ensure that the command correctly aggregates checkins count per patient per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         date = timezone.now().date()
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
             count_checkins=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1567,40 +1642,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_document_statistics(self) -> None:
         """Ensure that the command correctly aggregates documents count per patient per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         date = timezone.now().date()
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
             count_documents=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1693,40 +1768,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_educational_material_statistics(self) -> None:
         """Ensure that the command correctly aggregates educational materials count per patient per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         date = timezone.now().date()
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
             count_educational_materials=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1819,40 +1894,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_questionnaire_statistics(self) -> None:
         """Ensure that the command correctly aggregates questionnaires count per patient per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         date = timezone.now().date()
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
             count_questionnaires_complete=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1863,7 +1938,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '1',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1872,7 +1949,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '2', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '2',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1881,7 +1960,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '3',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1890,7 +1971,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '4', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '4',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=51,
             username=marge_caregiver.user.username,
@@ -1899,7 +1982,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '5', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '5',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=52,
             username=homer_caregiver.user.username,
@@ -1908,7 +1993,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '6', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '6',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=52,
             username=homer_caregiver.user.username,
@@ -1917,7 +2004,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '7', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '7',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=52,
             username=homer_caregiver.user.username,
@@ -1926,7 +2015,9 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         self._create_log_record(
             request='QuestionnaireUpdateStatus',
             parameters=json.dumps({
-                'answerQuestionnaire_id': '8', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+                'answerQuestionnaire_id': '8',
+                'new_status': '2',
+                'user_display_name': 'Marge Simpson',
             }).replace(' ', ''),
             target_patient_id=52,
             username=homer_caregiver.user.username,
@@ -1961,40 +2052,40 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_lab_statistics(self) -> None:
         """Ensure that the command correctly aggregates lab results count per patient per day."""
-        marge_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregiver_factories.CaregiverProfile(
-            user=caregiver_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile.create(
+            user=caregiver_factories.Caregiver.create(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patient_factories.Relationship(
-            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship.create(
+            type=patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         date = timezone.now().date()
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
             count_labs=1,
             action_date=date - dt.timedelta(days=2),
         )
-        statistics_factory.DailyUserPatientActivity(
+        statistics_factory.DailyUserPatientActivity.create(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregiver_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver.create(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -2089,98 +2180,98 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_previous_day_received_data(self) -> None:
         """Ensure that the command successfully populates the previous day received data statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
         previous_day = timezone.now() - dt.timedelta(days=1)
         current_day = timezone.now()
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=previous_day,
         )
 
         next_appointment = timezone.now() + dt.timedelta(days=3)
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=previous_day,
             scheduledstarttime=next_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=previous_day,
             scheduledstarttime=next_appointment,
         )
 
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=1,
             patientsernum=marge,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=2,
             patientsernum=homer,
             dateadded=previous_day,
         )
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=previous_day,
         )
 
         # current day records should not be included to the final queryset
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_day,
             scheduledstarttime=timezone.now() + dt.timedelta(days=7),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=3,
             patientsernum=marge,
             dateadded=current_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=current_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=current_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=current_day,
         )
@@ -2189,7 +2280,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 2
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.next_appointment == next_appointment
@@ -2205,7 +2296,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert marge_received_data.labs_received == 1
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.next_appointment == next_appointment
@@ -2222,98 +2313,98 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_current_day_received_data(self) -> None:
         """Ensure that the command successfully populates the current day received data statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
         previous_day = timezone.now() - dt.timedelta(days=1)
         current_day = timezone.now()
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=current_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=timezone.now() - dt.timedelta(days=7),
             scheduledstarttime=current_day,
         )
 
         next_appointment = timezone.now() + dt.timedelta(days=3)
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_day,
             scheduledstarttime=next_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_day,
             scheduledstarttime=next_appointment,
         )
 
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=1,
             patientsernum=marge,
             dateadded=current_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=2,
             patientsernum=homer,
             dateadded=current_day,
         )
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=current_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=current_day,
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=current_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=current_day,
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=current_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=current_day,
         )
 
         # previous day records should not be included to the final queryset
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=previous_day,
             scheduledstarttime=timezone.now() + dt.timedelta(days=7),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=3,
             patientsernum=marge,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=previous_day,
         )
@@ -2322,7 +2413,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Calculating usage statistics for today\nSuccessfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 2
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.next_appointment == next_appointment
@@ -2338,7 +2429,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert marge_received_data.labs_received == 1
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.next_appointment == next_appointment
@@ -2355,51 +2446,51 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_last_appointment_received(self) -> None:
         """Ensure that the command correctly fetches the last appointment received per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         homer_last_appointment = current_datetime - dt.timedelta(days=3)
         marge_last_appointment = current_datetime - dt.timedelta(days=3)
         bart_last_appointment = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=14),
             scheduledstarttime=current_datetime - dt.timedelta(days=7),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=7),
             scheduledstarttime=marge_last_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=21),
             scheduledstarttime=current_datetime - dt.timedelta(days=10),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=10),
             scheduledstarttime=homer_last_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=10),
             scheduledstarttime=bart_last_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=1),
             scheduledstarttime=timezone.now(),
@@ -2409,88 +2500,88 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.last_appointment_received == marge_last_appointment
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.last_appointment_received == homer_last_appointment
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.last_appointment_received == bart_last_appointment
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.last_appointment_received is None
 
     def test_populate_next_appointment_received(self) -> None:
         """Ensure that the command correctly fetches the next appointment statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         marge_next_appointment = current_datetime + dt.timedelta(days=1)
         homer_next_appointment = current_datetime + dt.timedelta(days=5)
         bart_next_appointment = current_datetime + dt.timedelta(days=10)
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=14),
             scheduledstarttime=current_datetime - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=7),
             scheduledstarttime=current_datetime + dt.timedelta(days=10),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=5),
             scheduledstarttime=marge_next_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=21),
             scheduledstarttime=current_datetime - dt.timedelta(days=10),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=10),
             scheduledstarttime=current_datetime + dt.timedelta(days=1),
             status='Cancelled',
             state='Closed',
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=10),
             scheduledstarttime=homer_next_appointment,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=5),
             scheduledstarttime=current_datetime + dt.timedelta(days=15),
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=1),
             scheduledstarttime=bart_next_appointment,
@@ -2500,83 +2591,83 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.next_appointment == marge_next_appointment
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.next_appointment == homer_next_appointment
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.next_appointment == bart_next_appointment
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.next_appointment is None
 
     def test_populate_appointments_received_count(self) -> None:
         """Ensure that the command correctly aggregates the appointments received count per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_day = timezone.now()
         previous_day = current_day - dt.timedelta(days=1)
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=marge,
             date_added=current_day + dt.timedelta(days=1),
         )
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=homer,
             date_added=current_day + dt.timedelta(days=2),
         )
 
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=previous_day,
         )
-        legacy_factories.LegacyAppointmentFactory(
+        legacy_factories.LegacyAppointmentFactory.create(
             patientsernum=bart,
             date_added=current_day,
         )
@@ -2585,74 +2676,74 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.appointments_received == 2
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.appointments_received == 2
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.appointments_received == 2
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.appointments_received == 0
 
     def test_populate_last_document_received(self) -> None:
         """Ensure that the command correctly fetches the last document received per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=1,
             patientsernum=marge,
             dateadded=current_datetime - dt.timedelta(days=4),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=2,
             patientsernum=marge,
             dateadded=current_datetime - dt.timedelta(days=7),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=3,
             patientsernum=homer,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=4,
             patientsernum=homer,
             dateadded=current_datetime,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=5,
             patientsernum=bart,
             dateadded=current_datetime - dt.timedelta(days=5),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=6,
             patientsernum=bart,
             dateadded=previous_day - dt.timedelta(days=7),
@@ -2662,89 +2753,89 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.last_document_received == current_datetime - dt.timedelta(days=4)
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.last_document_received == previous_day
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.last_document_received == current_datetime - dt.timedelta(days=5)
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.last_document_received is None
 
     def test_documents_received_statistics(self) -> None:
         """Ensure that the command correctly aggregates received documents statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=1,
             patientsernum=marge,
             dateadded=current_datetime - dt.timedelta(days=4),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=2,
             patientsernum=marge,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=3,
             patientsernum=marge,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=4,
             patientsernum=homer,
             dateadded=current_datetime - dt.timedelta(days=5),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=5,
             patientsernum=homer,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=6,
             patientsernum=homer,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=7,
             patientsernum=bart,
             dateadded=current_datetime - dt.timedelta(days=7),
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=8,
             patientsernum=bart,
             dateadded=previous_day,
         )
-        legacy_factories.LegacyDocumentFactory(
+        legacy_factories.LegacyDocumentFactory.create(
             documentsernum=9,
             patientsernum=bart,
             dateadded=previous_day,
@@ -2754,68 +2845,68 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.documents_received == 2
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.documents_received == 2
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.documents_received == 2
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.documents_received == 0
 
     def test_populate_last_educational_material_received(self) -> None:
         """Ensure the command correctly fetches the last educational material received per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=5),
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=4),
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=current_datetime,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=7),
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=8),
         )
@@ -2824,83 +2915,83 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.last_educational_material_received == current_datetime - dt.timedelta(days=4)
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.last_educational_material_received == current_datetime - dt.timedelta(days=1)
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.last_educational_material_received == current_datetime - dt.timedelta(days=7)
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.last_educational_material_received is None
 
     def test_populate_educational_materials_received_statistics(self) -> None:
         """Ensure that the command correctly aggregates received educational materials statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=homer,
             date_added=current_datetime,
         )
 
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=bart,
             date_added=previous_day,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=bart,
             date_added=current_datetime,
         )
-        legacy_factories.LegacyEducationalMaterialFactory(
+        legacy_factories.LegacyEducationalMaterialFactory.create(
             patientsernum=bart,
             date_added=current_datetime,
         )
@@ -2909,70 +3000,70 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.educational_materials_received == 3
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.educational_materials_received == 2
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.educational_materials_received == 1
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.educational_materials_received == 0
 
     def test_populate_last_questionnaire_received(self) -> None:
         """Ensure the command correctly fetches the last questionnaire received per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=7),
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=5),
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=4),
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=3),
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=bart,
             date_added=current_datetime,
         )
@@ -2981,83 +3072,83 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.last_questionnaire_received == current_datetime - dt.timedelta(days=5)
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.last_questionnaire_received == current_datetime - dt.timedelta(days=3)
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.last_questionnaire_received == current_datetime - dt.timedelta(days=1)
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.last_questionnaire_received is None
 
     def test_populate_questionnaires_received_statistics(self) -> None:
         """Ensure that the command correctly aggregates received questionnaires statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=current_datetime - dt.timedelta(days=2),
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=marge,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=current_datetime,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=homer,
             date_added=current_datetime - dt.timedelta(days=5),
         )
 
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=bart,
             date_added=current_datetime - dt.timedelta(days=2),
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=bart,
             date_added=previous_day,
         )
-        legacy_factories.LegacyQuestionnaireFactory(
+        legacy_factories.LegacyQuestionnaireFactory.create(
             patientsernum=bart,
             date_added=previous_day,
         )
@@ -3066,70 +3157,70 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.questionnaires_received == 2
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.questionnaires_received == 1
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.questionnaires_received == 2
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.questionnaires_received == 0
 
     def test_populate_last_lab_received(self) -> None:
         """Ensure the command correctly fetches the last lab result received per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=current_datetime - dt.timedelta(days=5),
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=current_datetime - dt.timedelta(days=4),
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=current_datetime - dt.timedelta(days=2),
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=current_datetime - dt.timedelta(days=1),
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=bart,
             date_added=current_datetime - dt.timedelta(days=1),
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=bart,
             date_added=current_datetime,
         )
@@ -3138,79 +3229,79 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.last_lab_received == current_datetime - dt.timedelta(days=4)
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.last_lab_received == current_datetime - dt.timedelta(days=1)
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.last_lab_received == current_datetime - dt.timedelta(days=1)
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.last_lab_received is None
 
     def test_populate_labs_received_statistics(self) -> None:
         """Ensure that the command correctly aggregates received lab results statistics per patient."""
-        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
-        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
-        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
-        lisa = legacy_factories.LegacyPatientFactory(patientsernum=54, ramq='SIMM18510194')
-        legacy_factories.LegacyPatientControlFactory(patient=marge)
-        legacy_factories.LegacyPatientControlFactory(patient=homer)
-        legacy_factories.LegacyPatientControlFactory(patient=bart)
-        legacy_factories.LegacyPatientControlFactory(patient=lisa)
+        marge = legacy_factories.LegacyPatientFactory.create(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory.create(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory.create(patientsernum=53, ramq='SIMM18510193')
+        lisa = legacy_factories.LegacyPatientFactory.create(patientsernum=54, ramq='SIMM18510194')
+        legacy_factories.LegacyPatientControlFactory.create(patient=marge)
+        legacy_factories.LegacyPatientControlFactory.create(patient=homer)
+        legacy_factories.LegacyPatientControlFactory.create(patient=bart)
+        legacy_factories.LegacyPatientControlFactory.create(patient=lisa)
 
-        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
-        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
-        django_lisa_patient = patient_factories.Patient(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
+        django_marge_patient = patient_factories.Patient.create(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient.create(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient.create(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+        django_lisa_patient = patient_factories.Patient.create(legacy_id=lisa.patientsernum, ramq='SIMM18510194')
 
         current_datetime = timezone.now()
         previous_day = current_datetime - dt.timedelta(days=1)
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=current_datetime - dt.timedelta(days=5),
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=previous_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=marge,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=current_datetime,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=previous_day,
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=homer,
             date_added=previous_day,
         )
 
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=bart,
             date_added=current_datetime - dt.timedelta(days=2),
         )
-        legacy_factories.LegacyPatientTestResultFactory(
+        legacy_factories.LegacyPatientTestResultFactory.create(
             patient_ser_num=bart,
             date_added=previous_day,
         )
@@ -3219,25 +3310,25 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyPatientDataReceived.objects.count() == 4
         marge_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_marge_patient,
+            patient=django_marge_patient,
         ).first()
         assert marge_received_data
         assert marge_received_data.labs_received == 2
 
         homer_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_homer_patient,
+            patient=django_homer_patient,
         ).first()
         assert homer_received_data
         assert homer_received_data.labs_received == 2
 
         bart_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_bart_patient,
+            patient=django_bart_patient,
         ).first()
         assert bart_received_data
         assert bart_received_data.labs_received == 1
 
         lisa_received_data = DailyPatientDataReceived.objects.filter(
-            patient_id=django_lisa_patient,
+            patient=django_lisa_patient,
         ).first()
         assert lisa_received_data
         assert lisa_received_data.labs_received == 0
@@ -3250,7 +3341,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         username: str = 'username',
         app_version: str = '100.100.100',
         days_delta: int = 1,
-    ) -> legacy_factories.LegacyPatientActivityLogFactory:
+    ) -> legacy_models.LegacyPatientActivityLog:
         """
         Create `LegacyPatientActivityLog` object.
 
@@ -3273,4 +3364,4 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             'date_time': timezone.now() - dt.timedelta(days=days_delta),
             'app_version': app_version,
         }
-        return legacy_factories.LegacyPatientActivityLogFactory(**data)
+        return legacy_factories.LegacyPatientActivityLogFactory.create(**data)
