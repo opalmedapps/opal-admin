@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used to display the Opal's General view."""
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.request import Request

@@ -1,4 +1,8 @@
-FROM python:3.12.8-alpine3.20 AS build
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+FROM python:3.12.9-alpine3.20 AS build
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -18,7 +22,7 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
   && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
 
 
-FROM python:3.12.8-alpine3.20
+FROM python:3.12.9-alpine3.20
 
 RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
@@ -61,7 +65,10 @@ RUN cp .env.sample .env \
   && rm .env \
   # ensure the uploads directory exists with appuser as the owner
   && mkdir -p ./opal/media/uploads \
-  && chown appuser:appuser ./opal/media/uploads
+  && chown appuser:appuser ./opal/media/uploads \
+  # ensure the logs directory exists for production logs
+  && mkdir /logs \
+  && chown appuser:appuser /logs
 
 USER appuser
 

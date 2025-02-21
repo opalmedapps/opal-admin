@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Django base settings to build other settings files upon.
 
@@ -17,6 +21,7 @@ from django.utils.translation import gettext_lazy as _
 
 import django_stubs_ext
 import environ
+import structlog
 
 # Monkeypatching Django, so stubs will work for all generics
 # see: https://github.com/typeddjango/django-stubs/tree/master/ext
@@ -176,7 +181,8 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'django_tables2',
     'corsheaders',
-    'easyaudit',
+    'auditlog',
+    'django_structlog',
     'slippers',
     'drf_spectacular',
 ]
@@ -267,7 +273,8 @@ MIDDLEWARE = [
     'opal.core.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
+    'django_structlog.middlewares.RequestMiddleware',
+    'opal.core.middleware.AuditlogMiddleware',
 ]
 
 # STATIC
@@ -382,22 +389,69 @@ ADMIN_URL = 'admin/'
 # https://sobolevn.me/2020/03/do-not-log
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
-        'verbose': {
-            'format': '{asctime} {levelname:^8s} {name:<28s} {message}',
-            'style': '{',
+        # Console Output: https://www.structlog.org/en/stable/console-output.html
+        'console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
         },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'console',
         },
     },
-    'root': {'level': 'INFO', 'handlers': ['console']},
+    'loggers': {
+        'django_structlog': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'opal': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        # Suppress default django runserver logs
+        'django.request': {
+            'handlers': [],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }
+
+# Auditing
+# ------------------------------------------------------------------------------
+
+# django-structlog configuration
+# https://django-structlog.readthedocs.io/en/latest/getting_started.html#installation
+# https://www.structlog.org/en/stable/configuration.html
+# ------------------------------------------------------------------------------
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.filter_by_level,
+        structlog.processors.TimeStamper(fmt='iso'),
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
+# django-auditlog
+# ------------------------------------------------------------------------------
+# See https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
+AUDITLOG_INCLUDE_ALL_MODELS = True
+# Use the Appuserid header to correlate changes with app users
+# https://django-auditlog.readthedocs.io/en/latest/usage.html#correlation-id
+AUDITLOG_CID_HEADER = 'Appuserid'
 
 # OPAL SPECIFIC
 # ------------------------------------------------------------------------------
@@ -505,18 +559,6 @@ SPECTACULAR_SETTINGS = {
 # CORS settings are optional
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
-
-# django-easy-audit
-# ------------------------------------------------------------------------------
-# See https://github.com/soynatan/django-easy-audit#settings
-# Remove /admin to log requests to the admin site
-DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
-# Make events read-only to disallow deleting
-DJANGO_EASY_AUDIT_READONLY_EVENTS = True
-# Propagate exceptions during debug
-DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
-# Disable extra DB calls to check whether user exists
-DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False
 
 # django-tables2
 # ------------------------------------------------------------------------------

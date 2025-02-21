@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 from django.test import Client
@@ -5,8 +9,8 @@ from django.urls.base import reverse
 from django.utils import timezone
 
 import pytest
+from _pytest.logging import LogCaptureFixture
 from bs4 import BeautifulSoup
-from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
@@ -232,7 +236,11 @@ def test_report_filter_missing_key(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_update_request_event_filter_template(user_client: Client, questionnaire_data: None) -> None:
+def test_update_request_event_filter_template(
+    user_client: Client,
+    questionnaire_data: None,
+    caplog: LogCaptureFixture,
+) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
     test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
@@ -243,22 +251,14 @@ def test_update_request_event_filter_template(user_client: Client, questionnaire
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['11']},
     )
-    q_string = "{'questionnaireid': '11'}"
-    method = 'POST'
-    request_event = (
-        RequestEvent.objects.filter(
-            url='/questionnaires/reports/filter/',
-        )
-        .order_by('-datetime')
-        .first()
-    )
 
     assert response.status_code == HTTPStatus.OK
-    assert request_event.method == method
-    assert request_event.query_string == q_string
+    assert len(caplog.records) == 2
+    assert "'questionnaire_id': '11'" in caplog.records[0].message
+    assert "'questionnaire_id': '11'" in caplog.records[1].message
 
 
-def test_update_request_event_detail_template(admin_client: Client) -> None:
+def test_update_request_event_detail_template(admin_client: Client, caplog: LogCaptureFixture) -> None:
     """Ensure RequestEvent object is correctly updated on call to detail template."""
     response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
@@ -272,21 +272,17 @@ def test_update_request_event_detail_template(admin_client: Client) -> None:
         },
     )
     q_string = (
-        "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27',"
+        "{'questionnaireID': '11', 'questionnaireName': 'Test Qst', 'start': '2016-11-25', 'end': '2020-02-27',"
         + " 'patientIDs': '3', 'questionIDs': '832'}"
-    )
-    method = 'POST'
-    request_event = (
-        RequestEvent.objects.filter(
-            url='/questionnaires/reports/detail/',
-        )
-        .order_by('-datetime')
-        .first()
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert request_event.method == method
-    assert request_event.query_string == q_string
+    assert len(caplog.records) == 2
+    assert "'questionnaire_id': '11'" in caplog.records[0].message
+    assert "'questionnaire_name': 'Test Qst'" in caplog.records[0].message
+    assert "'questionnaire_id': '11'" in caplog.records[1].message
+    assert "'questionnaire_name': 'Test Qst'" in caplog.records[1].message
+    assert q_string in caplog.records[1].message
 
 
 def test_detail_template_download_csv(admin_client: Client) -> None:

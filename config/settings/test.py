@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 With these settings, tests run faster.
 
@@ -24,14 +28,6 @@ PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-# django-easy-audit
-# ------------------------------------------------------------------------------
-# Don't watch model events by default.
-# Also helps suppressing data migration errors during test initialization.
-DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = False
-# Don't log login events since not every test has a request.
-DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = False
 
 # Whitenoise
 # ------------------------------------------------------------------------------

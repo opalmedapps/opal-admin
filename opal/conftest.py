@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
 
 from collections.abc import Callable, Generator
@@ -273,6 +277,7 @@ def set_orms_enabled(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.ORMS_ENABLED = True
+    settings.ORMS_HOST = 'http://localhost:8086'
 
 
 @pytest.fixture
@@ -284,6 +289,7 @@ def set_orms_disabled(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.ORMS_ENABLED = False
+    del settings.ORMS_HOST
 
 
 @pytest.fixture
