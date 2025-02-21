@@ -29,8 +29,12 @@ from .. import views
 pytestmark = pytest.mark.django_db()
 
 PATIENT_UUID = uuid4()
-FIXTURES_DIR = Path(__file__).resolve().parent.joinpath(
-    'fixtures',
+FIXTURES_DIR = (
+    Path(__file__)
+    .resolve()
+    .parent.joinpath(
+        'fixtures',
+    )
 )
 
 
@@ -203,12 +207,12 @@ def test_hl7_create_view_pid_does_not_match_uuid(
 ) -> None:
     """Ensure the endpoint returns an error if patient identified in the PID doesn't match the uuid in the url."""
     api_client.force_login(interface_engine_user)
-    patient = patient_factories.Patient(
+    patient = patient_factories.Patient.create(
         ramq='TEST01161972',
         uuid=PATIENT_UUID,
     )
-    hospital_factories.Site(acronym='RVH')
-    patient_factories.HospitalPatient(
+    hospital_factories.Site.create(acronym='RVH')
+    patient_factories.HospitalPatient.create(
         patient=patient,
         site=Site.objects.get(acronym='RVH'),
         mrn='9999996',
@@ -235,7 +239,7 @@ def test_hl7_create_view_patient_not_found_by_pid_data(
 ) -> None:
     """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
     api_client.force_login(interface_engine_user)
-    hospital_factories.Site(acronym='RVH')
+    hospital_factories.Site.create(acronym='RVH')
     message = 'Patient identified by HL7 PID could not be uniquely found in database.'
     with assertRaisesMessage(ValidationError, message):
         api_client.post(

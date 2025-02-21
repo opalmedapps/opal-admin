@@ -69,7 +69,7 @@ class TestQuestionnairesReportView:
 
     def test_invalid_mrn_length(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an MRN that has more than 10 characters."""
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient.create()
 
         response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, 'invalid mrn')
 
@@ -78,7 +78,7 @@ class TestQuestionnairesReportView:
 
     def test_no_mrn(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an empty MRN."""
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient.create()
 
         response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, '')
 
@@ -87,7 +87,7 @@ class TestQuestionnairesReportView:
 
     def test_invalid_site_length(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing a site code that has more than 10 characters."""
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient.create()
 
         response = self.make_request(
             api_client,
@@ -101,7 +101,7 @@ class TestQuestionnairesReportView:
 
     def test_no_site(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an empty site acronym."""
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient.create()
 
         response = self.make_request(api_client, admin_user, '', hospital_patient.mrn)
 
@@ -122,7 +122,7 @@ class TestQuestionnairesReportView:
 
     def test_site_mrn_not_found(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing a site acronym and an MRN that do not exist."""
-        patient_factories.HospitalPatient()
+        patient_factories.HospitalPatient.create()
 
         response = self.make_request(api_client, admin_user, 'wrong site', 'wrong mrn')
 
@@ -184,11 +184,11 @@ class TestQuestionnairesReportView:
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Ensure that unsuccessful report generation is handled properly and does not cause any exceptions."""
-        hospital_settings_factories.Institution(pk=1)
-        patient = patient_factories.Patient(legacy_id=51)
-        hospital_patient = patient_factories.HospitalPatient(
+        hospital_settings_factories.Institution.create(pk=1)
+        patient = patient_factories.Patient.create(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient.create(
             patient=patient,
-            site=patient_factories.Site(acronym='RVH'),
+            site=patient_factories.Site.create(acronym='RVH'),
         )
 
         message = 'An error occurred during questionnaire report generation.'
@@ -216,11 +216,11 @@ class TestQuestionnairesReportView:
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Ensure that unsuccessful PDF report exporting is handled properly and does not cause any exceptions."""
-        hospital_settings_factories.Institution(pk=1)
-        patient = patient_factories.Patient(legacy_id=51)
-        hospital_patient = patient_factories.HospitalPatient(
+        hospital_settings_factories.Institution.create(pk=1)
+        patient = patient_factories.Patient.create(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient.create(
             patient=patient,
-            site=patient_factories.Site(acronym='RVH'),
+            site=patient_factories.Site.create(acronym='RVH'),
         )
 
         message = 'An error occurred while exporting a PDF report to the source system'
@@ -260,11 +260,11 @@ class TestQuestionnairesReportView:
         questionnaire_data: None,
     ) -> None:
         """Test PDF report export request sent to the source system."""
-        hospital_settings_factories.Institution(pk=1)
-        patient = patient_factories.Patient(legacy_id=51)
-        hospital_patient = patient_factories.HospitalPatient(
+        hospital_settings_factories.Institution.create(pk=1)
+        patient = patient_factories.Patient.create(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient.create(
             patient=patient,
-            site=patient_factories.Site(acronym='RVH'),
+            site=patient_factories.Site.create(acronym='RVH'),
         )
 
         # mock an actual call to the legacy report generation service to raise a request error
@@ -311,11 +311,11 @@ class TestQuestionnairesReportView:
         questionnaire_data: None,
     ) -> None:
         """Test that PDF report is created successfully."""
-        hospital_settings_factories.Institution(pk=1)
-        patient = patient_factories.Patient(legacy_id=51)
-        hospital_patient = patient_factories.HospitalPatient(
+        hospital_settings_factories.Institution.create(pk=1)
+        patient = patient_factories.Patient.create(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient.create(
             patient=patient,
-            site=patient_factories.Site(acronym='RVH'),
+            site=patient_factories.Site.create(acronym='RVH'),
         )
 
         mock_export_pdf_report = mocker.patch(

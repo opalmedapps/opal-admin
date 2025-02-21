@@ -29,7 +29,7 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnair
 
 def test_get_user_sernum() -> None:
     """Test get_patient_sernum method."""
-    factories.LegacyUserFactory()
+    factories.LegacyUserFactory.create()
     user = models.LegacyUsers.objects.all()[0]
     sernum = legacy_utils.get_patient_sernum(user.username)
 
@@ -94,7 +94,7 @@ def test_create_dummy_patient() -> None:
 def test_update_patient() -> None:
     """An existing dummy patient is updated successfully."""
     # the date of birth for dummy patients is 0000-00-00 but it fails validation since it is an invalid date
-    legacy_patient = factories.LegacyPatientFactory(
+    legacy_patient = factories.LegacyPatientFactory.create(
         ramq='',
         date_of_birth=dt.datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
         sex=models.LegacySexType.UNKNOWN,
@@ -116,43 +116,52 @@ def test_update_patient() -> None:
 
 def test_insert_hospital_identifiers() -> None:
     """The patient's hospital identifiers are added for the legacy patient."""
-    rvh = hospital_factories.Site(acronym='RVH')
-    mgh = hospital_factories.Site(acronym='MGH')
-    mch = hospital_factories.Site(acronym='MCH')
+    rvh = hospital_factories.Site.create(acronym='RVH')
+    mgh = hospital_factories.Site.create(acronym='MGH')
+    mch = hospital_factories.Site.create(acronym='MCH')
 
-    patient = patient_factories.Patient()
-    patient_factories.HospitalPatient(patient=patient, mrn='9999995', site=rvh)
-    patient2 = patient_factories.Patient(ramq='SIMB08032999')
-    patient_factories.HospitalPatient(patient=patient2, mrn='1234567', site=rvh)
+    patient = patient_factories.Patient.create()
+    patient_factories.HospitalPatient.create(patient=patient, mrn='9999995', site=rvh)
+    patient2 = patient_factories.Patient.create(ramq='SIMB08032999')
+    patient_factories.HospitalPatient.create(patient=patient2, mrn='1234567', site=rvh)
 
-    legacy_patient = factories.LegacyPatientFactory(patientsernum=patient.legacy_id)
+    legacy_patient = factories.LegacyPatientFactory.create(patientsernum=patient.legacy_id)
 
-    factories.LegacyHospitalIdentifierTypeFactory(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory(code='MCH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
 
-    legacy_utils.insert_hospital_identifiers(legacy_patient, [
-        (rvh, '9999995', True),
-        (mgh, '7654321', True),
-        (mch, '1234567', False),
-    ])
+    legacy_utils.insert_hospital_identifiers(
+        legacy_patient,
+        [
+            (rvh, '9999995', True),
+            (mgh, '7654321', True),
+            (mch, '1234567', False),
+        ],
+    )
 
     assert models.LegacyPatientHospitalIdentifier.objects.count() == 3
     assert models.LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient).count() == 3
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
-        mrn='9999995', hospital__code='RVH', is_active=True,
+        mrn='9999995',
+        hospital__code='RVH',
+        is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
-        mrn='7654321', hospital__code='MGH', is_active=True,
+        mrn='7654321',
+        hospital__code='MGH',
+        is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
-        mrn='1234567', hospital__code='MCH', is_active=False,
+        mrn='1234567',
+        hospital__code='MCH',
+        is_active=False,
     ).exists()
 
 
 def test_create_patient_control() -> None:
     """The patient control is created for the legacy patient."""
-    legacy_patient = factories.LegacyPatientFactory(patientsernum=321)
+    legacy_patient = factories.LegacyPatientFactory.create(patientsernum=321)
 
     legacy_utils.create_patient_control(legacy_patient)
 
@@ -162,18 +171,18 @@ def test_create_patient_control() -> None:
 
 def test_initialize_new_patient() -> None:
     """A legacy patient is initialized from an existing patient."""
-    patient = patient_factories.Patient(ramq='SIMB04100199')
+    patient = patient_factories.Patient.create(ramq='SIMB04100199')
 
-    factories.LegacyHospitalIdentifierTypeFactory(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory(code='MCH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
+    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
 
     legacy_patient = legacy_utils.initialize_new_patient(
         patient,
         [
-            (hospital_factories.Site(acronym='RVH'), '9999995', True),
-            (hospital_factories.Site(acronym='MGH'), '7654321', True),
-            (hospital_factories.Site(acronym='MCH'), '1234567', False),
+            (hospital_factories.Site.create(acronym='RVH'), '9999995', True),
+            (hospital_factories.Site.create(acronym='MGH'), '7654321', True),
+            (hospital_factories.Site.create(acronym='MCH'), '1234567', False),
         ],
         self_caregiver=None,
     )
@@ -193,7 +202,7 @@ def test_initialize_new_patient() -> None:
 
 def test_initialize_new_patient_no_ramq() -> None:
     """A legacy patient is initialized from an existing patient that has no RAMQ."""
-    patient = patient_factories.Patient(ramq='')
+    patient = patient_factories.Patient.create(ramq='')
 
     legacy_patient = legacy_utils.initialize_new_patient(patient, [], None)
 
@@ -202,8 +211,8 @@ def test_initialize_new_patient_no_ramq() -> None:
 
 def test_initialize_new_patient_existing_caregiver() -> None:
     """A legacy patient is initialized from an existing patient that is their own caregiver."""
-    patient = patient_factories.Patient()
-    caregiver = caregiver_factories.CaregiverProfile()
+    patient = patient_factories.Patient.create()
+    caregiver = caregiver_factories.CaregiverProfile.create()
 
     legacy_patient = legacy_utils.initialize_new_patient(patient, [], caregiver)
 
@@ -224,7 +233,7 @@ def test_create_user() -> None:
 
 def test_update_legacy_user_type() -> None:
     """Ensure that a legacy user's type can be updated."""
-    legacy_user = factories.LegacyUserFactory(usertype=models.LegacyUserType.CAREGIVER)
+    legacy_user = factories.LegacyUserFactory.create(usertype=models.LegacyUserType.CAREGIVER)
     legacy_utils.update_legacy_user_type(legacy_user.usersernum, models.LegacyUserType.PATIENT)
     legacy_user.refresh_from_db()
 
@@ -243,7 +252,7 @@ def test_create_caregiver_user_patient() -> None:
         'SIMM86600599',
         models.LegacyAccessLevel.NEED_TO_KNOW,
     )
-    relationship = patient_factories.Relationship(
+    relationship = patient_factories.Relationship.create(
         patient__legacy_id=legacy_patient.patientsernum,
         type=RelationshipType.objects.self_type(),
     )
@@ -263,7 +272,7 @@ def test_create_caregiver_user_patient() -> None:
 
 def test_create_caregiver_user_caregiver() -> None:
     """The caregiver user is created for a non-patient."""
-    relationship = patient_factories.Relationship(
+    relationship = patient_factories.Relationship.create(
         patient__legacy_id=None,
         caregiver__user__first_name='John',
         caregiver__user__last_name='Wayne',
@@ -286,14 +295,14 @@ def test_create_caregiver_user_caregiver() -> None:
 
 def test_change_caregiver_user_to_patient() -> None:
     """The caregiver user is updated to a patient user."""
-    patient = patient_factories.Patient(ramq='SIMB04100199')
+    patient = patient_factories.Patient.create(ramq='SIMB04100199')
     legacy_patient = legacy_utils.create_dummy_patient(
         'Marge',
         'Simpson',
         'marge@opalmedapps.ca',
         models.LegacyLanguage.ENGLISH,
     )
-    legacy_user = factories.LegacyUserFactory(
+    legacy_user = factories.LegacyUserFactory.create(
         usertype=models.LegacyUserType.CAREGIVER,
         usertypesernum=legacy_patient.patientsernum,
     )
@@ -310,7 +319,9 @@ def test_change_caregiver_user_to_patient() -> None:
 
 
 def test_databank_consent_form_fixture(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
+    databank_consent_questionnaire_data: tuple[
+        questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl
+    ],
 ) -> None:
     """Test the fixture from conftest creates a proper consent questionnaire."""
     info_sheet = databank_consent_questionnaire_data[1]
@@ -324,18 +335,24 @@ def test_databank_consent_form_fixture(
 
 
 def test_fetch_databank_control_records(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
+    databank_consent_questionnaire_data: tuple[
+        questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl
+    ],
 ) -> None:
     """Test the fetching of key foreign key data used for consent form creation."""
     # Setup patient records
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
-    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
-    legacy_qdb_patient = questionnaire_factories.LegacyQuestionnairePatientFactory(external_id=django_patient.legacy_id)
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
+    factories.LegacyPatientFactory.create(patientsernum=django_patient.legacy_id)
+    legacy_qdb_patient = questionnaire_factories.LegacyQuestionnairePatientFactory.create(
+        external_id=django_patient.legacy_id
+    )
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
     result = legacy_utils.fetch_databank_control_records(django_patient)
     if result:
-        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = (
+            result
+        )
 
     assert all([
         result,
@@ -355,17 +372,21 @@ def test_fetch_databank_control_records(
 
 
 def test_fetch_databank_control_records_patient_creation(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
+    databank_consent_questionnaire_data: tuple[
+        questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl
+    ],
 ) -> None:
     """Test that the function will create a QDB_Patient record if one hasnt been created already."""
     # Setup patient records
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
-    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
+    factories.LegacyPatientFactory.create(patientsernum=django_patient.legacy_id)
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
     result = legacy_utils.fetch_databank_control_records(django_patient)
     if result:
-        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = (
+            result
+        )
 
     assert all([
         result,
@@ -386,8 +407,8 @@ def test_fetch_databank_control_records_patient_creation(
 
 def test_fetch_databank_control_records_not_found() -> None:
     """Test behaviour when one of the required controls isn't found."""
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
-    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
+    factories.LegacyPatientFactory.create(patientsernum=django_patient.legacy_id)
     result = legacy_utils.fetch_databank_control_records(django_patient)
 
     assert not result
@@ -396,24 +417,27 @@ def test_fetch_databank_control_records_not_found() -> None:
 def test_create_databank_patient_consent_data_records_not_found() -> None:
     """Test behaviour when control records are not found."""
     # Setup patient records
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
-    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
+    factories.LegacyPatientFactory.create(patientsernum=django_patient.legacy_id)
 
     assert not legacy_utils.create_databank_patient_consent_data(django_patient)
 
 
 def test_create_databank_patient_consent_data(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
+    databank_consent_questionnaire_data: tuple[
+        questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl
+    ],
 ) -> None:
     """Test creation of databank consent form and information sheet for patient."""
     # Setup patient records
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
-    legacy_patient = factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
+    legacy_patient = factories.LegacyPatientFactory.create(patientsernum=django_patient.legacy_id)
 
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
     response = legacy_utils.create_databank_patient_consent_data(django_patient)
 
+    assert django_patient.legacy_id is not None
     qdb_patient = questionnaire_models.LegacyQuestionnairePatient.objects.get(
         external_id=django_patient.legacy_id,
     )
@@ -449,11 +473,13 @@ def test_create_databank_patient_consent_data(
 
 
 def test_legacy_patient_not_found(
-    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],
+    databank_consent_questionnaire_data: tuple[
+        questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl
+    ],
 ) -> None:
     """Test behaviour when the legacy patient record is not found."""
     # Setup patient records
-    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    django_patient = patient_factories.Patient.create(ramq='SIMB04100199')
     assert not legacy_utils.create_databank_patient_consent_data(django_patient)
 
 
@@ -483,7 +509,8 @@ def test_get_questionnaire_data_db_error(mocker: MockerFixture) -> None:
     patient = patient_factories.Patient.create(legacy_id=123)
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=OperationalError('DB Error'),
+        'opal.legacy.utils._fetch_questionnaires_from_db',
+        side_effect=OperationalError('DB Error'),
     )
 
     with pytest.raises(legacy_utils.DataFetchError, match='DB Error'):
@@ -499,7 +526,8 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
     mock_query_result = [('',)]
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
+        'opal.legacy.utils._fetch_questionnaires_from_db',
+        return_value=mock_query_result,
     )
 
     with pytest.raises(legacy_utils.DataFetchError, match='Expected parsed data'):
@@ -571,7 +599,8 @@ def test_process_questionnaire_data() -> None:
                     'section_id': 1,
                     'values': [
                         [
-                            '2024-02-23 12:00:00.000000', '3',
+                            '2024-02-23 12:00:00.000000',
+                            '3',
                         ],
                     ],
                 },
@@ -611,17 +640,18 @@ def test_process_questionnaire_data_invalid_date_format() -> None:
             'questionnaire_id': 1,
             'questionnaire_nickname': 'Test Questionnaire',
             'last_updated': 'invalid-date',
-            'questions': [{
-                'question_text': 'Sample question',
-                'question_label': 'Sample label',
-                'question_type_id': 1,
-                'position': 1,
-                'min_value': None,
-                'max_value': None,
-                'polarity': None,
-                'section_id': 1,
-                'values': [],
-            },
+            'questions': [
+                {
+                    'question_text': 'Sample question',
+                    'question_label': 'Sample label',
+                    'question_type_id': 1,
+                    'position': 1,
+                    'min_value': None,
+                    'max_value': None,
+                    'polarity': None,
+                    'section_id': 1,
+                    'values': [],
+                },
             ],
         },
     ]
@@ -644,7 +674,8 @@ def test_process_questions_valid() -> None:
             'section_id': 1,
             'values': [
                 [
-                    '2024-02-23 12:00:00', '3',
+                    '2024-02-23 12:00:00',
+                    '3',
                 ],
             ],
         },
@@ -697,7 +728,8 @@ def test_invalid_question_date_format() -> None:
             'section_id': 1,
             'values': [
                 [
-                    '2024-23-02 12:00:00', '3',  # Should be '2024-02-23-...'
+                    '2024-23-02 12:00:00',
+                    '3',  # Should be '2024-02-23-...'
                 ],
             ],
         },
@@ -720,7 +752,8 @@ def questionnaire_data_mock() -> list[QuestionnaireData]:
         section_id=1,
         answers=[
             (
-                dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()), '3',
+                dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()),
+                '3',
             ),
         ],
     )
@@ -737,8 +770,8 @@ def questionnaire_data_mock() -> list[QuestionnaireData]:
 # Test for generating the report
 def test_generate_questionnaire_report(mocker: MockerFixture) -> None:
     """Test for generating the questionnaire report with the appropriate data."""
-    patient = patient_factories.Patient()
-    patient_factories.HospitalPatient(patient=patient)
+    patient = patient_factories.Patient.create()
+    patient_factories.HospitalPatient.create(patient=patient)
     institution = Institution.objects.get()
 
     mock_generate_pdf = mocker.patch('opal.services.reports.questionnaire.generate_pdf', autospec=True)
@@ -776,9 +809,12 @@ def test_generate_questionnaire_report(mocker: MockerFixture) -> None:
     assert question.question_type_id == QuestionType.NUMERIC
     assert question.min_value == 0
     assert question.max_value == 10
-    assert question.answers == [(
-        dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()), '3',
-    )]
+    assert question.answers == [
+        (
+            dt.datetime(2024, 11, 25, 10, 0, 0, tzinfo=timezone.get_current_timezone()),
+            '3',
+        )
+    ]
 
     # Verify pdf generation
     assert isinstance(result, bytearray), 'Output'

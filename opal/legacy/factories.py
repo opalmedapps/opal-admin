@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing model factories for Legacy database models."""
+
 import datetime as dt
 import json
 
@@ -14,7 +15,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-class LegacyUserFactory(DjangoModelFactory):
+class LegacyUserFactory(DjangoModelFactory[models.LegacyUsers]):
     """Model factory for Legacy user."""
 
     class Meta:
@@ -26,7 +27,7 @@ class LegacyUserFactory(DjangoModelFactory):
     usertype = models.LegacyUserType.PATIENT
 
 
-class LegacyPatientFactory(DjangoModelFactory):
+class LegacyPatientFactory(DjangoModelFactory[models.LegacyPatient]):
     """Model factory for Legacy Patient."""
 
     class Meta:
@@ -49,7 +50,7 @@ class LegacyPatientFactory(DjangoModelFactory):
     patient_aria_ser = Sequence(lambda number: number + 1)
 
 
-class LegacyPatientControlFactory(DjangoModelFactory):
+class LegacyPatientControlFactory(DjangoModelFactory[models.LegacyPatientControl]):
     """Model factory for Legacy PatientControl."""
 
     class Meta:
@@ -63,7 +64,7 @@ class LegacyPatientControlFactory(DjangoModelFactory):
     transferflag = 0
 
 
-class LegacyNotificationFactory(DjangoModelFactory):
+class LegacyNotificationFactory(DjangoModelFactory[models.LegacyNotification]):
     """Model factory for Legacy notifications."""
 
     class Meta:
@@ -74,7 +75,7 @@ class LegacyNotificationFactory(DjangoModelFactory):
     patientsernum = SubFactory(LegacyPatientFactory)
 
 
-class LegacyHospitalMapFactory(DjangoModelFactory):
+class LegacyHospitalMapFactory(DjangoModelFactory[models.LegacyHospitalMap]):
     """HospitalMap factory from the legacy database OpalDB."""
 
     class Meta:
@@ -85,7 +86,7 @@ class LegacyHospitalMapFactory(DjangoModelFactory):
     dateadded = dt.datetime(2023, 3, 15, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory):
+class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory[models.LegacyEducationalMaterialCategory]):
     """Educational material category from the legacy database."""
 
     class Meta:
@@ -94,7 +95,7 @@ class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory):
     title_en = 'Clinical'
 
 
-class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
+class LegacyEducationalMaterialControlFactory(DjangoModelFactory[models.LegacyEducationalMaterialControl]):
     """Educational material control factory from the legacy database."""
 
     class Meta:
@@ -109,7 +110,7 @@ class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
     date_added = dt.datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyAliasFactory(DjangoModelFactory):
+class LegacyAliasFactory(DjangoModelFactory[models.LegacyAlias]):
     """Alias factory from the legacy database."""
 
     class Meta:
@@ -124,7 +125,7 @@ class LegacyAliasFactory(DjangoModelFactory):
     hospitalmapsernum = SubFactory(LegacyHospitalMapFactory)
 
 
-class LegacyMasterSourceAliasFactory(DjangoModelFactory):
+class LegacyMasterSourceAliasFactory(DjangoModelFactory[models.LegacyMasterSourceAlias]):
     """SourceDatabase factory from the legacy database OpalDB."""
 
     class Meta:
@@ -135,7 +136,7 @@ class LegacyMasterSourceAliasFactory(DjangoModelFactory):
     description = Faker('pystr', max_chars=128)
 
 
-class LegacySourceDatabaseFactory(DjangoModelFactory):
+class LegacySourceDatabaseFactory(DjangoModelFactory[models.LegacySourceDatabase]):
     """SourceDatabase factory from the legacy database OpalDB."""
 
     class Meta:
@@ -145,7 +146,7 @@ class LegacySourceDatabaseFactory(DjangoModelFactory):
     enabled = True
 
 
-class LegacyAliasExpressionFactory(DjangoModelFactory):
+class LegacyAliasExpressionFactory(DjangoModelFactory[models.LegacyAliasExpression]):
     """Legacy expression from legacy database."""
 
     class Meta:
@@ -158,7 +159,7 @@ class LegacyAliasExpressionFactory(DjangoModelFactory):
     expression_name = Faker('sentence', nb_words=5)
 
 
-class LegacyAppointmentFactory(DjangoModelFactory):
+class LegacyAppointmentFactory(DjangoModelFactory[models.LegacyAppointment]):
     """Model factory for Legacy notifications."""
 
     class Meta:
@@ -181,7 +182,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     source_database = SubFactory(LegacySourceDatabaseFactory)
 
 
-class LegacyDocumentFactory(DjangoModelFactory):
+class LegacyDocumentFactory(DjangoModelFactory[models.LegacyDocument]):
     """Document factory from the legacy database."""
 
     class Meta:
@@ -210,7 +211,7 @@ class LegacyDocumentFactory(DjangoModelFactory):
     readstatus = 0
 
 
-class LegacyTxTeamMessageFactory(DjangoModelFactory):
+class LegacyTxTeamMessageFactory(DjangoModelFactory[models.LegacyTxTeamMessage]):
     """Txteammessage factory from the legacy database."""
 
     class Meta:
@@ -221,7 +222,7 @@ class LegacyTxTeamMessageFactory(DjangoModelFactory):
     readstatus = 0
 
 
-class LegacyEducationalMaterialFactory(DjangoModelFactory):
+class LegacyEducationalMaterialFactory(DjangoModelFactory[models.LegacyEducationalMaterial]):
     """Educational material factory from the legacy database."""
 
     class Meta:
@@ -234,7 +235,7 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
     date_added = dt.datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyQuestionnaireControlFactory(DjangoModelFactory):
+class LegacyQuestionnaireControlFactory(DjangoModelFactory[models.LegacyQuestionnaireControl]):
     """QuestionnaireControl factory from the legacy database."""
 
     class Meta:
@@ -247,7 +248,7 @@ class LegacyQuestionnaireControlFactory(DjangoModelFactory):
     date_added = dt.datetime(2023, 6, 9, 16, 38, 26, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyQuestionnaireFactory(DjangoModelFactory):
+class LegacyQuestionnaireFactory(DjangoModelFactory[models.LegacyQuestionnaire]):
     """Questionnaire factory from the legacy database."""
 
     class Meta:
@@ -260,7 +261,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     date_added = dt.datetime(2023, 6, 9, 16, 38, 26, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyPostcontrolFactory(DjangoModelFactory):
+class LegacyPostcontrolFactory(DjangoModelFactory[models.LegacyPostcontrol]):
     """Post Controle factory for announcement from the legacy database."""
 
     posttype = 'Announcement'
@@ -269,7 +270,7 @@ class LegacyPostcontrolFactory(DjangoModelFactory):
         model = models.LegacyPostcontrol
 
 
-class LegacyAnnouncementFactory(DjangoModelFactory):
+class LegacyAnnouncementFactory(DjangoModelFactory[models.LegacyAnnouncement]):
     """Announcement factory from the legacy database."""
 
     class Meta:
@@ -281,7 +282,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
     readby = '[]'
 
 
-class LegacySecurityQuestionFactory(DjangoModelFactory):
+class LegacySecurityQuestionFactory(DjangoModelFactory[models.LegacySecurityQuestion]):
     """SecurityQuestion factory from the legacy database."""
 
     class Meta:
@@ -295,7 +296,7 @@ class LegacySecurityQuestionFactory(DjangoModelFactory):
     active = 1
 
 
-class LegacySecurityAnswerFactory(DjangoModelFactory):
+class LegacySecurityAnswerFactory(DjangoModelFactory[models.LegacySecurityAnswer]):
     """SecurityAnswer factory from the legacy database."""
 
     class Meta:
@@ -309,7 +310,7 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
     lastupdated = dt.datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
+class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory[models.LegacyHospitalIdentifierType]):
     """Hospital_Identifier_Type factory from the legacy database OpalDB."""
 
     class Meta:
@@ -318,7 +319,7 @@ class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
     code = 'RVH'
 
 
-class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
+class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory[models.LegacyPatientHospitalIdentifier]):
     """Patient_Hospital_Identifier factory from the legacy database OpalDB."""
 
     class Meta:
@@ -330,7 +331,7 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     is_active = True
 
 
-class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
+class LegacyDiagnosisTranslationFactory(DjangoModelFactory[models.LegacyDiagnosisTranslation]):
     """DiagnosisTranslation factory from the legacy database OpalDB."""
 
     class Meta:
@@ -341,7 +342,7 @@ class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
     diagnosis_translation_ser_num = Sequence(lambda number: number + 1)
 
 
-class LegacyDiagnosisCodeFactory(DjangoModelFactory):
+class LegacyDiagnosisCodeFactory(DjangoModelFactory[models.LegacyDiagnosisCode]):
     """Diagnosis factory from the legacy database OpalDB."""
 
     class Meta:
@@ -352,7 +353,7 @@ class LegacyDiagnosisCodeFactory(DjangoModelFactory):
     diagnosis_translation_ser_num = SubFactory(LegacyDiagnosisTranslationFactory)
 
 
-class LegacyDiagnosisFactory(DjangoModelFactory):
+class LegacyDiagnosisFactory(DjangoModelFactory[models.LegacyDiagnosis]):
     """Diagnosis factory from the legacy database OpalDB."""
 
     class Meta:
@@ -369,7 +370,7 @@ class LegacyDiagnosisFactory(DjangoModelFactory):
     creation_date = dt.datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyTestResultControlFactory(DjangoModelFactory):
+class LegacyTestResultControlFactory(DjangoModelFactory[models.LegacyTestResultControl]):
     """TestResultControl factory from the legacy database OpalDB."""
 
     class Meta:
@@ -391,7 +392,7 @@ class LegacyTestResultControlFactory(DjangoModelFactory):
     url_fr = Faker('url')
 
 
-class LegacyTestResultFactory(DjangoModelFactory):
+class LegacyTestResultFactory(DjangoModelFactory[models.LegacyTestResult]):
     """TestResultControl factory from the legacy database OpalDB."""
 
     class Meta:
@@ -418,7 +419,7 @@ class LegacyTestResultFactory(DjangoModelFactory):
     read_status = Faker('random_int', min=0, max=1)
 
 
-class LegacyTestControlFactory(DjangoModelFactory):
+class LegacyTestControlFactory(DjangoModelFactory[models.LegacyTestControl]):
     """LegacyTestControl factory."""
 
     class Meta:
@@ -437,7 +438,7 @@ class LegacyTestControlFactory(DjangoModelFactory):
     url_fr = Faker('url')
 
 
-class LegacyTestExpressionFactory(DjangoModelFactory):
+class LegacyTestExpressionFactory(DjangoModelFactory[models.LegacyTestExpression]):
     """LegacyTestExpression factory."""
 
     class Meta:
@@ -449,7 +450,7 @@ class LegacyTestExpressionFactory(DjangoModelFactory):
     expression_name = Faker('word')
 
 
-class LegacyTestGroupExpressionFactory(DjangoModelFactory):
+class LegacyTestGroupExpressionFactory(DjangoModelFactory[models.LegacyTestGroupExpression]):
     """LegacyTestGroupExpression factory."""
 
     class Meta:
@@ -460,7 +461,7 @@ class LegacyTestGroupExpressionFactory(DjangoModelFactory):
     expression_name = Faker('word')
 
 
-class LegacyPatientTestResultFactory(DjangoModelFactory):
+class LegacyPatientTestResultFactory(DjangoModelFactory[models.LegacyPatientTestResult]):
     """LegacyPatientTestResult factory."""
 
     class Meta:
@@ -474,8 +475,7 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     normal_range_min = Faker('random_int')
     normal_range_max = Faker('random_int')
     normal_range = lazy_attribute(
-        lambda legacypatienttestresult:
-        str(legacypatienttestresult.normal_range_min)
+        lambda legacypatienttestresult: str(legacypatienttestresult.normal_range_min)
         + '-'
         + str(legacypatienttestresult.normal_range_max),
     )
@@ -488,7 +488,7 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     available_at = lazy_attribute(lambda _x: timezone.now())
 
 
-class LegacyOARoleFactory(DjangoModelFactory):
+class LegacyOARoleFactory(DjangoModelFactory[models.LegacyOARole]):
     """LegacyOARole factory."""
 
     class Meta:
@@ -502,7 +502,7 @@ class LegacyOARoleFactory(DjangoModelFactory):
     updated_by = Faker('name')
 
 
-class LegacyOAUserFactory(DjangoModelFactory):
+class LegacyOAUserFactory(DjangoModelFactory[models.LegacyOAUser]):
     """LegacyOAUser factory."""
 
     class Meta:
@@ -514,7 +514,7 @@ class LegacyOAUserFactory(DjangoModelFactory):
     date_added = dt.datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyOAUserRoleFactory(DjangoModelFactory):
+class LegacyOAUserRoleFactory(DjangoModelFactory[models.LegacyOAUserRole]):
     """LegacyOAUserRole factory."""
 
     class Meta:
@@ -524,7 +524,7 @@ class LegacyOAUserRoleFactory(DjangoModelFactory):
     rolesernum = Faker('random_int')
 
 
-class LegacyModuleFactory(DjangoModelFactory):
+class LegacyModuleFactory(DjangoModelFactory[models.LegacyModule]):
     """LegacyModule factory."""
 
     class Meta:
@@ -548,7 +548,7 @@ class LegacyModuleFactory(DjangoModelFactory):
     sqlpublicationunique = Faker('paragraph')
 
 
-class LegacyOARoleModuleFactory(DjangoModelFactory):
+class LegacyOARoleModuleFactory(DjangoModelFactory[models.LegacyOARoleModule]):
     """LegacyOARoleModule factory."""
 
     class Meta:
@@ -558,7 +558,7 @@ class LegacyOARoleModuleFactory(DjangoModelFactory):
     oa_role = SubFactory(LegacyOARoleFactory)
 
 
-class LegacyPatientActivityLogFactory(DjangoModelFactory):
+class LegacyPatientActivityLogFactory(DjangoModelFactory[models.LegacyPatientActivityLog]):
     """LegacyPatientActivityLog factory."""
 
     class Meta:
@@ -605,7 +605,7 @@ class LegacyPatientActivityLogFactory(DjangoModelFactory):
     app_version = '100.100.100'
 
 
-class LegacyPatientDeviceIdentifierFactory(DjangoModelFactory):
+class LegacyPatientDeviceIdentifierFactory(DjangoModelFactory[models.LegacyPatientDeviceIdentifier]):
     """LegacyPatientDeviceIdentifier factory."""
 
     class Meta:

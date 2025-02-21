@@ -23,14 +23,20 @@ QUANTITY_SAMPLE_DATA = {
 
 def test_fetch_blood_pressure_measurements_empty_list() -> None:
     """Ensure fetch_blood_pressure_measurements returns empty list with no errors."""
-    patient = patient_factories.Patient()
+    patient = patient_factories.Patient.create()
     data = QUANTITY_SAMPLE_DATA.copy()
     QuantitySample.objects.bulk_create([
         QuantitySample(
-            **data, patient=patient, type=QuantitySampleType.BODY_MASS, value=60.75,
+            **data,
+            patient=patient,
+            type=QuantitySampleType.BODY_MASS,
+            value=60.75,
         ),
         QuantitySample(
-            **data, patient=patient, type=QuantitySampleType.BODY_TEMPERATURE, value=36.6,
+            **data,
+            patient=patient,
+            type=QuantitySampleType.BODY_TEMPERATURE,
+            value=36.6,
         ),
     ])
     measurements = QuantitySample.objects.fetch_blood_pressure_measurements(patient)
@@ -39,7 +45,7 @@ def test_fetch_blood_pressure_measurements_empty_list() -> None:
 
 def test_fetch_blood_pressure_measurements_columns_exist() -> None:
     """Ensure fetch_blood_pressure_measurements returns systolic, diastolic, device, and measured_at columns."""
-    patient = patient_factories.Patient()
+    patient = patient_factories.Patient.create()
     data = QUANTITY_SAMPLE_DATA.copy()
     QuantitySample.objects.bulk_create([
         QuantitySample(
@@ -67,11 +73,11 @@ def test_fetch_blood_pressure_measurements_success() -> None:
     """Ensure fetch_blood_pressure_measurements all the patient's blood pressure records."""
     start_date = timezone.now()
 
-    first_patient = patient_factories.Patient(
+    first_patient = patient_factories.Patient.create(
         legacy_id=1,
         ramq='SIMM86600111',
     )
-    second_patient = patient_factories.Patient(
+    second_patient = patient_factories.Patient.create(
         legacy_id=2,
         ramq='SIMM86600222',
     )

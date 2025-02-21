@@ -92,7 +92,7 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     previous_day = timezone.now() - dt.timedelta(days=1)
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = previous_day
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='lisa_self1',
         relationship=relationships['lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
@@ -125,40 +125,40 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
     current_datetime = timezone.localtime()
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = current_datetime
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_code',
         relationship=relationships['marge_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = current_datetime - dt.timedelta(days=1)
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_homer',
         relationship=relationships['marge_homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_self',
         relationship=relationships['homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.BLOCKED,
     )
     mock_timezone.return_value = current_datetime - dt.timedelta(days=4)
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_bart',
         relationship=relationships['marge_bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='bart_self',
         relationship=relationships['bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = current_datetime - dt.timedelta(days=6)
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_lisa',
         relationship=relationships['homer_lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='lisa_self',
         relationship=relationships['lisa_pending_relationship'],
         status=caregiver_models.RegistrationCodeStatus.NEW,
@@ -204,43 +204,43 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
 
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = dt.datetime(2024, 6, 20, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_code',
         relationship=relationships['marge_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2024, 5, 15, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_homer',
         relationship=relationships['marge_homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2024, 5, 10, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_self',
         relationship=relationships['homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.BLOCKED,
     )
     mock_timezone.return_value = dt.datetime(2024, 4, 10, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_bart',
         relationship=relationships['marge_bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2024, 4, 5, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='bart_self',
         relationship=relationships['bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2024, 3, 4, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_lisa',
         relationship=relationships['homer_lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='lisa_self',
         relationship=relationships['lisa_pending_relationship'],
         status=caregiver_models.RegistrationCodeStatus.NEW,
@@ -286,43 +286,43 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
 
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = dt.datetime(2024, 6, 20, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_code',
         relationship=relationships['marge_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2023, 5, 15, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_homer',
         relationship=relationships['marge_homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2023, 4, 10, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_self',
         relationship=relationships['homer_relationship'],
         status=caregiver_models.RegistrationCodeStatus.BLOCKED,
     )
     mock_timezone.return_value = dt.datetime(2022, 4, 10, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='marge_bart',
         relationship=relationships['marge_bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2022, 3, 5, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='bart_self',
         relationship=relationships['bart_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2021, 2, 4, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='homer_lisa',
         relationship=relationships['homer_lisa_relationship'],
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
     mock_timezone.return_value = dt.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone())
-    caregiver_factories.RegistrationCode(
+    caregiver_factories.RegistrationCode.create(
         code='lisa_self',
         relationship=relationships['lisa_pending_relationship'],
         status=caregiver_models.RegistrationCodeStatus.NEW,
@@ -380,17 +380,21 @@ def test_empty_fetch_caregivers_summary() -> None:
 
 def test_fetch_caregivers_summary() -> None:
     """Ensure fetch_caregivers_summary() query successfully returns caregivers statistics."""
-    caregiver_factories.Caregiver(username='marge', language='fr', last_login=timezone.now())
-    caregiver_factories.Caregiver(username='homer', language='fr', last_login=timezone.now())
-    caregiver_factories.Caregiver(username='bart')
-    caregiver_factories.Caregiver(username='lisa', is_active=False)
-    caregiver_factories.Caregiver(username='mona', language='fr', is_active=False)
-    caregiver_factories.Caregiver(username='fred', is_active=False)
-    caregiver_factories.Caregiver(
-        username='pebbles', language='fr', date_joined=timezone.now() - dt.timedelta(days=1),
+    caregiver_factories.Caregiver.create(username='marge', language='fr', last_login=timezone.now())
+    caregiver_factories.Caregiver.create(username='homer', language='fr', last_login=timezone.now())
+    caregiver_factories.Caregiver.create(username='bart')
+    caregiver_factories.Caregiver.create(username='lisa', is_active=False)
+    caregiver_factories.Caregiver.create(username='mona', language='fr', is_active=False)
+    caregiver_factories.Caregiver.create(username='fred', is_active=False)
+    caregiver_factories.Caregiver.create(
+        username='pebbles',
+        language='fr',
+        date_joined=timezone.now() - dt.timedelta(days=1),
     )
-    caregiver_factories.Caregiver(
-        username='flinstone', language='fr', date_joined=timezone.now() - dt.timedelta(days=1),
+    caregiver_factories.Caregiver.create(
+        username='flinstone',
+        language='fr',
+        date_joined=timezone.now() - dt.timedelta(days=1),
     )
     caregivers_summary = stats_queries.fetch_caregivers_summary(
         start_date=timezone.now().today(),
@@ -426,28 +430,43 @@ def test_empty_fetch_patients_summary() -> None:
 
 def test_fetch_patients_summary() -> None:
     """Ensure fetch_patients_summary() query successfully returns patients statistics."""
-    patient_factories.Patient(
-        legacy_id=51, ramq='TEST01161974', sex=patient_models.Patient.SexType.FEMALE,
+    patient_factories.Patient.create(
+        legacy_id=51,
+        ramq='TEST01161974',
+        sex=patient_models.Patient.SexType.FEMALE,
     )
-    patient_factories.Patient(
-        legacy_id=52, ramq='TEST01161975', sex=patient_models.Patient.SexType.OTHER,
+    patient_factories.Patient.create(
+        legacy_id=52,
+        ramq='TEST01161975',
+        sex=patient_models.Patient.SexType.OTHER,
     )
-    patient_factories.Patient(
-        legacy_id=53, ramq='TEST01161976', sex=patient_models.Patient.SexType.UNKNOWN,
+    patient_factories.Patient.create(
+        legacy_id=53,
+        ramq='TEST01161976',
+        sex=patient_models.Patient.SexType.UNKNOWN,
     )
-    patient_factories.Patient(
-        legacy_id=54, ramq='TEST01161977', data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+    patient_factories.Patient.create(
+        legacy_id=54,
+        ramq='TEST01161977',
+        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
     )
-    patient_factories.Patient(
-        legacy_id=55, ramq='TEST01161978', data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+    patient_factories.Patient.create(
+        legacy_id=55,
+        ramq='TEST01161978',
+        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
     )
-    patient_factories.Patient(
-        legacy_id=56, ramq='TEST01161979', sex=patient_models.Patient.SexType.FEMALE, date_of_death=timezone.now(),
+    patient_factories.Patient.create(
+        legacy_id=56,
+        ramq='TEST01161979',
+        sex=patient_models.Patient.SexType.FEMALE,
+        date_of_death=timezone.now(),
     )
-    patient_factories.Patient(
-        legacy_id=57, ramq='TEST01161980', date_of_death=timezone.now(),
+    patient_factories.Patient.create(
+        legacy_id=57,
+        ramq='TEST01161980',
+        date_of_death=timezone.now(),
     )
-    patient_factories.Patient(
+    patient_factories.Patient.create(
         legacy_id=58,
         ramq='TEST01161981',
         sex=patient_models.Patient.SexType.FEMALE,
@@ -487,19 +506,19 @@ def test_empty_fetch_devices_summary() -> None:
 @pytest.mark.django_db(databases=['legacy'])
 def test_fetch_devices_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_devices_summary() query successfully returns device statistics."""
-    legacy_factories.LegacyPatientDeviceIdentifierFactory()
-    legacy_factories.LegacyPatientDeviceIdentifierFactory()
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(device_type=3)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(device_type=3)
 
     # Previous day records
     previous_day = timezone.now() - dt.timedelta(days=1)
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = previous_day
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(last_updated=previous_day)
-    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1, last_updated=previous_day)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(last_updated=previous_day)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory.create(device_type=1, last_updated=previous_day)
     devices_summary = stats_queries.fetch_devices_summary(
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
@@ -531,28 +550,28 @@ def test_patients_received_data_no_appointment_labs_note() -> None:
     """Ensure received_clinical_data_summary query successfully returns no_appointments_labs_notes statistic."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
@@ -562,25 +581,25 @@ def test_patients_received_data_no_appointment_labs_note() -> None:
 
     # previous day received records should not be included to the no_appointments_labs_notes count
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
@@ -606,26 +625,26 @@ def test_patients_received_data_has_appointments_only() -> None:
     """Ensure received_clinical_data_summary() query successfully returns has_appointments_only statistic."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
@@ -634,22 +653,22 @@ def test_patients_received_data_has_appointments_only() -> None:
 
     # previous day received records should not be included to the has_appointments_only count
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
@@ -674,26 +693,26 @@ def test_patients_received_data_has_labs_only() -> None:
     """Ensure received_clinical_data_summary() query successfully returns has_labs_only statistic."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
@@ -702,22 +721,22 @@ def test_patients_received_data_has_labs_only() -> None:
 
     # previous day received records should not be included to the has_labs_only count
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
@@ -742,26 +761,26 @@ def test_patients_received_data_has_clinical_notes_only() -> None:
     """Ensure received_clinical_data_summary() query successfully returns has_clinical_notes_only statistic."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
@@ -770,22 +789,22 @@ def test_patients_received_data_has_clinical_notes_only() -> None:
 
     # previous day received records should not be included to the has_clinical_notes_only count
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
@@ -810,47 +829,47 @@ def test_patients_received_data_using_app_after_receiving_new_data() -> None:
     """Ensure received_clinical_data_summary() successfully returns using_app_after_receiving_new_data count."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
         action_date=timezone.now().date(),
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
         action_date=timezone.now().date(),
     )
 
     # previous day received records should not be included to the using_app_after_receiving_new_data count
 
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['marge_relationship'].patient,
         last_document_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['homer_relationship'].patient,
         last_appointment_received=None,
         last_lab_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['bart_relationship'].patient,
         last_appointment_received=None,
         last_document_received=None,
     )
-    stats_factories.DailyPatientDataReceived(
+    stats_factories.DailyPatientDataReceived.create(
         patient=relationships['lisa_relationship'].patient,
     )
 
@@ -880,31 +899,31 @@ def test_empty_logins_summary() -> None:
 
 def test_fetch_logins_summary_by_date() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by date."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
     current_date = timezone.now().date()
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         action_date=current_date,
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=3,
         action_date=current_date,
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=5,
         action_date=current_date,
@@ -932,45 +951,45 @@ def test_fetch_logins_summary_by_date() -> None:
 
 def test_fetch_logins_summary_by_month() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by month."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=5,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         action_date=dt.date(2024, 3, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=9,
         action_date=dt.date(2024, 3, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=9,
         action_date=dt.date(2024, 3, 2),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=5,
         action_date=dt.date(2024, 3, 1),
@@ -1007,45 +1026,45 @@ def test_fetch_logins_summary_by_month() -> None:
 
 def test_fetch_logins_summary_by_year() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by year."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         action_date=dt.date(2024, 4, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=5,
         action_date=dt.date(2023, 8, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=6,
         action_date=dt.date(2023, 7, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         action_date=dt.date(2023, 6, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=3,
         action_date=dt.date(2023, 5, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         action_date=dt.date(2022, 4, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=8,
         action_date=dt.date(2022, 3, 3),
@@ -1091,11 +1110,11 @@ def test_empty_users_clicks_summary() -> None:
 
 def test_users_clicks_summary_by_date() -> None:
     """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by date."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
     current_date = timezone.now().date()
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         count_feedback=4,
@@ -1103,7 +1122,7 @@ def test_users_clicks_summary_by_date() -> None:
         count_update_passwords=6,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1111,7 +1130,7 @@ def test_users_clicks_summary_by_date() -> None:
         count_update_passwords=8,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         count_feedback=11,
@@ -1119,7 +1138,7 @@ def test_users_clicks_summary_by_date() -> None:
         count_update_passwords=13,
         action_date=current_date,
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=3,
         count_feedback=4,
@@ -1127,7 +1146,7 @@ def test_users_clicks_summary_by_date() -> None:
         count_update_passwords=6,
         action_date=current_date,
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1160,10 +1179,10 @@ def test_users_clicks_summary_by_date() -> None:
 
 def test_users_clicks_summary_by_month() -> None:
     """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by month."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         count_feedback=4,
@@ -1171,7 +1190,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=6,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1179,7 +1198,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=8,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1187,7 +1206,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=8,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=6,
         count_feedback=7,
@@ -1195,7 +1214,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=9,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         count_feedback=2,
@@ -1203,7 +1222,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=4,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         count_feedback=11,
@@ -1211,7 +1230,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=13,
         action_date=dt.date(2024, 3, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=9,
         count_feedback=10,
@@ -1219,7 +1238,7 @@ def test_users_clicks_summary_by_month() -> None:
         count_update_passwords=12,
         action_date=dt.date(2024, 3, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1262,10 +1281,10 @@ def test_users_clicks_summary_by_month() -> None:
 
 def test_users_clicks_summary_by_year() -> None:
     """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by year."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=3,
         count_feedback=4,
@@ -1273,7 +1292,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=6,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1281,7 +1300,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=8,
         action_date=dt.date(2024, 4, 5),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1289,7 +1308,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=8,
         action_date=dt.date(2023, 8, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=6,
         count_feedback=7,
@@ -1297,7 +1316,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=9,
         action_date=dt.date(2023, 7, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         count_feedback=2,
@@ -1305,7 +1324,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=4,
         action_date=dt.date(2023, 6, 4),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         count_feedback=11,
@@ -1313,7 +1332,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=13,
         action_date=dt.date(2022, 4, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         count_logins=9,
         count_feedback=10,
@@ -1321,7 +1340,7 @@ def test_users_clicks_summary_by_year() -> None:
         count_update_passwords=12,
         action_date=dt.date(2022, 3, 3),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         count_logins=5,
         count_feedback=6,
@@ -1367,7 +1386,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
     relationships = _create_relationship_records()
     current_date = timezone.now().date()
 
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1378,7 +1397,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=7,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1389,7 +1408,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=14,
         action_date=current_date - dt.timedelta(days=2),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['bart_relationship'],
         action_by_user=relationships['bart_relationship'].caregiver.user,
         patient=relationships['bart_relationship'].patient,
@@ -1400,7 +1419,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=9,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1411,7 +1430,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=11,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1422,7 +1441,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1433,7 +1452,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=7,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1444,7 +1463,7 @@ def test_user_patient_clicks_summary_by_date() -> None:
         count_labs=5,
         action_date=current_date,
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1493,7 +1512,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
     """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by month."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1504,7 +1523,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=7,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1515,7 +1534,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=14,
         action_date=dt.date(2024, 5, 4),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['bart_relationship'],
         action_by_user=relationships['bart_relationship'].caregiver.user,
         patient=relationships['bart_relationship'].patient,
@@ -1526,7 +1545,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=9,
         action_date=dt.date(2024, 4, 4),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1537,7 +1556,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=11,
         action_date=dt.date(2024, 4, 3),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1548,7 +1567,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=5,
         action_date=dt.date(2024, 4, 2),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1559,7 +1578,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=7,
         action_date=dt.date(2024, 4, 1),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1570,7 +1589,7 @@ def test_user_patient_clicks_summary_by_month() -> None:
         count_labs=5,
         action_date=dt.date(2024, 3, 3),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1621,7 +1640,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
     """Ensure fetch_user_patient_clicks_summary() successfully aggregates user/patient clicks grouped by year."""
     relationships = _create_relationship_records()
 
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1632,7 +1651,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=7,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1643,7 +1662,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=14,
         action_date=dt.date(2024, 4, 5),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['bart_relationship'],
         action_by_user=relationships['bart_relationship'].caregiver.user,
         patient=relationships['bart_relationship'].patient,
@@ -1654,7 +1673,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=9,
         action_date=dt.date(2023, 5, 5),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1665,7 +1684,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=11,
         action_date=dt.date(2023, 4, 4),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1676,7 +1695,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=5,
         action_date=dt.date(2023, 3, 3),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['homer_relationship'],
         action_by_user=relationships['homer_relationship'].caregiver.user,
         patient=relationships['homer_relationship'].patient,
@@ -1687,7 +1706,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=7,
         action_date=dt.date(2023, 2, 2),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['marge_relationship'],
         action_by_user=relationships['marge_relationship'].caregiver.user,
         patient=relationships['marge_relationship'].patient,
@@ -1698,7 +1717,7 @@ def test_user_patient_clicks_summary_by_year() -> None:
         count_labs=5,
         action_date=dt.date(2022, 3, 3),
     )
-    stats_factories.DailyUserPatientActivity(
+    stats_factories.DailyUserPatientActivity.create(
         user_relationship_to_patient=relationships['lisa_relationship'],
         action_by_user=relationships['lisa_relationship'].caregiver.user,
         patient=relationships['lisa_relationship'].patient,
@@ -1758,33 +1777,33 @@ def test_received_labs_summary_by_day() -> None:
     """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by day."""
     current_date = timezone.now().date()
 
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=5,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         labs_received=10,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         labs_received=15,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         labs_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         labs_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=15,
         action_date=current_date - dt.timedelta(days=2),
     )
@@ -1818,33 +1837,33 @@ def test_received_labs_summary_by_day() -> None:
 
 def test_received_labs_summary_by_month() -> None:
     """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by month."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         labs_received=10,
         action_date=dt.date(2024, 6, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         labs_received=15,
         action_date=dt.date(2024, 6, 1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         labs_received=5,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         labs_received=5,
         action_date=dt.date(2024, 5, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=15,
         action_date=dt.date(2024, 4, 10),
     )
@@ -1879,33 +1898,33 @@ def test_received_labs_summary_by_month() -> None:
 
 def test_received_labs_summary_by_year() -> None:
     """Ensure fetch_received_labs_summary() query successfully aggregates received labs summary grouped by year."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         labs_received=10,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         labs_received=15,
         action_date=dt.date(2024, 4, 1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         labs_received=5,
         action_date=dt.date(2023, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         labs_received=5,
         action_date=dt.date(2023, 3, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         labs_received=15,
         action_date=dt.date(2022, 2, 10),
     )
@@ -1951,33 +1970,33 @@ def test_fetch_received_appointments_summary_by_day() -> None:
     """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by day."""
     current_date = timezone.now().date()
 
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=5,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         appointments_received=10,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         appointments_received=15,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         appointments_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         appointments_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=15,
         action_date=current_date - dt.timedelta(days=2),
     )
@@ -2011,33 +2030,33 @@ def test_fetch_received_appointments_summary_by_day() -> None:
 
 def test_fetch_received_appointments_summary_by_month() -> None:
     """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by month."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         appointments_received=10,
         action_date=dt.date(2024, 6, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         appointments_received=15,
         action_date=dt.date(2024, 6, 1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         appointments_received=5,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         appointments_received=5,
         action_date=dt.date(2024, 5, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=15,
         action_date=dt.date(2024, 4, 1),
     )
@@ -2072,33 +2091,33 @@ def test_fetch_received_appointments_summary_by_month() -> None:
 
 def test_fetch_received_appointments_summary_by_year() -> None:
     """Ensure received_appointments_summary() successfully aggregates received appointments summary grouped by year."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         appointments_received=10,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         appointments_received=15,
         action_date=dt.date(2024, 4, 1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         appointments_received=5,
         action_date=dt.date(2023, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         appointments_received=5,
         action_date=dt.date(2023, 4, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         appointments_received=15,
         action_date=dt.date(2022, 3, 1),
     )
@@ -2144,33 +2163,33 @@ def test_fetch_received_educational_materials_summary_by_day() -> None:
     """Ensure received_edu_materials_summary() successfully aggregates received edu materials summary grouped by day."""
     current_date = timezone.now().date()
 
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=5,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         educational_materials_received=10,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         educational_materials_received=15,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         educational_materials_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         educational_materials_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=15,
         action_date=current_date - dt.timedelta(days=2),
     )
@@ -2204,33 +2223,33 @@ def test_fetch_received_educational_materials_summary_by_day() -> None:
 
 def test_fetch_received_educational_materials_summary_by_month() -> None:
     """Ensure received_edu_materials_summary successfully aggregates received edu materials summary grouped by month."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         educational_materials_received=10,
         action_date=dt.date(2024, 6, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         educational_materials_received=15,
         action_date=dt.date(2024, 6, 5),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         educational_materials_received=5,
         action_date=dt.date(2024, 5, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         educational_materials_received=5,
         action_date=dt.date(2024, 5, 10),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=15,
         action_date=dt.date(2024, 4, 3),
     )
@@ -2265,33 +2284,33 @@ def test_fetch_received_educational_materials_summary_by_month() -> None:
 
 def test_fetch_received_educational_materials_summary_by_year() -> None:
     """Ensure received_edu_materials_summary successfully aggregates received edu materials summary grouped by year."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         educational_materials_received=10,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         educational_materials_received=15,
         action_date=dt.date(2024, 4, 5),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         educational_materials_received=5,
         action_date=dt.date(2023, 4, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         educational_materials_received=5,
         action_date=dt.date(2023, 3, 10),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         educational_materials_received=15,
         action_date=dt.date(2022, 2, 3),
     )
@@ -2337,33 +2356,33 @@ def test_fetch_received_documents_summary_by_day() -> None:
     """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by day."""
     current_date = timezone.now().date()
 
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=5,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         documents_received=10,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         documents_received=15,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         documents_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         documents_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=15,
         action_date=current_date - dt.timedelta(days=2),
     )
@@ -2397,33 +2416,33 @@ def test_fetch_received_documents_summary_by_day() -> None:
 
 def test_fetch_received_documents_summary_by_month() -> None:
     """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by month."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         documents_received=10,
         action_date=dt.date(2024, 6, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         documents_received=15,
         action_date=dt.date(2024, 6, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         documents_received=5,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         documents_received=5,
         action_date=dt.date(2024, 5, 10),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=15,
         action_date=dt.date(2024, 4, 5),
     )
@@ -2458,33 +2477,33 @@ def test_fetch_received_documents_summary_by_month() -> None:
 
 def test_fetch_received_documents_summary_by_year() -> None:
     """Ensure fetch_received_documents_summary() successfully aggregates received documents summary grouped by year."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         documents_received=10,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         documents_received=15,
         action_date=dt.date(2024, 4, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         documents_received=5,
         action_date=dt.date(2023, 4, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         documents_received=5,
         action_date=dt.date(2023, 3, 10),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         documents_received=15,
         action_date=dt.date(2022, 2, 5),
     )
@@ -2530,33 +2549,33 @@ def test_fetch_received_questionnaires_summary_by_day() -> None:
     """Ensure received_questionnaires_summary successfully aggregates received questionnaires summary grouped by day."""
     current_date = timezone.now().date()
 
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=5,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         questionnaires_received=10,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         questionnaires_received=15,
         action_date=current_date,
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         questionnaires_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         questionnaires_received=5,
         action_date=current_date - dt.timedelta(days=1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=15,
         action_date=current_date - dt.timedelta(days=2),
     )
@@ -2590,33 +2609,33 @@ def test_fetch_received_questionnaires_summary_by_day() -> None:
 
 def test_fetch_received_questionnaires_summary_by_month() -> None:
     """Ensure fetch_received_questionnaires_summary successfully aggregates questionnaires summary grouped by month."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         questionnaires_received=10,
         action_date=dt.date(2024, 6, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         questionnaires_received=15,
         action_date=dt.date(2024, 6, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         questionnaires_received=5,
         action_date=dt.date(2024, 5, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         questionnaires_received=5,
         action_date=dt.date(2024, 5, 5),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=15,
         action_date=dt.date(2024, 4, 3),
     )
@@ -2651,33 +2670,33 @@ def test_fetch_received_questionnaires_summary_by_month() -> None:
 
 def test_fetch_received_questionnaires_summary_by_year() -> None:
     """Ensure fetch_received_questionnaires_summary successfully aggregates questionnaires summary grouped by year."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=5,
         action_date=dt.date(2024, 6, 25),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         questionnaires_received=10,
         action_date=dt.date(2024, 5, 20),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         questionnaires_received=15,
         action_date=dt.date(2024, 4, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         questionnaires_received=5,
         action_date=dt.date(2023, 4, 15),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         questionnaires_received=5,
         action_date=dt.date(2023, 3, 5),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972'),
         questionnaires_received=15,
         action_date=dt.date(2022, 2, 3),
     )
@@ -2721,22 +2740,22 @@ def test_fetch_users_latest_login_year_summary_empty() -> None:
 
 def test_fetch_users_latest_login_year_summary_success() -> None:
     """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
         action_date=dt.datetime(2023, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
@@ -2758,20 +2777,20 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
 
     The test user are same and has records in different years.
     """
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2022, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
         action_date=dt.datetime(2022, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
         action_date=dt.datetime(2023, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
@@ -2792,22 +2811,22 @@ def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None
 
     The test users are different and have records in the same year.
     """
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
@@ -2830,26 +2849,26 @@ def test_fetch_labs_summary_per_patient_empty() -> None:
 
 def test_fetch_labs_summary_per_patient_success() -> None:
     """Ensure fetch_labs_summary_per_patient successfully fetches labs statistics per patient."""
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=55, ramq='TEST01161976'),
         last_lab_received=None,
         labs_received=0,
         action_date=dt.date(2024, 8, 10),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=56, ramq='TEST01161977'),
         last_lab_received=dt.datetime(2024, 8, 1, 10, 10, 10).astimezone(),
         labs_received=3,
         action_date=dt.date(2024, 8, 1),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=56, ramq='TEST01161977'),
         last_lab_received=dt.datetime(2024, 8, 2, 10, 10, 10).astimezone(),
         labs_received=5,
         action_date=dt.date(2024, 8, 2),
     )
-    stats_factories.DailyPatientDataReceived(
-        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+    stats_factories.DailyPatientDataReceived.create(
+        patient=patient_factories.Patient.create(legacy_id=56, ramq='TEST01161977'),
         last_lab_received=dt.datetime(2024, 8, 10, 10, 10, 10).astimezone(),
         labs_received=10,
         action_date=dt.date(2024, 8, 10),
@@ -2881,22 +2900,22 @@ def test_fetch_logins_summary_per_user_empty() -> None:
 
 def test_fetch_logins_summary_per_user_success() -> None:
     """Ensure fetch_logins_summary_per_user successfully fetches individual login statistics."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=3,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=homer_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=bart_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
@@ -2931,20 +2950,20 @@ def test_fetch_logins_summary_per_user_multiple_logins() -> None:
 
     The test user has multiple logins in different days.
     """
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    stats_factories.DailyUserAppActivity(
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=2,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20, tzinfo=timezone.get_current_timezone()),
     )
-    stats_factories.DailyUserAppActivity(
+    stats_factories.DailyUserAppActivity.create(
         action_by_user=marge_caregiver.user,
         last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
         count_logins=5,
@@ -2969,31 +2988,35 @@ def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
 
 def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches the no empty statistics."""
-    django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
-    legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-    legacy_factories.LegacyPatientControlFactory(
-        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id),
+    django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
+    legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
+    legacy_factories.LegacyPatientControlFactory.create(
+        patient=legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id),
     )
-    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat1, hospital__code='RVH', mrn=1234567)
-    django_pat2 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=52)
-    legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
-    legacy_factories.LegacyPatientControlFactory(
-        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id),
+    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
+        patient=legacy_pat1, hospital__code='RVH', mrn=1234567
     )
-    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
+    django_pat2 = patient_factories.Patient.create(ramq='SIMM12345679', legacy_id=52)
+    legacy_pat2 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
+    legacy_factories.LegacyPatientControlFactory.create(
+        patient=legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id),
+    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
+        patient=legacy_pat2, hospital__code='MGH', mrn=1234566
+    )
     # Create a dummy patient to ensure it is not included in the report
-    legacy_factories.LegacyPatientFactory(patientsernum=53)
-    legacy_factories.LegacyDiagnosisFactory(
+    legacy_factories.LegacyPatientFactory.create(patientsernum=53)
+    legacy_factories.LegacyDiagnosisFactory.create(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis1',
         creation_date=timezone.now() - dt.timedelta(days=1),
     )
-    legacy_factories.LegacyDiagnosisFactory(
+    legacy_factories.LegacyDiagnosisFactory.create(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis2',
         creation_date=timezone.now(),
     )
-    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
+    legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
     demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.max)
     assert len(demographic_diagnosis_summary) == 2
     assert demographic_diagnosis_summary[0]['patient_ser_num'] == 51
@@ -3011,79 +3034,83 @@ def _create_relationship_records() -> dict[str, Any]:
     Returns:
         dictionary with self relationships
     """
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='marge', legacy_id=1, user__last_login=timezone.now(),
+    marge_caregiver = caregiver_factories.CaregiverProfile.create(
+        user__username='marge',
+        legacy_id=1,
+        user__last_login=timezone.now(),
     )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='homer', legacy_id=2, user__last_login=timezone.now(),
+    homer_caregiver = caregiver_factories.CaregiverProfile.create(
+        user__username='homer',
+        legacy_id=2,
+        user__last_login=timezone.now(),
     )
-    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
-    lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
+    bart_caregiver = caregiver_factories.CaregiverProfile.create(user__username='bart', legacy_id=3)
+    lisa_caregiver = caregiver_factories.CaregiverProfile.create(user__username='lisa', legacy_id=4)
 
-    marge_patient = patient_factories.Patient(legacy_id=51, ramq='TEST01161972')
-    homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
-    bart_patient = patient_factories.Patient(legacy_id=53, ramq='TEST01161974')
-    lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
+    marge_patient = patient_factories.Patient.create(legacy_id=51, ramq='TEST01161972')
+    homer_patient = patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973')
+    bart_patient = patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974')
+    lisa_patient = patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975')
 
     # marge
-    marge_self_relationship = patient_factories.Relationship(
+    marge_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
         patient=marge_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     # homer
-    marge_homer_relationship = patient_factories.Relationship(
+    marge_homer_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=homer_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    homer_self_relationship = patient_factories.Relationship(
+    homer_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        patient=patient_factories.Patient.create(legacy_id=52, ramq='TEST01161973'),
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    homer_pending_self_relationship = patient_factories.Relationship(
+    homer_pending_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.PENDING,
     )
     # bart
-    marge_bart_relationship = patient_factories.Relationship(
+    marge_bart_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=bart_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    bart_self_relationship = patient_factories.Relationship(
+    bart_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        patient=patient_factories.Patient.create(legacy_id=53, ramq='TEST01161974'),
         caregiver=bart_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    bart_expired_self_relationship = patient_factories.Relationship(
+    bart_expired_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
         patient=bart_patient,
         caregiver=bart_caregiver,
         status=patient_models.RelationshipStatus.EXPIRED,
     )
     # lisa
-    homer_lisa_relationship = patient_factories.Relationship(
+    homer_lisa_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=lisa_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    lisa_self_relationship = patient_factories.Relationship(
+    lisa_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
-        patient=patient_factories.Patient(legacy_id=54, ramq='TEST01161975'),
+        patient=patient_factories.Patient.create(legacy_id=54, ramq='TEST01161975'),
         caregiver=lisa_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    lisa_pending_self_relationship = patient_factories.Relationship(
+    lisa_pending_self_relationship = patient_factories.Relationship.create(
         type=patient_models.RelationshipType.objects.self_type(),
         patient=lisa_patient,
         caregiver=lisa_caregiver,

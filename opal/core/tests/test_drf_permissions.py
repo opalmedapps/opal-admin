@@ -51,7 +51,7 @@ class TestCaregiverPatientPermissions:
 
     def test_no_caregiver_username(self) -> None:
         """Test with no provided 'Appuserid'."""
-        caregiver_factories.CaregiverProfile()
+        caregiver_factories.CaregiverProfile.create()
         self.set_args(user_id=None, patient_id=99)
 
         with pytest.raises(exceptions.ParseError) as exception_info:
@@ -70,7 +70,7 @@ class TestCaregiverPatientPermissions:
 
     def test_no_patient_id(self) -> None:
         """Test with no provided 'legacy_id'."""
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
         self.set_args(caregiver.user.username, patient_id=None)
 
         with pytest.raises(exceptions.ParseError) as exception_info:
@@ -80,7 +80,7 @@ class TestCaregiverPatientPermissions:
 
     def test_non_integer_patient_id(self) -> None:
         """Test with a 'legacy_id' that's not an integer."""
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
         self.set_args(caregiver.user.username, patient_id='a')
 
         with pytest.raises(exceptions.ParseError) as exception_info:
@@ -90,7 +90,7 @@ class TestCaregiverPatientPermissions:
 
     def test_caregiver_not_found(self) -> None:
         """Test providing a username that doesn't exist."""
-        caregiver_factories.CaregiverProfile()
+        caregiver_factories.CaregiverProfile.create()
         self.set_args('wrong_username', patient_id=99)
 
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
@@ -100,8 +100,8 @@ class TestCaregiverPatientPermissions:
 
     def test_no_relationship(self) -> None:
         """Test a permissions check where the caregiver doesn't have a relationship with the patient."""
-        caregiver = caregiver_factories.CaregiverProfile()
-        patient = patient_factories.Patient()
+        caregiver = caregiver_factories.CaregiverProfile.create()
+        patient = patient_factories.Patient.create()
         self.set_args(caregiver.user.username, patient.legacy_id)
 
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
@@ -111,7 +111,7 @@ class TestCaregiverPatientPermissions:
 
     def test_unconfirmed_relationship(self) -> None:
         """Test a permissions check where the caregiver has a relationship with the patient, but it isn't confirmed."""
-        relationship = patient_factories.Relationship()
+        relationship = patient_factories.Relationship.create()
         self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
 
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
@@ -121,7 +121,7 @@ class TestCaregiverPatientPermissions:
 
     def test_deceased_patient(self) -> None:
         """Test that the permission check fails if the patient is deceased."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=RelationshipStatus.CONFIRMED,
             patient__date_of_death=timezone.now(),
         )
@@ -134,7 +134,7 @@ class TestCaregiverPatientPermissions:
 
     def test_success_confirmed_relationship(self) -> None:
         """Test a permissions check where the caregiver has a confirmed relationship with the patient."""
-        relationship = patient_factories.Relationship(status=RelationshipStatus.CONFIRMED)
+        relationship = patient_factories.Relationship.create(status=RelationshipStatus.CONFIRMED)
         self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
 
         assert self.has_permission()
@@ -169,7 +169,7 @@ class TestCaregiverSelfPermissions:
 
     def test_non_self_relationship_type(self) -> None:
         """Test a permissions check where the caregiver has a relationship with the patient, but it isn't self typed."""
-        relationship = patient_factories.Relationship(status=RelationshipStatus.CONFIRMED)
+        relationship = patient_factories.Relationship.create(status=RelationshipStatus.CONFIRMED)
         self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
 
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
@@ -179,7 +179,7 @@ class TestCaregiverSelfPermissions:
 
     def test_success_self_relationship_type(self) -> None:
         """Test a permissions check where the caregiver has a self relationship with the patient."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=RelationshipStatus.CONFIRMED,
             type=RelationshipType.objects.self_type(),
         )
@@ -294,13 +294,16 @@ def test_username_required_missing_attribute() -> None:
         drf_permissions._UsernameRequired().has_permission(Request(HttpRequest()), APIView())
 
 
-@pytest.mark.parametrize('permission_class', [
-    drf_permissions.IsListener,
-    drf_permissions.IsRegistrationListener,
-    drf_permissions.IsInterfaceEngine,
-    drf_permissions.IsLegacyBackend,
-    drf_permissions.IsOrmsSystem,
-])
+@pytest.mark.parametrize(
+    'permission_class',
+    [
+        drf_permissions.IsListener,
+        drf_permissions.IsRegistrationListener,
+        drf_permissions.IsInterfaceEngine,
+        drf_permissions.IsLegacyBackend,
+        drf_permissions.IsOrmsSystem,
+    ],
+)
 def test_username_required_unauthenticated(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions require the user to be authenticated."""
     request = Request(RequestFactory().get('/'))
@@ -308,13 +311,16 @@ def test_username_required_unauthenticated(permission_class: type[drf_permission
     assert not permission_class().has_permission(request, APIView())
 
 
-@pytest.mark.parametrize('permission_class', [
-    drf_permissions.IsListener,
-    drf_permissions.IsRegistrationListener,
-    drf_permissions.IsInterfaceEngine,
-    drf_permissions.IsLegacyBackend,
-    drf_permissions.IsOrmsSystem,
-])
+@pytest.mark.parametrize(
+    'permission_class',
+    [
+        drf_permissions.IsListener,
+        drf_permissions.IsRegistrationListener,
+        drf_permissions.IsInterfaceEngine,
+        drf_permissions.IsLegacyBackend,
+        drf_permissions.IsOrmsSystem,
+    ],
+)
 def test_username_required_admin_permitted(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions succeed if the user is an admin (superuser)."""
     request = Request(RequestFactory().get('/'))
@@ -323,13 +329,16 @@ def test_username_required_admin_permitted(permission_class: type[drf_permission
     assert permission_class().has_permission(request, APIView())
 
 
-@pytest.mark.parametrize('permission_class', [
-    drf_permissions.IsListener,
-    drf_permissions.IsRegistrationListener,
-    drf_permissions.IsInterfaceEngine,
-    drf_permissions.IsLegacyBackend,
-    drf_permissions.IsOrmsSystem,
-])
+@pytest.mark.parametrize(
+    'permission_class',
+    [
+        drf_permissions.IsListener,
+        drf_permissions.IsRegistrationListener,
+        drf_permissions.IsInterfaceEngine,
+        drf_permissions.IsLegacyBackend,
+        drf_permissions.IsOrmsSystem,
+    ],
+)
 def test_username_required_wrong_username(permission_class: type[drf_permissions._UsernameRequired]) -> None:
     """The permissions fail if the user does not have the expected username."""
     request = Request(RequestFactory().get('/'))
@@ -338,13 +347,16 @@ def test_username_required_wrong_username(permission_class: type[drf_permissions
     assert not permission_class().has_permission(request, APIView())
 
 
-@pytest.mark.parametrize(('permission_class', 'username'), [
-    (drf_permissions.IsListener, constants.USERNAME_LISTENER),
-    (drf_permissions.IsRegistrationListener, constants.USERNAME_LISTENER_REGISTRATION),
-    (drf_permissions.IsInterfaceEngine, constants.USERNAME_INTERFACE_ENGINE),
-    (drf_permissions.IsLegacyBackend, constants.USERNAME_BACKEND_LEGACY),
-    (drf_permissions.IsOrmsSystem, constants.USERNAME_ORMS),
-])
+@pytest.mark.parametrize(
+    ('permission_class', 'username'),
+    [
+        (drf_permissions.IsListener, constants.USERNAME_LISTENER),
+        (drf_permissions.IsRegistrationListener, constants.USERNAME_LISTENER_REGISTRATION),
+        (drf_permissions.IsInterfaceEngine, constants.USERNAME_INTERFACE_ENGINE),
+        (drf_permissions.IsLegacyBackend, constants.USERNAME_BACKEND_LEGACY),
+        (drf_permissions.IsOrmsSystem, constants.USERNAME_ORMS),
+    ],
+)
 def test_username_required_correct_username(
     permission_class: type[drf_permissions._UsernameRequired],
     username: str,

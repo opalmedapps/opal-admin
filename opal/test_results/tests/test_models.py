@@ -14,47 +14,47 @@ pytestmark = pytest.mark.django_db()
 
 def test_general_test_factory() -> None:
     """Ensure the `GeneralTest` factory creates a valid model."""
-    test = factories.GeneralTest()
+    test = factories.GeneralTest.create()
     test.full_clean()
 
 
 def test_pathology_observation_factory() -> None:
     """Ensure the `PathologyObservation` factory creates a valid model."""
-    pathology_observation = factories.PathologyObservationFactory()
+    pathology_observation = factories.PathologyObservationFactory.create()
     pathology_observation.full_clean()
 
 
 def test_lab_observation_factory() -> None:
     """Ensure the `LabObservation` factory creates a valid model."""
-    lab_observation = factories.LabObservationFactory()
+    lab_observation = factories.LabObservationFactory.create()
     lab_observation.full_clean()
 
 
 def test_note_factory() -> None:
     """Ensure the `Note` factory creates a valid model."""
-    note = factories.Note()
+    note = factories.Note.create()
     note.full_clean()
 
 
 def test_multi_observations_test() -> None:
     """Ensure multiple observation and note instances can be assigned to one GeneralTest."""
-    test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
-    observation1 = factories.PathologyObservationFactory(general_test=test)
-    observation2 = factories.PathologyObservationFactory(general_test=test)
-    observation3 = factories.PathologyObservationFactory(general_test=test)
-    observation4 = factories.PathologyObservationFactory(general_test=test)
-    note1 = factories.Note(general_test=test)
-    note2 = factories.Note(general_test=test)
+    test = factories.GeneralTest.create(type=models.TestType.PATHOLOGY)
+    observation1 = factories.PathologyObservationFactory.create(general_test=test)
+    observation2 = factories.PathologyObservationFactory.create(general_test=test)
+    observation3 = factories.PathologyObservationFactory.create(general_test=test)
+    observation4 = factories.PathologyObservationFactory.create(general_test=test)
+    note1 = factories.Note.create(general_test=test)
+    note2 = factories.Note.create(general_test=test)
 
     components = [observation1, observation2, observation3, observation4, note1, note2]
     for component in components:
         assert component.general_test.type == test.type  # type: ignore[attr-defined]
-        component.full_clean()  # type: ignore[attr-defined]
+        component.full_clean()
 
 
 def test_general_test_str() -> None:
     """Ensure the __str__ method for GeneralTest works properly."""
-    general_test = factories.GeneralTest(
+    general_test = factories.GeneralTest.create(
         type=models.TestType.PATHOLOGY,
         collected_at=timezone.now(),
     )
@@ -63,10 +63,10 @@ def test_general_test_str() -> None:
 
 def test_pathology_observation_str() -> None:
     """Ensure the __str__ method for PathologyObseration works properly."""
-    general_test = factories.GeneralTest(
+    general_test = factories.GeneralTest.create(
         type=models.TestType.PATHOLOGY,
     )
-    observation = factories.PathologyObservationFactory(
+    observation = factories.PathologyObservationFactory.create(
         general_test=general_test,
         observed_at=timezone.now(),
     )
@@ -75,10 +75,10 @@ def test_pathology_observation_str() -> None:
 
 def test_lab_observation_str() -> None:
     """Ensure the __str__ method for LabObseration works properly."""
-    general_test = factories.GeneralTest(
+    general_test = factories.GeneralTest.create(
         type=models.TestType.LAB,
     )
-    observation = factories.LabObservationFactory(
+    observation = factories.LabObservationFactory.create(
         general_test=general_test,
         value=3.0,
         value_units='10^9/L',
@@ -89,11 +89,11 @@ def test_lab_observation_str() -> None:
 
 def test_note_str() -> None:
     """Ensure the __str__ method for Note works properly."""
-    general_test = factories.GeneralTest(
+    general_test = factories.GeneralTest.create(
         type=models.TestType.PATHOLOGY,
         collected_at=timezone.now(),
     )
-    note = factories.Note(
+    note = factories.Note.create(
         general_test=general_test,
         note_text='Generic pathologist note',
     )
@@ -105,16 +105,16 @@ def test_note_str() -> None:
 
 def test_save_pathology_observation_correct_type() -> None:
     """Test save behaviour of PathologyObservations for correct type."""
-    pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
-    observation = factories.PathologyObservationFactory(general_test=pathology_test)
+    pathology_test = factories.GeneralTest.create(type=models.TestType.PATHOLOGY)
+    observation = factories.PathologyObservationFactory.create(general_test=pathology_test)
     # This should not raise any exceptions
     observation.full_clean()
 
 
 def test_save_pathology_observation_incorrect_type() -> None:
     """Test save behaviour of PathologyObservations for incorrect type."""
-    lab_test = factories.GeneralTest(type=models.TestType.LAB)
-    pathology_observation = factories.PathologyObservationFactory(general_test=lab_test)
+    lab_test = factories.GeneralTest.create(type=models.TestType.LAB)
+    pathology_observation = factories.PathologyObservationFactory.create(general_test=lab_test)
 
     with pytest.raises(ValidationError) as exc_info:
         pathology_observation.full_clean()
@@ -125,16 +125,16 @@ def test_save_pathology_observation_incorrect_type() -> None:
 
 def test_save_lab_observation_correct_type() -> None:
     """Test save behaviour of LabObservations for correct type."""
-    lab_test = factories.GeneralTest(type=models.TestType.LAB)
-    observation = factories.LabObservationFactory(general_test=lab_test)
+    lab_test = factories.GeneralTest.create(type=models.TestType.LAB)
+    observation = factories.LabObservationFactory.create(general_test=lab_test)
     # This should not raise any exceptions
     observation.full_clean()
 
 
 def test_save_lab_observation_incorrect_type() -> None:
     """Test save behaviour of LabObservations for incorrect type."""
-    pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
-    lab_observation = factories.LabObservationFactory(general_test=pathology_test)
+    pathology_test = factories.GeneralTest.create(type=models.TestType.PATHOLOGY)
+    lab_observation = factories.LabObservationFactory.create(general_test=pathology_test)
     with pytest.raises(ValidationError) as exc_info:
         lab_observation.full_clean()
 
@@ -145,10 +145,10 @@ def test_save_lab_observation_incorrect_type() -> None:
 def test_general_test_observations_reverse_relationship() -> None:
     """Test that the observations property correctly returns a GeneralTest's observation instances."""
     # Create a GeneralTest instance of type PATHOLOGY
-    pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
+    pathology_test = factories.GeneralTest.create(type=models.TestType.PATHOLOGY)
 
     # Create a related PathologyObservation instance
-    factories.PathologyObservationFactory(general_test=pathology_test)
+    factories.PathologyObservationFactory.create(general_test=pathology_test)
 
     # Check that the observations property returns PathologyObservation
     assert pathology_test.observations.count() == 1
@@ -156,10 +156,10 @@ def test_general_test_observations_reverse_relationship() -> None:
         assert isinstance(path_observation, models.PathologyObservation)
 
     # Create a GeneralTest instance of type LAB
-    lab_test = factories.GeneralTest(type=models.TestType.LAB)
+    lab_test = factories.GeneralTest.create(type=models.TestType.LAB)
 
     # Create a related LabObservation instance
-    factories.LabObservationFactory(general_test=lab_test)
+    factories.LabObservationFactory.create(general_test=lab_test)
 
     # Check that the observations property returns LabObservation
     assert lab_test.observations.count() == 1

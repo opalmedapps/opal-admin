@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Test module for the REST API endpoints of the `test_results` app."""
+
 import json
 from pathlib import Path
 from typing import Any
@@ -98,20 +99,20 @@ class TestCreatePathologyView:
     ) -> None:
         """Ensure the endpoint raises exception in case of unsuccessful insertion to the OpalDB.Documents table."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
-        Institution()
-        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
+        Institution.create()
+        Site.create(acronym=self._get_valid_input_data().get('receiving_facility'))
 
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
 
-        Relationship(
+        Relationship.create(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
         )
 
-        LegacyPatientFactory(
+        LegacyPatientFactory.create(
             patientsernum=patient.legacy_id,
         )
 
@@ -143,28 +144,28 @@ class TestCreatePathologyView:
     ) -> None:
         """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
-        Institution()
-        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
+        Institution.create()
+        Site.create(acronym=self._get_valid_input_data().get('receiving_facility'))
 
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
 
-        Relationship(
+        Relationship.create(
             patient=patient,
             type=patient_models.RelationshipType.objects.self_type(),
         )
 
-        LegacyPatientFactory(
+        LegacyPatientFactory.create(
             patientsernum=patient.legacy_id,
         )
 
-        LegacySourceDatabaseFactory(
+        LegacySourceDatabaseFactory.create(
             source_database_name='Oacis',
         )
 
-        LegacyAliasExpressionFactory(
+        LegacyAliasExpressionFactory.create(
             expression_name='Pathology',
             description='Pathology',
         )
@@ -198,16 +199,20 @@ class TestCreatePathologyView:
             dict: valid JSON data
         """
         return {
-            'observations': [{
-                'identifier_code': 'test',
-                'identifier_text': 'txt',
-                'value': 'value',
-                'observed_at': '1986-10-01 12:30:30',
-            }],
-            'notes': [{
-                'note_source': 'test',
-                'note_text': 'test',
-            }],
+            'observations': [
+                {
+                    'identifier_code': 'test',
+                    'identifier_text': 'txt',
+                    'value': 'value',
+                    'observed_at': '1986-10-01 12:30:30',
+                }
+            ],
+            'notes': [
+                {
+                    'note_source': 'test',
+                    'note_text': 'test',
+                }
+            ],
             'sending_facility': '',
             'receiving_facility': 'RVH',
             'collected_at': '1985-10-01 12:30:30',

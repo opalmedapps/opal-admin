@@ -20,11 +20,14 @@ pytestmark = pytest.mark.django_db
 HTTP_METHODS_READ_ONLY = 'GET, HEAD, OPTIONS'
 
 
-@pytest.mark.parametrize(('url_name', 'is_detail'), [
-    ('api:institutions-list', False),
-    ('api:institutions-detail', True),
-    ('api:institutions-terms-of-use', True),
-])
+@pytest.mark.parametrize(
+    ('url_name', 'is_detail'),
+    [
+        ('api:institutions-list', False),
+        ('api:institutions-detail', True),
+        ('api:institutions-terms-of-use', True),
+    ],
+)
 def test_institutions_unauthenticated_unauthorized(
     url_name: str,
     is_detail: bool,
@@ -33,7 +36,7 @@ def test_institutions_unauthenticated_unauthorized(
     user_with_permission: Callable[[str], User],
 ) -> None:
     """Test that unauthenticated and unauthorized users cannot access the API."""
-    kwargs = {'pk': factories.Institution().pk} if is_detail else {}
+    kwargs = {'pk': factories.Institution.create().pk} if is_detail else {}
     response = api_client.get(reverse(url_name, kwargs=kwargs))
 
     assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
@@ -53,7 +56,7 @@ def test_api_institutions_list(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the API to list institutions works."""
     api_client.force_login(user=admin_user)
 
-    institution = factories.Institution()
+    institution = factories.Institution.create()
     response = api_client.get(reverse('api:institutions-list'))
 
     assert response.status_code == HTTPStatus.OK
@@ -73,7 +76,7 @@ def test_api_institutions_list_allowed_methods(api_client: APIClient, admin_user
 def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can only be retrieved."""
     api_client.force_login(user=admin_user)
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     response = api_client.options(reverse('api:institutions-detail', kwargs={'pk': institution.pk}))
 
@@ -83,7 +86,7 @@ def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_us
 def test_api_institutions_retrieve(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can be retrieved."""
     api_client.force_login(user=admin_user)
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     response = api_client.get(reverse('api:institutions-detail', kwargs={'pk': institution.pk}))
 
@@ -94,7 +97,7 @@ def test_api_institutions_retrieve(api_client: APIClient, admin_user: User) -> N
 def test_api_terms_of_use_allowed_methods(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the terms of use of an institution can only be retrieved."""
     api_client.force_login(user=admin_user)
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     response = api_client.get(reverse('api:institutions-terms-of-use', kwargs={'pk': institution.pk}))
 
@@ -104,7 +107,7 @@ def test_api_terms_of_use_allowed_methods(api_client: APIClient, admin_user: Use
 def test_api_terms_of_use(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the terms of use an institution can be retrieved."""
     api_client.force_login(user=admin_user)
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     response = api_client.get(reverse('api:institutions-terms-of-use', kwargs={'pk': institution.pk}))
 
@@ -112,10 +115,13 @@ def test_api_terms_of_use(api_client: APIClient, admin_user: User) -> None:
     assert response.data['id'] == institution.pk
 
 
-@pytest.mark.parametrize(('url_name', 'is_detail'), [
-    ('api:sites-list', False),
-    ('api:sites-detail', True),
-])
+@pytest.mark.parametrize(
+    ('url_name', 'is_detail'),
+    [
+        ('api:sites-list', False),
+        ('api:sites-detail', True),
+    ],
+)
 def test_sites_unauthenticated_unauthorized(
     url_name: str,
     is_detail: bool,
@@ -124,7 +130,7 @@ def test_sites_unauthenticated_unauthorized(
     user_with_permission: Callable[[str], User],
 ) -> None:
     """Test that unauthenticated and unauthorized users cannot access the API."""
-    kwargs = {'pk': factories.Site().pk} if is_detail else {}
+    kwargs = {'pk': factories.Site.create().pk} if is_detail else {}
     response = api_client.get(reverse(url_name, kwargs=kwargs))
 
     assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
@@ -144,7 +150,7 @@ def test_api_site_list(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the API to list sites works."""
     api_client.force_login(user=admin_user)
 
-    site = factories.Site()
+    site = factories.Site.create()
 
     response = api_client.get(reverse('api:sites-list'))
 
@@ -156,7 +162,7 @@ def test_api_site_list(api_client: APIClient, admin_user: User) -> None:
 def test_api_site_retrieve(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can be retrieved."""
     api_client.force_login(user=admin_user)
-    site = factories.Site()
+    site = factories.Site.create()
 
     response = api_client.get(reverse('api:sites-detail', kwargs={'pk': site.pk}))
 
@@ -176,7 +182,7 @@ def test_api_sites_list_allowed_methods(api_client: APIClient, admin_user: User)
 def test_api_sites_detail_allowed_methods(api_client: APIClient, admin_user: User) -> None:
     """Ensure that a site can only be retrieved."""
     api_client.force_login(user=admin_user)
-    site = factories.Site()
+    site = factories.Site.create()
 
     response = api_client.options(reverse('api:sites-detail', kwargs={'pk': site.pk}))
 

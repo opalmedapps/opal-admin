@@ -23,13 +23,13 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 def test_get_appointment_databank_data() -> None:
     """Ensure appointment data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
-    consenting_patient = factories.LegacyPatientFactory()
+    consenting_patient = factories.LegacyPatientFactory.create()
     last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare appointment data
-    factories.LegacyAppointmentFactory(appointmentsernum=1, checkin=0, patientsernum=consenting_patient)
-    factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=0, patientsernum=consenting_patient)
-    factories.LegacyAppointmentFactory(appointmentsernum=3, patientsernum=consenting_patient)
-    factories.LegacyAppointmentFactory(appointmentsernum=4, patientsernum=consenting_patient)
+    factories.LegacyAppointmentFactory.create(appointmentsernum=1, checkin=0, patientsernum=consenting_patient)
+    factories.LegacyAppointmentFactory.create(appointmentsernum=2, checkin=0, patientsernum=consenting_patient)
+    factories.LegacyAppointmentFactory.create(appointmentsernum=3, patientsernum=consenting_patient)
+    factories.LegacyAppointmentFactory.create(appointmentsernum=4, patientsernum=consenting_patient)
     # Fetch the data
     databank_data = legacy_models.LegacyAppointment.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -60,7 +60,7 @@ def test_get_appointment_databank_data() -> None:
 def test_get_demographics_databank_data() -> None:
     """Ensure demographics data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
-    consenting_patient = factories.LegacyPatientFactory()
+    consenting_patient = factories.LegacyPatientFactory.create()
     last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Fetch the data
     databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
@@ -87,7 +87,7 @@ def test_get_demographics_databank_data() -> None:
 def test_exclude_unknown_gender() -> None:
     """Ensure demographics data for databank does not include patients with Unknown gender."""
     # Prepare patient and last cron run time
-    consenting_patient = factories.LegacyPatientFactory(sex='Unknown')
+    consenting_patient = factories.LegacyPatientFactory.create(sex='Unknown')
     last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Fetch the data
     databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
@@ -100,13 +100,13 @@ def test_exclude_unknown_gender() -> None:
 def test_get_diagnosis_databank_data() -> None:
     """Ensure diagnosis data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
-    consenting_patient = factories.LegacyPatientFactory()
-    non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
+    consenting_patient = factories.LegacyPatientFactory.create()
+    non_consenting_patient = factories.LegacyPatientFactory.create(patientsernum=52)
     last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare diagnosis data
-    factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
-    factories.LegacyDiagnosisFactory(patient_ser_num=consenting_patient)
-    factories.LegacyDiagnosisFactory(patient_ser_num=non_consenting_patient)
+    factories.LegacyDiagnosisFactory.create(patient_ser_num=consenting_patient)
+    factories.LegacyDiagnosisFactory.create(patient_ser_num=consenting_patient)
+    factories.LegacyDiagnosisFactory.create(patient_ser_num=non_consenting_patient)
     # Fetch the data
     databank_data = legacy_models.LegacyDiagnosis.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -131,14 +131,14 @@ def test_get_diagnosis_databank_data() -> None:
 def test_get_labs_databank_data() -> None:
     """Ensure labs data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
-    consenting_patient = factories.LegacyPatientFactory()
-    non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
+    consenting_patient = factories.LegacyPatientFactory.create()
+    non_consenting_patient = factories.LegacyPatientFactory.create(patientsernum=52)
     last_cron_sync_time = dt.datetime(2023, 1, 1, 0, 0, 5, tzinfo=timezone.get_current_timezone())
     # Prepare labs data
-    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyPatientTestResultFactory(patient_ser_num=non_consenting_patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=non_consenting_patient)
     # Fetch the data
     databank_data = legacy_models.LegacyPatientTestResult.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -171,11 +171,11 @@ def test_get_labs_databank_data() -> None:
 
 def test_create_pathology_document_success() -> None:
     """Ensure a new pathology PDF document record inserted successfully to the OpalDB.Document table."""
-    legacy_patient = LegacyPatientFactory()
+    legacy_patient = LegacyPatientFactory.create()
 
-    LegacySourceDatabaseFactory(source_database_name='OACIS')
+    LegacySourceDatabaseFactory.create(source_database_name='OACIS')
 
-    LegacyAliasExpressionFactory(
+    LegacyAliasExpressionFactory.create(
         expression_name='Pathology',
         description='Pathology',
     )
@@ -192,7 +192,7 @@ def test_create_pathology_document_success() -> None:
 
 def test_create_pathology_document_raises_exception() -> None:
     """Ensure that create_pathology_document method raises exception in case of unsuccessful insertion."""
-    legacy_patient = LegacyPatientFactory()
+    legacy_patient = LegacyPatientFactory.create()
 
     with assertRaisesMessage(
         DatabaseError,
@@ -210,28 +210,32 @@ def test_create_pathology_document_raises_exception() -> None:
 
 def test_get_unread_lab_results_queryset() -> None:
     """Ensure LegacyPatientTestResultManager returns lab results counts where available_at is less or equal than now."""
-    patient = factories.LegacyPatientFactory()
-    factories.LegacyPatientTestResultFactory(patient_ser_num=patient)
-    factories.LegacyPatientTestResultFactory(patient_ser_num=patient)
-    factories.LegacyPatientTestResultFactory(patient_ser_num=patient, read_by='[QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2]')
+    patient = factories.LegacyPatientFactory.create()
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=patient)
+    factories.LegacyPatientTestResultFactory.create(patient_ser_num=patient, read_by='[QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2]')
     available_at = timezone.now() + dt.timedelta(seconds=1)
-    factories.LegacyPatientTestResultFactory(
+    factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=patient,
         available_at=available_at,
     )
-    factories.LegacyPatientTestResultFactory(
+    factories.LegacyPatientTestResultFactory.create(
         patient_ser_num=patient,
         test_expression_ser_num__test_control_ser_num__publish_flag=0,
     )
 
     assert legacy_models.LegacyPatientTestResult.objects.count() == 5
-    assert legacy_models.LegacyPatientTestResult.objects.get_unread_queryset(
-        patient_sernum=patient.patientsernum,
-        username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
-    ).count() == 2
+    assert (
+        legacy_models.LegacyPatientTestResult.objects.get_unread_queryset(
+            patient_sernum=patient.patientsernum,
+            username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
+        ).count()
+        == 2
+    )
 
 
 # tests for populating user app activities
+
 
 def test_get_aggregated_user_app_no_activities() -> None:
     """Ensure that get_aggregated_user_app_activities function does not fail when there is no app statistics."""
@@ -245,10 +249,13 @@ def test_get_aggregated_user_app_no_activities() -> None:
         dt.datetime.max.time(),
         timezone.get_current_timezone(),
     )
-    assert legacy_models.LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
-        start_datetime_period,
-        end_datetime_period,
-    ).count() == 0
+    assert (
+        legacy_models.LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
+            start_datetime_period,
+            end_datetime_period,
+        ).count()
+        == 0
+    )
 
 
 def test_get_aggregated_user_app_activities_previous_day() -> None:
@@ -333,35 +340,35 @@ def test_get_aggregated_user_app_activities_last_login_statistics() -> None:
         dt.datetime.max.time(),
         timezone.get_current_timezone(),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='marge',
         date_time=start_datetime_period + dt.timedelta(hours=1),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='marge',
         date_time=start_datetime_period + dt.timedelta(hours=2),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='marge',
         date_time=start_datetime_period + dt.timedelta(hours=3),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='marge',
         date_time=start_datetime_period + dt.timedelta(days=1, hours=4),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='homer',
         date_time=start_datetime_period + dt.timedelta(hours=1),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='homer',
         date_time=start_datetime_period + dt.timedelta(hours=2),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='homer',
         date_time=start_datetime_period + dt.timedelta(hours=3),
     )
-    legacy_factories.LegacyPatientActivityLogFactory(
+    legacy_factories.LegacyPatientActivityLogFactory.create(
         username='homer',
         date_time=start_datetime_period + dt.timedelta(days=1, hours=4),
     )
@@ -907,6 +914,7 @@ def test_get_aggregated_user_app_activities_browser_device_statistics() -> None:
 
 # tests for populating patient app activities
 
+
 def test_get_aggregated_patient_app_no_activities() -> None:
     """Ensure that get_aggregated_patient_app_activities function does not fail when there is no app statistics."""
     start_datetime_period = dt.datetime.combine(
@@ -919,19 +927,28 @@ def test_get_aggregated_patient_app_no_activities() -> None:
         dt.datetime.max.time(),
         timezone.get_current_timezone(),
     )
-    assert legacy_models.LegacyPatientActivityLog.objects.get_aggregated_patient_app_activities(
-        start_datetime_period,
-        end_datetime_period,
-    ).count() == 0
+    assert (
+        legacy_models.LegacyPatientActivityLog.objects.get_aggregated_patient_app_activities(
+            start_datetime_period,
+            end_datetime_period,
+        ).count()
+        == 0
+    )
 
 
 def test_get_aggregated_patient_app_activities_previous_day() -> None:
     """Ensure that get_aggregated_patient_app_activities function returns patients' previous day activities."""
     _create_log_record(
-        request='DocumentContent', parameters=json.dumps(['1']), target_patient_id=51, username='marge',
+        request='DocumentContent',
+        parameters=json.dumps(['1']),
+        target_patient_id=51,
+        username='marge',
     )
     _create_log_record(
-        request='DocumentContent', parameters=json.dumps(['2']), target_patient_id=51, username='marge',
+        request='DocumentContent',
+        parameters=json.dumps(['2']),
+        target_patient_id=51,
+        username='marge',
     )
     _create_log_record(
         request='Log',
@@ -942,7 +959,9 @@ def test_get_aggregated_patient_app_activities_previous_day() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '1',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         target_patient_id=51,
         username='marge',
@@ -956,7 +975,11 @@ def test_get_aggregated_patient_app_activities_previous_day() -> None:
 
     # current day records should not be included to the final queryset
     _create_log_record(
-        request='Checkin', parameters='OMITTED', target_patient_id=51, username='marge', days_delta=0,
+        request='Checkin',
+        parameters='OMITTED',
+        target_patient_id=51,
+        username='marge',
+        days_delta=0,
     )
     _create_log_record(
         request='DocumentContent',
@@ -968,7 +991,9 @@ def test_get_aggregated_patient_app_activities_previous_day() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '3',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         target_patient_id=51,
         username='marge',
@@ -1001,10 +1026,18 @@ def test_get_aggregated_patient_app_activities_previous_day() -> None:
 def test_get_aggregated_patient_app_activities_current_day() -> None:
     """Ensure that get_aggregated_patient_app_activities function returns patients' current day activities."""
     _create_log_record(
-        request='DocumentContent', parameters=json.dumps(['1']), target_patient_id=51, username='marge', days_delta=0,
+        request='DocumentContent',
+        parameters=json.dumps(['1']),
+        target_patient_id=51,
+        username='marge',
+        days_delta=0,
     )
     _create_log_record(
-        request='DocumentContent', parameters=json.dumps(['2']), target_patient_id=51, username='marge', days_delta=0,
+        request='DocumentContent',
+        parameters=json.dumps(['2']),
+        target_patient_id=51,
+        username='marge',
+        days_delta=0,
     )
     _create_log_record(
         request='Log',
@@ -1016,7 +1049,9 @@ def test_get_aggregated_patient_app_activities_current_day() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '1',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         target_patient_id=51,
         username='marge',
@@ -1032,7 +1067,10 @@ def test_get_aggregated_patient_app_activities_current_day() -> None:
 
     # previous day records should not be included to the final queryset
     _create_log_record(
-        request='Checkin', parameters='OMITTED', target_patient_id=51, username='marge',
+        request='Checkin',
+        parameters='OMITTED',
+        target_patient_id=51,
+        username='marge',
     )
     _create_log_record(
         request='DocumentContent',
@@ -1043,7 +1081,9 @@ def test_get_aggregated_patient_app_activities_current_day() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '3',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         target_patient_id=51,
         username='marge',
@@ -1078,13 +1118,21 @@ def test_get_aggregated_user_app_activities_checkin_statistics() -> None:
     _create_log_record(request='Checkin', parameters='OMITTED', username='marge', target_patient_id=51)
     _create_log_record(request='Checkin', parameters='OMITTED', username='marge', target_patient_id=51)
     _create_log_record(
-        request='Checkin', parameters='OMITTED', username='marge', target_patient_id=51, days_delta=0,
+        request='Checkin',
+        parameters='OMITTED',
+        username='marge',
+        target_patient_id=51,
+        days_delta=0,
     )
     _create_log_record(request='Checkin', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(request='Checkin', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(request='Checkin', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(
-        request='Checkin', parameters='OMITTED', username='homer', target_patient_id=52, days_delta=0,
+        request='Checkin',
+        parameters='OMITTED',
+        username='homer',
+        target_patient_id=52,
+        days_delta=0,
     )
 
     start_datetime_period = dt.datetime.combine(
@@ -1114,13 +1162,21 @@ def test_get_aggregated_user_app_activities_documents_statistics() -> None:
     _create_log_record(request='DocumentContent', parameters='OMITTED', username='marge', target_patient_id=51)
     _create_log_record(request='DocumentContent', parameters='OMITTED', username='marge', target_patient_id=51)
     _create_log_record(
-        request='DocumentContent', parameters='OMITTED', username='marge', target_patient_id=51, days_delta=0,
+        request='DocumentContent',
+        parameters='OMITTED',
+        username='marge',
+        target_patient_id=51,
+        days_delta=0,
     )
     _create_log_record(request='DocumentContent', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(request='DocumentContent', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(request='DocumentContent', parameters='OMITTED', username='homer', target_patient_id=52)
     _create_log_record(
-        request='DocumentContent', parameters='OMITTED', username='homer', target_patient_id=52, days_delta=0,
+        request='DocumentContent',
+        parameters='OMITTED',
+        username='homer',
+        target_patient_id=52,
+        days_delta=0,
     )
 
     start_datetime_period = dt.datetime.combine(
@@ -1223,7 +1279,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '1', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '1',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         username='marge',
         target_patient_id=51,
@@ -1231,7 +1289,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '2', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '2',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         username='marge',
         target_patient_id=51,
@@ -1239,7 +1299,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '3', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '3',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         username='marge',
         target_patient_id=51,
@@ -1247,7 +1309,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '4', 'new_status': '2', 'user_display_name': 'Marge Simpson',
+            'answerQuestionnaire_id': '4',
+            'new_status': '2',
+            'user_display_name': 'Marge Simpson',
         }).replace(' ', ''),
         username='marge',
         target_patient_id=51,
@@ -1256,7 +1320,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '5', 'new_status': '2', 'user_display_name': 'Homer Simpson',
+            'answerQuestionnaire_id': '5',
+            'new_status': '2',
+            'user_display_name': 'Homer Simpson',
         }).replace(' ', ''),
         username='homer',
         target_patient_id=52,
@@ -1264,7 +1330,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '6', 'new_status': '2', 'user_display_name': 'Homer Simpson',
+            'answerQuestionnaire_id': '6',
+            'new_status': '2',
+            'user_display_name': 'Homer Simpson',
         }).replace(' ', ''),
         username='homer',
         target_patient_id=52,
@@ -1272,7 +1340,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '7', 'new_status': '2', 'user_display_name': 'Homer Simpson',
+            'answerQuestionnaire_id': '7',
+            'new_status': '2',
+            'user_display_name': 'Homer Simpson',
         }).replace(' ', ''),
         username='homer',
         target_patient_id=52,
@@ -1280,7 +1350,9 @@ def test_get_aggregated_user_app_activities_questionnaires_statistics() -> None:
     _create_log_record(
         request='QuestionnaireUpdateStatus',
         parameters=json.dumps({
-            'answerQuestionnaire_id': '8', 'new_status': '2', 'user_display_name': 'Homer Simpson',
+            'answerQuestionnaire_id': '8',
+            'new_status': '2',
+            'user_display_name': 'Homer Simpson',
         }).replace(' ', ''),
         username='homer',
         target_patient_id=52,
@@ -1398,7 +1470,7 @@ def _create_log_record(
     username: str = 'username',
     app_version: str = '100.100.100',
     days_delta: int = 1,
-) -> legacy_factories.LegacyPatientActivityLogFactory:
+) -> legacy_models.LegacyPatientActivityLog:
     data = {
         'request': request,
         'parameters': parameters,
@@ -1407,4 +1479,4 @@ def _create_log_record(
         'date_time': timezone.localtime(timezone.now()) - dt.timedelta(days=days_delta),
         'app_version': app_version,
     }
-    return legacy_factories.LegacyPatientActivityLogFactory(**data)
+    return legacy_factories.LegacyPatientActivityLogFactory.create(**data)

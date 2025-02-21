@@ -28,19 +28,21 @@ class TestCaregiverPermissionsView:
         if appuserid:
             api_client.credentials(HTTP_APPUSERID=appuserid)
 
-    def make_request(self, api_client: APIClient, legacy_id: int) -> Response:
+    def make_request(self, api_client: APIClient, legacy_id: int | None) -> Response:
         """
         Make a request to the API view being tested (CaregiverPermissionsView).
 
         Returns:
             The response of the API call.
         """
+        assert legacy_id is not None
+
         url = reverse('api:caregiver-permissions', kwargs={'legacy_id': legacy_id})
         return api_client.get(url)
 
     def test_unauthenticated_unauthorized(self, api_client: APIClient, user: User) -> None:
         """Test the request while unauthenticated."""
-        caregiver_factories.CaregiverProfile()
+        caregiver_factories.CaregiverProfile.create()
 
         response = self.make_request(api_client, 99)
 
@@ -72,8 +74,8 @@ class TestCaregiverPermissionsView:
 
     def test_no_relationship(self, api_client: APIClient, listener_user: User) -> None:
         """Test a permissions check where the caregiver doesn't have a relationship with the patient."""
-        caregiver = caregiver_factories.CaregiverProfile()
-        patient = patient_factories.Patient()
+        caregiver = caregiver_factories.CaregiverProfile.create()
+        patient = patient_factories.Patient.create()
 
         self.authenticate(api_client, listener_user, caregiver.user.username)
         response = self.make_request(api_client, patient.legacy_id)
@@ -83,7 +85,7 @@ class TestCaregiverPermissionsView:
 
     def test_unconfirmed_relationship(self, api_client: APIClient, listener_user: User) -> None:
         """Test a permissions check where the caregiver has a relationship with the patient, but it isn't confirmed."""
-        relationship = patient_factories.Relationship()
+        relationship = patient_factories.Relationship.create()
 
         self.authenticate(api_client, listener_user, relationship.caregiver.user.username)
         response = self.make_request(api_client, relationship.patient.legacy_id)
@@ -93,7 +95,7 @@ class TestCaregiverPermissionsView:
 
     def test_deceased_patient(self, api_client: APIClient, listener_user: User) -> None:
         """Test that the permission check fails if the patient is deceased."""
-        relationship = patient_factories.Relationship(
+        relationship = patient_factories.Relationship.create(
             status=RelationshipStatus.CONFIRMED,
             patient__date_of_death=timezone.now(),
         )
@@ -106,7 +108,7 @@ class TestCaregiverPermissionsView:
 
     def test_success_confirmed_relationship(self, api_client: APIClient, listener_user: User) -> None:
         """Test a permissions check where the caregiver has a confirmed relationship with the patient."""
-        relationship = patient_factories.Relationship(status=RelationshipStatus.CONFIRMED)
+        relationship = patient_factories.Relationship.create(status=RelationshipStatus.CONFIRMED)
 
         self.authenticate(api_client, listener_user, relationship.caregiver.user.username)
         response = self.make_request(api_client, relationship.patient.legacy_id)

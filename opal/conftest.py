@@ -438,67 +438,71 @@ def databank_consent_questionnaire_and_response() -> tuple[LegacyQuestionnairePa
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
     """
     # Legacy patient record
-    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory.create(external_id=LEGACY_TEST_PATIENT_ID)
     consenting_patient.full_clean()
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
-    middle_name_content = factories.LegacyDictionaryFactory(
+    middle_name_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
         content='Middle name',
         language_id=2,
     )
     middle_name_content.full_clean()
-    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
+    middle_name_question = factories.LegacyQuestionFactory.create(display=middle_name_content)
     middle_name_question.full_clean()
-    cob_content = factories.LegacyDictionaryFactory(
+    cob_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
         content='City of birth',
         language_id=2,
     )
     cob_content.full_clean()
-    cob_question = factories.LegacyQuestionFactory(display=cob_content)
+    cob_question = factories.LegacyQuestionFactory.create(display=cob_content)
     cob_question.full_clean()
-    consent_purpose_content = factories.LegacyDictionaryFactory(
+    consent_purpose_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Consent',
         language_id=2,
     )
     consent_purpose_content.full_clean()
-    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    consent_purpose = factories.LegacyPurposeFactory.create(title=consent_purpose_content)
     consent_purpose.full_clean()
     # Questionnaire
-    questionnaire_title = factories.LegacyDictionaryFactory(
+    questionnaire_title = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='Databank Consent Questionnaire',
         language_id=2,
     )
     questionnaire_title.full_clean()
-    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    consent_questionnaire = factories.LegacyQuestionnaireFactory.create(
+        purpose=consent_purpose, title=questionnaire_title
+    )
     consent_questionnaire.full_clean()
     # Questionnaire sections
-    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
-    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
-    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
+    section = factories.LegacySectionFactory.create(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory.create(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory.create(question=cob_question, section=section)
     # Answer data
-    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory(
+    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=consent_questionnaire,
         patient=consenting_patient,
     )
     answer_questionnaire.full_clean()
-    answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
-    cob_answer = factories.LegacyAnswerFactory(
+    answer_section = factories.LegacyAnswerSectionFactory.create(
+        answer_questionnaire=answer_questionnaire, section=section
+    )
+    cob_answer = factories.LegacyAnswerFactory.create(
         question=cob_question,
         answer_section=answer_section,
         patient=consenting_patient,
         questionnaire=consent_questionnaire,
     )
-    middle_name_answer = factories.LegacyAnswerFactory(
+    middle_name_answer = factories.LegacyAnswerFactory.create(
         question=middle_name_question,
         answer_section=answer_section,
         patient=consenting_patient,
         questionnaire=consent_questionnaire,
     )
-    factories.LegacyAnswerTextBoxFactory(answer=cob_answer, value='Springfield')
-    factories.LegacyAnswerTextBoxFactory(answer=middle_name_answer, value='Juliet')
+    factories.LegacyAnswerTextBoxFactory.create(answer=cob_answer, value='Springfield')
+    factories.LegacyAnswerTextBoxFactory.create(answer=middle_name_answer, value='Juliet')
 
     return (consenting_patient, consent_questionnaire)
 
@@ -512,39 +516,41 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
         Consent questionnaire
     """
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
-    middle_name_content = factories.LegacyDictionaryFactory(
+    middle_name_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
         content='Middle name',
         language_id=2,
     )
-    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
-    cob_content = factories.LegacyDictionaryFactory(
+    middle_name_question = factories.LegacyQuestionFactory.create(display=middle_name_content)
+    cob_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
         content='City of birth',
         language_id=2,
     )
-    cob_question = factories.LegacyQuestionFactory(display=cob_content)
-    consent_purpose_content = factories.LegacyDictionaryFactory(
+    cob_question = factories.LegacyQuestionFactory.create(display=cob_content)
+    consent_purpose_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Consent',
         language_id=2,
     )
-    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
-    questionnaire_title = factories.LegacyDictionaryFactory(
+    consent_purpose = factories.LegacyPurposeFactory.create(title=consent_purpose_content)
+    questionnaire_title = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='QSCC Databank Information',
         language_id=2,
     )
-    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
-    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
-    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
-    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
-    legacy_factories.LegacyQuestionnaireControlFactory(
+    consent_questionnaire = factories.LegacyQuestionnaireFactory.create(
+        purpose=consent_purpose, title=questionnaire_title
+    )
+    section = factories.LegacySectionFactory.create(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory.create(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory.create(question=cob_question, section=section)
+    legacy_factories.LegacyQuestionnaireControlFactory.create(
         questionnaire_name_en='QSCC Databank Information',
         questionnaire_db_ser_num=consent_questionnaire.id,
         publish_flag=1,
     )
-    info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory(
+    info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory.create(
         educational_material_type_en='Factsheet',
         educational_material_type_fr='Fiche Descriptive',
         name_en='Information and Consent Factsheet - QSCC Databank',

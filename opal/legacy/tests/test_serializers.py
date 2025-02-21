@@ -17,9 +17,10 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 # serializer for the questionnaire report generation API endpoint: questionnaires/reviewed/
 
+
 def test_mrn_type_for_questionnaire_report() -> None:
     """Ensure `mrn` for the questionnaire report request is a `serializers.CharField` type."""
-    hospital_patient = HospitalPatient()
+    hospital_patient = HospitalPatient.create()
     serializer = QuestionnaireReportRequestSerializer(
         data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
@@ -30,7 +31,7 @@ def test_mrn_type_for_questionnaire_report() -> None:
 
 def test_site_type_for_questionnaire_report() -> None:
     """Ensure `site_name` for the questionnaire report request is a `serializers.CharField` type."""
-    hospital_patient = HospitalPatient()
+    hospital_patient = HospitalPatient.create()
     serializer = QuestionnaireReportRequestSerializer(
         data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )

@@ -77,7 +77,7 @@ class TestInsertTestData(CommandTestMixin):
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The insertion can be cancelled when there is already data."""
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
-        relationship = factories.Relationship()
+        relationship = factories.Relationship.create()
 
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
@@ -87,9 +87,9 @@ class TestInsertTestData(CommandTestMixin):
     def test_insert_existing_data_delete(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The existing data is deleted when confirmed and new data added."""
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
-        relationship = factories.Relationship()
-        hospital_patient = factories.HospitalPatient()
-        security_answer = caregiver_factories.SecurityAnswer(user=relationship.caregiver)
+        relationship = factories.Relationship.create()
+        hospital_patient = factories.HospitalPatient.create()
+        security_answer = caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
         institution = Institution.objects.get()
         site = Site.objects.get()
@@ -123,9 +123,9 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
-        relationship = factories.Relationship()
-        factories.HospitalPatient()
-        caregiver_factories.SecurityAnswer(user=relationship.caregiver)
+        relationship = factories.Relationship.create()
+        factories.HospitalPatient.create()
+        caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
         stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
@@ -404,7 +404,7 @@ class TestInitializeData(CommandTestMixin):
         Group.objects.create(name='Clinicians')
         User.objects.create(username='johnwayne')
         # a caregiver that should not be deleted by the command
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
 
         stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
@@ -416,12 +416,15 @@ class TestInitializeData(CommandTestMixin):
         assert 'Data successfully deleted\n' in stdout
         assert 'Data successfully created\n' in stdout
 
-    @pytest.mark.parametrize('arg_name', [
-        '--listener-token',
-        '--listener-registration-token',
-        '--interface-engine-token',
-        '--opaladmin-backend-legacy-token',
-    ])
+    @pytest.mark.parametrize(
+        'arg_name',
+        [
+            '--listener-token',
+            '--listener-registration-token',
+            '--interface-engine-token',
+            '--opaladmin-backend-legacy-token',
+        ],
+    )
     def test_insert_existing_data_predefined_tokens_invalid(self, arg_name: str) -> None:
         """Tokens for system users can be provided."""
         token = secrets.token_hex(19)
@@ -434,12 +437,15 @@ class TestInitializeData(CommandTestMixin):
         with pytest.raises(CommandError, match=f"{arg_name}: invalid token value: '{token}'"):
             self._call_command('initialize_data', f'{arg_name}={token}')
 
-    @pytest.mark.parametrize('username', [
-        'listener',
-        'listener-registration',
-        'interface-engine',
-        'opaladmin-backend-legacy',
-    ])
+    @pytest.mark.parametrize(
+        'username',
+        [
+            'listener',
+            'listener-registration',
+            'interface-engine',
+            'opaladmin-backend-legacy',
+        ],
+    )
     def test_insert_existing_data_predefined_tokens(self, username: str) -> None:
         """Tokens for system users can be provided."""
         random_token = secrets.token_hex(20)
