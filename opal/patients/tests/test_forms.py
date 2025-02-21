@@ -800,6 +800,36 @@ def test_accessrequestsearchform_invalid_data(mocker: MockerFixture) -> None:
     assert form.non_field_errors()[0] == 'Hospital patient contains invalid data.'
 
 
+def test_accessrequestsearchform_non_ok(mocker: MockerFixture) -> None:
+    """Ensure that validation error of the response data are handled."""
+    patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    patient.first_name = ''
+    site = factories.Site.create(acronym='MGH')
+
+    mocker.patch(
+        'requests.post',
+        return_value=_MockResponse(
+            data={
+                'status_code': HTTPStatus.BAD_REQUEST,
+                'message': 'some error',
+            },
+            status_code=HTTPStatus.BAD_REQUEST,
+        ),
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'medical_number': '9999996',
+        'site': site.acronym,
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'Error while communicating with the hospital interface'
+
+
 def test_accessrequestconfirmpatientform_init() -> None:
     """Ensure that the form is bound for early evaluation."""
     form = forms.AccessRequestConfirmPatientForm(patient=SOURCE_SYSTEM_PATIENT_DATA)

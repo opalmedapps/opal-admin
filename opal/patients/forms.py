@@ -275,8 +275,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         except RequestException:
             self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
             LOGGER.exception('Error while connecting to hospital interface to find patient')
-        except hospital.NonOKResponseError as error:
-            self.add_error(NON_FIELD_ERRORS, error.error.message)
+        except hospital.NonOKResponseError:
+            self.add_error(NON_FIELD_ERRORS, _('Error while communicating with the hospital interface.'))
             LOGGER.exception('Error while connecting to hospital interface to find patient')
         except PydanticValidationError:
             self.add_error(NON_FIELD_ERRORS, _('Hospital patient contains invalid data.'))

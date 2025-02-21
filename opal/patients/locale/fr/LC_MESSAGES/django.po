@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-19 15:38-0500\n"
+"POT-Creation-Date: 2025-02-21 15:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,6 +76,10 @@ msgstr "Aucun patient n'a pu être retrouvé."
 #: opal/patients/forms.py
 msgid "Could not establish a connection to the hospital interface."
 msgstr "Impossible d'établir une connexion à l'interface de l'hôpital."
+
+#: opal/patients/forms.py
+msgid "Error while communicating with the hospital interface."
+msgstr "Erreur lors de la communication avec l'interface de l'hôpital."
 
 #: opal/patients/forms.py
 msgid "Hospital patient contains invalid data."
