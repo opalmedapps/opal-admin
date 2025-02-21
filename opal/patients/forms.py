@@ -246,7 +246,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if not self.patient:
                 self.patient = self._find_patient_in_source_system(constants.MedicalCard.RAMQ, medical_number)
         # MRN
-        elif card_type == constants.MedicalCard.MRN.name and site:
+        elif card_type == constants.MedicalCard.MRN.name and site:  # pragma: no cover
+            # site is always required when searching by MRN
             self.patient = Patient.objects.filter(
                 hospital_patients__mrn=medical_number,
                 hospital_patients__site=site,
@@ -268,7 +269,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         try:
             if card_type == constants.MedicalCard.RAMQ:
                 patient = hospital.find_patient_by_hin(medical_number)
-            elif site:
+            elif site:  # pragma: no cover
+                # site is always required when searching by MRN
                 patient = hospital.find_patient_by_mrn(medical_number, site)
         except hospital.PatientNotFoundError:
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
