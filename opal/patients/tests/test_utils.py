@@ -2,11 +2,12 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""App patient utils test functions."""
-
 import datetime as dt
+import json
+import logging
 import uuid
 from datetime import date, datetime
+from http import HTTPStatus
 from typing import Any
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -14,6 +15,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
@@ -47,7 +49,7 @@ from opal.patients.models import (
     RoleType,
     SexType,
 )
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
@@ -56,20 +58,28 @@ from .. import utils
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
-PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date.fromisoformat('1986-10-01'),
+PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    deceased=False,
-    death_date_time=None,
-    ramq='SIMM86600199',
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    sex=SexTypeSchema.FEMALE,
+    date_of_birth=date.fromisoformat('1986-10-01'),
+    date_of_death=None,
+    health_insurance_number='SIMM86600199',
     mrns=[],
 )
-MRN_DATA_RVH = SourceSystemMRNData(site='RVH', mrn='9999993', active=True)
-MRN_DATA_MGH = SourceSystemMRNData(site='MGH', mrn='9999996', active=False)
+MRN_DATA_RVH = HospitalNumberSchema(site='RVH', mrn='9999993')
+MRN_DATA_MGH = HospitalNumberSchema(site='MGH', mrn='9999996', is_active=False)
+
+
+class _MockResponse(requests.Response):
+    def __init__(self, status_code: HTTPStatus, data: Any) -> None:
+        self.status_code = status_code
+        self.data = data or {}
+        self.encoding = 'utf-8'
+
+    @property
+    def content(self) -> Any:
+        return json.dumps(self.data).encode()
 
 
 @pytest.mark.parametrize(
@@ -548,7 +558,7 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
 
 def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture) -> None:
     """An info message is logged when the call to the source system to initialize a patient succeeds."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    RequestMockerTest.mock_requests_post(mocker, {})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
@@ -563,10 +573,13 @@ def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture
     )
 
 
-def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) -> None:
+def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture, set_orms_disabled: None) -> None:
     """An error is logged when the call to the source system to initialize a patient fails."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
-    mock_error_logger = mocker.patch('logging.Logger.error')
+    mocker.patch(
+        'requests.post',
+        return_value=_MockResponse(HTTPStatus.BAD_REQUEST, {'status_code': HTTPStatus.BAD_REQUEST, 'message': 'error'}),
+    )
+    log_exception = mocker.spy(logging.Logger, 'exception')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
     LegacyHospitalIdentifierType.create(code='RVH')
@@ -575,7 +588,9 @@ def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) 
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
-    mock_error_logger.assert_any_call('Failed to initialize patient via the source system')
+    log_exception.assert_called_once()
+    message = log_exception.call_args_list[0].args[1]
+    assert 'Failed to initialize patient via the source system' in message
 
 
 def test_create_access_request_existing() -> None:
@@ -653,12 +668,12 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     caregiver_profile = CaregiverProfile.create()
     self_type = RelationshipType.objects.self_type()
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
-            SourceSystemPatientData(**patient_data),
+            patient_data,
             caregiver_profile,
             self_type,
         )
@@ -678,11 +693,11 @@ def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     caregiver_profile = CaregiverProfile.create()
     self_type = RelationshipType.objects.self_type()
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     relationship, _ = utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         self_type,
     )
@@ -795,23 +810,18 @@ def test_create_access_request_missing_legacy_id() -> None:
         )
 
 
-def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture) -> None:
-    """A new pediatric set delay values following corresponding institution field values."""
+def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixture, set_orms_disabled: None) -> None:
+    """A new pediatric patient gets lab delay values according to the institution settings."""
     RequestMockerTest.mock_requests_post(mocker, {})
     caregiver_profile = CaregiverProfile.create()
     self_type = RelationshipType.objects.self_type()
-    Site.create(acronym='RVH')
-    Site.create(acronym='MGH')
-    LegacyHospitalIdentifierType.create(code='RVH')
-    LegacyHospitalIdentifierType.create(code='MGH')
     institution = Institution.create(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
 
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
-    patient_data['date_of_birth'] = date(2008, 10, 23)
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.date_of_birth = datetime(2008, 10, 23, tzinfo=timezone.get_current_timezone())
 
     relationship, registration_code = utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         self_type,
     )
@@ -834,22 +844,22 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     LegacyHospitalIdentifierType.create(code='MGH')
     caregiver_profile = CaregiverProfile.create()
     relationship_type = RelationshipType.objects.get(role_type=role_type)
-    patient_data = PATIENT_DATA._asdict()
-    patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
+    patient_data = PatientSchema.model_copy(PATIENT_DATA)
+    patient_data.mrns = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     utils.create_access_request(
-        SourceSystemPatientData(**patient_data),
+        patient_data,
         caregiver_profile,
         relationship_type,
     )
 
-    legacy_patient = LegacyPatient.objects.get(ramq=patient_data['ramq'])
-    patient = Patient.objects.get(ramq=patient_data['ramq'])
+    legacy_patient = LegacyPatient.objects.get(ramq=patient_data.health_insurance_number)
+    patient = Patient.objects.get(ramq=patient_data.health_insurance_number)
     legacy_mrn_list = LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient)
 
     assert patient.legacy_id == legacy_patient.patientsernum
-    assert legacy_patient.first_name == patient_data['first_name']
-    assert legacy_patient.last_name == patient_data['last_name']
+    assert legacy_patient.first_name == patient_data.first_name
+    assert legacy_patient.last_name == patient_data.last_name
     assert legacy_patient.date_of_birth.strftime('%Y-%m-%d') == '1986-10-01'
     assert legacy_patient.sex == 'Female'
     assert legacy_patient.death_date is None

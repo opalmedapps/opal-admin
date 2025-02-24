@@ -46,6 +46,14 @@ def test_find_patient_by_hin_non_ok(mocker: MockFixture) -> None:
     assert exc.value.error == error
 
 
+def test_find_patient_by_hin_not_found(mocker: MockFixture) -> None:
+    """A PatientNotFoundError is raised if the response returns status not found."""
+    mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.NOT_FOUND, {}))
+
+    with pytest.raises(hospital.PatientNotFoundError):
+        hospital.find_patient_by_hin('test')
+
+
 def test_find_patient_by_hin_not_valid(mocker: MockFixture) -> None:
     """A ValidationError is raised if the response data is not valid."""
     response = _MockResponse(HTTPStatus.OK, {'first_name': 'Hans', 'last_name': 'Wurst'})
@@ -88,6 +96,14 @@ def test_find_patient_by_mrn_non_ok(mocker: MockFixture) -> None:
         hospital.find_patient_by_mrn('1234', 'test')
 
     assert exc.value.error == error
+
+
+def test_find_patient_by_mrn_not_found(mocker: MockFixture) -> None:
+    """A PatientNotFoundError is raised if the response returns status not found."""
+    mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.NOT_FOUND, {}))
+
+    with pytest.raises(hospital.PatientNotFoundError):
+        hospital.find_patient_by_mrn('1234', 'test')
 
 
 def test_find_patient_by_mrn_not_valid(mocker: MockFixture) -> None:
@@ -145,11 +161,8 @@ def test_notify_new_patient_bad_request(mocker: MockFixture) -> None:
 
 def test_notify_new_patient_not_found(mocker: MockFixture) -> None:
     """A NonOKResponseError is raised if the patient was not found."""
-    response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status_code': 404, 'message': 'not found'})
+    response = _MockResponse(HTTPStatus.NOT_FOUND, data={'status_code': 404, 'message': 'not found'})
     mocker.patch('requests.post', return_value=response)
 
-    with pytest.raises(hospital.NonOKResponseError) as exc:
+    with pytest.raises(hospital.PatientNotFoundError):
         hospital.notify_new_patient('1234', 'TEST')
-
-    assert exc.value.error.status_code == 404
-    assert exc.value.error.message == 'not found'

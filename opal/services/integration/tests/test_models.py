@@ -24,6 +24,14 @@ def test_hospital_number() -> None:
 
     assert hospital_number.mrn == '1234'
     assert hospital_number.site == 'TEST'
+    assert hospital_number.is_active is True
+
+
+def test_hospital_number_inactive() -> None:
+    """Test the HospitalNumberSchema with inactive status."""
+    hospital_number = schemas.HospitalNumberSchema(mrn='1234', site='TEST', is_active=False)
+
+    assert hospital_number.is_active is False
 
 
 def test_hospital_number_non_empty() -> None:
@@ -34,34 +42,32 @@ def test_hospital_number_non_empty() -> None:
     assert exc.value.error_count() == 2
 
 
-@pytest.mark.parametrize('sex', schemas.SexType)
-def test_patient_minimal(sex: schemas.SexType) -> None:
+@pytest.mark.parametrize('sex', schemas.SexTypeSchema)
+def test_patient_minimal(sex: schemas.SexTypeSchema) -> None:
     """Test the PatientSchema with minimal data."""
-    data = {
+    data: dict[str, Any] = {
         'first_name': 'Marge',
         'last_name': 'Simpson',
         'sex': sex.value,
         'date_of_birth': '1986-10-05',
         'date_of_death': None,
-        'health_insurance_number': None,
-        'mrns': [
-            {'mrn': '1234', 'site': 'TEST'},
-        ],
+        'health_insurance_number': 'TEST',
+        'mrns': [],
     }
 
     patient = schemas.PatientSchema.model_validate(data)
 
-    assert len(patient.mrns) == 1
+    assert len(patient.mrns) == 0
     assert patient.date_of_death is None
-    assert patient.health_insurance_number is None
+    assert patient.health_insurance_number == 'TEST'
 
 
-def test_patient_mrns_non_empty() -> None:
-    """The list of MRNs is required and cannot be an empty list."""
+def test_patient_medical_number_required() -> None:
+    """The health insurance number or at least one MRN is required."""
     data: dict[str, Any] = {
         'first_name': 'Marge',
         'last_name': 'Simpson',
-        'sex': schemas.SexType.MALE,
+        'sex': schemas.SexTypeSchema.MALE,
         'date_of_birth': '1986-10-05',
         'health_insurance_number': None,
         'date_of_death': None,
@@ -80,8 +86,26 @@ def test_patient_mrns_non_empty() -> None:
         schemas.PatientSchema.model_validate(data)
 
     assert exc.value.error_count() == 1
-    assert exc.value.errors()[0]['loc'] == ('mrns',)
-    assert exc.value.errors()[0]['type'] == 'too_short'
+    assert exc.value.errors()[0]['loc'] == ()
+    assert exc.value.errors()[0]['type'] == 'value_error'
+    assert 'Patient must have at least one medical number' in exc.value.errors()[0]['msg']
+
+
+def test_patient_mrn_only() -> None:
+    """The health insurance number is not required if at least one MRN is given."""
+    data: dict[str, Any] = {
+        'first_name': 'Marge',
+        'last_name': 'Simpson',
+        'sex': schemas.SexTypeSchema.MALE,
+        'date_of_birth': '1986-10-05',
+        'health_insurance_number': None,
+        'date_of_death': None,
+        'mrns': [
+            {'mrn': '1234', 'site': 'TEST'},
+        ],
+    }
+
+    schemas.PatientSchema.model_validate(data)
 
 
 def test_patient_deceased() -> None:
@@ -116,12 +140,13 @@ def test_patient_mrns() -> None:
         'mrns': [
             {'mrn': '9999996', 'site': 'OMI'},
             {'mrn': '1234', 'site': 'OHIGPH'},
+            {'mrn': '4321', 'site': 'OHIGPH', 'is_active': False},
         ],
     }
 
     patient = schemas.PatientSchema.model_validate(data)
 
-    assert len(patient.mrns) == 2
+    assert len(patient.mrns) == 3
 
 
 def test_patient_by_hin_request() -> None:
