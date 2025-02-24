@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, model_validator
 class ErrorResponseSchema(BaseModel):
     """An error response that is provided for any non-OK (200) HTTP response."""
 
-    status_code: int
+    status: int
     message: str
 
 

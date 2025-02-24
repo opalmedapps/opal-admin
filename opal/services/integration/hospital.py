@@ -25,7 +25,7 @@ class NonOKResponseError(Exception):
             response: the response with an unsupported status code
         """
         self.error = ErrorResponseSchema.model_validate_json(response.content, strict=True)
-        message = f'Non-OK status code returned: {self.error.status_code}: {self.error.message}'
+        message = f'Non-OK status code returned: {self.error.status}: {self.error.message}'
         super().__init__(message)
 
 

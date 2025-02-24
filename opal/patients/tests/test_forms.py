@@ -811,7 +811,7 @@ def test_accessrequestsearchform_non_ok(mocker: MockerFixture) -> None:
         'requests.post',
         return_value=_MockResponse(
             data={
-                'status_code': HTTPStatus.BAD_REQUEST,
+                'status': HTTPStatus.BAD_REQUEST,
                 'message': 'some error',
             },
             status_code=HTTPStatus.BAD_REQUEST,
