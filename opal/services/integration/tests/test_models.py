@@ -12,9 +12,9 @@ from .. import schemas
 
 def test_error_response() -> None:
     """Test the ErrorResponseSchema."""
-    response = schemas.ErrorResponseSchema(status_code=404, message='Patient not found')
+    response = schemas.ErrorResponseSchema(status=404, message='Patient not found')
 
-    assert response.status_code == 404
+    assert response.status == 404
     assert response.message == 'Patient not found'
 
 

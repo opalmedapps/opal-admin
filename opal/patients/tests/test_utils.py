@@ -577,7 +577,7 @@ def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture, 
     """An error is logged when the call to the source system to initialize a patient fails."""
     mocker.patch(
         'requests.post',
-        return_value=_MockResponse(HTTPStatus.BAD_REQUEST, {'status_code': HTTPStatus.BAD_REQUEST, 'message': 'error'}),
+        return_value=_MockResponse(HTTPStatus.BAD_REQUEST, {'status': HTTPStatus.BAD_REQUEST, 'message': 'error'}),
     )
     log_exception = mocker.spy(logging.Logger, 'exception')
 

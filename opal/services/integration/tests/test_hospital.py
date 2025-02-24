@@ -37,7 +37,7 @@ def test_nonok_response_error_not_valid() -> None:
 
 def test_find_patient_by_hin_non_ok(mocker: MockFixture) -> None:
     """A NonOKResponseError is raised if the response is not OK."""
-    error = schemas.ErrorResponseSchema(status_code=HTTPStatus.BAD_REQUEST, message='error message')
+    error = schemas.ErrorResponseSchema(status=HTTPStatus.BAD_REQUEST, message='error message')
     mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.BAD_REQUEST, error))
 
     with pytest.raises(hospital.NonOKResponseError) as exc:
@@ -89,7 +89,7 @@ def test_find_patient_by_hin(mocker: MockFixture) -> None:
 
 def test_find_patient_by_mrn_non_ok(mocker: MockFixture) -> None:
     """A NonOKResponseError is raised if the response is not OK."""
-    error = schemas.ErrorResponseSchema(status_code=HTTPStatus.BAD_REQUEST, message='error message')
+    error = schemas.ErrorResponseSchema(status=HTTPStatus.BAD_REQUEST, message='error message')
     mocker.patch('requests.post', return_value=_MockResponse(HTTPStatus.BAD_REQUEST, error))
 
     with pytest.raises(hospital.NonOKResponseError) as exc:
@@ -149,19 +149,19 @@ def test_notify_new_patient(mocker: MockFixture) -> None:
 
 def test_notify_new_patient_bad_request(mocker: MockFixture) -> None:
     """A NonOKResponseError is raised if the response is not OK."""
-    response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status_code': 400, 'message': 'no no no'})
+    response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status': 400, 'message': 'no no no'})
     mocker.patch('requests.post', return_value=response)
 
     with pytest.raises(hospital.NonOKResponseError) as exc:
         hospital.notify_new_patient('1234', 'TEST')
 
-    assert exc.value.error.status_code == 400
+    assert exc.value.error.status == 400
     assert exc.value.error.message == 'no no no'
 
 
 def test_notify_new_patient_not_found(mocker: MockFixture) -> None:
     """A NonOKResponseError is raised if the patient was not found."""
-    response = _MockResponse(HTTPStatus.NOT_FOUND, data={'status_code': 404, 'message': 'not found'})
+    response = _MockResponse(HTTPStatus.NOT_FOUND, data={'status': 404, 'message': 'not found'})
     mocker.patch('requests.post', return_value=response)
 
     with pytest.raises(hospital.PatientNotFoundError):
