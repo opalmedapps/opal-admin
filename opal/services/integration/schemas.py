@@ -10,8 +10,9 @@ To avoid confusion with the actual models, the Pydantic models are named with a 
 
 from datetime import date, datetime
 from enum import StrEnum, auto
+from typing import Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ErrorResponseSchema(BaseModel):
@@ -26,9 +27,10 @@ class HospitalNumberSchema(BaseModel):
 
     mrn: str = Field(min_length=1, max_length=10)
     site: str = Field(min_length=3, max_length=10)
+    is_active: bool = True
 
 
-class SexType(StrEnum):
+class SexTypeSchema(StrEnum):
     """The sex of a patient."""
 
     MALE = auto()
@@ -42,11 +44,27 @@ class PatientSchema(BaseModel):
 
     first_name: str = Field(min_length=1, max_length=150)
     last_name: str = Field(min_length=1, max_length=150)
-    sex: SexType
+    sex: SexTypeSchema
     date_of_birth: date
     date_of_death: datetime | None
     health_insurance_number: str | None = Field(min_length=1, max_length=12)
-    mrns: list[HospitalNumberSchema] = Field(min_length=1)
+    mrns: list[HospitalNumberSchema]
+
+    @model_validator(mode='after')
+    def check_medical_number(self) -> Self:
+        """
+        Check that a patient has at least one medical number (MRN or health insurance number).
+
+        Raises:
+            ValueError: if neither MRN nor health insurance number is provided
+
+        Returns:
+            the model instance
+        """
+        if not self.mrns and not self.health_insurance_number:
+            raise ValueError('Patient must have at least one medical number (MRN or health insurance number)')
+
+        return self
 
 
 class PatientByHINSchema(BaseModel):

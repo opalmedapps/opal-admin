@@ -8,35 +8,29 @@ from django.utils import timezone
 
 import pytest
 
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 
 from .. import factories, validators
 
-CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date.fromisoformat('1984-05-09'),
+CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    deceased=False,
-    death_date_time=datetime.fromisoformat('2054-05-09 09:20:30'),
-    ramq='MARG99991313',
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    date_of_birth=date.fromisoformat('1984-05-09'),
+    sex=SexTypeSchema.FEMALE,
+    date_of_death=datetime.fromisoformat('2054-05-09 09:20:30'),
+    health_insurance_number='MARG99991313',
     mrns=[
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='MGH',
             mrn='9999993',
-            active=True,
         ),
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='MCH',
             mrn='9999994',
-            active=True,
         ),
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='RVH',
             mrn='9999993',
-            active=True,
         ),
     ],
 )
@@ -44,86 +38,80 @@ CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
 
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
-    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
-        mrns=[
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=False,
-            ),
-            SourceSystemMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
+    patient_data = PatientSchema.model_copy(CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA)
+    patient_data.mrns = [
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999993',
+        ),
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999994',
+            is_active=False,
+        ),
+        HospitalNumberSchema(
+            site='RVH',
+            mrn='9999993',
+        ),
+    ]
+
     assert validators.has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
-    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
-        mrns=[
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=False,
-            ),
-        ],
-    )
+    patient_data = PatientSchema.model_copy(CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA)
+    patient_data.mrns = [
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999993',
+        ),
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999994',
+        ),
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999993',
+            is_active=False,
+        ),
+    ]
+
     assert validators.has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
-    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
-        mrns=[
-            SourceSystemMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
+    patient_data = PatientSchema.model_copy(CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA)
+    patient_data.mrns = [
+        HospitalNumberSchema(
+            site='MGH',
+            mrn='9999993',
+        ),
+        HospitalNumberSchema(
+            site='MCH',
+            mrn='9999994',
+        ),
+        HospitalNumberSchema(
+            site='RVH',
+            mrn='9999993',
+        ),
+    ]
+
     assert validators.has_multiple_mrns_with_same_site_code(patient_data) is False
 
 
 def test_patient_validator_not_deceased_source_system_patient() -> None:
     """Ensure `is_deceased` returns False when patients are not deceased for source system patients."""
-    source_system_patient = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA
+    source_system_patient = PatientSchema.model_copy(CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA)
+    source_system_patient.date_of_death = None
 
     assert validators.is_deceased(source_system_patient) is False
 
 
 def test_patient_validator_is_deceased_source_system_patient() -> None:
     """Ensure deceased patients are caught in the validator for source system patients."""
-    source_system_patient = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(deceased=True)
+    source_system_patient = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA
 
     assert validators.is_deceased(source_system_patient) is True
 

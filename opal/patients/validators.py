@@ -3,14 +3,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module for common validators for `patients` app."""
+
 from collections import Counter
 
 from opal.patients.models import Patient
-from opal.services.hospital.hospital_data import SourceSystemPatientData
+from opal.services.integration.schemas import PatientSchema
 
 
 # Patients Validators
-def is_deceased(patient: Patient | SourceSystemPatientData) -> bool:
+def is_deceased(patient: Patient | PatientSchema) -> bool:
     """
     Check if a patient is deceased.
 
@@ -20,13 +21,10 @@ def is_deceased(patient: Patient | SourceSystemPatientData) -> bool:
     Returns:
         True if patient is deceased, False otherwise
     """
-    if isinstance(patient, Patient):
-        return patient.date_of_death is not None
-
-    return patient.deceased
+    return patient.date_of_death is not None
 
 
-def has_multiple_mrns_with_same_site_code(patient_record: SourceSystemPatientData) -> bool:
+def has_multiple_mrns_with_same_site_code(patient_record: PatientSchema) -> bool:
     """
     Check if the number of MRN records with the same site code is greater than 1.
 
@@ -37,5 +35,5 @@ def has_multiple_mrns_with_same_site_code(patient_record: SourceSystemPatientDat
         True if the number of MRN records with the same site code is greater than 1
     """
     mrns = patient_record.mrns
-    key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
+    key_counts = Counter(hospital_number.site for hospital_number in mrns)
     return any(count > 1 for (site, count) in key_counts.items())

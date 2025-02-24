@@ -2,13 +2,17 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from datetime import date, datetime
+import json
+from datetime import date
+from http import HTTPStatus
+from typing import Any
 
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
 from django.utils import timezone
 
 import pytest
+import requests
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
@@ -16,7 +20,8 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile as CaregiverProfileFactory
 from opal.hospital_settings import factories as hospital_factories
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration import hospital
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver as CaregiverFactory
 from opal.users.models import User
@@ -28,20 +33,31 @@ from ..tables import ExistingUserTable
 
 pytestmark = pytest.mark.django_db
 
-SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date(1986, 10, 1),
+SOURCE_SYSTEM_PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    ramq='SIMM86600199',
-    deceased=False,
-    death_date_time=None,
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    date_of_birth=date(1986, 10, 1),
+    sex=SexTypeSchema.FEMALE,
+    health_insurance_number='SIMM86600199',
+    date_of_death=None,
     mrns=[
-        SourceSystemMRNData(site='MGH', mrn='9999993', active=True),
+        HospitalNumberSchema(site='MGH', mrn='9999993'),
     ],
 )
+
+
+class _MockResponse(requests.Response):
+    def __init__(self, status_code: HTTPStatus, data: Any) -> None:
+        self.status_code = status_code
+        self.data = data or {}
+        self.encoding = 'utf-8'
+
+    @property
+    def content(self) -> Any:
+        if isinstance(self.data, PatientSchema):
+            return self.data.model_dump_json().encode()
+
+        return json.dumps(self.data).encode()
 
 
 def test_relationshippending_form_is_valid() -> None:
@@ -637,32 +653,6 @@ def test_accessrequestsearchform_mrn_found_patient_model() -> None:
     assert form.patient == patient
 
 
-def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixture) -> None:
-    """Ensure that `_search_patient` function add error to form when no data is provided."""
-    mock_find = mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'success',
-            'data': SOURCE_SYSTEM_PATIENT_DATA,
-        },
-    )
-    form_data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'RAMQ12345678',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=form_data)
-    form._search_patient(
-        card_type='',
-        medical_number='',
-        site=None,
-    )
-
-    # asserting that correct error message is added to non-field form errors list
-    err_msg = 'No patient could be found.'
-    assert form.non_field_errors()[0] == err_msg
-    mock_find.assert_called_once_with('RAMQ12345678')
-
-
 def test_accessrequestsearchform_mrn_fail_source_system(mocker: MockerFixture) -> None:
     """
     Ensure that error is added if patient is not found in `Patient` model and in `source system`.
@@ -670,13 +660,8 @@ def test_accessrequestsearchform_mrn_fail_source_system(mocker: MockerFixture) -
     Mock find_patient_by_mrn and pretend it was failed.
     """
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_mrn',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': ['connection_error'],
-            },
-        },
+        'opal.services.integration.hospital.find_patient_by_mrn',
+        side_effect=RequestException(),
     )
     site = factories.Site.create()
     form_data = {
@@ -699,11 +684,8 @@ def test_accessrequestsearchform_mrn_success_source_system(mocker: MockerFixture
     Mock find_patient_by_mrn and pretend it was successful
     """
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_mrn',
-        return_value={
-            'status': 'success',
-            'data': SOURCE_SYSTEM_PATIENT_DATA,
-        },
+        'opal.services.integration.hospital.find_patient_by_mrn',
+        return_value=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     site = factories.Site.create(acronym='MGH')
@@ -738,19 +720,10 @@ def test_accessrequestsearchform_ramq_found_patient_model() -> None:
 
 
 def test_accessrequestsearchform_ramq_fail_source_system(mocker: MockerFixture) -> None:
-    """
-    Ensure that proper error message is displayed in source system response when search by ramq.
-
-    Mock find_patient_by_mrn and pretend it was failed.
-    """
+    """Ensure that proper error message is displayed in source system response when search by ramq."""
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': ['connection_error'],
-            },
-        },
+        'opal.services.integration.hospital.find_patient_by_hin',
+        side_effect=RequestException(),
     )
 
     form_data = {
@@ -771,11 +744,8 @@ def test_accessrequestsearchform_ramq_success_source_system(mocker: MockerFixtur
     Mock find_patient_by_mrn and pretend it was successful
     """
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'success',
-            'data': SOURCE_SYSTEM_PATIENT_DATA,
-        },
+        'opal.services.integration.hospital.find_patient_by_hin',
+        return_value=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     form_data = {
@@ -793,11 +763,8 @@ def test_accessrequestsearchform_ramq_success_source_system(mocker: MockerFixtur
 def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
     """Ensure that the validation fails if no patient was found."""
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['not_found']},
-        },
+        'opal.services.integration.hospital.find_patient_by_hin',
+        side_effect=hospital.PatientNotFoundError(),
     )
 
     data = {
@@ -812,14 +779,14 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
     assert form.non_field_errors()[0] == 'No patient could be found.'
 
 
-def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient is not a test patient."""
+def test_accessrequestsearchform_invalid_data(mocker: MockerFixture) -> None:
+    """Ensure that validation error of the response data are handled."""
+    patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    patient.first_name = ''
+
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['no_test_patient']},
-        },
+        'requests.post',
+        return_value=_MockResponse(data=patient, status_code=HTTPStatus.OK),
     )
 
     data = {
@@ -831,202 +798,37 @@ def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
     assert not form.is_valid()
     assert form.patient is None
     assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient is not a test patient.'
+    assert form.non_field_errors()[0] == 'Hospital patient contains invalid data.'
 
 
-def test_accessrequestsearchform_invalid_dateofbirth(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient dateOfBirth is invalid."""
+def test_accessrequestsearchform_non_ok(mocker: MockerFixture) -> None:
+    """Ensure that validation error of the response data are handled."""
+    patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    patient.first_name = ''
+    site = factories.Site.create(acronym='MGH')
+
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data does not have the attribute dateOfBirth.']},
-        },
+        'requests.post',
+        return_value=_MockResponse(
+            data={
+                'status_code': HTTPStatus.BAD_REQUEST,
+                'message': 'some error',
+            },
+            status_code=HTTPStatus.BAD_REQUEST,
+        ),
     )
 
     data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
+        'card_type': constants.MedicalCard.MRN.name,
+        'medical_number': '9999996',
+        'site': site.acronym,
     }
     form = forms.AccessRequestSearchPatientForm(data=data)
 
     assert not form.is_valid()
     assert form.patient is None
     assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient Date of Birth is invalid.'
-
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient dateOfBirth is invalid.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient Date of Birth is invalid.'
-
-
-def test_accessrequestsearchform_invalid_firstname(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the paitent firstname is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data firstName is empty.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient firstName is invalid.'
-
-
-def test_accessrequestsearchform_invalid_lastname(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient lastname is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data lastName is empty.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient lastName is invalid.'
-
-
-def test_accessrequestsearchform_invalid_sex(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient sex is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data sex is empty.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient sex is invalid.'
-
-
-def test_accessrequestsearchform_invalid_alias(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient alias is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data does not have the attribute alias.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient alias is invalid.'
-
-
-def test_accessrequestsearchform_invalid_ramq(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient ramq is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient ramq is missing.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient ramq is invalid.'
-
-
-def test_accessrequestsearchform_invalid_ramq_expiration(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient ramq expiration is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient data does not have the attribute ramqExpiration.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient ramq expiration is invalid.'
-
-
-def test_accessrequestsearchform_invalid_mrn(mocker: MockerFixture) -> None:
-    """Ensure that the validation fails if the patient MRN is invalid."""
-    mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': ['Patient MRN is invalid.']},
-        },
-    )
-
-    data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'TESS53510111',
-    }
-    form = forms.AccessRequestSearchPatientForm(data=data)
-
-    assert not form.is_valid()
-    assert form.patient is None
-    assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient MRN is invalid.'
+    assert form.non_field_errors()[0] == 'Error while communicating with the hospital interface.'
 
 
 def test_accessrequestconfirmpatientform_init() -> None:
@@ -1038,8 +840,9 @@ def test_accessrequestconfirmpatientform_init() -> None:
 
 def test_accessrequestconfirmpatientform_is_deceased_source_system() -> None:
     """Ensure that proper error message is added to form error list when source system patient is deceased."""
-    source_system_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(deceased=True)
-    form = forms.AccessRequestConfirmPatientForm(patient=source_system_patient)
+    data = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    data.date_of_death = timezone.now()
+    form = forms.AccessRequestConfirmPatientForm(patient=data)
     err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
 
     form.is_valid()
@@ -1061,25 +864,21 @@ def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
 
 def test_accessrequestconfirmpatientform_has_multiple_mrns_source_system() -> None:
     """Ensure that proper error message is added to form error list when source patient has more than one `MRN`."""
-    source_system_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(
-        mrns=[
-            SourceSystemMRNData(
-                site='MCH',
-                mrn='9999993',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            SourceSystemMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
+    source_system_patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    source_system_patient.mrns = [
+        HospitalNumberSchema(
+            site='MCH',
+            mrn='9999993',
+        ),
+        HospitalNumberSchema(
+            site='MCH',
+            mrn='9999994',
+        ),
+        HospitalNumberSchema(
+            site='RVH',
+            mrn='9999993',
+        ),
+    ]
     form = forms.AccessRequestConfirmPatientForm(patient=source_system_patient)
     err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
 
@@ -1130,10 +929,10 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
         .reverse(),
     )
 
-    patient = SOURCE_SYSTEM_PATIENT_DATA._asdict()
-    patient['date_of_birth'] = timezone.now().date() - relativedelta(years=age)
+    patient = PatientSchema.model_copy(SOURCE_SYSTEM_PATIENT_DATA)
+    patient.date_of_birth = timezone.now().date() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
-        patient=SourceSystemPatientData(**patient),
+        patient=patient,
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
@@ -1183,7 +982,7 @@ def test_requestor_form_relationship_type_description() -> None:
     assert options[1] == ('The patient is the requestor and is caring for themselves, Age: 14 and older')
 
     assert options[3] == (
-        'A parent or guardian of a minor who is considered' + ' incapacitated in terms of self-care, Age: 14-18'
+        'A parent or guardian of a minor who is considered incapacitated in terms of self-care, Age: 14-18'
     )
 
 
@@ -1751,7 +1550,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
     patient = factories.Patient.create(
         first_name='Test',
         last_name='Simpson',
-        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1777,7 +1576,7 @@ def test_validate_existing_relationship_missing_first_name() -> None:
     patient = factories.Patient.create(
         first_name='Test',
         last_name='Simpson',
-        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number,
     )
 
     form = forms.AccessRequestRequestorForm(

@@ -13,7 +13,7 @@ from django.utils import timezone
 import pytest
 from pytest_mock import MockerFixture
 
-from opal.services.hospital.hospital_data import SourceSystemMRNData
+from opal.services.integration.schemas import HospitalNumberSchema
 
 from .. import constants, factories, models, tables
 
@@ -54,8 +54,8 @@ def test_patienttable_render_mrns_patient() -> None:
 def test_patienttable_render_mrns_mrndata() -> None:
     """Ensure that MRNs are rendered correctly for MRN data."""
     mrns = [
-        SourceSystemMRNData(site='RVH', mrn='9999996', active=True),
-        SourceSystemMRNData(site='MGH', mrn='1234567', active=True),
+        HospitalNumberSchema(site='RVH', mrn='9999996'),
+        HospitalNumberSchema(site='MGH', mrn='1234567'),
     ]
 
     patient_table = tables.PatientTable([])

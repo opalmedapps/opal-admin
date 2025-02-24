@@ -19,12 +19,12 @@ from opal.core.utils import generate_random_registration_code, generate_random_u
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import LegacyUserType
-from opal.services.hospital.hospital import SourceSystemService
-from opal.services.hospital.hospital_data import SourceSystemPatientData
+from opal.services.integration import hospital
+from opal.services.integration.schemas import PatientSchema
 from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
-from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
@@ -395,15 +395,16 @@ def initialize_new_opal_patient(
 
     # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
-    source_system_response = SourceSystemService().new_opal_patient(active_mrn_list)
+    for site_code, mrn in active_mrn_list:
+        try:
+            hospital.notify_new_patient(mrn, site_code)
+        except hospital.NonOKResponseError as exc:  # noqa: PERF203
+            logger.exception(
+                f'Failed to initialize patient via the source system ({mrn=}, {site_code=}, {patient_uuid=}: {exc.error}'
+            )
+        else:
+            logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
 
-    if source_system_response['status'] == 'success':
-        logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
-    else:
-        logger.error('Failed to initialize patient via the source system')
-        logger.error(
-            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, Source system response = {source_system_response}',
-        )
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
         orms_response = ORMSService().set_opal_patient(active_mrn_list, patient_uuid)
@@ -421,7 +422,7 @@ def initialize_new_opal_patient(
 
 @transaction.atomic
 def create_access_request(
-    patient: Patient | SourceSystemPatientData,
+    patient: Patient | PatientSchema,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
 ) -> tuple[Relationship, caregiver_models.RegistrationCode | None]:
@@ -452,16 +453,18 @@ def create_access_request(
     )
 
     # New patient
-    if isinstance(patient, SourceSystemPatientData):
+    if isinstance(patient, PatientSchema):
         is_new_patient = True
-        mrns = [(Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active) for mrn_data in patient.mrns]
+        mrns = [
+            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.is_active) for mrn_data in patient.mrns
+        ]
 
         patient = create_patient(
             first_name=patient.first_name,
             last_name=patient.last_name,
             date_of_birth=patient.date_of_birth,
-            sex=Patient.SexType(patient.sex),
-            ramq=patient.ramq,
+            sex=SexType[patient.sex.name],
+            ramq=patient.health_insurance_number or '',
             mrns=mrns,
         )
 

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Table definitions for models of the patient app."""
+
 from datetime import date
 from typing import Any
 
@@ -14,7 +15,7 @@ from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
-from opal.services.hospital.hospital_data import SourceSystemMRNData
+from opal.services.integration.schemas import HospitalNumberSchema
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
@@ -112,7 +113,7 @@ class PatientTable(tables.Table):
 
     def render_mrns(
         self,
-        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[SourceSystemMRNData],
+        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[HospitalNumberSchema],
     ) -> str:
         """
         Render MRN column.
@@ -133,7 +134,7 @@ class PatientTable(tables.Table):
             mrn_site_list = []
 
             for item in value:
-                data = item._asdict() if isinstance(item, SourceSystemMRNData) else item
+                data = HospitalNumberSchema.model_dump(item) if isinstance(item, HospitalNumberSchema) else item
 
                 mrn_site_list.append(
                     f'{data.get("site")}: {data.get("mrn")}',

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import json
 import re
 import urllib
 from collections import OrderedDict
@@ -12,7 +11,6 @@ from typing import Any
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation
-from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 from django.test import Client, RequestFactory
 from django.urls import reverse
@@ -25,7 +23,8 @@ from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
 from opal.hospital_settings import factories as hospital_factories
-from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
+from opal.services.integration.hospital import PatientNotFoundError
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.users.models import Caregiver, User
 
 from .. import constants, factories, forms, models, tables
@@ -33,31 +32,28 @@ from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCare
 
 pytestmark = pytest.mark.django_db
 
-SOURCE_SYSTEM_PATIENT_DATA = SourceSystemPatientData(
-    date_of_birth=date.fromisoformat('1984-05-09'),
+SOURCE_SYSTEM_PATIENT_DATA = PatientSchema(
     first_name='Marge',
     last_name='Simpson',
-    sex='F',
-    alias='',
-    deceased=False,
-    death_date_time=datetime.fromisoformat('2054-05-09 09:20:30'),
-    ramq='MARG99991313',
-    ramq_expiration=datetime.fromisoformat('2024-01-31 23:59:59'),
+    date_of_birth=date.fromisoformat('1984-05-09'),
+    sex=SexTypeSchema.FEMALE,
+    date_of_death=datetime.fromisoformat('2054-05-09 09:20:30'),
+    health_insurance_number='MARG99991313',
     mrns=[
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='MGH',
             mrn='9999993',
-            active=True,
+            is_active=True,
         ),
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='MCH',
             mrn='9999994',
-            active=True,
+            is_active=True,
         ),
-        SourceSystemMRNData(
+        HospitalNumberSchema(
             site='RVH',
             mrn='9999993',
-            active=True,
+            is_active=True,
         ),
     ],
 )
@@ -1243,11 +1239,8 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
     """Ensure that the patient search form finds a new patient and moves to the next step."""
     _initialize_session(client)
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'success',
-            'data': SOURCE_SYSTEM_PATIENT_DATA,
-        },
+        'opal.services.integration.hospital.find_patient_by_hin',
+        return_value=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     form_data = {
@@ -1273,16 +1266,14 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
     # spot check only since some dates are datetimes others are strings
     assert patient.first_name == SOURCE_SYSTEM_PATIENT_DATA.first_name
     assert patient.last_name == SOURCE_SYSTEM_PATIENT_DATA.last_name
-    assert patient.ramq == SOURCE_SYSTEM_PATIENT_DATA.ramq
+    assert patient.health_insurance_number == SOURCE_SYSTEM_PATIENT_DATA.health_insurance_number
     assert patient.date_of_birth == SOURCE_SYSTEM_PATIENT_DATA.date_of_birth
     assert patient.mrns == SOURCE_SYSTEM_PATIENT_DATA.mrns
 
     # the form's data was saved and models were converted to their pk only
     session = client.session[AccessRequestView.session_key_name]
 
-    patient_data = SOURCE_SYSTEM_PATIENT_DATA._asdict()
-    patient_data['mrns'] = [mrn._asdict() for mrn in patient_data['mrns']]
-    patient_json = json.dumps(patient_data, cls=DjangoJSONEncoder)
+    patient_json = PatientSchema.model_dump_json(SOURCE_SYSTEM_PATIENT_DATA)
 
     assert session == {
         'step_search': {
@@ -1298,11 +1289,8 @@ def test_access_request_search_not_found(client: Client, registration_user: User
     """Ensure that the patient search form is invalid when no patient is found."""
     _initialize_session(client)
     mocker.patch(
-        'opal.services.hospital.hospital.SourceSystemService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {'message': 'patient not found'},
-        },
+        'opal.services.integration.hospital.find_patient_by_hin',
+        side_effect=PatientNotFoundError(),
     )
 
     form_data = {
