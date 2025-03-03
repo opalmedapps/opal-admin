@@ -248,6 +248,13 @@ def test_patient_ramq_format() -> None:
         patient.clean_fields()
 
 
+def test_patient_health_insurance_number() -> None:
+    """Ensure that the patient has a health insurance number."""
+    patient = factories.Patient.build(ramq='TEST')
+
+    assert patient.health_insurance_number == 'TEST'
+
+
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
     factories.Patient.create(ramq='', legacy_id=1)

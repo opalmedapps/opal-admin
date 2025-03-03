@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing models for the patients app."""
+
 from collections import defaultdict
 from datetime import date
 from typing import Any, Final, TypeAlias
@@ -309,6 +310,11 @@ class Patient(AbstractLabDelayModel):
             raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
 
     @property
+    def health_insurance_number(self) -> str:
+        """Return the health insurance number of the patient."""
+        return self.ramq
+
+    @property
     def age(self) -> int:
         """
         Return the age of the patient.
@@ -481,12 +487,14 @@ class Relationship(models.Model):
         # calculate the end date based on patient's birthday and relationship type
         end_date = self.calculate_end_date(self.patient.date_of_birth, self.type)
         if self.end_date is not None and end_date is not None and self.end_date > end_date:
-            errors.append(gettext(
-                'End date for {relationship_type} relationship cannot be later than {end_date}.',
-            ).format(
-                relationship_type=self.type,
-                end_date=end_date,
-            ))
+            errors.append(
+                gettext(
+                    'End date for {relationship_type} relationship cannot be later than {end_date}.',
+                ).format(
+                    relationship_type=self.type,
+                    end_date=end_date,
+                )
+            )
 
         if self.end_date is not None and self.end_date <= self.start_date:
             errors.append(gettext('End date should be later than start date.'))
@@ -508,10 +516,12 @@ class Relationship(models.Model):
             # exclude the current instance to support updating it
             and Relationship.objects.exclude(
                 pk=self.pk,
-            ).filter(
+            )
+            .filter(
                 patient=self.patient,
                 type__role_type=RoleType.SELF,
-            ).exists()
+            )
+            .exists()
         ):
             errors.append(gettext('The patient already has a self-relationship.'))
 
@@ -521,10 +531,12 @@ class Relationship(models.Model):
             # exclude the current instance to support updating it
             and Relationship.objects.exclude(
                 pk=self.pk,
-            ).filter(
+            )
+            .filter(
                 caregiver=self.caregiver,
                 type__role_type=RoleType.SELF,
-            ).exists()
+            )
+            .exists()
         ):
             errors.append(gettext('The caregiver already has a self-relationship.'))
 
@@ -567,14 +579,16 @@ class Relationship(models.Model):
         if (
             hasattr(self, 'patient')
             and hasattr(self, 'caregiver')
-             # exclude the current instance to support updating it
+            # exclude the current instance to support updating it
             and Relationship.objects.exclude(
                 pk=self.pk,
-            ).filter(
+            )
+            .filter(
                 patient=self.patient,
                 caregiver=self.caregiver,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
-            ).exists()
+            )
+            .exists()
         ):
             errors[NON_FIELD_ERRORS].append(
                 gettext('There already exists an active relationship between the patient and caregiver.'),
