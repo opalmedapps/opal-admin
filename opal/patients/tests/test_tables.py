@@ -5,6 +5,7 @@
 import datetime as dt
 import urllib
 from datetime import date, datetime, timedelta
+from typing import Any
 
 from django.test import Client
 from django.urls import reverse
@@ -13,7 +14,7 @@ from django.utils import timezone
 import pytest
 from pytest_mock import MockerFixture
 
-from opal.services.integration.schemas import HospitalNumberSchema
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema
 
 from .. import constants, factories, models, tables
 
@@ -73,6 +74,30 @@ def test_patienttable_render_mrns_dict() -> None:
     patient_table = tables.PatientTable([])
     site_mrn = patient_table.render_mrns(mrns)
     assert site_mrn == 'RVH: 9999996, MGH: 1234567'
+
+
+def test_patienttable_render_health_insurance_number() -> None:
+    """Ensure that the health insurance number/RAMQ is rendered correctly."""
+    data: dict[str, Any] = {
+        'first_name': 'Homer',
+        'last_name': 'Simpson',
+        'sex': 'male',
+        'date_of_birth': '1986-10-05',
+        'health_insurance_number': 'SIMM86600599',
+        'date_of_death': None,
+        'mrns': [],
+    }
+
+    patient_table = tables.PatientTable([
+        PatientSchema.model_validate(data),
+        factories.Patient.create(ramq='TEST'),
+    ])
+
+    row1 = patient_table.rows[0]
+    row2 = patient_table.rows[1]
+
+    assert row1.get_cell_value('health_insurance_number') == 'SIMM86600599'
+    assert row2.get_cell_value('health_insurance_number') == 'TEST'
 
 
 def _mock_datetime(mocker: MockerFixture) -> None:
