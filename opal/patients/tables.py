@@ -87,10 +87,11 @@ class PatientTable(tables.Table):
         verbose_name=_('MRN'),
         accessor='hospital_patients',
     )
+    health_insurance_number = tables.Column(verbose_name=_('RAMQ Number'))
 
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'ramq']
+        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'health_insurance_number']
         empty_text = _('No patient could be found.')
         orderable = False
 
