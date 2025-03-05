@@ -46,9 +46,9 @@ class TestInsertTestData(CommandTestMixin):
 
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OMI'
-        assert Site.objects.count() == 5
+        assert Site.objects.count() == 1
         assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 14
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 8
         assert Relationship.objects.count() == 13
         assert SecurityAnswer.objects.count() == 21
@@ -114,9 +114,9 @@ class TestInsertTestData(CommandTestMixin):
 
         # new data was created
         assert Institution.objects.count() == 1
-        assert Site.objects.count() == 5
+        assert Site.objects.count() == 1
         assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 14
+        assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 8
         assert Relationship.objects.count() == 13
         assert SecurityAnswer.objects.count() == 21
