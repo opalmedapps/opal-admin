@@ -26,10 +26,6 @@ from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
-TRAVEL_URLS_CRE = (
-    'https://live-cbhssjb.pantheonsite.io/cps/travelling',
-    'https://live-cbhssjb.pantheonsite.io/fr/cps/voyager',
-)
 
 
 class InstitutionOption(Enum):
@@ -52,76 +48,29 @@ INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.omi: {
         'name': 'Opal Demo',
         'name_fr': 'Démo de Opal',
-        'acronym_fr': 'ÉMO',
-        'support_email': 'opal@muhc.mcgill.ca',
+        'acronym_fr': 'DO1',
+        'support_email': 'info@opalmedapps.ca',
     },
     InstitutionOption.ohigph: {
         'name': 'Opal Demo 2',
         'name_fr': 'Démo de Opal 2',
         'acronym_fr': 'HPOHIG',
-        'support_email': 'opal+chusj@muhc.mcgill.ca',
+        'support_email': 'info@opalmedapps.ca',
     },
 })
 
 SITE_DATA = MappingProxyType({
     InstitutionOption.omi: [
         (
-            'Opal General Hospital 1 (RVH)',
-            'Hôpital général Opal 1 (HRV)',
-            'RVH',
-            'HRV',
-            PARKING_URLS_MUHC,
-            ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
+            'Opal Demo Hospital',
+            "Hôpital démo d'Opal",
+            'ODH',
+            'HDO',
+            ('https://www.opalmedapps.com/en/soutien', 'https://www.opalmedapps.com/soutien'),
+            ('https://www.opalmedapps.com/en', 'https://www.opalmedapps.com/fr'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal General Hospital 2 (MGH)',
-            'Hôpital général Opal 2 (HGM)',
-            'MGH',
-            'HGM',
-            PARKING_URLS_MUHC,
-            (
-                'https://muhc.ca/how-get-montreal-general-hospital',
-                'https://cusm.ca/se-rendre-lhopital-general-de-montreal',
-            ),
-            Decimal('45.496828'),
-            Decimal('-73.588782'),
-            ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal Childrens Hospital',
-            "L'Hôpital Opal pour enfants",
-            'MCH',
-            'HME',
-            PARKING_URLS_MUHC,
-            ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
-            Decimal('45.473343'),
-            Decimal('-73.600802'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
-        ),
-        (
-            'Opal General Hospital 3 (LAC)',
-            'Hôpital général Opal 3 (LAC)',
-            'LAC',
-            'LAC',
-            PARKING_URLS_MUHC,
-            ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
-            Decimal('45.44121'),
-            Decimal('-73.676791'),
-            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal General Hospital 4 (CRE)',
-            'Hôpital général Opal 4 (CRE)',
-            'CRE',
-            'CRE',
-            TRAVEL_URLS_CRE,
-            TRAVEL_URLS_CRE,
-            Decimal('45.51640'),
-            Decimal('-73.55529'),
-            ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5141234567', ''),
         ),
     ],
     InstitutionOption.ohigph: [
@@ -148,28 +97,16 @@ SITE_DATA = MappingProxyType({
 
 MRN_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'Marge Simpson': [
-            ('RVH', '9999996'),
-            ('LAC', '0389731'),
-        ],
-        'Homer Simpson': [
-            ('RVH', '9999997'),
-            ('MGH', '9999998'),
-        ],
-        'Bart Simpson': [('MCH', '9999996')],
-        'Mona Simpson': [
-            ('RVH', '9999993'),
-            ('MCH', '5407383'),
-        ],
-        'Fred Flintstone': [('RVH', '9999998')],
-        'Pebbles Flintstone': [('MCH', '9999999')],
-        'Wednesday Addams': [('RVH', '9999991')],
-        'Laurie Hendren': [
-            ('RVH', '1092300'),
-            ('MGH', '5024737'),
-        ],
-        "Rory O'Brien": [('RVH', '9999989')],
-        'Bobby Jones': [('RVH', '9999994')],
+        'Marge Simpson': [('ODH', '9999996')],
+        'Homer Simpson': [('ODH', '9999997')],
+        'Bart Simpson': [('ODH', '9999995')],
+        'Mona Simpson': [('ODH', '9999993')],
+        'Fred Flintstone': [('ODH', '9999998')],
+        'Pebbles Flintstone': [('ODH', '9999999')],
+        'Wednesday Addams': [('ODH', '9999991')],
+        'Laurie Opal': [('ODH', '1092300')],
+        "Rory O'Brien": [('ODH', '9999989')],
+        'John Smith': [('ODH', '9999994')],
     },
     InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -367,13 +304,12 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
         laurie = _create_patient(
             first_name='Laurie',
-            last_name='Hendren',
+            last_name='Opal',
             date_of_birth=date(1958, 12, 13),
             sex=Patient.SexType.FEMALE,
-            ramq='HENL58621319',
+            ramq='OPAL58621325',
             legacy_id=92,
-            mrns=mrn_data['Laurie Hendren'],
-            date_of_death=date(2019, 5, 27),
+            mrns=mrn_data['Laurie Opal'],
         )
         rory = _create_patient(
             first_name='Rory',
@@ -385,13 +321,13 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             mrns=mrn_data["Rory O'Brien"],
         )
         bobby = _create_patient(
-            first_name='Bobby',
-            last_name='Jones',
+            first_name='John',
+            last_name='Smith',
             date_of_birth=date(1985, 1, 1),
             sex=Patient.SexType.MALE,
             ramq='',
             legacy_id=93,
-            mrns=mrn_data['Bobby Jones'],
+            mrns=mrn_data['John Smith'],
         )
     # Bart exists at both institutions
     bart = _create_patient(
@@ -462,11 +398,11 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
 
         user_laurie = _create_caregiver(
             first_name='Laurie',
-            last_name='Hendren',
+            last_name='Opal',
             username='a51fba18-3810-4808-9238-4d0e487785c8',
             email='laurie@opalmedapps.ca',
             language='en',
-            phone_number='+15144415642',
+            phone_number='',
             legacy_id=6,
         )
         user_rory = _create_caregiver(
@@ -479,8 +415,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=7,
         )
         user_bobby = _create_caregiver(
-            first_name='Bobby',
-            last_name='Jones',
+            first_name='John',
+            last_name='Smith',
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
             email='bobbyjones@opalmedapps.ca',
             language='en',
@@ -664,7 +600,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Marge has 2 pathology reports received 2 and 12 days ago respectively
         _create_pathology_result(
             patient=marge,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=2),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=2),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=2),
@@ -672,7 +608,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
         _create_pathology_result(
             patient=marge,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
@@ -681,7 +617,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Homer received his pathology 8 days ago
         _create_pathology_result(
             patient=homer,
-            site=sites['MGH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=8),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=8),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=8),
@@ -690,7 +626,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Fred received his pathology 4 days ago
         _create_pathology_result(
             patient=fred,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
@@ -699,7 +635,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Bart received his pathology 5 days ago
         _create_pathology_result(
             patient=bart,
-            site=sites['MCH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
@@ -708,7 +644,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Pebbles received her pathology 4 days ago
         _create_pathology_result(
             patient=pebbles,
-            site=sites['MCH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
@@ -717,7 +653,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Wednesday received her pathology 15 days ago
         _create_pathology_result(
             patient=wednesday,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=15),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=15),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=15),
@@ -727,7 +663,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Laurie received her pathology 15 days ago
         _create_pathology_result(
             patient=laurie,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             received_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
@@ -736,7 +672,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         # Rory pathology 12 days ago
         _create_pathology_result(
             patient=rory,
-            site=sites['RVH'],
+            site=sites['ODH'],
             collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),

@@ -153,7 +153,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
 
         self._create_data(**options)
-        self._create_legacy_data(**options)
+        self._create_users(**options)
 
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
@@ -320,18 +320,9 @@ class Command(BaseCommand):
         )
         self.stdout.write(f'{orms.username} token: {token_orms}')
 
-    def _create_legacy_data(self, **options: Any) -> None:
+    def _create_users(self, **options: Any) -> None:
         # create a legacy admin user with the system administrator role
-        admin_role = legacy_models.LegacyOARole.objects.get(name_en='System Administrator')
-        legacy_models.LegacyOAUser.objects.create(
-            username='admin',
-            # the password does not matter since legacy OpalAdmin
-            # does not support logging in with AD or regular login at the same time
-            # i.e., if AD login is enabled a regular log in is not possible
-            password=secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES),
-            oa_role=admin_role,
-            user_type=legacy_models.LegacyOAUserType.HUMAN,
-        )
+        self._create_legacy_user('admin', legacy_models.LegacyOAUserType.HUMAN, 'System Administrator')
 
         password_option: str = options['admin_password']
         raw_password = password_option or secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
@@ -343,6 +334,18 @@ class Command(BaseCommand):
             message += f' and generated password: {raw_password}'
 
         self.stdout.write(message)
+
+    def _create_legacy_user(self, username: str, user_type: legacy_models.LegacyOAUserType, role_name: str) -> None:
+        role = legacy_models.LegacyOARole.objects.get(name_en=role_name)
+        legacy_models.LegacyOAUser.objects.create(
+            username=username,
+            # the password does not matter since legacy OpalAdmin
+            # does not support logging in with AD or regular login at the same time
+            # i.e., if AD login is enabled a regular log in is not possible
+            password=secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES),
+            oa_role=role,
+            user_type=user_type,
+        )
 
 
 def _create_security_questions() -> None:
