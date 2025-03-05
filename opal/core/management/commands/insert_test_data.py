@@ -320,7 +320,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=59,
             mrns=mrn_data["Rory O'Brien"],
         )
-        bobby = _create_patient(
+        john = _create_patient(
             first_name='John',
             last_name='Smith',
             date_of_birth=date(1985, 1, 1),
@@ -414,11 +414,11 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             phone_number='+15557654321',
             legacy_id=7,
         )
-        user_bobby = _create_caregiver(
+        user_john = _create_caregiver(
             first_name='John',
             last_name='Smith',
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
-            email='bobbyjones@opalmedapps.ca',
+            email='john@opalmedapps.ca',
             language='en',
             phone_number='',
             legacy_id=8,
@@ -551,10 +551,10 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=_relative_date(today, -14),
         )
 
-        # Bobby --> Bobby: Self
+        # John --> John: Self
         _create_relationship(
-            patient=bobby,
-            caregiver=user_bobby,
+            patient=john,
+            caregiver=user_john,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
             request_date=_relative_date(today, -14),
@@ -589,7 +589,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_fred)
         _create_security_answers(user_laurie)
         _create_security_answers(user_rory)
-        _create_security_answers(user_bobby)
+        _create_security_answers(user_john)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
