@@ -179,6 +179,10 @@ class TestRetrieveRegistrationDetailsView:
                 'id': institution.id,
                 'name': institution.name,
             },
+            'relationship_type': {
+                'name': relationship.type.name,
+                'role_type': relationship.type.role_type,
+            },
         }
 
     def test_api_not_retrieve_deceased_patient(self, api_client: APIClient, admin_user: User) -> None:
@@ -702,8 +706,8 @@ class TestPatientCaregiverDevicesView:
             'first_name': patient.first_name,
             'last_name': patient.last_name,
             'institution': {
-                'acronym_en': institution.acronym_en,  # type: ignore[attr-defined]
-                'acronym_fr': institution.acronym_fr,  # type: ignore[attr-defined]
+                'acronym_en': institution.acronym_en,
+                'acronym_fr': institution.acronym_fr,
             },
             'data_access': 'ALL',
             'caregivers': [
