@@ -179,6 +179,10 @@ class TestRetrieveRegistrationDetailsView:
                 'id': institution.id,
                 'name': institution.name,
             },
+            'relationship_type': {
+                'name': relationship.type.name,
+                'role_type': relationship.type.role_type,
+            },
         }
 
     def test_api_not_retrieve_deceased_patient(self, api_client: APIClient, admin_user: User) -> None:

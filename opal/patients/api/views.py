@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides `APIViews` for the `patients` app REST APIs."""
+
 from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -41,13 +42,12 @@ from ..models import Patient, Relationship, RelationshipType
 class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
     """Class handling GET requests for registration code values."""
 
-    queryset = (
-        caregiver_models.RegistrationCode.objects.select_related(
-            'relationship__patient',
-            'relationship__caregiver',
-        ).filter(
-            status=caregiver_models.RegistrationCodeStatus.NEW,
-        )
+    queryset = caregiver_models.RegistrationCode.objects.select_related(
+        'relationship__patient',
+        'relationship__caregiver',
+        'relationship__type',
+    ).filter(
+        status=caregiver_models.RegistrationCodeStatus.NEW,
     )
     serializer_class = caregiver_serializers.RegistrationCodeInfoSerializer
     permission_classes = (IsRegistrationListener,)
