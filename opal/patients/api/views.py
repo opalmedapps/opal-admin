@@ -65,7 +65,6 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             The object of RegistrationCode
         """
         registration_code = super().get_object()
-        print(registration_code)
         if registration_code.relationship.patient.date_of_death:
             raise PermissionDenied()
         return registration_code
