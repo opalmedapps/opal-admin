@@ -1,6 +1,6 @@
 Trademark policy
 
-1) The Opal name, the Opal Patient Portal name, the Opal Patient-in-the-loop Data Platform name, the Opal Room Management System name, the Opal logo, the OpalAdmin logo, the Opal Logiciel Ouvert logo, and the  Opal Open Source logo are all the property of the Opal Health Informatics Group at the Research Institute of the McGill University Health Centre in Montreal, Canada. Collectively they will be referred to as the “Marks” in this policy document.
+1) The Opal name, when used in conjunction with the Opal patient-the-loop platform and variations of it as developed at the Research Institute of the McGill University Health Centre (RI-MUHC) are all the property of or licensed to the Opal Health Informatics Group (opalmedapps.com) at the RI-MUHC in Montreal, Canada. Collectively they will be referred to as the “Marks” in this policy document.
 
 2) We acknowledge and support your right to make “fair use” of the Marks and do not mean to suggest with these guidelines that our permission is required in such cases. We cannot, however, tell you categorically what will or will not qualify as “fair use”.
 
@@ -8,8 +8,7 @@ Trademark policy
 
 4) You should not include any of the Marks in the name of your application, product, service, grant applications, or communications without our written permission, regardless of whether it’s commercial or non-commercial in nature.
 
-4.1) If you are producing new software that is intended to provide integration with a product using a Mark, you may use the Mark in a way which indicates the intent of your product. For example, if you are developing a plugin to integrate Opal with another system, acceptable project titles might be “Opal plugin for …” or “Opal integration for …”. However, you may not use the Marks in a way which implies an endorsement where that doesn’t exist,
-or which attempts to unfairly or confusingly capitalize on the goodwill or brand of the project.
+4.1) If you are producing new software that is intended to provide integration with a product using a Mark, you may use the Mark in a way which indicates the intent of your product. For example, if you are developing a plugin to integrate Opal with another system, acceptable project titles might be “Opal plugin for …” or “Opal integration for …”. However, you may not use the Marks in a way which implies an endorsement where that doesn’t exist, or which attempts to unfairly or confusingly capitalize on the goodwill or brand of the project.
 
 5) Domain Names: If you want to include all or any of the Marks in a domain name, you should seek our permission (see Contact Information below to request permission). People naturally associate domain names with organizations whose names sound similar. Almost any use of the Marks in a domain name is likely to confuse someone, thus running afoul the overarching requirement that any use of the Marks must not be confusing. By “domain name” we mean to refer to top-level domains and second-level domains, but not sub-domains.
 
@@ -17,7 +16,7 @@ or which attempts to unfairly or confusingly capitalize on the goodwill or brand
 
 7) Distributing modified Opal packages: In making such a distribution you must remove all trademark uses of the Marks from the version of the Opal software you are modifying.
 
-8) Although we love to encourage publications, if you want to include all or any of the Marks in the name of a publication such as a book or magazine, you need our permission (see Contact Information below to request permission). But you can use any or all of the Marks in a title of review inside a magazine, for example, as long as you use the Marks to refer to the official Opal  software or products.
+8) Although we love to encourage publications, if you want to include all or any of the Marks in the name of a publication such as a research publication, a book or magazine, you need our permission (see Contact Information below to request permission). But you can use any or all of the Marks in a title of review inside a magazine, for example, as long as you use the Marks to refer to the official Opal software or products.
 
 9) The Opal Health Informatics Group reserves the sole right to determine compliance with, modify or grant exceptions to this policy.
 
