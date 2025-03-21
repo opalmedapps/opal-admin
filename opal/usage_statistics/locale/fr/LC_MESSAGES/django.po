@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-13 11:39-0500\n"
+"POT-Creation-Date: 2024-12-18 13:40-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -227,6 +227,10 @@ msgstr "Données des patient reçues"
 msgid "Patient Data Received Records"
 msgstr "Dossiers de données des patients reçues"
 
-#: opal/usage_statistics/templates/usage_statistics/export_data/export_form.html
+#: opal/usage_statistics/templates/usage_statistics/reports/export_form.html
 msgid "Export Data"
 msgstr "Exporter les données"
+
+#: opal/usage_statistics/views.py
+msgid "No valid download option selected."
+msgstr "Aucune option de téléchargement valide sélectionnée."

@@ -2,10 +2,12 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+import datetime as dt
 import io
 import zipfile
 from typing import Any
 
+from django.utils import timezone
 from django.utils.text import Truncator
 
 from openpyxl import load_workbook
@@ -17,6 +19,34 @@ file_contents = {
     'file1.txt': b'Hello, this is file 1.',
     'file2.txt': b'This is the content of file 2.',
     'image.png': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00',
+}
+
+workbook_data_with_tz = {
+    'SheetWithTZ': [
+        {
+            'datetime_col': dt.datetime(2024, 1, 1, 12, 0, tzinfo=dt.timezone.utc),
+            'string_col': 'Test 1',
+        },
+        {
+            'datetime_col': dt.datetime(
+                2024,
+                2,
+                1,
+                13,
+                30,
+                tzinfo=dt.timezone(dt.timedelta(hours=-5)),
+            ),
+            'string_col': 'Test 2',
+        },
+    ],
+    'SheetNoTZ': [
+        {
+            'datetime_col': timezone.make_naive(
+                dt.datetime(2024, 3, 1, 14, 0, tzinfo=timezone.get_current_timezone()),
+            ),
+            'string_col': 'No TZ info',
+        },
+    ],
 }
 
 
@@ -61,7 +91,7 @@ def test_qr_code() -> None:
     """Ensure a QR code can be built as an in-memory SVG image."""
     code = utils.qr_code('https://opalmedapps.ca')
 
-    assert code.startswith(b'<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<svg xmlns:svg="http://www.w3.org/2000/svg"')
+    assert code.startswith(b"<?xml version='1.0' encoding='UTF-8'?>\n<svg xmlns:svg=\"http://www.w3.org/2000/svg\"")
 
 
 def test_create_zip_empty_list() -> None:
@@ -141,12 +171,7 @@ def test_dict_to_csv_multiple_dicts_success() -> None:
         {'name': 'Bob', 'age': 25, 'city': 'Los Angeles'},
         {'name': 'Charlie', 'age': 35, 'city': 'Chicago'},
     ]
-    expected_csv = (
-        'name,age,city\r\n'
-        + 'Alice,30,New York\r\n'
-        + 'Bob,25,Los Angeles\r\n'
-        + 'Charlie,35,Chicago\r\n'
-    )
+    expected_csv = 'name,age,city\r\n' + 'Alice,30,New York\r\n' + 'Bob,25,Los Angeles\r\n' + 'Charlie,35,Chicago\r\n'
     csv_bytes = utils.dict_to_csv(input_list)
     csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
@@ -175,15 +200,14 @@ def test_dict_to_csv_mixed_value_types() -> None:
 
 def test_dict_to_csv_special_chars() -> None:
     """Ensure dict_to_csv successfully converts list of dicts with values containing special characters."""
-    input_dict = [{
-        'key1': 'value1, with comma',
-        'key2': 'value\nwith newline',
-        'key3': 'value "with quotes"',
-    }]
-    expected_csv = (
-        'key1,key2,key3\r\n'
-        + '"value1, with comma","value\nwith newline","value ""with quotes"""\r\n'
-    )
+    input_dict = [
+        {
+            'key1': 'value1, with comma',
+            'key2': 'value\nwith newline',
+            'key3': 'value "with quotes"',
+        }
+    ]
+    expected_csv = 'key1,key2,key3\r\n' + '"value1, with comma","value\nwith newline","value ""with quotes"""\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
     csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
@@ -430,3 +454,34 @@ def test_dict_to_xlsx_none_values_in_data() -> None:
     sheet = workbook['Sheet1']
     row = [cell.value for cell in next(sheet.iter_rows(min_row=2))]
     assert row == ['Alice', None]
+
+
+def test_dict_to_xlsx_tzinfo_removed() -> None:
+    """Ensure that all timezone information is removed from the datetime objects after calling dict_to_xlsx."""
+    xlsx_bytes = utils.dict_to_xlsx(workbook_data_with_tz)
+    wb = load_workbook(io.BytesIO(xlsx_bytes))
+
+    # Check first sheet
+    sheet_tz = wb['SheetWithTZ']
+    header_row = [cell.value for cell in sheet_tz[1]]
+    assert header_row == ['datetime_col', 'string_col']
+
+    # Check the datetimes in rows
+    # Row 2
+    dt_value_second_row = sheet_tz.cell(row=2, column=1).value
+    assert isinstance(dt_value_second_row, dt.datetime), 'Cell should contain a datetime object'
+    assert dt_value_second_row.tzinfo is None, 'tzinfo should be None (timezone removed)'
+
+    # Row 3
+    dt_value_third_row = sheet_tz.cell(row=3, column=1).value
+    assert isinstance(dt_value_third_row, dt.datetime), 'Cell should contain a datetime object'
+    assert dt_value_third_row.tzinfo is None, 'tzinfo should be None (timezone removed)'
+
+    # Check second sheet (SheetNoTZ)
+    sheet_no_tz = wb['SheetNoTZ']
+    header_row = [cell.value for cell in sheet_no_tz[1]]
+    assert header_row == ['datetime_col', 'string_col']
+
+    dt_value_second_row = sheet_no_tz.cell(row=2, column=1).value
+    assert isinstance(dt_value_second_row, dt.datetime), 'Cell should contain a datetime object'
+    assert dt_value_second_row.tzinfo is None, 'tzinfo should be None since it was naive already'

@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """App core util functions."""
+
 import csv
+import datetime as dt
 import io
 import random
 import re
@@ -17,6 +19,7 @@ from django.utils.text import Truncator
 
 import qrcode
 from openpyxl import Workbook
+from openpyxl.worksheet.worksheet import Worksheet
 from qrcode.image import svg
 
 # Type aliases
@@ -189,7 +192,7 @@ def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData)
 
     Args:
         workbook: the workbook to add the sheet to.
-        sheet_name: The name of the sheet.
+        sheet_name: the name of the sheet.
         rows: the data rows to add to the sheet.
     """
     sheet_name = re.sub(FORBIDDEN_CHARACTERS, '', sheet_name)
@@ -200,8 +203,30 @@ def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData)
     if not rows:
         return
 
+    _add_rows_to_worksheet(worksheet, rows)
+
+
+def _add_rows_to_worksheet(worksheet: Worksheet, rows: SheetData) -> None:
+    """
+    Add rows to the worksheet.
+
+    All datetime objects are converted to UTC and made naive (tzinfo=None) to ensure Excel handles them properly.
+
+    Args:
+        worksheet: the worksheet to add the data rows to.
+        rows: the data rows to add to the sheet.
+    """
     headers = list(rows[0].keys())
     worksheet.append(headers)
 
     for row_data in rows:
-        worksheet.append([row_data.get(header, '') for header in headers])
+        # Convert any datetime objects to naive UTC
+        for header in headers:
+            value = row_data.get(header)
+            if isinstance(value, dt.datetime):
+                # Convert any tz-aware datetime to UTC and remove the tzinfo
+                if value.tzinfo is not None:
+                    value = value.astimezone(dt.timezone.utc).replace(tzinfo=None)
+                row_data[header] = value  # if None or empty string, leave as is
+
+        worksheet.append([row_data.get(column_header, '') for column_header in headers])
