@@ -5,7 +5,10 @@
 import datetime as dt
 import json
 
+from django.urls import reverse
 from django.utils import timezone
+
+from opal.core.forms.layouts import CancelButton
 
 from ..common import GroupByComponent, GroupReportType
 from ..forms import GroupUsageStatisticsForm, IndividualUsageStatisticsForm
@@ -27,10 +30,12 @@ def test_group_stats_form_missing_start_date() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        'start_date': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
+        'start_date': [
+            {
+                'message': 'This field is required.',
+                'code': 'required',
+            }
+        ],
     })
 
 
@@ -45,10 +50,12 @@ def test_group_stats_form_missing_end_date() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        'end_date': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
+        'end_date': [
+            {
+                'message': 'This field is required.',
+                'code': 'required',
+            }
+        ],
     })
 
 
@@ -63,10 +70,12 @@ def test_group_stats_form_missing_group_by() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        'group_by': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
+        'group_by': [
+            {
+                'message': 'This field is required.',
+                'code': 'required',
+            }
+        ],
     })
 
 
@@ -81,10 +90,12 @@ def test_group_stats_form_missing_report_type() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        'report_type': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
+        'report_type': [
+            {
+                'message': 'This field is required.',
+                'code': 'required',
+            }
+        ],
     })
 
 
@@ -100,10 +111,12 @@ def test_group_stats_form_start_later_than_end() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        '__all__': [{
-            'message': 'Start date cannot be later than end date.',
-            'code': '',
-        }],
+        '__all__': [
+            {
+                'message': 'Start date cannot be later than end date.',
+                'code': '',
+            }
+        ],
     })
 
 
@@ -119,35 +132,21 @@ def test_individual_usage_stats_form_is_valid(individual_usage_stats_form: Indiv
 
 
 def test_individual_stats_form_missing_start_date() -> None:
-    """Ensure that the IndividualUsageStatisticsForm checks for missing start date."""
+    """Ensure that the IndividualUsageStatisticsForm is valid if the start date is missing."""
     form_data = {
         'end_date': timezone.now().date(),
     }
     form = IndividualUsageStatisticsForm(data=form_data)
-
-    assert not form.is_valid()
-    assert form.errors.as_json() == json.dumps({
-        'start_date': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
-    })
+    assert form.is_valid()
 
 
 def test_individual_stats_form_missing_end_date() -> None:
-    """Ensure that the IndividualUsageStatisticsForm checks for missing end date."""
+    """Ensure that the IndividualUsageStatisticsForm is valid if the end date is missing."""
     form_data = {
         'start_date': timezone.now().date() - dt.timedelta(days=7),
     }
     form = IndividualUsageStatisticsForm(data=form_data)
-
-    assert not form.is_valid()
-    assert form.errors.as_json() == json.dumps({
-        'end_date': [{
-            'message': 'This field is required.',
-            'code': 'required',
-        }],
-    })
+    assert form.is_valid()
 
 
 def test_individual_stats_form_start_later_than_end() -> None:
@@ -160,8 +159,30 @@ def test_individual_stats_form_start_later_than_end() -> None:
 
     assert not form.is_valid()
     assert form.errors.as_json() == json.dumps({
-        '__all__': [{
-            'message': 'Start date cannot be later than end date.',
-            'code': '',
-        }],
+        '__all__': [
+            {
+                'message': 'Start date cannot be later than end date.',
+                'code': '',
+            }
+        ],
     })
+
+
+def test_group_stats_form_cancel_button_url() -> None:
+    """Ensure that the cancel button in the group statistics form has the correct URL."""
+    form = GroupUsageStatisticsForm()
+    layout_row = form.helper.layout[3]
+    cancel_button = layout_row[2]
+    assert isinstance(cancel_button, CancelButton), 'The layout item at position [3][2] should be a CancelButton.'
+    expected_url = reverse('usage-statistics:reports-group-export')
+    assert expected_url in cancel_button.html, 'The Cancel button does not have the expected URL.'
+
+
+def test_individual_stats_form_cancel_button_url() -> None:
+    """Ensure that the cancel button in the individual statistics form has the correct URL."""
+    form = IndividualUsageStatisticsForm()
+    layout_row = form.helper.layout[2]
+    cancel_button = layout_row[2]
+    assert isinstance(cancel_button, CancelButton), 'The layout item at position [2][2] should be a CancelButton.'
+    expected_url = reverse('usage-statistics:reports-individual-export')
+    assert expected_url in cancel_button.html, 'The Cancel button does not have the expected URL.'

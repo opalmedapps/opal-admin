@@ -702,7 +702,7 @@ def fetch_patient_demographic_diagnosis_summary(
         .annotate(
             patient_ser_num=models.F('patient__patientsernum'),
             age=models.F('patient__age'),
-            date_of_birth=models.F('patient__date_of_birth'),
+            date_of_birth=Trunc('patient__date_of_birth', 'second', tzinfo=dt.UTC),
             sex=models.F('patient__sex'),
             email=models.F('patient__email'),
             language=models.F('patient__language'),

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides forms for the `usage_statistics` app."""
+
+import datetime as dt
 from typing import Any
 
 from django import forms
@@ -15,8 +17,7 @@ from crispy_forms.layout import HTML, Column, Layout, Row
 
 from opal.core.forms.layouts import CancelButton, FormActions, Submit
 
-from . import constants
-from .common import GroupByComponent
+from . import common, constants
 
 
 class UsageStatisticsExportFormMixin(forms.Form):
@@ -49,9 +50,8 @@ class UsageStatisticsExportFormMixin(forms.Form):
                 Column('end_date', css_class='col-6'),
             ),
             FormActions(
-                Submit('submit', _('Download CSV')),
-                Submit('submit', _('Download XLSX')),
-                CancelButton(reverse('usage-statistics:reports-individual-export')),
+                Submit(constants.DOWNLOAD_CSV_BUTTON_NAME, _('Download CSV')),
+                Submit(constants.DOWNLOAD_XLSX_BUTTON_NAME, _('Download XLSX')),
             ),
         )
 
@@ -81,7 +81,7 @@ class GroupUsageStatisticsForm(UsageStatisticsExportFormMixin):
 
     group_by = forms.ChoiceField(
         choices=constants.TIME_INTERVAL_GROUPINGS,
-        initial=GroupByComponent.DAY.name,
+        initial=common.GroupByComponent.DAY.name,
         label=_('Group By'),
     )
     report_type = forms.ChoiceField(
@@ -103,6 +103,12 @@ class GroupUsageStatisticsForm(UsageStatisticsExportFormMixin):
         self.helper.layout.insert(1, 'group_by')
         self.helper.layout.insert(2, 'report_type')
 
+        # Add Cancel button
+        self.helper.layout[3].insert(
+            2,
+            CancelButton(reverse('usage-statistics:reports-group-export')),
+        )
+
 
 class IndividualUsageStatisticsForm(UsageStatisticsExportFormMixin):
     """Form for exporting individual usage statistics data based on the provided filtering values."""
@@ -116,10 +122,9 @@ class IndividualUsageStatisticsForm(UsageStatisticsExportFormMixin):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        start_date = self.data.get('start_date')
-        end_date = self.data.get('end_date')
-        self.fields['start_date'].required = bool(end_date)
-        self.fields['end_date'].required = bool(start_date)
+
+        self.fields['start_date'].required = False
+        self.fields['end_date'].required = False
 
         note_text = _('If date fields are not provided, all statistical data will be extracted.')
 
@@ -127,8 +132,38 @@ class IndividualUsageStatisticsForm(UsageStatisticsExportFormMixin):
         self.helper.layout.insert(
             0,
             HTML(
-                '<p class="text-muted">'
-                + f'<strong>Note:</strong> {note_text}'
-                + '</p>',
+                f'<p class="text-muted"><strong>Note:</strong>{note_text}</p>',
             ),
         )
+
+        # Add Cancel button
+        self.helper.layout[2].insert(
+            2,
+            CancelButton(reverse('usage-statistics:reports-individual-export')),
+        )
+
+    def clean_start_date(self) -> dt.date:
+        """
+        Validate the start date of the exporting individual usage statistics.
+
+        If no start date is provided, it defaults to the earliest representable date (e.g., `date.min`).
+
+        Returns:
+            the cleaned start date
+        """
+        start_date = self.cleaned_data.get('start_date')
+
+        return start_date if isinstance(start_date, dt.date) else dt.date.min
+
+    def clean_end_date(self) -> dt.date:
+        """
+        Validate the end date of the exporting individual usage statistics.
+
+        If no end date is provided, it defaults to the latest representable date (e.g., `date.max`).
+
+        Returns:
+            the cleaned end date
+        """
+        end_date = self.cleaned_data.get('end_date')
+
+        return end_date if isinstance(end_date, dt.date) else dt.date.max
