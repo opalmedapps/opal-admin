@@ -19,6 +19,7 @@ from opal.users import factories as user_factories
 from .. import constants, factories
 from ..models import (
     PREDEFINED_ROLE_TYPES,
+    DataAccessType,
     HospitalPatient,
     Patient,
     Relationship,
@@ -276,7 +277,7 @@ def test_patient_access_level_default() -> None:
     """Ensure that the default data access level is ALL."""
     patient = factories.Patient.create()
 
-    assert patient.data_access == Patient.DataAccessType.ALL
+    assert patient.data_access == DataAccessType.ALL
 
 
 def test_patient_non_interpretable_delay_field_max_value() -> None:

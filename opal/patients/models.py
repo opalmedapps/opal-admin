@@ -204,12 +204,6 @@ class DataAccessType(models.TextChoices):
 class Patient(AbstractLabDelayModel):
     """A patient whose data can be accessed."""
 
-    # TextChoices need to be defined outside to use them in constraints
-    # define them as class attributes for easier access
-    # see: https://stackoverflow.com/q/71522816
-    SexType = SexType
-    DataAccessType = DataAccessType
-
     uuid = models.UUIDField(
         verbose_name=_('UUID'),
         unique=True,

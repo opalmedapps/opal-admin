@@ -433,32 +433,32 @@ def test_fetch_patients_summary() -> None:
     patient_factories.Patient.create(
         legacy_id=51,
         ramq='TEST01161974',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
     )
     patient_factories.Patient.create(
         legacy_id=52,
         ramq='TEST01161975',
-        sex=patient_models.Patient.SexType.OTHER,
+        sex=patient_models.SexType.OTHER,
     )
     patient_factories.Patient.create(
         legacy_id=53,
         ramq='TEST01161976',
-        sex=patient_models.Patient.SexType.UNKNOWN,
+        sex=patient_models.SexType.UNKNOWN,
     )
     patient_factories.Patient.create(
         legacy_id=54,
         ramq='TEST01161977',
-        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+        data_access=patient_models.DataAccessType.NEED_TO_KNOW,
     )
     patient_factories.Patient.create(
         legacy_id=55,
         ramq='TEST01161978',
-        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+        data_access=patient_models.DataAccessType.NEED_TO_KNOW,
     )
     patient_factories.Patient.create(
         legacy_id=56,
         ramq='TEST01161979',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
         date_of_death=timezone.now(),
     )
     patient_factories.Patient.create(
@@ -469,7 +469,7 @@ def test_fetch_patients_summary() -> None:
     patient_factories.Patient.create(
         legacy_id=58,
         ramq='TEST01161981',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
         created_at=timezone.now() - dt.timedelta(days=3),
     )
     caregivers_summary = stats_queries.fetch_patients_summary(

@@ -52,7 +52,7 @@ class Patient(DjangoModelFactory[models.Patient]):
     first_name = 'Marge'
     last_name = 'Simpson'
     date_of_birth = datetime.date(1999, 1, 1)
-    sex = models.Patient.SexType.MALE
+    sex = models.SexType.MALE
     ramq = ''
     legacy_id = Sequence(lambda number: number + 1)
 
