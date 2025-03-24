@@ -163,7 +163,7 @@ def _create_patient(model: type[Model], ramq: str = '') -> Model:
         first_name='Marge',
         last_name='Simpson',
         date_of_birth='1987-03-19',
-        sex=models.Patient.SexType.FEMALE,
+        sex=models.SexType.FEMALE,
     )
 
 

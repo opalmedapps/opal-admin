@@ -20,7 +20,15 @@ from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
+from opal.patients.models import (
+    DataAccessType,
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipStatus,
+    RelationshipType,
+    SexType,
+)
 from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
 from opal.users.models import Caregiver
 
@@ -236,7 +244,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Lisa',
             last_name='Simpson',
             date_of_birth=_create_date(8, 5, 9),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='SIML14550999',
             legacy_id=54,
             mrns=mrn_data['Lisa Simpson'],
@@ -246,7 +254,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Marge',
             last_name='Simpson',
             date_of_birth=_create_date(36, 10, 1),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='SIMM86600199',
             legacy_id=51,
             mrns=mrn_data['Marge Simpson'],
@@ -256,7 +264,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Homer',
             last_name='Simpson',
             date_of_birth=_create_date(39, 5, 12),
-            sex=Patient.SexType.MALE,
+            sex=SexType.MALE,
             ramq='SIMH83051299',
             legacy_id=52,
             mrns=mrn_data['Homer Simpson'],
@@ -266,19 +274,19 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Mona',
             last_name='Simpson',
             date_of_birth=date(1940, 3, 15),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='SIMM40531599',
             legacy_id=55,
             mrns=mrn_data['Mona Simpson'],
             date_of_death=_relative_date(today, -2),
-            data_access=Patient.DataAccessType.NEED_TO_KNOW,
+            data_access=DataAccessType.NEED_TO_KNOW,
         )
 
         fred = _create_patient(
             first_name='Fred',
             last_name='Flintstone',
             date_of_birth=date(1960, 8, 1),
-            sex=Patient.SexType.MALE,
+            sex=SexType.MALE,
             ramq='FLIF60080199',
             legacy_id=56,
             mrns=mrn_data['Fred Flintstone'],
@@ -288,7 +296,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Pebbles',
             last_name='Flintstone',
             date_of_birth=_create_date(9, 2, 22),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='FLIP15022299',
             legacy_id=57,
             mrns=mrn_data['Pebbles Flintstone'],
@@ -297,7 +305,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Wednesday',
             last_name='Addams',
             date_of_birth=_create_date(15, 2, 13),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='ADAW09021399',
             legacy_id=58,
             mrns=mrn_data['Wednesday Addams'],
@@ -306,7 +314,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Laurie',
             last_name='Opal',
             date_of_birth=date(1958, 12, 13),
-            sex=Patient.SexType.FEMALE,
+            sex=SexType.FEMALE,
             ramq='OPAL58621325',
             legacy_id=92,
             mrns=mrn_data['Laurie Opal'],
@@ -315,7 +323,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='Rory',
             last_name="O'Brien",
             date_of_birth=date(1972, 6, 11),
-            sex=Patient.SexType.OTHER,
+            sex=SexType.OTHER,
             ramq='OBRR72061199',
             legacy_id=59,
             mrns=mrn_data["Rory O'Brien"],
@@ -324,7 +332,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             first_name='John',
             last_name='Smith',
             date_of_birth=date(1985, 1, 1),
-            sex=Patient.SexType.MALE,
+            sex=SexType.MALE,
             ramq='',
             legacy_id=93,
             mrns=mrn_data['John Smith'],
@@ -334,7 +342,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         first_name='Bart',
         last_name='Simpson',
         date_of_birth=_create_date(14, 2, 23),
-        sex=Patient.SexType.OTHER,
+        sex=SexType.OTHER,
         ramq='SIMB13022399',
         legacy_id=53,
         mrns=mrn_data['Bart Simpson'],
@@ -805,12 +813,12 @@ def _create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
-    sex: Patient.SexType,
+    sex: SexType,
     ramq: str,
     legacy_id: int,
     mrns: list[tuple[Site, str]],
     date_of_death: date | None = None,
-    data_access: Patient.DataAccessType = Patient.DataAccessType.ALL,
+    data_access: DataAccessType = DataAccessType.ALL,
 ) -> Patient:
     """
     Create, validate and save a patient instance with the given properties.

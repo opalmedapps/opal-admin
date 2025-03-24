@@ -193,7 +193,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         patient = patient_models.Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
-        assert patient.sex == patient_models.Patient.SexType.MALE
+        assert patient.sex == patient_models.SexType.MALE
         assert patient.first_name == legacy_patient.first_name
         assert patient.last_name == legacy_patient.last_name
         assert patient.ramq == legacy_patient.ramq
@@ -210,7 +210,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         assert patient.date_of_birth == date(2018, 1, 1)
         assert patient.date_of_death == datetime(2118, 1, 1, tzinfo=timezone.get_current_timezone())
-        assert patient.sex == patient_models.Patient.SexType.MALE
+        assert patient.sex == patient_models.SexType.MALE
         assert patient.first_name == legacy_patient.first_name
         assert patient.last_name == legacy_patient.last_name
         assert patient.ramq == legacy_patient.ramq
@@ -218,13 +218,13 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     @pytest.mark.parametrize(
         ('data_access', 'legacy_data_access'),
         [
-            (patient_models.Patient.DataAccessType.ALL, '3'),
-            (patient_models.Patient.DataAccessType.NEED_TO_KNOW, '1'),
+            (patient_models.DataAccessType.ALL, '3'),
+            (patient_models.DataAccessType.NEED_TO_KNOW, '1'),
         ],
     )
     def test_import_patient_data_access(
         self,
-        data_access: patient_models.Patient.DataAccessType,
+        data_access: patient_models.DataAccessType,
         legacy_data_access: str,
     ) -> None:
         """The patient is imported with the data access level."""
@@ -679,7 +679,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             first_name='Second First Name',
             last_name='Second Last Name',
             date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
-            sex=patient_models.Patient.SexType.FEMALE,
+            sex=patient_models.SexType.FEMALE,
         )
         # create second `HospitalPatient` record
         patient_factories.HospitalPatient.create(
@@ -723,7 +723,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             date_of_birth=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
-        assert patient.data_access == patient_models.Patient.DataAccessType.ALL
+        assert patient.data_access == patient_models.DataAccessType.ALL
         assert legacy_patient.access_level == '1'
 
         with pytest.raises(CommandError) as exc:
@@ -968,7 +968,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             first_name='Second First Name',
             last_name='Second Last Name',
             date_of_birth=datetime(1950, 2, 3, tzinfo=timezone.get_current_timezone()),
-            sex=patient_models.Patient.SexType.FEMALE,
+            sex=patient_models.SexType.FEMALE,
         )
 
         # create second SELF type caregiver and second User record

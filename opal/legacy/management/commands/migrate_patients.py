@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for Patients migration."""
+
 from types import MappingProxyType
 from typing import Any
 
@@ -11,12 +12,12 @@ from django.db import IntegrityError
 
 from opal.hospital_settings.models import Site
 from opal.legacy.models import LegacyAccessLevel, LegacyPatient, LegacyPatientHospitalIdentifier
-from opal.patients.models import HospitalPatient, Patient, SexType
+from opal.patients.models import DataAccessType, HospitalPatient, Patient, SexType
 
 #: Mapping from legacy access level to corresponding DataAccessType
 DATA_ACCESS_MAPPING = MappingProxyType({
-    LegacyAccessLevel.ALL.value: Patient.DataAccessType.ALL,
-    LegacyAccessLevel.NEED_TO_KNOW.value: Patient.DataAccessType.NEED_TO_KNOW,
+    LegacyAccessLevel.ALL.value: DataAccessType.ALL,
+    LegacyAccessLevel.NEED_TO_KNOW.value: DataAccessType.NEED_TO_KNOW,
 })
 
 
@@ -56,7 +57,7 @@ class Command(BaseCommand):
 
             else:
                 # If patient does not exist in the new backend migrate it
-                data_access = DATA_ACCESS_MAPPING.get(legacy_patient.access_level, Patient.DataAccessType.NEED_TO_KNOW)
+                data_access = DATA_ACCESS_MAPPING.get(legacy_patient.access_level, DataAccessType.NEED_TO_KNOW)
                 migrated_patient = Patient(
                     legacy_id=legacy_patient.patientsernum,
                     date_of_birth=legacy_patient.date_of_birth,
@@ -93,9 +94,11 @@ class Command(BaseCommand):
             patient=legacy_patient.patientsernum,
         )
         if not legacy_patient_identifiers:
-            self.stdout.write(self.style.WARNING(
-                f'No hospital patient identifiers for patient with legacy_id: {legacy_patient.patientsernum} exists, skipping',
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    f'No hospital patient identifiers for patient with legacy_id: {legacy_patient.patientsernum} exists, skipping',
+                )
+            )
 
         for legacy_patient_identifier in legacy_patient_identifiers:
             # Check if new backend model HospitalPatient already has a record for the added patient
@@ -106,9 +109,11 @@ class Command(BaseCommand):
             ).first()
             if hospital_patient:
                 # when HospitalPatient record already has been migrated
-                self.stdout.write(self.style.WARNING(
-                    f'Patient identifier legacy_id: {legacy_patient.patientsernum}, mrn: {legacy_patient_identifier.mrn} already exists, skipping',
-                ))
+                self.stdout.write(
+                    self.style.WARNING(
+                        f'Patient identifier legacy_id: {legacy_patient.patientsernum}, mrn: {legacy_patient_identifier.mrn} already exists, skipping',
+                    )
+                )
             else:
                 self._create_patient_identifier(migrated_patient, legacy_patient, legacy_patient_identifier)
 
@@ -144,4 +149,5 @@ class Command(BaseCommand):
                     patient_id=legacy_patient.patientsernum,
                     mrn=legacy_patient_identifier.mrn,
                     site=legacy_patient_identifier.hospital.code,
-                ))
+                )
+            )

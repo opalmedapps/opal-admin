@@ -7,7 +7,7 @@
 import datetime as dt
 from collections import UserDict
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any
 
 from django.db import models
 
@@ -20,9 +20,9 @@ from opal.usage_statistics.models import DailyUserPatientActivity
 from . import queries
 
 # Type aliases
-RowData: TypeAlias = dict[str, Any]
-UsageStatisticsData: TypeAlias = list[RowData]
-ReportData: TypeAlias = dict[str, UsageStatisticsData]
+type RowData = dict[str, Any]
+type UsageStatisticsData = list[RowData]
+type ReportData = dict[str, UsageStatisticsData]
 
 
 class RelationshipMapping(UserDict[str, Any]):

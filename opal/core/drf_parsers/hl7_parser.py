@@ -7,7 +7,7 @@
 from collections import defaultdict
 from collections.abc import Callable, Mapping
 from datetime import datetime
-from typing import IO, Any, TypeAlias
+from typing import IO, Any
 
 from django.utils import timezone
 
@@ -16,7 +16,7 @@ from hl7apy.parser import parse_message
 from rest_framework import exceptions
 from rest_framework.parsers import BaseParser
 
-ParserFunction: TypeAlias = Callable[[Segment], dict[str, Any]]
+type ParserFunction = Callable[[Segment], dict[str, Any]]
 
 FORMAT_DATE = '%Y%m%d'
 FORMAT_DATETIME_SHORT = '%Y%m%d%H%M'

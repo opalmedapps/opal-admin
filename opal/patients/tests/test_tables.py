@@ -102,7 +102,7 @@ def test_patienttable_render_health_insurance_number() -> None:
 
 def _mock_datetime(mocker: MockerFixture) -> None:
     # mock the current timezone to avoid flaky tests
-    current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+    current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.UTC)
     mocker.patch.object(timezone, 'now', return_value=current_time)
 
 
