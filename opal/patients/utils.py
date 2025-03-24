@@ -398,7 +398,7 @@ def initialize_new_opal_patient(
     for site_code, mrn in active_mrn_list:
         try:
             hospital.notify_new_patient(mrn, site_code)
-        except hospital.NonOKResponseError as exc:  # noqa: PERF203
+        except hospital.NonOKResponseError as exc:
             logger.exception(
                 f'Failed to initialize patient via the source system ({mrn=}, {site_code=}, {patient_uuid=}: {exc.error}'
             )

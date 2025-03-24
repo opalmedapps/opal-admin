@@ -2885,8 +2885,8 @@ def test_fetch_labs_summary_per_patient_success() -> None:
         {
             'patient_ser_num': 56,
             'patient__legacy_id': 56,
-            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
-            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.UTC),
+            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.UTC),
             'total_labs_received': 18,
         },
     ]

@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, TypeAlias, Union
+from typing import Any
 
 from django.conf import settings
 from django.db import OperationalError, connections, models, transaction
@@ -53,15 +53,15 @@ ACCESS_LEVEL_MAPPING = MappingProxyType({
     Patient.DataAccessType.NEED_TO_KNOW.value: LegacyAccessLevel.NEED_TO_KNOW,
 })
 
-DatabankControlRecords: TypeAlias = Union[
+type DatabankControlRecords = (
     tuple[
         LegacyEducationalMaterialControl,
         LegacyQuestionnairePatient,
         QDB_LegacyQuestionnaire,
         LegacyQuestionnaireControl,
-    ],
-    None,
-]
+    ]
+    | None
+)
 
 LOGGER = logging.getLogger(__name__)
 

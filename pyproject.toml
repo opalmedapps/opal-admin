@@ -1,7 +1,0 @@
-[project]
-name = "backend"
-version = "0"
-description = "The new backend for Opal"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
