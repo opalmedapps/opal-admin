@@ -7,6 +7,7 @@ Module providing legacy quesitonnaire model managers to provide the interface th
 
 Each manager in this module should be prefixed with `Legacy`
 """
+
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -69,9 +70,11 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
                 respondent_contents.append('Caregiver')
 
         return self.filter(
-            legacyanswerquestionnaire__status=0,                             # 0 = New questionnaires
+            # 0 = New questionnaires
+            legacyanswerquestionnaire__status=0,
             legacyanswerquestionnaire__patient__external_id=patient_sernum,
-            purpose=purpose_id,                                            # questionnaire purpose
+            # questionnaire purpose
+            purpose=purpose_id,
             respondent__title__content__in=respondent_contents,
             respondent__title__language_id=2,  # set English as default
         )
@@ -123,10 +126,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
 
         """
         columns = [col[0] for col in cursor.description]
-        return [
-            dict(zip(columns, row))
-            for row in cursor.fetchall()
-        ]
+        return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
 
     def _read_local_sql(self, directory: Path) -> str:
         """

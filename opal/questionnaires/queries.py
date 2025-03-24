@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This file contains SQL queries for the ePRO reporting tool."""
+
 import html
 import logging
 from typing import Any
@@ -58,7 +59,8 @@ def _get_description(qid: int, lang_id: int) -> str:
                )
                AND languageId = %s
                LIMIT 1
-            """, [qid, lang_id],
+            """,
+            [qid, lang_id],
         )
 
         return str(conn.fetchone()[0])
@@ -76,10 +78,7 @@ def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
     """
     columns = [col[0] for col in cursor.description]
-    return [
-        dict(zip(columns, row))
-        for row in cursor.fetchall()
-    ]
+    return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
 
 
 @transaction.atomic
@@ -129,7 +128,8 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:
     """
     with connections['questionnaire'].cursor() as conn:
         conn.execute(
-            'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID = %s', [lang_id, qid],
+            'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID = %s',
+            [lang_id, qid],
         )
         questionnaire = _fetch_all_as_dict(conn)
         conn.execute(
@@ -162,7 +162,8 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:
                     AND A.questionId = Q.ID
                     );
 
-                """, [lang_id, qid, test_accounts],
+                """,
+            [lang_id, qid, test_accounts],
         )
 
         conn.execute('SELECT DISTINCT patientId FROM tempDetails')
@@ -234,7 +235,8 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
                         AND qq.ID in %s
                         AND qs.sectionId = S.ID
                         AND qq.ID = qs.questionId
-                )""", [lang_id, lang_id, qid, qids],
+                )""",
+                [lang_id, lang_id, qid, qids],
             )
             conn.execute(
                 """
@@ -266,7 +268,8 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
                         AND A.deleted = 0
                         AND A.answered = 1
                         AND A.questionId = Q.ID
-                )""", [lang_id, qid, test_accounts, pids, startdate, enddate],
+                )""",
+                [lang_id, qid, test_accounts, pids, startdate, enddate],
             )
             conn.execute(
                 """
@@ -367,7 +370,8 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:
                         aL.answerId = A.AnswerID
                         AND lOpt.ID = aL.`value`
                         AND A.typeId = 5
-            )""", [lang_id, lang_id, lang_id],
+            )""",
+                [lang_id, lang_id, lang_id],
             )
     else:
         return False

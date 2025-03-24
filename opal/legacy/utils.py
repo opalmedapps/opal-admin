@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, TypeAlias, Union
+from typing import Any
 
 from django.conf import settings
 from django.db import OperationalError, connections, models, transaction
@@ -20,7 +20,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
-from opal.patients.models import Patient, Relationship
+from opal.patients.models import DataAccessType, Patient, Relationship, SexType
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
 
@@ -41,27 +41,27 @@ from .models import (
 
 #: Mapping from sex type to the corresponding legacy sex type
 SEX_TYPE_MAPPING = MappingProxyType({
-    Patient.SexType.MALE.value: LegacySexType.MALE,
-    Patient.SexType.FEMALE.value: LegacySexType.FEMALE,
-    Patient.SexType.OTHER.value: LegacySexType.OTHER,
-    Patient.SexType.UNKNOWN.value: LegacySexType.UNKNOWN,
+    SexType.MALE.value: LegacySexType.MALE,
+    SexType.FEMALE.value: LegacySexType.FEMALE,
+    SexType.OTHER.value: LegacySexType.OTHER,
+    SexType.UNKNOWN.value: LegacySexType.UNKNOWN,
 })
 
 #: Mapping from data access type to the corresponding legacy access level
 ACCESS_LEVEL_MAPPING = MappingProxyType({
-    Patient.DataAccessType.ALL.value: LegacyAccessLevel.ALL,
-    Patient.DataAccessType.NEED_TO_KNOW.value: LegacyAccessLevel.NEED_TO_KNOW,
+    DataAccessType.ALL.value: LegacyAccessLevel.ALL,
+    DataAccessType.NEED_TO_KNOW.value: LegacyAccessLevel.NEED_TO_KNOW,
 })
 
-DatabankControlRecords: TypeAlias = Union[
+type DatabankControlRecords = (
     tuple[
         LegacyEducationalMaterialControl,
         LegacyQuestionnairePatient,
         QDB_LegacyQuestionnaire,
         LegacyQuestionnaireControl,
-    ],
-    None,
-]
+    ]
+    | None
+)
 
 LOGGER = logging.getLogger(__name__)
 

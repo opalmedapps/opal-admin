@@ -3,15 +3,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing reusable views for the whole project."""
-from typing import Any, Generic, TypeVar
+
+from typing import Any
 
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.db.models import Model, QuerySet
 from django.forms.models import ModelForm
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import UpdateView
-
-_Model = TypeVar('_Model', bound=Model)
 
 
 class LoginView(DjangoLoginView):
@@ -29,7 +28,7 @@ class LoginView(DjangoLoginView):
     }
 
 
-class CreateUpdateView(Generic[_Model], UpdateView[_Model, ModelForm[_Model]]):
+class CreateUpdateView[ModelType: Model](UpdateView[ModelType, ModelForm[ModelType]]):
     """
     Generic view that can handle creation and updating of objects.
 
@@ -37,7 +36,7 @@ class CreateUpdateView(Generic[_Model], UpdateView[_Model, ModelForm[_Model]]):
     """
 
     # TODO: change signature to be consistent with superclass (-> _Model)
-    def get_object(self, queryset: QuerySet[_Model] | None = None) -> Any:
+    def get_object(self, queryset: QuerySet[ModelType] | None = None) -> Any:
         """
         Return the object the view is displaying.
 

@@ -17,7 +17,7 @@ If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """
 
-from typing import Any, ClassVar, TypeAlias
+from typing import Any, ClassVar
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
@@ -50,7 +50,7 @@ class User(AbstractUser):
     # TextChoices need to be defined outside to use them in constraints
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
-    UserType: TypeAlias = UserType
+    UserType = UserType
 
     base_type = UserType.CLINICAL_STAFF
 

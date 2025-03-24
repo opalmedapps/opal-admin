@@ -36,7 +36,7 @@ REGISTRATION_CODE_LENGTH: Final = 10
 logger = logging.getLogger(__name__)
 
 
-def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
+def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: SexType) -> str:
     """
     Build a RAMQ number based on the official format and with 99 as the last two digits (administrative code).
 
@@ -51,7 +51,7 @@ def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patien
     Returns:
         the RAMQ number derived from the given arguments
     """
-    month = date_of_birth.strftime('%m') if sex == Patient.SexType.MALE else date_of_birth.month + RAMQ_FEMALE_INDICATOR
+    month = date_of_birth.strftime('%m') if sex == SexType.MALE else date_of_birth.month + RAMQ_FEMALE_INDICATOR
 
     data = [
         last_name[:3].upper(),
@@ -251,7 +251,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
-    sex: Patient.SexType,
+    sex: SexType,
     ramq: str,
     mrns: list[tuple[Site, str, bool]],
 ) -> Patient:
@@ -398,7 +398,7 @@ def initialize_new_opal_patient(
     for site_code, mrn in active_mrn_list:
         try:
             hospital.notify_new_patient(mrn, site_code)
-        except hospital.NonOKResponseError as exc:  # noqa: PERF203
+        except hospital.NonOKResponseError as exc:
             logger.exception(
                 f'Failed to initialize patient via the source system ({mrn=}, {site_code=}, {patient_uuid=}: {exc.error}'
             )
