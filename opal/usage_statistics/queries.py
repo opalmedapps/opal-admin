@@ -6,7 +6,7 @@
 
 import datetime as dt
 from collections import Counter
-from typing import Any, TypeVar
+from typing import Any
 
 from django.conf import settings
 from django.db import models
@@ -19,10 +19,6 @@ from opal.users import models as users_models
 
 from .common import GroupByComponent
 from .models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
-
-# Create a type variable to represent any model type
-_ModelT = TypeVar('_ModelT', bound=models.Model)
-
 
 # GROUP REPORTING
 
@@ -773,11 +769,11 @@ def _fetch_received_medical_records_summary(
     )
 
 
-def _annotate_queryset_with_grouping_field(
-    queryset: models.QuerySet[_ModelT],
+def _annotate_queryset_with_grouping_field[ModelType: models.Model](
+    queryset: models.QuerySet[ModelType],
     field_name: str,
     group_by: GroupByComponent,
-) -> models.QuerySet[_ModelT]:
+) -> models.QuerySet[ModelType]:
     """
     Add an aggregation field to the queryset based on the grouping component.
 
@@ -793,7 +789,7 @@ def _annotate_queryset_with_grouping_field(
     datetime_expr = Cast(field_name, output_field=models.DateTimeField())
 
     if group_by == GroupByComponent.YEAR:
-        annotated_queryset: models.QuerySet[_ModelT] = queryset.annotate(
+        annotated_queryset: models.QuerySet[ModelType] = queryset.annotate(
             year=TruncYear(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     elif group_by == GroupByComponent.MONTH:

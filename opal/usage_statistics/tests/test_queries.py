@@ -433,32 +433,32 @@ def test_fetch_patients_summary() -> None:
     patient_factories.Patient.create(
         legacy_id=51,
         ramq='TEST01161974',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
     )
     patient_factories.Patient.create(
         legacy_id=52,
         ramq='TEST01161975',
-        sex=patient_models.Patient.SexType.OTHER,
+        sex=patient_models.SexType.OTHER,
     )
     patient_factories.Patient.create(
         legacy_id=53,
         ramq='TEST01161976',
-        sex=patient_models.Patient.SexType.UNKNOWN,
+        sex=patient_models.SexType.UNKNOWN,
     )
     patient_factories.Patient.create(
         legacy_id=54,
         ramq='TEST01161977',
-        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+        data_access=patient_models.DataAccessType.NEED_TO_KNOW,
     )
     patient_factories.Patient.create(
         legacy_id=55,
         ramq='TEST01161978',
-        data_access=patient_models.Patient.DataAccessType.NEED_TO_KNOW,
+        data_access=patient_models.DataAccessType.NEED_TO_KNOW,
     )
     patient_factories.Patient.create(
         legacy_id=56,
         ramq='TEST01161979',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
         date_of_death=timezone.now(),
     )
     patient_factories.Patient.create(
@@ -469,7 +469,7 @@ def test_fetch_patients_summary() -> None:
     patient_factories.Patient.create(
         legacy_id=58,
         ramq='TEST01161981',
-        sex=patient_models.Patient.SexType.FEMALE,
+        sex=patient_models.SexType.FEMALE,
         created_at=timezone.now() - dt.timedelta(days=3),
     )
     caregivers_summary = stats_queries.fetch_patients_summary(
@@ -2885,8 +2885,8 @@ def test_fetch_labs_summary_per_patient_success() -> None:
         {
             'patient_ser_num': 56,
             'patient__legacy_id': 56,
-            'first_lab_received_utc': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
-            'last_lab_received_utc': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'first_lab_received_utc': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.UTC),
+            'last_lab_received_utc': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.UTC),
             'total_labs_received': 18,
         },
     ]
@@ -3034,7 +3034,7 @@ def test_fetch_patient_demographic_diagnosis_summary_success(mocker: MockerFixtu
         1,
         5,
         0,
-        tzinfo=dt.timezone.utc,
+        tzinfo=dt.UTC,
     )
 
 

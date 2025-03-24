@@ -771,7 +771,7 @@ class TestVerifyEmailView:
     ) -> None:
         """Test that the EmailVerification instance is created with the correct properties."""
         # mock the current timezone to simulate the UTC time already on the next day
-        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+        current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.UTC)
         mocker.patch.object(timezone, 'now', return_value=current_time)
 
         api_client.force_login(user=admin_user)

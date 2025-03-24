@@ -13,7 +13,7 @@ import secrets
 import string
 import uuid
 import zipfile
-from typing import Any, TypeAlias
+from typing import Any
 
 from django.utils.text import Truncator
 
@@ -23,9 +23,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from qrcode.image import svg
 
 # Type aliases
-RowData: TypeAlias = dict[str, Any]
-SheetData: TypeAlias = list[RowData]
-WorkbookData: TypeAlias = dict[str, SheetData]
+type RowData = dict[str, Any]
+type SheetData = list[RowData]
+type WorkbookData = dict[str, SheetData]
 
 FORBIDDEN_CHARACTERS = r'[\/\\\?\*\:\[\]]'
 SHEET_TITLE_MAX_LENGTH = 31
@@ -226,7 +226,7 @@ def _add_rows_to_worksheet(worksheet: Worksheet, rows: SheetData) -> None:
             if isinstance(value, dt.datetime):
                 # Convert any tz-aware datetime to UTC and remove the tzinfo
                 if value.tzinfo is not None:
-                    value = value.astimezone(dt.timezone.utc).replace(tzinfo=None)
+                    value = value.astimezone(dt.UTC).replace(tzinfo=None)
                 row_data[header] = value  # if None or empty string, leave as is
 
         worksheet.append([row_data.get(column_header, '') for column_header in headers])
