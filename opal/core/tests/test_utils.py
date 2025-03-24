@@ -24,7 +24,7 @@ file_contents = {
 workbook_data_with_tz = {
     'SheetWithTZ': [
         {
-            'datetime_col': dt.datetime(2024, 1, 1, 12, 0, tzinfo=dt.timezone.utc),
+            'datetime_col': dt.datetime(2024, 1, 1, 12, 0, tzinfo=dt.UTC),
             'string_col': 'Test 1',
         },
         {
