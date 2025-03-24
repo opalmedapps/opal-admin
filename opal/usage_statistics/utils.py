@@ -7,7 +7,7 @@
 import datetime as dt
 from collections import UserDict
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from django.db import models
 
@@ -16,6 +16,13 @@ import pandas as pd
 from opal.legacy import models as legacy_models
 from opal.patients.models import Relationship
 from opal.usage_statistics.models import DailyUserPatientActivity
+
+from . import queries
+
+# Type aliases
+RowData: TypeAlias = dict[str, Any]
+UsageStatisticsData: TypeAlias = list[RowData]
+ReportData: TypeAlias = dict[str, UsageStatisticsData]
 
 
 class RelationshipMapping(UserDict[str, Any]):
@@ -319,6 +326,97 @@ def export_data(
             dataframe.to_excel(file_path, index=False)
         case _:
             raise ValueError('Invalid file format, please use either csv or xlsx')
+
+
+def get_summary_report(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: queries.GroupByComponent,
+) -> ReportData:
+    """
+    Fetch summary usage statistics report.
+
+    The statistics include summaries on grouped registration codes, caregivers, patients, and device identifiers.
+
+    Args:
+        start_date: the beginning of the time period of the summary usage statistics (inclusive).
+        end_date: the end of the time period of the of the summary usage statistics (inclusive).
+        group_by: the date component to group by.
+
+    Returns:
+        grouped summary usage statistics for a given time period.
+    """
+    return {
+        'registration_summary': [queries.fetch_registration_summary(start_date, end_date)],
+        # Note this returns the same columns as `registration_summary`, it just groups by a date component
+        'grouped_registration_summary': queries.fetch_grouped_registration_summary(start_date, end_date, group_by),
+        'caregivers_summary': [queries.fetch_caregivers_summary(start_date, end_date)],
+        'fetch_patients_summary': [queries.fetch_patients_summary(start_date, end_date)],
+        'devices_summary': [queries.fetch_devices_summary(start_date, end_date)],
+    }
+
+
+def get_received_data_report(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: queries.GroupByComponent,
+) -> ReportData:
+    """
+    Fetch received data usage statistics report.
+
+    The statistics include summaries on the received clinical data (e.g., appointments, labs, clinical notes,
+    diagnosis), educational materials, questionnaires, and documents.
+
+    Args:
+        start_date: the beginning of the time period of the received data usage statistics (inclusive).
+        end_date: the end of the time period of the of the received data usage statistics (inclusive).
+        group_by: the date component to group by.
+
+    Returns:
+        grouped received data usage statistics for a given time period.
+    """
+    return {
+        'received_clinical_data_summary': [queries.fetch_patients_received_clinical_data_summary(start_date, end_date)],
+        'received_labs_summary': queries.fetch_received_labs_summary(start_date, end_date, group_by),
+        'received_appointments_summary': queries.fetch_received_appointments_summary(start_date, end_date, group_by),
+        'received_educational_materials_summary': queries.fetch_received_educational_materials_summary(
+            start_date,
+            end_date,
+            group_by,
+        ),
+        'received_documents_summary': queries.fetch_received_documents_summary(start_date, end_date, group_by),
+        'received_questionnaires_summary': queries.fetch_received_questionnaires_summary(
+            start_date,
+            end_date,
+            group_by,
+        ),
+    }
+
+
+def get_app_activity_report(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: queries.GroupByComponent,
+) -> ReportData:
+    """
+    Fetch mobile application activity usage statistics report.
+
+    The statistics include summaries on the logins, users' clicks, patients' clicks, latest logins.
+
+    Args:
+        start_date: the beginning of the time period of the application activity usage statistics (inclusive).
+        end_date: the end of the time period of the application activity usage statistics (inclusive).
+        group_by: the date component to group by.
+
+    Returns:
+        grouped application activity usage statistics for a given time period.
+    """
+    return {
+        'logins_summary': queries.fetch_logins_summary(start_date, end_date, group_by),
+        'users_clicks_summary': queries.fetch_users_clicks_summary(start_date, end_date, group_by),
+        'user_patient_clicks_summary': queries.fetch_user_patient_clicks_summary(start_date, end_date, group_by),
+        'users_latest_login_year_summary': [queries.fetch_users_latest_login_year_summary(start_date, end_date)],
+    }
 
 
 def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:

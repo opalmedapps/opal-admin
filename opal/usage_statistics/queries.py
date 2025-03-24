@@ -10,7 +10,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import models
-from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncYear
+from django.db.models.functions import Cast, ExtractYear, Trunc, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
@@ -566,7 +566,7 @@ def fetch_users_latest_login_year_summary(
             'action_by_user',
         )
         .annotate(
-            year=ExtractYear(models.Max('last_login')),
+            year=ExtractYear(models.Max('last_login', tzinfo=dt.UTC)),
         )
     )
 
@@ -602,8 +602,8 @@ def fetch_labs_summary_per_patient(
         .values('patient__legacy_id')
         .annotate(
             patient_ser_num=models.F('patient__legacy_id'),
-            first_lab_received=models.Min('last_lab_received'),
-            last_lab_received=models.Max('last_lab_received'),
+            first_lab_received_utc=models.Min('last_lab_received'),
+            last_lab_received_utc=models.Max('last_lab_received'),
             # total_lab_groups_received=models.Sum('lab_groups_received'),   noqa: E800
             total_labs_received=models.Sum('labs_received'),
             # average_labs_per_test_group=models.F('total_labs_received')    noqa: E800
@@ -698,13 +698,13 @@ def fetch_patient_demographic_diagnosis_summary(
         .annotate(
             patient_ser_num=models.F('patient__patientsernum'),
             age=models.F('patient__age'),
-            date_of_birth=models.F('patient__date_of_birth'),
+            date_of_birth=Trunc('patient__date_of_birth', 'second', tzinfo=dt.UTC),
             sex=models.F('patient__sex'),
             email=models.F('patient__email'),
             language=models.F('patient__language'),
-            registration_date=models.F('patient__registration_date'),
+            registration_date_utc=Trunc('patient__registration_date', 'second', tzinfo=dt.UTC),
             latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
-            latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
+            latest_diagnosis_date_utc=Trunc('patient__legacydiagnosis__creation_date', 'second', tzinfo=dt.UTC),
         )
         .values(
             'patient_ser_num',
@@ -713,11 +713,12 @@ def fetch_patient_demographic_diagnosis_summary(
             'sex',
             'email',
             'language',
-            'registration_date',
+            'registration_date_utc',
             'latest_diagnosis_description',
-            'latest_diagnosis_date',
+            'latest_diagnosis_date_utc',
         )
     )
+
     return list(demographics_and_diagnosis)
 
 
@@ -784,13 +785,20 @@ def _annotate_queryset_with_grouping_field[ModelType: models.Model](
     Returns:
         queryset with annotated grouping component field
     """
+    # First, cast the field to a DateTimeField (to avoid the ValueError if it's a DateField).
+    datetime_expr = Cast(field_name, output_field=models.DateTimeField())
+
     if group_by == GroupByComponent.YEAR:
         annotated_queryset: models.QuerySet[ModelType] = queryset.annotate(
-            year=TruncYear(field_name),
+            year=TruncYear(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     elif group_by == GroupByComponent.MONTH:
-        annotated_queryset = queryset.annotate(month=TruncMonth(field_name))
+        annotated_queryset = queryset.annotate(
+            month=TruncMonth(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
+        )
     else:
-        annotated_queryset = queryset.annotate(day=TruncDay(field_name))
+        annotated_queryset = queryset.annotate(
+            day=TruncDay(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
+        )
 
     return annotated_queryset

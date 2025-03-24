@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides Django REST framework serializers for Caregiver apis."""
+
 from typing import Any, TypedDict
 
 from rest_framework import serializers
@@ -108,6 +109,11 @@ class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCod
         many=False,
         read_only=True,
     )
+    relationship_type = RelationshipTypeSerializer(
+        source='relationship.type',
+        fields=('name', 'role_type'),
+        many=False,
+    )
     institution = serializers.SerializerMethodField()
 
     def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:
@@ -124,7 +130,7 @@ class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCod
 
     class Meta:
         model = RegistrationCode
-        fields = ['caregiver', 'patient', 'institution']
+        fields = ['caregiver', 'patient', 'institution', 'relationship_type']
 
 
 class SecurityQuestionSerializer(serializers.ModelSerializer[SecurityQuestion]):

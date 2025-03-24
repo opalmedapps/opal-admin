@@ -122,7 +122,7 @@ def test_empty_fetch_grouped_registration_summary() -> None:
 def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> None:
     """Ensure fetch_grouped_registration_summary query successfully returns registration statistics grouped by day."""
     relationships = _create_relationship_records()
-    current_datetime = timezone.localtime()
+    current_datetime = dt.datetime(2025, 1, 20, 20, tzinfo=dt.UTC)
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = current_datetime
     caregiver_factories.RegistrationCode.create(
@@ -165,8 +165,8 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
     )
 
     population_summary = stats_queries.fetch_grouped_registration_summary(
-        start_date=current_datetime.today() - dt.timedelta(days=7),
-        end_date=current_datetime.today(),
+        start_date=current_datetime.date() - dt.timedelta(days=7),
+        end_date=current_datetime.date(),
     )
 
     current_datetime = current_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -175,25 +175,25 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'day': current_datetime,
+            'day': current_datetime.date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=1),
+            'day': (current_datetime - dt.timedelta(days=1)).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=4),
+            'day': (current_datetime - dt.timedelta(days=4)).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=6),
+            'day': (current_datetime - dt.timedelta(days=6)).date(),
         },
     ]
 
@@ -257,25 +257,25 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'month': dt.datetime(2024, 6, 1, tzinfo=timezone.get_current_timezone()),
+            'month': dt.datetime(2024, 6, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': dt.datetime(2024, 5, 1, tzinfo=timezone.get_current_timezone()),
+            'month': dt.datetime(2024, 5, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'month': dt.datetime(2024, 4, 1, tzinfo=timezone.get_current_timezone()),
+            'month': dt.datetime(2024, 4, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': dt.datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone()),
+            'month': dt.datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
     ]
 
@@ -339,25 +339,25 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'year': dt.datetime(2024, 1, 1, tzinfo=timezone.get_current_timezone()),
+            'year': dt.datetime(2024, 1, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': dt.datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone()),
+            'year': dt.datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'year': dt.datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()),
+            'year': dt.datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': dt.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
+            'year': dt.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()).date(),
         },
     ]
 
@@ -2878,15 +2878,15 @@ def test_fetch_labs_summary_per_patient_success() -> None:
         {
             'patient_ser_num': 55,
             'patient__legacy_id': 55,
-            'first_lab_received': None,
-            'last_lab_received': None,
+            'first_lab_received_utc': None,
+            'last_lab_received_utc': None,
             'total_labs_received': 0,
         },
         {
             'patient_ser_num': 56,
             'patient__legacy_id': 56,
-            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.UTC),
-            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.UTC),
+            'first_lab_received_utc': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.UTC),
+            'last_lab_received_utc': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.UTC),
             'total_labs_received': 18,
         },
     ]
@@ -2986,8 +2986,10 @@ def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
     assert not demographic_diagnosis_summary
 
 
-def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
+def test_fetch_patient_demographic_diagnosis_summary_success(mocker: MockerFixture) -> None:
     """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches the no empty statistics."""
+    now = dt.datetime(2025, 1, 8, 12, 0, 0, tzinfo=timezone.get_current_timezone())
+    mocker.patch('django.utils.timezone.now', return_value=now)
     django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
     legacy_pat1 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
     legacy_factories.LegacyPatientControlFactory.create(
@@ -3009,12 +3011,12 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     legacy_factories.LegacyDiagnosisFactory.create(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis1',
-        creation_date=timezone.now() - dt.timedelta(days=1),
+        creation_date=now - dt.timedelta(days=1),
     )
     legacy_factories.LegacyDiagnosisFactory.create(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis2',
-        creation_date=timezone.now(),
+        creation_date=now,
     )
     legacy_factories.LegacyDiagnosisFactory.create(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
     demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.max)
@@ -3023,6 +3025,17 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     assert demographic_diagnosis_summary[1]['patient_ser_num'] == 52
     assert demographic_diagnosis_summary[0]['latest_diagnosis_description'] == 'Test Diagnosis2'
     assert demographic_diagnosis_summary[1]['latest_diagnosis_description'] == 'Test Diagnosis3'
+    assert demographic_diagnosis_summary[0]['registration_date_utc'] == now
+    assert demographic_diagnosis_summary[1]['registration_date_utc'] == now
+    assert demographic_diagnosis_summary[0]['latest_diagnosis_date_utc'] == now
+    assert demographic_diagnosis_summary[1]['latest_diagnosis_date_utc'] == dt.datetime(
+        2018,
+        1,
+        1,
+        5,
+        0,
+        tzinfo=dt.UTC,
+    )
 
 
 def _create_relationship_records() -> dict[str, Any]:

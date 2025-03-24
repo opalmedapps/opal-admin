@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: add usage statistics export page for downloading statistical data (!1332)
 * feat: add form for exporting group usage statistics (!1335)
 * feat: add form for exporting individual usage statistics (!1356)
+* feat: implement views for exporting usage statistics (!1372)
 
 ### Documentation
 

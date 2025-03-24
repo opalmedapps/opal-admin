@@ -12,3 +12,6 @@ from .common import GroupByComponent, GroupReportType
 TIME_INTERVAL_GROUPINGS: Final = tuple((item.name, item.value) for item in GroupByComponent)
 #: Choices for the group usage statistic report types
 GROUP_REPORT_TYPES: Final = tuple((item.name, item.value) for item in GroupReportType)
+# Names of the form action buttons
+DOWNLOAD_CSV_BUTTON_NAME: str = 'download_csv'
+DOWNLOAD_XLSX_BUTTON_NAME: str = 'download_xlsx'
