@@ -1238,7 +1238,7 @@ class TestRegistrationCompletionView:
         skeleton.refresh_from_db()
         assert skeleton.is_active
         assert skeleton.username == 'test-username'
-        assert skeleton.phone_number == '+15141112222'
+        assert skeleton.phone_number == '+15142112222'
         assert skeleton.language == 'fr'
 
         # check legacy data

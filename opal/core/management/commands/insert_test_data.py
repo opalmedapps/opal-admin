@@ -411,7 +411,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             username='mouj1pqpXrYCl994oSm5wtJT3In2',
             email='rory@opalmedapps.ca',
             language='en',
-            phone_number='+15557654321',
+            phone_number='+15145554321',
             legacy_id=7,
         )
         user_john = _create_caregiver(
@@ -900,6 +900,7 @@ def _create_caregiver(  # noqa: PLR0913, PLR0917
 
     # User passwords aren't currently saved in Django
     user.set_unusable_password()
+    print(f'checking {user}: {user.phone_number}')
     user.full_clean()
     user.save()
 
