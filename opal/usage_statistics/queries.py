@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Statistics queries used by usage statistics app."""
+
 import datetime as dt
 from collections import Counter
 from typing import Any, TypeVar
@@ -25,6 +26,7 @@ _ModelT = TypeVar('_ModelT', bound=models.Model)
 
 # GROUP REPORTING
 
+
 def fetch_registration_summary(
     start_date: dt.date,
     end_date: dt.date,
@@ -44,10 +46,12 @@ def fetch_registration_summary(
         created_at__date__lte=end_date,
     ).aggregate(
         uncompleted_registration=models.Count(
-            'id', filter=~models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+            'id',
+            filter=~models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
         ),
         completed_registration=models.Count(
-            'id', filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+            'id',
+            filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
         ),
         total_registration_codes=models.F('uncompleted_registration') + models.F('completed_registration'),
     )
@@ -80,15 +84,19 @@ def fetch_grouped_registration_summary(
     return list(
         queryset.values(
             group_field,
-        ).annotate(
+        )
+        .annotate(
             uncompleted_registration=models.Count(
-                'id', filter=~models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+                'id',
+                filter=~models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
             ),
             completed_registration=models.Count(
-                'id', filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+                'id',
+                filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
             ),
             total_registration_codes=models.F('uncompleted_registration') + models.F('completed_registration'),
-        ).order_by(f'-{group_field}'),
+        )
+        .order_by(f'-{group_field}'),
     )
 
 
@@ -107,9 +115,7 @@ def fetch_caregivers_summary(
         caregivers summary for a given time period
     """
     lang_codes = [lang[0] for lang in settings.LANGUAGES]
-    lang_dict = {
-        lang: models.Count('id', filter=models.Q(language=lang)) for lang in lang_codes
-    }
+    lang_dict = {lang: models.Count('id', filter=models.Q(language=lang)) for lang in lang_codes}
 
     return users_models.Caregiver.objects.filter(
         date_joined__date__gte=start_date,
@@ -287,11 +293,13 @@ def fetch_logins_summary(
     return list(
         queryset.values(
             group_field,
-        ).annotate(
+        )
+        .annotate(
             total_logins=models.Sum('count_logins'),
             unique_user_logins=models.Count('action_by_user', distinct=True),
             avg_logins_per_user=models.F('total_logins') / models.F('unique_user_logins'),
-        ).order_by(f'-{group_field}'),
+        )
+        .order_by(f'-{group_field}'),
     )
 
 
@@ -323,12 +331,14 @@ def fetch_users_clicks_summary(
     return list(
         queryset.values(
             group_field,
-        ).annotate(
+        )
+        .annotate(
             login_count=models.Sum('count_logins'),
             feedback_count=models.Sum('count_feedback'),
             update_security_answers_count=models.Sum('count_update_security_answers'),
             update_passwords_count=models.Sum('count_update_passwords'),
-        ).order_by(f'-{group_field}'),
+        )
+        .order_by(f'-{group_field}'),
     )
 
 
@@ -359,13 +369,15 @@ def fetch_user_patient_clicks_summary(
     return list(
         queryset.values(
             group_field,
-        ).annotate(
+        )
+        .annotate(
             checkins_count=models.Sum('count_checkins'),
             documents_count=models.Sum('count_documents'),
             educational_materials_count=models.Sum('count_educational_materials'),
             completed_questionnaires_count=models.Sum('count_questionnaires_complete'),
             labs_count=models.Sum('count_labs'),
-        ).order_by(f'-{group_field}'),
+        )
+        .order_by(f'-{group_field}'),
     )
 
 
@@ -427,8 +439,8 @@ def fetch_received_appointments_summary(
         annotated_summary_fields={
             'total_received_appointments': models.Sum('appointments_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
-            'avg_received_appointments_per_patient':
-                models.F('total_received_appointments') / models.F('total_unique_patients'),
+            'avg_received_appointments_per_patient': models.F('total_received_appointments')
+            / models.F('total_unique_patients'),
         },
         group_by=group_by,
     )
@@ -462,8 +474,8 @@ def fetch_received_educational_materials_summary(
         annotated_summary_fields={
             'total_received_edu_materials': models.Sum('educational_materials_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
-            'avg_received_edu_materials_per_patient':
-                models.F('total_received_edu_materials') / models.F('total_unique_patients'),
+            'avg_received_edu_materials_per_patient': models.F('total_received_edu_materials')
+            / models.F('total_unique_patients'),
         },
         group_by=group_by,
     )
@@ -494,8 +506,8 @@ def fetch_received_documents_summary(
         annotated_summary_fields={
             'total_received_documents': models.Sum('documents_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
-            'avg_received_documents_per_patient':
-                models.F('total_received_documents') / models.F('total_unique_patients'),
+            'avg_received_documents_per_patient': models.F('total_received_documents')
+            / models.F('total_unique_patients'),
         },
         group_by=group_by,
     )
@@ -526,8 +538,8 @@ def fetch_received_questionnaires_summary(
         annotated_summary_fields={
             'total_received_questionnaires': models.Sum('questionnaires_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
-            'avg_received_questionnaires_per_patient':
-                models.F('total_received_questionnaires') / models.F('total_unique_patients'),
+            'avg_received_questionnaires_per_patient': models.F('total_received_questionnaires')
+            / models.F('total_unique_patients'),
         },
         group_by=group_by,
     )
@@ -549,13 +561,17 @@ def fetch_users_latest_login_year_summary(
     Returns:
         latest login statistics grouped by year for a given time period.
     """
-    latest_logins = DailyUserAppActivity.objects.filter(
-        action_date__gte=start_date,
-        action_date__lte=end_date,
-    ).values(
-        'action_by_user',
-    ).annotate(
-        year=ExtractYear(models.Max('last_login')),
+    latest_logins = (
+        DailyUserAppActivity.objects.filter(
+            action_date__gte=start_date,
+            action_date__lte=end_date,
+        )
+        .values(
+            'action_by_user',
+        )
+        .annotate(
+            year=ExtractYear(models.Max('last_login')),
+        )
     )
 
     latest_logins_by_year = Counter(str(item['year']) for item in latest_logins)
@@ -586,7 +602,9 @@ def fetch_labs_summary_per_patient(
         DailyPatientDataReceived.objects.filter(
             action_date__gte=start_date,
             action_date__lte=end_date,
-        ).values('patient__legacy_id').annotate(
+        )
+        .values('patient__legacy_id')
+        .annotate(
             patient_ser_num=models.F('patient__legacy_id'),
             first_lab_received=models.Min('last_lab_received'),
             last_lab_received=models.Max('last_lab_received'),
@@ -594,7 +612,8 @@ def fetch_labs_summary_per_patient(
             total_labs_received=models.Sum('labs_received'),
             # average_labs_per_test_group=models.F('total_labs_received')    noqa: E800
             # / models.F('total_lab_groups_received'),  noqa: E800
-        ).order_by('patient_ser_num'),
+        )
+        .order_by('patient_ser_num'),
     )
 
 
@@ -618,17 +637,21 @@ def fetch_logins_summary_per_user(
         DailyUserAppActivity.objects.filter(
             action_date__gte=start_date,
             action_date__lte=end_date,
-        ).values('action_by_user_id').annotate(
+        )
+        .values('action_by_user_id')
+        .annotate(
             user_id=models.F('action_by_user_id'),
             total_logged_in_days=models.Count('action_by_user_id'),
             total_logins=models.Sum('count_logins'),
             avg_logins_per_day=models.F('total_logins') / models.F('total_logged_in_days'),
-        ).values(
+        )
+        .values(
             'user_id',
             'total_logged_in_days',
             'total_logins',
             'avg_logins_per_day',
-        ).order_by('user_id'),
+        )
+        .order_by('user_id'),
     )
 
 
@@ -650,44 +673,54 @@ def fetch_patient_demographic_diagnosis_summary(
         demographic information and latest diagnosis per patient.
     """
     # TODO: QSCCD-2254 - update the query when Diagnosis model is implemented in django-backend
-    latest_diagnosis_sernum_list = legacy_models.LegacyDiagnosis.objects.values(
-        'patient_ser_num',
-    ).annotate(
-        latest_diagnosis_date=models.Max('creation_date'),
-        latest_diagnosis_sernum=models.Subquery(
-            legacy_models.LegacyDiagnosis.objects.filter(
-                patient_ser_num=models.OuterRef('patient_ser_num'),
-            ).order_by('-creation_date').values('diagnosis_ser_num')[:1],
-        ),
-    ).values_list(
-        'latest_diagnosis_sernum',
-        flat=True,
+    latest_diagnosis_sernum_list = (
+        legacy_models.LegacyDiagnosis.objects.values(
+            'patient_ser_num',
+        )
+        .annotate(
+            latest_diagnosis_date=models.Max('creation_date'),
+            latest_diagnosis_sernum=models.Subquery(
+                legacy_models.LegacyDiagnosis.objects.filter(
+                    patient_ser_num=models.OuterRef('patient_ser_num'),
+                )
+                .order_by('-creation_date')
+                .values('diagnosis_ser_num')[:1],
+            ),
+        )
+        .values_list(
+            'latest_diagnosis_sernum',
+            flat=True,
+        )
     )
-    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
-        models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
-        | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
-        patient__last_updated__date__gte=start_date,
-        patient__last_updated__date__lte=end_date,
-    ).annotate(
-        patient_ser_num=models.F('patient__patientsernum'),
-        age=models.F('patient__age'),
-        date_of_birth=models.F('patient__date_of_birth'),
-        sex=models.F('patient__sex'),
-        email=models.F('patient__email'),
-        language=models.F('patient__language'),
-        registration_date=models.F('patient__registration_date'),
-        latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
-        latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
-    ).values(
-        'patient_ser_num',
-        'age',
-        'date_of_birth',
-        'sex',
-        'email',
-        'language',
-        'registration_date',
-        'latest_diagnosis_description',
-        'latest_diagnosis_date',
+    demographics_and_diagnosis = (
+        legacy_models.LegacyPatientControl.objects.filter(
+            models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
+            | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
+            patient__last_updated__date__gte=start_date,
+            patient__last_updated__date__lte=end_date,
+        )
+        .annotate(
+            patient_ser_num=models.F('patient__patientsernum'),
+            age=models.F('patient__age'),
+            date_of_birth=models.F('patient__date_of_birth'),
+            sex=models.F('patient__sex'),
+            email=models.F('patient__email'),
+            language=models.F('patient__language'),
+            registration_date=models.F('patient__registration_date'),
+            latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
+            latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
+        )
+        .values(
+            'patient_ser_num',
+            'age',
+            'date_of_birth',
+            'sex',
+            'email',
+            'language',
+            'registration_date',
+            'latest_diagnosis_description',
+            'latest_diagnosis_date',
+        )
     )
     return list(demographics_and_diagnosis)
 
@@ -731,9 +764,11 @@ def _fetch_received_medical_records_summary(
     return list(
         queryset.values(
             group_field,
-        ).annotate(
+        )
+        .annotate(
             **annotated_summary_fields,
-        ).order_by(f'-{group_field}'),
+        )
+        .order_by(f'-{group_field}'),
     )
 
 

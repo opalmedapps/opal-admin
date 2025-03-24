@@ -6,7 +6,7 @@
 
 from collections import defaultdict
 from datetime import date
-from typing import Any, Final, TypeAlias
+from typing import Any, Final
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -54,7 +54,7 @@ class RelationshipType(models.Model):
     # TextChoices need to be defined outside to use them in constraints
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
-    RoleType: TypeAlias = RoleType
+    RoleType = RoleType
 
     name = models.CharField(
         verbose_name=_('Name'),
@@ -207,8 +207,8 @@ class Patient(AbstractLabDelayModel):
     # TextChoices need to be defined outside to use them in constraints
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
-    SexType: TypeAlias = SexType
-    DataAccessType: TypeAlias = DataAccessType
+    SexType = SexType
+    DataAccessType = DataAccessType
 
     uuid = models.UUIDField(
         verbose_name=_('UUID'),

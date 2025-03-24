@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """App core util functions."""
+
 import csv
 import io
 import random
@@ -11,7 +12,7 @@ import secrets
 import string
 import uuid
 import zipfile
-from typing import Any, TypeAlias
+from typing import Any
 
 from django.utils.text import Truncator
 
@@ -20,9 +21,9 @@ from openpyxl import Workbook
 from qrcode.image import svg
 
 # Type aliases
-RowData: TypeAlias = dict[str, Any]
-SheetData: TypeAlias = list[RowData]
-WorkbookData: TypeAlias = dict[str, SheetData]
+type RowData = dict[str, Any]
+type SheetData = list[RowData]
+type WorkbookData = dict[str, SheetData]
 
 FORBIDDEN_CHARACTERS = r'[\/\\\?\*\:\[\]]'
 SHEET_TITLE_MAX_LENGTH = 31

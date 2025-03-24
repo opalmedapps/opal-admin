@@ -7,7 +7,7 @@
 import json
 from collections import defaultdict
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -24,8 +24,8 @@ from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 if TYPE_CHECKING:
     from datetime import datetime
 
-CombinedModuleData: TypeAlias = list[dict[str, Any]]
-DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData
+type CombinedModuleData = list[dict[str, Any]]
+type DatabankQuerySet = QuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
 class Command(BaseCommand):
