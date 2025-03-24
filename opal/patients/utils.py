@@ -1,7 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """App patients util functions."""
+
 import logging
 from datetime import date
-from typing import Final, Optional
+from typing import Final
 from uuid import UUID
 
 from django.conf import settings
@@ -14,12 +19,12 @@ from opal.core.utils import generate_random_registration_code, generate_random_u
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import LegacyUserType
-from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.integration import hospital
+from opal.services.integration.schemas import PatientSchema
 from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
-from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
@@ -27,10 +32,6 @@ RAMQ_FEMALE_INDICATOR: Final = 50
 RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
-
-# Initialize services to communicate with external components
-oie_service: OIEService = OIEService()
-orms_service: ORMSService = ORMSService()
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +51,7 @@ def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patien
     Returns:
         the RAMQ number derived from the given arguments
     """
-    month = (
-        date_of_birth.strftime('%m')
-        if sex == Patient.SexType.MALE
-        else date_of_birth.month + RAMQ_FEMALE_INDICATOR
-    )
+    month = date_of_birth.strftime('%m') if sex == Patient.SexType.MALE else date_of_birth.month + RAMQ_FEMALE_INDICATOR
 
     data = [
         last_name[:3].upper(),
@@ -82,20 +79,7 @@ def update_registration_code_status(
     registration_code.save()
 
 
-def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
-    """
-    Update Patient Legacy_id.
-
-    Args:
-        patient: Patient object
-        legacy_id: number or None.
-    """
-    patient.legacy_id = legacy_id
-    patient.full_clean()
-    patient.save()
-
-
-def find_caregiver(username: str) -> Optional[User]:
+def find_caregiver(username: str) -> User | None:
     """
     Find the user if it exists.
 
@@ -212,7 +196,7 @@ def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
     return relationship_types_queryset
 
 
-def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Optional[Patient]:
+def get_patient_by_ramq_or_mrn(ramq: str | None, mrn: str, site: str) -> Patient | None:
     """
     Get a `Patient` object filtered by a given RAMQ or sites and MRNs.
 
@@ -263,7 +247,7 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
 
-def create_patient(  # noqa: WPS211
+def create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -310,13 +294,13 @@ def create_patient(  # noqa: WPS211
     return patient
 
 
-def create_relationship(  # noqa: WPS211
+def create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver_profile: caregiver_models.CaregiverProfile,
     relationship_type: RelationshipType,
     status: RelationshipStatus,
-    request_date: Optional[date] = None,
-    start_date: Optional[date] = None,
+    request_date: date | None = None,
+    start_date: date | None = None,
 ) -> Relationship:
     """
     Create a new relationship instance with the given properties.
@@ -333,7 +317,7 @@ def create_relationship(  # noqa: WPS211
         the new relationship instance
     """
     if not request_date:
-        request_date = date.today()
+        request_date = timezone.now().date()
 
     if not start_date:
         start_date = patient.date_of_birth
@@ -384,7 +368,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(  # noqa: WPS210
+def initialize_new_opal_patient(
     patient: Patient,
     mrn_list: list[tuple[Site, str, bool]],
     patient_uuid: UUID,
@@ -393,7 +377,7 @@ def initialize_new_opal_patient(  # noqa: WPS210
     """
     Execute all the steps necessary to set up a new patient in the system after registration.
 
-    This includes notifying ORMS and the OIE of the new patient.
+    This includes notifying ORMS and the source system of the new patient.
 
     Args:
         patient: the patient to initialize in the legacy DB.
@@ -407,38 +391,41 @@ def initialize_new_opal_patient(  # noqa: WPS210
     legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
     patient.legacy_id = legacy_patient.patientsernum
     patient.save()
-    logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
+    logger.info(f'Successfully initialized patient in legacy DB; legacy_id = {patient.legacy_id}')
 
-    # Call the OIE to notify it of the existence of the new patient (must be done before calling
+    # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
-    oie_response = oie_service.new_opal_patient(active_mrn_list)
+    for site_code, mrn in active_mrn_list:
+        try:
+            hospital.notify_new_patient(mrn, site_code)
+        except hospital.NonOKResponseError as exc:  # noqa: PERF203
+            logger.exception(
+                f'Failed to initialize patient via the source system ({mrn=}, {site_code=}, {patient_uuid=}: {exc.error}'
+            )
+        else:
+            logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
 
-    if oie_response['status'] == 'success':
-        logger.info('Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid))
+    if settings.ORMS_ENABLED:
+        # Call ORMS to notify it of the existence of the new patient
+        orms_response = ORMSService().set_opal_patient(active_mrn_list, patient_uuid)
+
+        if orms_response['status'] == 'success':
+            logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
+        else:
+            logger.error('Failed to initialize patient via ORMS')
+            logger.error(
+                f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, ORMS response = {orms_response}',
+            )
     else:
-        logger.error('Failed to initialize patient via the OIE')
-        logger.error(
-            'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
-        )
-
-    # Call ORMS to notify it of the existence of the new patient
-    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
-
-    if orms_response['status'] == 'success':
-        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
-    else:
-        logger.error('Failed to initialize patient via ORMS')
-        logger.error(
-            'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),
-        )
+        logger.info(f'ORMS System not enabled, skipping notification of new patient; patient_uuid {patient_uuid}')
 
 
 @transaction.atomic
-def create_access_request(  # noqa: WPS210, WPS231
-    patient: Patient | OIEPatientData,
+def create_access_request(
+    patient: Patient | PatientSchema,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
-) -> tuple[Relationship, Optional[caregiver_models.RegistrationCode]]:
+) -> tuple[Relationship, caregiver_models.RegistrationCode | None]:
     """
     Create a new access request (relationship) between the patient and caregiver.
 
@@ -447,7 +434,7 @@ def create_access_request(  # noqa: WPS210, WPS231
     For a new caregiver a registration code will also be created.
 
     Args:
-        patient: a `Patient` instance if the patient exists, `OIEPatientData` otherwise
+        patient: a `Patient` instance if the patient exists, `SourceSystemPatientData` otherwise
         caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
         relationship_type: the type of relationship between the caregiver and patient
 
@@ -466,23 +453,22 @@ def create_access_request(  # noqa: WPS210, WPS231
     )
 
     # New patient
-    if isinstance(patient, OIEPatientData):
+    if isinstance(patient, PatientSchema):
         is_new_patient = True
         mrns = [
-            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active)
-            for mrn_data in patient.mrns
+            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.is_active) for mrn_data in patient.mrns
         ]
 
         patient = create_patient(
             first_name=patient.first_name,
             last_name=patient.last_name,
             date_of_birth=patient.date_of_birth,
-            sex=Patient.SexType(patient.sex),
-            ramq=patient.ramq,
+            sex=SexType[patient.sex.name],
+            ramq=patient.health_insurance_number or '',
             mrns=mrns,
         )
 
-        # set the two fields according to the institution’s field values if the patient is a pediatric patient
+        # set the two fields according to the institution's field values if the patient is a pediatric patient
         institution = Institution.objects.get()
         if patient.age < institution.adulthood_age:
             patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay
@@ -513,6 +499,9 @@ def create_access_request(  # noqa: WPS210, WPS231
                 patient.uuid,
                 caregiver_profile if relationship_type.is_self else None,
             )
+            # Prepare databank consent and infosheet automatically for new patients, if enabled
+            if settings.DATABANK_ENABLED:
+                legacy_utils.create_databank_patient_consent_data(patient)
     else:
         # New user
         # Create caregiver and caregiver profile

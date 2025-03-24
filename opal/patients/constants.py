@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """List of constants for the patients app."""
 from enum import Enum
 from typing import Final
@@ -8,15 +12,15 @@ from django.utils.translation import gettext_lazy as _
 class MedicalCard(Enum):
     """An enumeration of supported medical card types."""
 
-    MRN = _('Hospital Card (MRN)')  # noqa: WPS115
-    RAMQ = _('Medicare Card (RAMQ)')  # noqa: WPS115
+    MRN = _('Hospital Card (MRN)')
+    RAMQ = _('Medicare Card (RAMQ)')
 
 
 class UserType(Enum):
     """An enumeration of user types."""
 
-    NEW = _('New Opal User')  # noqa: WPS115
-    EXISTING = _('Existing Opal User')  # noqa: WPS115
+    NEW = _('New Opal User')
+    EXISTING = _('Existing Opal User')
 
 
 #: Choices for the type of the medical cards

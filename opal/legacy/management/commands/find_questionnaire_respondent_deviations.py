@@ -1,18 +1,23 @@
-"""Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
-from typing import Any, Optional
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.core.management.base import BaseCommand
+"""Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
+from typing import Any
+
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, transaction
 from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
+# consider only completed (status=2) and in progress (status=1) questionnaires
 LEGACY_RESPONDENT_QUERY = """
     SELECT
         aq.respondentUsername AS Username,
         aq.respondentDisplayName AS CaregiverName
     FROM answerQuestionnaire aq
-    WHERE aq.status = 2 OR aq.status = 3
+    WHERE aq.status = 1 OR aq.status = 2
     GROUP BY aq.respondentUsername, aq.respondentDisplayName;
 """
 
@@ -22,32 +27,34 @@ DJANGO_RESPONDENT_QUERY = """
         CONCAT_WS(' ', UU.first_name, UU.last_name) AS CaregiverName
     FROM users_user UU
     WHERE UU.username IN %s;
-"""  # noqa: WPS323
+"""
 
 
 class Command(BaseCommand):
-    """Command to find differences in the questionnaire respondent data between legacy and new back end databases.
+    """
+    Command to find differences in the questionnaire respondent data between legacy and new back end databases.
 
     The command compares the `respondentUsername` field of the `QuestionnaireDB.answerQuestionnaire` table with the \
     `first_name` and the `last_name` of the same `CaregiverProfile` stored in the Django back end.
     """
 
-    help = '{0} {1}'.format(  # noqa: A003
-        'Check the `first_name` and `last_name` of the questionnaire respondents are in sync',
-        'with those stored for the same caregiver in Django.',
+    help = (
+        'Check the `first_name` and `last_name` of the questionnaire respondents are in sync'
+        + 'with those stored for the same caregiver in Django.'
     )
     requires_migrations_checks = True
 
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle sync check for the questionnaire respondents.
 
-        Return 'None'.
-
         Args:
-            args: input arguments.
-            kwargs: input arguments.
+            args: input arguments
+            kwargs: input arguments
+
+        Raises:
+            CommandError: if there are deviations
         """
         with connections['questionnaire'].cursor() as questionnaire_db:
             questionnaire_db.execute(LEGACY_RESPONDENT_QUERY)
@@ -67,18 +74,17 @@ class Command(BaseCommand):
         )
 
         if respondents_err_str:
-            self.stderr.write(
-                respondents_err_str,
-            )
-        else:
-            self.stdout.write('No sync errors has been found in the in the questionnaire respondent data.')
+            raise CommandError(respondents_err_str)
+
+        self.stdout.write('No sync errors have been found in the in the questionnaire respondent data.')
 
     def _get_respondents_sync_err(
         self,
         legacy_respondents: list[tuple[str, ...]],
         django_respondents: list[tuple[str, ...]],
-    ) -> Optional[str]:
-        """Build error string based on the questionnaire respondents' first & last names deviations.
+    ) -> str | None:
+        """
+        Build error string based on the questionnaire respondents' first & last names deviations.
 
         Args:
             legacy_respondents: Django's `Users'` first and last names filtered by `username`
@@ -97,16 +103,14 @@ class Command(BaseCommand):
         if not unmatched_respondents:
             return None
 
-        err_str = '\n{0}'.format(SPLIT_LENGTH * '-')
-        err_str += '\n{0}: found deviations in the questionnaire respondents!!!'.format(timezone.now())
-        err_str = '{0}\n\n{1}\n{2}\n\n'.format(
-            err_str,
-            '[QuestionnaireDB.answerQuestionnaire.respondentUsername  <===>  opal.users_user.first_name::last_name]',
-            '[format: (Username, CaregiverName)]:',
+        divider = SPLIT_LENGTH * '-'
+        unmatched_respondents_string = '\n'.join(str(respondent) for respondent in (unmatched_respondents))
+        return (
+            f'\n{divider}'
+            + f'\n{timezone.now()}: found deviations in the questionnaire respondents!!!\n\n'
+            + '[QuestionnaireDB.answerQuestionnaire.respondentUsername  <===>  opal.users_user.first_name::last_name]\n'
+            + '[format: (Username, CaregiverName)]:\n\n'
+            # Add a list of unmatched questionnaire respondents' names to the error string
+            + unmatched_respondents_string
+            + f'\n{divider}\n\n\n'
         )
-
-        # Add a list of unmatched questionnaire respondents' names to the error string
-        err_str += '\n'.join(str(respondent) for respondent in (unmatched_respondents))
-        err_str += '\n{0}\n\n\n'.format(SPLIT_LENGTH * '-')
-
-        return err_str

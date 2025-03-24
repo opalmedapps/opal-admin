@@ -1,4 +1,9 @@
-"""Module providing model factories for patients app models.
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""
+Module providing model factories for patients app models.
 
 reference from:
 
@@ -8,6 +13,8 @@ reference from:
 """
 
 import datetime
+
+from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 from factory import Sequence, SubFactory, lazy_attribute
@@ -19,7 +26,7 @@ from opal.hospital_settings.factories import Site
 from . import models
 
 
-class RelationshipType(DjangoModelFactory):
+class RelationshipType(DjangoModelFactory[models.RelationshipType]):
     """Model factory to create [opal.patients.models.RelationshipType][] models."""
 
     class Meta:
@@ -27,15 +34,15 @@ class RelationshipType(DjangoModelFactory):
         django_get_or_create = ('name',)
 
     name = 'Caregiver'
-    name_fr = lazy_attribute(lambda type: f'{type.name} FR')
+    name_fr = lazy_attribute(lambda relationship_type: f'{relationship_type.name} FR')
     description = 'The patient'
-    description_fr = lazy_attribute(lambda type: f'{type.description} FR')
+    description_fr = lazy_attribute(lambda relationship_type: f'{relationship_type.description} FR')
     start_age = 14
     form_required = False
     can_answer_questionnaire = False
 
 
-class Patient(DjangoModelFactory):
+class Patient(DjangoModelFactory[models.Patient]):
     """Model factory to create [opal.patients.models.Patient][] models."""
 
     class Meta:
@@ -50,7 +57,7 @@ class Patient(DjangoModelFactory):
     legacy_id = Sequence(lambda number: number + 1)
 
 
-class Relationship(DjangoModelFactory):
+class Relationship(DjangoModelFactory[models.Relationship]):
     """Model factory to create [opal.patients.models.Relationship][] models."""
 
     class Meta:
@@ -58,14 +65,14 @@ class Relationship(DjangoModelFactory):
 
     patient = SubFactory(Patient)
     caregiver = SubFactory(CaregiverProfile)
-    type = SubFactory(RelationshipType)  # noqa: A003
-    request_date = datetime.date.today()
+    type = SubFactory(RelationshipType)
+    request_date = timezone.now().date()
     start_date = lazy_attribute(lambda relationship: relationship.patient.date_of_birth)
-    end_date = datetime.date.today() + relativedelta(years=2)
+    end_date = timezone.now().date() + relativedelta(years=2)
     reason = ''
 
 
-class HospitalPatient(DjangoModelFactory):
+class HospitalPatient(DjangoModelFactory[models.HospitalPatient]):
     """Model factory to create [opal.patients.models.HospitalPatient][] models."""
 
     class Meta:

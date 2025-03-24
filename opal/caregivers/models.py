@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing models for the caregivers app."""
 from uuid import uuid4
 
@@ -43,7 +47,7 @@ class CaregiverProfile(models.Model):
         Returns:
             the name of the associated user
         """
-        return '{last}, {first}'.format(first=self.user.first_name, last=self.user.last_name)
+        return f'{self.user.last_name}, {self.user.first_name}'
 
 
 class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]
@@ -64,7 +68,8 @@ class SecurityQuestion(models.Model):  # type: ignore[django-manager-missing]
         verbose_name_plural = _('Security Questions')
 
     def __str__(self) -> str:
-        """Return the question text.
+        """
+        Return the question text.
 
         Returns:
             the question text.
@@ -97,7 +102,8 @@ class SecurityAnswer(models.Model):
         verbose_name_plural = _('Security Answers')
 
     def __str__(self) -> str:
-        """Return the question.
+        """
+        Return the question.
 
         Returns:
             the question.
@@ -123,7 +129,7 @@ class Device(models.Model):
         on_delete=models.CASCADE,
     )
 
-    type = models.CharField(  # noqa: A003
+    type = models.CharField(
         verbose_name=_('Device Type'),
         max_length=3,
         choices=DeviceType.choices,
@@ -156,11 +162,11 @@ class Device(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=DeviceType.values),
             ),
             models.UniqueConstraint(
-                name='%(app_label)s_%(class)s_unique_caregiver_device',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_unique_caregiver_device',
                 fields=['caregiver_id', 'device_id'],
             ),
         ]
@@ -185,7 +191,7 @@ class RegistrationCodeStatus(models.TextChoices):
 
 
 class RegistrationCode(models.Model):
-    """A Registration Code belonging to an [Patients][location of the model] with its specific properties."""
+    """A Registration code for a [relationship][opal.patients.models.Relationship] between a patient and caregiver."""
 
     relationship = models.ForeignKey(
         # Using string model references to avoid circular import
@@ -225,7 +231,7 @@ class RegistrationCode(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_status_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_status_valid',
                 check=models.Q(status__in=RegistrationCodeStatus.values),
             ),
         ]

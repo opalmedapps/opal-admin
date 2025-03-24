@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing legacy models to provide access to the legacy DB.
 
@@ -37,6 +41,7 @@ class LegacyUsers(models.Model):
     usertype = models.CharField(db_column='UserType', max_length=255, choices=LegacyUserType.choices)
     usertypesernum = models.IntegerField(db_column='UserTypeSerNum')
     username = models.CharField(db_column='Username', max_length=255)
+    password = models.CharField(db_column='Password', max_length=255, blank=True)
 
     class Meta:
         managed = False
@@ -108,7 +113,7 @@ class LegacyPatientControl(models.Model):
     patientupdate = models.IntegerField(db_column='PatientUpdate', default=1)
     lasttransferred = models.DateTimeField(
         db_column='LastTransferred',
-        default=timezone.make_aware(dt.datetime(2000, 1, 1)),
+        default=dt.datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
     )
     lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
     transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)
@@ -170,7 +175,7 @@ class LegacyAppointment(models.Model):
     roomlocation_fr = models.CharField(db_column='RoomLocation_FR', max_length=100)
     date_added = models.DateTimeField(db_column='DateAdded')
     scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
-    appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
+    source_system_id = models.CharField(db_column='SourceSystemID', max_length=100)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     source_database = models.ForeignKey(
         'LegacySourceDatabase',
@@ -226,6 +231,14 @@ class LegacyAlias(models.Model):
     )
     alias_description_en = models.TextField(db_column='AliasDescription_EN')
     alias_description_fr = models.TextField(db_column='AliasDescription_FR')
+    # TODO To be renamed to Reference Material when fully migrated to Django
+    educational_material_control_ser_num = models.ForeignKey(
+        'LegacyEducationalMaterialControl',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialControlSerNum',
+        to_field='educationalmaterialcontrolsernum',
+        null=True,
+    )
 
     class Meta:
         managed = False
@@ -290,7 +303,7 @@ class LegacyDocument(models.Model):
         help_text='Deprecated',
     )
     readby = models.JSONField(db_column='ReadBy', default=list)
-    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyDocumentManager = managers.LegacyDocumentManager()
 
     class Meta:
@@ -324,6 +337,8 @@ class LegacyEducationalMaterial(models.Model):
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     readby = models.JSONField(db_column='ReadBy', default=list)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     objects: managers.LegacyEducationalMaterialManager = managers.LegacyEducationalMaterialManager()
 
     class Meta:
@@ -335,11 +350,21 @@ class LegacyEducationalMaterialControl(models.Model):
     """EducationalMaterialControl model from the legacy database OpalDB."""
 
     educationalmaterialcontrolsernum = models.AutoField(db_column='EducationalMaterialControlSerNum', primary_key=True)
+    educational_material_type_en = models.CharField(max_length=100, db_column='EducationalMaterialType_EN')
+    educational_material_type_fr = models.CharField(max_length=100, db_column='EducationalMaterialType_FR')
+    publish_flag = models.IntegerField(db_column='PublishFlag', default=0)
+    name_en = models.CharField(db_column='Name_EN', max_length=200)
+    name_fr = models.CharField(db_column='Name_FR', max_length=200)
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     educationalmaterialcategoryid = models.ForeignKey(
         'LegacyEducationalMaterialCategory',
         models.DO_NOTHING,
         db_column='EducationalMaterialCategoryId',
     )
+    # These columns are configured to allow NULL in the database
+    url_en = models.CharField(db_column='URL_EN', max_length=2000, null=True, blank=True)
+    url_fr = models.CharField(db_column='URL_FR', max_length=2000, null=True, blank=True)
 
     class Meta:
         managed = False
@@ -349,7 +374,7 @@ class LegacyEducationalMaterialControl(models.Model):
 class LegacyEducationalMaterialCategory(models.Model):
     """EducationalMaterialCategory model from the legacy database OpalDB."""
 
-    id = models.AutoField(db_column='ID', primary_key=True)  # noqa: A003
+    id = models.AutoField(db_column='ID', primary_key=True)
     title_en = models.CharField(db_column='title_EN', max_length=128)
     title_fr = models.CharField(db_column='title_FR', max_length=128)
 
@@ -362,13 +387,39 @@ class LegacyQuestionnaire(models.Model):
     """Questionnaire model from the legacy database OpalDB."""
 
     questionnairesernum = models.BigAutoField(db_column='QuestionnaireSerNum', primary_key=True)
+    questionnaire_control_ser_num = models.ForeignKey(
+        'LegacyQuestionnaireControl',
+        models.DO_NOTHING,
+        db_column='QuestionnaireControlSerNum',
+        to_field='questionnaire_control_ser_num',
+    )
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    patient_questionnaire_db_ser_num = models.IntegerField(db_column='PatientQuestionnaireDBSerNum')
     completedflag = models.IntegerField(db_column='CompletedFlag')
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
     objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
     class Meta:
         managed = False
         db_table = 'Questionnaire'
+
+
+class LegacyQuestionnaireControl(models.Model):
+    """QuestionnaireControl model from the legacy database OpalDB."""
+
+    questionnaire_control_ser_num = models.BigAutoField(db_column='QuestionnaireControlSerNum', primary_key=True)
+    questionnaire_db_ser_num = models.IntegerField(db_column='QuestionnaireDBSerNum')
+    questionnaire_name_en = models.CharField(db_column='QuestionnaireName_EN', max_length=2056)
+    questionnaire_name_fr = models.CharField(db_column='QuestionnaireName_FR', max_length=2056)
+    publish_flag = models.SmallIntegerField(db_column='PublishFlag')
+    date_added = models.DateTimeField(db_column='DateAdded')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'QuestionnaireControl'
 
 
 class LegacyAnnouncement(models.Model):
@@ -489,7 +540,7 @@ class LegacyHospitalMap(models.Model):
 class LegacyMasterSourceAlias(models.Model):
     """MasterSourceAlias from the legacy database OpalDB."""
 
-    id = models.AutoField(primary_key=True, db_column='ID')  # noqa: A003
+    id = models.AutoField(primary_key=True, db_column='ID')
     external_id = models.CharField(db_column='externalId', max_length=512)
     code = models.CharField(db_column='code', max_length=128)
     description = models.CharField(db_column='description', max_length=128)
@@ -543,8 +594,8 @@ class LegacyDiagnosis(models.Model):
     diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=100)
     description_en = models.CharField(db_column='Description_EN', max_length=200)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
-    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
+    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)
+    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)
     creation_date = models.DateTimeField(db_column='CreationDate')
 
     objects: managers.LegacyDiagnosisManager = managers.LegacyDiagnosisManager()
@@ -643,10 +694,10 @@ class LegacyPatientTestResult(models.Model):
     test_value_numeric = models.FloatField(db_column='TestValueNumeric')
     test_value_string = models.CharField(db_column='TestValue', max_length=255)
     unit_description = models.CharField(db_column='UnitDescription', max_length=40)
-    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
+    date_added = models.DateTimeField(db_column='DateAdded', default=timezone.now)
     read_status = models.IntegerField(db_column='ReadStatus', default=0)
     read_by = models.TextField(db_column='ReadBy', blank=True)
-    last_updated = models.DateTimeField(auto_now=True, db_column='LastUpdated')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     available_at = models.DateTimeField(db_column='AvailableAt', null=True)
 
     objects: managers.LegacyPatientTestResultManager = managers.LegacyPatientTestResultManager()
@@ -739,6 +790,13 @@ class LegacyTestControl(models.Model):
         db_table = 'TestControl'
 
 
+class LegacyOAUserType(models.IntegerChoices):
+    """The user type for OA users."""
+
+    HUMAN = 1
+    SYSTEM = 2
+
+
 class LegacyOAUser(models.Model):
     """OAUser from the legacy database OpalDB."""
 
@@ -746,11 +804,10 @@ class LegacyOAUser(models.Model):
     username = models.CharField(db_column='Username', max_length=1000)
     password = models.CharField(db_column='Password', max_length=1000)
     oa_role = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
-    # value 1 for human user, 2 for system user
-    user_type = models.IntegerField(db_column='type', default=1)
+    user_type = models.IntegerField(db_column='type', choices=LegacyOAUserType.choices, default=LegacyOAUserType.HUMAN)
     language = models.CharField(db_column='Language', max_length=2, default='EN')
     is_deleted = models.IntegerField(db_column='deleted', default=0)
-    date_added = models.DateTimeField(db_column='DateAdded')
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
     class Meta:
@@ -766,7 +823,7 @@ class LegacyOARole(models.Model):
     name_fr = models.CharField(db_column='name_FR', max_length=64)
     is_deleted = models.IntegerField(db_column='deleted', default=0)
     deleted_by = models.CharField(db_column='deletedBy', max_length=255)
-    creation_date = models.DateTimeField(db_column='creationDate')
+    creation_date = models.DateTimeField(db_column='creationDate', auto_now_add=True)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
@@ -826,3 +883,45 @@ class LegacyOARoleModule(models.Model):
     class Meta:
         managed = False
         db_table = 'oaRoleModule'
+
+
+class LegacyPatientActivityLog(models.Model):
+    """PatientActivityLog from the legacy database OpalDB."""
+
+    activity_ser_num = models.BigAutoField(db_column='ActivitySerNum', primary_key=True)
+    request = models.CharField(db_column='Request', max_length=255, null=False)
+    parameters = models.CharField(db_column='Parameters', max_length=2048, default='')
+    target_patient_id = models.IntegerField(db_column='TargetPatientId', null=True)
+    username = models.CharField(db_column='Username', max_length=255, null=False)
+    device_id = models.CharField(db_column='DeviceId', max_length=255, null=False)
+    session_id = models.TextField(db_column='SessionId', default='')
+    date_time = models.DateTimeField(db_column='DateTime', null=False)
+    lastupdated = models.DateTimeField(db_column='LastUpdated', null=False, default=timezone.now)
+    app_version = models.CharField(db_column='AppVersion', max_length=50, null=False)
+
+    objects: managers.LegacyPatientActivityLogManager = managers.LegacyPatientActivityLogManager()
+
+    class Meta:
+        managed = False
+        db_table = 'PatientActivityLog'
+
+
+class LegacyPatientDeviceIdentifier(models.Model):
+    """PatientDeviceIdentifier from the legacy OpalDB database."""
+
+    patient_device_identifier_ser_num = models.BigAutoField(db_column='PatientDeviceIdentifierSerNum', primary_key=True)
+    device_id = models.CharField(db_column='DeviceId', max_length=255)
+    app_version = models.CharField(db_column='appVersion', max_length=16)
+    registration_id = models.CharField(db_column='RegistrationId', max_length=256)
+    device_type = models.SmallIntegerField(db_column='DeviceType', default=0)  # 0 = iOS, 1 = Android, 3 = browser
+    security_answer_ser_num = models.IntegerField(db_column='SecurityAnswerSerNum', null=True)
+    attempt = models.IntegerField(db_column='Attempt', default=0)
+    trusted = models.SmallIntegerField(db_column='Trusted', default=0)
+    timeout_timestamp = models.DateTimeField(db_column='TimeoutTimestamp', null=True)
+    last_updated = models.DateTimeField(db_column='LastUpdated', null=True, auto_now=True)
+    username = models.CharField(db_column='Username', max_length=255, default='')
+    security_answer = models.CharField(db_column='SecurityAnswer', max_length=256, default='')
+
+    class Meta:
+        managed = False
+        db_table = 'PatientDeviceIdentifier'

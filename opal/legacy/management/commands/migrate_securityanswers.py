@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Security Answer migration."""
-from typing import Any, Optional
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -11,9 +15,9 @@ from opal.users.models import User
 class Command(BaseCommand):
     """Command to migrate Security Answer from legacy DB to backend DB."""
 
-    help = 'migrate Security Answer from legacy DB to backend DB'  # noqa: A003
+    help = 'migrate Security Answer from legacy DB to backend DB'
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: C901 WPS231 WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate Security Answer from legacy DB to backend DB.
 
@@ -69,16 +73,14 @@ class Command(BaseCommand):
                 migrated_answers += 1
             else:
                 self.stdout.write(self.style.WARNING(
-                    'Security answer already exists, sernum: {answersernum}'.format(
-                        answersernum=legacy_answer.securityanswersernum,
-                    ),
+                    f'Security answer already exists, sernum: {legacy_answer.securityanswersernum}',
                 ))
 
         self.stdout.write(self.style.SUCCESS(
             f'Migrated {migrated_answers} out of {legacy_answers.count()} security answers',
         ))
 
-    def _find_user(self, patientsernum: int) -> Optional[User]:  # noqa: C901
+    def _find_user(self, patientsernum: int) -> User | None:
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 
@@ -95,15 +97,11 @@ class Command(BaseCommand):
             legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum, usertype=LegacyUserType.PATIENT)
         except LegacyUsers.DoesNotExist:
             self.stderr.write(self.style.ERROR(
-                'Legacy user does not exist, usertypesernum: {usertypesernum}'.format(
-                    usertypesernum=patientsernum,
-                ),
+                f'Legacy user does not exist, usertypesernum: {patientsernum}',
             ))
         except LegacyUsers.MultipleObjectsReturned:
             self.stderr.write(self.style.ERROR(
-                'Found more than one related legacy users, usertypesernum: {usertypesernum}'.format(
-                    usertypesernum=patientsernum,
-                ),
+                f'Found more than one related legacy users, usertypesernum: {patientsernum}',
             ))
 
         if legacy_user:
@@ -112,8 +110,6 @@ class Command(BaseCommand):
                 user = User.objects.get(username=legacy_user.username)
             except User.DoesNotExist:
                 self.stderr.write(self.style.ERROR(
-                    'User does not exist, username: {username}'.format(
-                        username=legacy_user.username,
-                    ),
+                    f'User does not exist, username: {legacy_user.username}',
                 ))
         return user

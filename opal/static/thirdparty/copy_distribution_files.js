@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 const fs = require('fs')
 const path = require('path')
 
@@ -9,6 +13,15 @@ dependencies.set('bootstrap/dist/css/bootstrap.min.css', 'bootstrap/css/bootstra
 dependencies.set('bootstrap/dist/css/bootstrap.min.css.map', 'bootstrap/css/bootstrap.min.css.map')
 dependencies.set('bootstrap/dist/js/bootstrap.bundle.min.js', 'bootstrap/js/bootstrap.bundle.min.js')
 dependencies.set('bootstrap/dist/js/bootstrap.bundle.min.js.map', 'bootstrap/js/bootstrap.bundle.min.js.map')
+// Fontawesome
+dependencies.set('@fortawesome/fontawesome-free/css/fontawesome.min.css', 'fontawesomefree/css/fontawesome.min.css')
+dependencies.set('@fortawesome/fontawesome-free/css/solid.min.css', 'fontawesomefree/css/solid.min.css')
+dependencies.set('@fortawesome/fontawesome-free/css/regular.min.css', 'fontawesomefree/css/regular.min.css')
+// the CSS files reference the webfonts
+dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf', 'fontawesomefree/webfonts/fa-solid-900.ttf')
+dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2', 'fontawesomefree/webfonts/fa-solid-900.woff2')
+dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf', 'fontawesomefree/webfonts/fa-regular-400.ttf')
+dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2', 'fontawesomefree/webfonts/fa-regular-400.woff2')
 // Unpoly
 dependencies.set('unpoly/unpoly.min.css', 'unpoly/css/unpoly.min.css')
 dependencies.set('unpoly/unpoly-bootstrap5.min.css', 'unpoly/css/unpoly-bootstrap5.min.css')

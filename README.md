@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Opal Backend
 
 [![pipeline status](https://gitlab.com/opalmedapps/backend/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/documentation-available-brightgreen.svg)](https://opalmedapps.gitlab.io/backend)
@@ -7,7 +13,8 @@
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.10 or higher
+* Python 3.12
+* [Git LFS](https://git-lfs.com/)
 
 ## Getting Started
 
@@ -49,7 +56,7 @@ In order for linting, type checking, unit testing etc. to be available in your I
 === "macOS/Linux"
 
     ```sh
-    python3 -m venv --prompt 'opal' .venv
+    python3.12 -m venv --prompt 'opal' .venv
     source .venv/bin/activate
     ```
 
@@ -142,25 +149,42 @@ python -m pip install -r requirements/development.txt
 
         ```sh
         brew install mysql-client
-        export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
         brew install pkg-config
-        export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
+        # export PATH and PKG_CONFIG_PATH according to output from installing mysql-client
         # install dependencies via pip install
         ```
+
+        Use the output from installing `mysql-client` to update the `PATH` and set the `PKG_CONFIG_PATH` environment variables.
+        If you've already installed `mysql-client` you can get this information by executing `brew info mysql-client`.
 
     === "Windows"
         No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the `mysqlclient` package.
 
 ### Migrate Database and Create Superuser
 
-Before you can start, you need to migrate the database and create a superuser. Execute the following commands either in the virtual environment or in the `app` container.
+Before you can start, you need to migrate the database and create a superuser. Ensure at least the database container is running. Execute the following commands either in the virtual environment or in the `app` container.
 
 ```sh
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
+!!! note
+
+The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
+
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
+
+### Initializing data
+
+For convenience, we provide two commands to initialize initial and test data.
+
+```shell
+python manage.py initialize_data
+python manage.py insert_test_data OMI
+```
+
+See the command's help for more information.
 
 ### Pre-commit
 
@@ -352,6 +376,16 @@ services:
       - path/to/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
       - $PWD/.env:.env
 ```
+
+### Running management commands periodically
+
+The following management commands need to be run periodically (e.g., as a cronjob):
+
+* `find_deviations` (once per day): to detect deviations with data stored in the legacy database for patients and caregivers
+* `find_questionnaire_respondent_deviations` (once per day): to detect deviations for questionnaire respondents in the legacy questionnaire database
+* `expire_relationships` (once per day after midnight): to expire relationships where the patient reached the end age of the relationship type
+* `expire_outdated_registration_codes` (every hour or more often): to expire unused registration codes
+* `update_daily_usage_statistics` (once per day at 5am): to update daily usage statistics for patients and caregivers
 
 ## Running the databases with encrypted connections
 

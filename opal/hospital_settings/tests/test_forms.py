@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import decimal
 
 import pytest
@@ -70,7 +74,7 @@ def test_institution_update_with_nonnumeric_delay_fields(institution_form: Insti
 
 def test_site_create() -> None:
     """Ensure that the site create form is valid."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     form_data = {
         'name_en': 'TEST1_EN',
@@ -124,7 +128,7 @@ def test_site_create_with_missing_field() -> None:
 
 def test_site_create_nonnumeric_location_fields() -> None:
     """Ensure that the form validation captures non-numeric entries for longitude and latitude on creations."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     form_data = {
         'name_en': 'TEST1_EN',
@@ -151,7 +155,7 @@ def test_site_create_nonnumeric_location_fields() -> None:
 
 def test_site_create_with_large_long_lat_fields() -> None:
     """Ensure that the form validation does not accept number exceeds max_length for long/lat on creations."""
-    institution = factories.Institution()
+    institution = factories.Institution.create()
 
     form_data = {
         'name_en': 'TEST1_EN',
@@ -178,7 +182,7 @@ def test_site_create_with_large_long_lat_fields() -> None:
 
 def test_site_update() -> None:
     """Ensure that the site update form is valid."""
-    site = factories.Site()
+    site = factories.Site.create()
 
     form_data = {
         'name_en': 'TEST1_EN',
@@ -212,7 +216,7 @@ def test_site_update() -> None:
 
 def test_site_update_with_missing_field() -> None:
     """Ensure that the site form checks for missing institution field at the moment of updating a site."""
-    site = factories.Site()
+    site = factories.Site.create()
 
     form_data = {
         'name_en': 'TEST1_EN_updated',
@@ -242,12 +246,12 @@ def test_site_update_with_missing_field() -> None:
         assert not form.is_valid()
 
     site.refresh_from_db()
-    assert site.name_en != form.data['name_en']
+    assert site.name_en != form.data['name_en']  # type: ignore[attr-defined]
 
 
 def test_site_update_nonnumeric_location_fields() -> None:
     """Ensure that the site form checks for nonnumeric longitude and latitude on updates."""
-    site = factories.Site()
+    site = factories.Site.create()
     form_data = {
         'name_en': 'TEST1_EN_updated',
         'name_fr': 'TEST1_FR_updated',
@@ -276,7 +280,7 @@ def test_site_update_nonnumeric_location_fields() -> None:
 
 def test_site_update_with_large_long_lat_field() -> None:
     """Ensure that the site form checks for longitude and latitude max_length fields on updates."""
-    site = factories.Site()
+    site = factories.Site.create()
     form_data = {
         'name_en': 'TEST1_EN_updated',
         'name_fr': 'TEST1_FR_updated',

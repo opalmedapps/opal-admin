@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing model factories for Legacy QuestionnaireDB models."""
+
 from datetime import datetime
 
 from django.utils import timezone
@@ -9,7 +14,7 @@ from factory.django import DjangoModelFactory
 from . import models
 
 
-class LegacyDefinitionTableFactory(DjangoModelFactory):
+class LegacyDefinitionTableFactory(DjangoModelFactory[models.LegacyDefinitionTable]):
     """DefinitionTable factory from the legacy questionnaire database."""
 
     class Meta:
@@ -18,20 +23,22 @@ class LegacyDefinitionTableFactory(DjangoModelFactory):
     name = 'questionnaire'
 
 
-class LegacyDictionaryFactory(DjangoModelFactory):
+class LegacyDictionaryFactory(DjangoModelFactory[models.LegacyDictionary]):
     """Dictionary factory from the legacy questionnaire database."""
 
     class Meta:
         model = models.LegacyDictionary
 
     content = 'Edmonton Symptom Assessment Survey'
-    content_id = 999999999
+    content_id = Sequence(lambda number: number + 1)
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
+    created_by = 'TestUser'
+    updated_by = 'TestUser'
 
 
-class LegacyPurposeFactory(DjangoModelFactory):
+class LegacyPurposeFactory(DjangoModelFactory[models.LegacyPurpose]):
     """Purpose factory from the legacy questionnaire database."""
 
     class Meta:
@@ -41,7 +48,7 @@ class LegacyPurposeFactory(DjangoModelFactory):
     description = SubFactory(LegacyDictionaryFactory)
 
 
-class LegacyRespondentFactory(DjangoModelFactory):
+class LegacyRespondentFactory(DjangoModelFactory[models.LegacyRespondent]):
     """Respondent factory from the legacy questionnaire database."""
 
     class Meta:
@@ -51,7 +58,7 @@ class LegacyRespondentFactory(DjangoModelFactory):
     description = SubFactory(LegacyDictionaryFactory)
 
 
-class LegacyQuestionnaireFactory(DjangoModelFactory):
+class LegacyQuestionnaireFactory(DjangoModelFactory[models.LegacyQuestionnaire]):
     """Questionnaire factory from the legacy questionnaire database."""
 
     class Meta:
@@ -65,42 +72,43 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
     deleted_by = 'Test User'
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = 'Test User'
     updated_by = 'Test User'
-    legacyname = 'Test Questionnaire'
+    legacy_name = 'Test Questionnaire'
 
 
-class LegacyPatientFactory(DjangoModelFactory):
+class LegacyQuestionnairePatientFactory(DjangoModelFactory[models.LegacyQuestionnairePatient]):
     """Patient factory from the legacy questionnaire database."""
 
     class Meta:
-        model = models.LegacyPatient
+        model = models.LegacyQuestionnairePatient
+        django_get_or_create = ('external_id',)
 
     external_id = 51
     hospital_id = -1
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
 
 
-class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
+class LegacyAnswerQuestionnaireFactory(DjangoModelFactory[models.LegacyAnswerQuestionnaire]):
     """AnswerQuestionnaire factory from the legacy questionnaire database."""
 
     class Meta:
         model = models.LegacyAnswerQuestionnaire
 
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     status = 0
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     deleted_by = 'Test User'
     created_by = 'Test User'
     updated_by = 'Test User'
 
 
-class LegacyLanguageFactory(DjangoModelFactory):
+class LegacyLanguageFactory(DjangoModelFactory[models.LegacyLanguage]):
     """Language factory from the legacy questionnaire database."""
 
     class Meta:
@@ -114,7 +122,7 @@ class LegacyLanguageFactory(DjangoModelFactory):
     updated_by = Faker('name')
 
 
-class LegacySectionFactory(DjangoModelFactory):
+class LegacySectionFactory(DjangoModelFactory[models.LegacySection]):
     """Section factory from the legacy questionnaire database."""
 
     class Meta:
@@ -126,11 +134,11 @@ class LegacySectionFactory(DjangoModelFactory):
     order = Sequence(lambda number: number)
     deleted = False
     created_by = Faker('name')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     updated_by = Faker('name')
 
 
-class LegacyTypeFactory(DjangoModelFactory):
+class LegacyTypeFactory(DjangoModelFactory[models.LegacyType]):
     """Type factory from the legacy questionnaire database."""
 
     class Meta:
@@ -143,7 +151,7 @@ class LegacyTypeFactory(DjangoModelFactory):
     template_sub_table = SubFactory(LegacyDefinitionTableFactory)
 
 
-class LegacyQuestionFactory(DjangoModelFactory):
+class LegacyQuestionFactory(DjangoModelFactory[models.LegacyQuestion]):
     """Question factory from the legacy questionnaire database."""
 
     class Meta:
@@ -153,19 +161,19 @@ class LegacyQuestionFactory(DjangoModelFactory):
     display = SubFactory(LegacyDictionaryFactory)
     definition = SubFactory(LegacyDictionaryFactory)
     question = Sequence(lambda number: number)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     version = 1
     parent_id = -1
     private = False
     final = False
     optional_feedback = False
     deleted = False
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('name')
     updated_by = Faker('name')
 
 
-class LegacyRadioButtonFactory(DjangoModelFactory):
+class LegacyRadioButtonFactory(DjangoModelFactory[models.LegacyRadioButton]):
     """RadioButton factory from the legacy questionnaire database."""
 
     class Meta:
@@ -174,7 +182,7 @@ class LegacyRadioButtonFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyRadioButtonOptionFactory(DjangoModelFactory):
+class LegacyRadioButtonOptionFactory(DjangoModelFactory[models.LegacyRadioButtonOption]):
     """RadioButtonOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -185,7 +193,7 @@ class LegacyRadioButtonOptionFactory(DjangoModelFactory):
     order = Sequence(lambda number: number)
 
 
-class LegacyCheckboxFactory(DjangoModelFactory):
+class LegacyCheckboxFactory(DjangoModelFactory[models.LegacyCheckbox]):
     """CheckBox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -194,7 +202,7 @@ class LegacyCheckboxFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyCheckboxOptionFactory(DjangoModelFactory):
+class LegacyCheckboxOptionFactory(DjangoModelFactory[models.LegacyCheckboxOption]):
     """CheckBoxOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -205,7 +213,7 @@ class LegacyCheckboxOptionFactory(DjangoModelFactory):
     parent_table = SubFactory(LegacyCheckboxFactory)
 
 
-class LegacyLabelFactory(DjangoModelFactory):
+class LegacyLabelFactory(DjangoModelFactory[models.LegacyLabel]):
     """Label factory from the legacy questionnaire database."""
 
     class Meta:
@@ -214,7 +222,7 @@ class LegacyLabelFactory(DjangoModelFactory):
     question = SubFactory(LegacyQuestionFactory)
 
 
-class LegacyLabelOptionFactory(DjangoModelFactory):
+class LegacyLabelOptionFactory(DjangoModelFactory[models.LegacyLabelOption]):
     """LabelOption factory from the legacy questionnaire database."""
 
     class Meta:
@@ -230,7 +238,7 @@ class LegacyLabelOptionFactory(DjangoModelFactory):
     parent_table = SubFactory(LegacyLabelFactory)
 
 
-class LegacyQuestionSectionFactory(DjangoModelFactory):
+class LegacyQuestionSectionFactory(DjangoModelFactory[models.LegacyQuestionSection]):
     """Type factory from the legacy questionnaire database."""
 
     class Meta:
@@ -243,7 +251,7 @@ class LegacyQuestionSectionFactory(DjangoModelFactory):
     optional = False
 
 
-class LegacyAnswerSectionFactory(DjangoModelFactory):
+class LegacyAnswerSectionFactory(DjangoModelFactory[models.LegacyAnswerSection]):
     """AnswerSection factory from the legacy questionnaire database."""
 
     class Meta:
@@ -253,7 +261,7 @@ class LegacyAnswerSectionFactory(DjangoModelFactory):
     section = SubFactory(LegacySectionFactory)
 
 
-class LegacyAnswerFactory(DjangoModelFactory):
+class LegacyAnswerFactory(DjangoModelFactory[models.LegacyAnswer]):
     """Answer factory from the legacy questionnaire database."""
 
     class Meta:
@@ -262,20 +270,20 @@ class LegacyAnswerFactory(DjangoModelFactory):
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
     section = SubFactory(LegacySectionFactory)
     question = SubFactory(LegacyQuestionFactory)
-    type = SubFactory(LegacyTypeFactory)  # noqa: A003
+    type = SubFactory(LegacyTypeFactory)
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     answered = Faker('boolean')
     skipped = Faker('boolean')
     deleted = Faker('boolean')
     deleted_by = Faker('word')
-    creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
     created_by = Faker('word')
     updated_by = Faker('word')
 
 
-class LegacyAnswerSliderFactory(DjangoModelFactory):
+class LegacyAnswerSliderFactory(DjangoModelFactory[models.LegacyAnswerSlider]):
     """AnswerSlider factory from the legacy questionnaire database."""
 
     class Meta:
@@ -285,7 +293,7 @@ class LegacyAnswerSliderFactory(DjangoModelFactory):
     value = Faker('pyfloat', positive=True, min_value=1, max_value=10)
 
 
-class LegacyAnswerTextBoxFactory(DjangoModelFactory):
+class LegacyAnswerTextBoxFactory(DjangoModelFactory[models.LegacyAnswerTextBox]):
     """AnswerTextBox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -295,7 +303,7 @@ class LegacyAnswerTextBoxFactory(DjangoModelFactory):
     value = Faker('text', max_nb_chars=200)
 
 
-class LegacyAnswerTimeFactory(DjangoModelFactory):
+class LegacyAnswerTimeFactory(DjangoModelFactory[models.LegacyAnswerTime]):
     """AnswerTime factory from the legacy questionnaire database."""
 
     class Meta:
@@ -305,7 +313,7 @@ class LegacyAnswerTimeFactory(DjangoModelFactory):
     value = Faker('time')
 
 
-class LegacyAnswerLabelFactory(DjangoModelFactory):
+class LegacyAnswerLabelFactory(DjangoModelFactory[models.LegacyAnswerLabel]):
     """AnswerLabel factory from the legacy questionnaire database."""
 
     class Meta:
@@ -319,7 +327,7 @@ class LegacyAnswerLabelFactory(DjangoModelFactory):
     value = Faker('pyint')
 
 
-class LegacyAnswerRadioButtonFactory(DjangoModelFactory):
+class LegacyAnswerRadioButtonFactory(DjangoModelFactory[models.LegacyAnswerRadioButton]):
     """AnswerRadioButton factory from the legacy questionnaire database."""
 
     class Meta:
@@ -329,7 +337,7 @@ class LegacyAnswerRadioButtonFactory(DjangoModelFactory):
     value = Faker('random_int')
 
 
-class LegacyAnswerCheckboxFactory(DjangoModelFactory):
+class LegacyAnswerCheckboxFactory(DjangoModelFactory[models.LegacyAnswerCheckbox]):
     """AnswerCheckbox factory from the legacy questionnaire database."""
 
     class Meta:
@@ -339,11 +347,11 @@ class LegacyAnswerCheckboxFactory(DjangoModelFactory):
     value = Faker('random_int')
 
 
-class LegacyAnswerDateFactory(DjangoModelFactory):
+class LegacyAnswerDateFactory(DjangoModelFactory[models.LegacyAnswerDate]):
     """AnswerDate factory from the legacy questionnaire database."""
 
     class Meta:
         model = models.LegacyAnswerDate
 
     answer = SubFactory(LegacyAnswerFactory)
-    value = timezone.make_aware(datetime(2022, 9, 27))
+    value = datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())

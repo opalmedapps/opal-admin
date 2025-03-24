@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Reusable form widgets."""
-from typing import Any, Optional, Union
+from typing import Any
 
 from django import forms
 
@@ -68,15 +72,15 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         """
         self._option_descriptions = descriptions
 
-    def create_option(  # noqa: WPS211
+    def create_option(  # noqa: PLR0913, PLR0917
         self,
         name: str,
         value: Any,
-        label: Union[int, str],
+        label: int | str,
         selected: bool,
         index: int,
-        subindex: Optional[int] = None,
-        attrs: Optional[dict[str, Any]] = None,
+        subindex: int | None = None,
+        attrs: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Initialize an option (choice).

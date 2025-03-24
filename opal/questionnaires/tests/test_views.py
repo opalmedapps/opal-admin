@@ -1,12 +1,16 @@
-from datetime import date
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 from django.test import Client
 from django.urls.base import reverse
+from django.utils import timezone
 
 import pytest
+from _pytest.logging import LogCaptureFixture
 from bs4 import BeautifulSoup
-from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
@@ -46,7 +50,7 @@ def test_dashboard_empty_profile(admin_client: Client) -> None:
 
 def test_dashboard_forms_exist(user_client: Client) -> None:
     """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -59,7 +63,7 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
 
 def test_dashboard_multi_questionnaire_profile(user_client: Client) -> None:
     """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()
     test_questionnaire_profile.user.is_superuser = True
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -87,9 +91,9 @@ def test_filter_report_form_exists(admin_client: Client) -> None:
     assertContains(response, reverse('questionnaires:reports-filter'))
 
 
-def test_detail_report_form_exists(user_client: Client) -> None:
+def test_detail_report_form_exists(user_client: Client, questionnaire_data: None) -> None:
     """Ensure that a form exists in the reports filter page pointing to the detail page."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -232,9 +236,13 @@ def test_report_filter_missing_key(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_update_request_event_filter_template(user_client: Client) -> None:
+def test_update_request_event_filter_template(
+    user_client: Client,
+    questionnaire_data: None,
+    caplog: LogCaptureFixture,
+) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
-    test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
+    test_questionnaire_profile = QuestionnaireProfileFactory.create()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
@@ -243,18 +251,14 @@ def test_update_request_event_filter_template(user_client: Client) -> None:
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['11']},
     )
-    q_string = "{'questionnaireid': '11'}"
-    method = 'POST'
-    request_event = RequestEvent.objects.filter(
-        url='/questionnaires/reports/filter/',
-    ).order_by('-datetime').first()
 
     assert response.status_code == HTTPStatus.OK
-    assert request_event.method == method
-    assert request_event.query_string == q_string
+    assert len(caplog.records) == 2
+    assert "'questionnaire_id': '11'" in caplog.records[0].message
+    assert "'questionnaire_id': '11'" in caplog.records[1].message
 
 
-def test_update_request_event_detail_template(admin_client: Client) -> None:
+def test_update_request_event_detail_template(admin_client: Client, caplog: LogCaptureFixture) -> None:
     """Ensure RequestEvent object is correctly updated on call to detail template."""
     response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
@@ -268,17 +272,17 @@ def test_update_request_event_detail_template(admin_client: Client) -> None:
         },
     )
     q_string = (
-        "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27',"
+        "{'questionnaireID': '11', 'questionnaireName': 'Test Qst', 'start': '2016-11-25', 'end': '2020-02-27',"
         + " 'patientIDs': '3', 'questionIDs': '832'}"
     )
-    method = 'POST'
-    request_event = RequestEvent.objects.filter(
-        url='/questionnaires/reports/detail/',
-    ).order_by('-datetime').first()
 
     assert response.status_code == HTTPStatus.OK
-    assert request_event.method == method
-    assert request_event.query_string == q_string
+    assert len(caplog.records) == 2
+    assert "'questionnaire_id': '11'" in caplog.records[0].message
+    assert "'questionnaire_name': 'Test Qst'" in caplog.records[0].message
+    assert "'questionnaire_id': '11'" in caplog.records[1].message
+    assert "'questionnaire_name': 'Test Qst'" in caplog.records[1].message
+    assert q_string in caplog.records[1].message
 
 
 def test_detail_template_download_csv(admin_client: Client) -> None:
@@ -305,12 +309,12 @@ def test_detail_template_download_csv(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.OK
     headers = response.headers
     assert headers.get('Content-Type') == 'text/csv'
-    filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.csv'  # noqa: WPS237
+    filename = f'attachment; filename = questionnaire-11-{timezone.now().date().isoformat()}.csv'
     assert headers.get('Content-Disposition') == filename
     assert int(headers.get('Content-Length', 0)) > 0
 
 
-def test_detail_template_download_xlsx(admin_client: Client) -> None:
+def test_detail_template_download_xlsx(admin_client: Client, questionnaire_data: None) -> None:
     """Ensure downloading of xlsx data works as expected."""
     # trigger generation of temp tables
     response = admin_client.post(
@@ -351,7 +355,7 @@ def test_detail_template_download_xlsx(admin_client: Client) -> None:
         assert resp.status_code == HTTPStatus.OK
     for header in (response_one.headers, response_two.headers, response_three.headers):
         assert header.get('Content-Type') == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'  # noqa: WPS237
+        filename = f'attachment; filename = questionnaire-11-{timezone.now().date().isoformat()}.xlsx'
         assert header.get('Content-Disposition') == filename
         assert int(header.get('Content-Length', 0)) > 0
 

@@ -1,0 +1,236 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-12-18 13:40-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/usage_statistics/apps.py
+msgid "Usage Statistics"
+msgstr "Statistiques d'utilisation"
+
+#: opal/usage_statistics/common.py
+msgid "Day"
+msgstr "Jour"
+
+#: opal/usage_statistics/common.py
+msgid "Month"
+msgstr "Mois"
+
+#: opal/usage_statistics/common.py
+msgid "Year"
+msgstr "Année"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped registration codes, caregivers, patients, device identifiers"
+msgstr ""
+"Regroupement des codes d'enregistrement, proches aidants, patients, "
+"identifiants d'appareils"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped patients received data"
+msgstr "Données reçues des patients groupés"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped patient/user app activity"
+msgstr "Activité de l'application des utilisateurs/patients groupés"
+
+#: opal/usage_statistics/forms.py
+msgid "Start Date"
+msgstr "Date de début"
+
+#: opal/usage_statistics/forms.py
+msgid "End Date"
+msgstr "Date de fin"
+
+#: opal/usage_statistics/forms.py
+msgid "Download CSV"
+msgstr "Télécharger CSV"
+
+#: opal/usage_statistics/forms.py
+msgid "Download XLSX"
+msgstr "Télécharger XLSX"
+
+#: opal/usage_statistics/forms.py
+msgid "Start date cannot be later than end date."
+msgstr "La date de début ne peut pas être postérieure à la date de fin."
+
+#: opal/usage_statistics/forms.py
+msgid "Group By"
+msgstr "Grouper par"
+
+#: opal/usage_statistics/forms.py
+msgid "Report Type"
+msgstr "Type de rapport"
+
+#: opal/usage_statistics/forms.py
+msgid ""
+"If date fields are not provided, all statistical data will be extracted."
+msgstr ""
+"Si les champs de date ne sont pas fournis, toutes les données statistiques "
+"seront extraites."
+
+#: opal/usage_statistics/models.py
+msgid "User who triggered this action"
+msgstr "Utilisateur qui a déclenché cette action"
+
+#: opal/usage_statistics/models.py
+msgid "Relationship between user and patient"
+msgstr "Relation entre l'utilisateur et le patient"
+
+#: opal/usage_statistics/models.py
+msgid "Patient"
+msgstr "Patient"
+
+#: opal/usage_statistics/models.py
+msgid "Count Checkins"
+msgstr "Nombre d'enregistrements"
+
+#: opal/usage_statistics/models.py
+msgid "Count Documents"
+msgstr "Nombre de documents"
+
+#: opal/usage_statistics/models.py
+msgid "Count Educational Materials"
+msgstr "Nombre de matériel éducatif"
+
+#: opal/usage_statistics/models.py
+msgid "Count Questionnaires"
+msgstr "Nombre de questionnaires"
+
+#: opal/usage_statistics/models.py
+msgid "Count Labs"
+msgstr "Nombre de résultats de laboratoire"
+
+#: opal/usage_statistics/models.py
+msgid "Action Date"
+msgstr "Date de l'action"
+
+#: opal/usage_statistics/models.py
+msgid "User Patient Activity"
+msgstr "Activité de l'utilisateur et du patient"
+
+#: opal/usage_statistics/models.py
+msgid "User Patient Activities"
+msgstr "Activités des patients utilisateurs"
+
+#: opal/usage_statistics/models.py
+msgid "Last Login"
+msgstr "Dernière connexion"
+
+#: opal/usage_statistics/models.py
+msgid "Count Logins"
+msgstr "Nombre de connexions"
+
+#: opal/usage_statistics/models.py
+msgid "Count Feedbacks"
+msgstr "Nombre de rétroactions"
+
+#: opal/usage_statistics/models.py
+msgid "Count Security Answer Updates"
+msgstr "Nombre de mises à jour des réponses de sécurité"
+
+#: opal/usage_statistics/models.py
+msgid "Count Password Updates"
+msgstr "Nombre de mises à jour de mots de passe"
+
+#: opal/usage_statistics/models.py
+msgid "Count Language Updates"
+msgstr "Nombre de mises à jour linguistiques"
+
+#: opal/usage_statistics/models.py
+msgid "IOS Devices"
+msgstr "Appareils iOS"
+
+#: opal/usage_statistics/models.py
+msgid "Android Devices"
+msgstr "Appareils Android"
+
+#: opal/usage_statistics/models.py
+msgid "Browser Devices"
+msgstr "Appareils de navigateur"
+
+#: opal/usage_statistics/models.py
+msgid "User App Activity"
+msgstr "Activité de l'application utilisateur"
+
+#: opal/usage_statistics/models.py
+msgid "User App Activities"
+msgstr "Activités de l'application utilisateur"
+
+#: opal/usage_statistics/models.py
+msgid "Next Appointment"
+msgstr "Prochain rendez-vous"
+
+#: opal/usage_statistics/models.py
+msgid "Last Appointment Received"
+msgstr "Dernier rendez-vous reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Appointments Received"
+msgstr "Rendez-vous reçus"
+
+#: opal/usage_statistics/models.py
+msgid "Last Document Received"
+msgstr "Dernier document reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Documents Received"
+msgstr "Documents reçus"
+
+#: opal/usage_statistics/models.py
+msgid "Last Educational Material Received"
+msgstr "Dernier matériel éducatif reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Educational Materials Received"
+msgstr "Matériel éducatif reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Last Questionnaire Received"
+msgstr "Dernier questionnaire reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Questionnaires Received"
+msgstr "Questionnaires reçus"
+
+#: opal/usage_statistics/models.py
+msgid "Last Lab Received"
+msgstr "Dernier résultat de laboratoire reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Labs Received"
+msgstr "Résultats de laboratoire reçu"
+
+#: opal/usage_statistics/models.py
+msgid "Patient Data Received"
+msgstr "Données des patient reçues"
+
+#: opal/usage_statistics/models.py
+msgid "Patient Data Received Records"
+msgstr "Dossiers de données des patients reçues"
+
+#: opal/usage_statistics/templates/usage_statistics/reports/export_form.html
+msgid "Export Data"
+msgstr "Exporter les données"
+
+#: opal/usage_statistics/views.py
+msgid "No valid download option selected."
+msgstr "Aucune option de téléchargement valide sélectionnée."

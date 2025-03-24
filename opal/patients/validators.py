@@ -1,29 +1,30 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module for common validators for `patients` app."""
+
 from collections import Counter
-from typing import Union
 
 from opal.patients.models import Patient
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.integration.schemas import PatientSchema
 
 
 # Patients Validators
-def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
+def is_deceased(patient: Patient | PatientSchema) -> bool:
     """
     Check if a patient is deceased.
 
     Args:
-        patient: either patient object or patient record from OIE
+        patient: either patient object or patient record from source system
 
     Returns:
         True if patient is deceased, False otherwise
     """
-    if isinstance(patient, Patient):
-        return patient.date_of_death is not None
-
-    return patient.deceased
+    return patient.date_of_death is not None
 
 
-def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> bool:
+def has_multiple_mrns_with_same_site_code(patient_record: PatientSchema) -> bool:
     """
     Check if the number of MRN records with the same site code is greater than 1.
 
@@ -34,5 +35,5 @@ def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> boo
         True if the number of MRN records with the same site code is greater than 1
     """
     mrns = patient_record.mrns
-    key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
+    key_counts = Counter(hospital_number.site for hospital_number in mrns)
     return any(count > 1 for (site, count) in key_counts.items())

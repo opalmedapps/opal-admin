@@ -1,6 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for security question api endpoints."""
+
 from collections.abc import Callable
 from http import HTTPStatus
+from typing import Any
 
 from django.urls import reverse
 
@@ -11,10 +17,13 @@ from opal.caregivers import factories
 from opal.users.models import User
 
 
-@pytest.mark.parametrize(('url_name', 'is_detail'), [
-    ('api:security-questions-list', False),
-    ('api:security-questions-detail', True),
-])
+@pytest.mark.parametrize(
+    ('url_name', 'is_detail'),
+    [
+        ('api:security-questions-list', False),
+        ('api:security-questions-detail', True),
+    ],
+)
 def test_securityquestions_unauthenticated_unauthorized(
     url_name: str,
     is_detail: bool,
@@ -22,7 +31,7 @@ def test_securityquestions_unauthenticated_unauthorized(
     user: User,
 ) -> None:
     """Test that unauthenticated and unauthorized users cannot access the API."""
-    kwargs = {'pk': factories.SecurityQuestion().pk} if is_detail else {}
+    kwargs = {'pk': factories.SecurityQuestion.create().pk} if is_detail else {}
     response = api_client.get(reverse(url_name, kwargs=kwargs))
 
     assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
@@ -39,8 +48,8 @@ def test_get_all_active_security_questions(
 ) -> None:
     """Test get only active security questions."""
     api_client.force_login(user=user_with_permission('caregivers.view_securityquestion'))
-    security_question = factories.SecurityQuestion()
-    security_question2 = factories.SecurityQuestion(is_active=False)
+    security_question = factories.SecurityQuestion.create()
+    security_question2 = factories.SecurityQuestion.create(is_active=False)
 
     response = api_client.get(reverse('api:security-questions-list'))
 
@@ -56,7 +65,7 @@ def test_get_specific_active_security_question(
 ) -> None:
     """Test get a specific active security question."""
     api_client.force_login(user=user_with_permission('caregivers.view_securityquestion'))
-    security_question = factories.SecurityQuestion()
+    security_question = factories.SecurityQuestion.create()
 
     response = api_client.get(
         reverse(
@@ -69,12 +78,15 @@ def test_get_specific_active_security_question(
     assert response.data['title_en'] == security_question.title
 
 
-@pytest.mark.parametrize(('url_name', 'is_detail'), [
-    ('api:caregivers-securityquestions-list', False),
-    ('api:caregivers-securityquestions-random', False),
-    ('api:caregivers-securityquestions-detail', True),
-    ('api:caregivers-securityquestions-verify', True),
-])
+@pytest.mark.parametrize(
+    ('url_name', 'is_detail'),
+    [
+        ('api:caregivers-securityquestions-list', False),
+        ('api:caregivers-securityquestions-random', False),
+        ('api:caregivers-securityquestions-detail', True),
+        ('api:caregivers-securityquestions-verify', True),
+    ],
+)
 def test_securityanswer_unauthenticated_unauthorized(
     url_name: str,
     is_detail: bool,
@@ -82,9 +94,9 @@ def test_securityanswer_unauthenticated_unauthorized(
     user: User,
 ) -> None:
     """Test that unauthenticated and unauthorized users cannot access the API."""
-    kwargs = {'username': user.username}
+    kwargs: dict[str, Any] = {'username': user.username}
     if is_detail:
-        kwargs['pk'] = factories.SecurityAnswer().pk
+        kwargs['pk'] = factories.SecurityAnswer.create().pk
 
     response = api_client.get(reverse(url_name, kwargs=kwargs))
 
@@ -99,11 +111,11 @@ def test_securityanswer_unauthenticated_unauthorized(
 def test_get_answer_list(api_client: APIClient, listener_user: User) -> None:
     """Test get answer list could return all answer records."""
     api_client.force_login(user=listener_user)
-    caregiver1 = factories.CaregiverProfile(user=listener_user)
-    caregiver2 = factories.CaregiverProfile()
-    security_answer1 = factories.SecurityAnswer(user=caregiver1)
-    security_answer2 = factories.SecurityAnswer(user=caregiver1, answer='test')
-    factories.SecurityAnswer(user=caregiver2)
+    caregiver1 = factories.CaregiverProfile.create(user=listener_user)
+    caregiver2 = factories.CaregiverProfile.create()
+    security_answer1 = factories.SecurityAnswer.create(user=caregiver1)
+    security_answer2 = factories.SecurityAnswer.create(user=caregiver1, answer='test')
+    factories.SecurityAnswer.create(user=caregiver2)
 
     response = api_client.get(
         reverse(
@@ -121,10 +133,10 @@ def test_get_answer_list(api_client: APIClient, listener_user: User) -> None:
 def test_get_random_answer(api_client: APIClient, listener_user: User) -> None:
     """Test get random answer can return a correct record."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
     # create only one question to test the correct data
     # cannot test random because the random result might be equal
-    security_answer = factories.SecurityAnswer(user=caregiver)
+    security_answer = factories.SecurityAnswer.create(user=caregiver)
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-random',
@@ -139,9 +151,9 @@ def test_get_random_answer(api_client: APIClient, listener_user: User) -> None:
 def test_get_specific_security_answer_success(api_client: APIClient, listener_user: User) -> None:
     """Test get a specific security answer."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
-    security_answer1 = factories.SecurityAnswer(user=caregiver)
-    security_answer2 = factories.SecurityAnswer(user=caregiver, question='Ananas')
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
+    security_answer1 = factories.SecurityAnswer.create(user=caregiver)
+    security_answer2 = factories.SecurityAnswer.create(user=caregiver, question='Ananas')
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
@@ -156,8 +168,8 @@ def test_get_specific_security_answer_success(api_client: APIClient, listener_us
 def test_get_specific_security_answer_failure(api_client: APIClient, listener_user: User) -> None:
     """Test get a specific security answer with wrong caregiver."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
-    security_answer = factories.SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
+    security_answer = factories.SecurityAnswer.create(user=caregiver)
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
@@ -170,8 +182,8 @@ def test_get_specific_security_answer_failure(api_client: APIClient, listener_us
 def test_update_specific_security_answer(api_client: APIClient, listener_user: User) -> None:
     """Test update a specific security answer."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
-    security_answer = factories.SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
+    security_answer = factories.SecurityAnswer.create(user=caregiver)
     old_answer = security_answer.answer
     new_question = {
         'question': security_answer.question,
@@ -193,14 +205,14 @@ def test_update_specific_security_answer(api_client: APIClient, listener_user: U
 def test_verify_answer_success(api_client: APIClient, listener_user: User) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
-    security_answer = factories.SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
+    security_answer = factories.SecurityAnswer.create(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': security_answer.answer}
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': listener_user.username, 'pk': answer_id},
         ),
         data=answer,
     )
@@ -210,15 +222,15 @@ def test_verify_answer_success(api_client: APIClient, listener_user: User) -> No
 def test_verify_answer_failure(api_client: APIClient, listener_user: User) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=listener_user)
-    caregiver = factories.CaregiverProfile(user=listener_user)
-    security_answer = factories.SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile.create(user=listener_user)
+    security_answer = factories.SecurityAnswer.create(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': 'wrong_answer'}
 
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': listener_user.username, 'pk': answer_id},
         ),
         data=answer,
     )

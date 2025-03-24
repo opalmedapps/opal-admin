@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Django base settings to build other settings files upon.
 
@@ -9,15 +13,18 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
+
 from pathlib import Path
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
 import django_stubs_ext
 import environ
+import structlog
 
 # Monkeypatching Django, so stubs will work for all generics
-# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
+# see: https://github.com/typeddjango/django-stubs/tree/master/ext
 django_stubs_ext.monkeypatch()
 
 # get root of the project
@@ -58,8 +65,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
 # https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
-# allow definition of PAGE_SIZE globally while having pagination opt-in
-SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
+# W001: allow definition of PAGE_SIZE globally while having pagination opt-in
+# E311: legacy questionnaire content_id cannot be unique
+# see also: https://code.djangoproject.com/ticket/26472
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001', 'fields.E311']
 
 
 # DATABASES
@@ -74,38 +83,38 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': 'test_{0}'.format(env('DATABASE_NAME')),
+            'NAME': f'test_{env("DATABASE_NAME")}',
         },
         'ATOMIC_REQUESTS': True,
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_DATABASE_NAME'),
+        'NAME': 'OpalDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
-        'TIME_ZONE': 'EST5EDT',
+        'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_DATABASE_NAME')),
+            'NAME': 'test_OpalDB',
         },
     },
     'questionnaire': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('LEGACY_QUESTIONNAIRE_DATABASE_NAME'),
+        'NAME': 'QuestionnaireDB',
         'USER': env('LEGACY_DATABASE_USER'),
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
-        'TIME_ZONE': 'EST5EDT',
+        'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')),
+            'NAME': 'test_QuestionnaireDB',
         },
     },
 }
 
 # Use SSL for all the database connections if DATABASE_USE_SSL is set to True
-if env.bool('DATABASE_USE_SSL'):  # pragma: no cover
+if env.bool('DATABASE_USE_SSL', default=False):  # pragma: no cover
     # Use OPTIONS setting to set extra parameters when connecting to the database.
     # The parameters vary depending on the database backend.
     # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
@@ -172,10 +181,11 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'django_tables2',
     'corsheaders',
-    'easyaudit',
+    'auditlog',
+    'django_structlog',
     'slippers',
-    'fontawesomefree',
     'phonenumber_field',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -191,6 +201,7 @@ LOCAL_APPS = [
     'opal.databank',
     'opal.test_results',
     'opal.pharmacy',
+    'opal.usage_statistics',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -229,7 +240,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 # https://docs.djangoproject.com/en/dev/topics/auth/passwords/#enabling-password-validation
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list[dict[str, Any]] = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -263,7 +274,8 @@ MIDDLEWARE = [
     'opal.core.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
+    'django_structlog.middlewares.RequestMiddleware',
+    'opal.core.middleware.AuditlogMiddleware',
 ]
 
 # STATIC
@@ -367,7 +379,7 @@ ADMIN_URL = 'admin/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # ADMINS =
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
-# MANAGERS = ADMINS  # noqa: E800
+# MANAGERS = ADMINS  # noqa: ERA001
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -378,22 +390,69 @@ ADMIN_URL = 'admin/'
 # https://sobolevn.me/2020/03/do-not-log
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
-        'verbose': {
-            'format': '{asctime} {levelname:^8s} {name:<28s} {message}',
-            'style': '{',
+        # Console Output: https://www.structlog.org/en/stable/console-output.html
+        'console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
         },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'console',
         },
     },
-    'root': {'level': 'INFO', 'handlers': ['console']},
+    'loggers': {
+        'django_structlog': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'opal': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        # Suppress default django runserver logs
+        'django.request': {
+            'handlers': [],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }
+
+# Auditing
+# ------------------------------------------------------------------------------
+
+# django-structlog configuration
+# https://django-structlog.readthedocs.io/en/latest/getting_started.html#installation
+# https://www.structlog.org/en/stable/configuration.html
+# ------------------------------------------------------------------------------
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.filter_by_level,
+        structlog.processors.TimeStamper(fmt='iso'),
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
+# django-auditlog
+# ------------------------------------------------------------------------------
+# See https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
+AUDITLOG_INCLUDE_ALL_MODELS = True
+# Use the Appuserid header to correlate changes with app users
+# https://django-auditlog.readthedocs.io/en/latest/usage.html#correlation-id
+AUDITLOG_CID_HEADER = 'Appuserid'
 
 # OPAL SPECIFIC
 # ------------------------------------------------------------------------------
@@ -401,17 +460,11 @@ LOGGING = {
 #
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
-# Redirect after logout to legacy OpalAdmin's logout page
-# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
 
-# Legacy URL for generating questionnaires report
-LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
-
-# Opal Integration Engine (OIE)
-OIE_HOST = env.url('OIE_HOST').geturl()
-OIE_USER = env('OIE_USER')
-OIE_PASSWORD = env('OIE_PASSWORD')
+# Source System/Integration Engine
+SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
+SOURCE_SYSTEM_USER = env('SOURCE_SYSTEM_USER')
+SOURCE_SYSTEM_PASSWORD = env('SOURCE_SYSTEM_PASSWORD')
 
 # Registration
 # Opal User Registration URL
@@ -422,13 +475,20 @@ INSTITUTION_CODE = env.str('INSTITUTION_CODE')
 # Questionnaires: Export Report
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
+# Name of the source system that generated PDF report
+REPORT_SOURCE_SYSTEM = env.str('REPORT_SOURCE_SYSTEM')
+# Number assigned by the hospital for the generated PDF report
+REPORT_DOCUMENT_NUMBER = env.str('REPORT_DOCUMENT_NUMBER')
 
 # ORMS SETTINGS
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_GROUP_NAME = 'ORMS Users'
-# base URL to ORMS (no trailing slash)
-ORMS_HOST = env.url('ORMS_HOST').geturl()
+ORMS_ENABLED = env.bool('ORMS_ENABLED')
+
+if ORMS_ENABLED:
+    # base URL to ORMS (no trailing slash)
+    ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
@@ -443,6 +503,9 @@ SMS_FROM = env.str('SMS_FROM')
 # PATHOLOGY REPORTS SETTINGS
 # Path to the pathology reports folder
 PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
+
+# Databank Enabled
+DATABANK_ENABLED = env.bool('DATABANK_ENABLED')
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
@@ -465,26 +528,38 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     # set default request format to JSON
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF Spectacular API documentation (OpenAPI 3.0 Specification)
+# See https://drf-spectacular.readthedocs.io/en/latest/index.html
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Opal Backend',
+    'DESCRIPTION': (
+        'This Python Django-based backend provides API '
+        + 'endpoints for other Opal applications and a user '
+        + 'interface for administrative functionality.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'RelationshipStatusEnum': 'opal.patients.models.RelationshipStatus.choices',
+        'RegistrationCodeStatusEnum': 'opal.caregivers.models.RegistrationCodeStatus.choices',
+    },
+    # list of authentication/permission classes for spectacular's views.
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+    #  TODO: 'CONTACT': {},
+    #  TODO: 'LICENSE': {},
 }
 
 # django-cors-headers
 # ------------------------------------------------------------------------------
 # See https://github.com/adamchainz/django-cors-headers#setup
 # A list of origins that are authorized to make cross-site HTTP requests.
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
-CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
-
-# django-easy-audit
-# ------------------------------------------------------------------------------
-# See: https://github.com/soynatan/django-easy-audit#settings
-# Remove /admin to log requests to the admin site
-DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
-# Make events read-only to disallow deleting
-DJANGO_EASY_AUDIT_READONLY_EVENTS = True
-# Propagate exceptions during debug
-DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
-# Disable extra DB calls to check whether user exists
-DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
+# CORS settings are optional
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
 
 # django-phonenumber-field
 # ------------------------------------------------------------------------------

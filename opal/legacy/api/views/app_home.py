@@ -1,4 +1,10 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used to display the Opal's home view."""
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
+from rest_framework import fields
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +15,24 @@ from opal.legacy import models
 from ..serializers import LegacyAppointmentSerializer
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+    responses=inline_serializer(
+        name='AppHomeSerializer',
+        fields={
+            'unread_notification_count': fields.IntegerField(min_value=0),
+            'daily_appointments': LegacyAppointmentSerializer(many=True),
+            'closed_appointment': LegacyAppointmentSerializer(),
+        },
+    ),
+)
 class AppHomeView(APIView):
     """Class to return home page required data."""
 

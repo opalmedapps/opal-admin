@@ -1,9 +1,16 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing algorithms and functions related to the de-identification of patient data."""
+
 import hashlib
 import logging
 from dataclasses import dataclass
 from datetime import date
 from typing import Final
+
+from django.utils import timezone
 
 from unidecode import unidecode
 
@@ -19,13 +26,14 @@ class PatientData:
     first_name: str
     middle_name: str
     last_name: str
-    gender: str
+    gender: SexType
     date_of_birth: str
     city_of_birth: str
 
 
-class OpenScienceIdentity():
-    """This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
+class OpenScienceIdentity:
+    """
+    This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
 
     A unique signature is generated for a patient by taking several personal identifiers
     and feeding them into a one way hash. This allows each ID to be unique to a subject while
@@ -38,12 +46,18 @@ class OpenScienceIdentity():
     _pbkdf2_iterations: Final[int] = 10000
     _pbkdf2_hash_function: Final[str] = 'sha256'
     _pbkdf2_key_length: Final[int] = 32
-    _gender_values = [value.lower() for value in SexType.labels]
+    _sextype_mapping: Final[dict[SexType, str]] = {
+        SexType.FEMALE: 'female',
+        SexType.MALE: 'male',
+        SexType.OTHER: 'other',
+        SexType.UNKNOWN: 'unknown',
+    }
     # Identity attributes are the minimum required attributes for GUID generation
     _identity_attributes = ['first_name', 'last_name', 'gender', 'date_of_birth', 'city_of_birth']
 
     def __init__(self, patient_data: PatientData) -> None:
-        """Initialize hash password attributes and convenience class data structures.
+        """
+        Initialize hash password attributes and convenience class data structures.
 
         Args:
             patient_data: dictionary of input arguments to algorithm
@@ -53,7 +67,8 @@ class OpenScienceIdentity():
         self.invalid_attributes: list[str] = []  # Easier debugging by tracking invalid inputs
 
     def to_signature(self) -> str:
-        """Validate input attributes, generate the signature (password), and produce the hash.
+        """
+        Validate input attributes, generate the signature (password), and produce the hash.
 
         Returns:
             The hex representation of hashlib's pbkdf2 derivation
@@ -71,7 +86,8 @@ class OpenScienceIdentity():
         ).hex()
 
     def _clean_general_attribute(self, attr_name: str) -> str:
-        """Generalized cleaning method for any attribute.
+        """
+        Generalized cleaning method for any attribute.
 
         Args:
             attr_name: Name of the attribute to clean.
@@ -81,6 +97,11 @@ class OpenScienceIdentity():
         """
         if attr_name not in self._cache:
             attr_value = getattr(self.patient_data, attr_name, '')
+
+            # Map SexType value to plaintext gender to match OSI validation
+            if attr_name == 'gender' and isinstance(attr_value, SexType):
+                attr_value = self._sextype_mapping.get(attr_value, '')
+
             # Cache the result to avoid needing to re-clean data during algorithm execution
             self._cache[attr_name] = self._plain_alpha(attr_value)
         return self._cache[attr_name]
@@ -94,12 +115,14 @@ class OpenScienceIdentity():
                 self.invalid_attributes.append('date_of_birth')
                 return
             # Additional check for 'realistic' date_of_birth
-            today = date.today()
-            if dob.year < 1900 or today.year < dob.year:  # noqa: WPS432
+            min_year = 1900
+            today = timezone.now().date()
+            if dob.year < min_year or today.year < dob.year:
                 self.invalid_attributes.append('date_of_birth')
 
     def _plain_alpha(self, string: str) -> str:
-        """Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
+        """
+        Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
 
         The goal of transliterating is to unify special Unicode characters
         with their nearest 'normal' ASCII representation.
@@ -111,7 +134,7 @@ class OpenScienceIdentity():
         Returns:
             Cleaned string, or empty string
         """
-        if not string or string.strip() == '':
+        if not string or not string.strip():
             return ''
 
         # Transliterate the string to its closest ASCII representation
@@ -120,7 +143,8 @@ class OpenScienceIdentity():
         return ''.join(char.lower() for char in transliterated_string if char.isalnum())
 
     def _clean_and_validate(self) -> None:
-        """Implement the validity and cleaning functions for each class attribute.
+        """
+        Implement the validity and cleaning functions for each class attribute.
 
         Raises:
             ValueError: if any identify attributes are missing or otherwise invalid.
@@ -128,7 +152,7 @@ class OpenScienceIdentity():
         # General cleaning and validation for all attributes, gender must be in specified list
         for attr in self._identity_attributes:
             cleaned_value = self._clean_general_attribute(attr)
-            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._gender_values):
+            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._sextype_mapping.values()):
                 self.invalid_attributes.append(attr)
 
         # Special validation rules for date_of_birth
@@ -136,10 +160,11 @@ class OpenScienceIdentity():
 
         # Raise error if any validation fails
         if self.invalid_attributes:
-            raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
+            raise ValueError(f'Invalid identity components {", ".join(self.invalid_attributes)}')
 
     def _signature_key(self) -> str:
-        """Generate the password for the pbfkd2 function from the cleaned attributes.
+        """
+        Generate the password for the pbfkd2 function from the cleaned attributes.
 
         Example:
              male|pierre|tiberius|rioux|19211231|newyorkcity

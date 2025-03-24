@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
@@ -8,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-04 15:14-0400\n"
+"POT-Creation-Date: 2024-11-21 08:21-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,9 +26,13 @@ msgstr ""
 msgid "Extra"
 msgstr "Extra"
 
+#: opal/users/api/serializers.py
+msgid "The two password fields don't match."
+msgstr "Les deux mots de passe ne correspondent pas."
+
 #: opal/users/api/viewsets.py
-msgid "Manager group not found."
-msgstr "Groupe de gestionnaires introuvable."
+msgid "User manager group not found."
+msgstr "Groupe de gestionnaire d'utilisateurs introuvable."
 
 #: opal/users/api/viewsets.py
 msgid "User was added to the managers group successfully."

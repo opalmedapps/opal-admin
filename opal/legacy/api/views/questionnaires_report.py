@@ -1,21 +1,24 @@
-"""Collection of api views used to send questionnaire PDF reports to the OIE."""
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
+"""Collection of api views used to send questionnaire PDF reports to the source system."""
+
+import base64
 import logging
-from pathlib import Path
 from typing import Any
 
-from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.utils import timezone, translation
+from django.utils import timezone
 
-from rest_framework import response, status, views
+from fpdf import FPDFException
+from rest_framework import exceptions, response, views
 from rest_framework.request import Request
 
 from opal.core.drf_permissions import IsORMSUser
-from opal.hospital_settings.models import Institution
+from opal.legacy.utils import generate_questionnaire_report, get_questionnaire_data
 from opal.patients.models import Patient
-from opal.services.hospital.hospital import OIEReportExportData, OIEService
-from opal.services.reports import QuestionnaireReportRequestData, ReportService
+from opal.services.hospital.hospital import SourceSystemReportExportData, SourceSystemService
 
 from ..serializers import QuestionnaireReportRequestSerializer
 
@@ -27,8 +30,7 @@ class QuestionnairesReportView(views.APIView):
 
     permission_classes = (IsORMSUser,)
     serializer_class = QuestionnaireReportRequestSerializer
-    oie = OIEService()
-    report_service = ReportService()
+    source_system = SourceSystemService()
 
     def post(
         self,
@@ -37,7 +39,7 @@ class QuestionnairesReportView(views.APIView):
         **kwargs: Any,
     ) -> response.Response:
         """
-        Generate questionnaire PDF report and submit to the OIE.
+        Generate questionnaire PDF report and submit to the source system.
 
         Args:
             request: HTTP request that initiates report generation
@@ -46,6 +48,10 @@ class QuestionnairesReportView(views.APIView):
 
         Returns:
             HTTP `Response` with results of report generation
+
+        Raises:
+            ParseError: if the patient can not be found
+            APIException: if the report generation fails
         """
         serializer = QuestionnaireReportRequestSerializer(data=request.data)
         # Validate received data. Return a 400 response if the data was invalid.
@@ -60,35 +66,23 @@ class QuestionnairesReportView(views.APIView):
                     },
                 ],
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            return self._create_error_response(
-                'Could not find `Patient` record with the provided MRN and site acronym.',
-            )
-
-        # the language used in the current thread
-        # if the language is not set (e.g., translations are temporarily deactivated), use the default language
-        lang = translation.get_language() or settings.LANGUAGES[0][0]
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
+            raise exceptions.ParseError(
+                detail='Could not find `Patient` record with the provided MRN and site acronym.',
+            ) from error
 
         # Generate questionnaire report
-        encoded_report = self.report_service.generate_base64_questionnaire_report(
-            QuestionnaireReportRequestData(
-                patient_id=patient.legacy_id if patient.legacy_id else -1,
-                patient_name=f'{patient.first_name} {patient.last_name}',
-                patient_site=serializer.validated_data.get('site'),
-                patient_mrn=serializer.validated_data.get('mrn'),
-                logo_path=Path(Institution.objects.get().logo.path),
-                language=lang,
-            ),
-        )
+        try:
+            pdf_report = generate_questionnaire_report(patient, get_questionnaire_data(patient))
+        except FPDFException as exc:
+            LOGGER.exception('An error occurred during questionnaire report generation')
+            raise exceptions.APIException(detail='An error occurred during questionnaire report generation.') from exc
 
-        # The `ReportService` does not return error messages.
-        # If an error occurs during report generation, the `ReportService` returns `None`
-        if not encoded_report:
-            return self._create_error_response('An error occurred during report generation.')
+        encoded_report = base64.b64encode(pdf_report).decode('utf-8')
 
-        # Submit report to the OIE
-        export_result = self.oie.export_pdf_report(
-            OIEReportExportData(
+        # Submit report to the source system
+        export_result = self.source_system.export_pdf_report(
+            SourceSystemReportExportData(
                 mrn=serializer.validated_data.get('mrn'),
                 site=serializer.validated_data.get('site'),
                 base64_content=encoded_report,
@@ -97,22 +91,8 @@ class QuestionnairesReportView(views.APIView):
             ),
         )
 
-        if (
-            not export_result
-            or 'status' not in export_result
-            or export_result['status'] == 'error'
-        ):
-            LOGGER.error('An error occurred while exporting a PDF report to the OIE.')
+        if not export_result or 'status' not in export_result or export_result['status'] == 'error':
+            LOGGER.error(f'An error occurred while exporting a PDF report to the source system: {export_result}')
+            raise exceptions.APIException(detail='An error occurred while exporting a PDF report to the source system')
 
-        return response.Response(export_result)
-
-    def _create_error_response(self, message: str) -> response.Response:
-        # Log an error message
-        LOGGER.error(message)
-        return response.Response(
-            {
-                'status': 'error',
-                'message': message,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return response.Response()

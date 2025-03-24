@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 {% load i18n %}
 
 <ul class="list-unstyled ps-0 mb-auto">
@@ -47,6 +53,18 @@
     {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
       {% #menu_item url_name="questionnaires:reports" request=request %}
         {% translate "Export Reports" %}
+      {% /menu_item %}
+    {% /menu_group %}
+  {% endif %}
+
+  {# Usage Statistics #}
+  {% if request.user.is_superuser %}
+    {% #menu_group app_name="usage-statistics" group_id="statistics" title=_("Usage Statistics") request=request %}
+      {% #menu_item url_name="usage-statistics:reports-group-export" request=request %}
+        {% translate "Group Reports" %}
+      {% /menu_item %}
+      {% #menu_item url_name="usage-statistics:reports-individual-export" request=request %}
+        {% translate "Individual Reports" %}
       {% /menu_item %}
     {% /menu_group %}
   {% endif %}

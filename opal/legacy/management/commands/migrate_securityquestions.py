@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Security Question migration."""
 from typing import Any
 
@@ -10,7 +14,7 @@ from opal.legacy.models import LegacySecurityQuestion
 class Command(BaseCommand):
     """Command to migrate Security Question from legacy DB to the new backend."""
 
-    help = 'migrate Security Question from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate Security Question from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -34,15 +38,9 @@ class Command(BaseCommand):
                     is_active=bool(legacy_question.active),
                 )
                 self.stdout.write(
-                    'Imported security question, sernum: {questionsernum}, title: {title}'.format(
-                        questionsernum=legacy_question.securityquestionsernum,
-                        title=legacy_question.questiontext_en,
-                    ),
+                    f'Imported security question, sernum: {legacy_question.securityquestionsernum}, title: {legacy_question.questiontext_en}',
                 )
                 continue
             self.stdout.write(
-                'Security question sernum: {questionsernum}, title: {title} exists already, skipping'.format(
-                    questionsernum=legacy_question.securityquestionsernum,
-                    title=legacy_question.questiontext_en,
-                ),
+                f'Security question sernum: {legacy_question.securityquestionsernum}, title: {legacy_question.questiontext_en} exists already, skipping',
             )

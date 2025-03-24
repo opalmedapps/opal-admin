@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
@@ -72,7 +76,7 @@ class RelationshipManager(models.Manager['Relationship']):
         )
 
         # filter out legacy_id=None to avoid typing problems when doing at the DB-level
-        # the result type is otherwise ValuesQuerySet[Relationship, Optional[int]]
+        # the result type is otherwise QuerySet[Relationship, int | None]
         return [
             legacy_id
             for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
@@ -84,7 +88,8 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
     """Manager class for the `RelationshipType` model."""
 
     def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
-        """Return a new QuerySet filtered by the patient age between start_age and end_age.
+        """
+        Return a new QuerySet filtered by the patient age between start_age and end_age.
 
         Args:
             patient_age: patient's ages.

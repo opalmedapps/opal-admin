@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from django.contrib.admin.sites import AdminSite
 from django.http import HttpRequest
 from django.test import RequestFactory
@@ -28,12 +32,14 @@ def test_relationshiptype_admin_has_delete_permission_false(role_type: models.Ro
 def test_relationshiptype_admin_has_delete_permission_true(admin_user: User) -> None:
     """Ensure a user can delete a regular permission from the admin portal."""
     admin = RelationshipTypeAdmin(models.RelationshipType, site)
-    relationship_type = factories.RelationshipType(role_type=models.RoleType.CAREGIVER)
+    relationship_type = factories.RelationshipType.create(role_type=models.RoleType.CAREGIVER)
 
-    request = RequestFactory().post(reverse(
-        'admin:patients_relationshiptype_delete',
-        kwargs={'object_id': relationship_type.pk},
-    ))
+    request = RequestFactory().post(
+        reverse(
+            'admin:patients_relationshiptype_delete',
+            kwargs={'object_id': relationship_type.pk},
+        )
+    )
     request.user = admin_user
 
     assert admin.has_delete_permission(request=request, obj=relationship_type)

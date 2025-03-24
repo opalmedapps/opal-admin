@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `UpdateAPIViews` for the `users` app REST APIs."""
 from django.contrib.auth.models import Group
 
@@ -5,7 +9,7 @@ from rest_framework import generics
 
 from opal.core.drf_permissions import FullDjangoModelPermissions
 
-from ..models import Caregiver, User
+from ..models import Caregiver
 from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
 
 
@@ -18,7 +22,7 @@ class ListGroupView(generics.ListAPIView[Group]):
     permission_classes = (FullDjangoModelPermissions,)
 
 
-class UserCaregiverUpdateView(generics.UpdateAPIView[User]):
+class UserCaregiverUpdateView(generics.UpdateAPIView[Caregiver]):
     """View to update a caregiver."""
 
     permission_classes = (FullDjangoModelPermissions,)

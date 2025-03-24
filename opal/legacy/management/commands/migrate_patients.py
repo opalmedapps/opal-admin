@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Patients migration."""
 from types import MappingProxyType
 from typing import Any
@@ -19,7 +23,7 @@ DATA_ACCESS_MAPPING = MappingProxyType({
 class Command(BaseCommand):
     """Command to migrate patients from legacy DB to the new backend patients."""
 
-    help = 'migrate Patients from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate Patients from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -46,9 +50,7 @@ class Command(BaseCommand):
                 # When a patient already exist in the new backend
                 self.stdout.write(
                     self.style.WARNING(
-                        'Patient with legacy_id: {patientsernum} already exists, skipping'.format(
-                            patientsernum=legacy_patient.patientsernum,
-                        ),
+                        f'Patient with legacy_id: {legacy_patient.patientsernum} already exists, skipping',
                     ),
                 )
 
@@ -64,6 +66,7 @@ class Command(BaseCommand):
                     last_name=legacy_patient.last_name,
                     ramq=legacy_patient.ramq,
                     data_access=data_access,
+                    created_at=legacy_patient.registration_date,
                 )
                 migrated_patient.full_clean()
                 migrated_patient.save()
@@ -91,9 +94,7 @@ class Command(BaseCommand):
         )
         if not legacy_patient_identifiers:
             self.stdout.write(self.style.WARNING(
-                'No hospital patient identifiers for patient with legacy_id: {patientsernum} exists, skipping'.format(
-                    patientsernum=legacy_patient.patientsernum,
-                ),
+                f'No hospital patient identifiers for patient with legacy_id: {legacy_patient.patientsernum} exists, skipping',
             ))
 
         for legacy_patient_identifier in legacy_patient_identifiers:
@@ -106,10 +107,7 @@ class Command(BaseCommand):
             if hospital_patient:
                 # when HospitalPatient record already has been migrated
                 self.stdout.write(self.style.WARNING(
-                    'Patient identifier legacy_id: {patientsernum}, mrn: {mrn} already exists, skipping'.format(
-                        patientsernum=legacy_patient.patientsernum,
-                        mrn=legacy_patient_identifier.mrn,
-                    ),
+                    f'Patient identifier legacy_id: {legacy_patient.patientsernum}, mrn: {legacy_patient_identifier.mrn} already exists, skipping',
                 ))
             else:
                 self._create_patient_identifier(migrated_patient, legacy_patient, legacy_patient_identifier)

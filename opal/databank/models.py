@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing models for the databank app.
 
@@ -16,7 +20,8 @@ from opal.patients.models import Patient
 
 
 class DatabankConsent(models.Model):
-    """DatabankConsent for the donation of de-identified patient data to the research databank.
+    """
+    DatabankConsent for the donation of de-identified patient data to the research databank.
 
     An instance of DatabankConsent represents an Opal patient's consent preferences
     for the donation of their de-identified data to the databank. Consent preferences
@@ -67,7 +72,7 @@ class DatabankConsent(models.Model):
     )
     last_synchronized = models.DateTimeField(
         verbose_name=_('Last Synchronized'),
-        default=timezone.make_aware(datetime.datetime(1970, 1, 1)),
+        default=datetime.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone()),
     )
 
     class Meta:
@@ -75,7 +80,8 @@ class DatabankConsent(models.Model):
         verbose_name_plural = _('Databank Consents')
 
     def __str__(self) -> str:
-        """Return the patient's databank consents.
+        """
+        Return the patient's databank consents.
 
         Example: Patient Bart consents to donate their appointments, labs, and questionnaires data:
         str(DatabankConsent) == 'Bart Simpson : appointments, labs, questionnaires'
@@ -83,9 +89,7 @@ class DatabankConsent(models.Model):
         Returns:
             The patient's consent information.
         """
-        return "{patient}'s Databank Consent".format(
-            patient=str(self.patient),
-        )
+        return f"{self.patient}'s Databank Consent"
 
 
 class DataModuleType(models.TextChoices):
@@ -99,7 +103,8 @@ class DataModuleType(models.TextChoices):
 
 
 class SharedData(models.Model):
-    """A piece of data sent to the databank.
+    """
+    A piece of data sent to the databank.
 
     Each instance contains some identifiers for each piece of data sent to the databank.
     """
@@ -131,8 +136,11 @@ class SharedData(models.Model):
                 check=models.Q(data_type__in=DataModuleType.values),
             ),
         ]
-        # TODO: After finalizing retrieval queries, add indexes to SharedData to reduce query time.
-        #       Indexing will depend on what we will be searching by (databank_consent+data_type?)
+        # Filtering or sorting this table by sent_at, databank_consent, or both together will be faster
+        indexes = [
+            models.Index(fields=['sent_at'], name='shareddata_sent_at_idx'),
+            models.Index(fields=['databank_consent', 'sent_at'], name='shareddata_db_consent_sent_idx'),
+        ]
 
     def __str__(self) -> str:
         """

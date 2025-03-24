@@ -1,3 +1,8 @@
+# noqa: INP001
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Generate the code reference pages and navigation.
 
@@ -5,6 +10,7 @@ Taken inspiration from:
     * https://github.com/mkdocstrings/mkdocstrings/blob/master/docs/gen_ref_nav.py
     * https://github.com/liquidinvestigations/hoover-snoop2/blob/master/docs/gen.py
 """
+
 from pathlib import Path
 
 import mkdocs_gen_files
@@ -30,7 +36,7 @@ for path in sorted(Path(CODE_ROOT).glob('**/*.py')):
 
     # write Markdown file for module
     with mkdocs_gen_files.open(doc_path, 'w') as fd:
-        print('::: {identifier}'.format(identifier=ident), file=fd)
+        print(f'::: {ident}', file=fd)
 
     mkdocs_gen_files.set_edit_path(doc_path, Path('..', path))
 

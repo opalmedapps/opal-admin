@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from datetime import date, datetime, timedelta
 
 from django.core.exceptions import ValidationError
@@ -28,14 +32,14 @@ pytestmark = pytest.mark.django_db
 
 def test_relationshiptype_factory() -> None:
     """Ensure the RelationshipType factory is building properly."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.full_clean()
 
 
 def test_relationshiptype_factory_multiple() -> None:
     """Ensure the RelationshipType factory can build multiple default model instances."""
-    relationship_type = factories.RelationshipType()
-    relationship_type2 = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
+    relationship_type2 = factories.RelationshipType.create()
 
     assert relationship_type == relationship_type2
 
@@ -48,7 +52,7 @@ def test_relationshiptype_str() -> None:
 
 def test_relationshiptype_duplicate_names() -> None:
     """Ensure that the relationship type name is unique."""
-    factories.RelationshipType(name='Self')
+    factories.RelationshipType.create(name='Self')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):
         relationship_type = factories.RelationshipType.build(name='Self')
@@ -57,10 +61,10 @@ def test_relationshiptype_duplicate_names() -> None:
 
 def test_relationshiptype_min_age_lowerbound() -> None:
     """Ensure the minimum age lower bound is validated correctly."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE - 1
 
-    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE)
+    message = f'Ensure this value is greater than or equal to {constants.RELATIONSHIP_MIN_AGE}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -71,10 +75,10 @@ def test_relationshiptype_min_age_lowerbound() -> None:
 
 def test_relationshiptype_min_age_upperbound() -> None:
     """Ensure the minimum age upper bound is validated correctly."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE
 
-    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE - 1)
+    message = f'Ensure this value is less than or equal to {constants.RELATIONSHIP_MAX_AGE - 1}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -85,10 +89,10 @@ def test_relationshiptype_min_age_upperbound() -> None:
 
 def test_relationshiptype_max_age_lowerbound() -> None:
     """Ensure the maximum age lower bound is validated correctly."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE
 
-    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE + 1)
+    message = f'Ensure this value is greater than or equal to {constants.RELATIONSHIP_MIN_AGE + 1}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -99,10 +103,10 @@ def test_relationshiptype_max_age_lowerbound() -> None:
 
 def test_relationshiptype_max_age_upperbound() -> None:
     """Ensure the maximum age upper bound is validated correctly."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE + 1
 
-    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE)
+    message = f'Ensure this value is less than or equal to {constants.RELATIONSHIP_MAX_AGE}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -113,20 +117,20 @@ def test_relationshiptype_max_age_upperbound() -> None:
 
 def test_relationshiptype_default_role() -> None:
     """Ensure a new relationshiptype (factory) role defaults to caregiver."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     assert relationship_type.role_type == RoleType.CAREGIVER
 
 
 def test_relationshiptype_is_self_true() -> None:
     """Ensure the RelationshipType correctly identifies a SELF role type."""
-    relationship_type = factories.RelationshipType(role_type=RoleType.SELF)
+    relationship_type = factories.RelationshipType.create(role_type=RoleType.SELF)
     assert relationship_type.is_self
 
 
 @pytest.mark.parametrize('role_type', [role for role in RoleType.values if role != RoleType.SELF])
 def test_relationshiptype_is_self_false(role_type: RoleType) -> None:
     """Ensure the RelationshipType correctly identifies non-SELF role types."""
-    relationship_type = factories.RelationshipType(role_type=role_type)
+    relationship_type = factories.RelationshipType.create(role_type=role_type)
     assert not relationship_type.is_self
 
 
@@ -136,11 +140,14 @@ def test_patient_str() -> None:
     assert str(patient) == 'Last Name, First Name'
 
 
-@pytest.mark.parametrize(('date_of_birth', 'reference_date', 'age'), [
-    (date(2004, 1, 1), date(2023, 10, 1), 19),
-    (date(2004, 12, 1), date(2023, 1, 1), 18),
-    (date.today() - relativedelta(years=23), None, 23),
-])
+@pytest.mark.parametrize(
+    ('date_of_birth', 'reference_date', 'age'),
+    [
+        (date(2004, 1, 1), date(2023, 10, 1), 19),
+        (date(2004, 12, 1), date(2023, 1, 1), 18),
+        (timezone.now().date() - relativedelta(years=23, days=1), None, 23),
+    ],
+)
 def test_patient_age_calculation(date_of_birth: date, reference_date: date | None, age: int) -> None:
     """Ensure the `calculate_age` method calculates the age correctly."""
     assert Patient.calculate_age(date_of_birth, reference_date) == age
@@ -148,22 +155,22 @@ def test_patient_age_calculation(date_of_birth: date, reference_date: date | Non
 
 def test_patient_factory() -> None:
     """Ensure the Patient factory is building properly."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
     patient.full_clean()
 
 
 def test_patient_factory_multiple() -> None:
     """Ensure the Patient factory can build multiple default model instances."""
-    patient = factories.Patient()
-    patient2 = factories.Patient()
+    patient = factories.Patient.create()
+    patient2 = factories.Patient.create()
 
     assert patient == patient2
 
 
 def test_patient_uuid_unique() -> None:
     """Ensure that the field uuid of patient is unique."""
-    patient = factories.Patient()
-    patients2 = factories.Patient(ramq='SIMM87531908')
+    patient = factories.Patient.create()
+    patients2 = factories.Patient.create(ramq='SIMM87531908')
     patient.uuid = patients2.uuid
 
     message = 'Patient with this UUID already exists.'
@@ -173,8 +180,8 @@ def test_patient_uuid_unique() -> None:
 
 def test_patient_age() -> None:
     """Ensure that the field age of the patient is calculated correctly."""
-    date_of_birth = date.today() - relativedelta(years=42)
-    patient = factories.Patient(date_of_birth=date_of_birth)
+    date_of_birth = timezone.now().date() - relativedelta(years=42)
+    patient = factories.Patient.create(date_of_birth=date_of_birth)
 
     assert patient.age == 42
 
@@ -182,9 +189,9 @@ def test_patient_age() -> None:
 @pytest.mark.parametrize('adulthood_age', [17, 18, 19])
 def test_patient_is_adult(adulthood_age: int) -> None:
     """Ensure that a patient is considered an adult."""
-    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
-    date_of_birth = date.today() - relativedelta(years=adulthood_age)
-    patient = factories.Patient(date_of_birth=date_of_birth)
+    hospital_settings_factories.Institution.create(adulthood_age=adulthood_age)
+    date_of_birth = timezone.now().date() - relativedelta(years=adulthood_age)
+    patient = factories.Patient.create(date_of_birth=date_of_birth)
 
     assert patient.is_adult is True
 
@@ -192,10 +199,10 @@ def test_patient_is_adult(adulthood_age: int) -> None:
 @pytest.mark.parametrize('adulthood_age', [17, 18, 19])
 def test_patient_is_adult_pediatric(adulthood_age: int) -> None:
     """Ensure that a patient is considered an adult."""
-    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
-    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    hospital_settings_factories.Institution.create(adulthood_age=adulthood_age)
+    date_of_birth = timezone.now().date() - relativedelta(years=adulthood_age)
     date_of_birth += relativedelta(days=1)
-    patient = factories.Patient(date_of_birth=date_of_birth)
+    patient = factories.Patient.create(date_of_birth=date_of_birth)
 
     assert patient.is_adult is False
 
@@ -204,22 +211,22 @@ def test_patient_invalid_sex() -> None:
     """Ensure that a patient cannot be saved with an invalid sex type."""
     message = 'CONSTRAINT `patients_patient_sex_valid` failed'
     with assertRaisesMessage(IntegrityError, message):
-        factories.Patient(sex='I')
+        factories.Patient.create(sex='I')
 
 
 def test_patient_ramq_non_unique() -> None:
     """Ensure that the health insurance number is non-unique."""
-    factories.Patient(ramq='TEST12345678')
-    factories.Patient(ramq='TEST12345678')
+    factories.Patient.create(ramq='TEST12345678')
+    factories.Patient.create(ramq='TEST12345678')
 
 
 def test_patient_ramq_max() -> None:
     """Ensure the length of patient ramq is not greater than 12."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
     patient.ramq = 'ABCD5678901234'
-    expected_message = '{0}, {1}'.format(
-        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
-        "'Ensure this value has at most 12 characters (it has 14).']",
+    expected_message = (
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'"
+        + ", 'Ensure this value has at most 12 characters (it has 14).']"
     )
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
@@ -227,44 +234,47 @@ def test_patient_ramq_max() -> None:
 
 def test_patient_ramq_min() -> None:
     """Ensure the length of patient ramq is not less than 12."""
-    patient = factories.Patient(ramq='ABCD56')
-    expected_message = '{0}'.format(
-        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
-    )
+    patient = factories.Patient.create(ramq='ABCD56')
+    expected_message = "'ramq': ['Ensure this value has at least 12 characters (it has 6).'"
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
 
 
 def test_patient_ramq_format() -> None:
     """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
-    patient = factories.Patient(ramq='ABC123456789')
-    expected_message = '{0}'.format(
-        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
-    )
+    patient = factories.Patient.create(ramq='ABC123456789')
+    expected_message = "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']"
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
 
 
+def test_patient_health_insurance_number() -> None:
+    """Ensure that the patient has a health insurance number."""
+    patient = factories.Patient.build(ramq='TEST')
+
+    assert patient.health_insurance_number == 'TEST'
+
+
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
-    factories.Patient(ramq='', legacy_id=1)
+    factories.Patient.create(ramq='', legacy_id=1)
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):
-        factories.Patient(ramq='somevalue', legacy_id=1)
+        factories.Patient.create(ramq='somevalue', legacy_id=1)
 
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
-    factories.Patient(ramq='', legacy_id=None)
-    factories.Patient(ramq='somevalue', legacy_id=None)
+    factories.Patient.create(ramq='', legacy_id=None)
+    factories.Patient.create(ramq='somevalue', legacy_id=None)
 
     assert Patient.objects.count() == 2
 
 
 def test_patient_access_level_default() -> None:
     """Ensure that the default data access level is ALL."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
 
     assert patient.data_access == Patient.DataAccessType.ALL
 
@@ -287,9 +297,9 @@ def test_patient_interpretable_delay_field_max_value() -> None:
 
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
-    patient = factories.Patient(first_name='Kobe', last_name='Briant')
+    patient = factories.Patient.create(first_name='Kobe', last_name='Briant')
 
-    caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
+    caregiver = user_factories.Caregiver.create(first_name='John', last_name='Wayne')
     profile = CaregiverProfile(user=caregiver)
 
     relationship = factories.Relationship.build(patient=patient, caregiver=profile)
@@ -299,14 +309,14 @@ def test_relationship_str() -> None:
 
 def test_relationship_factory() -> None:
     """Ensure the Relationship factory is building properly."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.full_clean()
 
 
 def test_relationship_factory_multiple() -> None:
     """Ensure the Relationship factory can build multiple default model instances."""
-    relationship = factories.Relationship()
-    relationship2 = factories.Relationship()
+    relationship = factories.Relationship.create()
+    relationship2 = factories.Relationship.create()
     relationship2.full_clean()
 
     assert relationship != relationship2
@@ -317,14 +327,14 @@ def test_relationship_factory_multiple() -> None:
 
 def test_relationship_default_status() -> None:
     """Relationship has the default relationship status set."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
 
     assert relationship.status == RelationshipStatus.PENDING
 
 
 def test_relationship_clean_no_end_date() -> None:
     """Ensure that the relationship with start date but without end date."""
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         start_date=date.fromisoformat('2022-05-04'),
         end_date=None,
     )
@@ -354,7 +364,7 @@ def test_relationship_clean_no_patient_caregiver() -> None:
 
 def test_relationship_clean_valid_dates() -> None:
     """Ensure that the date is valid if start date is earlier than end date."""
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         start_date=date.fromisoformat('2022-05-01'),
         end_date=date.fromisoformat('2022-05-04'),
     )
@@ -365,7 +375,7 @@ def test_relationship_clean_valid_dates() -> None:
 
 def test_relationship_clean_invalid_dates() -> None:
     """Ensure that the date is invalid if start date is later than end date."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.start_date = date(2022, 5, 8)
     relationship.end_date = date(2022, 5, 4)
 
@@ -376,7 +386,7 @@ def test_relationship_clean_invalid_dates() -> None:
 
 def test_relationship_clean_start_date_before_date_of_birth() -> None:
     """Ensure that the relationship start_date cannot be before the patient's date of birth."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.start_date = relationship.patient.date_of_birth - timedelta(days=1)
 
     expected_message = "Start date cannot be earlier than patient's date of birth"
@@ -386,7 +396,7 @@ def test_relationship_clean_start_date_before_date_of_birth() -> None:
 
 def test_relationship_clean_end_date_beyond_boundary() -> None:
     """Ensure that the relationship end_date cannot be before the boundary."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.patient.date_of_birth = date(2008, 5, 9)
     relationship.type.end_age = 18
 
@@ -396,9 +406,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
     relationship.start_date = calculated_end_date - relativedelta(years=2)
     relationship.end_date = calculated_end_date + timedelta(days=1)
 
-    expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
-        calculated_end_date=calculated_end_date,
-    )
+    expected_message = f'End date for Caregiver relationship cannot be later than {calculated_end_date}.'
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
@@ -406,7 +414,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
 def test_relationship_clean_pending_not_apply_self_role() -> None:
     """Ensure that the relationship Pending status does not apply for the Self relationship."""
     self_type = RelationshipType.objects.self_type()
-    relationship = factories.Relationship(type=self_type)
+    relationship = factories.Relationship.create(type=self_type)
     relationship.status = RelationshipStatus.PENDING
 
     expected_message = '"Pending" status does not apply for the Self relationship.'
@@ -418,9 +426,9 @@ def test_relationship_clean_no_patient_multiple_self() -> None:
     """Ensure that a patient can only have one self-relationship."""
     self_type = RelationshipType.objects.self_type()
 
-    relationship = factories.Relationship(type=self_type)
+    relationship = factories.Relationship.create(type=self_type)
     # create a relationship with a new relationship type
-    relationship2 = factories.Relationship(patient=relationship.patient)
+    relationship2 = factories.Relationship.create(patient=relationship.patient)
     relationship2.full_clean()
 
     relationship2.type = self_type
@@ -433,10 +441,10 @@ def test_relationship_clean_no_caregiver_multiple_self() -> None:
     """Ensure that a caregiver can only have one self-relationship."""
     self_type = RelationshipType.objects.self_type()
 
-    relationship = factories.Relationship(type=self_type)
+    relationship = factories.Relationship.create(type=self_type)
     # create a relationship with a new relationship type and patient
-    patient = factories.Patient(ramq='SIMM86100299')
-    relationship2 = factories.Relationship(patient=patient, caregiver=relationship.caregiver)
+    patient = factories.Patient.create(ramq='SIMM86100299')
+    relationship2 = factories.Relationship.create(patient=patient, caregiver=relationship.caregiver)
     relationship2.full_clean()
 
     relationship2.type = self_type
@@ -445,15 +453,18 @@ def test_relationship_clean_no_caregiver_multiple_self() -> None:
         relationship2.full_clean()
 
 
-@pytest.mark.parametrize('status', [
-    RelationshipStatus.CONFIRMED,
-    RelationshipStatus.PENDING,
-])
+@pytest.mark.parametrize(
+    'status',
+    [
+        RelationshipStatus.CONFIRMED,
+        RelationshipStatus.PENDING,
+    ],
+)
 def test_relationship_clean_no_caregiver_multiple_active_relationships(status: RelationshipStatus) -> None:
     """Ensure that a caregiver cannot have multiple active relationships to the same patient."""
     self_type = RelationshipType.objects.self_type()
 
-    relationship = factories.Relationship(type=self_type, status=status)
+    relationship = factories.Relationship.create(type=self_type, status=status)
     # create a relationship with a new relationship type
     relationship2 = Relationship(
         patient=relationship.patient,
@@ -487,9 +498,9 @@ def test_relationship_clean_can_update_existing_self() -> None:
     """Ensure that an existing self-relationship can be updated."""
     self_type = RelationshipType.objects.self_type()
 
-    relationship = factories.Relationship(type=self_type)
+    relationship = factories.Relationship.create(type=self_type)
     relationship.status = RelationshipStatus.CONFIRMED
-    relationship.end_date = None  # type: ignore[assignment]
+    relationship.end_date = None
     relationship.full_clean()
 
 
@@ -497,7 +508,7 @@ def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
     """Ensure that a name mismatch between patient and caregiver for a self-relationship is valid."""
     self_type = RelationshipType.objects.self_type()
 
-    relationship = factories.Relationship(
+    relationship = factories.Relationship.create(
         patient__first_name='Marge',
         patient__last_name='Simpson',
         type=self_type,
@@ -519,8 +530,8 @@ def test_relationship_clean_unsaved_instance() -> None:
     """Ensure that an unsaved relationship instance can be cleaned."""
     self_type = RelationshipType.objects.self_type()
 
-    patient = factories.Patient()
-    caregiver = factories.CaregiverProfile()
+    patient = factories.Patient.create()
+    caregiver = factories.CaregiverProfile.create()
     relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
     relationship.status = RelationshipStatus.CONFIRMED
 
@@ -529,7 +540,7 @@ def test_relationship_clean_unsaved_instance() -> None:
 
 def test_relationship_invalid_dates_constraint() -> None:
     """Ensure that the date cannot be saved if start date is later than end date."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.start_date = date(2022, 5, 8)
     relationship.end_date = date(2022, 5, 4)
 
@@ -540,7 +551,7 @@ def test_relationship_invalid_dates_constraint() -> None:
 
 def test_relationship_status_constraint() -> None:
     """Error happens when assigning an invalid Relationship status."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.status = 'INV'
 
     constraint_name = 'patients_relationship_status_valid'
@@ -550,14 +561,14 @@ def test_relationship_status_constraint() -> None:
 
 def test_hospitalpatient_factory() -> None:
     """Ensure the Patient factory is building properly."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
     hospital_patient.full_clean()
 
 
 def test_hospitalpatient_factory_multiple() -> None:
     """Ensure the Patient factory can build multiple default model instances."""
-    hospital_patient = factories.HospitalPatient()
-    hospital_patient2 = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
+    hospital_patient2 = factories.HospitalPatient.create()
 
     assert hospital_patient != hospital_patient2
     assert hospital_patient.patient == hospital_patient2.patient
@@ -566,17 +577,17 @@ def test_hospitalpatient_factory_multiple() -> None:
 
 def test_hospitalpatient_str() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
-    site = factories.Site(name="Montreal Children's Hospital")
-    hospital_patient = factories.HospitalPatient(site=site)
+    site = factories.Site.create(name="Montreal Children's Hospital")
+    hospital_patient = factories.HospitalPatient.create(site=site)
 
     assert str(hospital_patient) == 'MONT: 9999996'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:
     """Ensure a patient can have MRNs at different sites."""
-    patient = factories.Patient(first_name='aaa', last_name='bbb')
-    site1 = factories.Site(name="Montreal Children's Hospital")
-    site2 = factories.Site(name='Royal Victoria Hospital')
+    patient = factories.Patient.create(first_name='aaa', last_name='bbb')
+    site1 = factories.Site.create(name="Montreal Children's Hospital")
+    site2 = factories.Site.create(name='Royal Victoria Hospital')
 
     HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
     HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
@@ -589,12 +600,12 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 
 def test_hospitalpatient_many_patients_one_site() -> None:
     """Ensure a (site, MRN) pair can only be used once."""
-    patient1 = factories.Patient(first_name='aaa', last_name='111')
-    patient2 = factories.Patient(
+    patient1 = factories.Patient.create(first_name='aaa', last_name='111')
+    patient2 = factories.Patient.create(
         first_name='bbb',
         last_name='222',
     )
-    site = factories.Site(name="Montreal Children's Hospital")
+    site = factories.Site.create(name="Montreal Children's Hospital")
 
     HospitalPatient.objects.create(patient=patient1, site=site, mrn='9999996')
 
@@ -604,8 +615,8 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
 def test_hospitalpatient_patient_site_unique() -> None:
     """Ensure a patient can only have one MRN at a specific site."""
-    patient = factories.Patient()
-    site = factories.Site()
+    patient = factories.Patient.create()
+    site = factories.Site.create()
 
     HospitalPatient.objects.create(patient=patient, site=site, mrn='9999996')
 
@@ -616,14 +627,14 @@ def test_hospitalpatient_patient_site_unique() -> None:
 
 def test_can_answer_questionnaire_default() -> None:
     """Ensure default can_answer_questionnaire field is false."""
-    relationtype = factories.RelationshipType()
+    relationtype = factories.RelationshipType.create()
     assert not relationtype.can_answer_questionnaire
 
 
 # tests for reason field constraints and validations
 def test_relationship_no_reason_invalid_revoked() -> None:
     """Ensure that error is thrown when reason is empty and status is revoked."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.reason = ''
     relationship.status = RelationshipStatus.REVOKED
 
@@ -634,7 +645,7 @@ def test_relationship_no_reason_invalid_revoked() -> None:
 
 def test_relationship_no_reason_invalid_denied() -> None:
     """Ensure that error is thrown when reason is empty and status is denied."""
-    relationship = factories.Relationship()
+    relationship = factories.Relationship.create()
     relationship.reason = ''
     relationship.status = RelationshipStatus.DENIED
 
@@ -645,7 +656,7 @@ def test_relationship_no_reason_invalid_denied() -> None:
 
 def test_relationship_valid_reason_pass_denied() -> None:
     """Ensure that error is not thrown when reason field has content and status is denied."""
-    relationship = factories.Relationship(reason='A reason')
+    relationship = factories.Relationship.create(reason='A reason')
     relationship.status = RelationshipStatus.DENIED
 
     relationship.clean()
@@ -653,7 +664,7 @@ def test_relationship_valid_reason_pass_denied() -> None:
 
 def test_relationship_valid_reason_pass_revoked() -> None:
     """Ensure that error is not thrown when reason field has content and status is revoked."""
-    relationship = factories.Relationship(reason='A reason')
+    relationship = factories.Relationship.create(reason='A reason')
     relationship.status = RelationshipStatus.REVOKED
 
     relationship.clean()
@@ -661,7 +672,7 @@ def test_relationship_valid_reason_pass_revoked() -> None:
 
 def test_relationship_reason_non_required_status() -> None:
     """Ensure that a reason field can be provided for a status that does not require one."""
-    relationship = factories.Relationship(reason='A reason')
+    relationship = factories.Relationship.create(reason='A reason')
     relationship.status = RelationshipStatus.CONFIRMED
 
     relationship.clean()
@@ -669,40 +680,40 @@ def test_relationship_reason_non_required_status() -> None:
 
 def test_relationship_same_combination() -> None:
     """Ensure that a relationship with same patient-caregiver-type-status combo is unique."""
-    patient = factories.Patient(first_name='Kobe', last_name='Briant')
-    caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
-    profile = factories.CaregiverProfile(user=caregiver)
-    factories.Relationship(patient=patient, caregiver=profile)
+    patient = factories.Patient.create(first_name='Kobe', last_name='Briant')
+    caregiver = user_factories.Caregiver.create(first_name='John', last_name='Wayne')
+    profile = factories.CaregiverProfile.create(user=caregiver)
+    factories.Relationship.create(patient=patient, caregiver=profile)
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
-        factories.Relationship(patient=patient, caregiver=profile)
+        factories.Relationship.create(patient=patient, caregiver=profile)
 
 
 def test_relationship_diff_relation_same_status() -> None:
     """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same status."""
-    patient1 = factories.Patient(first_name='John', last_name='Smith')
-    caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
-    profile1 = factories.CaregiverProfile(user=caregiver1)
-    factories.Relationship(patient=patient1, caregiver=profile1, status=RelationshipStatus.CONFIRMED)
+    patient1 = factories.Patient.create(first_name='John', last_name='Smith')
+    caregiver1 = user_factories.Caregiver.create(first_name='Betty', last_name='White')
+    profile1 = factories.CaregiverProfile.create(user=caregiver1)
+    factories.Relationship.create(patient=patient1, caregiver=profile1, status=RelationshipStatus.CONFIRMED)
 
-    patient2 = factories.Patient(first_name='Will', last_name='Smith')
-    caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile2 = factories.CaregiverProfile(user=caregiver2)
-    factories.Relationship(patient=patient2, caregiver=profile2, status=RelationshipStatus.CONFIRMED)
+    patient2 = factories.Patient.create(first_name='Will', last_name='Smith')
+    caregiver2 = user_factories.Caregiver.create(first_name='Emma', last_name='Stone')
+    profile2 = factories.CaregiverProfile.create(user=caregiver2)
+    factories.Relationship.create(patient=patient2, caregiver=profile2, status=RelationshipStatus.CONFIRMED)
 
 
 def test_relationship_diff_relation_same_type() -> None:
     """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same type."""
-    patient1 = factories.Patient(first_name='John', last_name='Smith')
-    caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
-    profile1 = factories.CaregiverProfile(user=caregiver1)
+    patient1 = factories.Patient.create(first_name='John', last_name='Smith')
+    caregiver1 = user_factories.Caregiver.create(first_name='Betty', last_name='White')
+    profile1 = factories.CaregiverProfile.create(user=caregiver1)
     relationship1 = factories.Relationship.build(patient=patient1, caregiver=profile1)
 
-    patient2 = factories.Patient(first_name='Will', last_name='Smith')
-    caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile2 = factories.CaregiverProfile(user=caregiver2)
+    patient2 = factories.Patient.create(first_name='Will', last_name='Smith')
+    caregiver2 = user_factories.Caregiver.create(first_name='Emma', last_name='Stone')
+    profile2 = factories.CaregiverProfile.create(user=caregiver2)
     relationship2 = factories.Relationship.build(patient=patient2, caregiver=profile2)
 
-    relationship1.type = factories.RelationshipType()
+    relationship1.type = factories.RelationshipType.create()
     relationship2.type = relationship1.type
 
     relationship1.full_clean()
@@ -711,31 +722,31 @@ def test_relationship_diff_relation_same_type() -> None:
 
 def test_relationship_same_relation_diff_status() -> None:
     """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple statuses."""
-    patient = factories.Patient(first_name='Will', last_name='Smith')
-    caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile = factories.CaregiverProfile(user=caregiver)
-    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.CONFIRMED)
-    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.PENDING)
+    patient = factories.Patient.create(first_name='Will', last_name='Smith')
+    caregiver = user_factories.Caregiver.create(first_name='Emma', last_name='Stone')
+    profile = factories.CaregiverProfile.create(user=caregiver)
+    factories.Relationship.create(patient=patient, caregiver=profile, status=RelationshipStatus.CONFIRMED)
+    factories.Relationship.create(patient=patient, caregiver=profile, status=RelationshipStatus.PENDING)
 
 
 def test_relationship_same_relation_diff_type() -> None:
     """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple types."""
-    patient = factories.Patient(first_name='Will', last_name='Smith')
-    caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile = factories.CaregiverProfile(user=caregiver)
+    patient = factories.Patient.create(first_name='Will', last_name='Smith')
+    caregiver = user_factories.Caregiver.create(first_name='Emma', last_name='Stone')
+    profile = factories.CaregiverProfile.create(user=caregiver)
 
-    type1 = factories.RelationshipType(name='Friend')
-    type2 = factories.RelationshipType(name='Mentor')
+    type1 = factories.RelationshipType.create(name='Friend')
+    type2 = factories.RelationshipType.create(name='Mentor')
 
-    factories.Relationship(patient=patient, caregiver=profile, type=type1)
-    factories.Relationship(patient=patient, caregiver=profile, type=type2)
+    factories.Relationship.create(patient=patient, caregiver=profile, type=type1)
+    factories.Relationship.create(patient=patient, caregiver=profile, type=type2)
 
 
 def test_invalid_date_of_death() -> None:
     """Ensure that the date of death is invalid if date of birth is later."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
     patient.date_of_birth = date(2022, 11, 20)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 10, 20))
+    patient.date_of_death = datetime(2022, 10, 20, tzinfo=timezone.get_current_timezone())
 
     expected_message = 'Date of death cannot be earlier than date of birth.'
     with assertRaisesMessage(ValidationError, expected_message):
@@ -744,18 +755,18 @@ def test_invalid_date_of_death() -> None:
 
 def test_valid_date_of_death() -> None:
     """Ensure that the date of death is entered and valid."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
     patient.date_of_birth = date(2022, 10, 20)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 11, 20))
+    patient.date_of_death = datetime(2022, 11, 20, tzinfo=timezone.get_current_timezone())
 
     patient.clean()
 
 
 def test_same_birth_and_death_date() -> None:
     """Ensure that the date of death is valid if same as date of birth."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
     patient.date_of_birth = date(2022, 1, 23)
-    patient.date_of_death = timezone.make_aware(datetime(2022, 1, 23))
+    patient.date_of_death = datetime(2022, 1, 23, tzinfo=timezone.get_current_timezone())
 
     patient.clean()
 
@@ -927,8 +938,9 @@ def test_relationship_calculate_default_start_date(
 def test_relationship_calculate_end_date_with_end_age_set() -> None:
     """Test set relationship end date if a relationship type has an end age set."""
     date_of_birth = date(2013, 4, 3)
-    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18)
+    relationship_type = factories.RelationshipType.create(name='Guardian-Caregiver', start_age=14, end_age=18)
 
+    assert relationship_type.end_age is not None
     assert Relationship.calculate_end_date(
         date_of_birth=date_of_birth,
         relationship_type=relationship_type,
@@ -938,7 +950,7 @@ def test_relationship_calculate_end_date_with_end_age_set() -> None:
 def test_relationship_calculate_end_date_actual_value() -> None:
     """Test set relationship end date if it is an actual date value."""
     date_of_birth = date(2013, 4, 3)
-    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18)
+    relationship_type = factories.RelationshipType.create(name='Guardian-Caregiver', start_age=14, end_age=18)
 
     assert Relationship.calculate_end_date(
         date_of_birth=date_of_birth,
@@ -949,7 +961,7 @@ def test_relationship_calculate_end_date_actual_value() -> None:
 def test_relationship_calculate_end_date_without_end_age_set() -> None:
     """Test set relationship end date if a relationship type has no end age set."""
     date_of_birth = date(2013, 4, 3)
-    relationship_type = factories.RelationshipType(name='Mandatary', start_age=1)
+    relationship_type = factories.RelationshipType.create(name='Mandatary', start_age=1)
 
     assert (
         Relationship.calculate_end_date(
@@ -993,7 +1005,7 @@ def test_relationshiptype_predefined_role_type_delete_error(role_type: RoleType)
 @pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)
 def test_relationshiptype_duplicate_predefined_role_type(role_type: RoleType) -> None:
     """Ensure validation error when creating a second predefined role type."""
-    relationship_type = factories.RelationshipType()
+    relationship_type = factories.RelationshipType.create()
     relationship_type.role_type = role_type
 
     message = "['There already exists a relationship type with this role type']"
@@ -1012,11 +1024,11 @@ def test_relationshiptype_can_update_predefined_role_type(role_type: RoleType) -
 
 def test_relationshiptype_can_add_caregiver_type() -> None:
     """Ensure a relationship type with a role type of `CAREGIVER` can be created."""
-    relationship_type = factories.RelationshipType(role_type=RoleType.CAREGIVER)
+    relationship_type = factories.RelationshipType.create(role_type=RoleType.CAREGIVER)
     relationship_type.full_clean()
 
 
 def test_relationshiptype_can_delete_caregiver_type() -> None:
     """Ensure a relationship type with a role type of `CAREGIVER` can be deleted."""
-    relationship_type = factories.RelationshipType(role_type=RoleType.CAREGIVER)
+    relationship_type = factories.RelationshipType.create(role_type=RoleType.CAREGIVER)
     relationship_type.delete()

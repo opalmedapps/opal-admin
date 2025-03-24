@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for the hospital's internal communication (e.g., Opal Integration Engine)."""
 
 from django.conf import settings
@@ -5,8 +9,9 @@ from django.conf import settings
 from ..general.service_communication import ServiceHTTPCommunicationManager
 
 
-class OIEHTTPCommunicationManager(ServiceHTTPCommunicationManager):
-    """Manager that provides functionality for communication with Opal Integration Engine (OIE).
+class SourceSystemHTTPCommunicationManager(ServiceHTTPCommunicationManager):
+    """
+    Manager that provides functionality for communication with Opal Integration Engine.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 
@@ -14,11 +19,11 @@ class OIEHTTPCommunicationManager(ServiceHTTPCommunicationManager):
     """
 
     def __init__(self) -> None:
-        """Initialize an OIE-specific ServiceHTTPCommunicationManager."""
+        """Initialize a source-system-specific ServiceHTTPCommunicationManager."""
         super().__init__(
-            base_url=settings.OIE_HOST,
-            display_name='OIE',
-            user=settings.OIE_USER,
-            password=settings.OIE_PASSWORD,
+            base_url=settings.SOURCE_SYSTEM_HOST,
+            display_name='Source System',
+            user=settings.SOURCE_SYSTEM_USER,
+            password=settings.SOURCE_SYSTEM_PASSWORD,
             dump_json_payload=True,
         )

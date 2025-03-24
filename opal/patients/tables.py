@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Table definitions for models of the patient app."""
+
 from datetime import date
 from typing import Any
 
@@ -10,7 +15,7 @@ from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
-from opal.services.hospital.hospital_data import OIEMRNData
+from opal.services.integration.schemas import HospitalNumberSchema
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
@@ -82,10 +87,11 @@ class PatientTable(tables.Table):
         verbose_name=_('MRN'),
         accessor='hospital_patients',
     )
+    health_insurance_number = tables.Column(verbose_name=_('RAMQ Number'))
 
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'ramq']
+        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'health_insurance_number']
         empty_text = _('No patient could be found.')
         orderable = False
 
@@ -108,9 +114,10 @@ class PatientTable(tables.Table):
 
     def render_mrns(
         self,
-        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[OIEMRNData],  # noqa: WPS221
+        value: QuerySet[HospitalPatient] | list[dict[str, Any]] | list[HospitalNumberSchema],
     ) -> str:
-        """Render MRN column.
+        """
+        Render MRN column.
 
         Concat list of MRN/site pairs into one string.
 
@@ -128,11 +135,10 @@ class PatientTable(tables.Table):
             mrn_site_list = []
 
             for item in value:
-                if isinstance(item, OIEMRNData):
-                    item = item._asdict()  # noqa: WPS437
+                data = HospitalNumberSchema.model_dump(item) if isinstance(item, HospitalNumberSchema) else item
 
                 mrn_site_list.append(
-                    f'{item.get("site")}: {item.get("mrn")}',
+                    f'{data.get("site")}: {data.get("mrn")}',
                 )
         else:
             mrn_site_list = [
@@ -164,11 +170,11 @@ class PendingRelationshipTable(tables.Table):
         template_name='tables/action_column.html',
         orderable=False,
     )
-    type = tables.Column(  # noqa: A003
+    type = tables.Column(
         verbose_name=_('Relationship'),
     )
     status = tables.Column(
-        verbose_name=Relationship._meta.get_field('status').verbose_name,  # noqa: WPS437
+        verbose_name=Relationship._meta.get_field('status').verbose_name,
         order_by='request_date',
     )
 
@@ -192,8 +198,8 @@ class PendingRelationshipTable(tables.Table):
             today = timezone.now().date()
             number_of_days = (today - record.request_date).days
             pending_since_text = ngettext(
-                '%(number_of_days)d day',  # noqa: WPS323
-                '%(number_of_days)d days',  # noqa: WPS323
+                '%(number_of_days)d day',
+                '%(number_of_days)d days',
                 number_of_days,
             ) % {
                 'number_of_days': number_of_days,
@@ -305,7 +311,8 @@ class RelationshipCaregiverTable(tables.Table):
 
 
 class ConfirmPatientDetailsTable(PatientTable):
-    """Custom table for confirmation of patient data given an OIE data object.
+    """
+    Custom table for confirmation of patient data given a source system data object.
 
     The goal of this table is to render data in the same way as the existing `PatientTable`
     A new table is required because the existing table is rendered using a patient queryset in

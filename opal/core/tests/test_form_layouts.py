@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from typing import Any
 
 from django import forms
@@ -163,8 +167,10 @@ def test_formactions() -> None:
     form = SampleForm(layouts.FormActions(Submit('foo', 'bar')))
 
     html = render_crispy_form(form)
+    # make HTML one line for easier assertion
+    html = ' '.join(line.strip() for line in html.split('\n'))
 
-    assert '<div class="mb-3 d-flex justify-content-end gap-2"' in html
+    assert '<div  class="mb-3 d-flex justify-content-end gap-2 "' in html
     assert '<input type="submit"' in html
 
 
@@ -173,8 +179,10 @@ def test_formactions_extra_css_class() -> None:
     form = SampleForm(layouts.FormActions(css_class='extra'))
 
     html = render_crispy_form(form)
+    # make HTML one line for easier assertion
+    html = ' '.join(line.strip() for line in html.split('\n'))
 
-    assert '<div class="mb-3 d-flex justify-content-end gap-2 extra"' in html
+    assert '<div  class="mb-3 d-flex justify-content-end gap-2 extra "' in html
 
 
 def test_radioselect_hidden() -> None:

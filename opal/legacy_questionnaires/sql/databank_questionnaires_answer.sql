@@ -1,15 +1,6 @@
-
-SELECT
-   A.*,
-   answerTextBox.VALUE AS answer_value
-FROM
-   tempAnswerDetails A,
-   answerTextBox
-WHERE
-   answerTextBox.answerId = A.question_answer_id
-   AND A.question_type_id = 3
-
-UNION
+-- SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+--
+-- SPDX-License-Identifier: AGPL-3.0-or-later
 
 SELECT
    A.*,

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing functionality for handling errors from external components and generating error messages."""
 from typing import Any
 
@@ -9,7 +13,8 @@ class ServiceErrorHandler:
         self,
         response_data: dict[str, Any],
     ) -> dict[str, Any]:
-        """Create error response in a JSON format that contains `data` field with the specific details.
+        """
+        Create error response in a JSON format that contains `data` field with the specific details.
 
         Args:
             response_data (dict[str, Any]): data that needs to be included into error response message

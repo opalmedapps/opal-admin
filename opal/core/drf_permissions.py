@@ -1,8 +1,14 @@
-"""This module provides custom permissions for the Django REST framework.
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""
+This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
-from typing import TYPE_CHECKING, Optional
+
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -90,13 +96,11 @@ class _UsernameRequired(permissions.IsAuthenticated):
         """
         if not hasattr(self, 'required_username') or not self.required_username:
             raise ImproperlyConfigured(
-                'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
-                    class_=self.__class__.__name__,
-                ),
+                f'The concrete permission class {self.__class__.__name__} has to define the `required_username` attribute.'
             )
 
         return super().has_permission(request, view) and (
-            str(request.user.username) == self.required_username or request.user.is_superuser
+            request.user.username == self.required_username or request.user.is_superuser
         )
 
 
@@ -124,6 +128,12 @@ class IsLegacyBackend(_UsernameRequired):
     required_username = constants.USERNAME_BACKEND_LEGACY
 
 
+class IsOrmsSystem(_UsernameRequired):
+    """Allows access only to the ORMS system user and superusers."""
+
+    required_username = constants.USERNAME_ORMS
+
+
 class IsORMSUser(permissions.IsAuthenticated):
     """Allows access only to users belong to the ORMS user group and superusers."""
 
@@ -139,10 +149,7 @@ class IsORMSUser(permissions.IsAuthenticated):
             True, if the check is successful, False otherwise
         """
         return super().has_permission(request, view) and (
-            # make mypy happy to know that the user is not anonymous
-            request.user.is_authenticated
-            and request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
-            or request.user.is_superuser
+            request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists() or request.user.is_superuser
         )
 
 
@@ -215,7 +222,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Returns:
             The patient's legacy id.
         """
-        patient_legacy_id: Optional[int] = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
+        patient_legacy_id: int | None = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
                 'Requests to APIs using CaregiverPatientPermissions must provide an integer'
@@ -223,7 +230,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
         return patient_legacy_id
 
-    def _check_caregiver_exists(self, caregiver_username: Optional[str]) -> CaregiverProfile:
+    def _check_caregiver_exists(self, caregiver_username: str | None) -> CaregiverProfile:
         """
         Validate the existence of a CaregiverProfile matching the input caregiver username, and return it if found.
 
@@ -296,7 +303,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         valid_relationships = relationships_with_target.filter(status=RelationshipStatus.CONFIRMED)
         if not valid_relationships.exists():
             raise exceptions.PermissionDenied(
-                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
+                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON')."
             )
 
 
@@ -355,9 +362,5 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         valid_relationships = [rel for rel in relationships_with_target if rel.type.role_type == RoleType.SELF]
         if not valid_relationships:
             raise exceptions.PermissionDenied(
-                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
+                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.'
             )
-
-
-# Future Enhancement: Pull common permissions functionality into an abstract base class
-#                     to allow for faster definition of new perms in the future

@@ -1,10 +1,15 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Management command for inserting test data."""
+
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Optional
+from typing import Any
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandParser
@@ -21,10 +26,6 @@ from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
-TRAVEL_URLS_CRE = (
-    'https://live-cbhssjb.pantheonsite.io/cps/travelling',
-    'https://live-cbhssjb.pantheonsite.io/fr/cps/voyager',
-)
 
 
 class InstitutionOption(Enum):
@@ -45,78 +46,31 @@ class InstitutionOption(Enum):
 
 INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'name': 'Opal Medical Institution',
-        'name_fr': 'Établissement Médical Opal',
-        'acronym_fr': 'ÉMO',
-        'support_email': 'opal@muhc.mcgill.ca',
+        'name': 'Opal Demo',
+        'name_fr': 'Démo de Opal',
+        'acronym_fr': 'DO1',
+        'support_email': 'info@opalmedapps.ca',
     },
     InstitutionOption.ohigph: {
-        'name': 'OHIG Pediatric Hospital',
-        'name_fr': 'Hôpital Pédiatrique OHIG',
+        'name': 'Opal Demo 2',
+        'name_fr': 'Démo de Opal 2',
         'acronym_fr': 'HPOHIG',
-        'support_email': 'opal+chusj@muhc.mcgill.ca',
+        'support_email': 'info@opalmedapps.ca',
     },
 })
 
 SITE_DATA = MappingProxyType({
     InstitutionOption.omi: [
         (
-            'Opal General Hospital 1 (RVH)',
-            'Hôpital général Opal 1 (HRV)',
-            'RVH',
-            'HRV',
-            PARKING_URLS_MUHC,
-            ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
+            'Opal Demo Hospital',
+            "Hôpital démo d'Opal",
+            'ODH',
+            'HDO',
+            ('https://www.opalmedapps.com/en/soutien', 'https://www.opalmedapps.com/soutien'),
+            ('https://www.opalmedapps.com/en', 'https://www.opalmedapps.com/fr'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal General Hospital 2 (MGH)',
-            'Hôpital général Opal 2 (HGM)',
-            'MGH',
-            'HGM',
-            PARKING_URLS_MUHC,
-            (
-                'https://muhc.ca/how-get-montreal-general-hospital',
-                'https://cusm.ca/se-rendre-lhopital-general-de-montreal',
-            ),
-            Decimal('45.496828'),
-            Decimal('-73.588782'),
-            ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal Childrens Hospital',
-            "L'Hôpital Opal pour enfants",
-            'MCH',
-            'HME',
-            PARKING_URLS_MUHC,
-            ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
-            Decimal('45.473343'),
-            Decimal('-73.600802'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
-        ),
-        (
-            'Opal General Hospital 3 (LAC)',
-            'Hôpital général Opal 3 (LAC)',
-            'LAC',
-            'LAC',
-            PARKING_URLS_MUHC,
-            ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
-            Decimal('45.44121'),
-            Decimal('-73.676791'),
-            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
-        ),
-        (
-            'Opal General Hospital 4 (CRE)',
-            'Hôpital général Opal 4 (CRE)',
-            'CRE',
-            'CRE',
-            TRAVEL_URLS_CRE,
-            TRAVEL_URLS_CRE,
-            Decimal('45.51640'),
-            Decimal('-73.55529'),
-            ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5141234567', ''),
         ),
     ],
     InstitutionOption.ohigph: [
@@ -143,20 +97,16 @@ SITE_DATA = MappingProxyType({
 
 MRN_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'Marge Simpson': [('RVH', '9999996')],
-        'Homer Simpson': [
-            ('RVH', '9999997'),
-            ('MGH', '9999998'),
-        ],
-        'Bart Simpson': [('MCH', '9999996')],
-        'Lisa Simpson': [('MCH', '9999993')],
-        'Mona Simpson': [
-            ('RVH', '9999993'),
-            ('MCH', '5407383'),
-        ],
-        'Fred Flintstone': [('RVH', '9999998')],
-        'Pebbles Flintstone': [('MCH', '9999999')],
-        'Wednesday Addams': [('RVH', '9999991')],
+        'Marge Simpson': [('ODH', '9999996')],
+        'Homer Simpson': [('ODH', '9999997')],
+        'Bart Simpson': [('ODH', '9999995')],
+        'Mona Simpson': [('ODH', '9999993')],
+        'Fred Flintstone': [('ODH', '9999998')],
+        'Pebbles Flintstone': [('ODH', '9999999')],
+        'Wednesday Addams': [('ODH', '9999991')],
+        'Laurie Opal': [('ODH', '1092300')],
+        "Rory O'Brien": [('ODH', '9999989')],
+        'John Smith': [('ODH', '9999994')],
     },
     InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -172,7 +122,7 @@ class Command(BaseCommand):
     Inserts an institution, sites, patients, caregivers and relationships between the patients and caregivers.
     """
 
-    help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'  # noqa: A003
+    help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -250,7 +200,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
     """
     Create all test data.
 
@@ -266,13 +216,13 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     Args:
         institution_option: the chosen institution for which the test data should be inserted
     """
-    today = date.today()
+    today = timezone.now()
 
     # hospital settings
     institution = create_institution(institution_option)
     sites = create_sites(institution_option, institution)
 
-    mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
+    mrn_data: dict[str, list[tuple[Site, str]]] = {}
 
     for key, value in MRN_DATA[institution_option].items():
         new_value = [(sites[site], mrn) for site, mrn in value]
@@ -281,7 +231,17 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
-    if not is_pediatric:
+    if is_pediatric:
+        lisa = _create_patient(
+            first_name='Lisa',
+            last_name='Simpson',
+            date_of_birth=_create_date(8, 5, 9),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIML14550999',
+            legacy_id=54,
+            mrns=mrn_data['Lisa Simpson'],
+        )
+    else:
         marge = _create_patient(
             first_name='Marge',
             last_name='Simpson',
@@ -311,6 +271,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             legacy_id=55,
             mrns=mrn_data['Mona Simpson'],
             date_of_death=_relative_date(today, -2),
+            data_access=Patient.DataAccessType.NEED_TO_KNOW,
         )
 
         fred = _create_patient(
@@ -326,7 +287,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         pebbles = _create_patient(
             first_name='Pebbles',
             last_name='Flintstone',
-            date_of_birth=_create_date(9, 2, 1),
+            date_of_birth=_create_date(9, 2, 22),
             sex=Patient.SexType.FEMALE,
             ramq='FLIP15022299',
             legacy_id=57,
@@ -335,31 +296,48 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         wednesday = _create_patient(
             first_name='Wednesday',
             last_name='Addams',
-            date_of_birth=date(2009, 2, 13),
+            date_of_birth=_create_date(15, 2, 13),
             sex=Patient.SexType.FEMALE,
             ramq='ADAW09021399',
             legacy_id=58,
             mrns=mrn_data['Wednesday Addams'],
         )
-
+        laurie = _create_patient(
+            first_name='Laurie',
+            last_name='Opal',
+            date_of_birth=date(1958, 12, 13),
+            sex=Patient.SexType.FEMALE,
+            ramq='OPAL58621325',
+            legacy_id=92,
+            mrns=mrn_data['Laurie Opal'],
+        )
+        rory = _create_patient(
+            first_name='Rory',
+            last_name="O'Brien",
+            date_of_birth=date(1972, 6, 11),
+            sex=Patient.SexType.OTHER,
+            ramq='OBRR72061199',
+            legacy_id=59,
+            mrns=mrn_data["Rory O'Brien"],
+        )
+        john = _create_patient(
+            first_name='John',
+            last_name='Smith',
+            date_of_birth=date(1985, 1, 1),
+            sex=Patient.SexType.MALE,
+            ramq='',
+            legacy_id=93,
+            mrns=mrn_data['John Smith'],
+        )
+    # Bart exists at both institutions
     bart = _create_patient(
         first_name='Bart',
         last_name='Simpson',
         date_of_birth=_create_date(14, 2, 23),
-        sex=Patient.SexType.MALE,
+        sex=Patient.SexType.OTHER,
         ramq='SIMB13022399',
         legacy_id=53,
         mrns=mrn_data['Bart Simpson'],
-    )
-
-    lisa = _create_patient(
-        first_name='Lisa',
-        last_name='Simpson',
-        date_of_birth=_create_date(8, 5, 9),
-        sex=Patient.SexType.FEMALE,
-        ramq='SIML14550999',
-        legacy_id=54,
-        mrns=mrn_data['Lisa Simpson'],
     )
 
     # caregivers
@@ -382,16 +360,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         language='en',
         phone_number='+498999998123',
         legacy_id=3,
-    )
-
-    user_fred = _create_caregiver(
-        first_name='Fred',
-        last_name='Flintstone',
-        username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
-        email='fred@opalmedapps.ca',
-        language='en',
-        phone_number='+15144758941',
-        legacy_id=5,
     )
 
     if not is_pediatric:
@@ -418,6 +386,43 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             is_active=False,
         )
 
+        user_fred = _create_caregiver(
+            first_name='Fred',
+            last_name='Flintstone',
+            username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
+            email='fred@opalmedapps.ca',
+            language='en',
+            phone_number='+15144758941',
+            legacy_id=5,
+        )
+
+        user_laurie = _create_caregiver(
+            first_name='Laurie',
+            last_name='Opal',
+            username='a51fba18-3810-4808-9238-4d0e487785c8',
+            email='laurie@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=6,
+        )
+        user_rory = _create_caregiver(
+            first_name='Rory',
+            last_name="O'Brien",
+            username='mouj1pqpXrYCl994oSm5wtJT3In2',
+            email='rory@opalmedapps.ca',
+            language='en',
+            phone_number='+15557654321',
+            legacy_id=7,
+        )
+        user_john = _create_caregiver(
+            first_name='John',
+            last_name='Smith',
+            username='hIMnEXkedPMxYnXeqNXzphklu4V2',
+            email='john@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=8,
+        )
     # get relationship types
     type_self = RelationshipType.objects.self_type()
     type_parent = RelationshipType.objects.parent_guardian()
@@ -427,7 +432,18 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     # relationships
     date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
-    if not is_pediatric:
+    if is_pediatric:
+        # Marge --> Lisa: Guardian/Parent
+        _create_relationship(
+            patient=lisa,
+            caregiver=user_marge,
+            relationship_type=type_parent,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(lisa.date_of_birth, 14),
+        )
+    else:
         # Marge --> Marge: Self
         _create_relationship(
             patient=marge,
@@ -515,6 +531,37 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             end_date=_relative_date(pebbles.date_of_birth, 14),
         )
 
+        # Laurie --> Laurie: Self
+        _create_relationship(
+            patient=laurie,
+            caregiver=user_laurie,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
+
+        # Rory --> Rory: Self
+        _create_relationship(
+            patient=rory,
+            caregiver=user_rory,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
+
+        # John --> John: Self
+        _create_relationship(
+            patient=john,
+            caregiver=user_john,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
+    # The rest of the relationships exist at both institutions
+
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
         patient=bart,
@@ -524,17 +571,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         request_date=date_bart_fourteen,
         start_date=date_bart_fourteen,
         end_date=_relative_date(bart.date_of_birth, 18),
-    )
-
-    # Marge --> Lisa: Guardian/Parent
-    _create_relationship(
-        patient=lisa,
-        caregiver=user_marge,
-        relationship_type=type_parent,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -1),
-        start_date=_relative_date(today, -3),
-        end_date=_relative_date(lisa.date_of_birth, 14),
     )
 
     # Bart --> Bart
@@ -551,6 +587,9 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     if not is_pediatric:
         _create_security_answers(user_homer)
         _create_security_answers(user_fred)
+        _create_security_answers(user_laurie)
+        _create_security_answers(user_rory)
+        _create_security_answers(user_john)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
@@ -558,53 +597,86 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
+        # Marge has 2 pathology reports received 2 and 12 days ago respectively
         _create_pathology_result(
             patient=marge,
-            site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2023, 6, 8, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=2),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=2),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=2),
             legacy_document_id=7,
         )
         _create_pathology_result(
+            patient=marge,
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            legacy_document_id=8,
+        )
+        # Homer received his pathology 8 days ago
+        _create_pathology_result(
             patient=homer,
-            site=sites['MGH'],
-            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=8),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=8),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=8),
             legacy_document_id=6,
         )
+        # Fred received his pathology 4 days ago
         _create_pathology_result(
             patient=fred,
-            site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2023, 11, 3, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             legacy_document_id=12,
         )
+        # Bart received his pathology 5 days ago
         _create_pathology_result(
             patient=bart,
-            site=sites['MCH'],
-            collected_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2023, 6, 1, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=5),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             legacy_document_id=5,
         )
+        # Pebbles received her pathology 4 days ago
         _create_pathology_result(
             patient=pebbles,
-            site=sites['MCH'],
-            collected_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
             legacy_document_id=13,
         )
+        # Wednesday received her pathology 15 days ago
         _create_pathology_result(
             patient=wednesday,
-            site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
-            received_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
-            reported_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=15),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=15),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=15),
             legacy_document_id=16,
+        )
+        # Create a fake pathology for laurie as well to complete her dataset
+        # Laurie received her pathology 15 days ago
+        _create_pathology_result(
+            patient=laurie,
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=6, months=0, days=15),
+            received_at=timezone.now() - relativedelta(years=6, months=0, days=15),
+            reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
+            legacy_document_id=31,
+        )
+        # Rory pathology 12 days ago
+        _create_pathology_result(
+            patient=rory,
+            site=sites['ODH'],
+            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
+            legacy_document_id=32,
         )
 
 
@@ -672,7 +744,7 @@ def create_sites(institution_option: InstitutionOption, institution: Institution
     return result
 
 
-def _create_site(
+def _create_site(  # noqa: PLR0913, PLR0917
     institution: Institution,
     name: str,
     name_fr: str,
@@ -729,7 +801,7 @@ def _create_site(
     return site
 
 
-def _create_patient(
+def _create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     date_of_birth: date,
@@ -737,7 +809,8 @@ def _create_patient(
     ramq: str,
     legacy_id: int,
     mrns: list[tuple[Site, str]],
-    date_of_death: Optional[date] = None,
+    date_of_death: date | None = None,
+    data_access: Patient.DataAccessType = Patient.DataAccessType.ALL,
 ) -> Patient:
     """
     Create, validate and save a patient instance with the given properties.
@@ -753,6 +826,7 @@ def _create_patient(
         legacy_id: the ID (aka. SerNum) of the patient in the legacy DB
         mrns: a list of Site, MRN tuples for the MRNs the patient has at different sites
         date_of_death: an optional date of death if the patient is deceased
+        data_access: the data access level the patient has
 
     Returns:
         the created patient instance
@@ -764,6 +838,7 @@ def _create_patient(
         sex=sex,
         ramq=ramq,
         legacy_id=legacy_id,
+        data_access=data_access,
     )
 
     if date_of_death:
@@ -785,7 +860,7 @@ def _create_patient(
     return patient
 
 
-def _create_caregiver(
+def _create_caregiver(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
     username: str,
@@ -839,14 +914,14 @@ def _create_caregiver(
     return profile
 
 
-def _create_relationship(
+def _create_relationship(  # noqa: PLR0913, PLR0917
     patient: Patient,
     caregiver: CaregiverProfile,
     relationship_type: RelationshipType,
     status: RelationshipStatus,
     request_date: date,
     start_date: date,
-    end_date: Optional[date] = None,
+    end_date: date | None = None,
     reason: str = '',
 ) -> None:
     """
@@ -889,35 +964,32 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
     question1 = (
         'What is the name of your first pet?'
         if language == 'en'
-        else
-        'Quel est le nom de votre premier animal de compagnie?'
+        else 'Quel est le nom de votre premier animal de compagnie?'
     )
     question2 = (
         'What was the name of your favorite superhero as a child?'
         if language == 'en'
-        else
-        'Quel était le nom de votre super-héros préféré durant votre enfance?'
+        else 'Quel était le nom de votre super-héros préféré durant votre enfance?'
     )
     question3 = (
         'What was the color of your first car?'
         if language == 'en'
-        else
-        'Quelle était la couleur de votre première voiture?'
+        else 'Quelle était la couleur de votre première voiture?'
     )
     _create_security_answer(
         caregiver,
         question1,
-        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',  # noqa: E501
+        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',
     )
     _create_security_answer(
         caregiver,
         question2,
-        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',  # noqa: E501
+        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',
     )
     _create_security_answer(
         caregiver,
         question3,
-        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',  # noqa: E501
+        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',
     )
 
 
@@ -936,11 +1008,11 @@ def _create_date(relative_years: int, month: int, day: int) -> date:
     Returns:
         the date with the given month and day and the year the given number of years before today
     """
-    current_year = date.today().year
+    current_year = timezone.now().year
 
     # is the current date before the birth date
     # if so, to have the correct age, we need to add an extra year
-    before_birth_date = date.today() < date(current_year, month, day)
+    before_birth_date = timezone.now().date() < date(current_year, month, day)
     relative_years += before_birth_date
 
     return date(current_year, month, day) - relativedelta(years=relative_years)
@@ -962,7 +1034,7 @@ def _relative_date(base_date: date, years: int) -> date:
     return base_date + relativedelta(years=years)
 
 
-def _create_pathology_result(
+def _create_pathology_result(  # noqa: PLR0913, PLR0917
     patient: Patient,
     site: Site,
     collected_at: datetime,

@@ -1,9 +1,16 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Settings for production.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
-from .base import *
+
+import structlog
+
+from .base import *  # noqa: F403
 from .base import env
 
 # GENERAL
@@ -88,7 +95,7 @@ EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = env.int('EMAIL_PORT')
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-use-tls
-EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: WPS432
+EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: PLR2004
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-use-ssl
 EMAIL_USE_SSL = not EMAIL_USE_TLS
 
@@ -105,9 +112,17 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'}},
     'formatters': {
-        'verbose': {
-            'format': '{levelname:^8s} {asctime} {module} {process} {thread} {message}',
-            'style': '{',
+        'console': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.dev.ConsoleRenderer(),
+        },
+        'json_formatter': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.JSONRenderer(),
+        },
+        'key_value': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processor': structlog.processors.KeyValueRenderer(key_order=['timestamp', 'level', 'event', 'logger']),
         },
     },
     'handlers': {
@@ -119,15 +134,32 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'console',
+        },
+        'json_file': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/logs/json.log',
+            'formatter': 'json_formatter',
+        },
+        'flat_line_file': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/logs/flat_line.log',
+            'formatter': 'key_value',
         },
     },
-    'root': {'level': 'INFO', 'handlers': ['console']},
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'django_structlog': {
+            'handlers': ['json_file'],
+            'level': 'INFO',
+        },
+        'opal': {
+            'handlers': ['json_file'],
+            'level': 'INFO',
         },
         'django.security.DisallowedHost': {
             'level': 'ERROR',
@@ -136,3 +168,9 @@ LOGGING = {
         },
     },
 }
+
+# OPAL SPECIFIC
+# ------------------------------------------------------------------------------
+# Redirect after logout to legacy OpalAdmin's logout page
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = f'{OPAL_ADMIN_URL}/user/logout'  # noqa: F405

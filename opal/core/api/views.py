@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing reusable views for the whole project."""
 
 import uuid
@@ -9,7 +13,8 @@ from django.db.models import Model
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
-from rest_framework import status
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers, status
 from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -25,6 +30,11 @@ from .serializers import LanguageSerializer
 _Model = TypeVar('_Model', bound=Model)
 
 
+@extend_schema(
+    responses={
+        200: LanguageSerializer(many=True),
+    },
+)
 class LanguagesView(APIView):
     """View that returns the list of supported languages."""
 
@@ -51,7 +61,8 @@ class HL7CreateView(CreateAPIView[_Model]):
     parser_classes = (HL7Parser,)
 
     def get_parser_context(self, http_request: HttpRequest) -> dict[str, Any]:
-        """Append a list of HL7 segments to be parsed to the dictionary of parser context data.
+        """
+        Append a list of HL7 segments to be parsed to the dictionary of parser context data.
 
         Each view can define segments_to_parse if desired to add specific segments to parse.
 
@@ -66,7 +77,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         return context
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Ensure the patient identified in kwargs uniquely exists and matches the PID data.
+        """
+        Ensure the patient identified in kwargs uniquely exists and matches the PID data.
 
         Args:
             request: The http request object
@@ -93,7 +105,8 @@ class HL7CreateView(CreateAPIView[_Model]):
         parsed_data: dict[str, Any],
         url_uuid: uuid.UUID,
     ) -> bool:
-        """Ensure the PID segment parsed from the message matches the uuid from the url.
+        """
+        Ensure the PID segment parsed from the message matches the uuid from the url.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data
@@ -108,7 +121,7 @@ class HL7CreateView(CreateAPIView[_Model]):
         # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
         valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
         valid_pid_mrn_sites = [
-            mrn_site for mrn_site in parsed_data.get('PID', None)['mrn_sites'] if mrn_site[1] in valid_sites
+            mrn_site for mrn_site in parsed_data.get('PID', [])['mrn_sites'] if mrn_site[1] in valid_sites
         ]
         try:
             patient = Patient.objects.get_patient_by_site_mrn_list(
@@ -116,9 +129,26 @@ class HL7CreateView(CreateAPIView[_Model]):
                     {
                         'site': {'acronym': site},
                         'mrn': mrn,
-                    } for mrn, site in valid_pid_mrn_sites
+                    }
+                    for mrn, site in valid_pid_mrn_sites
                 ],
             )
         except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
-            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.')
+            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.') from None
         return url_uuid == patient.uuid
+
+
+class EmptyResponseSerializer(serializers.Serializer[Any]):
+    """
+    Serializer used for responses with no content.
+
+    This serializer is intended to be used for endpoints that return an empty response body
+    while still adhering to a consistent API schema. It ensures that the API documentation
+    accurately reflects that the response will contain no data.
+
+    Example usage:
+        - Success responses for actions like deletion or marking items as viewed
+        - Endpoints that only need to indicate success without returning data
+    """
+
+    pass

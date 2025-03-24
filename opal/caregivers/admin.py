@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing admin functionality for the caregivers app."""
 from django.contrib import admin
 
@@ -53,7 +57,7 @@ class SecurityAnswerAdmin(admin.ModelAdmin[models.SecurityAnswer]):
 
 
 @admin.register(models.SecurityQuestion)
-class SecurityQuestionAdmin(TranslationAdmin, admin.ModelAdmin[models.SecurityQuestion]):
+class SecurityQuestionAdmin(TranslationAdmin[models.SecurityQuestion]):
     """This class provides admin options for `SecurityQuestion`."""
 
     list_display = ['__str__', 'is_active']

@@ -1,7 +1,14 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of API views used to handle ORMS authentication."""
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 
 from dj_rest_auth.views import LoginView
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,7 +16,9 @@ from rest_framework.views import APIView
 
 from opal.core.drf_permissions import IsORMSUser
 from opal.users.api.serializers import ClinicalStaffDetailSerializer
-from opal.users.models import ClinicalStaff
+
+if TYPE_CHECKING:
+    from opal.users.models import ClinicalStaff
 
 
 class ORMSLoginView(LoginView):
@@ -20,9 +29,10 @@ class ORMSLoginView(LoginView):
     """
 
     def login(self) -> None:
-        """Check user's group and credentials.
+        """
+        Check user's group and credentials.
 
-        Only users that belong to the `ORMS_GROUP_NAME` can login to the system.
+        Only superusers and users that belong to the `ORMS_GROUP_NAME` can login to the system.
 
         Accept the following POST parameters: username, password
 
@@ -33,7 +43,7 @@ class ORMSLoginView(LoginView):
         """
         user = self.serializer.validated_data['user']
 
-        if user.groups.filter(
+        if user.is_superuser or user.groups.filter(
             name=settings.ORMS_GROUP_NAME,
         ).exists():
             super().login()
@@ -41,6 +51,11 @@ class ORMSLoginView(LoginView):
             raise PermissionDenied()
 
 
+@extend_schema(
+    responses={
+        200: ClinicalStaffDetailSerializer,
+    },
+)
 class ORMSValidateView(APIView):
     """
     Custom `ValidateView` for the ORMS system.

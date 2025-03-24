@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test module for the REST API endpoints of the `databank` app."""
+
 import json
 from typing import Any
 from uuid import uuid4
@@ -10,7 +15,8 @@ from pytest_django.asserts import assertContains, assertJSONEqual
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
+from opal.databank.models import DatabankConsent
+from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.patients.factories import Patient
 from opal.users.models import User
 
@@ -24,7 +30,7 @@ class TestCreateDatabankConsentView:
 
     def test_databank_consent_form_fixture(
         self,
-        databank_consent_questionnaire_and_response: tuple[LegacyPatient, LegacyQuestionnaire],
+        databank_consent_questionnaire_and_response: tuple[LegacyQuestionnairePatient, LegacyQuestionnaire],
     ) -> None:
         """Test the fixture from conftest creates a proper consent questionnaire."""
         consenting_patient = databank_consent_questionnaire_and_response[0]
@@ -88,6 +94,7 @@ class TestCreateDatabankConsentView:
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert DatabankConsent.objects.count() == 0
 
     def test_databank_consent_create_missing_data(
         self,
@@ -95,7 +102,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept partial data."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -110,6 +117,7 @@ class TestCreateDatabankConsentView:
                 'has_labs': False,
                 'has_questionnaires': False,
                 'middle_name': 'Bert',
+                'has_health_data_consent': True,
             },
         )
 
@@ -118,6 +126,7 @@ class TestCreateDatabankConsentView:
             text='{"city_of_birth":["This field is required."]}',
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+        assert DatabankConsent.objects.count() == 0
 
     def test_databank_consent_create_blank_city_of_birth(
         self,
@@ -125,7 +134,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint doesn't accept a blank city of birth."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -141,6 +150,7 @@ class TestCreateDatabankConsentView:
                 'has_questionnaires': False,
                 'middle_name': 'Bert',
                 'city_of_birth': '',
+                'has_health_data_consent': True,
             },
         )
 
@@ -149,6 +159,7 @@ class TestCreateDatabankConsentView:
             text='{"city_of_birth":["This field may not be blank."]}',
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+        assert DatabankConsent.objects.count() == 0
 
     def test_databank_consent_create_blank_middle_name(
         self,
@@ -156,7 +167,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint allows blank middle name (middle name not required for GUID)."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -172,10 +183,12 @@ class TestCreateDatabankConsentView:
                 'has_questionnaires': False,
                 'middle_name': '',
                 'city_of_birth': 'ddd',
+                'has_health_data_consent': True,
             },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+        assert DatabankConsent.objects.count() == 1
 
     def test_databank_consent_create_success(
         self,
@@ -183,7 +196,7 @@ class TestCreateDatabankConsentView:
         listener_user: User,
     ) -> None:
         """Ensure the endpoint can create databank consent for a full input with no errors."""
-        patient = Patient(
+        patient = Patient.create(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
@@ -195,9 +208,75 @@ class TestCreateDatabankConsentView:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+        assert DatabankConsent.objects.count() == 1
+
+    def test_databank_consent_create_blank_health_form_auth(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+    ) -> None:
+        """Ensure the endpoint doesn't accept a blank health data authorization response."""
+        patient = Patient.create(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+
+        api_client.force_login(listener_user)
+        response = api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': 'Bert',
+                'city_of_birth': 'Whatever',
+            },
+        )
+
+        assertContains(
+            response=response,
+            text='{"has_health_data_consent":["This field is required."]}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        assert DatabankConsent.objects.count() == 0
+
+    def test_databank_consent_create_declined_health_form_auth(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+    ) -> None:
+        """Ensure the endpoint doesn't create a consent instance if the patient declines health form auth."""
+        patient = Patient.create(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+
+        api_client.force_login(listener_user)
+        response = api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': 'Bert',
+                'city_of_birth': 'Whatever',
+                'has_health_data_consent': False,
+            },
+        )
+        assertContains(
+            response=response,
+            text='{"has_health_data_consent":["Patient must consent to health data authorization."]}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        assert DatabankConsent.objects.count() == 0
 
     def _get_valid_input_data(self) -> dict[str, Any]:
-        """Generate valid JSON data for a DatabankConsent record.
+        """
+        Generate valid JSON data for a DatabankConsent record.
 
         Returns:
             dict: valid JSON data
@@ -210,4 +289,5 @@ class TestCreateDatabankConsentView:
             'has_questionnaires': False,
             'middle_name': 'Juliet',
             'city_of_birth': 'Springfield',
+            'has_health_data_consent': True,
         }

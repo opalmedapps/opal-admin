@@ -1,14 +1,19 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for generating charts using plotly library."""
 import logging
 from types import MappingProxyType
-from typing import Final, NamedTuple, Optional
+from typing import Final, NamedTuple
 
 import pandas as pd
 from plotly import express as px
 
 
 class ChartData(NamedTuple):
-    """Typed `NamedTuple` that describes data fields needed for generating a chart.
+    """
+    Typed `NamedTuple` that describes data fields needed for generating a chart.
 
     Attributes:
         title: the title that is shown on top of the chart
@@ -39,7 +44,7 @@ CHART_LAYOUT: Final = MappingProxyType({
 LOGGER = logging.getLogger(__name__)
 
 
-class ChartService():
+class ChartService:
     """Service that provides functionality for generating plotly charts in HTML format."""
 
     def generate_error_bar_chart(
@@ -47,8 +52,9 @@ class ChartService():
         chart_data: ChartData,
         label_error_min: str = 'min',
         label_error_max: str = 'max',
-    ) -> Optional[str]:
-        """Generate a plotly error bar chart.
+    ) -> str | None:
+        """
+        Generate a plotly error bar chart.
 
         The DataFrame should contain x, error_max, error_min, and legend records.
 
@@ -64,12 +70,11 @@ class ChartService():
             return None
 
         if not set({'x', 'error_max', 'error_min', 'legend'}).issubset(chart_data.data.columns):
-            LOGGER.error('{0}\n{1}\n{2} {3}\n\n'.format(
-                'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):',
-                'chart_data.data should contain the following columns: x, error_max, error_min, legend',
-                'The columns received:',
-                chart_data.data.columns,
-            ))
+            LOGGER.error(
+                'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):\n'
+                + 'chart_data.data should contain the following columns: x, error_max, error_min, legend\n'
+                + f'The columns received: {chart_data.data.columns}\n\n',
+            )
             return None
 
         chart_data.data['error_diff'] = chart_data.data['error_max'] - chart_data.data['error_min']
@@ -84,7 +89,7 @@ class ChartService():
                 'error_max': chart_data.label_y,
                 'legend': chart_data.label_legend,
             },
-            error_y=[0] * len(chart_data.data['error_max']),  # noqa: WPS435 list multiplication creates references
+            error_y=[0] * len(chart_data.data['error_max']),
             error_y_minus='error_diff',
             hover_data={
                 'error_min': False,
@@ -104,8 +109,9 @@ class ChartService():
     def generate_line_chart(
         self,
         chart_data: ChartData,
-    ) -> Optional[str]:
-        """Generate a plotly line chart.
+    ) -> str | None:
+        """
+        Generate a plotly line chart.
 
         The DataFrame should contain x, value, and legend records.
 
@@ -119,12 +125,11 @@ class ChartService():
             return None
 
         if not set({'x', 'y', 'legend'}).issubset(chart_data.data.columns):
-            LOGGER.error('{0}\n{1}\n{2} {3}\n\n'.format(
-                'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):',
-                'chart_data.data should contain the following columns: x, y, legend',
-                'The columns received:',
-                chart_data.data.columns,
-            ))
+            LOGGER.error(
+                'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):\n'
+                + 'chart_data.data should contain the following columns: x, y, legend\n'
+                + f'The columns received: {chart_data.data.columns}\n\n',
+            )
             return None
 
         #  Plotly chart customization: https://plotly.com/python/line-charts/

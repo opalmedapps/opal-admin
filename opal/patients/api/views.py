@@ -1,10 +1,16 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `APIViews` for the `patients` app REST APIs."""
+
 from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
-from rest_framework import mixins, serializers, status
+from drf_spectacular.utils import extend_schema
+from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.request import Request
@@ -36,18 +42,14 @@ from ..models import Patient, Relationship, RelationshipType
 class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
     """Class handling GET requests for registration code values."""
 
-    queryset = (
-        caregiver_models.RegistrationCode.objects.select_related(
-            'relationship',
-            'relationship__type',
-            'relationship__patient',
-            'relationship__caregiver',
-        ).prefetch_related(
-            'relationship__patient__hospital_patients',
-        ).filter(
-            status=caregiver_models.RegistrationCodeStatus.NEW,
-        )
+    queryset = caregiver_models.RegistrationCode.objects.select_related(
+        'relationship__patient',
+        'relationship__caregiver',
+        'relationship__type',
+    ).filter(
+        status=caregiver_models.RegistrationCodeStatus.NEW,
     )
+    serializer_class = caregiver_serializers.RegistrationCodeInfoSerializer
     permission_classes = (IsRegistrationListener,)
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
@@ -67,38 +69,29 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(
-        self, *args: Any, **kwargs: Any,
-    ) -> type[serializers.BaseSerializer[caregiver_models.RegistrationCode]]:
-        """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
-        Args:
-            args: request parameters
-            kwargs: request parameters
-
-        Returns:
-            The expected serializer according to the request parameter.
-        """
-        if 'detailed' in self.request.query_params:
-            return caregiver_serializers.RegistrationCodeDetailSerializer
-        return caregiver_serializers.RegistrationCodeInfoSerializer
-
-
+@extend_schema(
+    responses={
+        200: CaregiverRelationshipSerializer(many=True),
+        403: {'description': 'User not authorized'},
+        404: {'description': 'Patient not found'},
+    },
+)
 class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = (IsListener, CaregiverSelfPermissions)
+    queryset = Relationship.objects.select_related('caregiver__user')
 
     def get_queryset(self) -> QuerySet[Relationship]:
-        """Query set to retrieve list of caregivers for the input patient.
+        """
+        Query set to retrieve list of caregivers for the input patient.
 
         Returns:
             List of caregiver profiles for a given patient
         """
-        return Relationship.objects.select_related(
-            'caregiver__user',
-        ).filter(
+        return self.queryset.filter(
             patient__legacy_id=self.kwargs['legacy_id'],
         )
 
@@ -115,7 +108,8 @@ class PatientDemographicView(UpdateAPIView[Patient]):
     serializer_class = PatientDemographicSerializer
 
     def get_object(self) -> Patient:
-        """Perform a custom lookup for a `Patient` object.
+        """
+        Perform a custom lookup for a `Patient` object.
 
         Since there is no `lookup_url` parameter in the endpoints, the lookup is performed by using the provided `mrns`.
 
@@ -138,14 +132,12 @@ class PatientDemographicView(UpdateAPIView[Patient]):
             patient = self.queryset.get_patient_by_site_mrn_list(
                 hospital_patient_serializer.validated_data,
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
             # Raise `NotFound` if `Patient` object is empty
             raise NotFound(
-                '{0} {1}'.format(
-                    'Cannot find patient record with the provided MRNs and sites.',
-                    'Make sure that MRN/site pairs refer to the same patient.',
-                ),
-            )
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.',
+            ) from error
 
         # May raise a permission denied
         self.check_object_permissions(self.request, patient)
@@ -177,6 +169,13 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
+    @extend_schema(
+        responses={
+            200: PatientSerializer,
+            403: {'description': 'User not authorized'},
+            404: {'description': 'Patient not found'},
+        },
+    )
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle a GET request to retrieve a patient instance.
@@ -192,6 +191,15 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         self.serializer_class = PatientSerializer
         return self.retrieve(request, *args, **kwargs)
 
+    @extend_schema(
+        request=PatientUpdateSerializer,
+        responses={
+            200: PatientUpdateSerializer,
+            400: {'description': 'Bad request'},
+            403: {'description': 'User not authorized'},
+            404: {'description': 'Patient not found'},
+        },
+    )
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle a PUT request to update a patient instance.
@@ -208,8 +216,17 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         return self.update(request, *args, **kwargs)
 
 
+@extend_schema(
+    request={
+        'serializer': HospitalPatientSerializer(many=True),
+    },
+    responses={
+        200: PatientSerializer,
+    },
+)
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
+    """
+    Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 
@@ -245,7 +262,8 @@ class PatientExistsView(APIView):
         Returns:
             uuid & legacy_id for the `Patient` object
         """
-        # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
+        # Make `is_active` not required for cases when source systme calling
+        # the API without knowing if Patient is active in Opal
         serializer = HospitalPatientSerializer(
             fields=('mrn', 'site_code'),
             data=request.data,
@@ -257,13 +275,10 @@ class PatientExistsView(APIView):
 
             try:
                 patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
-            except (ObjectDoesNotExist, MultipleObjectsReturned):
+            except (ObjectDoesNotExist, MultipleObjectsReturned) as error:
                 raise NotFound(
-                    detail='{0} {1}'.format(
-                        'Cannot find patient record with the provided MRNs and sites or',
-                        'multiple patients found.',
-                    ),
-                )
+                    detail='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
+                ) from error
             return Response(
                 data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,
                 status=status.HTTP_200_OK,

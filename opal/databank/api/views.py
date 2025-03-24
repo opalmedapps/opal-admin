@@ -1,10 +1,14 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing API views for the `databank` app."""
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import IsListener
-from opal.patients.models import Patient
+from opal.patients.models import Patient, SexType
 from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 from ..models import DatabankConsent
@@ -35,11 +39,14 @@ class CreateDatabankConsentView(generics.CreateAPIView[DatabankConsent]):
             first_name=patient.first_name,
             middle_name=serializer.validated_data.pop('middle_name', None),
             last_name=patient.last_name,
-            gender=patient.get_sex_display(),
+            gender=SexType(patient.sex),
             date_of_birth=str(patient.date_of_birth),
             city_of_birth=serializer.validated_data.pop('city_of_birth', None),
         )
         guid = OpenScienceIdentity(osi_identifiers).to_signature()
+
+        # Remove non model field before saving and after validating Consent response
+        serializer.validated_data.pop('has_health_data_consent', None)
 
         serializer.save(
             patient=patient,

@@ -1,6 +1,11 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used to display the Opal's Chart view."""
 from typing import Any
 
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +17,19 @@ from opal.legacy_questionnaires.models import LegacyQuestionnaire
 from ..serializers import UnreadCountSerializer
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+    responses={
+        200: UnreadCountSerializer,
+    },
+)
 class AppChartView(APIView):
     """Class to return chart page required data."""
 
@@ -61,6 +79,12 @@ class AppChartView(APIView):
                 legacy_id,
                 username,
                 1,
+            ).count(),
+            'unread_research_reference_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
+                legacy_id,
+                username,
+            ).filter(
+                educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Research',
             ).count(),
             'unread_research_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,

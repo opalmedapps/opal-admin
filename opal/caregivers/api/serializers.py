@@ -1,5 +1,10 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides Django REST framework serializers for Caregiver apis."""
-from typing import Any
+
+from typing import Any, TypedDict
 
 from rest_framework import serializers
 
@@ -104,9 +109,14 @@ class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCod
         many=False,
         read_only=True,
     )
+    relationship_type = RelationshipTypeSerializer(
+        source='relationship.type',
+        fields=('name', 'role_type'),
+        many=False,
+    )
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:  # noqa: WPS615
+    def get_institution(self, obj: RegistrationCode) -> dict[str, Any]:
         """
         Get a single institution data.
 
@@ -120,7 +130,7 @@ class RegistrationCodeInfoSerializer(serializers.ModelSerializer[RegistrationCod
 
     class Meta:
         model = RegistrationCode
-        fields = ['caregiver', 'patient', 'institution']
+        fields = ['caregiver', 'patient', 'institution', 'relationship_type']
 
 
 class SecurityQuestionSerializer(serializers.ModelSerializer[SecurityQuestion]):
@@ -142,7 +152,7 @@ class SecurityAnswerQuestionSerializer(serializers.ModelSerializer[SecurityAnswe
 class VerifySecurityAnswerSerializer(serializers.ModelSerializer[SecurityAnswer]):
     """Serializer for Verify security answers."""
 
-    answer = serializers.CharField(max_length=128)  # noqa: WPS432
+    answer = serializers.CharField(max_length=128)
 
     class Meta:
         model = SecurityAnswer
@@ -206,56 +216,47 @@ class _NestedCaregiverSerializer(CaregiverSerializer):
         extra_kwargs = {
             'legacy_id': dict(CaregiverSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
         }
-        fields = list(CaregiverSerializer.Meta.fields) + ['email']
+        fields = [*CaregiverSerializer.Meta.fields, 'email']
 
 
-class _NestedPatientSerializer(PatientSerializer):
+class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
     """
-    Patient serializer that supports nested updates.
-
-    The unique validator on legacy_id otherwise fails when the legacy_id already exists.
-
-    See: https://github.com/encode/django-rest-framework/issues/2996
-    See: https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
-    """
-
-    class Meta(PatientSerializer.Meta):
-        extra_kwargs = {
-            # enforce proper value for legacy_id
-            'legacy_id': {
-                'allow_null': False,
-                'required': True,
-                'validators': [],
-            },
-        }
-
-
-class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information.
+    RegistrationCode serializer used to get patient and caregiver information for new users.
 
     The information include Patient and Caregiver data.
     """
 
-    patient = _NestedPatientSerializer(
-        source='relationship.patient',
-        fields=('legacy_id',),
-        many=False,
-    )
-
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number', 'username', 'email', 'legacy_id'),
+        fields=('language', 'phone_number', 'username', 'email'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(
         fields=('question', 'answer'),
         many=True,
-        required=False,
     )
 
     class Meta:
         model = RegistrationCode
-        fields = ['patient', 'caregiver', 'security_answers']
+        fields = ['caregiver', 'security_answers']
+
+
+class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
+    """
+    RegistrationCode serializer used to get patient and caregiver information for existing users.
+
+    The information include Patient and Caregiver data.
+    """
+
+    caregiver = _NestedCaregiverSerializer(
+        source='relationship.caregiver',
+        fields=('language', 'username'),
+        many=False,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['caregiver']
 
 
 class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
@@ -268,7 +269,11 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
     caregivers = serializers.SerializerMethodField()
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: Patient) -> dict[str, str]:  # noqa: WPS615
+    class _InstitutionData(TypedDict):
+        acronym_en: str
+        acronym_fr: str
+
+    def get_institution(self, obj: Patient) -> _InstitutionData:
         """
         Get a single institution acronym.
 
@@ -280,7 +285,7 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
         """
         return Institution.objects.values('acronym_en', 'acronym_fr').get()
 
-    def get_caregivers(self, obj: Patient) -> dict[str, Any]:  # noqa: WPS615
+    def get_caregivers(self, obj: Patient) -> dict[str, Any]:
         """
         Return the active caregivers of the patient.
 

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Users Caregivers migration."""
 from typing import Any
 
@@ -12,9 +16,9 @@ from opal.users.models import Caregiver
 class Command(BaseCommand):
     """Command to migrate Caregivers from legacy DB to Caregivers in New Backend."""
 
-    help = 'migrate Caregivers from legacy DB to New backend DB'  # noqa: A003
+    help = 'migrate Caregivers from legacy DB to New backend DB'
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate Caregivers from legacy DB to New backend DB.
 
@@ -33,9 +37,7 @@ class Command(BaseCommand):
                 caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usersernum).first()
                 if caregiver_profile:
                     self.stdout.write(
-                        'Nothing to be done for sernum: {legacy_id}, skipping.'.format(
-                            legacy_id=legacy_user.usersernum,
-                        ),
+                        f'Nothing to be done for sernum: {legacy_user.usersernum}, skipping.',
                     )
                 else:
                     legacy_patient = LegacyPatient.objects.get(patientsernum=legacy_user.usertypesernum)
@@ -46,9 +48,7 @@ class Command(BaseCommand):
                 self._create_relationship(patient, caregiver_profile, relationship_type)
             else:
                 self.stderr.write(self.style.WARNING(
-                    'Patient with sernum: {legacy_id}, does not exist, skipping.'.format(
-                        legacy_id=legacy_user.usertypesernum,
-                    ),
+                    f'Patient with sernum: {legacy_user.usertypesernum}, does not exist, skipping.',
                 ))
         self.stdout.write(
             f'Number of imported caregivers is: {migrated_users_count} (out of {legacy_users.count()})',
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             CaregiverProfile: the created `CaregiverProfile` instance
         """
         # convert phone number in int to str
-        phone_number = '+1{0}'.format(legacy_patient.tel_num) if legacy_patient.tel_num else ''
+        phone_number = f'+1{legacy_patient.tel_num}' if legacy_patient.tel_num else ''
         caregiver_user = Caregiver(
             username=legacy_user.username,
             first_name=legacy_patient.first_name,
@@ -103,7 +103,7 @@ class Command(BaseCommand):
         relationship_type: RelationshipType,
     ) -> None:
         """
-            Check the self relationship between caregiver and patient and migrated if it does not exist.
+        Check the self relationship between caregiver and patient and migrated if it does not exist.
 
         Args:
             patient: instance of Patient model.
@@ -118,9 +118,7 @@ class Command(BaseCommand):
         ).first()
         if relationship:
             self.stdout.write(self.style.WARNING(
-                'Self relationship for patient with legacy_id: {legacy_id} already exists.'.format(
-                    legacy_id=patient.legacy_id,
-                ),
+                f'Self relationship for patient with legacy_id: {patient.legacy_id} already exists.',
             ))
         else:
             relationship = Relationship(

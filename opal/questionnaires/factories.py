@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing model factories for questionnaire app models."""
 
 from factory import SubFactory
@@ -8,7 +12,7 @@ from opal.users.factories import User
 from . import models
 
 
-class QuestionnaireProfile(DjangoModelFactory):
+class QuestionnaireProfile(DjangoModelFactory[models.QuestionnaireProfile]):
     """Model factory to create [opal.questionnaires.models.QuestionnaireProfile][] models."""
 
     class Meta:

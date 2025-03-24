@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import pytest
 from rest_framework import serializers
 
@@ -13,9 +17,10 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 # serializer for the questionnaire report generation API endpoint: questionnaires/reviewed/
 
+
 def test_mrn_type_for_questionnaire_report() -> None:
     """Ensure `mrn` for the questionnaire report request is a `serializers.CharField` type."""
-    hospital_patient = HospitalPatient()
+    hospital_patient = HospitalPatient.create()
     serializer = QuestionnaireReportRequestSerializer(
         data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
@@ -26,7 +31,7 @@ def test_mrn_type_for_questionnaire_report() -> None:
 
 def test_site_type_for_questionnaire_report() -> None:
     """Ensure `site_name` for the questionnaire report request is a `serializers.CharField` type."""
-    hospital_patient = HospitalPatient()
+    hospital_patient = HospitalPatient.create()
     serializer = QuestionnaireReportRequestSerializer(
         data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
@@ -60,6 +65,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -72,6 +78,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -82,6 +89,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -95,6 +103,7 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -106,6 +115,7 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -121,6 +131,7 @@ def test_invalid_field_value_type() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 'ffff',
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -152,6 +163,7 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -164,6 +176,7 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }

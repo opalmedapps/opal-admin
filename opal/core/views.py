@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing reusable views for the whole project."""
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.db.models import Model, QuerySet
@@ -33,7 +37,7 @@ class CreateUpdateView(Generic[_Model], UpdateView[_Model, ModelForm[_Model]]):
     """
 
     # TODO: change signature to be consistent with superclass (-> _Model)
-    def get_object(self, queryset: Optional[QuerySet[_Model]] = None) -> Any:
+    def get_object(self, queryset: QuerySet[_Model] | None = None) -> Any:
         """
         Return the object the view is displaying.
 

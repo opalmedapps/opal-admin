@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing custom crispy layout objects."""
-from typing import Any, Optional
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
@@ -50,11 +54,11 @@ class InlineSubmit(Layout):
     default_label = _('Submit')
     default_css_class = 'btn d-table'
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         name: str,
-        label: Optional[str] = None,
-        extra_css: Optional[str] = None,
+        label: str | None = None,
+        extra_css: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -68,7 +72,7 @@ class InlineSubmit(Layout):
             extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the submit button
         """
-        the_label = label if label else self.default_label
+        the_label = label or self.default_label
 
         submit = Submit(name, the_label, **kwargs)
 
@@ -98,10 +102,10 @@ class InlineReset(Layout):
     default_label = _('Reset')
     default_css_class = 'btn d-table'
 
-    def __init__(  # noqa: WPS210
+    def __init__(
         self,
-        label: Optional[str] = None,
-        extra_css: Optional[str] = None,
+        label: str | None = None,
+        extra_css: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -114,15 +118,12 @@ class InlineReset(Layout):
             extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the reset button
         """
-        the_label = label if label else self.default_label
+        the_label = label or self.default_label
         flat_attrs = flatatt(kwargs)
 
         url = '{{request.path}}'
 
-        if extra_css:
-            css_class = f'{self.default_css_class} {extra_css}'
-        else:
-            css_class = f'{self.default_css_class} btn-unselected'
+        css_class = f'{self.default_css_class} {extra_css}' if extra_css else f'{self.default_css_class} btn-unselected'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
@@ -138,12 +139,12 @@ class FormActions(CrispyFormActions):
 
     default_css_class = 'd-flex justify-content-end gap-2'
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         *fields: Any,
-        css_id: Optional[str] = None,
-        css_class: Optional[str] = None,
-        template: Optional[str] = None,
+        css_id: str | None = None,
+        css_class: str | None = None,
+        template: str | None = None,
         **kwargs: Any,
     ):
         """

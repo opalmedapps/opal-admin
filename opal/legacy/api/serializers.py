@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of serializers for the app ApiViews."""
 from typing import Any
 
@@ -12,7 +16,14 @@ class LegacyAliasSerializer(DynamicFieldsSerializer[LegacyAlias]):
 
     class Meta:
         model = LegacyAlias
-        fields = ['aliassernum', 'aliastype', 'aliasname_en', 'aliasname_fr']
+        fields = [
+            'aliassernum',
+            'aliastype',
+            'aliasname_en',
+            'aliasname_fr',
+            'alias_description_en',
+            'alias_description_fr',
+        ]
 
 
 class LegacyHospitalMapSerializer(DynamicFieldsSerializer[LegacyHospitalMap]):
@@ -66,6 +77,16 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
         source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkininstruction_fr',
     )
 
+    educational_material_url_en = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.educational_material_control_ser_num.url_en',
+        required=False,
+    )
+
+    educational_material_url_fr = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.educational_material_control_ser_num.url_fr',
+        required=False,
+    )
+
     patient = LegacyPatientSerializer(
         source='patientsernum',
         fields=('patientsernum', 'first_name', 'last_name'),
@@ -75,7 +96,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
 
     alias = LegacyAliasSerializer(
         source='aliasexpressionsernum.aliassernum',
-        fields=('aliastype', 'aliasname_en', 'aliasname_fr'),
+        fields=('aliastype', 'aliasname_en', 'aliasname_fr', 'alias_description_en', 'alias_description_fr'),
         many=False,
         read_only=True,
     )
@@ -104,12 +125,37 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
             'checkinpossible',
             'checkininstruction_en',
             'checkininstruction_fr',
+            'educational_material_url_en',
+            'educational_material_url_fr',
             'roomlocation_en',
             'roomlocation_fr',
             'hospitalmap',
             'patient',
             'alias',
         ]
+
+
+class LegacyAppointmentCheckinSerializer(serializers.ModelSerializer[LegacyAppointment]):
+    """Appointment serializer to update checkin status for a LegacyAppointment instance."""
+
+    checkin = serializers.BooleanField(
+        required=True,
+        help_text='Checkin value of 1 means patient successfully checked in.',
+    )
+    source_system_id = serializers.CharField(
+        max_length=100,
+        required=True,
+        help_text='The source system identifier.',
+    )
+    source_database = serializers.IntegerField(
+        source='source_database_id',
+        required=True,
+        help_text='The source database identifier.',
+    )
+
+    class Meta:
+        model = LegacyAppointment
+        fields = ['checkin', 'source_system_id', 'source_database']
 
 
 class QuestionnaireReportRequestSerializer(serializers.Serializer[tuple[str, str]]):
@@ -139,6 +185,7 @@ class UnreadCountSerializer(serializers.Serializer[dict[str, Any]]):
     unread_txteammessage_count = serializers.IntegerField()
     unread_educationalmaterial_count = serializers.IntegerField()
     unread_questionnaire_count = serializers.IntegerField()
+    unread_research_reference_count = serializers.IntegerField()
     unread_research_questionnaire_count = serializers.IntegerField()
     unread_consent_questionnaire_count = serializers.IntegerField()
 

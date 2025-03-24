@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for communication with ORMS."""
 from typing import Any
 from uuid import UUID
@@ -8,7 +12,8 @@ from .orms_validation import ORMSValidator
 
 
 class ORMSService:
-    """Service that provides an interface for interaction with the Opal Room Management System (ORMS).
+    """
+    Service that provides an interface for interaction with the Opal Room Management System (ORMS).
 
     All the provided functions contain the following business logic:
         * validate the input data (parameters)
@@ -28,7 +33,8 @@ class ORMSService:
         active_mrn_list: list[tuple[str, str]],
         patient_uuid: UUID,
     ) -> dict[str, Any]:
-        """Mark a patient as an Opal patient in ORMS.
+        """
+        Mark a patient as an Opal patient in ORMS.
 
         Tries calling ORMS using each of the patient's MRNs until one succeeds.
 

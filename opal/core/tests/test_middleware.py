@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 
 from django.test import Client
@@ -30,7 +34,7 @@ def test_loginrequired_partial_urls_not_excluded(
     mock_resolve_route = mocker.spy(LoginRequiredMiddleware, '_resolve_route')
 
     # ensure that the middleware excludes /{api_root}/ only
-    response = client.get('/{api_root}test'.format(api_root=settings.API_ROOT))
+    response = client.get(f'/{settings.API_ROOT}test')
     mock_resolve_route.assert_called_once()
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -59,7 +63,7 @@ def test_loginrequired_unauthenticated_open_url(client: Client, settings: Settin
     assert response.status_code == HTTPStatus.OK
 
 
-def test_loginrequired_unauthenticated_favicon(client: Client, settings: SettingsWrapper) -> None:
+def test_loginrequired_unauthenticated_favicon(client: Client) -> None:
     """Ensure that open URLs are exempted for unauthenticated requests."""
     response = client.get(reverse('favicon.ico'))
 

@@ -1,35 +1,41 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for sending data to the Databank."""
+
 import json
 from collections import defaultdict
-from datetime import datetime
 from http import HTTPStatus
-from typing import Any, Optional, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.utils import timezone
 
 import requests
-from django_stubs_ext.aliases import ValuesQuerySet
 from requests.auth import HTTPBasicAuth
 
 from opal.databank.models import DatabankConsent, DataModuleType, SharedData
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 CombinedModuleData: TypeAlias = list[dict[str, Any]]
-DatabankQuerySet: TypeAlias = ValuesQuerySet[Model, dict[str, Any]] | CombinedModuleData
+DatabankQuerySet: TypeAlias = QuerySet[Model, dict[str, Any]] | CombinedModuleData
 
 
-class Command(BaseCommand):  # noqa: WPS214
+class Command(BaseCommand):
     """Command to send the data of consenting databank patients to the external databank."""
 
-    help = "send consenting Patients' data to the databank"  # noqa: A003
+    help = "send consenting Patients' data to the databank"
 
     def __init__(self) -> None:
-        """Prepare some class level fields to help with last_synchronized tracking.
+        """
+        Prepare some class level fields to help with last_synchronized tracking.
 
         - called_at is the time when this command was called
         - patient_data_success_tracker will have an entry for each patient
@@ -50,15 +56,14 @@ class Command(BaseCommand):  # noqa: WPS214
             parser: the command parser to add arguments to
         """
         parser.add_argument(
-            '--oie-timeout',
+            '--request-timeout',
             type=int,
             required=False,
-            default=120,  # noqa: WPS432
-            help='Specify maximum wait time per-api call to the OIE [seconds]. Default 120.',
+            default=120,
+            help='Specify maximum wait time per API call to the databank [seconds]. Default 120.',
         )
 
-    @transaction.atomic
-    def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle sending patients de-identified data to the databank.
 
@@ -76,9 +81,9 @@ class Command(BaseCommand):  # noqa: WPS214
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
 
-        oie_timeout: int = options.get('oie_timeout', 120)  # noqa: WPS432
+        request_timeout: int = options.get('request_timeout', 120)
         self.stdout.write(
-            f'Sending databank data with {oie_timeout} seconds timeout for OIE response.',
+            f'Sending databank data with {request_timeout} seconds timeout for source system response.',
         )
         for module, queryset in consenting_patients_querysets.items():
             patients_list = list(queryset.iterator())
@@ -101,9 +106,9 @@ class Command(BaseCommand):  # noqa: WPS214
                         )
                         combined_module_data.append(nested_databank_data)
                 if combined_module_data:
-                    aggregate_response = self._send_to_oie_and_handle_response(
+                    aggregate_response = self._request_and_handle_response(
                         {'patientList': combined_module_data},
-                        oie_timeout,
+                        request_timeout,
                     )
                     if aggregate_response:
                         self._parse_aggregate_databank_response(aggregate_response, combined_module_data)
@@ -119,7 +124,8 @@ class Command(BaseCommand):  # noqa: WPS214
         databank_patient: DatabankConsent,
         module: DataModuleType,
     ) -> DatabankQuerySet | None:
-        """Use model managers to retrieve databank data for a consenting patient.
+        """
+        Use model managers to retrieve databank data for a consenting patient.
 
         Args:
             databank_patient: Patient consenting for this databank module
@@ -166,7 +172,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if databank_data:
             # Return the data for this patient
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
+                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',
             )
         else:
             self.stdout.write(
@@ -181,7 +187,8 @@ class Command(BaseCommand):  # noqa: WPS214
         queryset: DatabankQuerySet,
         nesting_key: str,
     ) -> dict[str, str | CombinedModuleData]:
-        """Pull the GUID to the top element and nest the rest of the qs records into a single dict.
+        """
+        Pull the GUID to the top element and nest the rest of the qs records into a single dict.
 
         Args:
             queryset: Databank queryset with one or many rows
@@ -214,64 +221,88 @@ class Command(BaseCommand):  # noqa: WPS214
                 }
                 for key, value in groups.items()
             ]
+        # Extra nesting requirements for questionnaires to create question answer list under questionnaire identifiers
+        elif nesting_key == 'QSTN':
+            groups2 = defaultdict(list)
+            for item2 in data:
+                # Group by answer questionnaire id, date answered, questionnaire id and title
+                key2 = (
+                    item2.pop('answer_questionnaire_id', None),
+                    item2.pop('creation_date', None),
+                    item2.pop('questionnaire_id', None),
+                    item2.pop('questionnaire_title', None),
+                )
+                groups2[key2].append(item2)
+            # Convert the defaultdict to the final format
+            data = [
+                {
+                    'answer_questionnaire_id': key2[0],
+                    'creation_date': key2[1],
+                    'questionnaire_id': key2[2],
+                    'questionnaire_title': key2[3],
+                    'question_answers': value2,
+                }
+                for key2, value2 in groups2.items()
+            ]
         return {'GUID': guid, nesting_key: data}
 
-    def _send_to_oie_and_handle_response(
+    def _request_and_handle_response(
         self,
         data: dict[str, CombinedModuleData],
-        oie_timeout: int,
-    ) -> Any:
-        """Send databank dataset to the OIE and handle immediate OIE response.
+        request_timeout: int,
+    ) -> dict[str, Any] | None:
+        """
+        Send databank dataset to the source system and handle immediate response from source system.
 
-        This function should handle status and errors between Django and OIE only.
-        The `_parse_aggregate_databank_response` function handles the status and errors between OIE and Databank.
+        This function should handle status and errors between Django and source system only.
+        The `_parse_aggregate_databank_response` function handles the status
+        and errors between source system and Databank.
 
         Args:
             data: Databank dictionary of one of the five module types.
-            oie_timeout: Maximum seconds to wait for response per api call to the OIE
+            request_timeout: Maximum seconds to wait for response per api call to the source system
 
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
         """
-        response = None
         try:
             response = requests.post(
-                url=f'{settings.OIE_HOST}/databank/post',
-                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                url=f'{settings.SOURCE_SYSTEM_HOST}/databank/post',
+                auth=HTTPBasicAuth(settings.SOURCE_SYSTEM_USER, settings.SOURCE_SYSTEM_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=oie_timeout,  # noqa: WPS432
+                timeout=request_timeout,
             )
         except requests.exceptions.RequestException as exc:
-            # Connection details for OIE might be misconfigured
+            # Connection details for source system might be misconfigured
             self.stderr.write(
-                f'OIE connection Error: {exc}',
+                f'Source system connection Error: {exc}',
             )
             return None
 
         if response and response.status_code == HTTPStatus.OK:
-            # Data sent to OIE successfully, parse aggregate response from databank and update models
-            return response.json()
-        else:
-            # Specific error occured between Django, Nginx, and/or OIE communications
-            self.stderr.write(
-                '{0}{1}: {2}'.format(
-                    response.status_code,
-                    ' oie response error ',
-                    response.content.decode(),
-                ),
-            )
+            # Data sent to source system successfully, parse aggregate response from databank and update models
+            response_data: dict[str, Any] = response.json()
+            return response_data
+
+        # Specific error occured between Django, Nginx, and/or source system communications
+        self.stderr.write(
+            f'{response.status_code} source system response error: ' + response.content.decode(),
+        )
+
+        return None
 
     def _parse_aggregate_databank_response(
         self,
         aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
     ) -> None:
-        """Parse the aggregated response message from the databank and update databank models.
+        """
+        Parse the aggregated response message from the databank and update databank models.
 
         Args:
             aggregate_response: JSON object with a response code & message for each patient data
-            original_data_sent: list of data originally sent to OIE
+            original_data_sent: list of data originally sent to source system
         """
         for identifier, response_object in aggregate_response.items():
             status_code, message = response_object
@@ -284,9 +315,9 @@ class Command(BaseCommand):  # noqa: WPS214
             except ValueError:
                 self.stderr.write(f'Unrecognized module prefix in response: {module_prefix}')
 
-            # Intialize the patient_data_success tracker for this patient
+            # Initialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
-                self.patient_data_success_tracker[patient_guid] = {module: True for module in DataModuleType}
+                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)
 
             # Handle response codes
             if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
@@ -300,21 +331,17 @@ class Command(BaseCommand):  # noqa: WPS214
             else:
                 self.patient_data_success_tracker[patient_guid][data_module] = False
                 self.stderr.write(
-                    '{0}{1}{2} : {3}'.format(
-                        status_code,
-                        ' error for patient ',
-                        patient_guid,
-                        message.strip('[]"'),
-                    ),
+                    f'{status_code} error for patient {patient_guid}: ' + message.strip('[]"'),
                 )
 
     def _update_databank_patient_shared_data(
         self,
         databank_patient: DatabankConsent,
         synced_data: Any,
-        message: Optional[str] = None,
+        message: str | None = None,
     ) -> None:
-        """Create `SharedData` instances for a given patient.
+        """
+        Create `SharedData` instances for a given patient.
 
         Args:
             databank_patient: Consent instance to be updated
@@ -338,21 +365,47 @@ class Command(BaseCommand):  # noqa: WPS214
                 for component in lab.get('components', [])
                 if 'test_result_id' in component
             ]
-            shared_data_instances = [
-                SharedData(databank_consent=databank_patient, data_id=test_result_id, data_type=DataModuleType.LABS)
-                for test_result_id in sent_test_result_ids
-            ]
-            SharedData.objects.bulk_create(shared_data_instances)
+            self._create_shared_data_instances(databank_patient, DataModuleType.LABS, sent_test_result_ids)
         elif DataModuleType.DIAGNOSES in synced_data:
             sent_diagnosis_ids = [
-                diagnosis['diagnosis_id']
-                for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
+                diagnosis['diagnosis_id'] for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
             ]
-            shared_data_instances = [
-                SharedData(databank_consent=databank_patient, data_id=diagnosis_id, data_type=DataModuleType.DIAGNOSES)
-                for diagnosis_id in sent_diagnosis_ids
+            self._create_shared_data_instances(databank_patient, DataModuleType.DIAGNOSES, sent_diagnosis_ids)
+        elif DataModuleType.QUESTIONNAIRES in synced_data:
+            sent_questionnaire_answer_ids = [
+                questionnaire_answer['answer_questionnaire_id']
+                for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
-            SharedData.objects.bulk_create(shared_data_instances)
+            self._create_shared_data_instances(
+                databank_patient,
+                DataModuleType.QUESTIONNAIRES,
+                sent_questionnaire_answer_ids,
+            )
+        elif DataModuleType.APPOINTMENTS in synced_data:
+            sent_appointment_ids = [
+                appointment['appointment_id'] for appointment in synced_data.get(DataModuleType.APPOINTMENTS, [])
+            ]
+            self._create_shared_data_instances(databank_patient, DataModuleType.APPOINTMENTS, sent_appointment_ids)
+
+    def _create_shared_data_instances(
+        self,
+        databank_patient: DatabankConsent,
+        data_module_type: DataModuleType,
+        id_list: list[Any],
+    ) -> None:
+        """
+        Bulk create SharedData instances given the module type and id list.
+
+        Args:
+            databank_patient: The consent instance whose data was successfully synced with LORIS
+            data_module_type: The data type
+            id_list: The list of specific ids of module data that was successfully synced
+        """
+        shared_data_instances = [
+            SharedData(databank_consent=databank_patient, data_id=data_id, data_type=data_module_type)
+            for data_id in id_list
+        ]
+        SharedData.objects.bulk_create(shared_data_instances)
 
     def _update_patients_last_synchronization(self) -> None:
         """Update the `databank_patient.last_synchronized` for all patients based on the success tracker."""

@@ -1,4 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides `ViewSets` for the users app."""
+
 from http import HTTPStatus
 
 from django.contrib.auth.models import Group
@@ -11,20 +16,20 @@ from rest_framework.exceptions import NotFound
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
+from rest_framework.serializers import ModelSerializer
 
 from config.settings.base import USER_MANAGER_GROUP_NAME
 
 from ...core.drf_permissions import FullDjangoModelPermissions
-from ..models import ClinicalStaff, User
-from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
+from ..models import ClinicalStaff
+from .serializers import UpdateClinicalStaffGroupSerializer, UserClinicalStaffSerializer
 
 
-class UserViewSet(  # noqa: WPS215 (too many base classes)
+class UserViewSet(
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    viewsets.GenericViewSet[User],
+    viewsets.GenericViewSet[ClinicalStaff],
 ):
     """
     A viewset that provides `create`, `retrieve`, and `update` actions to clinical staff and groups.
@@ -38,10 +43,10 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
     default_serializer_class = UserClinicalStaffSerializer
     serializer_classes = {
         'create': UserClinicalStaffSerializer,
-        'retrieve': UpdateClinicalStaffUserSerializer,
+        'retrieve': UpdateClinicalStaffGroupSerializer,
         'update': UserClinicalStaffSerializer,
-        'set_manager_user': UpdateClinicalStaffUserSerializer,
-        'unset_manager_user': UpdateClinicalStaffUserSerializer,
+        'set_manager_user': UpdateClinicalStaffGroupSerializer,
+        'unset_manager_user': UpdateClinicalStaffGroupSerializer,
     }
     permission_classes = (FullDjangoModelPermissions,)
 
@@ -67,7 +72,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.'))
+            raise NotFound(_('User manager group not found.')) from None
 
         clinicalstaff_user.groups.add(group.pk)
         clinicalstaff_user.save()
@@ -95,7 +100,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('Manager group not found.'))
+            raise NotFound(_('User manager group not found.')) from None
 
         clinicalstaff_user.groups.remove(group.pk)
         clinicalstaff_user.save()
@@ -141,7 +146,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         clinicalstaff_user.save()
         return Response({'detail': _('User was reactivated successfully.')}, status=HTTPStatus.OK)
 
-    def get_serializer_class(self) -> type[BaseSerializer[User]]:
+    def get_serializer_class(self) -> type[ModelSerializer[ClinicalStaff]]:
         """
         Override get_serializer_class to return the corresponding serializer for each action.
 

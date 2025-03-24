@@ -1,8 +1,17 @@
 {
-    "python.terminal.activateEnvironment": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "flake8.interpreter": ["${workspaceFolder}/.venv/bin/python"],
-    "isort.interpreter": ["${workspaceFolder}/.venv/bin/python"],
-    "mypy-type-checker.importStrategy": "fromEnvironment",
+  "python.terminal.activateEnvironment": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "yaml.customTags": [
+    "!reference sequence"
+  ],
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
 }

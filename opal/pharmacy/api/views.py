@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing API views for the `pharmacy` app."""
 from typing import Any
 
@@ -23,7 +27,8 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
 
     @transaction.atomic
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Extract and transform the parsed data from the request.
+        """
+        Extract and transform the parsed data from the request.
 
         Args:
             request: The http request object
@@ -42,8 +47,9 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:  # noqa: WPS210
-        """Transform the parsed segment data dictionary into the expected structure for the serializer.
+    def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Transform the parsed segment data dictionary into the expected structure for the serializer.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data
@@ -71,20 +77,20 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
             'filler_order_number': order_data['filler_order_number'],
             'order_status': order_data['order_status'],
             'entered_at': order_data['entered_at'],
-            'entered_by': '{0}_{1}_{2}'.format(
-                order_data['entered_by_given_name'],
-                order_data['entered_by_family_name'],
-                order_data['entered_by_id'],
+            'entered_by': (
+                order_data['entered_by_given_name']
+                + f"_{order_data['entered_by_family_name']}"
+                + f"_{order_data['entered_by_id']}"
             ),
-            'verified_by': '{0}_{1}_{2}'.format(
-                order_data['verified_by_given_name'],
-                order_data['verified_by_family_name'],
-                order_data['verified_by_id'],
+            'verified_by': (
+                order_data['verified_by_given_name']
+                + f"_{order_data['verified_by_family_name']}"
+                + f"_{order_data['verified_by_id']}"
             ),
-            'ordered_by': '{0}_{1}_{2}'.format(
-                order_data['order_by_given_name'],
-                order_data['order_by_family_name'],
-                order_data['ordered_by_id'],
+            'ordered_by': (
+                order_data['order_by_given_name']
+                + f"_{order_data['order_by_family_name']}"
+                + f"_{order_data['ordered_by_id']}"
             ),
             'effective_at': order_data['effective_at'],
             'pharmacy_encoded_order': {

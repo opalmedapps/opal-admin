@@ -1,16 +1,26 @@
-from datetime import date
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+import secrets
+from datetime import date, datetime
 
 from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import CommandError
+from django.utils import timezone
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
+from opal.core import constants
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
@@ -36,19 +46,19 @@ class TestInsertTestData(CommandTestMixin):
 
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OMI'
-        assert Site.objects.count() == 5
-        assert Patient.objects.count() == 8
+        assert Site.objects.count() == 1
+        assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 5
-        assert Relationship.objects.count() == 11
-        assert SecurityAnswer.objects.count() == 12
-        assert GeneralTest.objects.count() == 6
-        assert PathologyObservation.objects.count() == 6
-        assert Note.objects.count() == 6
+        assert CaregiverProfile.objects.count() == 8
+        assert Relationship.objects.count() == 13
+        assert SecurityAnswer.objects.count() == 21
+        assert GeneralTest.objects.count() == 9
+        assert PathologyObservation.objects.count() == 9
+        assert Note.objects.count() == 9
         assert stdout == 'Test data successfully created\n'
 
-    def test_insert_chusj(self) -> None:
-        """Ensure that test data for Sainte-Justine is inserted when there is no existing data."""
+    def test_insert_ohigph(self) -> None:
+        """Ensure that test data for the Opal Pediatric Institute is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
@@ -56,7 +66,7 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 3
+        assert CaregiverProfile.objects.count() == 2
         assert Relationship.objects.count() == 3
         assert SecurityAnswer.objects.count() == 6
         assert GeneralTest.objects.count() == 0
@@ -67,7 +77,7 @@ class TestInsertTestData(CommandTestMixin):
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The insertion can be cancelled when there is already data."""
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
-        relationship = factories.Relationship()
+        relationship = factories.Relationship.create()
 
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
@@ -77,9 +87,9 @@ class TestInsertTestData(CommandTestMixin):
     def test_insert_existing_data_delete(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The existing data is deleted when confirmed and new data added."""
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
-        relationship = factories.Relationship()
-        hospital_patient = factories.HospitalPatient()
-        security_answer = caregiver_factories.SecurityAnswer(user=relationship.caregiver)
+        relationship = factories.Relationship.create()
+        hospital_patient = factories.HospitalPatient.create()
+        security_answer = caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
         institution = Institution.objects.get()
         site = Site.objects.get()
@@ -104,18 +114,18 @@ class TestInsertTestData(CommandTestMixin):
 
         # new data was created
         assert Institution.objects.count() == 1
-        assert Site.objects.count() == 5
-        assert Patient.objects.count() == 8
+        assert Site.objects.count() == 1
+        assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 5
-        assert Relationship.objects.count() == 11
-        assert SecurityAnswer.objects.count() == 12
+        assert CaregiverProfile.objects.count() == 8
+        assert Relationship.objects.count() == 13
+        assert SecurityAnswer.objects.count() == 21
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
-        relationship = factories.Relationship()
-        factories.HospitalPatient()
-        caregiver_factories.SecurityAnswer(user=relationship.caregiver)
+        relationship = factories.Relationship.create()
+        factories.HospitalPatient.create()
+        caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
         stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
@@ -138,12 +148,8 @@ class TestInsertTestData(CommandTestMixin):
     def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
         """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
         # set today before Bart's birth day in the year (Feb 22nd)
-        # mocking date is tricky: https://stackoverflow.com/a/55187924
-        mock_date = mocker.patch(
-            'opal.core.management.commands.insert_test_data.date',
-            wraps=date,
-        )
-        mock_date.today.return_value = date(2024, 1, 18)
+        now = datetime(2024, 1, 18, tzinfo=timezone.get_current_timezone())
+        mocker.patch.object(timezone, 'now', return_value=now)
 
         self._call_command('insert_test_data', 'OMI')
 
@@ -153,12 +159,8 @@ class TestInsertTestData(CommandTestMixin):
     def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
         """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
         # set today after Bart's birth day in the year (Feb 22nd)
-        # mocking date is tricky: https://stackoverflow.com/a/55187924
-        mock_date = mocker.patch(
-            'opal.core.management.commands.insert_test_data.date',
-            wraps=date,
-        )
-        mock_date.today.return_value = date(2024, 2, 23)
+        now = datetime(2024, 2, 23, tzinfo=timezone.get_current_timezone())
+        mocker.patch.object(timezone, 'now', return_value=now)
 
         self._call_command('insert_test_data', 'OMI')
 
@@ -166,15 +168,52 @@ class TestInsertTestData(CommandTestMixin):
         assert bart.date_of_birth == date(2010, 2, 23)
 
 
+@pytest.mark.django_db(databases=['default', 'legacy'])
 class TestInitializeData(CommandTestMixin):
     """Test class to group the `initialize_data` command tests."""
+
+    @pytest.fixture(autouse=True)
+    def _add_legacy_role(self) -> None:
+        legacy_models.LegacyOARole.objects.create(name_en='System Administrator')
 
     def test_insert(self) -> None:
         """Ensure that initial data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert User.objects.count() == 6
+        assert Token.objects.count() == 5
+        assert SecurityQuestion.objects.count() == 6
+
+        for group in Group.objects.all():
+            group.full_clean()
+        for user in User.objects.all():
+            user.full_clean()
+        for token in Token.objects.all():
+            token.full_clean()
+        for security_question in SecurityQuestion.objects.all():
+            security_question.full_clean()
+
+        listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
+        interface_engine_token = Token.objects.get(user__username='interface-engine')
+        legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+        orms_token = Token.objects.get(user__username='orms')
+
+        assert 'Data successfully created\n' in stdout
+        assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
+        assert f'interface-engine token: {interface_engine_token.key}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+        assert f'orms token: {orms_token.key}' in stdout
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_orms_disabled(self) -> None:
+        """Ensure that orms specific data is not inserted if ORMS disabled."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Group.objects.count() == 6
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
@@ -196,10 +235,48 @@ class TestInitializeData(CommandTestMixin):
         assert f'listener token: {listener_token.key}' in stdout
         assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
-        assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
 
     def test_insert_tokens(self) -> None:
         """Ensure that initial data is inserted with existing system users and their existing tokens are returned."""
+        listener = User.objects.create(username='listener')
+        registration_listener = User.objects.create(username='listener-registration')
+        interface_engine = User.objects.create(username='interface-engine')
+        legacy_backend = User.objects.create(username='opaladmin-backend-legacy')
+        orms = User.objects.create(username='orms')
+
+        token_listener = Token.objects.create(user=listener)
+        token_registration_listener = Token.objects.create(user=registration_listener)
+        token_interface_engine = Token.objects.create(user=interface_engine)
+        token_legacy_backend = Token.objects.create(user=legacy_backend)
+        token_orms = Token.objects.create(user=orms)
+
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Token.objects.count() == 5
+
+        listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
+        interface_engine_token = Token.objects.get(user__username='interface-engine')
+        legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+        orms_token = Token.objects.get(user__username='orms')
+
+        assert 'Data successfully created\n' in stdout
+        assert token_listener == listener_token
+        assert token_registration_listener == registration_listener_token
+        assert token_interface_engine == interface_engine_token
+        assert token_legacy_backend == legacy_backend_token
+        assert token_orms == orms_token
+
+        assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
+        assert f'interface-engine token: {interface_engine_token.key}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+        assert f'orms token: {orms_token.key}' in stdout
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_tokens_orms_disabled(self) -> None:
+        """Ensure that initial data is inserted except orms data if ORMS disabled."""
         listener = User.objects.create(username='listener')
         registration_listener = User.objects.create(username='listener-registration')
         interface_engine = User.objects.create(username='interface-engine')
@@ -224,21 +301,15 @@ class TestInitializeData(CommandTestMixin):
         assert token_registration_listener == registration_listener_token
         assert token_interface_engine == interface_engine_token
         assert token_legacy_backend == legacy_backend_token
+
         assert f'listener token: {listener_token.key}' in stdout
         assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
-        assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
 
-    def test_insert_muhc_deployment(self) -> None:
-        """Ensure that initial data is inserted and includes sites and muhc institution given flag."""
-        stdout, _stderr = self._call_command('initialize_data', '--muhc-deployment')
-
-        assert Group.objects.count() == 7
-        assert User.objects.count() == 4
-        assert Token.objects.count() == 4
-        assert SecurityQuestion.objects.count() == 6
-        assert Institution.objects.count() == 1
-        assert Site.objects.count() == 5
+        message = 'Token matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            Token.objects.get(user__username='orms')
 
     def test_insert_existing_data_group(self) -> None:
         """An error is shown if a group already exists."""
@@ -261,7 +332,41 @@ class TestInitializeData(CommandTestMixin):
 
     def test_insert_existing_data_force_delete(self) -> None:
         """Existing data with the exception of system users is deleted before inserted."""
-        stdout, stderr = self._call_command('initialize_data')
+        stdout, _stderr = self._call_command('initialize_data')
+
+        listener = User.objects.get(username='listener')
+        registration_listener = User.objects.get(username='listener-registration')
+        interface_engine = User.objects.get(username='interface-engine')
+        legacy_backend = User.objects.get(username='opaladmin-backend-legacy')
+        orms = User.objects.get(username='orms')
+
+        token_listener = Token.objects.get(user=listener)
+        token_registration_listener = Token.objects.get(user=registration_listener)
+        token_interface_engine = Token.objects.get(user=interface_engine)
+        token_legacy_backend = Token.objects.get(user=legacy_backend)
+        token_orms = Token.objects.get(user=orms)
+
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
+
+        assert Group.objects.count() == 7
+        assert User.objects.count() == 6
+        assert Token.objects.count() == 5
+        assert SecurityQuestion.objects.count() == 6
+
+        assert 'Deleting existing data\n' in stdout
+        assert 'Data successfully deleted\n' in stdout
+        assert 'Data successfully created\n' in stdout
+
+        token_listener.refresh_from_db()
+        token_registration_listener.refresh_from_db()
+        token_interface_engine.refresh_from_db()
+        token_legacy_backend.refresh_from_db()
+        token_orms.refresh_from_db()
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_existing_data_force_delete_orms_disabled(self) -> None:
+        """Existing data with the exception of system users is deleted before inserted and skips ORMS data."""
+        stdout, _stderr = self._call_command('initialize_data')
 
         listener = User.objects.get(username='listener')
         registration_listener = User.objects.get(username='listener-registration')
@@ -273,16 +378,20 @@ class TestInitializeData(CommandTestMixin):
         token_interface_engine = Token.objects.get(user=interface_engine)
         token_legacy_backend = Token.objects.get(user=legacy_backend)
 
-        stdout, stderr = self._call_command('initialize_data', '--force-delete')
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
-        assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert Group.objects.count() == 6
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
         assert 'Deleting existing data\n' in stdout
         assert 'Data successfully deleted\n' in stdout
         assert 'Data successfully created\n' in stdout
+
+        message = 'User matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            User.objects.get(username='orms')
 
         token_listener.refresh_from_db()
         token_registration_listener.refresh_from_db()
@@ -295,7 +404,7 @@ class TestInitializeData(CommandTestMixin):
         Group.objects.create(name='Clinicians')
         User.objects.create(username='johnwayne')
         # a caregiver that should not be deleted by the command
-        caregiver = caregiver_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile.create()
 
         stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
@@ -306,3 +415,87 @@ class TestInitializeData(CommandTestMixin):
         assert 'Deleting existing data\n' in stdout
         assert 'Data successfully deleted\n' in stdout
         assert 'Data successfully created\n' in stdout
+
+    @pytest.mark.parametrize(
+        'arg_name',
+        [
+            '--listener-token',
+            '--listener-registration-token',
+            '--interface-engine-token',
+            '--opaladmin-backend-legacy-token',
+        ],
+    )
+    def test_insert_existing_data_predefined_tokens_invalid(self, arg_name: str) -> None:
+        """Tokens for system users can be provided."""
+        token = secrets.token_hex(19)
+
+        with pytest.raises(CommandError, match=f"{arg_name}: invalid token value: '{token}'"):
+            self._call_command('initialize_data', f'{arg_name}={token}')
+
+        token = secrets.token_hex(21)
+
+        with pytest.raises(CommandError, match=f"{arg_name}: invalid token value: '{token}'"):
+            self._call_command('initialize_data', f'{arg_name}={token}')
+
+    @pytest.mark.parametrize(
+        'username',
+        [
+            'listener',
+            'listener-registration',
+            'interface-engine',
+            'opaladmin-backend-legacy',
+        ],
+    )
+    def test_insert_existing_data_predefined_tokens(self, username: str) -> None:
+        """Tokens for system users can be provided."""
+        random_token = secrets.token_hex(20)
+
+        self._call_command('initialize_data', f'--{username}-token={random_token}')
+
+        user = User.objects.get(username=username)
+        token = Token.objects.get(user=user)
+
+        assert token.key == random_token
+
+    def test_insert_superuser_random_password(self) -> None:
+        """An admin user with a random password us generated."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password: ' in stdout
+
+    def test_insert_superuser_predefined_password(self) -> None:
+        """A predefined password can be provided for the admin user."""
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+
+        stdout, _stderr = self._call_command('initialize_data', f'--admin-password={random_password}')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+        assert user.check_password(random_password)
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password' not in stdout
+
+    def test_insert_superuser_predefined_password_invalid(self) -> None:
+        """The password for the admin user needs to have a minimum length."""
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES - 1)
+
+        with pytest.raises(
+            CommandError,
+            match=f"Error: argument --admin-password: invalid password value: '{random_password}'",
+        ):
+            self._call_command('initialize_data', f'--admin-password={random_password}')

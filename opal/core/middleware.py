@@ -1,13 +1,21 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing different middlewares for the whole project."""
 from collections.abc import Callable
-from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse
+from django.utils.functional import SimpleLazyObject
+
+from auditlog.cid import set_cid
+from auditlog.context import set_actor
+from auditlog.middleware import AuditlogMiddleware as _AuditlogMiddleware
 
 
-class LoginRequiredMiddleware():
+class LoginRequiredMiddleware:
     """
     Middleware that requires a user to be authenticated to view any page other than LOGIN_URL.
 
@@ -22,7 +30,8 @@ class LoginRequiredMiddleware():
     """
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
-        """Initialize the middleware.
+        """
+        Initialize the middleware.
 
         Args:
             get_response: the next `get_response` callable (could be a view or the next middleware)
@@ -45,19 +54,16 @@ class LoginRequiredMiddleware():
         if (
             not request.user.is_authenticated
             # ignore API URLs since this is handled by DRF
-            and not request.path.startswith('/{api_root}/'.format(api_root=self.api_root))
+            and not request.path.startswith(f'/{self.api_root}/')
             and self._resolve_route(request) not in settings.AUTH_EXEMPT_ROUTES
         ):
-            redirect_to = '{login_url}?next={next_url}'.format(
-                login_url=reverse(settings.LOGIN_URL),
-                next_url=request.path_info,
-            )
+            redirect_to = f'{reverse(settings.LOGIN_URL)}?next={request.path_info}'
 
             return HttpResponseRedirect(redirect_to)
 
         return self.get_response(request)
 
-    def _resolve_route(self, request: HttpRequest) -> Optional[str]:
+    def _resolve_route(self, request: HttpRequest) -> str | None:
         """
         Resolve the route of the request to the format namespace:url_name.
 
@@ -72,6 +78,31 @@ class LoginRequiredMiddleware():
         route_name = resolver.url_name
 
         if resolver.namespace:
-            route_name = '{namespace}:{url_name}'.format(namespace=resolver.namespace, url_name=route_name)
+            route_name = f'{resolver.namespace}:{route_name}'
 
         return route_name
+
+
+# source: https://github.com/jazzband/django-auditlog/issues/115#issuecomment-1539262735
+class AuditlogMiddleware(_AuditlogMiddleware):
+    """Custom middleware for django-auditlog with better support for DRF."""
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        """
+        Process the call to this middleware.
+
+        Args:
+            request: the HTTP request
+
+        Returns:
+            the HTTP response
+        """
+        remote_addr = self._get_remote_addr(request)
+        # make user a lazy object to retrieve API users
+        # DRF authenticates in views rather than middlewares like Django does
+        user = SimpleLazyObject(lambda: self._get_actor(request))
+
+        set_cid(request)
+
+        with set_actor(actor=user, remote_addr=remote_addr):
+            return self.get_response(request)  # type: ignore[no-any-return]

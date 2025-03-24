@@ -1,8 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module providing business logic for communication with an external component."""
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -12,9 +16,13 @@ from .service_error import ServiceErrorHandler
 # add this in any module that need to log
 logger = logging.getLogger(__name__)
 
+# hard-coded source system timeout
+SOURCE_SYSTEM_TIMEOUT = 30
+
 
 class ServiceHTTPCommunicationManager:
-    """Manager that provides functionality for communication with an external component.
+    """
+    Manager that provides functionality for communication with an external component.
 
     The manager is responsible only for the HTTP communication and handling any communication-related errors.
 
@@ -27,7 +35,7 @@ class ServiceHTTPCommunicationManager:
     password: str
     dump_json_payload: bool
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         base_url: str,
         display_name: str,
@@ -60,9 +68,10 @@ class ServiceHTTPCommunicationManager:
         self,
         endpoint: str,
         payload: dict[str, Any],
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Send data to the external component by making HTTP POST request.
+        """
+        Send data to the external component by making HTTP POST request.
 
         Args:
             endpoint (str): communication endpoint exposed by the service for communication with it through the network
@@ -77,19 +86,16 @@ class ServiceHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.post
             # https://www.w3schools.com/python/ref_requests_post.asp
             return requests.post(
-                url='{0}{1}'.format(self.base_url, endpoint),
+                url=f'{self.base_url}{endpoint}',
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 json=json.dumps(payload) if self.dump_json_payload else payload,
-                timeout=5,
+                timeout=SOURCE_SYSTEM_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             # log external component errors
             logger.exception(
-                '{component_name} error: {error_message}'.format(
-                    component_name=self.display_name,
-                    error_message=str(req_exp),
-                ),
+                f'{self.display_name} request error',
             )
             return self.error_handler.generate_error({
                 'message': str(req_exp),
@@ -100,10 +106,11 @@ class ServiceHTTPCommunicationManager:
     def fetch(
         self,
         endpoint: str,
-        params: Optional[dict[str, Any]] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Retrieve data from the external component by making HTTP GET request.
+        """
+        Retrieve data from the external component by making HTTP GET request.
 
         Args:
             endpoint (str): communication endpoint exposed by the external component
@@ -118,11 +125,11 @@ class ServiceHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.get
             # https://www.w3schools.com/python/ref_requests_get.asp
             return requests.get(
-                url='{0}{1}'.format(self.base_url, endpoint),
+                url=f'{self.base_url}{endpoint}',
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 params=params,
-                timeout=5,
+                timeout=SOURCE_SYSTEM_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             return self.error_handler.generate_error({'message': str(req_exp)})

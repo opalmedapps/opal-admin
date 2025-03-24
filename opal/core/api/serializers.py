@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of serializers for the core ApiViews."""
 from typing import Any, TypeVar
 
@@ -9,7 +13,8 @@ _Model = TypeVar('_Model', bound=Model)
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer[_Model]):
-    """Dynamic fields serializer for models.
+    """
+    Dynamic fields serializer for models.
 
     A ModelSerializer that takes an additional `fields` argument that
     controls which fields should be displayed.

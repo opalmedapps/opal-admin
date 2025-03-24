@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import pytest
 
 from .. import factories, models
@@ -7,20 +11,20 @@ pytestmark = pytest.mark.django_db
 
 def test_questionnaireprofile_factory() -> None:
     """Ensure QuestionnaireProfile factory builds properly."""
-    questionnaire_profile = factories.QuestionnaireProfile()
+    questionnaire_profile = factories.QuestionnaireProfile.create()
     questionnaire_profile.full_clean()
 
 
 def test_questionnaireprofile_str() -> None:
     """Ensure the `__str__` method is defined for the `QuestionnaireProfile` model."""
-    questionnaire_profile = factories.QuestionnaireProfile()
+    questionnaire_profile = factories.QuestionnaireProfile.create()
     expected_follows_string = "{'19': {'title': 'Opal Feedback Questionnaire', 'lastviewed': '2022-11-17'}}"
     assert str(questionnaire_profile).split('__')[2] == expected_follows_string
 
 
 def test_questionnaireprofile_update() -> None:
     """Ensure QuestionnaireProfile factory builds properly."""
-    questionnaire_profile = factories.QuestionnaireProfile()
+    questionnaire_profile = factories.QuestionnaireProfile.create()
     models.QuestionnaireProfile.update_questionnaires_following(
         qid='13',
         qname='Test Qst Add',
@@ -36,7 +40,7 @@ def test_questionnaireprofile_update() -> None:
 
 def test_questionnaireprofile_toggle_off() -> None:
     """Ensure QuestionnaireProfile factory builds properly."""
-    questionnaire_profile = factories.QuestionnaireProfile()
+    questionnaire_profile = factories.QuestionnaireProfile.create()
     models.QuestionnaireProfile.update_questionnaires_following(
         qid='19',
         qname='Test Qst Add',

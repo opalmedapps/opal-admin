@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from http import HTTPStatus
 from uuid import uuid4
 
@@ -8,9 +12,9 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertTemplateUsed
 
-from opal.patients import factories as patient_factory
+from opal.patients import factories as patient_factories
 
-from .. import factories as healthdata_factory
+from .. import factories as healthdata_factories
 from ..models import QuantitySampleType
 
 pytestmark = pytest.mark.django_db
@@ -27,7 +31,7 @@ MISSING_DATA_WARNINGS = (
 
 def test_health_data_ui_template_used(admin_client: Client) -> None:
     """Ensure the health data page can be rendered and patient info displayed."""
-    hd_patient = patient_factory.Patient(ramq='OTES12345678')
+    hd_patient = patient_factories.Patient.create(ramq='OTES12345678')
 
     response = admin_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': hd_patient.uuid}))
 
@@ -44,7 +48,7 @@ def test_health_data_ui_template_used(admin_client: Client) -> None:
 
 def test_health_data_ui_unauthorized_no_data(user_client: Client) -> None:
     """Ensure that no health data appears if user missing permission."""
-    hd_patient = patient_factory.Patient(ramq='OTES12345678')
+    hd_patient = patient_factories.Patient.create(ramq='OTES12345678')
 
     response = user_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': hd_patient.uuid}))
 
@@ -60,14 +64,14 @@ def test_health_data_ui_error_no_patient(admin_client: Client) -> None:
 
 def test_health_data_template_plots_detected(admin_client: Client) -> None:
     """Ensure generate plotly content shows in template."""
-    patient = patient_factory.Patient()
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BODY_MASS)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BODY_TEMPERATURE)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.HEART_RATE)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.HEART_RATE_VARIABILITY)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.OXYGEN_SATURATION)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC)
+    patient = patient_factories.Patient.create()
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BODY_MASS)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BODY_TEMPERATURE)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.HEART_RATE)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.HEART_RATE_VARIABILITY)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.OXYGEN_SATURATION)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC)
 
     response = admin_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': patient.uuid}))
 
@@ -82,7 +86,7 @@ def test_health_data_template_plots_detected(admin_client: Client) -> None:
 
 def test_health_data_generate_plot_empty(admin_client: Client) -> None:
     """Ensure generate plot returns nothing given no QuantitySample data, and the correct info lines are shown."""
-    patient = patient_factory.Patient()
+    patient = patient_factories.Patient.create()
 
     response = admin_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': patient.uuid}))
 

@@ -1,6 +1,11 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import datetime as dt
 import urllib
 from datetime import date, datetime, timedelta
+from typing import Any
 
 from django.test import Client
 from django.urls import reverse
@@ -9,7 +14,7 @@ from django.utils import timezone
 import pytest
 from pytest_mock import MockerFixture
 
-from opal.services.hospital.hospital_data import OIEMRNData
+from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema
 
 from .. import constants, factories, models, tables
 
@@ -18,7 +23,7 @@ pytestmark = pytest.mark.django_db
 
 def test_patienttable_render_date_of_birth_patient() -> None:
     """Ensure that the date of birth is rendered correctly for a `Patient`."""
-    patient = factories.Patient()
+    patient = factories.Patient.create()
 
     table = tables.PatientTable([])
 
@@ -34,11 +39,11 @@ def test_patienttable_render_date_of_birth_str() -> None:
 
 def test_patienttable_render_mrns_patient() -> None:
     """Ensure that MRNs are rendered in the form `SITE: MRN` in `PatientTable` for a `Patient`."""
-    patient = factories.Patient()
-    site = factories.Site(name='TEST_SITE', acronym='TSITE')
-    site2 = factories.Site(name='Test2', acronym='TST2')
-    factories.HospitalPatient(patient=patient, site=site, mrn='999999')
-    factories.HospitalPatient(patient=patient, site=site2, mrn='1234567')
+    patient = factories.Patient.create()
+    site = factories.Site.create(name='TEST_SITE', acronym='TSITE')
+    site2 = factories.Site.create(name='Test2', acronym='TST2')
+    factories.HospitalPatient.create(patient=patient, site=site, mrn='999999')
+    factories.HospitalPatient.create(patient=patient, site=site2, mrn='1234567')
 
     hospital_patients = models.HospitalPatient.objects.filter(patient=patient)
 
@@ -50,8 +55,8 @@ def test_patienttable_render_mrns_patient() -> None:
 def test_patienttable_render_mrns_mrndata() -> None:
     """Ensure that MRNs are rendered correctly for MRN data."""
     mrns = [
-        OIEMRNData(site='RVH', mrn='9999996', active=True),
-        OIEMRNData(site='MGH', mrn='1234567', active=True),
+        HospitalNumberSchema(site='RVH', mrn='9999996'),
+        HospitalNumberSchema(site='MGH', mrn='1234567'),
     ]
 
     patient_table = tables.PatientTable([])
@@ -71,6 +76,30 @@ def test_patienttable_render_mrns_dict() -> None:
     assert site_mrn == 'RVH: 9999996, MGH: 1234567'
 
 
+def test_patienttable_render_health_insurance_number() -> None:
+    """Ensure that the health insurance number/RAMQ is rendered correctly."""
+    data: dict[str, Any] = {
+        'first_name': 'Homer',
+        'last_name': 'Simpson',
+        'sex': 'male',
+        'date_of_birth': '1986-10-05',
+        'health_insurance_number': 'SIMM86600599',
+        'date_of_death': None,
+        'mrns': [],
+    }
+
+    patient_table = tables.PatientTable([
+        PatientSchema.model_validate(data),
+        factories.Patient.create(ramq='TEST'),
+    ])
+
+    row1 = patient_table.rows[0]
+    row2 = patient_table.rows[1]
+
+    assert row1.get_cell_value('health_insurance_number') == 'SIMM86600599'
+    assert row2.get_cell_value('health_insurance_number') == 'TEST'
+
+
 def _mock_datetime(mocker: MockerFixture) -> None:
     # mock the current timezone to avoid flaky tests
     current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
@@ -83,7 +112,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
 
     # in case of `zero` number of days
     today_date = date(2022, 6, 2)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -93,7 +122,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
 
     # in case of `one` number of days
     today_date = date(2022, 6, 1)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -107,7 +136,7 @@ def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -
     _mock_datetime(mocker)
 
     today_date = date(2022, 6, 2) - timedelta(days=5)
-    relationship_record = factories.Relationship(request_date=today_date)
+    relationship_record = factories.Relationship.create(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
@@ -118,8 +147,8 @@ def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -
 
 def test_relationships_table_readonly_url(relationship_user: Client) -> None:
     """Ensures Relationships action buttons use readonly url for expired status."""
-    hospital_patient = factories.HospitalPatient()
-    factories.Relationship(
+    hospital_patient = factories.HospitalPatient.create()
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.mandatary(),
         status=models.RelationshipStatus.EXPIRED,
@@ -148,9 +177,9 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
 def test_relationships_table_update_url(relationship_user: Client) -> None:
     """Ensures Relationships action uses edit url for statuses other than expired."""
-    hospital_patient = factories.HospitalPatient()
+    hospital_patient = factories.HospitalPatient.create()
 
-    factories.Relationship(
+    factories.Relationship.create(
         patient=hospital_patient.patient,
         type=models.RelationshipType.objects.parent_guardian(),
         status=models.RelationshipStatus.PENDING,

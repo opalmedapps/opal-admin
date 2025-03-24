@@ -1,8 +1,13 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Collection of api views used for caregiver-patient permission checks."""
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import CaregiverPatientPermissions, IsListener
 
 
@@ -16,6 +21,7 @@ class CaregiverPermissionsView(APIView):
 
     # The essential work for this request is done by CaregiverPatientPermissions
     permission_classes = (IsListener, CaregiverPatientPermissions)
+    serializer_class = EmptyResponseSerializer
 
     def get(self, request: Request, legacy_id: int) -> Response:
         """

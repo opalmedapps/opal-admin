@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -51,11 +57,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: show systolic and diastolic blood pressure measurements on the same chart (!708)
 * feat: add REST API endpoint for creating pathology reports (!724)
 * feat: add a pathology PDF generator for producing reports (!791)
+* feat: add usage_statistics app to store users' and patients' activity statistics (!1100)
+* feat: add management command for populating statistics to DailyUserAppActivity and DailyUserPatientActivity models (!1133)
+* feat: finalize management command for sending five types of databank data (!1180)
+* feat: add usage statistics export page for downloading statistical data (!1332)
+* feat: add form for exporting group usage statistics (!1335)
+* feat: add form for exporting individual usage statistics (!1356)
+* feat: implement views for exporting usage statistics (!1372)
 
 ### Documentation
 
 * Add mkdocs-based documentation site (!35)
 * Improve getting started documentation for Windows users (!42)
+* Add drf-spectacular schema generation (!1220)
 
 ### Miscellaneous Chores
 

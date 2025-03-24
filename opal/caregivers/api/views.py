@@ -1,20 +1,25 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+
 import datetime as dt
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models.functions import SHA512
-from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework import exceptions
-from rest_framework import serializers
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import exceptions, serializers
 from rest_framework import serializers as drf_serializers
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
@@ -31,14 +36,20 @@ from opal.caregivers.api.serializers import (
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.api.mixins import AllowPUTAsCreateMixin
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
+from opal.hospital_settings.models import Institution
+from opal.legacy import utils as legacy_utils
 from opal.patients import utils
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
 from opal.users.models import Caregiver, User
 
 from .. import constants
+
+if TYPE_CHECKING:
+    from django.db.models.manager import Manager
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
@@ -48,9 +59,12 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
         RegistrationCode.objects.select_related(
             'relationship',
             'relationship__patient',
-        ).prefetch_related(
+        )
+        .prefetch_related(
             'relationship__patient__hospital_patients',
-        ).annotate(code_sha512=SHA512('code')).filter(status=RegistrationCodeStatus.NEW)
+        )
+        .annotate(code_sha512=SHA512('code'))
+        .filter(status=RegistrationCodeStatus.NEW)
     )
     permission_classes = (IsRegistrationListener,)
     serializer_class = RegistrationEncryptionInfoSerializer
@@ -67,7 +81,8 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
     lookup_field = 'device_id'
 
     def get_queryset(self) -> QuerySet[Device]:
-        """Provide the desired object or fails with 404 error.
+        """
+        Provide the desired object or fails with 404 error.
 
         Returns:
             Device object or 404.
@@ -77,6 +92,20 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 
+# TODO: Switch to using GenericListView for GetCaregiverPatientsList
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+    responses={
+        200: CaregiverPatientSerializer(many=True),
+    },
+)
 class GetCaregiverPatientsList(APIView):
     """Class to return a list of patients for a given caregiver."""
 
@@ -99,7 +128,7 @@ class GetCaregiverPatientsList(APIView):
 
         if not user_id:
             raise exceptions.ParseError(
-                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
             )
 
         relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
@@ -108,6 +137,16 @@ class GetCaregiverPatientsList(APIView):
         )
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+)
 class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
     """Retrieve the profile of the current caregiver."""
 
@@ -136,7 +175,7 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
 
         if not user_id:
             raise exceptions.ParseError(
-                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user."
             )
 
         # manually set the username kwarg since it is not provided via the URL
@@ -158,24 +197,38 @@ class RetrieveRegistrationCodeMixin:
             The queryset of RegistrationCode
         """
         code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
-        return RegistrationCode.objects.select_related(
-            'relationship__caregiver',
-            'relationship__caregiver__user',
-        ).prefetch_related(
-            'relationship__caregiver__email_verifications',
-        ).filter(code=code, status=RegistrationCodeStatus.NEW)
+        return (
+            RegistrationCode.objects.select_related(
+                'relationship__caregiver',
+                'relationship__caregiver__user',
+            )
+            .prefetch_related(
+                'relationship__caregiver__email_verifications',
+            )
+            .filter(code=code, status=RegistrationCodeStatus.NEW)
+        )
 
 
+@extend_schema(
+    request={
+        'serializer': EmailVerificationSerializer,
+    },
+    responses={
+        200: {},
+        400: {'description': 'Email verification not found or already verified'},
+    },
+)
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
-    """View that initiates email verification for a given email address.
+    """
+    View that initiates email verification for a given email address.
 
     And send email to the user with the verification code.
     """
 
     permission_classes = (IsRegistrationListener,)
 
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
+    def post(self, request: Request, code: str) -> Response:
         """
         Generate a random verification code and set up the EmailVerification instance.
 
@@ -218,8 +271,8 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             )
             self._send_verification_code_email(email_verification, caregiver_profile.user)
         else:
-            # in case there is an error sent_at is None, but wont happen in fact
-            time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
+            sent_at: dt.datetime = email_verification.sent_at  # type: ignore[assignment]
+            time_delta = timezone.now() - sent_at
             if time_delta.total_seconds() > constants.CODE_RESEND_TIME_DELAY:
                 input_serializer.update(
                     email_verification,
@@ -269,6 +322,15 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         )
 
 
+@extend_schema(
+    request={
+        'serializer': EmailVerificationSerializer,
+    },
+    responses={
+        200: {},
+        400: {'description': 'Email verification not found or already verified'},
+    },
+)
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
     """View that verifies the user-provided verification code with the actual one."""
@@ -311,14 +373,23 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
         return Response()
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter('existingUser'),
+    ],
+    request={
+        'existingUser': caregiver_serializers.ExistingUserRegistrationRegisterSerializer,
+        'newUser': caregiver_serializers.NewUserRegistrationRegisterSerializer,
+    },
+    responses={200: None},
+)
 class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
-    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
+    def post(self, request: Request, code: str) -> Response:
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -332,7 +403,8 @@ class RegistrationCompletionView(APIView):
         Returns:
             HTTP response with the error or success status.
         """
-        serializer = self.serializer_class(
+        serializer_class = self._get_serializer_class()
+        serializer = serializer_class(
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
@@ -341,34 +413,108 @@ class RegistrationCompletionView(APIView):
         registration_code = get_object_or_404(
             caregiver_models.RegistrationCode.objects.select_related(
                 'relationship__patient',
+                'relationship__type',
                 'relationship__caregiver__user',
             ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
         )
         caregiver_data = validated_data['relationship']['caregiver']
         existing_caregiver = utils.find_caregiver(caregiver_data['user']['username'])
-        relationship = registration_code.relationship
+        relationship: Relationship = registration_code.relationship
+        patient = relationship.patient
+        self_caregiver = relationship.caregiver if relationship.type.is_self else None
+        mrns = [
+            (hospital_patient.site, hospital_patient.mrn, hospital_patient.is_active)
+            for hospital_patient in patient.hospital_patients.all()
+        ]
 
-        try:  # noqa: WPS229
-            utils.update_registration_code_status(registration_code)
-            utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
+        try:
+            if relationship.patient.legacy_id is None:
+                # also creates the legacy patient and sets patient.legacy_id
+                utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
+                # Send databank consent and infosheet automatically for new patients, if enabled
+                if settings.DATABANK_ENABLED:
+                    legacy_utils.create_databank_patient_consent_data(patient)
             if existing_caregiver:
+                email = existing_caregiver.email
                 utils.replace_caregiver(existing_caregiver, relationship)
+                # if an existing caregiver gets access to themself the legacy data needs to be updated
+                if relationship.type.is_self:
+                    caregiver_profile = CaregiverProfile.objects.get(user=existing_caregiver)
+                    # an existing caregiver will have a legacy ID
+                    caregiver_id: int = caregiver_profile.legacy_id  # type: ignore[assignment]
+                    legacy_utils.change_caregiver_user_to_patient(caregiver_id, relationship.patient)
             else:
-                self._handle_new_caregiver(relationship, caregiver_data)
+                email = self._get_email_address(relationship, caregiver_data)
+                self._update_caregiver(relationship, email, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
+
+            utils.update_registration_code_status(registration_code)
+            self._send_confirmation_email(email, caregiver_data['user']['language'])
         except ValidationError as exception:
             transaction.set_rollback(True)
-            raise serializers.ValidationError({'detail': str(exception.args)})
+            raise serializers.ValidationError({'detail': str(exception.args)}) from exception
 
         return Response()
 
-    def _handle_new_caregiver(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> None:
+    def _send_confirmation_email(
+        self,
+        email: str,
+        language: str,
+    ) -> None:
         """
-        Handle registration completion for a new caregiver.
+        Send confirmation email to the user with an template according to the user language.
+
+        Args:
+            email: the target email
+            language: the language of user
+        """
+        institution = Institution.objects.get()
+
+        context = {
+            'support_email': institution.support_email,
+        }
+
+        with override(language):
+            email_plain = render_to_string(
+                'email/confirmation_email.txt',
+                context,
+            )
+            send_mail(
+                gettext('Thank you for registering for Opal!'),
+                email_plain,
+                settings.EMAIL_FROM_REGISTRATION,
+                [email],
+            )
+
+    def _get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
+        """
+        Switch the serializer based on the parameter `existingUser`.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            The expected serializer according to the request parameter.
+        """
+        if 'existingUser' in self.request.query_params:
+            return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
+        return caregiver_serializers.NewUserRegistrationRegisterSerializer
+
+    def _get_email_address(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> str:
+        """
+        Return the email address for a new caregiver.
+
+        The email address is either coming from the related `EmailVerification`.
+        Or, from the request data (if the caregiver has an account at another institution,
+        i.e., an existing Firebase account).
 
         Args:
             relationship: the relationship
             caregiver_data: the validated registration data for the caregiver
+
+        Returns:
+            The email address.
 
         Raises:
             ValidationError: if the caregiver is already registered or there is no verified email
@@ -376,23 +522,26 @@ class RegistrationCompletionView(APIView):
         # a user can potentially verify multiple email address during the same process
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
-        email_verification = email_verifications.filter(
-            is_verified=True,
-        ).order_by('-sent_at').first()
+        email_verification = (
+            email_verifications.filter(
+                is_verified=True,
+            )
+            .order_by('-sent_at')
+            .first()
+        )
 
-        data_email: str = caregiver_data.get('email', None)
+        data_email: str = caregiver_data.get('email', '')
 
         if email_verification is None and not data_email:
             raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution
-        email: str = email_verification.email if email_verification is not None else data_email
-        self._update_caregiver(relationship.caregiver, email, caregiver_data)
+        return email_verification.email if email_verification is not None else data_email
 
     def _update_caregiver(
         self,
-        caregiver_profile: caregiver_models.CaregiverProfile,
+        relationship: Relationship,
         email: str,
         caregiver_data: dict[str, Any],
     ) -> None:
@@ -400,11 +549,12 @@ class RegistrationCompletionView(APIView):
         Update the caregiver with the provided data.
 
         Args:
-            caregiver_profile: the caregiver profile instance to update
+            relationship: the relationship linking to the the caregiver to update
             email: the verified email
             caregiver_data: the validated data specific to the caregiver
         """
         user_data = caregiver_data['user']
+        caregiver_profile = relationship.caregiver
         utils.update_caregiver(
             caregiver_profile.user,
             email,
@@ -412,13 +562,17 @@ class RegistrationCompletionView(APIView):
             user_data['language'],
             user_data['phone_number'],
         )
-        utils.update_caregiver_profile(
-            caregiver_profile,
-            caregiver_data['legacy_id'],
+        # Handle creation of legacy user and dummy patient (if necessary)
+        legacy_user = legacy_utils.create_caregiver_user(
+            relationship,
+            user_data['username'],
+            user_data['language'],
+            email,
         )
+        utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
-class RetrieveCaregiverView(RetrieveAPIView[User]):
+class RetrieveCaregiverView(RetrieveAPIView[Caregiver]):
     """
     View that looks up a caregiver by its username.
 
@@ -427,6 +581,6 @@ class RetrieveCaregiverView(RetrieveAPIView[User]):
 
     permission_classes = (IsRegistrationListener,)
     queryset = Caregiver.objects.all()
-    serializer_class = drf_serializers.Serializer
+    serializer_class = EmptyResponseSerializer
     lookup_field = 'username'
     lookup_url_kwarg = 'username'

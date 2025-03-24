@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Module providing legacy model managers to provide the interface through which Legacy DB query operations.
 
@@ -12,21 +16,19 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 """
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import DatabaseError, models
 from django.utils import timezone
 
-from django_stubs_ext.aliases import ValuesQuerySet
-
 from opal.patients.models import Relationship, RelationshipStatus
 
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
-    from opal.legacy.models import (  # noqa: F401, WPS235
+    from opal.legacy.models import (
         LegacyAnnouncement,
         LegacyAppointment,
         LegacyDiagnosis,
@@ -34,6 +36,7 @@ if TYPE_CHECKING:
         LegacyEducationalMaterial,
         LegacyNotification,
         LegacyPatient,
+        LegacyPatientActivityLog,
         LegacyPatientTestResult,
         LegacyQuestionnaire,
         LegacyTxTeamMessage,
@@ -42,6 +45,8 @@ if TYPE_CHECKING:
 _Model = TypeVar('_Model', bound=models.Model)
 
 logger = logging.getLogger(__name__)
+
+LOGIN_ACTIVITY_FILTER: Final = models.Q(request='Log', parameters__contains='"Activity":"Login"')
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
@@ -86,18 +91,19 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
         """
-        Get the queryset of uncompleted appointments for a given user.
+        Get the queryset of unread appointments for a given user.
+
+        The appointments might contain any statuses and states (e.g., deleted, cancelled, completed, etc.).
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
             username: Firebase username making the request.
 
         Returns:
-            Queryset of uncompleted appointments.
+            Queryset of unread appointments with all status/states (e.g., deleted, cancelled, etc.).
         """
         return self.filter(
             patientsernum=patient_sernum,
-            state='Active',
         ).exclude(
             readby__contains=username,
         )
@@ -123,9 +129,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             if legacy_id is not None
         ]
         return self.select_related(
-            'aliasexpressionsernum',
-            'aliasexpressionsernum__aliassernum',
             'aliasexpressionsernum__aliassernum__appointmentcheckin',
+            'aliasexpressionsernum__aliassernum__educational_material_control_ser_num',
         ).filter(
             scheduledstarttime__date=timezone.localtime(timezone.now()).date(),
             patientsernum__in=patient_ids,
@@ -163,7 +168,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> ValuesQuerySet['LegacyAppointment', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyAppointment', dict[str, Any]]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -189,7 +194,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             source_db_name=models.F('source_database__source_database_name'),
             source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
             source_db_alias_description=models.F('aliasexpressionsernum__description'),
-            source_db_appointment_id=models.F('appointment_aria_ser'),
+            source_db_appointment_id=models.F('source_system_id'),
             alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
             scheduled_start_time=models.F('scheduledstarttime'),
         ).values(
@@ -211,12 +216,13 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
 
     def create_pathology_document(
         self,
-        legacy_patient_id: Optional[int],
+        legacy_patient_id: int | None,
         prepared_by: int,
         received_at: datetime,
         report_file_name: str,
     ) -> 'LegacyDocument':
-        """Insert a new pathology PDF document record to the OpalDB.Document table.
+        """
+        Insert a new pathology PDF document record to the OpalDB.Document table.
 
         This will indicate that a new pathology report is available for viewing in the app.
 
@@ -235,7 +241,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
         LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
         LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
-        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')    # noqa: N806
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')  # noqa: N806
 
         try:
             legacy_document = self.create(
@@ -268,11 +274,9 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         except (ObjectDoesNotExist, MultipleObjectsReturned) as exp:
             # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
             # instances cannot be found or multiple instances returned
-            err = 'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {0}'.format(
-                exp,
-            )
-            logger.error(err)
-            raise DatabaseError(err)
+            err = f'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {exp}'
+            logger.exception(err)
+            raise DatabaseError(err) from exp
 
         legacy_document.save()
 
@@ -322,7 +326,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> ValuesQuerySet['LegacyPatient', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyPatient', dict[str, Any]]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -337,6 +341,8 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         return self.filter(
             patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
+        ).exclude(
+            sex='Unknown',
         ).annotate(
             patient_id=models.F('patientsernum'),
             opal_registration_date=models.F('registration_date'),
@@ -362,7 +368,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> ValuesQuerySet['LegacyDiagnosis', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyDiagnosis', dict[str, Any]]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -407,7 +413,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> ValuesQuerySet['LegacyPatientTestResult', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyPatientTestResult', dict[str, Any]]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
@@ -469,7 +475,170 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         """
         return self.filter(
             patient_ser_num=patient_sernum,
+            test_expression_ser_num__test_control_ser_num__publish_flag=1,
             available_at__lte=timezone.now(),
         ).exclude(
             read_by__contains=username,
+        )
+
+
+class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']):
+    """LegacyPatientActivityLog model manager."""
+
+    def get_aggregated_user_app_activities(
+        self,
+        start_datetime_period: datetime,
+        end_datetime_period: datetime,
+    ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
+        """
+        Retrieve aggregated application activity statistics per user for a given time period.
+
+        The statistics are fetched from the legacy `PatientActivityLog` (a.k.a. PAL) table.
+
+        NOTE: The `PatientActivityLog.DateTime` field stores the datetime in the EST time zone format
+        (e.g., zoneinfo.ZoneInfo(key=EST5EDT))), while managed Django models store datetimes in the
+        UTC format. Both are time zone aware.
+
+        Args:
+            start_datetime_period: the beginning of the time period of app activities being extracted
+            end_datetime_period: the end of the time period of app activities being extracted
+
+        Returns:
+            Annotated `LegacyPatientActivityLog` records
+        """
+        return self.filter(
+            date_time__gte=start_datetime_period,
+            date_time__lt=end_datetime_period,
+        ).values(
+            'username',
+        ).annotate(
+            last_login=models.Max('date_time', filter=LOGIN_ACTIVITY_FILTER),
+            count_logins=models.Count('activity_ser_num', filter=LOGIN_ACTIVITY_FILTER, distinct=True),
+            count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
+            count_update_security_answers=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='UpdateSecurityQuestionAnswer'),
+            ),
+            count_update_passwords=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='AccountChange', parameters='OMITTED'),
+            ),
+            count_update_language=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='AccountChange', parameters__contains='Language'),
+            ),
+            count_device_ios=models.Count(
+                'activity_ser_num',
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
+                    parameters__contains='"deviceType":"iOS"',
+                ),
+                distinct=True,
+            ),
+            count_device_android=models.Count(
+                'activity_ser_num',
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
+                    parameters__contains='"deviceType":"Android"',
+                ),
+                distinct=True,
+            ),
+            count_device_browser=models.Count(
+                'activity_ser_num',
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
+                    parameters__contains='"deviceType":"browser"',
+                ),
+                distinct=True,
+            ),
+            # NOTE! The action_date indicates the date when the application activities were made.
+            # It is not the date when the activity statistics were populated.
+            action_date=models.Value(start_datetime_period.date()),
+        ).filter(
+            # Since the query returns each unique pairing of patient+user (e.g., relationship),
+            #     we have the potential to have several 'useless' records created here.
+            # This might occur if the legacy 'PatientActivityLog' table contains only
+            # patient activity records with no user activities.
+            #
+            # To solve this problem we filter out these rows with 0 counts
+            # using a secondary filter to mimic the MySQL `HAVING` clause.
+            models.Q(count_logins__gt=0)
+            | models.Q(count_feedback__gt=0)
+            | models.Q(count_update_security_answers__gt=0)
+            | models.Q(count_update_passwords__gt=0)
+            | models.Q(count_update_language__gt=0)
+            | models.Q(count_device_ios__gt=0)
+            | models.Q(count_device_android__gt=0)
+            | models.Q(count_device_browser__gt=0),
+        )
+
+    def get_aggregated_patient_app_activities(
+        self,
+        start_datetime_period: datetime,
+        end_datetime_period: datetime,
+    ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
+        """
+        Retrieve aggregated application activity statistics per patient for a given time period.
+
+        The statistics are fetched from the legacy `PatientActivityLog` (a.k.a. PAL) table.
+
+        NOTE: The `PatientActivityLog.DateTime` field stores the datetime in the EST time zone format
+        (e.g., zoneinfo.ZoneInfo(key=EST5EDT))), while managed Django models store datetimes in the
+        UTC format. Both are time zone aware.
+
+        Args:
+            start_datetime_period: the beginning of the time period of app activities being extracted
+            end_datetime_period: the end of the time period of app activities being extracted
+
+        Returns:
+            Annotated `LegacyPatientActivityLog` records
+        """
+        # NOTE: an activity triggered from the Notifications page is recorded differently than
+        #       an activity that is initialized in the chart.
+        #       E.g., if Marge clicks on a TxTeamMessage notification from her Home page,
+        #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
+        #       Whereas if Marge clicks on a TxTeamMessage from her chart page,
+        #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
+        return self.filter(
+            date_time__gte=start_datetime_period,
+            date_time__lt=end_datetime_period,
+        ).exclude(
+            target_patient_id=None,
+        ).values(
+            'target_patient_id',
+            'username',
+        ).annotate(
+            # NOTE: the count includes both successful and failed check-ins
+            # TODO: QSCCD-2139. Split the counts of successful from failed check in attempts
+            count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
+            count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
+            # NOTE: educational materials count does not include opened sub educational materials or chapters.
+            # E.g., Package or Booklet educational materials might have sub-materials that won't be counted.
+            count_educational_materials=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
+            ),
+            count_questionnaires_complete=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
+            ),
+            count_labs=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
+            ),
+            # NOTE! The action_date indicates the date when the application activities were made.
+            # It is not the date when the activity statistics were populated.
+            action_date=models.Value(start_datetime_period.date()),
+        ).filter(
+            # Since the query returns each unique pairing of patient+user (e.g., relationship),
+            #     we have the potential to have several 'useless' records created here.
+            # For example, if Fred Flintstone logged in once, did nothing and logged out,
+            #     then this query would create one row for Fred's patient activity with all the counts set to 0.
+            # Also, a row with with zero counts might be created if user switches the profile to associated profile
+            # and makes activities that are not captured by this query (e.g., navigating to the `Notifications` tab).
+            #
+            # To solve this problem we filter out these rows with 0 counts
+            # using a secondary filter to mimic the MySQL `HAVING` clause.
+            models.Q(count_checkins__gt=0)
+            | models.Q(count_documents__gt=0)
+            | models.Q(count_educational_materials__gt=0)
+            | models.Q(count_questionnaires_complete__gt=0)
+            | models.Q(count_labs__gt=0),
         )

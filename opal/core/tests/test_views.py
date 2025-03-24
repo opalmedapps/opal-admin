@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import json
 from http import HTTPStatus
 from pathlib import Path
@@ -14,6 +18,7 @@ from pytest_mock.plugin import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from opal.core.api.views import EmptyResponseSerializer
 from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.models import Site
 from opal.patients import factories as patient_factories
@@ -24,8 +29,12 @@ from .. import views
 pytestmark = pytest.mark.django_db()
 
 PATIENT_UUID = uuid4()
-FIXTURES_DIR = Path(__file__).resolve().parent.joinpath(
-    'fixtures',
+FIXTURES_DIR = (
+    Path(__file__)
+    .resolve()
+    .parent.joinpath(
+        'fixtures',
+    )
 )
 
 
@@ -37,7 +46,7 @@ def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) ->
     # follow any redirect to retrieve content
     response = user_client.get(reverse('start'), follow=True)
 
-    assertContains(response, text='href="{url}/#!/home"'.format(url=url))
+    assertContains(response, text=f'href="{url}/#!/home"')
 
 
 def test_logout_url_shown(user_client: Client) -> None:
@@ -61,7 +70,7 @@ def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -
     """Ensure that an unauthenticated request to the redirect URL is redirected to the login page."""
     response = client.get(reverse(settings.LOGIN_REDIRECT_URL))
 
-    assertRedirects(response, '{url}?next=/'.format(url=reverse(settings.LOGIN_URL)))
+    assertRedirects(response, f'{reverse(settings.LOGIN_URL)}?next=/')
 
 
 def test_loginview_success(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
@@ -198,12 +207,12 @@ def test_hl7_create_view_pid_does_not_match_uuid(
 ) -> None:
     """Ensure the endpoint returns an error if patient identified in the PID doesn't match the uuid in the url."""
     api_client.force_login(interface_engine_user)
-    patient = patient_factories.Patient(
+    patient = patient_factories.Patient.create(
         ramq='TEST01161972',
         uuid=PATIENT_UUID,
     )
-    hospital_factories.Site(acronym='RVH')
-    patient_factories.HospitalPatient(
+    hospital_factories.Site.create(acronym='RVH')
+    patient_factories.HospitalPatient.create(
         patient=patient,
         site=Site.objects.get(acronym='RVH'),
         mrn='9999996',
@@ -230,7 +239,7 @@ def test_hl7_create_view_patient_not_found_by_pid_data(
 ) -> None:
     """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
     api_client.force_login(interface_engine_user)
-    hospital_factories.Site(acronym='RVH')
+    hospital_factories.Site.create(acronym='RVH')
     message = 'Patient identified by HL7 PID could not be uniquely found in database.'
     with assertRaisesMessage(ValidationError, message):
         api_client.post(
@@ -241,10 +250,18 @@ def test_hl7_create_view_patient_not_found_by_pid_data(
 
 
 def _load_hl7_fixture(filename: str) -> str:
-    """Load a HL7 fixture for testing.
+    """
+    Load a HL7 fixture for testing.
 
     Returns:
         string of the fixture data
     """
     with (FIXTURES_DIR / filename).open('r') as file:
         return file.read()
+
+
+def test_empty_response_serializer() -> None:
+    """Ensure the EmptyResponseSerializer data is empty and valid."""
+    serializer = EmptyResponseSerializer(data={})
+    assert serializer.is_valid(), 'Serializer should be valid for empty data'
+    assert not serializer.data, 'Serialized data should be an empty dictionary'

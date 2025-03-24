@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for detecting outdated new registration codes and expire them."""
 from datetime import timedelta
 from typing import Any
@@ -10,7 +14,8 @@ from opal.hospital_settings.models import Institution
 
 
 class Command(BaseCommand):
-    """Command to find and expire the outdated registration codes outside of the duration `REGISTRATION_CODE_EXPIRY`.
+    """
+    Command to find and expire the outdated registration codes outside of the duration `REGISTRATION_CODE_EXPIRY`.
 
     The variable `REGISTRATION_CODE_EXPIRY` is set in the `constants.py` file.
 
@@ -18,7 +23,7 @@ class Command(BaseCommand):
 
     """
 
-    help = 'expire outdated registration code based on preset duration in constants'  # noqa: A003
+    help = 'expire outdated registration code based on preset duration in constants'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """

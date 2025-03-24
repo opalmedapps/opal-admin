@@ -1,5 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 services:
   db:
     volumes:
       - ./certs:/certs
       - ./docker/mariadb/config/ssl.cnf:/etc/mysql/conf.d/ssl.cnf
+  app:
+    environment:
+      - DATABASE_USE_SSL=True

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command for Users migration."""
 from enum import Enum
 from typing import Any
@@ -23,7 +27,7 @@ class Access(Enum):
 class Command(BaseCommand):
     """Command to migrate users from legacy DB to the new backend users."""
 
-    help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
+    help = 'migrate OAUsers from legacy DB to the new backend'
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -59,8 +63,7 @@ class Command(BaseCommand):
                 clinical_staff_user.is_superuser = True
 
                 if self._save_clinical_staff_user(clinical_staff_user):
-                    # waiting for fix to be released: https://github.com/typeddjango/django-stubs/pull/1864
-                    admin_group.user_set.add(clinical_staff_user)  # type: ignore[attr-defined]
+                    admin_group.user_set.add(clinical_staff_user)
                     admin_users_counter += 1
                     all_users_counter += 1
             else:
@@ -73,8 +76,7 @@ class Command(BaseCommand):
                 if self._save_clinical_staff_user(clinical_staff_user):
                     # access codes 0-7
                     if role_module:
-                        # waiting for fix to be released: https://github.com/typeddjango/django-stubs/pull/1864
-                        registrant_group.user_set.add(clinical_staff_user)  # type: ignore[attr-defined]
+                        registrant_group.user_set.add(clinical_staff_user)
                         staff_users_counter += 1
 
                     all_users_counter += 1
@@ -103,10 +105,7 @@ class Command(BaseCommand):
 
         except ValidationError as exception:
             self.stderr.write(self.style.ERROR(
-                'Error: {msg} when saving username: {username}'.format(
-                    msg=exception,
-                    username=clinical_staff_user.username,
-                ),
+                f'Error: {exception} when saving username: {clinical_staff_user.username}',
             ))
             return False
 

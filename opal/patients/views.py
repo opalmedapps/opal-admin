@@ -1,15 +1,17 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides views for the patients app."""
+
 import base64
-import json
 from collections import OrderedDict
-from datetime import date
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Model
 from django.forms import Form
 from django.forms.models import ModelForm
@@ -29,7 +31,7 @@ from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.integration.schemas import PatientSchema
 
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
@@ -65,7 +67,8 @@ class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView
 
 
 class RelationshipTypeDeleteView(
-    PermissionRequiredMixin, generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
+    PermissionRequiredMixin,
+    generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
 ):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
@@ -76,7 +79,7 @@ class RelationshipTypeDeleteView(
     """
 
     # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
-    object: RelationshipType  # noqa: A003
+    object: RelationshipType
     model = RelationshipType
     permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/confirm_delete.html'
@@ -101,7 +104,7 @@ class AccessRequestStorageMixin:
         """
         storage: dict[str, _StorageValue] = self.request.session[self.session_key_name]
 
-        return storage  # noqa: WPS331
+        return storage
 
     def _reset_storage(self) -> None:
         """Erase the storage to empty data for the user's session."""
@@ -264,7 +267,7 @@ class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorag
         return data.get('registration_code') is not None
 
 
-class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+class AccessRequestView(
     PermissionRequiredMixin,
     AccessRequestStorageMixin,
     TemplateResponseMixin,
@@ -311,11 +314,13 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         """
         self._reset_storage()
 
-        return self.render_to_response(self.get_context_data(
-            search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
-        ))
+        return self.render_to_response(
+            self.get_context_data(
+                search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
+            )
+        )
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
         Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid.
 
@@ -368,7 +373,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return self.get(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: C901, WPS210, WPS231
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the context data for rendering the view.
 
@@ -383,16 +388,18 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         next_step = kwargs.get('next_step', 'search')
         current_forms = kwargs.get('current_forms', [])
 
-        context_data['management_form'] = forms.AccessRequestManagementForm(initial={
-            'current_step': next_step,
-        })
+        context_data['management_form'] = forms.AccessRequestManagementForm(
+            initial={
+                'current_step': next_step,
+            }
+        )
         context_data['next_button_text'] = self.texts.get(next_step)
 
         for current_form in current_forms:
             prefix = self._get_prefix(current_form.__class__)
             context_data[f'{prefix}_form'] = current_form
 
-        if len(current_forms) >= 2 and current_forms[0].is_valid():
+        if len(current_forms) >= 2 and current_forms[0].is_valid():  # noqa: PLR2004
             patient_form: forms.AccessRequestSearchPatientForm = current_forms[1]
             patients = [patient_form.patient]
 
@@ -408,16 +415,16 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             table_data = [existing_user.user] if existing_user else []
             context_data['user_table'] = tables.ExistingUserTable(table_data)
 
-        if current_step == 'confirm' or next_step == 'confirm':
-            # populate relationship type (in case it is just the ID)
-            relationship_form.full_clean()
+            if current_step == 'confirm' or next_step == 'confirm':
+                # populate relationship type (in case it is just the ID)
+                relationship_form.full_clean()
 
-            if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
-                context_data['next_button_text'] = _('Create Access Request')
+                if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
+                    context_data['next_button_text'] = _('Create Access Request')
 
         return context_data
 
-    def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
+    def _done(self, current_forms: list[Form]) -> HttpResponse:
         patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
         patient = patient_form.patient
 
@@ -425,9 +432,9 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # populate relationship type (in case it is just the ID)
         relationship_form.full_clean()
 
-        caregiver = (
-            relationship_form.existing_user
-            or (relationship_form.cleaned_data['first_name'], relationship_form.cleaned_data['last_name'])
+        caregiver = relationship_form.existing_user or (
+            relationship_form.cleaned_data['first_name'],
+            relationship_form.cleaned_data['last_name'],
         )
 
         relationship, registration_code = create_access_request(
@@ -451,7 +458,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # avoid form resubmit via Post/Redirect/Get pattern
         return redirect(reverse('patients:access-request-confirmation'))
 
-    def _get_prefix(self, form_class: type[Form]) -> Optional[str]:
+    def _get_prefix(self, form_class: type[Form]) -> str | None:
         """
         Return the prefix for the given form class.
 
@@ -484,7 +491,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         # the data for a step is always a dict
         return storage[f'step_{step}']  # type: ignore[return-value]
 
-    def _store_form_data(  # noqa: C901, WPS231, WPS210 (too complex, too many local variables)
+    def _store_form_data(
         self,
         form: Form,
         step: str,
@@ -524,19 +531,16 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
                 storage['patient'] = patient.pk
             else:
                 # convert it to a dictionary to be able to serialize it into JSON
-                data_dict = patient._asdict()  # noqa: WPS437
-                data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
-                # use DjangoJSONEncoder which supports date/datetime
-                storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
+                storage['patient'] = PatientSchema.model_dump_json(patient)
         elif step == 'relationship':
-            caregiver: Optional[CaregiverProfile] = form.existing_user  # type: ignore[attr-defined]
+            caregiver: CaregiverProfile | None = form.existing_user  # type: ignore[attr-defined]
 
             if caregiver:
                 storage['caregiver'] = caregiver.pk
 
         self.request.session.modified = True
 
-    def _get_form_kwargs(  # noqa: C901, WPS210 (too complex, too many local variables)
+    def _get_form_kwargs(
         self,
         step: str,
         is_current: bool,
@@ -566,27 +570,21 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
         if step in {'patient', 'relationship'}:
             # TODO: might be better to refactor into a function so it can be tested easier
             patient_data: str | int = storage.get('patient', '[]')  # type: ignore[assignment]
-            patient: OIEPatientData | Patient
+            patient: PatientSchema | Patient
 
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
             else:
-                patient_json = json.loads(patient_data)
-                date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
-                # convert JSON back to OIEPatientData for consistency (so it is either Patient or OIEPatientData)
-                patient_json['mrns'] = [
-                    OIEMRNData(**mrn)
-                    for mrn in patient_json['mrns']
-                ]
-                patient_json['date_of_birth'] = date_of_birth
-                patient = OIEPatientData(**patient_json)
+                # convert JSON back to PatientSchema for consistency
+                # (so it is either Patient or PatientSchema)
+                patient = PatientSchema.model_validate_json(patient_data)
 
             kwargs.update({
                 'patient': patient,
             })
 
             if step == 'relationship':
-                caregiver_pk: Optional[int] = storage.get('caregiver', None)  # type: ignore[assignment]
+                caregiver_pk: int | None = storage.get('caregiver', None)  # type: ignore[assignment]
 
                 if caregiver_pk:
                     caregiver = CaregiverProfile.objects.get(pk=caregiver_pk)
@@ -599,7 +597,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return kwargs
 
-    def _get_forms(self, current_step: str) -> list[Form]:  # noqa: WPS210, WPS231
+    def _get_forms(self, current_step: str) -> list[Form]:
         """
         Return all forms up to the current step.
 
@@ -628,10 +626,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             # strip it from the POST data which contains keys with the prefix
             # NOTE: this is not ideal since even the current form will get initial data this way
             # which can cause issues when the form itself has actual disabled fields
-            initial = {
-                key.replace(f'{current_step}-', ''): value
-                for key, value in data.items()
-            }
+            initial = {key.replace(f'{current_step}-', ''): value for key, value in data.items()}
 
             # use initial instead of data to avoid validating a form when up-validate is used
             if is_current_step and 'X-Up-Validate' in self.request.headers:
@@ -655,7 +650,7 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         return form_list
 
-    def _next_step(self, current_step: str) -> Optional[str]:
+    def _next_step(self, current_step: str) -> str | None:
         """
         Determine the next step in the process.
 
@@ -680,14 +675,16 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
     table_class = tables.PendingRelationshipTable
     template_name = 'patients/relationships/pending_relationship_list.html'
     queryset = Relationship.objects.select_related(
-        'patient', 'caregiver__user', 'type',
+        'patient',
+        'caregiver__user',
+        'type',
     ).prefetch_related(
         'patient__hospital_patients__site',
     )
     filterset_class = ManageCaregiverAccessFilter
     ordering = ['request_date']
 
-    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:  # noqa: WPS615
+    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:
         """
         Apply the filter arguments on the set of data.
 
@@ -719,7 +716,7 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
 
         return filterset_kwargs
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:  # noqa: WPS615
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `PendingRelationshipListView` update view.
 
@@ -754,7 +751,9 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
     form_class = RelationshipAccessForm
     success_url = reverse_lazy('patients:relationships-list')
     queryset = Relationship.objects.select_related(
-        'patient', 'caregiver__user', 'type',
+        'patient',
+        'caregiver__user',
+        'type',
     ).prefetch_related(
         'patient__hospital_patients__site',
     )
@@ -775,14 +774,14 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         context_data['table'] = tables.PatientTable([context_data['relationship'].patient])
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
-        elif self.request.META.get('HTTP_REFERER'):
-            context_data['cancel_url'] = self.request.META.get('HTTP_REFERER')
+        elif self.request.headers.get('referer'):
+            context_data['cancel_url'] = self.request.headers.get('referer')
         else:
             context_data['cancel_url'] = default_success_url
 
         return context_data
 
-    def get_success_url(self) -> str:  # noqa: WPS615
+    def get_success_url(self) -> str:
         """
         Provide the correct `success_url` that re-submits search query or default success_url.
 
@@ -808,8 +807,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             regular response for continuing get functionlity for `ManageCaregiverAccessUpdateView`
         """
         relationship_record = self.get_object()
-        http_referer = self.request.META.get('HTTP_REFERER')
-        cancel_url = http_referer if http_referer else self.get_success_url()
+        http_referrer = self.request.headers.get('referer')
+        cancel_url = http_referrer or self.get_success_url()
         if relationship_record.status == RelationshipStatus.EXPIRED:
             return render(
                 request,
@@ -890,7 +889,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             user_form.save()
         else:
             # to show errors and display messages on the field
-            for field, _value in user_form.errors.items():
+            for field in user_form.errors:
                 form.add_error(field, user_form.errors.get(field))  # type: ignore[arg-type]
 
             return self.form_invalid(form)

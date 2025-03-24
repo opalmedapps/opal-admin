@@ -1,9 +1,11 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import json
 from http import HTTPStatus
-from typing import Optional
 
 from django.contrib.auth import authenticate
-from django.test import Client
 
 import pytest
 from pytest_django.fixtures import SettingsWrapper
@@ -33,7 +35,7 @@ def _create_auth_data(success: str) -> dict[str, str]:
     (AUTHENTICATION_FAILURE, None),
     (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
 ])
-def test_parse_response(success: str, expected: Optional[UserData], mocker: MockerFixture) -> None:
+def test_parse_response(success: str, expected: UserData | None, mocker: MockerFixture) -> None:
     """Ensure JSON response is parsed correctly."""
     mock_logger = mocker.patch('logging.Logger.error')
     response: Response = Response()
@@ -284,7 +286,7 @@ def test_authenticate_integration_incomplete_data(mocker: MockerFixture) -> None
 
 
 @pytest.mark.django_db
-def test_django_authentication_integration(client: Client, mocker: MockerFixture) -> None:
+def test_django_authentication_integration(mocker: MockerFixture) -> None:
     """Django authenticate should return user on successful authentication using fed auth."""
     user = UserModel.objects.create(username='testuser')
 
@@ -294,7 +296,7 @@ def test_django_authentication_integration(client: Client, mocker: MockerFixture
     # spy on FedAuthBackend.authenticate to ensure it was called
     mock_fedauth = mocker.spy(FedAuthBackend, 'authenticate')
 
-    authenticated_user = authenticate(None, username='testuser', password='testpass')  # noqa: S106
+    authenticated_user = authenticate(None, username='testuser', password='testpass')
 
     assert authenticated_user == user
     mock_fedauth.assert_called()

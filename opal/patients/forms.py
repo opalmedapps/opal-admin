@@ -1,24 +1,27 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides forms for the `patients` app."""
+
 import logging
 from datetime import timedelta
-from typing import Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.db.models import QuerySet
 from django.forms.fields import Field
-from django.utils.translation import gettext
+from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import override
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Column, Div
+from crispy_forms.layout import HTML, Column, Div, Hidden, Layout, Row, Submit
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 from phonenumber_field.formfields import PhoneNumberField
+from pydantic import ValidationError as PydanticValidationError
 from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
@@ -33,14 +36,17 @@ from opal.core.forms.layouts import (
 )
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.hospital_settings.models import Institution
-from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.integration import hospital
+from opal.services.integration.schemas import PatientSchema
 from opal.services.twilio import TwilioService, TwilioServiceError
 from opal.users.models import Caregiver, Language, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,9 +92,9 @@ def get_site_empty_label(form: forms.Form) -> str:
         `Choose` if mrn is selected, `Not Required` otherwise
     """
     if is_mrn_selected(form):
-        return cast(str, _('Choose...'))
+        return cast('str', _('Choose...'))
 
-    return cast(str, _('Not required'))
+    return cast('str', _('Not required'))
 
 
 class DisableFieldsMixin(forms.Form):
@@ -104,13 +110,13 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression)
+        super().__init__(*args, **kwargs)
 
         self.has_existing_data = False
 
     def disable_fields(self) -> None:
         """Disable all form fields."""
-        for _field_name, field in self.fields.items():
+        for field in self.fields.values():
             field.disabled = True
 
         self.has_existing_data = True
@@ -156,10 +162,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         super().__init__(*args, **kwargs)
 
         # store response for patient searched in hospital
-        self.patient: Union[OIEPatientData, Patient, None] = None
+        self.patient: PatientSchema | Patient | None = None
 
         # initialize site with a site object when there is a single site and card type is mrn
-        site_field: forms.ModelChoiceField = self.fields['site']  # type: ignore[assignment]
+        site_field: forms.ModelChoiceField[Site] = self.fields['site']  # type: ignore[assignment]
         sites: QuerySet[Site] = site_field.queryset  # type: ignore[assignment]
 
         if sites.count() == 1:
@@ -217,81 +223,69 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             the cleaned data
         """
         super().clean()
-        # initialize the OIEService to communicate with oie
-        self.oie_service: OIEService = OIEService()
 
-        card_type: Optional[str] = self.cleaned_data.get('card_type')
-        medical_number: Optional[str] = self.cleaned_data.get('medical_number')
-        site: Optional[Site] = self.cleaned_data.get('site')
+        card_type: str | None = self.cleaned_data.get('card_type')
+        medical_number: str | None = self.cleaned_data.get('medical_number')
+        site: Site | None = self.cleaned_data.get('site')
 
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
 
         return self.cleaned_data
 
-    def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
+    def _search_patient(self, card_type: str, medical_number: str, site: Site | None) -> None:
         """
-        Perform patient search in `Patient` model then in OIE.
+        Perform patient search in `Patient` model then in source system.
 
         Args:
             card_type: card type either ramq or mrn
             medical_number: medical number of the proper card type in string form
             site: `Site` object
         """
-        response: dict[str, Any] = {}
-
         if card_type == constants.MedicalCard.RAMQ.name:
             self.patient = Patient.objects.filter(ramq=medical_number).first()
             if not self.patient:
-                response = self.oie_service.find_patient_by_ramq(medical_number)
+                self.patient = self._find_patient_in_source_system(constants.MedicalCard.RAMQ, medical_number)
         # MRN
-        elif card_type == constants.MedicalCard.MRN.name and site:
+        elif card_type == constants.MedicalCard.MRN.name and site:  # pragma: no cover
+            # site is always required when searching by MRN
             self.patient = Patient.objects.filter(
                 hospital_patients__mrn=medical_number,
                 hospital_patients__site=site,
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(medical_number, site.acronym)
+                self.patient = self._find_patient_in_source_system(
+                    constants.MedicalCard.MRN, medical_number, site.acronym
+                )
 
-        if response:
-            self._handle_response(response)
+    def _find_patient_in_source_system(
+        self,
+        card_type: constants.MedicalCard,
+        medical_number: str,
+        site: str | None = None,
+    ) -> PatientSchema | None:
+        patient = None
 
-        if not self.patient and not self._errors:
+        try:
+            if card_type == constants.MedicalCard.RAMQ:
+                patient = hospital.find_patient_by_hin(medical_number)
+            elif site:  # pragma: no cover
+                # site is always required when searching by MRN
+                patient = hospital.find_patient_by_mrn(medical_number, site)
+        except hospital.PatientNotFoundError:
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
+        except RequestException:
+            self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
+            LOGGER.exception('Error while connecting to hospital interface to find patient')
+        except hospital.NonOKResponseError:
+            self.add_error(NON_FIELD_ERRORS, _('Error while communicating with the hospital interface.'))
+            LOGGER.exception('Error while connecting to hospital interface to find patient')
+        except PydanticValidationError:
+            self.add_error(NON_FIELD_ERRORS, _('Hospital patient contains invalid data.'))
+            LOGGER.exception('Source system returned in valid patient data')
 
-    def _handle_response(self, response: dict[str, Any]) -> None:
-        """Handle the response from OIE service.
-
-        Args:
-            response: OIE service response
-        """
-        messages = []
-        if response['status'] == 'success':
-            self.patient = response['data']
-        else:
-            messages = response['data'].get('message')
-
-            if 'connection_error' in messages:
-                self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
-            elif 'no_test_patient' in messages:
-                self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
-
-        errors = {
-            ' dateOfBirth': _('Patient Date of Birth is invalid.'),
-            ' firstName': _('Patient firstName is invalid.'),
-            ' lastName': _('Patient lastName is invalid.'),
-            ' sex': _('Patient sex is invalid.'),
-            ' alias': _('Patient alias is invalid.'),
-            ' ramq ': _('Patient ramq is invalid.'),
-            ' ramqExpiration': _('Patient ramq expiration is invalid.'),
-            'Patient MRN': _('Patient MRN is invalid.'),
-        }
-
-        for message in messages:
-            for error, text in errors.items():
-                if error in message:
-                    self.add_error(NON_FIELD_ERRORS, text)
+        return patient
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -303,19 +297,14 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     Submitting the form (assuming it is valid) confirms that the correct patient was found.
     """
 
-    # TODO: checkbox will be needed to be added at the end
-    # move search buttons to inline with search
-    # make form continue when clicking checkbox
-    # "The correct patient was found and the patient data is correct"
-
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | PatientSchema, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
 
         The patient can either be an existing patient or a search result from the hospital.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance
+            patient: a `Patient` or `SourceSystemPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -351,7 +340,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
                 _('Unable to complete action with this patient. Please contact Medical Records.'),
             )
 
-        if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
+        if isinstance(self.patient, PatientSchema) and has_multiple_mrns_with_same_site_code(self.patient):
             self.add_error(
                 NON_FIELD_ERRORS,
                 _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
@@ -360,10 +349,10 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         return cleaned_data
 
 
-class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """This form provides a radio button to choose the relationship to the patient."""
 
-    relationship_type = forms.ModelChoiceField(
+    relationship_type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all().reverse(),
         widget=AvailableRadioSelect(attrs={'up-validate': ''}),
         label=_('Relationship to the patient'),
@@ -372,7 +361,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     form_filled = DynamicField(
         forms.BooleanField,
         label=_('The requestor filled out the request form'),
-        required=lambda form: form._form_required(),  # noqa: WPS437
+        required=lambda form: form._form_required(),  # noqa: SLF001
     )
 
     id_checked = forms.BooleanField(label=_('Requestor ID checked'))
@@ -409,10 +398,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(  # noqa: WPS231 (too much cognitive complexity)
+    def __init__(
         self,
-        patient: Patient | OIEPatientData,
-        existing_user: Optional[CaregiverProfile] = None,
+        patient: Patient | PatientSchema,
+        existing_user: CaregiverProfile | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -420,7 +409,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance
+            patient: a `Patient` or `SourceSystemPatientData` instance
             existing_user: a `CaregiverProfile` if a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
@@ -448,12 +437,13 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = existing_user
+        self.existing_user: CaregiverProfile | None = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.disable_csrf = True
 
+        validation_text = gettext('Validation')
         self.helper.layout = Layout(
             Row(
                 Column(
@@ -461,7 +451,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
                 Column(
                     # make it appear like a label
-                    HTML('<p class="fw-semibold">{0}</p>'.format(_('Validation'))),
+                    HTML(f'<p class="fw-semibold">{validation_text}</p>'),
                     'form_filled',
                     'id_checked',
                 ),
@@ -472,22 +462,26 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         )
 
         if self.is_existing_user_selected():
-            self.helper.layout[2].append(Layout(
-                Row(
-                    Column('user_email', css_class='col-4'),
-                    Column('user_phone', css_class='col-4'),
-                    Column(InlineSubmit('search_user', label=gettext('Find User'))),
-                ),
-                HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
-            ))
+            self.helper.layout[2].append(
+                Layout(
+                    Row(
+                        Column('user_email', css_class='col-4'),
+                        Column('user_phone', css_class='col-4'),
+                        Column(InlineSubmit('search_user', label=gettext('Find User'))),
+                    ),
+                    HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
+                )
+            )
         # handle current value being None
         else:
-            self.helper.layout[2].extend(Layout(
-                Row(
-                    Column('first_name', css_class='col-4'),
-                    Column('last_name', css_class='col-4'),
-                ),
-            ))
+            self.helper.layout[2].extend(
+                Layout(
+                    Row(
+                        Column('first_name', css_class='col-4'),
+                        Column('last_name', css_class='col-4'),
+                    ),
+                )
+            )
 
         if isinstance(patient, Patient):
             relationship_types = utils.valid_relationship_types(patient)
@@ -515,7 +509,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return False
 
-    def is_existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
+    def is_existing_user_selected(self, cleaned_data: dict[str, Any] | None = None) -> bool:
         """
         Return whether the existing user option is selected.
 
@@ -529,11 +523,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Returns:
             True, if the existing user option is selected, False otherwise
         """
-        user_type: Optional[str] = cleaned_data.get('user_type') if cleaned_data else self['user_type'].value()
+        user_type: str | None = cleaned_data.get('user_type') if cleaned_data else self['user_type'].value()
 
         return user_type == constants.UserType.EXISTING.name
 
-    def clean(self) -> dict[str, Any]:  # noqa: WPS231
+    def clean(self) -> dict[str, Any]:
         """
         Validate the form.
 
@@ -553,9 +547,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             existing_user = self.existing_user
             relationship_type = cleaned_data.get('relationship_type')
 
-            if existing_user:
-                if relationship_type:
-                    self._validate_relationship(patient_instance, existing_user, relationship_type)
+            if existing_user and relationship_type:
+                self._validate_relationship(patient_instance, existing_user, relationship_type)
         elif patient_instance:
             self._validate_existing_relationship(cleaned_data, patient_instance)
 
@@ -589,7 +582,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 )
 
     def _validate_relationship(
-        self, patient: Patient | None,
+        self,
+        patient: Patient | None,
         caregiver: CaregiverProfile,
         relationship_type: RelationshipType,
     ) -> None:
@@ -751,7 +745,7 @@ class AccessRequestSendSMSForm(forms.Form):
             ),
         )
 
-    def clean(self) -> Optional[dict[str, Any]]:  # noqa: WPS210 (too many local variables)
+    def clean(self) -> dict[str, Any] | None:
         """
         Send the SMS to the phone number if the form fields are valid.
 
@@ -797,7 +791,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     last_name = forms.CharField(
         label=_('Last Name'),
     )
-    type = forms.ModelChoiceField(  # noqa: A003
+    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
@@ -835,7 +829,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Set the layout.
 
@@ -878,25 +872,28 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         self.fields['status'].choices = [  # type: ignore[attr-defined]
-            (choice.value, choice.label) for choice in Relationship.valid_statuses(
+            (choice.value, choice.label)
+            for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
             )
         ]
-        self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['start_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
-            ) or Relationship.max_end_date(
+            )
+            or Relationship.max_end_date(
                 self.instance.patient.date_of_birth,
             ),
         })
-        self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
+        self.fields['end_date'].widget.attrs.update({
             'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
-            ) or Relationship.max_end_date(
+            )
+            or Relationship.max_end_date(
                 self.instance.patient.date_of_birth,
             ),
         })
@@ -931,19 +928,16 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         """
         super().clean()
 
-        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
-        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
-        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+        caregiver_firstname: str | None = self.cleaned_data.get('first_name')
+        caregiver_lastname: str | None = self.cleaned_data.get('last_name')
+        type_field: RelationshipType = cast('RelationshipType', self.cleaned_data.get('type'))
 
         # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
             caregiver: User = self.instance.caregiver.user
 
             # Only add an error if the name was modified by the user
-            if (
-                caregiver.first_name != caregiver_firstname
-                and caregiver.last_name != caregiver_lastname
-            ):
+            if caregiver.first_name != caregiver_firstname and caregiver.last_name != caregiver_lastname:
                 error = _("The caregiver's name cannot currently be changed.")
                 self.add_error(NON_FIELD_ERRORS, error)
 
@@ -983,8 +977,8 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['card_type'])
-        site: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['site'])
+        card_type = cast('forms.ChoiceField', self.fields['card_type'])
+        site = cast('forms.ModelChoiceField[Site]', self.fields['site'])
 
         # add up-validate to `card_type` field to trigger post on change
         card_type.widget.attrs.update({'up-validate': ''})

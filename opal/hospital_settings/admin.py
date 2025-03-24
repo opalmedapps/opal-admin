@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides admin options for hospital-specific settings models."""
 from django.contrib import admin
 from django.http import HttpRequest
@@ -10,7 +14,7 @@ from .models import Institution, Site
 # need to use modeltranslation's admin
 # see: https://django-modeltranslation.readthedocs.io/en/latest/admin.html
 @admin.register(Institution)
-class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin[Institution]):
+class InstitutionAdmin(TranslationAdmin[Institution]):
     """This class provides admin options for `Institution`."""
 
     list_display = ['__str__', 'acronym']
@@ -34,7 +38,7 @@ class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin[Institution]):
 
 
 @admin.register(Site)
-class SiteAdmin(TranslationAdmin):
+class SiteAdmin(TranslationAdmin[Site]):
     """This class provides admin options for `Site`."""
 
     list_display = ['__str__', 'acronym', 'institution']

@@ -1,6 +1,8 @@
-"""This module provides admin options for patient models."""
-from typing import Optional
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
+"""This module provides admin options for patient models."""
 from django.contrib import admin
 from django.http import HttpRequest
 
@@ -45,8 +47,9 @@ class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
 
     # Django Admin deletion privileges discussion:
     # https://stackoverflow.com/questions/38127581/django-admin-has-delete-permission-ignored-for-delete-action
-    def has_delete_permission(self, request: HttpRequest, obj: Optional[models.RelationshipType] = None) -> bool:
-        """Override default default permission behaviour for restricted role types.
+    def has_delete_permission(self, request: HttpRequest, obj: models.RelationshipType | None = None) -> bool:
+        """
+        Override default default permission behaviour for restricted role types.
 
         Args:
             request: Http request details.
@@ -58,7 +61,7 @@ class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
         if obj and obj.role_type in models.PREDEFINED_ROLE_TYPES:
             return False
 
-        return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
+        return super().has_delete_permission(request, obj)
 
 
 @admin.register(models.Relationship)

@@ -1,7 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 /* Opal Purple for the primary button */
 .btn-primary {
   --bs-btn-color: #fff;
-  --bs-btn-bg: #337ab7;
+  --bs-btn-bg: #10171d;
   --bs-btn-border-color: #2e6da4;
   --bs-btn-hover-bg: #235c6d;
   --bs-btn-hover-border-color: #235c6d;

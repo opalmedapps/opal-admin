@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module provides models for hospital-specific settings."""
 
 from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
@@ -31,7 +35,7 @@ class Institution(Location, AbstractLabDelayModel):  # type: ignore[django-manag
 
     terms_of_use = models.FileField(
         verbose_name=_('Terms of use'),
-        upload_to='uploads/%Y/%m/%d/',  # noqa: WPS323
+        upload_to='uploads/%Y/%m/%d/',
         validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
     )
     logo = models.ImageField(

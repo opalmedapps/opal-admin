@@ -1,5 +1,11 @@
+# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
-from collections.abc import Callable
+
+from collections.abc import Callable, Generator
+from datetime import datetime
 from pathlib import Path
 
 from django.apps import apps
@@ -12,13 +18,16 @@ from django.test import Client
 import pytest
 from _pytest.config import Config
 from _pytest.main import Session
-from _pytest.python import Function, Module
+from _pytest.python import Function, Module  # noqa: PLC2701
 from pytest_django import DjangoDbBlocker
+from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from opal.core import constants
+from opal.legacy import factories as legacy_factories
+from opal.legacy.models import LegacyEducationalMaterialControl
 from opal.legacy_questionnaires import factories
-from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.users.models import User
 
 LEGACY_TEST_PATIENT_ID = 51
@@ -54,7 +63,17 @@ def pytest_collection_modifyitems(session: Session, config: Config, items: list[
             original_items_order.append(item)
 
     # modify items in place with migration tests moved to the end
-    items[:] = original_items_order + migration_tests  # noqa: WPS362
+    items[:] = original_items_order + migration_tests
+
+
+@pytest.fixture(autouse=True)
+def mock_now(mocker: MockerFixture) -> None:
+    """
+    Mock timezone.now to avoid jumping to the next day in UTC.
+
+    This is an issue when tests run late in the day where the equivalent in UTC is on the next day.
+    """
+    mocker.patch('django.utils.timezone.now', side_effect=lambda: datetime.now().astimezone().replace(hour=13))
 
 
 @pytest.fixture
@@ -69,7 +88,7 @@ def api_client() -> APIClient:
 
 
 @pytest.fixture
-def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:  # noqa: WPS442
+def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient:
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in user.
 
@@ -87,7 +106,7 @@ def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient
 
 
 @pytest.fixture
-def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:  # noqa: WPS442
+def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:
     """
     Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in admin user.
 
@@ -139,7 +158,8 @@ def user_with_permission(user: User) -> Callable[[str], User]:
     Returns:
         a callable that adds a permission
     """
-    def add_permission(permission_name: str) -> User:  # noqa: WPS430
+
+    def add_permission(permission_name: str) -> User:
         permission_names = [permission_name]
 
         permission_tuples = [permission.split('.') for permission in permission_names]
@@ -235,6 +255,44 @@ def orms_user(django_user_model: User, settings: LazySettings) -> User:
 
 
 @pytest.fixture
+def orms_system_user(django_user_model: User) -> User:
+    """
+    Fixture providing a `User` instance representing the ORMS sytem.
+
+    Args:
+        django_user_model: the `User` model used in this project
+
+    Returns:
+        a user instance representing ORMS
+    """
+    return django_user_model.objects.create_user(username=constants.USERNAME_ORMS)
+
+
+@pytest.fixture(autouse=True)
+def set_orms_enabled(settings: LazySettings) -> None:
+    """
+    Fixture enables ORMS by default for all unit tests.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.ORMS_ENABLED = True
+    settings.ORMS_HOST = 'http://localhost:8086'
+
+
+@pytest.fixture
+def set_orms_disabled(settings: LazySettings) -> None:
+    """
+    Fixture disables ORMS for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.ORMS_ENABLED = False
+    del settings.ORMS_HOST
+
+
+@pytest.fixture
 def user_client(client: Client, user: User) -> Client:
     """
     Fixture providing an instance of [Client][django.test.Client] with a logged in user.
@@ -263,7 +321,7 @@ def is_legacy_model(model: type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label == 'legacy' and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -283,12 +341,13 @@ def _manage_unmanaged_models() -> None:
     unmanaged_models = [model for model in models if is_legacy_model(model)]
 
     for model in unmanaged_models:
-        model._meta.managed = True  # noqa: WPS437
+        model._meta.managed = True
 
 
 @pytest.fixture(autouse=True)
 def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
-    """Fixture changing the `MEDIA_ROOT` value of the settings.
+    """
+    Fixture changing the `MEDIA_ROOT` value of the settings.
 
     Args:
         tmp_path: Object to a temporary directory which is unique to each test function
@@ -298,81 +357,226 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004, WPS442
-    """Add test_QuestionnaireDB setup by executing code in tests/sql.
+def django_db_setup(
+    django_db_setup: None,
+    django_db_blocker: DjangoDbBlocker,
+) -> Generator[None, None, None]:
+    """
+    Set up the QuestionnaireDB manually using an SQL file with the schema.
 
     Args:
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
-    """
-    # load test questionnaire db sql
-    with Path('opal/tests/sql/test_QuestionnaireDB.sql').open(encoding='ISO-8859-1') as handle:
-        sql_content = handle.read()
-        handle.close()
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute(sql_content)
-            conn.close()
+    Yields:
+        None
+    """
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='utf-8') as handle:
+        sql_content = handle.read()
+
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
+        sql_cleanup = handle.read()
+
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute(sql_content)
+
+    yield
+
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute('SELECT COUNT(*) FROM questionnaire;')
+        result = conn.fetchone()
+        assert result[0] == 0
+        conn.execute(sql_cleanup)
 
 
 @pytest.fixture
-def databank_consent_questionnaire_and_response(  # noqa: WPS210
-) -> tuple[LegacyPatient, LegacyQuestionnaire]:
-    """Add a full databank consent questionnaire and simple response to test setup.
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:
+    """
+    Initialize the QuestionnaireDB with data.
+
+    Data inserted includes the creation of questionnaires with related questions and dictionary entires.
+    Additionally, instances of questionnaire answers:
+
+    * Completed ESAS questionnaires for patientId 1, 2; in progress for patientId 3
+    * Completed Patient Satisfaction Questionnaire for patientId 3
+    * New Bowel Function Questionnaire for patientId 3
+    * New Quality of Life - Head and Neck Cancer for patientId 2
+    * New BREAST-Q Reconstruction Module Preoperative Scales
+      and BREAST-Q Reconstruction Module Postoperative Scales for patientId 1
+
+    Args:
+        django_db_blocker: pytest fixture to allow database access here only
+
+    Yields:
+        None
+    """
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='utf-8') as handle:
+        sql_data = handle.read()
+
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
+        sql_cleanup = handle.read()
+
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        # safety check to ensure that there is no data already
+        conn.execute('SELECT COUNT(*) FROM questionnaire;')
+        result = conn.fetchone()
+        assert result[0] == 0
+        conn.execute(sql_data)
+
+    yield
+
+    with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
+        conn.execute(sql_cleanup)
+
+
+@pytest.fixture
+def databank_consent_questionnaire_and_response() -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
+    """
+    Add a full databank consent questionnaire and simple response to test setup.
 
     Returns:
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
     """
     # Legacy patient record
-    consenting_patient = factories.LegacyPatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory.create(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient.full_clean()
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
-    middle_name_content = factories.LegacyDictionaryFactory(
+    middle_name_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
         content='Middle name',
         language_id=2,
     )
-    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
-    cob_content = factories.LegacyDictionaryFactory(
+    middle_name_content.full_clean()
+    middle_name_question = factories.LegacyQuestionFactory.create(display=middle_name_content)
+    middle_name_question.full_clean()
+    cob_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
         content='City of birth',
         language_id=2,
     )
-    cob_question = factories.LegacyQuestionFactory(display=cob_content)
-    consent_purpose_content = factories.LegacyDictionaryFactory(
+    cob_content.full_clean()
+    cob_question = factories.LegacyQuestionFactory.create(display=cob_content)
+    cob_question.full_clean()
+    consent_purpose_content = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Consent',
         language_id=2,
     )
-    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
-    questionnaire_title = factories.LegacyDictionaryFactory(
+    consent_purpose_content.full_clean()
+    consent_purpose = factories.LegacyPurposeFactory.create(title=consent_purpose_content)
+    consent_purpose.full_clean()
+    # Questionnaire
+    questionnaire_title = factories.LegacyDictionaryFactory.create(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='Databank Consent Questionnaire',
         language_id=2,
     )
-    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
-    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
-    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
-    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
+    questionnaire_title.full_clean()
+    consent_questionnaire = factories.LegacyQuestionnaireFactory.create(
+        purpose=consent_purpose, title=questionnaire_title
+    )
+    consent_questionnaire.full_clean()
+    # Questionnaire sections
+    section = factories.LegacySectionFactory.create(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory.create(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory.create(question=cob_question, section=section)
     # Answer data
-    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory(
+    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=consent_questionnaire,
         patient=consenting_patient,
     )
-    answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
-    cob_answer = factories.LegacyAnswerFactory(
+    answer_questionnaire.full_clean()
+    answer_section = factories.LegacyAnswerSectionFactory.create(
+        answer_questionnaire=answer_questionnaire, section=section
+    )
+    cob_answer = factories.LegacyAnswerFactory.create(
         question=cob_question,
         answer_section=answer_section,
         patient=consenting_patient,
         questionnaire=consent_questionnaire,
     )
-    middle_name_answer = factories.LegacyAnswerFactory(
+    middle_name_answer = factories.LegacyAnswerFactory.create(
         question=middle_name_question,
         answer_section=answer_section,
         patient=consenting_patient,
         questionnaire=consent_questionnaire,
     )
-    factories.LegacyAnswerTextBoxFactory(answer=cob_answer, value='Springfield')
-    factories.LegacyAnswerTextBoxFactory(answer=middle_name_answer, value='Juliet')
+    factories.LegacyAnswerTextBoxFactory.create(answer=cob_answer, value='Springfield')
+    factories.LegacyAnswerTextBoxFactory.create(answer=middle_name_answer, value='Juliet')
 
     return (consenting_patient, consent_questionnaire)
+
+
+@pytest.fixture
+def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEducationalMaterialControl]:
+    """
+    Add a full databank consent questionnaire to test setup.
+
+    Returns:
+        Consent questionnaire
+    """
+    # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
+    middle_name_content = factories.LegacyDictionaryFactory.create(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID,
+        content='Middle name',
+        language_id=2,
+    )
+    middle_name_question = factories.LegacyQuestionFactory.create(display=middle_name_content)
+    cob_content = factories.LegacyDictionaryFactory.create(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
+        content='City of birth',
+        language_id=2,
+    )
+    cob_question = factories.LegacyQuestionFactory.create(display=cob_content)
+    consent_purpose_content = factories.LegacyDictionaryFactory.create(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
+        content='Consent',
+        language_id=2,
+    )
+    consent_purpose = factories.LegacyPurposeFactory.create(title=consent_purpose_content)
+    questionnaire_title = factories.LegacyDictionaryFactory.create(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
+        content='QSCC Databank Information',
+        language_id=2,
+    )
+    consent_questionnaire = factories.LegacyQuestionnaireFactory.create(
+        purpose=consent_purpose, title=questionnaire_title
+    )
+    section = factories.LegacySectionFactory.create(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory.create(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory.create(question=cob_question, section=section)
+    legacy_factories.LegacyQuestionnaireControlFactory.create(
+        questionnaire_name_en='QSCC Databank Information',
+        questionnaire_db_ser_num=consent_questionnaire.id,
+        publish_flag=1,
+    )
+    info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory.create(
+        educational_material_type_en='Factsheet',
+        educational_material_type_fr='Fiche Descriptive',
+        name_en='Information and Consent Factsheet - QSCC Databank',
+        name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
+    )
+
+    return (consent_questionnaire, info_sheet)
+
+
+@pytest.fixture
+def set_databank_disabled(settings: LazySettings) -> None:
+    """
+    Fixture disables the databank for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.DATABANK_ENABLED = False
+
+
+@pytest.fixture(autouse=True)
+def set_databank_enabled(settings: LazySettings) -> None:
+    """
+    Fixture enables databank by default for all unit tests.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.DATABANK_ENABLED = True
