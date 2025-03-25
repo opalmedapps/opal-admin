@@ -16,7 +16,7 @@ django-auditlog==3.0.0  # https://github.com/jazzband/django-auditlog
 django-structlog==9.0.1  # https://github.com/jrobichaud/django-structlog/
 django-tables2==2.7.5  # https://github.com/jieter/django-tables2
 django-forms-dynamic==1.0.0  # https://github.com/dabapps/django-forms-dynamic
-django-phonenumber-field[phonenumberslite]==7.3.0  # https://github.com/stefanfoulis/django-phonenumber-field
+django-phonenumber-field[phonenumberslite]==8.0.0  # https://github.com/stefanfoulis/django-phonenumber-field
 
 # required as a runtime dependency due to the need to monkeypatch at runtime for generics
 # see: https://github.com/typeddjango/django-stubs/tree/master/ext
