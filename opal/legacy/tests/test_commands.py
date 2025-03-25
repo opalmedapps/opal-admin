@@ -431,13 +431,13 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
-        legacy_patient = legacy_factories.LegacyPatientFactory.create(tel_num=514123456789)
+        legacy_patient = legacy_factories.LegacyPatientFactory.create(tel_num=5142345678)
         legacy_user = legacy_factories.LegacyUserFactory.create()
 
         command = migrate_caregivers.Command()
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
-        assert profile.user.phone_number == '+1514123456789'
+        assert profile.user.phone_number == '+15142345678'
 
     def test_import_new_user_phone_number_missing(self) -> None:
         """Ensure that a legacy patient without a phone number is correctly migrated."""

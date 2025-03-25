@@ -1114,7 +1114,7 @@ class TestRegistrationCompletionView:
     data_new_caregiver = {
         'caregiver': {
             'language': 'fr',
-            'phone_number': '+15141112222',
+            'phone_number': '+15142112222',
             'username': 'test-username',
         },
         'security_answers': [
@@ -1238,7 +1238,7 @@ class TestRegistrationCompletionView:
         skeleton.refresh_from_db()
         assert skeleton.is_active
         assert skeleton.username == 'test-username'
-        assert skeleton.phone_number == '+15141112222'
+        assert skeleton.phone_number == '+15142112222'
         assert skeleton.language == 'fr'
 
         # check legacy data
@@ -1541,7 +1541,7 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json() == {
-            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
+            'detail': "({'phone_number': [ValidationError(['The phone number entered is not valid.'])]}, None, None)",
         }
         # check that no data was changed
         registration_code.refresh_from_db()

@@ -20,6 +20,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div, Hidden, Layout, Row, Submit
 from crispy_forms.layout import Field as CrispyField
 from dynamic_forms import DynamicField, DynamicFormMixin
+from phonenumber_field.formfields import PhoneNumberField
 from pydantic import ValidationError as PydanticValidationError
 from requests.exceptions import RequestException
 
@@ -392,10 +393,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
     user_phone = DynamicField(
-        forms.CharField,
+        PhoneNumberField,
         label=_('Phone Number'),
-        initial='+1',
-        validators=[validators.validate_phone_number],
         required=lambda form: form.is_existing_user_selected(),
     )
 
@@ -715,11 +714,7 @@ class AccessRequestSendSMSForm(forms.Form):
         choices=Language,
     )
 
-    phone_number = forms.CharField(
-        label=_('Phone Number'),
-        initial='+1',
-        validators=[validators.validate_phone_number],
-    )
+    phone_number = PhoneNumberField(label=_('Phone Number'))
 
     def __init__(self, registration_code: str, *args: Any, **kwargs: Any) -> None:
         """

@@ -1021,7 +1021,7 @@ def test_accessrequestrequestorform_validate_user_types(user_type: constants.Use
     relationshiptype = RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'user_type': user_type.name,
@@ -1051,7 +1051,7 @@ def test_accessrequestrequestorform_clean_existing_user_no_type() -> None:
     """Ensure `clean` can handle a missing relationship type."""
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'user_type': constants.UserType.EXISTING.name,
@@ -1137,10 +1137,11 @@ def test_accessrequestrequestorform_existing_user_layout() -> None:
         form,
         context={'user_table': ExistingUserTable(data=[])},
     )
+
     assert '<input type="text" name="first_name"' not in html
     assert '<input type="text" name="last_name"' not in html
     assert '<input type="email" name="user_email"' in html
-    assert '<input type="text" name="user_phone"' in html
+    assert '<input type="tel" name="user_phone"' in html
 
 
 def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
@@ -1152,7 +1153,7 @@ def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
             'relationship_type': RelationshipType.objects.self_type(),
             'id_checked': True,
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
     )
 
@@ -1196,7 +1197,7 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
         user__first_name='Marge',
         user__last_name='Simpson',
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1207,7 +1208,7 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
             'form_filled': True,
             'id_checked': True,
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
     )
 
@@ -1221,7 +1222,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
         user__first_name='Marge',
         user__last_name='Simpson',
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1231,7 +1232,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
             'relationship_type': RelationshipType.objects.self_type(),
             'id_checked': True,
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
     )
 
@@ -1245,7 +1246,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
         user__first_name='Ned',
         user__last_name='Flanders',
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1255,7 +1256,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
             'relationship_type': RelationshipType.objects.self_type(),
             'id_checked': True,
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
     )
 
@@ -1284,7 +1285,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
     """Ensure `clean()` can handle a name mismatch for self relationships when the patient is new."""
     caregiver = factories.CaregiverProfile.create(
         user__email='homer@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
         user__first_name='Homer',
     )
     data = {
@@ -1307,7 +1308,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_patient_exists()
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+        phone_number='+15142345678',
     )
     relationship = factories.Relationship.create(
         patient__first_name='Marge',
@@ -1337,7 +1338,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+        phone_number='+15142345678',
     )
     factories.Relationship.create(
         patient__first_name='Marge',
@@ -1367,7 +1368,7 @@ def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
         first_name='Marge',
         last_name='Simpson',
         email='marge@opalmedapps.ca',
-        phone_number='+15141234567',
+        phone_number='+15142345678',
     )
     relationship = factories.Relationship.create(
         caregiver=CaregiverProfileFactory.create(user=caregiver),
@@ -1508,7 +1509,7 @@ def test_accessrequestrequestorform_existing_relationship() -> None:
         first_name='Test',
         last_name='Caregiver',
         email='test@opalmedapps.ca',
-        phone_number='+15141234567',
+        phone_number='+15142345678',
     )
     relationship = factories.Relationship.create(
         patient__first_name='Marge',
@@ -1538,7 +1539,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
         first_name='Test',
         last_name='Caregiver',
         email='test@opalmedapps.ca',
-        phone_number='+15141234567',
+        phone_number='+15142345678',
     )
     factories.Relationship.create(
         patient__first_name='Marge',
@@ -1563,7 +1564,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
             'first_name': 'Test111',
             'last_name': 'Caregiver111',
             'user_email': 'test2@opalmedapps.ca',
-            'user_phone': '+1514123456',
+            'user_phone': '+15142345678',
         },
     )
 

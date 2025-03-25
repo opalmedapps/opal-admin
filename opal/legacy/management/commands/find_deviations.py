@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
+
 from typing import Any
 
 from django.conf import settings
@@ -240,10 +241,7 @@ class Command(BaseCommand):
 
         # return `None` if there are no unmatched records
         # and the number of the data records is the same
-        if (
-            not unmatched_records
-            and django_records_len == legacy_records_len
-        ):
+        if not unmatched_records and django_records_len == legacy_records_len:
             return None
 
         err_str = (

@@ -1411,7 +1411,7 @@ def test_access_request_requestor_existing_user_not_found(client: Client, regist
         'relationship-id_checked': True,
         'relationship-user_type': constants.UserType.EXISTING.name,
         'relationship-user_email': 'marge@opalmedapps.ca',
-        'relationship-user_phone': '+15141234567',
+        'relationship-user_phone': '+15142345678',
     }
 
     response = client.post(reverse('patients:access-request'), data=form_data)
@@ -1428,7 +1428,7 @@ def test_access_request_requestor_existing_user_found(client: Client, registrati
     hospital_patient = factories.HospitalPatient.create()
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'step_search': {
@@ -1447,7 +1447,7 @@ def test_access_request_requestor_existing_user_found(client: Client, registrati
         'search_user': 'submit',
         'relationship-user_type': constants.UserType.EXISTING.name,
         'relationship-user_email': 'marge@opalmedapps.ca',
-        'relationship-user_phone': '+15141234567',
+        'relationship-user_phone': '+15142345678',
     }
 
     response = client.post(reverse('patients:access-request'), data=form_data)
@@ -1463,7 +1463,7 @@ def test_access_request_requestor_existing_user(client: Client, registration_use
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'step_search': {
@@ -1484,7 +1484,7 @@ def test_access_request_requestor_existing_user(client: Client, registration_use
         'relationship-id_checked': True,
         'relationship-user_type': constants.UserType.EXISTING.name,
         'relationship-user_email': 'marge@opalmedapps.ca',
-        'relationship-user_phone': '+15141234567',
+        'relationship-user_phone': '+15142345678',
     }
 
     response = client.post(reverse('patients:access-request'), data=form_data)
@@ -1504,10 +1504,12 @@ def test_access_request_requestor_existing_user(client: Client, registration_use
             'first_name': '',
             'last_name': '',
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            # the phone number gets formatted by phonenumberfield according to international format
+            'user_phone': '+1 514-234-5678',
         },
         'caregiver': caregiver.pk,
     })
+
     assert session == expected_data
 
 
@@ -1525,7 +1527,7 @@ def test_access_request_confirm_password_invalid(
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'step_search': {
@@ -1542,7 +1544,7 @@ def test_access_request_confirm_password_invalid(
             'first_name': '',
             'last_name': '',
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
         'caregiver': caregiver.pk,
         'patient': hospital_patient.patient.pk,
@@ -1582,7 +1584,7 @@ def test_access_request_confirm_password_existing_user(
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
         user__email='marge@opalmedapps.ca',
-        user__phone_number='+15141234567',
+        user__phone_number='+15142345678',
     )
     data = {
         'step_search': {
@@ -1599,7 +1601,7 @@ def test_access_request_confirm_password_existing_user(
             'first_name': '',
             'last_name': '',
             'user_email': 'marge@opalmedapps.ca',
-            'user_phone': '+15141234567',
+            'user_phone': '+15142345678',
         },
         'caregiver': caregiver.pk,
         'patient': hospital_patient.patient.pk,

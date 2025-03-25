@@ -24,6 +24,7 @@ from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin, SingleTableView
+from phonenumber_field.phonenumber import PhoneNumber
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
@@ -516,6 +517,9 @@ class AccessRequestView(
             # to support serializing them to JSON
             if isinstance(value, Model):
                 cleaned_data[key] = value.pk
+            # convert the phone number to a string according to the defined format
+            elif isinstance(value, PhoneNumber):
+                cleaned_data[key] = str(value)
 
         storage[f'step_{step}'] = cleaned_data
 

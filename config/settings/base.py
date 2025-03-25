@@ -184,6 +184,7 @@ THIRD_PARTY_APPS = [
     'auditlog',
     'django_structlog',
     'slippers',
+    'phonenumber_field',
     'drf_spectacular',
 ]
 
@@ -559,6 +560,13 @@ SPECTACULAR_SETTINGS = {
 # CORS settings are optional
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
+
+# django-phonenumber-field
+# ------------------------------------------------------------------------------
+# See: https://django-phonenumber-field.readthedocs.io/en/latest/reference.html#settings
+PHONENUMBER_DEFAULT_REGION = 'CA'
+PHONENUMBER_DEFAULT_FORMAT = 'INTERNATIONAL'
+PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 # django-tables2
 # ------------------------------------------------------------------------------

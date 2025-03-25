@@ -71,14 +71,6 @@ msgid "Phone Number"
 msgstr "Numéro de téléphone"
 
 #: opal/users/models.py
-msgid ""
-"Format: +<countryCode><phoneNumber> (for example +15141234567) with an "
-"optional extension \"x123\""
-msgstr ""
-"Format: +<code du pays><numéro de téléphone> (par exemple +15141234567) avec "
-"une extension facultative \"x123\""
-
-#: opal/users/models.py
 msgid "Type"
 msgstr "Type"
 

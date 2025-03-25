@@ -21,11 +21,12 @@ from typing import Any, ClassVar
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
-from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+
+from phonenumber_field.modelfields import PhoneNumberField
 
 from config.settings.base import ADMIN_GROUP_NAME
 
@@ -60,13 +61,9 @@ class User(AbstractUser):
         # use the language code of the first language
         default=Language[0][0],
     )
-    phone_number = models.CharField(
+    phone_number = PhoneNumberField(
         verbose_name=_('Phone Number'),
-        max_length=22,
         blank=True,
-        # Based on a suggestion from here: https://www.twilio.com/docs/glossary/what-e164
-        validators=[RegexValidator(r'^\+[1-9]\d{6,14}(x\d{1,5})?$')],
-        help_text=_('Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"'),
     )
     type = models.CharField(
         verbose_name=_('Type'),
