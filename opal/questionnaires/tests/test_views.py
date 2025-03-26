@@ -12,6 +12,7 @@ from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
+from opal.questionnaires.models import QuestionnaireProfile
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
@@ -58,6 +59,26 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
     response = user_client.get(reverse('questionnaires:reports'))
     assertContains(response, reverse('questionnaires:reports-filter'))
     assertContains(response, reverse('questionnaires:reports-list'))
+
+
+def test_dashboard_multi_questionnaire_profile(user_client: Client) -> None:
+    """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
+    test_questionnaire_profile = QuestionnaireProfileFactory()
+    test_questionnaire_profile.user.is_superuser = True
+    test_questionnaire_profile.user.save()
+    user_client.force_login(test_questionnaire_profile.user)
+
+    response = user_client.get(reverse('questionnaires:reports'))
+    assert response.status_code == HTTPStatus.OK
+    #  Add second questionnaire to list and go back to dashboard page
+    QuestionnaireProfile.update_questionnaires_following(
+        qid='13',
+        qname='Test Add Questionnaire',
+        user=test_questionnaire_profile.user,
+        toggle=True,
+    )
+    response = user_client.get(reverse('questionnaires:reports'))
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
