@@ -86,7 +86,7 @@ Use the template tag [`{{ perms }}`](https://docs.djangoproject.com/en/dev/topic
 
 ## Testing the permissions
 
-The [`PermissionDenied`]((https://docs.djangoproject.com/en/dev/topics/testing/tools/#exceptions)) exception is raised when a user does not have the required permission to access a view. This applies to all permissions, whether built-in or custom. Hence, we can use it to test if this exception is raised. In the references below, there is more than one suggestion to test. However, the most compact and straight forward way to test is the following: In the `test_views.py` file add the following:
+The [`PermissionDenied`](https://docs.djangoproject.com/en/dev/topics/testing/tools/#exceptions) exception is raised when a user does not have the required permission to access a view. This applies to all permissions, whether built-in or custom. Hence, we can use it to test if this exception is raised. In the references below, there is more than one suggestion to test. However, the most compact and straight forward way to test is the following: In the `test_views.py` file add the following:
 
 ```python
 from django.core.exceptions import PermissionDenied
