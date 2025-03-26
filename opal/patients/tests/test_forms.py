@@ -1491,14 +1491,14 @@ def test_accessrequestrequestorform_existing_relationship() -> None:
         patient__first_name='Marge',
         patient__last_name='Simpson',
         caregiver=CaregiverProfile(user=caregiver),
-        type=RelationshipType.objects.mandatory(),
+        type=RelationshipType.objects.mandatary(),
     )
 
     form = forms.AccessRequestRequestorForm(
         patient=OIE_PATIENT_DATA,
         data={
             'user_type': constants.UserType.NEW.name,
-            'relationship_type': RelationshipType.objects.mandatory(),
+            'relationship_type': RelationshipType.objects.mandatary().pk,
             'id_checked': True,
             'first_name': 'Test',
             'last_name': 'Caregiver',
