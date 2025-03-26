@@ -1505,19 +1505,19 @@ def test_caregiver_access_tables_displayed_by_ramq(user_client: Client, django_u
     )
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(name=models.RoleType.SELF),
+        type=models.RelationshipType.objects.self_type(),
     )
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+        type=models.RelationshipType.objects.mandatary(),
     )
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+        type=models.RelationshipType.objects.parent_guardian(),
     )
     factories.Relationship(
         patient=factories.Patient(ramq='TEST123'),
-        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+        type=factories.RelationshipType(),
     )
 
     form_data = {
