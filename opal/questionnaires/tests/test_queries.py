@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import connections
 
 import pytest
-from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
+from pytest_django import DjangoDbBlocker
 
 from .. import queries
 
@@ -21,7 +21,7 @@ def test_set_test_account_string_debug() -> None:
     assert test_accounts == ('')
 
 
-def test_get_all_questionnaires_db_error(django_db_blocker: _DatabaseBlocker) -> None:
+def test_get_all_questionnaires_db_error(django_db_blocker: DjangoDbBlocker) -> None:
     """Test error thrown when empty questionnairedb is provided."""
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
