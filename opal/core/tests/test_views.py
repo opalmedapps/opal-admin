@@ -130,7 +130,7 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
 
 
 def test_languagesview_get() -> None:
-    """The `LanguagesView` can return the languages in the settings."""
+    """Ensure that the `LanguagesView` can return the languages in the settings."""
     view = api_views.LanguagesView()
     response = view.get([])
     data = response.data

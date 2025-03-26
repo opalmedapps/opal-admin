@@ -20,7 +20,7 @@ class LanguagesView(APIView):
         Handle GET requests from `api/languages`.
 
         Args:
-            request: Http request made by the listener.
+            request: Http request.
 
         Returns:
             Http response with the data needed to return the languages.
