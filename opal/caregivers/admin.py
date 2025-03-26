@@ -6,13 +6,19 @@ from modeltranslation.admin import TranslationAdmin
 from . import models
 
 
+class CaregiverProfileAdmin(admin.ModelAdmin):
+    """Admin options for the `CaregiverProfile` model."""
+
+    readonly_fields = ['uuid']
+
+
 class SecurityQuestionAdmin(TranslationAdmin):
     """This class provides admin options for `SecurityQuestion`."""
 
     pass  # noqa: WPS420, WPS604
 
 
-admin.site.register(models.CaregiverProfile, admin.ModelAdmin)
+admin.site.register(models.CaregiverProfile, CaregiverProfileAdmin)
 admin.site.register(models.RegistrationCode, admin.ModelAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionAdmin)
 admin.site.register(models.SecurityAnswer, admin.ModelAdmin)
