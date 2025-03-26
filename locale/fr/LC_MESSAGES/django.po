@@ -134,56 +134,58 @@ msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
 #: opal/templates/sidebar.html
-msgid "Go back to Legacy OpalAdmin"
-msgstr "Retourner à l'ancien OpalAdmin"
-
-#: opal/templates/sidebar.html
-msgid "Home"
-msgstr "Accueil"
-
-#: opal/templates/sidebar.html
-msgid "Home Page"
-msgstr "Page d'accueil"
-
-#: opal/templates/sidebar.html
-msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
-
-#: opal/templates/sidebar.html
-msgid "Institutions"
-msgstr "Établissements"
-
-#: opal/templates/sidebar.html
-msgid "Sites"
-msgstr "Sites"
-
-#: opal/templates/sidebar.html
-msgid "Patients"
-msgstr "Patients"
-
-#: opal/templates/sidebar.html
-msgid "Relationship Types"
-msgstr "Types de Relations"
-
-#: opal/templates/sidebar.html
-msgid "Opal Registration"
-msgstr "Inscription à Opal"
-
-#: opal/templates/sidebar.html
-msgid "Manage Caregiver Access"
-msgstr "Gestion d'accès des proches aidants"
-
-#: opal/templates/sidebar.html
-msgid "Questionnaires"
-msgstr "Questionnaires"
-
-#: opal/templates/sidebar.html
-msgid "Export Reports"
-msgstr "Exportation de Rapports"
+#, fuzzy
+#| msgid "Go back to OpalAdmin menu"
+msgid "Go back to OpalAdmin menu"
+msgstr "Retourner au menu d'OpalAdmin"
 
 #: opal/templates/sidebar.html
 msgid "Log Out"
 msgstr "Se déconnecter"
+
+#: opal/templates/sidebar_menu.html
+msgid "Home"
+msgstr "Accueil"
+
+#: opal/templates/sidebar_menu.html
+msgid "Home Page"
+msgstr "Page d'accueil"
+
+#: opal/templates/sidebar_menu.html
+msgid "Hospital Settings"
+msgstr "Paramètres Hospitalier"
+
+#: opal/templates/sidebar_menu.html
+msgid "Institutions"
+msgstr "Établissements"
+
+#: opal/templates/sidebar_menu.html
+msgid "Sites"
+msgstr "Sites"
+
+#: opal/templates/sidebar_menu.html
+msgid "Patients"
+msgstr "Patients"
+
+#: opal/templates/sidebar_menu.html
+msgid "Relationship Types"
+msgstr "Types de Relations"
+
+#: opal/templates/sidebar_menu.html
+msgid "Opal Registration"
+msgstr "Inscription à Opal"
+
+#: opal/templates/sidebar_menu.html
+msgid "Manage Caregiver Access"
+msgstr "Gestion d'accès des proches aidants"
+
+#: opal/templates/sidebar_menu.html
+msgid "Questionnaires"
+msgstr "Questionnaires"
+
+#: opal/templates/sidebar_menu.html
+msgid "Export Reports"
+msgstr "Exportation de Rapports"
 
 #: opal/templates/tables/action_column.html
 msgid "View"

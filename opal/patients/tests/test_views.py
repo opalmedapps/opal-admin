@@ -625,6 +625,7 @@ def test_relationship_permission_required_success(user_client: Client, django_us
     assert response.status_code == HTTPStatus.OK
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_relationships_response_contains_menu(user_client: Client, django_user_model: User) -> None:
     """Ensures that pending relationships is displayed for users with permission."""
     user = django_user_model.objects.create(username='test_relationship_user')
@@ -693,6 +694,7 @@ def test_relationshiptype_perm_required_success(
     assert response.status_code == HTTPStatus.OK
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
     """Ensures that pending relationshiptypes is displayed for users with permission."""
     response = relationshiptype_user.get(reverse('hospital-settings:index'))
@@ -910,6 +912,7 @@ def test_access_request_no_permission(django_user_model: User) -> None:
         NewAccessRequestView.as_view()(request)
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_access_request_menu_shown(client: Client, registration_user: User) -> None:
     """Ensures that Opal Registration is displayed for users with permission."""
     client.force_login(registration_user)
