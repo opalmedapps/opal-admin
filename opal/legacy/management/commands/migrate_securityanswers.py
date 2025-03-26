@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     ),
                 )
 
-    def _find_question(self, securityquestionsernum: int) -> Any:
+    def _find_question(self, securityquestionsernum: int) -> Optional[SecurityQuestion]:
         """
         Check legacy security question exists or not.
 
@@ -87,7 +87,7 @@ class Command(BaseCommand):
             securityquestionsernum: legacy security question sernum.
 
         Returns:
-            Return SecurityQuestion or None.
+            Return question if found otherwise return None.
         """
         # Skip answer import if related legacy question not found
         try:
@@ -100,21 +100,19 @@ class Command(BaseCommand):
                     questionsernum=securityquestionsernum,
                 ),
             )
-            return None
-
-        # Import SecurityQuestion according to legacy security question or create if not exists.
-        try:
-            question = SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
-        except SecurityQuestion.DoesNotExist:
-            self.stderr.write(
-                'Security question does not exist, title_en: {title_en}'.format(
-                    title_en=legacy_question.questiontext_en,
-                ),
-            )
-            return None
+        if legacy_question:
+            # Import SecurityQuestion according to legacy security question or create if not exists.
+            try:
+                question = SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
+            except SecurityQuestion.DoesNotExist:
+                self.stderr.write(
+                    'Security question does not exist, title_en: {title_en}'.format(
+                        title_en=legacy_question.questiontext_en,
+                    ),
+                )
         return question
 
-    def _find_user(self, patientsernum: int) -> Optional[User]:
+    def _find_user(self, patientsernum: int) -> Optional[User]:  # noqa: C901
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 
@@ -133,23 +131,21 @@ class Command(BaseCommand):
                     usertypesernum=patientsernum,
                 ),
             )
-            return None
         except LegacyUsers.MultipleObjectsReturned:
             self.stderr.write(
                 'Found more than one related legacy users, usertypesernum: {usertypesernum}'.format(
                     usertypesernum=patientsernum,
                 ),
             )
-            return None
 
-        # Skip anwer import if related user not found
-        try:
-            user = User.objects.get(username=legacy_user.username)
-        except User.DoesNotExist:
-            self.stderr.write(
-                'User does not exist, username: {username}'.format(
-                    username=legacy_user.username,
-                ),
-            )
-            return None
+        if legacy_user:
+            # Skip anwer import if related user not found
+            try:
+                user = User.objects.get(username=legacy_user.username)
+            except User.DoesNotExist:
+                self.stderr.write(
+                    'User does not exist, username: {username}'.format(
+                        username=legacy_user.username,
+                    ),
+                )
         return user
