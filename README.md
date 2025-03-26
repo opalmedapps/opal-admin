@@ -143,6 +143,8 @@ python -m pip install -r requirements/development.txt
         ```sh
         brew install mysql-client
         export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+        brew install pkg-config
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
         # install dependencies via pip install
         ```
 
