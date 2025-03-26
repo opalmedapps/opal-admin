@@ -141,7 +141,7 @@ def test_languagesview_get(mocker: MockerFixture) -> None:
     }
 
     view = api_views.LanguagesView()
-    response = view.get([])
+    response = view.get()
     data = cast(Dict[str, dict], response)['data']
     assert data[0] == [('code', 'lan1'), ('name', 'language1')]
     assert data[1] == [('code', 'lan2'), ('name', 'language2')]
