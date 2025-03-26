@@ -1214,8 +1214,45 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
     )
 
 
-# Search Patient Access Results tests
+def test_form_pending_readonly_update_template(relationship_user: Client) -> None:
+    """Ensure that the correct html template appears in update and readonly requests."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    hospital_patient = factories.HospitalPatient()
+    caregiver = factories.CaregiverProfile()
+    relationship_record = factories.Relationship(
+        pk=1,
+        patient=hospital_patient.patient,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.EXPIRED,
+    )
 
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+
+    # test in case of EXPIRED status, readonly view
+    assertContains(response, '<p>{0}</p>'.format(str(relationship_record.patient)))
+    assertContains(response, '{0}:{1}'.format(hospital_patient.site.code, hospital_patient.mrn))
+    assertContains(response, 'Cancel')
+    assertNotContains(response, 'Save')
+
+    relationship_record = factories.Relationship(
+        pk=2,
+        patient=hospital_patient.patient,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 2}))
+
+    # test in case of PENDING status, update view
+    assertContains(response, str(relationship_record.patient.first_name))
+    assertContains(response, 'name="first_name"')
+    assertContains(response, 'Cancel')
+    assertContains(response, 'Save')
+
+
+# Search Patient Access Results tests
 @pytest.mark.parametrize(
     'status', [
         models.RelationshipStatus.PENDING,
