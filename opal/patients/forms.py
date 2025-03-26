@@ -18,7 +18,7 @@ from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .utils import search_valid_relationship_types
 
 
@@ -546,10 +546,9 @@ class ConfirmPasswordForm(forms.Form):
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
     """Form for updating `Relationship Caregiver Access`  record."""
 
-    relationship_type = forms.ModelChoiceField(
-        queryset=RelationshipType.objects.all(),
-        widget=AvailableRadioSelect,
-        label=_('Relationship Type'),
+    type = forms.ModelChoiceField(  # noqa: A003
+        queryset=RelationshipType.objects.none(),
+        label=_('Relationship'),
     )
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -577,7 +576,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'status',
             'reason',
             'cancel_url',
-            'relationship_type',
+            'type',
         )
 
     def __init__(   # noqa: WPS211
@@ -626,14 +625,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 relationship_type,
             ),
         })
-        available_choices = search_valid_relationship_types(date_of_birth)
-        self.fields['relationship_type'].widget.available_choices = available_choices
+        available_choices = RelationshipType.objects.filter_by_patient_age(
+            patient_age=Patient.calculate_age(date_of_birth=date_of_birth),
+        )
+        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
+        initial_index = [
+            index
+            for index, item in enumerate(available_choices)
+            if item == self.instance.type
+        ]
+        self.fields['type'].initial = available_choices[initial_index[0]]
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': ''}
-
         self.helper.layout = Layout(
-            'relationship_type',
+            'type',
             'start_date',
             'end_date',
             'status',

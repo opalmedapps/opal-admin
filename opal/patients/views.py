@@ -3,7 +3,7 @@ import base64
 import io
 from collections import Counter
 from datetime import date
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -143,7 +143,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             self.request.session['site_selection'] = site_selection
         return form_step_data
 
-    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -154,7 +154,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             the template context for a step
         """
-        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
+        context: dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
             patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
             context = self._update_patient_confirmation_context(context, patient_record)
@@ -478,9 +478,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
     def _update_patient_confirmation_context(
         self,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         patient_record: OIEPatientData,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update the context for patient confirmation form.
 
@@ -529,7 +529,7 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
 
-    def get_form_kwargs(self) -> Dict[str, Any]:
+    def get_form_kwargs(self) -> dict[str, Any]:
         """
         Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
 
@@ -557,25 +557,7 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
     permission_required = ('patients.can_manage_relationships',)
     success_url = reverse_lazy('patients:relationships-pending-list')
 
-    def get_form_kwargs(self) -> dict[str, str]:
-        """
-        Return the kwargs for `ManagePendingUpdateView` update view.
-
-        Returns:
-            the dictionary of kwards including date_of_birth
-        """
-        kwargs = super().get_form_kwargs()
-        # Get the priamry key of Relationship object
-        pk = self.kwargs.get('pk', None)
-
-        if pk:
-            relationship = Relationship.objects.get(pk=pk)
-            patient = relationship.patient
-            kwargs['date_of_birth'] = patient.date_of_birth
-
-        return kwargs
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `ManagePendingUpdateView` update view.
 
@@ -601,7 +583,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
     It overrides `get_success_url()` to provide the correct `success_url` when saving an update.
     """
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for `ManageSearchUpdateView` update view.
 

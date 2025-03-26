@@ -42,7 +42,7 @@ def test_relationshippending_form_is_valid() -> None:
         data=form_data,
         instance=relationship_info,
         date_of_birth=datetime.date.today() - relativedelta(
-            years=10,
+            years=18,
         ),
         relationship_type=factories.RelationshipType(),
         request_date=datetime.date.today(),
@@ -52,17 +52,19 @@ def test_relationshippending_form_is_valid() -> None:
 
 def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
-    relationship_info = factories.Relationship.build()
+    relationship_info = factories.Relationship.build(
+        type=factories.RelationshipType(),
+    )
     form_data = model_to_dict(relationship_info, exclude=[
         'start_date',
         'end_date',
     ])
-
+    print(form_data)
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
         date_of_birth=datetime.date.today() - relativedelta(
-            years=10,
+            years=18,
         ),
         relationship_type=factories.RelationshipType(),
         request_date=datetime.date.today(),
@@ -79,11 +81,12 @@ def test_relationshippending_update() -> None:
         data=form_data,
         instance=relationship_info,
         date_of_birth=datetime.date.today() - relativedelta(
-            years=10,
+            years=18,
         ),
         relationship_type=factories.RelationshipType(),
         request_date=datetime.date.today(),
     )
+
     relationshippending_form.save()
 
     assert Relationship.objects.all()[0].start_date == relationshippending_form.data['start_date']
@@ -91,7 +94,9 @@ def test_relationshippending_update() -> None:
 
 def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
-    relationship_info = factories.Relationship.build()
+    relationship_info = factories.Relationship.build(
+        type=factories.RelationshipType(),
+    )
     form_data = model_to_dict(relationship_info, exclude=[
         'start_date',
         'end_date',
@@ -102,7 +107,7 @@ def test_relationshippending_update_fail() -> None:
         data=form_data,
         instance=relationship_info,
         date_of_birth=datetime.date.today() - relativedelta(
-            years=10,
+            years=18,
         ),
         relationship_type=factories.RelationshipType(),
         request_date=datetime.date.today(),
@@ -127,7 +132,9 @@ def test_relationshippending_form_date_validated() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=18,
+        ),
         relationship_type=factories.RelationshipType(),
         request_date=relationship_info.start_date + relativedelta(
             years=constants.RELATIVE_YEAR_VALUE,
@@ -156,7 +163,9 @@ def test_relationship_pending_status_reason() -> None:
     pending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=18,
+        ),
         relationship_type=factories.RelationshipType(),
         request_date=relationship_info.start_date + relativedelta(
             years=constants.RELATIVE_YEAR_VALUE,
