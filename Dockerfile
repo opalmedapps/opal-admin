@@ -7,7 +7,7 @@ ARG ENV=development
 RUN apt-get update \
   # dependencies for building Python packages
   && apt-get install -y build-essential \
-  #install git
+  # install git
   && apt-get install git -y \
   # mysqlclient dependencies
   && apt-get install -y default-libmysqlclient-dev \
@@ -15,6 +15,8 @@ RUN apt-get update \
   && apt-get install -y libffi-dev libssl-dev \
   # Translations dependencies
   && apt-get install -y gettext \
+  # cron dependencies
+  && apt-get install -y cron \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
@@ -37,5 +39,11 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 WORKDIR /app
 
 ADD . /app
+
+# Set up the cron jobs
+COPY ./scripts/cron/* /etc/cron.d/
+
+# Add new cron jobs to the cron tab
+RUN crontab /etc/cron.d/crontab
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
