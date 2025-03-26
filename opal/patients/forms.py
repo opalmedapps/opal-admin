@@ -1,4 +1,4 @@
-"""This module provides forms for the `patients` app."""  # noqa: WPS402
+"""This module provides forms for the `patients` app."""
 import logging
 from datetime import timedelta
 from typing import Any, Optional, Union, cast
