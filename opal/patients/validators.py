@@ -20,7 +20,7 @@ def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
     if isinstance(patient, Patient):
         return patient.date_of_death is not None
 
-    return bool(patient.deceased)
+    return patient.deceased
 
 
 def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> bool:
