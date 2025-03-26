@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from factory import Faker, Sequence, SubFactory
+from factory import Faker, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from . import models
@@ -345,7 +345,7 @@ class LegacyTestResultFactory(DjangoModelFactory):
     min_norm = Faker('pyfloat', positive=True)
     approved_flag = 'Y'
     test_value = Faker('pyfloat', positive=True)
-    test_value_string = Faker('sentence')
+    test_value_string = lazy_attribute(lambda legacytestresult: str(legacytestresult.test_value))
     unit_description = Faker('word')
     valid_entry = 'Y'
     date_added = timezone.make_aware(datetime(2018, 1, 1))
