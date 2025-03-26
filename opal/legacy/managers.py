@@ -226,21 +226,20 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread annoucement(s) records.
         """
-        return self.select_related(
+        return self.select_related(  # noqa WPS221
             'postcontrolsernum',
+        ).exclude(
+            readby__contains=user_name,
         ).values(
             'postcontrolsernum',
         ).filter(
             patientsernum__in=patient_sernum_list,
-            # select_related here does a left join instead
-            # of inner join and causes a problem to get
-            # the announcements with the postcontrolsernum
-            # which does not exist. So forward to posttype
-            # which default value is not null, to tell it
-            # null or not and remove the announcement with
+            # select_related here does a left join instead of inner join and causes a problem to get
+            # the announcements with the postcontrolsernum which does not exist. So forward to posttype
+            # which default value is not null, to tell it null or not and remove the announcement with
             # non-existing postcontrolsernum
             postcontrolsernum__posttype__isnull=False,
-        ).count() or 0
+        ).distinct().count() or 0
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
