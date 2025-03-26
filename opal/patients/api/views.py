@@ -2,11 +2,15 @@
 
 from typing import Any, Type
 
+from django.db.models.query import QuerySet
+
 from rest_framework import serializers
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from opal.caregivers.api.serializers import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
+from opal.patients.api.serializers import MyCaregiversSerializer
+from opal.patients.models import Relationship
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -38,3 +42,18 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             return RegistrationCodePatientDetailedSerializer
 
         return RegistrationCodePatientSerializer
+
+
+class GetCaregiverList(ListAPIView):
+    """Class returning list of caregivers for a given patient."""
+
+    serializer_class = MyCaregiversSerializer
+    pagination_class = None
+
+    def get_queryset(self) -> QuerySet[Relationship]:
+        """Query set to retrieve list of caregivers for the input patient.
+
+        Returns:
+            List of caregivers profile for a given patient
+        """
+        return Relationship.objects.filter(patient__legacy_id=self.kwargs['legacy_patient_id'])

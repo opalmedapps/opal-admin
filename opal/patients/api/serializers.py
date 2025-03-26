@@ -47,3 +47,15 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Relationship
         fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
+
+
+class MyCaregiversSerializer(serializers.ModelSerializer):
+    """Serializer for the my caregiver list page in the app."""
+
+    caregiver_id = serializers.IntegerField(source='caregiver.user.id')
+    firstname = serializers.CharField(source='caregiver.user.first_name')
+    lastname = serializers.CharField(source='caregiver.user.last_name')
+
+    class Meta:
+        model = Relationship
+        fields = ['caregiver_id', 'firstname', 'lastname']
