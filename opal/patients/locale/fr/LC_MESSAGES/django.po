@@ -79,6 +79,14 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
+msgid "Right to answer questionnaire"
+msgstr "Le droit de répondre au questionnaire"
+
+#: opal/patients/models.py
+msgid "The caregiver can answer questionnaires on behalf of the patient."
+msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
@@ -115,6 +123,10 @@ msgid "Date of Birth"
 msgstr "Date de naissance"
 
 #: opal/patients/models.py
+msgid "Date and Time of Death"
+msgstr "Date et heure du décès"
+
+#: opal/patients/models.py
 msgid "Sex"
 msgstr "Sexe"
 
@@ -133,6 +145,10 @@ msgstr "Identifiant existant"
 #: opal/patients/models.py
 msgid "Patient"
 msgstr "Patient"
+
+#: opal/patients/models.py
+msgid "Date of death cannot be earlier than date of birth."
+msgstr "Date de décès ne peut pas précéder la date de naissance."
 
 #: opal/patients/models.py
 msgid "Pending"
