@@ -31,16 +31,12 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/caregivers/models.py
-#, fuzzy
-#| msgid "Caregivers"
 msgid "Caregiver Profile"
-msgstr "Proches aidants"
+msgstr "Profil de proche aidant"
 
 #: opal/caregivers/models.py
-#, fuzzy
-#| msgid "Caregivers"
 msgid "Caregiver Profiles"
-msgstr "Proches aidants"
+msgstr "Profil de proche aidants"
 
 #: opal/caregivers/models.py
 msgid "Title"
