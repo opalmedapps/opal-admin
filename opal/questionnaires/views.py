@@ -13,8 +13,8 @@ import pandas as pd
 
 from ..core.audit import update_request_event_query_string
 from ..users.models import User
-from .backend import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .models import QuestionnaireProfile
+from .queries import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .tables import ReportTable
 
 language_map = {'fr': 1, 'en': 2}  # All queries assume the integer representation of opal languages
