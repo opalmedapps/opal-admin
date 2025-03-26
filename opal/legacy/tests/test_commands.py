@@ -241,7 +241,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         message, error = self._call_command('migrate_patients')
 
-        assert 'Number of imported patients is: 1\n' in message
+        assert 'Number of imported patients is: 1 (out of 1)\n' in message
 
     def test_import_pass_patientidentifier_only(self) -> None:
         """Test import fail for patient and pass patient identifier."""
@@ -253,7 +253,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         message, error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
 
     def test_import_pass_patient_only(self) -> None:
         """Test import pass for patient and fail patient identifier already exists."""
@@ -276,7 +276,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         assert 'Patient with legacy_id: 99 already exists, skipping\n' in message
         assert 'Patient identifier legacy_id: 99, mrn: 9999996 already exists, skipping\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
 
     def test_import_failure_multiple_mrns_at_same_site(self) -> None:
         """Test import fail for patient with multiple MRNs at the same site."""
@@ -298,7 +298,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         message, error = self._call_command('migrate_patients')
 
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Number of imported patients is: 0\n' in message
+        assert 'Number of imported patients is: 0 (out of 1)\n' in message
         assert error == (
             'Cannot import patient hospital identifier for patient (legacy ID: 10, MRN: 9999997),'
             + ' already has an MRN at the same site (TEST)\n'

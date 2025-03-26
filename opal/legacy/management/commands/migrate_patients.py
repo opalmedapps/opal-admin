@@ -72,7 +72,7 @@ class Command(BaseCommand):
             self.import_patient_identifier(migrated_patient, legacy_patient)
 
         self.stdout.write(
-            f'Number of imported patients is: {imported_patients_count}',
+            f'Number of imported patients is: {imported_patients_count} (out of {legacy_patients.count()})',
         )
 
     def import_patient_identifier(self, migrated_patient: Patient, legacy_patient: LegacyPatient) -> None:
