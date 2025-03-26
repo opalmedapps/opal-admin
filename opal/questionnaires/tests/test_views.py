@@ -7,6 +7,7 @@ from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
+from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertTemplateUsed, assertURLEqual
 
 from opal.users.models import User
@@ -187,3 +188,45 @@ def test_report_filter_missing_key(user_client: Client, admin_user: AbstractUser
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_update_request_event_filter_template(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure RequestEvent object is correctly updated on call to filter template."""
+    user_client.force_login(admin_user)
+    response = user_client.post(
+        path=reverse('questionnaires:reports-filter'),
+        data={'questionnaireid': ['11']},
+    )
+    q_string = "{'questionnaireid': '11'}"
+    method = 'POST'
+    request_event = RequestEvent.objects.filter(
+        url='/questionnaires/reports/filter/',
+    ).order_by('-datetime').first()
+
+    assert response.status_code == HTTPStatus.OK
+    assert request_event.method == method
+    assert request_event.query_string == q_string
+
+
+def test_update_request_event_detail_template(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure RequestEvent object is correctly updated on call to detail template."""
+    user_client.force_login(admin_user)
+    response = user_client.post(
+        path=reverse('questionnaires:reports-detail'),
+        data={
+            'start': ['2016-11-25'],
+            'end': ['2020-02-27'],
+            'patientIDs': ['3'],
+            'questionIDs': ['823', '824', '811', '830', '832'],
+            'questionnaireid': ['11'],
+        },
+    )
+    q_string = "{'questionnaireid': '11', 'start': '2016-11-25', 'end': '2020-02-27', 'patientIDs': '3', 'questionIDs': '832'}"  # noqa: E501
+    method = 'POST'
+    request_event = RequestEvent.objects.filter(
+        url='/questionnaires/reports/detail/',
+    ).order_by('-datetime').first()
+
+    assert response.status_code == HTTPStatus.OK
+    assert request_event.method == method
+    assert request_event.query_string == q_string

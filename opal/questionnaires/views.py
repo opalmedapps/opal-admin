@@ -85,7 +85,6 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             # Also update auditing service with request details
             update_request_event_query_string(
                 request,
-                'POST',
                 parameters=[
                     'questionnaireid',
                 ],
@@ -143,7 +142,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         # Update audit query string with request parameters
         update_request_event_query_string(
             request,
-            'POST',
             parameters=[
                 'questionnaireid',
                 'start',
