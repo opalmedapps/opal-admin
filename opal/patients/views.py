@@ -13,10 +13,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Model
 from django.forms import Form
 from django.forms.models import ModelForm
-from django.http import HttpResponse
-from django.http.request import HttpRequest
-from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
@@ -82,8 +81,188 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+class AccessRequestStorageMixin:
+    """Mixin to handle storage of session data for access request functionality."""
+
+    session_key_name = 'access_request'
+    # add request to satisfy type checking
+    request: HttpRequest
+
+    def _get_storage(self) -> dict[str, _StorageValue]:
+        """
+        Return the storage for this view from the user's session.
+
+        Raises a KeyError if the session storage does not exist at all.
+
+        Returns:
+            the storage dictionary
+        """
+        storage: dict[str, _StorageValue] = self.request.session[self.session_key_name]
+
+        return storage  # noqa: WPS331
+
+    def _reset_storage(self) -> None:
+        """Erase the storage to empty data for the user's session."""
+        self.request.session[self.session_key_name] = {}
+        self.request.session.modified = True
+
+
+class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorageMixin, generic.FormView):
+    """
+    View that shows the confirmation page for a completed access request.
+
+    Shows a different page depending on whether there is a registration code (new user) or not (existing user).
+    When there is a registration code, the view contains a form to send the registration code as an SMS.
+    """
+
+    form_class = forms.AccessRequestSendSMSForm
+    template_name = 'patients/access_request/confirmation_code.html'
+    template_name_no_code = 'patients/access_request/confirmation.html'
+    permission_required = ('patients.can_perform_registration',)
+
+    def get(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        """
+        Handle GET requests: Return the appropriate template depending on whether there is a code or not.
+
+        Redirects to the access request view if there is no (valid) session data.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        # ensure that there is session data
+        if self._has_confirmation_data():
+            context = self.get_context_data()
+            template_name = self.template_name
+
+            if not self._has_registration_code():
+                template_name = self.template_name_no_code
+                self._reset_storage()
+
+            return render(request, template_name, context)
+
+        return redirect(reverse('patients:access-request'))
+
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        """
+        Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid.
+
+        Redirects to the access request view if there is no (valid) session data.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        if self._has_confirmation_data() and self._has_registration_code():
+            return super().post(request, *args, **kwargs)
+
+        return redirect(reverse('patients:access-request'))
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """
+        Return the context data for the view.
+
+        Adds the required data for the confirmation template from the session.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the context data
+        """
+        context = super().get_context_data(**kwargs)
+
+        data = self._get_storage()
+
+        context.update({
+            'patient': data['patient'],
+            'requestor': data['requestor'],
+        })
+
+        registration_code = data.get('registration_code')
+
+        if registration_code:
+            code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code}'
+            context.update({
+                'registration_code': registration_code,
+                'registration_url': settings.OPAL_USER_REGISTRATION_URL,
+                'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+            })
+
+        return context
+
+    def get_form_kwargs(self) -> dict[str, Any]:
+        """
+        Return the keyword arguments for the form.
+
+        Returns:
+            the form's keyword arguments
+        """
+        kwargs = super().get_form_kwargs()
+
+        data = self._get_storage()
+        kwargs['registration_code'] = data['registration_code']
+
+        return kwargs
+
+    def form_valid(self, form: Form) -> HttpResponse:
+        """
+        Handle a valid form.
+
+        Deletes the session storage and re-renders the same confirmation page.
+
+        Args:
+            form: the valid form
+
+        Returns:
+            the HTTP response
+        """
+        # context needs access to the data, reset it after
+        context = self.get_context_data(send_sms_success=True)
+        self._reset_storage()
+
+        # re-render the same page without the form
+        return self.render_to_response(context)
+
+    def _has_confirmation_data(self) -> bool:
+        """
+        Return whether the session contains expected confirmation data.
+
+        Returns:
+            True, if the expected confirmation data is in the session, False otherwise
+        """
+        # ensure that there is session data
+        if self.session_key_name in self.request.session:
+            data = self._get_storage()
+
+            if all(key in data for key in ('patient', 'requestor', 'registration_code')):
+                return True
+
+        return False
+
+    def _has_registration_code(self) -> bool:
+        """
+        Return whether the session contains a registration code.
+
+        Returns:
+            True, if there is a registration code, False otherwise
+        """
+        data = self._get_storage()
+
+        return data.get('registration_code') is not None
+
+
+class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
     PermissionRequiredMixin,
+    AccessRequestStorageMixin,
     TemplateResponseMixin,
     ContextMixin,
     View,
@@ -97,9 +276,7 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
     """
 
     permission_required = ('patients.can_perform_registration',)
-    template_name = 'patients/access_request/new_access_request.html'
-    template_name_confirmation_code = 'patients/access_request/confirmation_code.html'
-    template_name_confirmation = 'patients/access_request/confirmation.html'
+    template_name = 'patients/access_request/access_request.html'
     prefix = 'search'
 
     forms = OrderedDict({
@@ -115,7 +292,6 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         'confirm': _('Generate Registration Code'),
     }
     current_step_name = 'current_step'
-    session_key_name = 'access_request'
 
     def get(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
         """
@@ -129,7 +305,7 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         Returns:
             the HTTP response
         """
-        self.request.session[self.session_key_name] = {}
+        self._reset_storage()
 
         return self.render_to_response(self.get_context_data(
             search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
@@ -165,11 +341,12 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
             # only validate the current form since all others use stored data
             # don't continue if the next button was not clicked (e.g., an unpoly event was triggered)
             if current_form.is_valid() and 'next' in self.request.POST:
-                # store data for current step in session
-                self._store_form_data(current_form, current_step)
                 next_step = self._next_step(current_step)
 
                 if next_step:
+                    # store data for current step in session
+                    # skip last step to avoid storing the user's password
+                    self._store_form_data(current_form, current_step)
                     current_form.disable_fields()  # type: ignore[attr-defined]
                     next_form_class = self.forms[next_step]
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step, is_current=True)))
@@ -265,24 +442,22 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
             relationship_type=relationship_form.cleaned_data['relationship_type'],
         )
 
-        context: dict[str, Any] = {
-            'relationship': relationship,
-            'patient': relationship.patient,
-            'requestor': relationship.caregiver,
+        data: dict[str, Any] = {
+            'patient': str(relationship.patient),
+            'requestor': str(relationship.caregiver),
         }
-        template_name = self.template_name_confirmation
 
         if registration_code:
-            code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code.code}'
-            context.update({
-                'registration_url': settings.OPAL_USER_REGISTRATION_URL,
+            data.update({
                 'registration_code': registration_code.code,
-                'qr_code': base64.b64encode(qr_code(code_url)).decode(),
             })
-            template_name = self.template_name_confirmation_code
 
-        # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
-        return render(self.request, template_name, context)
+        # store required data for consumption by confirmation view
+        self.request.session[self.session_key_name] = data
+        self.request.session.modified = True
+
+        # avoid form resubmit via Post/Redirect/Get pattern
+        return redirect(reverse('patients:access-request-confirmation'))
 
     def _get_prefix(self, form_class: Type[Form]) -> Optional[str]:
         """
@@ -301,17 +476,6 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
                 return prefix
 
         return None
-
-    def _get_storage(self) -> dict[str, _StorageValue]:
-        """
-        Return the storage for this view from the user's session.
-
-        Returns:
-            the storage dictionary
-        """
-        storage: dict[str, _StorageValue] = self.request.session[self.session_key_name]
-
-        return storage  # noqa: WPS331
 
     def _get_saved_form_data(self, step: str) -> dict[str, Any]:
         """
@@ -610,7 +774,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             the template context for `ManagePendingUpdateView`
         """
         context_data = super().get_context_data(**kwargs)
-        default_success_url = reverse_lazy('patients:relationships-list')
+        default_success_url = reverse('patients:relationships-list')
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
         elif self.request.META.get('HTTP_REFERER'):
@@ -627,7 +791,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         Returns:
             the success url link
         """
-        success_url: str = reverse_lazy('patients:relationships-list')
+        success_url: str = reverse('patients:relationships-list')
         if self.request.POST.get('cancel_url', False):
             success_url = self.request.POST['cancel_url']
 

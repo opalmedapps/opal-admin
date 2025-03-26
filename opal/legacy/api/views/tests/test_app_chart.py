@@ -103,22 +103,22 @@ class TestChartAppView:
         research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
         consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=consent_purpose)
         patient_one = questionnaires_factories.LegacyPatientFactory()
-        patient_two = questionnaires_factories.LegacyPatientFactory(externalid=52)
+        patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
 
         # status=0 by default for new questionnaires
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_one,
+            questionnaire=clinical_questionnaire,
+            patient=patient_one,
         )
         # status=1 indicates in progress
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_one,
+            questionnaire=clinical_questionnaire,
+            patient=patient_one,
             status=1,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=research_questionnaire,
-            patientid=patient_one,
+            questionnaire=research_questionnaire,
+            patient=patient_one,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
             questionnaireid=consent_questionnaire,

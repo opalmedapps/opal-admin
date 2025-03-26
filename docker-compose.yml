@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:10.6.13-focal
+    image: mariadb:10.6.14-focal
     environment:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_USER=${DATABASE_USER}

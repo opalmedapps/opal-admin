@@ -1,13 +1,17 @@
 """This module provides forms for the `patients` app."""
+import logging
 from datetime import timedelta
 from typing import Any, Optional, Union, cast
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db.models import QuerySet
 from django.forms.fields import Field
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import override
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div
@@ -21,11 +25,14 @@ from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormAct
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
-from opal.users.models import Caregiver, User
+from opal.services.twilio import TwilioService, TwilioServiceError
+from opal.users.models import Caregiver, Language, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+LOGGER = logging.getLogger(__name__)
 
 
 # functions that are reused between two forms
@@ -87,7 +94,7 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression)
 
         self.has_existing_data = False
 
@@ -545,11 +552,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             user_email = cleaned_data['user_email']
             user_phone = cleaned_data['user_phone']
 
-            if user_email and user_phone:
-                self.existing_user = CaregiverProfile.objects.filter(
-                    user__email=user_email,
-                    user__phone_number=user_phone,
-                ).first()
+            self.existing_user = CaregiverProfile.objects.filter(
+                user__email=user_email,
+                user__phone_number=user_phone,
+            ).first()
 
             # prevent continuing when no user was found
             if not self.existing_user:
@@ -597,7 +603,8 @@ class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 
     password = forms.CharField(
-        widget=forms.PasswordInput(),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}),
+        strip=False,
         label=_('Please confirm access to patient data by entering your password.'),
     )
 
@@ -651,6 +658,79 @@ class TabRadioSelect(CrispyField):
     """
 
     template = 'patients/radioselect_tabs.html'
+
+
+class AccessRequestSendSMSForm(forms.Form):
+    """This form provides the ability to send SMS with a registration code."""
+
+    language = forms.ChoiceField(
+        choices=Language,
+    )
+
+    phone_number = forms.CharField(
+        label=_('Phone Number'),
+        initial='+1',
+        validators=[validators.validate_phone_number],
+    )
+
+    def __init__(self, registration_code: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for the send SMS form.
+
+        Args:
+            registration_code: the registration code that can be sent to a phone number
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        self.registration_code = registration_code
+
+        self.helper = FormHelper()
+        self.helper.attrs = {'novalidate': '', 'up-submit': '', 'up-target': '#sendSMS'}
+        self.helper.layout = Layout(
+            Div(
+                'language',
+                CrispyField('phone_number', wrapper_class='col-4'),
+                # wrap the submit button to not make it increase in size if the form has field errors
+                Div(
+                    InlineSubmit('send_sms', 'Send'),
+                ),
+                # make form inline
+                css_class='d-md-flex flex-row justify-content-start gap-3',
+            ),
+        )
+
+    def clean(self) -> Optional[dict[str, Any]]:  # noqa: WPS210 (too many local variables)
+        """
+        Send the SMS to the phone number if the form fields are valid.
+
+        Returns:
+            the cleaned form data
+        """
+        cleaned_data = self.cleaned_data
+
+        language = cleaned_data.get('language')
+        phone_number = cleaned_data.get('phone_number')
+        registration_code = self.registration_code
+
+        if language and phone_number:
+            url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
+            with override(language):
+                message = gettext('Your Opal registration code is: {code}. Please go to: {url}'.format(
+                    code=registration_code,
+                    url=url,
+                ))
+
+            twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
+
+            try:
+                twilio.send_sms(phone_number, message)
+            except TwilioServiceError:
+                self.add_error(NON_FIELD_ERRORS, gettext('An error occurred while sending the SMS'))
+                LOGGER.exception(f'Sending SMS failed to {phone_number}')
+
+        return cleaned_data
 
 
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
@@ -720,7 +800,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         caregiver_firstname_field.initial = self.instance.caregiver.user.first_name
         caregiver_lastname_field.initial = self.instance.caregiver.user.last_name
 
-        # get the selected type
+        # get the saved type
         initial_type: RelationshipType = self.instance.type
         # ensure that self cannot be changed
         if initial_type.role_type == RoleType.SELF:
@@ -731,10 +811,13 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             # change to required/not-required according to the type of the relationship
             self.fields['end_date'].required = False
         else:
+            # get the selected type
             selected_type = self['type'].value()
             initial_type = RelationshipType.objects.get(pk=selected_type)
             # combine the instance value and with the valid relationshiptypes
             available_choices |= utils.valid_relationship_types(self.instance.patient)
+            # exclude self relationship to disallow switching to self
+            available_choices = available_choices.exclude(role_type=RelationshipType.objects.self_type())
 
         # set the type field with the proper choices
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
