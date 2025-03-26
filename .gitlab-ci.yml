@@ -104,7 +104,7 @@ markdownlint:
     # to convert output to code quality artefact
     - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
   script:
-    - markdownlint-cli2 "**/*.md" "#.venv" "#node_modules"
+    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv" "#node_modules"
   artifacts:
     when: always
     reports:
