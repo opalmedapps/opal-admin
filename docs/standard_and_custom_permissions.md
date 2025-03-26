@@ -35,10 +35,10 @@ In order to add permissions, and allow its use in the Django Admin Site, follow 
 
 2. Run
    
-        ```python
-        python manage.py makemigrations
-        python manage.py migrate
-        ```
+    ```python
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
 
 3. Go to http://localhost:8000/admin or project-link/admin --> users --> select certain user --> scroll down to see all permissions
 
