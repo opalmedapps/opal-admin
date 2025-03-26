@@ -9,55 +9,19 @@
 
 {% block content %}
   <div class="card mb-3">
-    <div class="card-body">
-      <div class="row">
-        <h4>{% translate "Patient Details" %}</h4>
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Name" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient }}</p>
-          </div>
-        </div>
+    <!-- reused file in both edit and view templates -->
+    {% include "patients/relationships/patient_details.html" %}
 
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "Date of Birth" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.date_of_birth | localize }}</p>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "MRN(s)" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>
-              {{ relationship.patient.hospital_patients.reverse |join:', ' }}
-            </p>
-          </div>
-        </div>
-        <div class="col">
-          <div class="row h-25 mb-1">
-            <p><span class="fw-bold">{% translate "RAMQ" %}</span>:</p>
-          </div>
-          <div class="row">
-            <p>{{ relationship.patient.ramq }}</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
   <div class="card">
     <div class="card-body">
-      <h4>{% translate "Caregiver Details" %}</h4>
+      <h4 class="mb-4">{% translate "Caregiver Details" %}</h4>
+      <div class="col-lg-12 mb-4">
+        <p class="mb-0">{% translate "This screen allows you to confirm, revoke or deny a caregiver's access to a patient's data." %}</p>
+        <ul>
+          <li>{% translate "Changes to the data fields are validated against the caregiver type and patient's age." %}</li>
+          <li>{% translate "Caregivers will only have acceess to the data of their patient once the relationship has been confirmed." %}</li>
+        </ul>
+      </div>
       {% crispy form %}
     </div>
   </div>

@@ -107,7 +107,7 @@ def get_all_questionnaires(lang_id: int) -> list[dict]:
 
 
 @transaction.atomic
-def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, WPS213
+def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210
     """Get details for desired questionnaire (questions, patients, dates).
 
     Args:
@@ -182,7 +182,7 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
 
 
 @transaction.atomic
-def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: WPS210, WPS213
+def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: WPS210
     """Query the QuestionnaireDB with the user's specific options & generate tables.
 
     Args:

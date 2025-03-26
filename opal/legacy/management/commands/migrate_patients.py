@@ -1,4 +1,5 @@
 """Command for Patients migration."""
+from types import MappingProxyType
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -7,6 +8,12 @@ from django.db import IntegrityError
 from opal.hospital_settings.models import Site
 from opal.legacy.models import LegacyPatient, LegacyPatientHospitalIdentifier
 from opal.patients.models import HospitalPatient, Patient, SexType
+
+#: Mapping from legacy access level to corresponding DataAccessType
+DATA_ACCESS_MAPPING = MappingProxyType({
+    '3': Patient.DataAccessType.ALL,
+    '1': Patient.DataAccessType.NEED_TO_KNOW,
+})
 
 
 class Command(BaseCommand):
@@ -43,6 +50,7 @@ class Command(BaseCommand):
 
             else:
                 # If patient does not exist in the new backend migrate it
+                data_access = DATA_ACCESS_MAPPING.get(legacy_patient.accesslevel, Patient.DataAccessType.NEED_TO_KNOW)
                 migrated_patient = Patient.objects.create(
                     legacy_id=legacy_patient.patientsernum,
                     date_of_birth=legacy_patient.dateofbirth,
@@ -50,6 +58,7 @@ class Command(BaseCommand):
                     first_name=legacy_patient.firstname,
                     last_name=legacy_patient.lastname,
                     ramq=legacy_patient.ssn,
+                    data_access=data_access,
                 )
                 self.stdout.write(
                     'Imported patient, legacy_id: {patientsernum}'.format(
