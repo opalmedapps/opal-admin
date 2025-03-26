@@ -3,12 +3,19 @@ Module providing legacy quesitonnaire model managers to provide the interface th
 
 Each manager in this module should be prefixed with `Legacy`
 """
-from typing import TYPE_CHECKING
+import logging
+from datetime import datetime
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from django.db import models
+from django.db import connections, models, transaction
+from django.db.backends.utils import CursorWrapper
 
 if TYPE_CHECKING:
-    from .models import LegacyQuestionnaire
+    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
+
+# Logger instance declared at the module level
+logger = logging.getLogger(__name__)
 
 
 class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
@@ -35,3 +42,66 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
             legacyanswerquestionnaire__patient__external_id=patient_sernum,
             purpose=1,                                                     # 1 = Clinical questionnaire purpose
         )
+
+
+class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire']):
+    """LegacyAnswerQuestionnaire manager."""
+
+    @transaction.atomic
+    def get_databank_data_for_patient(  # noqa: WPS210
+        self,
+        patient_ser_num: int,
+        last_synchronized: datetime,
+    ) -> Any:
+        """
+        Retrieve the latest de-identified questionnaire data for a consenting DataBank patient.
+
+        Args:
+            patient_ser_num: Legacy QuestionnaireDB external_id
+            last_synchronized: Last time the cron process to send databank data ran successfully
+
+        Returns:
+            Questionnaire answer data
+
+        """
+        # First sql file contains construction of the temporary questionnaire details table
+        query_dir_details = Path(__file__).parent / 'sql/databank_questionnaires_details.sql'
+        # Second sql file queries from the temp table in conjunction with the 7 answer type tables
+        query_dir_answer = Path(__file__).parent / 'sql/databank_questionnaires_answer.sql'
+
+        # Execute SQL contents
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(self._read_local_sql(query_dir_details), [patient_ser_num, last_synchronized])
+            conn.execute('SELECT * FROM tempAnswerDetails;')
+            conn.execute(self._read_local_sql(query_dir_answer))
+            return self._fetch_all_as_dict(conn)
+
+    def _fetch_all_as_dict(self, cursor: CursorWrapper) -> list[dict]:
+        """Return all rows from a cursor as a dict.
+
+        Args:
+            cursor: Database connection.
+
+        Returns:
+            dictionary list for query.
+
+        """
+        columns = [col[0] for col in cursor.description]
+        return [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
+    def _read_local_sql(self, directory: Path) -> str:
+        """Open and read SQL content from a local directory.
+
+        Args:
+            directory: Path object pointing to location of SQL to be read
+
+        Returns:
+            sql string content
+        """
+        with Path(directory).open() as handle:
+            sql_content = handle.read()
+            handle.close()
+        return sql_content
