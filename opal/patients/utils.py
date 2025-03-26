@@ -30,7 +30,6 @@ REGISTRATION_CODE_LENGTH: Final = 10
 
 # Initialize services to communicate with external components
 oie_service: OIEService = OIEService()
-orms_service: ORMSService = ORMSService()
 
 logger = logging.getLogger(__name__)
 
@@ -409,6 +408,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
         )
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
+        orms_service: ORMSService = ORMSService()
         orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
         if orms_response['status'] == 'success':

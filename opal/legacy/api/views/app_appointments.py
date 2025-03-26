@@ -1,8 +1,6 @@
 """Collection of api views used to get and update appointment details."""
 from typing import Any
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import UpdateAPIView
@@ -84,7 +82,7 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
                 source_system_id=source_system_id,
                 source_database=source_database,
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (models.LegacyAppointment.DoesNotExist, models.LegacyAppointment.MultipleObjectsReturned):
             # Ensure only one appointment is found
             raise NotFound(
                 detail='Cannot find a unique appointment matching criteria.',
