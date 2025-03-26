@@ -1,12 +1,16 @@
 from http import HTTPStatus
-from typing import Tuple
+from typing import Any, Tuple
 
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.http import HttpRequest
+from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
+
+from opal.patients import views
 
 from .. import factories, models, tables
 
@@ -270,3 +274,80 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
 
         elif 'search' in step:
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
+
+
+class TestAccessRequestView(views.AccessRequestView):
+    """
+    This view is to test AccessRequestView.
+
+    It patches dispatch to return the view instance as well for testing.
+
+    It requires since the WizardView needs to be fully set up.
+    """
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, 'TestAccessRequestView']:
+        """
+        Process the request.
+
+        Args:
+            request: a `HttpRequest` instance
+            args: additional keyword arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the object of HttpResponse
+        """
+        response = super().dispatch(request, *args, **kwargs)
+        return response, self
+
+
+@pytest.mark.django_db()
+def test_unexpected_step() -> None:
+    """Test unexpected step 'search'."""
+    request = RequestFactory().get('/')
+    # adding session
+    middleware = SessionMiddleware()
+    middleware.process_request(request)
+    request.session.save()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert bool(instance.get_form_initial('search')) is False
+
+
+@pytest.mark.django_db()
+def test_expected_step_without_session_storage() -> None:
+    """Test expected step 'site' without session storage of saving user selection."""
+    request = RequestFactory().get('/')
+    # adding session
+    middleware = SessionMiddleware()
+    middleware.process_request(request)
+    request.session.save()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert bool(instance.get_form_initial('site')) is False
+
+
+@pytest.mark.django_db()
+def test_expected_step_with_session_storage() -> None:
+    """Test expected step 'site' with session storage of saving user selection."""
+    request = RequestFactory().get('/')
+    # adding session
+    middleware = SessionMiddleware()
+    middleware.process_request(request)
+    request.session['site_selection'] = str('Royal Victoria')
+    request.session.save()
+    # adding Site records
+    factories.Site(name='Royal Victoria')
+    factories.Site(name='Montreal General')
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert bool(instance.get_form_initial('site')) is True

@@ -127,9 +127,11 @@ class AccessRequestView(SessionWizardView):
         """
         initial = self.initial_dict.get(step, {})
         if step == 'site' and 'site_selection' in self.request.session:
-            initial.update({
-                'sites': Site.objects.get(name=self.request.session['site_selection']),
-            })
+            site_user_selection = Site.objects.get(name=self.request.session['site_selection'])
+            if site_user_selection:
+                initial.update({
+                    'sites': site_user_selection,
+                })
         return initial
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
