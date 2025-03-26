@@ -75,6 +75,11 @@ class FedAuthBackend(BaseBackend):
                     user.set_unusable_password()
 
                     user.save()
+                else:
+                    # augment user data if it is not present with data from ADFS
+                    # required for users added via the legacy OpalAdmin which doesn't capture email, first and last name
+                    self._update_user(user, user_data)
+
                 return user
 
         return None
@@ -145,13 +150,33 @@ class FedAuthBackend(BaseBackend):
             #
             # if the data does not contain the key (e.g., in an empty return), handle as not authenticated
             if auth_data.get('authenticate', AUTHENTICATION_FAILURE) == AUTHENTICATION_SUCCESS:
-                if all(key in auth_data for key in ('mail', 'givenName', 'sn')):
-                    email = auth_data['mail']
-                    first_name = auth_data['givenName']
-                    last_name = auth_data['sn']
+                email = auth_data.get('mail', '')
+                first_name = auth_data.get('givenName', '')
+                last_name = auth_data.get('sn', '')
 
-                    return UserData(email, first_name, last_name)
-                else:
-                    LOGGER.error('incomplete response data received from fed auth API: {0}'.format(auth_data))
+                return UserData(email, first_name, last_name)
 
         return None
+
+    def _update_user(self, user: User, user_data: UserData) -> None:
+        """
+        Update the existing user if it is missing data.
+
+        Args:
+            user: the existing user instance
+            user_data: the user data received from the ADFS
+        """
+        needs_save = False
+
+        if not user.first_name and user_data.first_name:
+            user.first_name = user_data.first_name
+            needs_save = True
+        if not user.last_name and user_data.last_name:
+            user.last_name = user_data.last_name
+            needs_save = True
+        if not user.email and user_data.email:
+            user.email = user_data.email
+            needs_save = True
+
+        if needs_save:
+            user.save()
