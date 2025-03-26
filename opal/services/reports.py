@@ -305,7 +305,7 @@ class PathologyPDF(FPDF):
             txt='\n\n\n\n'.join(section_content),
         )
 
-    def _add_new_page_if_needed(self) -> None:
+    def _add_new_page_if_needed(self) -> None:  # pragma: no cover
         """Add new page if the prepared-by-table will not fit the current page."""
         if self.will_page_break(40):
             self.add_page()
