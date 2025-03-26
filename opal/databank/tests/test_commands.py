@@ -980,15 +980,15 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             {
                 'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
                 databank_models.DataModuleType.QUESTIONNAIRES: [
-                    {'questionnaire_answer_id': 1},
-                    {'questionnaire_answer_id': 2},
-                    {'questionnaire_answer_id': 3},
+                    {'answer_questionnaire_id': 1},
+                    {'answer_questionnaire_id': 2},
+                    {'answer_questionnaire_id': 3},
                 ],
             },
             {
                 'GUID': 'b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
                 databank_models.DataModuleType.QUESTIONNAIRES: [
-                    {'questionnaire_answer_id': 4},
+                    {'answer_questionnaire_id': 4},
                 ],
             },
         ]

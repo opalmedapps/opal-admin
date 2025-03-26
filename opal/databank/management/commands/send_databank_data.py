@@ -368,7 +368,7 @@ class Command(BaseCommand):  # noqa: WPS214
             self._create_shared_data_instances(databank_patient, DataModuleType.DIAGNOSES, sent_diagnosis_ids)
         elif DataModuleType.QUESTIONNAIRES in synced_data:
             sent_questionnaire_answer_ids = [
-                questionnaire_answer['questionnaire_answer_id']
+                questionnaire_answer['answer_questionnaire_id']
                 for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
             self._create_shared_data_instances(
