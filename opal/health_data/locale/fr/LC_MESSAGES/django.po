@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-30 12:36-0400\n"
+"POT-Creation-Date: 2023-05-19 15:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/health_data/apps.py opal/health_data/templates/health_data_display.html
 msgid "Health Data"
-msgstr ""
+msgstr "Données de santé"
 
 #: opal/health_data/models.py
 #: opal/health_data/templates/health_data_display.html
@@ -99,4 +99,4 @@ msgstr "Aucune donnée(s) trouvée concernant masse la corporelle."
 
 #: opal/health_data/views.py
 msgid "Date"
-msgstr ""
+msgstr "Date"

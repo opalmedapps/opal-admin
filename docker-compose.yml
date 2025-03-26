@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   db:
     image: mariadb:10.6.13-focal
@@ -10,7 +8,7 @@ services:
       - MARIADB_DATABASE=${DATABASE_NAME}
       - MYSQL_TCP_PORT=${DATABASE_PORT}
     volumes:
-      - ./docker/mariadb:/docker-entrypoint-initdb.d
+      - ./docker/mariadb/scripts:/docker-entrypoint-initdb.d
     # expose DB locally to be able to access it through venv
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}

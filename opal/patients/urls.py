@@ -12,19 +12,14 @@ app_name = 'patients'
 urlpatterns = [
     # Manage Caregiver Access Pages
     path(
-        'relationships/pending/',
-        views.PendingRelationshipListView.as_view(),
-        name='relationships-pending-list',
+        'relationships/',
+        views.ManageCaregiverAccessListView.as_view(),
+        name='relationships-list',
     ),
     path(
-        'relationships/pending/<int:pk>/update/',
-        views.ManagePendingUpdateView.as_view(),
-        name='relationships-pending-update',
-    ),
-    path(
-        'relationships/pending/<int:pk>/readonly/',
-        views.ManagePendingReadOnlyView.as_view(),
-        name='relationships-pending-readonly',
+        'relationships/<int:pk>/',
+        views.ManageCaregiverAccessUpdateView.as_view(),
+        name='relationships-view-update',
     ),
     # Relationship Types Pages
     path(
@@ -48,6 +43,12 @@ urlpatterns = [
         name='relationshiptype-delete',
     ),
     # Access request pages
+    path(
+        # TODO: rename when old one is removed
+        'access-request-new/',
+        views.NewAccessRequestView.as_view(),
+        name='access-request-new',
+    ),
     path(
         'access-request/',
         views.AccessRequestView.as_view(views.AccessRequestView.form_list),

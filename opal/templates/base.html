@@ -22,9 +22,10 @@
     </title>
 
     <link href="{% static 'thirdparty/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
-    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'thirdparty/unpoly/css/unpoly-bootstrap5.min.css' %}" rel="stylesheet" type="text/css" />
 
     {% block stylesheets %}{% endblock %}
 
@@ -46,6 +47,8 @@
       See: https://javascript.info/script-async-defer
     {% endcomment %}
     <script defer src="{% static 'thirdparty/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script defer src="{% static 'thirdparty/unpoly/js/unpoly.min.js' %}"></script>
+    <script defer src="{% static 'thirdparty/unpoly/js/unpoly-bootstrap5.min.js' %}"></script>
     {% block javascript %}{% endblock %}
   </head>
   <body>

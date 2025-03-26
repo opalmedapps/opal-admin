@@ -1,25 +1,454 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.urls import reverse_lazy
+from django.forms.fields import Field
+from django.urls import reverse
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Field, Hidden, Layout, Row, Submit
+from crispy_forms.layout import HTML, ButtonHolder, Column, Div
+from crispy_forms.layout import Field as CrispyField
+from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
+from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, FormActions
+from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
 from . import constants, utils
-from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+
+
+class DisableFieldsMixin(forms.Form):
+    """Form mixin that has the ability to disable all form fields."""
+
+    fields: dict[str, Field]
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the mixin.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression; move to setup.cfg?)
+
+        self.has_existing_data = False
+
+    def disable_fields(self) -> None:
+        """Disable all form fields."""
+        for _field_name, field in self.fields.items():
+            field.disabled = True
+
+        self.has_existing_data = True
+
+
+class AccessRequestManagementForm(forms.Form):
+    """
+    Management form for an access request.
+
+    Tracks the current step during the process.
+    """
+
+    current_step = forms.CharField(widget=forms.HiddenInput())
+
+
+class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+    """Access request form that allows a user to search for a patient."""
+
+    card_type = forms.ChoiceField(
+        widget=forms.Select(attrs={'up-validate': ''}),
+        choices=constants.MEDICAL_CARDS,
+        label=_('Card Type'),
+    )
+    site = DynamicField(
+        forms.ModelChoiceField,
+        queryset=Site.objects.all(),
+        # TODO: initialize to first site if there is only one
+        # check if initial can be a callable to accomplish this
+        label=_('Hospital'),
+        # TODO: required when MRN but only if there is more than one site
+        # might be better to move it into a function
+        required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
+        # TODO: disabled when not MRN or when MRN and there is only one site
+        # might be better to move it into a function
+        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name,
+    )
+    medical_number = forms.CharField(label=_('Identification Number'))
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        # store response for patient searched in hospital
+        self.patient: Union[OIEPatientData, Patient, None] = None
+
+        # TODO: potential improvement: make a mixin for all access request forms
+        # that initializes the form helper and sets these two properties
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        self.helper.layout = Layout(
+            Div(
+                'card_type',
+                'site',
+                'medical_number',
+                # make form inline
+                css_class='d-md-flex flex-row justify-content-start gap-3',
+            ),
+        )
+
+    def clean_medical_number(self) -> str:
+        """
+        Validate the medical number depending on the type of card.
+
+        Raises a `ValidationError` if the data is invalid.
+
+        Returns:
+            the cleaned medical number
+        """
+        # validate in specific field method even though it is reliant on card_type
+        # is called after the required check
+        card_type = self.cleaned_data.get('card_type')
+        medical_number: str = self.cleaned_data['medical_number']
+
+        if card_type == constants.MedicalCard.ramq.name:
+            validators.validate_ramq(medical_number)
+
+        if card_type == constants.MedicalCard.mrn.name:
+            # TODO: add MRN validation
+            pass  # noqa: WPS420
+
+        return medical_number
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Clean the form.
+
+        If all data is valid performs the lookup/search for the patient.
+
+        Returns:
+            the cleaned data
+        """
+        super().clean()
+
+        card_type = self.cleaned_data.get('card_type')
+        medical_number = self.cleaned_data.get('medical_number')
+
+        if card_type and medical_number:
+            # TODO: look in the Patient model first, only if not found search via OIE
+            # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
+            if card_type == constants.MedicalCard.ramq.name:
+                self.patient = Patient.objects.filter(first_name='Marge').first()
+            else:
+                # TODO: handle connection errors here, i.e., raise helpful validation error
+                self.patient = self._fake_oie_response()
+
+        return self.cleaned_data
+
+    def _fake_oie_response(self) -> OIEPatientData:
+        return OIEPatientData(
+            date_of_birth=date.fromisoformat('2018-01-01'),
+            first_name='Lisa',
+            last_name='Simpson',
+            sex='F',
+            alias='',
+            ramq='SIML86531906',
+            ramq_expiration=None,
+            deceased=False,
+            death_date_time=None,
+            mrns=[
+                OIEMRNData(site='MGH', mrn='9999993', active=True),
+                OIEMRNData(site='RVH', mrn='9999993', active=True),
+            ],
+        )
+
+
+class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
+    """
+    Access request form that allows a user to confirm the found patient.
+
+    This form does not contain any fields.
+    This form can be validated after initialization to give early user feedback.
+    Submitting the form (assuming it is valid) confirms that the correct patient was found.
+    """
+
+    # TODO: if a checkbox is absolutely required use the following label for the BooleanField
+    # "The correct patient was found and the patient data is correct"
+
+    def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the form with the patient search result.
+
+        The patient can either be an existing patient or a search result from the hospital.
+
+        Args:
+            patient: a `Patient` or `OIEPatientData` instance, `None` if no patient was found
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        # pretend its bound so that it can be validated early
+        self.is_bound = True
+        # TODO: ensure that the form is validated early
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        self.patient = patient
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Clean the form.
+
+        Validates that the patient was found
+        and that the found patient does not contain any errors
+        preventing us to continue to proceed with the process.
+
+        Returns:
+            the cleaned data
+        """
+        super().clean()
+        cleaned_data = self.cleaned_data
+
+        if not self.patient:
+            self.add_error(None, 'There is no patient to confirm')
+
+        # TODO: validate that the patient is not deceased
+        # TODO: validate the patient record (if coming from the OIE)
+        #  - multiple MRNs at same site
+        #  - ...
+        # self.add_error(NON_FIELD_ERRORS, 'test')  # noqa: E800
+
+        return cleaned_data
+
+
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+    """This form provides a radio button to choose the relationship to the patient."""
+
+    relationship_type = forms.ModelChoiceField(
+        queryset=RelationshipType.objects.all(),
+        # TODO: provide a custom template that can show a tooltip
+        # when hovering over the relationship type with the details of the relationship type
+        # can be done as a completely separate MR at the end
+        widget=AvailableRadioSelect(),
+        label=_('Relationship to the patient'),
+    )
+
+    form_filled = forms.BooleanField(
+        label=_('The requestor filled out the request form'),
+        # TODO: change to dynamic field to switch required depending on form_required of selected relationship type
+        required=False,
+    )
+
+    id_checked = forms.BooleanField(label='Requestor ID checked')
+
+    user_type = forms.ChoiceField(
+        choices=constants.TYPE_USERS,
+        initial=0,
+        widget=forms.RadioSelect(attrs={'up-validate': ''}),
+    )
+
+    first_name = DynamicField(
+        forms.CharField,
+        label=_('First Name'),
+        required=lambda form: form['user_type'].value() != '1',
+    )
+    last_name = DynamicField(
+        forms.CharField,
+        label=_('Last Name'),
+        required=lambda form: form['user_type'].value() != '1',
+    )
+
+    user_email = DynamicField(
+        forms.CharField,
+        label=_('Email Address'),
+        required=lambda form: form['user_type'].value() == '1',
+    )
+    user_phone = DynamicField(
+        forms.CharField,
+        label=_('Phone Number'),
+        initial='+1',
+        validators=[validators.validate_phone_number],
+        required=lambda form: form['user_type'].value() == '1',
+    )
+
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for card type select box and card number input box.
+
+        Args:
+            date_of_birth: patient's date of birth
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        self.existing_user: Optional[Caregiver] = None
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        self.helper.layout = Layout(
+            Row(
+                Column(
+                    'relationship_type',
+                ),
+                Column(
+                    Fieldset(
+                        'Validation',
+                        'form_filled',
+                        'id_checked',
+                    ),
+                ),
+            ),
+            TabRadioSelect('user_type'),
+            # empty div to be filled below depending on the chosen user type
+            Div(css_class='mb-4 p-3 border-start border-end border-bottom'),
+        )
+
+        user_type = self['user_type'].value()
+
+        if user_type == '1':
+            self.helper.layout[2].append(Layout(
+                Row(
+                    Column('user_email', css_class='col-4'),
+                    Column('user_phone', css_class='col-4'),
+                    Column(InlineSubmit('search_user', 'Find User')),
+                ),
+                HTML('{% load render_table from django_tables2 %}{% render_table user_table %}'),
+            ))
+        # handle current value being None
+        else:
+            self.helper.layout[2].extend(Layout(
+                Row(
+                    Column('first_name', css_class='col-4'),
+                    Column('last_name', css_class='col-4'),
+                ),
+            ))
+
+        available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = available_choices
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Validate the form.
+
+        Ensure the `form_filled` checkbox is checked if the selected relationship type requires a form.
+        Handle the "Existing user" selection by looking up the caregiver based on the inputs.
+
+        Returns:
+            the cleaned data
+        """
+        super().clean()
+        cleaned_data = self.cleaned_data
+
+        relationship_type = cleaned_data.get('relationship_type')
+        form_filled = cleaned_data.get('form_filled')
+
+        if relationship_type:
+            if relationship_type.form_required and not form_filled:
+                self.add_error('form_filled', _('A request form is required for the selected relationship.'))
+
+        user_type = cleaned_data['user_type']
+
+        if user_type == '1':
+            self._validate_existing_user()
+
+        return cleaned_data
+
+    def _validate_existing_user(self) -> None:
+        """
+        Validate the existing user selection by looking up the caregiver.
+
+        Look up the caregiver by email **and** phone number.
+        Add an error to the form if no user was found.
+        """
+        cleaned_data = self.cleaned_data
+
+        # at the beginning (empty form) they are not in the cleaned data
+        if 'user_email' in cleaned_data and 'user_phone' in cleaned_data:
+            user_email = cleaned_data['user_email']
+            user_phone = cleaned_data['user_phone']
+
+            if user_email and user_phone:
+                # ensure that we are only looking among Caregivers
+                self.existing_user = Caregiver.objects.filter(  # type: ignore[assignment]
+                    phone_number=user_phone,
+                    email=user_email,
+                ).first()
+
+                # prevent continuing when no user was found
+                if not self.existing_user:
+                    self.add_error(
+                        NON_FIELD_ERRORS,
+                        _('No existing user found. Choose "New User" if the user cannot be found.'),
+                    )
+
+
+class AccessRequestConfirmForm(forms.Form):
+    """This form provides a layout to confirm user password."""
+
+    password = forms.CharField(
+        widget=forms.PasswordInput(),
+        label=_('Please confirm access to patient data by entering your password.'),
+    )
+
+    def __init__(self, username: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for new user form.
+
+        Args:
+            username: the username of the current user
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        self.helper.layout = Layout(
+            Row(
+                Column('password', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row',
+            ),
+        )
+        self.username = username
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Validate the user password.
+
+        Returns:
+            the cleaned form data
+        """
+        super().clean()
+        password = self.cleaned_data.get('password')
+
+        if password and not authenticate(username=self.username, password=password):
+            self.add_error('password', _('The password you entered is incorrect. Please try again.'))
+
+        return self.cleaned_data
 
 
 class SelectSiteForm(forms.Form):
@@ -162,6 +591,20 @@ class ConfirmPatientForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
+
+
+# TODO: move to core form layouts?
+# potential improvement: inherit from Container or LayoutObject to include the content
+# and provide a method to add content at the right place
+class TabRadioSelect(CrispyField):
+    """
+    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
+
+    Triggers validation via `up-validate` on selection to let the form react to the selection.
+    For example, the form can change the layout according to the selection.
+    """
+
+    template = 'patients/radioselect_tabs.html'
 
 
 class RequestorDetailsForm(forms.Form):
@@ -435,11 +878,13 @@ class NewUserForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = False
+
         self.helper.layout = Layout(
             Row(
-                Column('first_name', css_class='form-group col-md-6 mb-0'),
-                Column('last_name', css_class='form-group col-md-6 mb-0'),
-                css_class='form-row',
+                Column('first_name'),
+                Column('last_name'),
             ),
             'is_id_checked',
             ButtonHolder(
@@ -473,7 +918,7 @@ class ConfirmPasswordForm(forms.Form):
                 css_class='form-row',
             ),
             FormActions(
-                CancelButton(reverse_lazy('patients:access-request')),
+                CancelButton(reverse('patients:access-request')),
                 Submit('wizard_goto_step', _('Confirm')),
             ),
         )
@@ -571,15 +1016,16 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
         self.helper = FormHelper(self)
+        self.helper.attrs = {'novalidate': ''}
         self.helper.layout = Layout(
             Row(
-                Field('first_name', wrapper_class='col-md-6'),
-                Field('last_name', wrapper_class='col-md-6'),
-                Field('type', wrapper_class='col-lg-3 col-md-6'),
-                Field('start_date', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
-                Field('status', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
-                Field('end_date', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
-                Field('reason', wrapper_class='col-md-12'),
+                CrispyField('first_name', wrapper_class='col-md-6'),
+                CrispyField('last_name', wrapper_class='col-md-6'),
+                CrispyField('type', wrapper_class='col-lg-3 col-md-6'),
+                CrispyField('status', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
+                CrispyField('start_date', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
+                CrispyField('end_date', wrapper_class='col-lg-3 col-md-6 col-sm-12'),
+                CrispyField('reason', wrapper_class='col-md-12'),
             ),
             Hidden('cancel_url', '{{cancel_url}}'),
             Row(
@@ -612,21 +1058,34 @@ class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
 class ManageCaregiverAccessForm(forms.Form):
     """Custom form for the manage caregiver access filter to customize cleaning the form."""
 
-    required_error = forms.Field.default_error_messages['required']
-
-    def clean(self) -> dict[str, Any]:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
-        Make sure that all required data is there to pass it to the filter.
+        Initialize the form.
 
-        Returns:
-            cleaned_data
+        Handle dynamic form updates based on the current user selection.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
         """
-        super().clean()
+        super().__init__(*args, **kwargs)
 
-        card_type = self.cleaned_data.get('card_type')
-        site = self.cleaned_data.get('site')
+        card_type = self.fields['card_type']
+        card_type.widget.attrs.update({'up-validate': ''})
+        card_type_value = self['card_type'].value()
 
-        if card_type == constants.MedicalCard.mrn.name and not site:
-            self.add_error('site', forms.ValidationError(self.required_error, 'required'))
+        if card_type_value == 'mrn':
+            self.fields['site'].required = True
+        else:
+            self.fields['site'].disabled = True
 
-        return self.cleaned_data
+
+class ManageCaregiverAccessUserForm(forms.ModelForm[User]):
+    """Form for updating a `Caregiver` object."""
+
+    class Meta:
+        model = Caregiver
+        fields = [
+            'first_name',
+            'last_name',
+        ]

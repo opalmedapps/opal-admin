@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 class MedicalCard(Enum):
     """An enumeration of supported medical card types."""
 
-    mrn = _('Medical Record Number (MRN)')
-    ramq = _('Medicare Card Number (RAMQ)')
+    ramq = _('Medicare Card (RAMQ)')
+    mrn = _('Hospital Card (MRN)')
 
 
 #: Maximum possible patient age for a relationship.
@@ -17,7 +17,7 @@ RELATIONSHIP_MAX_AGE: Final = 150
 #: Minimum possible patient age for a relationship.
 RELATIONSHIP_MIN_AGE: Final = 0
 #: Choices for the type of the medical cards
-MEDICAL_CARDS: Final = frozenset((item.name, item.value) for item in MedicalCard)
+MEDICAL_CARDS: Final = tuple((item.name, item.value) for item in MedicalCard)
 #: Choices for the type of users
 # TODO: we might refactor this constant name for more clarity
 TYPE_USERS: Final = ((0, _('New Opal User')), (1, _('Existing Opal User')))
@@ -29,7 +29,5 @@ NEW_USER: Final = 0
 EXISTING_USER: Final = 1
 #: Random uuid hexadecimal string length for the caregiver username.
 USERNAME_LENGTH: Final = 30
-#: Random alphanumeric string length for the registration code.
-REGISTRATION_CODE_LENGTH: Final = 10
 #: QR code dimension
 QR_CODE_BOX_SIZE: Final = 10
