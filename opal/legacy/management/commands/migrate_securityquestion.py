@@ -1,4 +1,6 @@
 """Command for Security Question migration."""
+from typing import Any
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
@@ -9,7 +11,7 @@ from opal.legacy.models import LegacySecurityquestion
 class Command(BaseCommand):
     """Command to migrate Security Question from legacy DB to backend DB."""
 
-    def handle(self, *args, **kwargs) -> None:
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate Security Question from legacy DB to backend DB.
 

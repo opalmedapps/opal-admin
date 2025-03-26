@@ -1,4 +1,6 @@
 """Command for Security Answer migration."""
+from typing import Any, Dict
+
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
@@ -10,7 +12,7 @@ from opal.users.models import User
 class Command(BaseCommand):
     """Command to migrate Security Answer from legacy DB to backend DB."""
 
-    def handle(self, *args, **kwargs) -> None:  # noqa: C901 WPS231 WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: C901 WPS231 WPS210
         """
         Handle migrate Security Answer from legacy DB to backend DB.
 
@@ -23,12 +25,15 @@ class Command(BaseCommand):
         legacy_answers = LegacySecurityanswer.objects.all()
         for legacy_answer in legacy_answers:
 
-            patient = legacy_answer.patientsernum
-            user = self._check_users(patient.patientsernum)
+            legacy_patient = legacy_answer.patientsernum
+            user = self._check_users(legacy_patient.patientsernum)
+            user = user['user']
             if user is None:
                 continue
 
-            question = self._check_and_import_question(legacy_answer.securityquestionsernum)
+            legacy_question = legacy_answer.securityquestionsernum
+            question = self._check_and_import_question(legacy_question.securityquestionsernum)
+            question = question['question']
             if question is None:
                 continue
 
@@ -44,11 +49,11 @@ class Command(BaseCommand):
             except ObjectDoesNotExist:
                 SecurityAnswer.objects.create(
                     user=caregiver,
-                    question=question.title_en,
+                    question=question.title,
                     answer=legacy_answer.answertext,
                 )
 
-    def _check_and_import_question(self, securityquestionsernum: int) -> SecurityQuestion:
+    def _check_and_import_question(self, securityquestionsernum: int) -> Dict:
         """
         Check legacy security question and security question exist or not.
 
@@ -64,7 +69,7 @@ class Command(BaseCommand):
                 securityquestionsernum=securityquestionsernum,
             )
         except ObjectDoesNotExist:
-            return None
+            return {'question': None}
 
         # Import SecurityQuestion according to legacy security question
         try:
@@ -74,9 +79,9 @@ class Command(BaseCommand):
                 title_en=legacy_question.questiontext_en,
                 title_fr=legacy_question.questiontext_fr,
             )
-        return question
+        return {'question': question}
 
-    def _check_users(self, patientsernum: int) -> User:
+    def _check_users(self, patientsernum: int) -> Dict:
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 
@@ -90,14 +95,14 @@ class Command(BaseCommand):
         try:
             legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum)
         except ObjectDoesNotExist:
-            return None
+            return {'user': None}
         except MultipleObjectsReturned:
-            return None
+            return {'user': None}
 
         # Skip anwer import if related user not found
         try:
             user = User.objects.get(username=legacy_user.username)
         except ObjectDoesNotExist:
             # TODO not sure how to import user
-            return None
-        return user
+            return {'user': None}
+        return {'user': user}
