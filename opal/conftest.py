@@ -349,10 +349,6 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
 
-    with django_db_blocker.unblock():
-        with connections['questionnaire'].cursor() as conn:
-            conn.execute('SELECT COUNT(*) FROM questionnaire')
-            raise Exception(conn.fetchall())
 
 # @pytest.fixture(autouse=True)
 # def check_data(db):
