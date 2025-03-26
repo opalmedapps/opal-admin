@@ -9,7 +9,7 @@ from django.urls.conf import include
 
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from opal.caregivers.api.views import GetRegistrationEncryptionInfoView
+from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api import views as legacy_views
@@ -28,10 +28,11 @@ router.register('sites', settings_views.SiteViewSet, basename='sites')
 app_name = 'core'
 
 urlpatterns = [
-    path('auth/', include('dj_rest_auth.urls')),
+    path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
+    path('auth/', include('dj_rest_auth.urls')),
+    path('caregivers/patients/', GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
-    path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
     path('', include(router.urls)),
 ]
