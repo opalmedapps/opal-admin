@@ -9,7 +9,7 @@ In general, a view inheriting this mixin should specify:
 
     put/patch methods which call self.update and self.partial_update respectively
 
-    get_queryset: return the targetted model object using the keyword args or request data
+    get_queryset: return the targeted model object using the keyword args or request data
 
 """
 from typing import Any
@@ -23,15 +23,20 @@ from rest_framework.response import Response
 
 
 class AllowPUTAsCreateMixin(GenericAPIView):
-    """The following mixin class may be used in order to update or create records in the targeted model."""
+    """
+    The following mixin class may be used in order to update or create records in the targeted model.
+
+    See: https://www.django-rest-framework.org/api-guide/generic-views/#put-as-create
+    See: https://gist.github.com/tomchristie/a2ace4577eff2c603b1b
+    """
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:  # noqa: WPS210
-        """Update the targetted model or create if it doesn't exist.
+        """Update the targeted model or create if it doesn't exist.
 
         Args:
-            request (Request): request object with parameters to update or create
-            args (Any): varied amount of non-keyworded arguments
-            kwargs (Any): varied amount of keyworded arguments
+            request: request object with parameters to update or create
+            args: varied amount of non-keyword arguments
+            kwargs: varied amount of keyword arguments
 
         Returns:
             HTTP `Response` success or failure
@@ -55,9 +60,9 @@ class AllowPUTAsCreateMixin(GenericAPIView):
         """Set partial parameter and re-call update method.
 
         Args:
-            request (Request): request object with parameters to update or create
-            args (Any): varied amount of non-keyworded arguments
-            kwargs (Any): varied amount of keyworded arguments
+            request: request object with parameters to update or create
+            args: varied amount of non-keyword arguments
+            kwargs: varied amount of keyword arguments
 
         Returns:
             self.update()
