@@ -25,7 +25,7 @@ class InstitutionForm(forms.ModelForm):
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
-        super(InstitutionForm, self).__init__(*args, **kwargs)  # noqa: WPS608
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         image_html_en = """
             {% if form.logo_en.value %}
