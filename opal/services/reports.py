@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import NamedTuple, Optional
 
 from django.conf import settings
+from django.utils import timezone
 
 import requests
 from fpdf import FPDF
@@ -143,7 +144,7 @@ class ReportService():
         """
         pdf = PathologyPDF()
         pdf.add_page()
-        generated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        generated_at = timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')
         report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
             first_name=pathology_data.patient_first_name,
             last_name=pathology_data.patient_last_name,

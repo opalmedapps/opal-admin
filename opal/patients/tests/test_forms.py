@@ -11,6 +11,7 @@ from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile
+from opal.hospital_settings import factories as hospital_factories
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver, User
@@ -1510,6 +1511,7 @@ def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
 
 def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
     """Ensure that the SMS is not sent when the form is incomplete."""
+    hospital_factories.Institution()
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     form = forms.AccessRequestSendSMSForm(
@@ -1526,6 +1528,7 @@ def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None
 
 def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
     """Ensure that the SMS is sent successfully."""
+    hospital_factories.Institution()
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     form = forms.AccessRequestSendSMSForm(
@@ -1544,6 +1547,7 @@ def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
 
 def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if sending the SMS failed."""
+    hospital_factories.Institution()
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
@@ -1568,6 +1572,7 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
 
 def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if the connection to Twilio fails."""
+    hospital_factories.Institution()
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=RequestException('SSL key too weak'),

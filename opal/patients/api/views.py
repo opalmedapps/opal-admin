@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions, CustomDjangoModelPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import CaregiverSelfPermissions, FullDjangoModelPermissions, UpdateModelPermissions
 
 from .. import utils
 from ..api.serializers import (
@@ -234,7 +234,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
 class PatientUpdateView(UpdateAPIView):
     """Class handling PUT requests for patient access level update."""
 
-    permission_classes = [CustomDjangoModelPermissions]
+    permission_classes = [FullDjangoModelPermissions]
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'

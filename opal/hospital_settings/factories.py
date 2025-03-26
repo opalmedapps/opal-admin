@@ -24,6 +24,7 @@ class Institution(DjangoModelFactory):
     adulthood_age = 18
     non_interpretable_lab_result_delay = 0
     interpretable_lab_result_delay = 0
+    registration_code_valid_period = 72
 
 
 class Site(DjangoModelFactory):

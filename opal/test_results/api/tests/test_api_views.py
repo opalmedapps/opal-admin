@@ -1,21 +1,28 @@
 """Test module for the REST API endpoints of the `test_results` app."""
 
 import json
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 from django.contrib.auth.models import Permission
 from django.urls import reverse
+from django.utils import timezone
 
+import py
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
-from pytest_mock.plugin import MockerFixture
+from pytest_django.fixtures import SettingsWrapper
+from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.hospital_settings.factories import Institution
+from opal.legacy import models as legacy_models
+from opal.legacy.factories import LegacyAliasExpressionFactory, LegacyPatientFactory, LegacySourceDatabaseFactory
 from opal.patients import models as patient_models
 from opal.patients.factories import Patient, Relationship
+from opal.test_results import models as test_results_models
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -77,18 +84,15 @@ class TestCreatePathologyView:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_pathology_create_success(
+    def test_pathology_create_raises_exception(
         self,
         api_client: APIClient,
+        tmpdir: py.path.local,
         mocker: MockerFixture,
+        settings: SettingsWrapper,
     ) -> None:
-        """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
-        # Mock the ReportService.generate_pathology_report() method
-        mock_pdf_generator = mocker.patch(
-            'opal.services.reports.ReportService.generate_pathology_report',
-            return_value=None,
-        )
-
+        """Ensure the endpoint raises exception in case of unsuccessful insertion to the OpalDB.Documents table."""
+        settings.PATHOLOGY_REPORTS_PATH = Path(str(tmpdir))
         Institution(pk=1)
 
         patient = Patient(
@@ -101,15 +105,84 @@ class TestCreatePathologyView:
             type=patient_models.RelationshipType.objects.self_type(),
         )
 
+        LegacyPatientFactory(
+            patientsernum=patient.legacy_id,
+        )
+
+        # mock the current timezone to simulate the local time
+        generated_at = timezone.localtime(timezone.now())
+        mocker.patch.object(timezone, 'now', return_value=generated_at)
+
+        client = self._get_client_with_permissions(api_client)
+
+        response = client.post(
+            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
+            data=self._get_valid_input_data(),
+            format='json',
+        )
+        assertContains(
+            response=response,
+            text='An error occurred while inserting `LegacyDocument` record to the database.',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        assert test_results_models.GeneralTest.objects.count() == 0
+        assert legacy_models.LegacyDocument.objects.count() == 0
+
+    def test_pathology_create_success(
+        self,
+        api_client: APIClient,
+        tmpdir: py.path.local,
+        mocker: MockerFixture,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
+        settings.PATHOLOGY_REPORTS_PATH = Path(str(tmpdir))
+        Institution(pk=1)
+
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+
+        Relationship(
+            patient=patient,
+            type=patient_models.RelationshipType.objects.self_type(),
+        )
+
+        LegacyPatientFactory(
+            patientsernum=patient.legacy_id,
+        )
+
+        LegacySourceDatabaseFactory(
+            source_database_name='Oacis',
+        )
+
+        LegacyAliasExpressionFactory(
+            expression_name='Pathology',
+            description='Pathology',
+        )
+        # mock the current timezone to simulate the local time
+        generated_at = timezone.localtime(timezone.now())
+        mocker.patch.object(timezone, 'now', return_value=generated_at)
+
         client = self._get_client_with_permissions(api_client)
         response = client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
             data=self._get_valid_input_data(),
             format='json',
         )
+        report_file_name = '{first_name}_{last_name}_{date}_pathology.pdf'.format(
+            first_name=patient.first_name,
+            last_name=patient.last_name,
+            date=generated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        )
 
         assert response.status_code == status.HTTP_201_CREATED
-        mock_pdf_generator.assert_called_once()
+        assert test_results_models.GeneralTest.objects.count() == 1
+        assert legacy_models.LegacyDocument.objects.count() == 1
+        assert legacy_models.LegacyDocument.objects.filter(originalfilename=report_file_name).count() == 1
+        pathology_report = settings.PATHOLOGY_REPORTS_PATH / report_file_name
+        assert pathology_report.is_file()
 
     def _get_valid_input_data(self) -> dict[str, Any]:
         """Generate valid JSON data for creating pathology record.

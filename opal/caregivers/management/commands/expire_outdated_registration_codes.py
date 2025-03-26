@@ -5,8 +5,8 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from opal.caregivers.constants import REGISTRATION_CODE_EXPIRY
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
+from opal.hospital_settings.models import Institution
 
 
 class Command(BaseCommand):
@@ -31,7 +31,8 @@ class Command(BaseCommand):
             kwargs:  variable keyword input arguments.
         """
         # get all dates that have passed the allowed duration before expiry
-        expiration_datetime = timezone.now() - timedelta(hours=REGISTRATION_CODE_EXPIRY)
+        valid_period = Institution.objects.get().registration_code_valid_period
+        expiration_datetime = timezone.now() - timedelta(hours=valid_period)
         registration_codes = RegistrationCode.objects.filter(
             status=RegistrationCodeStatus.NEW,
             created_at__lte=expiration_datetime,

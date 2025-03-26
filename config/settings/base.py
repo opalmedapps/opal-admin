@@ -173,7 +173,6 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
-    'formtools',
     'slippers',
     'fontawesomefree',
 ]
@@ -400,6 +399,9 @@ LOGGING = {
 #
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
+# Redirect after logout to legacy OpalAdmin's logout page
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)  # noqa: F405
 
 # Legacy URL for generating questionnaires report
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
@@ -453,7 +455,7 @@ REST_FRAMEWORK = {
     ],
     # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [
-        'opal.core.drf_permissions.CustomDjangoModelPermissions',
+        'opal.core.drf_permissions.FullDjangoModelPermissions',
     ],
     # disabled pagination by default
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints

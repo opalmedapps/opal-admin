@@ -10,10 +10,13 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
+import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
-from django.db import models
+from django.apps import apps
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.db import DatabaseError, models
 from django.utils import timezone
 
 from opal.patients.models import Relationship, RelationshipStatus
@@ -35,6 +38,8 @@ if TYPE_CHECKING:
     )
 
 _Model = TypeVar('_Model', bound=models.Model)
+
+logger = logging.getLogger(__name__)
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
@@ -196,6 +201,75 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
     """LegacyDocument manager."""
 
+    def create_pathology_document(
+        self,
+        legacy_patient_id: Optional[int],
+        prepared_by: int,
+        received_at: datetime,
+        report_file_name: str,
+    ) -> 'LegacyDocument':
+        """Insert a new pathology PDF document record to the OpalDB.Document table.
+
+        This will indicate that a new pathology report is available for viewing in the app.
+
+        Args:
+            legacy_patient_id: legacy patient's ID for whom a new document record being inserted
+            prepared_by: `StaffSerNum` from the `OpalDB.LegacyStaff` table that indicates who prepared the report
+            received_at: date and time that indicate when the pathology report data were entered into the source system
+            report_file_name: filename of the new pathology report document
+
+        Raises:
+            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
+
+        Returns:
+            newly created and saved `LegacyDocument` instance for the pathology report document
+        """
+        # Perform lazy import by using the `django.apps` to avoid circular imports issue
+        LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
+        LegacyAliasExpressionModel = apps.get_model('legacy', 'LegacyAliasExpression')  # noqa: N806
+        LegacySourceDatabaseModel = apps.get_model('legacy', 'LegacySourceDatabase')    # noqa: N806
+
+        try:
+            legacy_document = self.create(
+                patientsernum=LegacyPatientModel.objects.get(
+                    patientsernum=legacy_patient_id,
+                ),
+                sourcedatabasesernum=LegacySourceDatabaseModel.objects.get(
+                    source_database_name='OACIS',
+                    enabled=1,
+                ),
+                aliasexpressionsernum=LegacyAliasExpressionModel.objects.get(
+                    expression_name='Pathology',
+                    description='Pathology',
+                ),
+                approvedby=prepared_by,
+                approvedtimestamp=received_at,
+                authoredbysernum=prepared_by,
+                dateofservice=received_at,
+                validentry='Y',
+                originalfilename=report_file_name,
+                finalfilename=report_file_name,
+                createdbysernum=prepared_by,
+                createdtimestamp=received_at,
+                transferstatus='T',
+                transferlog='Transfer successful',
+                dateadded=timezone.localtime(timezone.now()),
+                readstatus=0,
+                readby=[],
+            )
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as exp:
+            # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
+            # instances cannot be found or multiple instances returned
+            err = 'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {0}'.format(
+                exp,
+            )
+            logger.error(err)
+            raise DatabaseError(err)
+
+        legacy_document.save()
+
+        return legacy_document
+
 
 class LegacyTxTeamMessageManager(UnreadQuerySetMixin['LegacyTxTeamMessage'], models.Manager['LegacyTxTeamMessage']):
     """LegacyTxTeamMessage manager."""
@@ -226,13 +300,11 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread annoucement(s) records.
         """
-        return self.filter(
-            patientsernum__in=patient_sernum_list,
-        ).exclude(
+        return self.exclude(
             readby__contains=user_name,
-        ).values(
-            'postcontrolsernum',
-        ).distinct().count() or 0
+        ).filter(
+            patientsernum__in=patient_sernum_list,
+        ).count()
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
