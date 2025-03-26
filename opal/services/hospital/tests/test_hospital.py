@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from http import HTTPStatus
+from typing import Any
 from unittest.mock import MagicMock
 
 import requests
@@ -102,10 +103,13 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
 def test_export_pdf_report_error(mocker: MockerFixture) -> None:
     """Ensure export request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
-    generated_report_data: dict[str, str] = {}
-    mock_post = _mock_requests_post(mocker, generated_report_data)
-    mock_post.side_effect = requests.RequestException('request failed')
-    mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
+    generated_report_data: dict[str, Any] = {
+        'status': 'error',
+        'data': {
+            'message': 'OIE response format is not valid.',
+        },
+    }
+    _mock_requests_post(mocker, generated_report_data)
 
     report_data = oie_service.export_pdf_report(
         OIEReportExportData(
@@ -117,11 +121,39 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
         ),
     )
 
-    assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
     assert report_data == {
         'status': 'error',
         'data': {
-            'message': 'request failed',
+            'message': 'OIE response format is not valid.',
+        },
+    }
+
+
+def test_export_pdf_report_response_invalid(mocker: MockerFixture) -> None:
+    """Ensure invalid response is handled and does not result in an error."""
+    # mock actual OIE API call to raise a request error
+    generated_report_data: dict[str, Any] = {
+        'invalidStatus': 'error',
+    }
+    _mock_requests_post(mocker, generated_report_data)
+
+    report_data = oie_service.export_pdf_report(
+        OIEReportExportData(
+            mrn=MRN,
+            site=SITE_CODE,
+            base64_content=BASE64_ENCODED_REPORT,
+            document_number=DOCUMENT_NUMBER,
+            document_date=datetime.now(),
+        ),
+    )
+
+    assert report_data == {
+        'status': 'error',
+        'data': {
+            'message': 'OIE response format is not valid.',
+            'responseData': {
+                'invalidStatus': 'error',
+            },
         },
     }
 

@@ -58,14 +58,14 @@ def _mock_requests_get(
     Returns:
         MagicMock: object that mocks HTTP get request to the OIE for exporting reports
     """
-    mock_post = mocker.patch('requests.get')
+    mock_get = mocker.patch('requests.get')
     response = requests.Response()
     response.status_code = HTTPStatus.OK
 
     response._content = json.dumps(generated_response_data).encode(ENCODING)
-    mock_post.return_value = response
+    mock_get.return_value = response
 
-    return mock_post
+    return mock_get
 
 
 # __init__
@@ -288,7 +288,7 @@ def test_fetch_invalid_metadata(mocker: MockerFixture) -> None:
 def test_fetch_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
-    error_response = 'invalid json'
+    error_response = 'invalid json response'
     mock_get = _mock_requests_get(mocker, error_response)  # type: ignore
     mock_get.side_effect = requests.exceptions.JSONDecodeError(
         'request failed',
