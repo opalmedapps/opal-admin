@@ -8,7 +8,7 @@ This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
 * Python 3.11
-* [Git LFS](https://git-lfs.github.com/)
+* [Git LFS](https://git-lfs.com/)
 
 ## Getting Started
 
