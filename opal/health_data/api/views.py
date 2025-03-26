@@ -1,10 +1,11 @@
 """Module providing API views for the `health_data` app."""
 from typing import Any
 
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from opal.core.drf_permissions import IsListener
 from opal.patients.models import Patient
 
 from ..models import QuantitySample
@@ -19,7 +20,8 @@ class CreateQuantitySampleView(generics.CreateAPIView):
     """
 
     serializer_class = QuantitySampleSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # TODO: change in the future to limit to user with access to the patient
+    permission_classes = (IsListener,)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[QuantitySample]:
         """
