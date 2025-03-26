@@ -24,7 +24,6 @@ services:
       - LEGACY_DATABASE_HOST=host.docker.internal
     volumes:
       - .:/app
-      - ./docker/app/logs:/var/log
     ports:
       - 8000:8000
     depends_on:
