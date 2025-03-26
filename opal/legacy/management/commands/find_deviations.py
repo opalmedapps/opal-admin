@@ -62,8 +62,6 @@ LEGACY_CAREGIVER_QUERY = """
     WHERE U.UserType = "Caregiver";
 """  # noqa: WPS323
 
-# TODO: confirm with Matthias the JOIN and conditions for this query.
-# Matthias was mentioning there might be cases when a patient does not have a `Relationship` record
 DJANGO_PATIENT_QUERY = """
     SELECT
         PP.legacy_id AS LegacyID,
@@ -264,12 +262,9 @@ class Command(BaseCommand):
         Returns:
             string containing unmatched_records
         """
-        if (unmatched_records):
-            return '{0}\n{1}:\n\n{2}{3}'.format(
-                '\n\n{0}'.format(SPLIT_LENGTH * '-'),
-                block_name,
-                '\n'.join(str(patient) for patient in (unmatched_records)),
-                '\n{0}'.format(SPLIT_LENGTH * '-'),
-            )
-
-        return ''
+        return '{0}\n{1}:\n\n{2}{3}'.format(
+            '\n\n{0}'.format(SPLIT_LENGTH * '-'),
+            block_name,
+            '\n'.join(str(record) for record in (unmatched_records)),
+            '\n{0}'.format(SPLIT_LENGTH * '-'),
+        )
