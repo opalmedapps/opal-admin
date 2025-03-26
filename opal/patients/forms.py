@@ -8,14 +8,13 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
-from dateutil.relativedelta import relativedelta
 
 from opal.core import validators
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
-from .models import CaregiverProfile, Patient, Relationship, RelationshipType, Site
+from .models import Patient, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -415,19 +414,11 @@ class ExistingUserForm(forms.Form):
         required=False,
     )
 
-    def __init__(
-        self,
-        relationship_type: RelationshipType,
-        patient_record: OIEPatientData,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for existing user form.
 
         Args:
-            relationship_type: caregiver relationship type
-            patient_record: patient record retrieved from OIE service
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -443,8 +434,6 @@ class ExistingUserForm(forms.Form):
                 Submit('wizard_goto_step', _('Find Account')),
             ),
         )
-        self.relationship_type = relationship_type
-        self.patient_record = patient_record
 
     def clean(self) -> None:
         """Validate the user selection."""
@@ -504,57 +493,12 @@ class ExistingUserForm(forms.Form):
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
 
-        # Check if there is no 'Self' relationship related to this requestor himself/herself
-        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
-        relationships = Relationship.objects.get_relationship_by_patient_caregiver(
-            'Self',
-            user.first_name,
-            user.last_name,
-            user.id,
-            self.patient_record.ramq,
-        )
-        # If no, create the relationship record with the value 'Self'
-        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
-        # TODO: I'll refactor this part based on new mockup to make it happens after generating access request
-        # TODO: I'll check patient and caregiver record and create them if not exist and then create relationship
-        if not relationships and str(self.relationship_type) == 'Self':
-            Relationship.objects.create(
-                patient=Patient.objects.get(ramq=self.patient_record.ramq),
-                caregiver=CaregiverProfile.objects.get(user_id=user.id),
-                type=self.relationship_type,
-                reason=_('Create self relationship for patient'),
-                request_date=date.today(),
-                start_date=self._set_relationship_start_date(),
-            )
-        # If yes, show user details
-        elif relationships:
-            self.cleaned_data['user_record'] = {  # type: ignore[index]
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'phone_number': user.phone_number,
-            }
-
-    def _set_relationship_start_date(self) -> date:
-        """
-        Calculate the start date for the relationship record.
-
-        Returns:
-            the start date
-        """
-        # Get the date 2 years ago from now
-        reference_date = date.today() - relativedelta(years=2)
-        # Calculate patient age based on reference date
-        age = Patient.calculate_age(
-            date_of_birth=self.patient_record.date_of_birth,
-            reference_date=reference_date,
-        )
-        # Get the user choice for the relationship type in the previous step
-        user_select_type = RelationshipType.objects.get(name=self.relationship_type)
-        # Return reference date if patient age is larger or otherwise return start date based on patient's age
-        if age < user_select_type.start_age:
-            reference_date = self.patient_record.date_of_birth + relativedelta(years=user_select_type.start_age)
-        return reference_date
+        self.cleaned_data['user_record'] = {  # type: ignore[index]
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'phone_number': user.phone_number,
+        }
 
 
 class ConfirmExistingUserForm(forms.Form):

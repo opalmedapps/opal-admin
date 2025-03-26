@@ -1,6 +1,8 @@
 """This module provides views for patient settings."""
 import io
+import uuid
 from collections import Counter
+from datetime import date
 from typing import Any, Dict, List, Tuple
 
 from django.forms import Form
@@ -11,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import qrcode
+from dateutil.relativedelta import relativedelta
 from django_tables2 import SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
@@ -18,8 +21,9 @@ from qrcode.image import svg
 from opal.core.views import CreateUpdateView
 from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
+from opal.users.models import Caregiver
 
-from .models import Relationship, RelationshipStatus, RelationshipType, Site
+from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
 from .tables import ExistingUserTable, PatientTable, PendingRelationshipTable, RelationshipTypeTable
 
 
@@ -216,11 +220,6 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
             kwargs['date_of_birth'] = patient_record.date_of_birth
-        elif step == 'requestor':
-            relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
-            kwargs['relationship_type'] = relationship_type
-            patient_record = self.get_cleaned_data_for_step('search')['patient_record']
-            kwargs['patient_record'] = patient_record
         return kwargs
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
@@ -235,8 +234,13 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             the object of HttpResponse
         """
         form_data = [form.cleaned_data for form in form_list]
+        # process form data for easily accessing to
+        new_form_data = self._process_form_data(form_data)
+        # generate access request for both of the case(new user or existing user)
+        self._generate_access_request(new_form_data)
+
         factory = svg.SvgImage
-        img = qrcode.make(form_data[0]['sites'], image_factory=factory, box_size=10)
+        img = qrcode.make(new_form_data['sites'], image_factory=factory, box_size=10)
         stream = io.BytesIO()
         img.save(stream)
 
@@ -244,6 +248,167 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             'svg': stream.getvalue().decode(),
             'header_title': _('QR Code Generation'),
         })
+
+    def _set_relationship_start_date(self, date_of_birth: date, relationship_type: str) -> date:
+        """
+        Calculate the start date for the relationship record.
+
+        Args:
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
+
+        Returns:
+            the start date
+        """
+        # Get the date 1 years ago from now
+        reference_date = date.today() - relativedelta(years=1)
+        # Calculate patient age based on reference date
+        age = Patient.calculate_age(
+            date_of_birth=date_of_birth,
+            reference_date=reference_date,
+        )
+        # Get the user choice for the relationship type in the previous step
+        user_select_type = RelationshipType.objects.get(name=relationship_type)
+        # Return reference date if patient age is larger or otherwise return start date based on patient's age
+        if age < user_select_type.start_age:
+            reference_date = date_of_birth + relativedelta(years=user_select_type.start_age)
+        return reference_date
+
+    def _create_caregiver_profile(self, form_data: dict, random_username_length: int) -> dict[str, Any]:
+        """
+        Create caregiver user and caregiver profile instance if not exists.
+
+        Args:
+            form_data: form data
+            random_username_length: the length of random username
+
+        Returns:
+            caregiver user nad caregiver profile instance dictionary
+        """
+        if form_data['user_type'] == '1':
+            # Get the Caregiver user if it exists
+            caregiver_user = Caregiver.objects.get(
+                email=form_data['user_email'],
+                phone_number=form_data['user_phone'],
+            )
+        else:
+            # Create a new Caregiver user
+            caregiver_user = Caregiver.objects.create(
+                username=uuid.uuid4().hex[:random_username_length],
+                first_name=form_data['first_name'],
+                last_name=form_data['last_name'],
+            )
+
+        # Check if the caregiver record exists. If not, create a new record.
+        try:
+            caregiver = CaregiverProfile.objects.get(user_id=caregiver_user.id)
+        except CaregiverProfile.DoesNotExist:
+            caregiver = CaregiverProfile.objects.create(user=caregiver_user)
+
+        return {
+            'caregiver_user': caregiver_user,
+            'caregiver': caregiver,
+        }
+
+    def _create_patient(self, form_data: dict) -> Patient:
+        """
+        Create patient instance if not exists.
+
+        Args:
+            form_data: form data
+
+        Returns:
+            patient instance
+        """
+        patient_record = form_data['patient_record']
+        # Check if the patient record exists searching by RAMQ. If not, create a new record.
+        try:
+            patient = Patient.objects.get(ramq=patient_record.ramq)
+        except Patient.DoesNotExist:
+            patient = Patient.objects.create(
+                first_name=patient_record.first_name,
+                last_name=patient_record.last_name,
+                date_of_birth=patient_record.date_of_birth,
+                sex=patient_record.sex,
+                ramq=patient_record.ramq,
+            )
+
+        return patient
+
+    def _create_relationship(   # noqa: WPS210
+        self,
+        form_data: dict,
+        caregiver_dict: dict[str, Any],
+        patient: Patient,
+    ) -> None:
+        """
+        Create relationship instance if not exists.
+
+        Args:
+            form_data: form data
+            caregiver_dict: caregiver user nad caregiver profile instance dictionary
+            patient: patient instance
+        """
+        caregiver_user = caregiver_dict['caregiver_user']
+        caregiver = caregiver_dict['caregiver']
+        patient_record = form_data['patient_record']
+        relationship_type = form_data['relationship_type']
+
+        # Check if there is no relationship between requestor and patient
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
+        relationships = Relationship.objects.get_relationship_by_patient_caregiver(
+            str(relationship_type),
+            caregiver_user.first_name,
+            caregiver_user.last_name,
+            caregiver_user.id,
+            patient_record.ramq,
+        )
+
+        # The default value for status is PENDING
+        status = RelationshipStatus.PENDING
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
+        # For `Self` relationship, the status is CONFIRMED
+        if not relationships and str(relationship_type) == 'Self':
+            status = RelationshipStatus.CONFIRMED
+        if not relationships:
+            Relationship.objects.create(
+                patient=patient,
+                caregiver=caregiver,
+                type=relationship_type,
+                status=status,
+                reason='',
+                request_date=date.today(),
+                start_date=self._set_relationship_start_date(
+                    patient_record.date_of_birth,
+                    relationship_type,
+                ),
+            )
+
+    def _generate_access_request(self, new_form_data: dict) -> None:
+        # Create caregiver user and caregiver profile if not exists
+        caregiver_dict = self._create_caregiver_profile(new_form_data, random_username_length=30)   # noqa: WPS432
+
+        # Create patient instance if not exists
+        patient = self._create_patient(new_form_data)
+
+        # Create relationship instance if not exists
+        self._create_relationship(new_form_data, caregiver_dict, patient)
+
+    def _process_form_data(self, forms_data: list) -> dict:
+        """
+        Process form data for easily accessing to.
+
+        Args:
+            forms_data: a list of form data
+
+        Returns:
+            the processed form data dictionary
+        """
+        processed_form_date = {}
+        for form_data in forms_data:
+            for key, value in form_data.items():
+                processed_form_date[key] = value
+        return processed_form_date
 
     def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
         """
