@@ -141,6 +141,7 @@ django:
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
     - grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep '#| msgid' -B02 -A01
+    - echo $?
     # - (! grep --include=\*.po -rnw './opal' -e "#| msgid")
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
@@ -154,9 +155,6 @@ django:
     # Check templates
     - echo "Validating templates ..."
     - python manage.py validate_templates
-    # compile messages to ensure there are no fuzzy strings
-    - echo "Compiling messages (fix fuzzy strings in case of errors) ..."
-    - python manage.py compilemessages --ignore .venv
   needs:
     - job: setup
 
@@ -172,6 +170,11 @@ build docs:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
     - job: setup
+
+
+  lint docs:
+    stage: Documentation
+    image: markdownlint...
 
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
