@@ -202,7 +202,6 @@ def test_device_push_token_length() -> None:
     caregiver = factories.CaregiverProfile(id=1)
     device = factories.Device(caregiver=caregiver, device_id='1a2b3c')
     device.push_token = ''.join('a' for _ in range(260))
-    print(device.push_token)
     with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):  # type: ignore[arg-type]
         device.save()
 
