@@ -723,10 +723,10 @@ class AccessRequestSendSMSForm(forms.Form):
         if language and phone_number:
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
-                message = gettext('Your Opal registration code is: {code}. Please go to: {url}'.format(
+                message = gettext('Your Opal registration code is: {code}. Please go to: {url}').format(
                     code=registration_code,
                     url=url,
-                ))
+                )
 
             twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
 
