@@ -116,7 +116,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
 
         """
         context = self.get_context_data()
-        context.update({'title': 'export questionnaire'})
 
         requestor: User = request.user  # type: ignore[assignment]
 
