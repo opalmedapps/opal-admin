@@ -9,12 +9,11 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
 
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton
+from opal.core.forms.layouts import CancelButton, FormActions
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.users.models import Caregiver, User
@@ -458,8 +457,8 @@ class ConfirmPasswordForm(forms.Form):
                 css_class='form-row',
             ),
             FormActions(
-                Submit('wizard_goto_step', _('Confirm')),
                 CancelButton(reverse_lazy('patients:access-request')),
+                Submit('wizard_goto_step', _('Confirm')),
             ),
         )
         self.authorized_user = authorized_user

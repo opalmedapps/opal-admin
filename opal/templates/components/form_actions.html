@@ -1,4 +1,6 @@
 {% var submit_type=submit_type|default:"save" %}
 
-{% form_cancel href=cancel_url %}
-{% form_submit type=submit_type %}
+<div class="d-flex justify-content-end gap-2">
+  {% form_cancel href=cancel_url %}
+  {% form_submit type=submit_type %}
+</div>
