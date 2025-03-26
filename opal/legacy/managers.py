@@ -94,7 +94,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             username: Firebase username making the request.
 
         Returns:
-            Queryset of unreaded appointments with all status/states (e.g., deleted, cancelled, etc.).
+            Queryset of unread appointments with all status/states (e.g., deleted, cancelled, etc.).
         """
         return self.filter(
             patientsernum=patient_sernum,
