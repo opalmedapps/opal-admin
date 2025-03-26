@@ -93,6 +93,6 @@ def _set_email_backend_service(settings: LazySettings) -> None:
     """Fixture changing the `EMAIL_BACKEND` setting to the in-memory backend.
 
     Args:
-        settings: All the configurations of the `opalAdmin backend` service
+        settings: the Django settings
     """
     settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
