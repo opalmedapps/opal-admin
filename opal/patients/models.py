@@ -104,7 +104,7 @@ class Patient(models.Model):
         validators=[
             MinLengthValidator(12),
             RegexValidator(
-                r'^[A-Z]{4}\d{8}',
+                r'^[A-Z]{4}\d{8}$',
                 'First 4 characters should be alphabetic, last 8 characters should be numeric.',
             ),
         ],

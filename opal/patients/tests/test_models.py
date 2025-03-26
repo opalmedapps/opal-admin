@@ -143,8 +143,9 @@ def test_patient_ramq_max() -> None:
     """Ensure the length of patient ramq is not greater than 12."""
     patient = factories.Patient()
     patient.ramq = 'ABCD5678901234'
-    expected_message = '{0}'.format(
-        "'ramq': ['Ensure this value has at most 12 characters (it has 14).'",
+    expected_message = '{0}, {1}'.format(
+        "'ramq': ['First 4 characters should be alphabetic, last 8 characters should be numeric.'",
+        "'Ensure this value has at most 12 characters (it has 14).']",
     )
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         patient.clean_fields()
