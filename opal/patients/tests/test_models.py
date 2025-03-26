@@ -160,16 +160,10 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_ramq_unique() -> None:
-    """Ensure that the health insurance number is unique."""
+def test_patient_ramq_non_unique() -> None:
+    """Ensure that the health insurance number is non-unique."""
     factories.Patient(ramq='TEST12345678')
-    patient = factories.Patient(ramq='TEST21234567')
-
-    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
-
-    with assertRaisesMessage(IntegrityError, message):
-        patient.ramq = 'TEST12345678'
-        patient.save()
+    factories.Patient(ramq='TEST12345678')
 
 
 def test_patient_ramq_max() -> None:
@@ -204,19 +198,9 @@ def test_patient_ramq_format() -> None:
         patient.clean_fields()
 
 
-def test_patient_ramq_default_value() -> None:
-    """Ensure patient ramq default value is NULL."""
-    patient = Patient(
-        date_of_birth=date.fromisoformat('2022-09-02'),
-        sex='m',
-    )
-    patient.save()
-    assert patient.ramq is None
-
-
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
-    factories.Patient(ramq=None, legacy_id=1)
+    factories.Patient(ramq='', legacy_id=1)
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):
@@ -225,7 +209,7 @@ def test_patient_legacy_id_unique() -> None:
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
-    factories.Patient(ramq=None, legacy_id=None)
+    factories.Patient(ramq='', legacy_id=None)
     factories.Patient(ramq='somevalue', legacy_id=None)
 
     assert Patient.objects.count() == 2
