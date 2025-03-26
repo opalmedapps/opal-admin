@@ -19,7 +19,7 @@ from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 
-from ..management.commands import migrate_users
+from ..management.commands import migrate_caregivers
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
@@ -313,15 +313,15 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
-        assert 'Number of imported users is: 0' in message
+        assert 'Number of imported caregivers is: 0' in message
 
     def test_import_user_caregiver_no_patient_exist(self) -> None:
         """Test import fails, a corresponding patient in new backend does not exist."""
         legacy_factories.LegacyUserFactory(usertypesernum=99)
 
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
         assert 'Patient with sernum: 99, does not exist, skipping.\n' in error
 
@@ -336,10 +336,10 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             user__last_name=patient.last_name,
         )
 
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported users is: 0\n' in message
+        assert 'Number of imported caregivers is: 0\n' in message
 
     def test_import_user_caregiver_exists_relation(self) -> None:
         """Test import relation fails, relation already exists."""
@@ -354,10 +354,10 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             status=RelationshipStatus.CONFIRMED,
         )
 
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported users is: 0\n' in message
+        assert 'Number of imported caregivers is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
 
     def test_import_user_caregiver_no_relation(self) -> None:
@@ -371,10 +371,10 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             user__last_name=patient.last_name,
         )
 
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
-        assert 'Number of imported users is: 0\n' in message
+        assert 'Number of imported caregivers is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
 
     def test_import_new_user_caregiver_no_relation(self) -> None:
@@ -386,10 +386,10 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             first_name=legacy_patient.firstname,
             last_name=legacy_patient.lastname,
         )
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy user with sernum: 55 has been migrated\n' in message
-        assert 'Number of imported users is: 1\n' in message
+        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
+        assert 'Number of imported caregivers is: 1\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
 
     def test_import_new_user_caregiver_with_relation(self) -> None:
@@ -409,20 +409,20 @@ class TestUsersCaregiversMigration(CommandTestMixin):
             first_name=legacy_patient2.firstname,
             last_name=legacy_patient2.lastname,
         )
-        message, error = self._call_command('migrate_users')
+        message, error = self._call_command('migrate_caregivers')
 
-        assert 'Legacy user with sernum: 55 has been migrated\n' in message
-        assert 'Legacy user with sernum: 56 has been migrated\n' in message
+        assert 'Legacy caregiver with sernum: 55 has been migrated\n' in message
+        assert 'Legacy caregiver with sernum: 56 has been migrated\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
         assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
-        assert 'Number of imported users is: 2\n' in message
+        assert 'Number of imported caregivers is: 2\n' in message
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
         legacy_patient = legacy_factories.LegacyPatientFactory(telnum=514123456789)
         legacy_user = legacy_factories.LegacyUserFactory()
 
-        command = migrate_users.Command()
+        command = migrate_caregivers.Command()
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
         assert profile.user.phone_number == '+1514123456789'
@@ -432,7 +432,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_patient = legacy_factories.LegacyPatientFactory(telnum=None)
         legacy_user = legacy_factories.LegacyUserFactory()
 
-        command = migrate_users.Command()
+        command = migrate_caregivers.Command()
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
         assert profile.user.phone_number == ''
@@ -442,7 +442,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_patient = legacy_factories.LegacyPatientFactory()
         legacy_user = legacy_factories.LegacyUserFactory()
 
-        command = migrate_users.Command()
+        command = migrate_caregivers.Command()
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
         assert not profile.user.has_usable_password()
