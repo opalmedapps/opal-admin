@@ -487,7 +487,7 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
     try:
         data_list = _parse_query_result(query_result)
     except ValueError as exc:  # noqa: WPS440
-        raise DataFetchError(f'Error parsing questionnaires: {exc}')
+        raise DataFetchError(f'Error parsing questionnaires: {exc}') from exc
     return _process_questionnaire_data(data_list)
 
 
