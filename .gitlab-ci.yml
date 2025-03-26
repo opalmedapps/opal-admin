@@ -328,8 +328,8 @@ build docs:
 #
 pages:
   stage: deploy
-  only:
-    - main
+  # only:
+    # - main
   script:
     - pip install uv
     - uv pip install --system -r requirements/docs.txt
