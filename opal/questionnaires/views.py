@@ -265,8 +265,8 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         df = pd.DataFrame.from_dict(report_dict)
         buffer = BytesIO()
 
-        if tabs == 'none':
-            # return everything as one xlsx sheet, no dellineation by sheet
+        if tabs == 'none' or df.empty:
+            # If df is empty return an empty download to avoid a potential key error
             df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
         else:
             # sort by patient or question id
