@@ -531,6 +531,7 @@ def test_parse_query_result_success() -> None:
 
     assert result == expected_output
 
+
 def test_parse_query_result_empty_rows() -> None:
     """Test parsing when rows contain empty data."""
     query_result = list('')
