@@ -53,7 +53,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
 
 
 class RegistrationRegisterView(APIView):
-    """Registration-register api class."""
+    """Registration-register `APIView` class for handling "registration-completed" requests."""
 
     serializer_class = caregiver_serializers.RegistrationRegisterSerializer
 
@@ -62,10 +62,10 @@ class RegistrationRegisterView(APIView):
     @transaction.atomic
     def post(self, request: Request, code: str) -> Response:  # noqa: C901 WPS210 WPS231
         """
-        Handle post requests from `registration/<str:code>/register/`.
+        Handle POST requests from `registration/<str:code>/register/`.
 
         Args:
-            request: request data of post api.
+            request: REST framework's request object.
             code: registration code.
 
         Raises:

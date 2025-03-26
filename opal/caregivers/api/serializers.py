@@ -89,7 +89,7 @@ class SecurityQuestionSerializer(serializers.ModelSerializer):
 
 
 class SecurityAnswerQuestionSerializer(serializers.ModelSerializer):
-    """Serializer for security answers without answer."""
+    """Serializer for ``SecurityAnswer` questions without answers."""
 
     class Meta:
         model = SecurityAnswer
