@@ -131,6 +131,10 @@ TEMPLATES = [
 ]
 
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
+FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
+
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'opal.wsgi.application'
 
@@ -176,6 +180,34 @@ DATABASES = {
         },
     },
 }
+
+# Use SSL for all the database connections if DATABASE_USE_SSL is set to True
+if env.bool('DATABASE_USE_SSL'):  # pragma: no cover
+    # Use OPTIONS setting to set extra parameters when connecting to the database.
+    # The parameters vary depending on the database backend.
+    # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
+    #    - https://docs.djangoproject.com/en/4.2/ref/databases/#connecting-to-the-database
+    #    - https://mysqlclient.readthedocs.io/user_guide.html#functions-and-attributes
+    ssl_settings = {
+        # For the "ssl_mode" parameters see MySQL's documentation:
+        # https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode
+        # The following links might be helpful in case we need to modify the sources of the mysqlclient dependency:
+        #    - https://dev.mysql.com/doc/c-api/8.0/en/mysql-options.html
+        #    - https://mariadb.com/kb/en/mysql_optionsv/
+        'ssl_mode': 'VERIFY_IDENTITY',
+        # See mysql_ssl_set MySQL C API where the parameter names are keys used by the "ssl" setting.
+        # https://dev.mysql.com/doc/c-api/8.0/en/mysql-ssl-set.html
+        # The current setup is using one-way SSL/TLS.
+        # https://mariadb.com/kb/en/securing-connections-for-client-and-server/#enabling-one-way-tls-for-mariadb-clients
+        # TODO: two-way SSL/TLS
+        'ssl': {
+            'ca': env.str('SSL_CA'),
+        },
+    }
+
+    DATABASES['default']['OPTIONS'] = ssl_settings
+    DATABASES['legacy']['OPTIONS'] = ssl_settings
+    DATABASES['questionnaire']['OPTIONS'] = ssl_settings
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
 DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
@@ -470,7 +502,7 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # ORMS settings
 # ------------------------------------------------------------------------------
 # Name of the group for the ORMS users
-# Please see: https://docs.djangoproject.com/en/3.2/topics/auth/default/#groups
+# Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_USER_GROUP = 'orms'
 
 # Institution code for registration

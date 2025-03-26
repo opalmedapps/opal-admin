@@ -23,7 +23,9 @@ slippers==0.5.0  # https://github.com/mixxorz/slippers
 
 # MySQL/MariaDB
 #
-mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
+# NOTE! we use release candidate version since it fixes the SSL issue/bug
+# TODO: Use mysqlclient=2.2.0 once released
+mysqlclient==2.2.0rc1 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #

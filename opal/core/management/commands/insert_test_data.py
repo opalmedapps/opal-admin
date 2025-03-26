@@ -202,7 +202,7 @@ def _create_test_data() -> None:
         first_name=marge.first_name,
         last_name=marge.last_name,
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
-        email='muhc.app.mobile@gmail.com',
+        email='marge@opalmedapps.ca',
         language='en',
         phone_number='+15551234567',
         legacy_id=1,
@@ -211,19 +211,21 @@ def _create_test_data() -> None:
     user_homer = _create_caregiver(
         first_name=homer.first_name,
         last_name=homer.last_name,
-        username='homer_username_undefined',
-        email='homer@opaldevapps.ca',
-        language='en',
+        username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
+        email='homer@opalmedapps.ca',
+        language='fr',
         phone_number='+15557654321',
         legacy_id=2,
+        # homer is blocked: he lost access due to him being unstable
+        is_active=False,
     )
 
     user_bart = _create_caregiver(
         first_name=bart.first_name,
         last_name=bart.last_name,
-        username='bart_username_undefined',
-        email='bart@opaldevapps.ca',
-        language='fr',
+        username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
+        email='bart@opalmedapps.ca',
+        language='en',
         phone_number='+498999998123',
         legacy_id=3,
     )

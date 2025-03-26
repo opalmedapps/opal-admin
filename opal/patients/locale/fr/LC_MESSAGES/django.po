@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-24 17:04+0000\n"
+"POT-Creation-Date: 2023-05-28 21:03-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -168,7 +168,8 @@ msgstr ""
 
 #: opal/patients/forms.py
 msgid "This opal user already has a self-relationship with the patient."
-msgstr "Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
+msgstr ""
+"Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
 
 #: opal/patients/forms.py
 msgid "ID Checked?"
@@ -191,7 +192,7 @@ msgstr "Confirmer"
 msgid "Relationship"
 msgstr "Relation"
 
-#: opal/patients/forms.py opal/patients/tables.py
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Status"
 msgstr "Statut"
@@ -290,7 +291,7 @@ msgid ""
 "being accessed."
 msgstr ""
 "Les types de rôle permettent de suivre la catégorie de relation entre un "
-"proche aidantet et un patient. Un rôle de type “Self” indique que le patient "
+"proche aidant et un patient. Un rôle de type “Self” indique que le patient "
 "est le propriétaire des données demandées."
 
 #: opal/patients/models.py
@@ -392,24 +393,20 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
-msgid "Relationship Status"
-msgstr "Statut de la relation"
-
-#: opal/patients/models.py
 msgid "Reason of Status Change"
 msgstr "Raison du changement de statut"
 
 #: opal/patients/models.py
-msgid "Relationship Request Date"
-msgstr "Date de la demande de relation"
+msgid "Request Date"
+msgstr "Date de la demande"
 
-#: opal/patients/models.py
-msgid "Relationship Start Date"
-msgstr "Date de début de la relation"
+#: opal/patients/models.py opal/patients/tables.py
+msgid "Start Date"
+msgstr "Date de Début"
 
-#: opal/patients/models.py
-msgid "Relationship End Date"
-msgstr "Date de fin de relation"
+#: opal/patients/models.py opal/patients/tables.py
+msgid "End Date"
+msgstr "Date de Fin"
 
 #: opal/patients/models.py
 msgid "Can manage relationships"
@@ -451,7 +448,8 @@ msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
 
 #: opal/patients/models.py
 msgid "\"Pending\" status does not apply for the Self relationship."
-msgstr "Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
+msgstr ""
+"Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
 
 #: opal/patients/models.py
 msgid "The patient already has a self-relationship"
@@ -513,14 +511,6 @@ msgid "No caregiver requests found."
 msgstr "Aucun aidant n'a pu être retrouvé."
 
 #: opal/patients/tables.py
-msgid "Start Date"
-msgstr "Date de Début"
-
-#: opal/patients/tables.py
-msgid "End Date"
-msgstr "Date de Fin"
-
-#: opal/patients/tables.py
 msgid "No caregiver could be found."
 msgstr "Aucun aidant n'a pu être retrouvé."
 
@@ -528,15 +518,43 @@ msgstr "Aucun aidant n'a pu être retrouvé."
 msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
 
-#: opal/patients/templates/patients/access_request/new_access_request.html
-msgid "Opal Registration"
-msgstr ""
-
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation.html
 msgid "Opal Registration: Confirmation"
 msgstr ""
 
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation.html
+msgid ""
+"The following access request has been created for the following patient and "
+"caregiver:"
+msgstr ""
+
+#: opal/patients/templates/patients/access_request/confirmation.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid "Patient:"
+msgstr "Patient :"
+
+#: opal/patients/templates/patients/access_request/confirmation.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid "Requestor:"
+msgstr "Demandeur :"
+
+#: opal/patients/templates/patients/access_request/confirmation.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid ""
+"\n"
+"Please inform the requestor that access to patient data is subject to "
+"approval by Medical Records\n"
+"and inform them about any steps required to be done as per hospital policy.\n"
+msgstr ""
+"Informez le demandeur que l'accès aux données du patient est soumis à "
+"l'approbation de Dossiers médicaux et informez-les de toutes les étapes à "
+"suivre conformément à politique de l'hôpital."
+
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid "Opal Registration: Code"
+msgstr ""
+
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
 "A unique one-time Opal registration code has been created for the following "
 "patient:"
@@ -544,37 +562,19 @@ msgstr ""
 "Un code d'enregistrement Opal à usage unique a été créé pour le patient "
 "suivant:"
 
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Name:"
-msgstr "Nom:"
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid "Registration Code"
+msgstr ""
 
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Hospital Name:"
-msgstr "Nom de l'hôpital:"
-
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Instructions"
 msgstr "Instructions"
 
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Inform the requestor that the code is valid for 24 hours."
-msgstr "Informez le demandeur que le code est valable pour 24 heures."
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid "Inform the requestor that the code is valid for 72 hours."
+msgstr "Informez le demandeur que le code est valable pour 72 heures."
 
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid ""
-"Inform the requestor that access to patient data is subject to approval by "
-"Medical Records and inform them about any steps required to be done as per "
-"hospital policy. Upon confirmation by Medical Records, the user will receive "
-"a push notification and email to inform them that they can access the "
-"patient's data in the app."
-msgstr ""
-"Informez le demandeur que l'accès aux données du patient est soumis à "
-"l'approbation de Dossiers médicaux et informez-les de toutes les étapes à "
-"suivre conformément à politique de l'hôpital. Après confirmation par Medical "
-"Records, l'utilisateur recevra une notification push et un e-mail pour les "
-"informer qu'ils peuvent accéder les données du patient dans l'application."
-
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
 "Inform the requestor how to proceed if the code expired (as per hospital "
 "policy)."
@@ -582,28 +582,38 @@ msgstr ""
 "Informez le demandeur de la marche à suivre si le code a expiré (selon "
 "l'hôpital politique)."
 
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
 "Inform the requestor to create their Opal user account using the above code"
 msgstr ""
 "Informez le demandeur de créer son compte utilisateur Opal à l'aide du code "
 "ci-dessus"
 
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "URL: "
 msgstr "URL: "
 
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Offer to scan the QR code to open the registration website"
 msgstr "Proposez de scanner le code QR pour ouvrir le site d'inscription"
 
-#: opal/patients/templates/patients/access_request/qr_code.html
+#: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Offer to receive the registration link via SMS"
 msgstr "Proposez de recevoir le lien d'inscription par SMS"
 
-#: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Code"
-msgstr "Code"
+#: opal/patients/templates/patients/access_request/new_access_request.html
+msgid "Opal Registration"
+msgstr ""
+
+#: opal/patients/templates/patients/access_request/new_access_request.html
+#: opal/patients/views.py
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/templates/patients/access_request/new_access_request.html
+#: opal/patients/views.py
+msgid "Requestor Details"
+msgstr "Détails du demandeur"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -658,14 +668,6 @@ msgstr ""
 #: opal/patients/views.py
 msgid "Hospital Information"
 msgstr "Patient de l'hôpital"
-
-#: opal/patients/views.py
-msgid "Patient Details"
-msgstr "Détails du patient"
-
-#: opal/patients/views.py
-msgid "Requestor Details"
-msgstr "Détails du demandeur"
 
 #: opal/patients/views.py
 msgid "Confirm access to patient data"

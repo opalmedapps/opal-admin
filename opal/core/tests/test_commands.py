@@ -1,12 +1,15 @@
+from django.contrib.auth.models import Group
+
 import pytest
+from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
-from opal.caregivers.models import CaregiverProfile, SecurityAnswer
+from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
-from opal.users.models import Caregiver
+from opal.users.models import Caregiver, User
 
 pytestmark = pytest.mark.django_db()
 
@@ -15,7 +18,7 @@ class TestInsertTestData(CommandTestMixin):
     """Test class to group the `insert_test_data` command tests."""
 
     def test_insert(self) -> None:
-        """Ensure that test data is inserting when there is no existing data."""
+        """Ensure that test data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('insert_test_data')
 
         assert Institution.objects.count() == 1
@@ -85,3 +88,42 @@ class TestInsertTestData(CommandTestMixin):
 
         assert question_en == 'What is the name of your first pet?'
         assert question_fr == 'Quel est le nom de votre premier animal de compagnie?'
+
+
+class TestInitializeData(CommandTestMixin):
+    """Test class to group the `initialize_data` command tests."""
+
+    def test_insert(self) -> None:
+        """Ensure that initial data is inserted when there is no existing data."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Group.objects.count() == 4
+        assert User.objects.count() == 2
+        assert Token.objects.count() == 2
+        assert SecurityQuestion.objects.count() == 6
+
+        listener_token = Token.objects.get(user__username='Listener')
+        interface_engine_token = Token.objects.get(user__username='Interface Engine')
+
+        assert 'Data successfully created\n' in stdout
+        assert f'Listener token: {listener_token.key}' in stdout
+        assert f'Interface Engine token: {interface_engine_token.key}' in stdout
+
+    def test_insert_existing_data_group(self) -> None:
+        """An error is shown if a group already exists."""
+        Group.objects.create(name='Clinicians')
+        User.objects.create(username='Listener')
+
+        stdout, stderr = self._call_command('initialize_data')
+
+        assert stdout == ''
+        assert stderr == 'There already exists data\n'
+
+    def test_insert_existing_data_security_questions(self) -> None:
+        """An error is shown if a security questions already exists."""
+        SecurityQuestion.objects.create(title='test')
+
+        stdout, stderr = self._call_command('initialize_data')
+
+        assert stdout == ''
+        assert stderr == 'There already exists data\n'
