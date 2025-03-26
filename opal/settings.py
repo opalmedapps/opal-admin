@@ -54,6 +54,7 @@ THIRD_PARTY_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'django_filters',
+    'django_tables2',
     'corsheaders',
     'easyaudit',
 ]
@@ -131,6 +132,7 @@ DATABASES = {
         'TEST': {
             'NAME': 'test_{0}'.format(env('DATABASE_NAME')),
         },
+        'ATOMIC_REQUESTS': True,
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
@@ -139,6 +141,7 @@ DATABASES = {
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
+        'TIME_ZONE': 'EST5EDT',
     },
 }
 
@@ -352,3 +355,8 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 #
 # Use Twitter Bootstrap (version 4) as a default template for the project
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# Django Tables2
+#
+# Set a default template to use
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'

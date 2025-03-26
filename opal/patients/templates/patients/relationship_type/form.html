@@ -4,11 +4,13 @@
 {% load crispy_forms_tags %}
 
 {% block content-header-page-name %}
-  {% if object %}{% translate "Update" %}{% else %}{% translate "Create" %}{% endif %} {% translate "Site" %}
+  {% if object %}{% translate "Update" %}{% else %}{% translate "Create" %}{% endif %} {% translate "Relationship Type" %}
 {% endblock %}
 
 {% block content %}
+{% comment %} Main content {% endcomment %}
   <section class="content">
+    {% comment %} Default box {% endcomment %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
@@ -17,15 +19,18 @@
                       <form method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:site-list' %}">
+                        <a class="btn btn-secondary mr-2" href="{% url 'patients:relationshiptype-list' %}">
                           {% translate "Cancel" %}
                         </a>
                         <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
                       </form>
                     </div>
+                    {% comment %} /.card-body {% endcomment %}
                 </div>
             </div>
         </div>
     </div>
+    {% comment %} /.card {% endcomment %}
   </section>
+{% comment %} /.content {% endcomment %}
 {% endblock %}

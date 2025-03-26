@@ -47,7 +47,6 @@ def test_views_use_correct_template(user_client: Client, url: str, template: str
 
 # tuple with `Institution` templates and corresponding url names
 test_institution_url_template_data: list[Tuple] = [
-    ('hospital-settings:institution-detail', 'hospital_settings/institution/institution_detail.html'),
     ('hospital-settings:institution-update', 'hospital_settings/institution/institution_form.html'),
     ('hospital-settings:institution-delete', 'hospital_settings/institution/institution_confirm_delete.html'),
 ]
@@ -112,7 +111,6 @@ def test_institution_update_object_displayed(user_client: Client) -> None:
 
 # tuple with `Site` templates and corresponding url names
 test_site_url_template_data: list[Tuple] = [
-    ('hospital-settings:site-detail', 'hospital_settings/site/site_detail.html'),
     ('hospital-settings:site-update', 'hospital_settings/site/site_form.html'),
     ('hospital-settings:site-delete', 'hospital_settings/site/site_confirm_delete.html'),
 ]

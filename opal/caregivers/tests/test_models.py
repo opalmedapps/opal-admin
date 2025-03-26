@@ -1,5 +1,7 @@
+import datetime
 
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 
 import pytest
@@ -100,3 +102,60 @@ def test_security_answer_factory() -> None:
     """Ensure the SecurityAnswer factory is building properly."""
     answer = factories.SecurityAnswer()
     answer.full_clean()
+
+
+def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
+    """The `str` method returns the registration code and status."""
+    registration_code = factories.RegistrationCode()
+    assert str(registration_code) == 'Code: code12345678 (Status: NEW)'
+
+
+def test_registrationcode_factory() -> None:
+    """Ensure the Regtistrationcode factory is building properly."""
+    registration_code = factories.RegistrationCode()
+    registration_code.full_clean()
+
+
+def test_registrationcode_code_unique() -> None:
+    """Ensure the code of registration code is unique."""
+    registration_code = factories.RegistrationCode()
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'code12345678' for key 'code'"):  # type: ignore[arg-type]
+        factories.RegistrationCode(relationship=registration_code.relationship)
+
+
+def test_registrationcode_code_length_gt_max() -> None:
+    """Ensure the length of registration code is not greater than 12."""
+    registration_code = factories.RegistrationCode()
+    registration_code.code = 'code1234567890'
+    expected_message = "'code': ['Ensure this value has at most 12 characters (it has 14).']"
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        registration_code.clean_fields()
+
+
+def test_registrationcode_email_code_too_long() -> None:
+    """Ensure the length of email verification code is not greater than 6."""
+    registration_code = factories.RegistrationCode()
+    registration_code.email_verification_code = '1234567'
+    expected_message = "'email_verification_code': ['Ensure this value has at most 6 characters (it has 7).']"
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        registration_code.clean_fields()
+
+
+def test_registrationcode_codes_length_lt_min() -> None:
+    """Ensure the length of registration code is not less than 12."""
+    registration_code = factories.RegistrationCode(
+        code='123456',
+        email_verification_code='1234',
+    )
+    expected_message = '{0}{1}'.format(
+        "'code': ['Ensure this value has at least 12 characters (it has 6).'], ",
+        "'email_verification_code': ['Ensure this value has at least 6 characters (it has 4).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        registration_code.clean_fields()
+
+
+def test_registrationcode_creation_date_is_today() -> None:
+    """Ensure the creation date is tody when creating a new registration code."""
+    registration_code = factories.RegistrationCode()
+    assert str(registration_code.creation_date) == str(datetime.date.today())

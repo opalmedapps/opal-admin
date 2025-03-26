@@ -69,3 +69,51 @@ msgstr "Réponse de sécurité"
 #: opal/caregivers/models.py
 msgid "Security Answers"
 msgstr "Réponses de sécurité"
+
+#: opal/caregivers/models.py
+msgid "New"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registered"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Expired"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Blocked"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Relationship"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Status"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Creation Date"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Attempts"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Email Verification Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registration Code"
+msgstr ""
+
+#: opal/caregivers/models.py
+msgid "Registration Codes"
+msgstr ""

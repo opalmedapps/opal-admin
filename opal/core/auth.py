@@ -61,12 +61,15 @@ class FedAuthBackend(BaseBackend):
                 try:
                     user: User = UserModel.objects.get(username=username)
                 except UserModel.DoesNotExist:
-                    # There's no need to set a password since it is stored in ADFS.
                     user = UserModel(username=username)
 
                     user.email = user_data.email
                     user.first_name = user_data.first_name
                     user.last_name = user_data.last_name
+                    # There's no need to set a password since it is stored in ADFS.
+                    # Mark it as unusable:
+                    # https://docs.djangoproject.com/en/dev/ref/contrib/auth/#django.contrib.auth.models.User.set_unusable_password
+                    user.set_unusable_password()
 
                     user.save()
                 return user
