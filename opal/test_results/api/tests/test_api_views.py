@@ -9,9 +9,11 @@ from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
+from pytest_mock.plugin import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from opal.hospital_settings.factories import Institution
 from opal.patients import models as patient_models
 from opal.patients.factories import Patient, Relationship
 from opal.users import factories as user_factories
@@ -78,8 +80,17 @@ class TestCreatePathologyView:
     def test_pathology_create_success(
         self,
         api_client: APIClient,
+        mocker: MockerFixture,
     ) -> None:
-        """Ensure the endpoint can update patient info with no errors."""
+        """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
+        # Mock the ReportService.generate_pathology_report() method
+        mock_pdf_generator = mocker.patch(
+            'opal.services.reports.ReportService.generate_pathology_report',
+            return_value=None,
+        )
+
+        Institution(pk=1)
+
         patient = Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
@@ -98,6 +109,7 @@ class TestCreatePathologyView:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+        mock_pdf_generator.assert_called_once()
 
     def _get_valid_input_data(self) -> dict[str, Any]:
         """Generate valid JSON data for creating pathology record.
@@ -126,6 +138,7 @@ class TestCreatePathologyView:
             'test_group_code_description': 'TEST',
             'legacy_document_id': None,
             'reported_at': '1985-12-01 10:30:30',
+            'case_number': 'test-case-number',
         }
 
     def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
@@ -142,7 +155,7 @@ class TestCreatePathologyView:
         )
         user.user_permissions.add(
             Permission.objects.get(codename='add_generaltest'),
-            Permission.objects.get(codename='add_observation'),
+            Permission.objects.get(codename='add_pathologyobservation'),
             Permission.objects.get(codename='add_note'),
             Permission.objects.get(codename='change_patient'),
         )

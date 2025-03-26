@@ -185,8 +185,8 @@ class TestQuestionnairesReportView:
         )
 
         # mock an actual call to the legacy report generation service to raise a request error
-        mock_generate_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+        mock_generate_base64_questionnaire_report = mocker.patch(
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
@@ -198,7 +198,7 @@ class TestQuestionnairesReportView:
 
         self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
 
-        mock_generate_questionnaire_report.assert_called_once_with(
+        mock_generate_base64_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 patient_name='Marge Simpson',
@@ -226,8 +226,8 @@ class TestQuestionnairesReportView:
         error_response = {'status': 'error', 'message': message}
 
         # mock an actual call to the legacy report generation service to raise a request error
-        mock_generate_questionnaire_report = mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+        mock_generate_base64_questionnaire_report = mocker.patch(
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=None,
         )
 
@@ -236,7 +236,7 @@ class TestQuestionnairesReportView:
 
         response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
 
-        mock_generate_questionnaire_report.assert_called_once_with(
+        mock_generate_base64_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 patient_name='Marge Simpson',
@@ -268,7 +268,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 
@@ -311,7 +311,7 @@ class TestQuestionnairesReportView:
 
         # mock an actual call to the legacy report generation service to raise a request error
         mocker.patch(
-            'opal.services.reports.ReportService.generate_questionnaire_report',
+            'opal.services.reports.ReportService.generate_base64_questionnaire_report',
             return_value=base64_encoded_report,
         )
 

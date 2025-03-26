@@ -142,7 +142,25 @@ class LegacyDocumentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyDocument
 
+    documentsernum = 5
     patientsernum = SubFactory(LegacyPatientFactory)
+    sourcedatabasesernum = SubFactory(LegacySourceDatabaseFactory)
+    documentid = '56190000000000039165511'
+    aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
+    approvedby = 890
+    approvedtimestamp = timezone.make_aware(datetime(2023, 6, 1, 12, 36))
+    authoredbysernum = 890
+    dateofservice = timezone.make_aware(datetime(2023, 6, 8, 12, 35))
+    revised = ''
+    validentry = 'Y'
+    originalfilename = 'bart_2009Feb23_pathology.pdf'
+    finalfilename = 'bart_2009Feb23_pathology.pdf'
+    createdbysernum = 890
+    createdtimestamp = timezone.make_aware(datetime(2023, 6, 8, 12, 36))
+    transferstatus = 'T'
+    transferlog = 'Transfer successful'
+    dateadded = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
+    readstatus = 0
     readby = '[]'
     readstatus = 0
 

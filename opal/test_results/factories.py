@@ -1,6 +1,4 @@
 """Module providing model factories for test result app models."""
-from typing import Any
-
 from django.utils import timezone
 
 import factory
@@ -42,41 +40,34 @@ class GeneralTest(DjangoModelFactory):
         model = models.GeneralTest
 
 
-class Observation(DjangoModelFactory):
-    """Model factory to create [opal.test_results.models.Observation][] models.
+class PathologyObservationFactory(DjangoModelFactory):
+    """Model factory to create [opal.test_results.models.PathologyObservation][] models."""
 
-    The identifiers, value, & value_units fields depend on the parent GeneralTest type.
-    If type=Pathology, value is a qualitative description of the tissue sample.
-    If type=Labs, value is an integer value for this observation component, in our case a White Blood Cell Count.
-    """
-
-    general_test = factory.SubFactory(GeneralTest)
-    identifier_code: str = factory.LazyAttribute(
-        lambda obx: 'SPSPECI'
-        if obx.general_test.type == models.TestType.PATHOLOGY
-        else 'WBC',
-    )
-    identifier_text: str = factory.LazyAttribute(
-        lambda obx: 'SPECIMEN'
-        if obx.general_test.type == models.TestType.PATHOLOGY
-        else 'WHITE BLOOD CELL',
-    )
-    # Value is the pathology description if pathology, else an integer value for a lab component
-    value: Any = factory.LazyAttribute(
-        lambda obx: "Left breast mass three o'clock previously collagenous stroma"
-        if obx.general_test.type == models.TestType.PATHOLOGY
-        else 30.02,
-    )
-    value_units: str = factory.LazyAttribute(
-        lambda obx: ''
-        if obx.general_test.type == models.TestType.PATHOLOGY
-        else '10^9/L',
-    )
-    value_abnormal = factory.Iterator(models.AbnormalFlag.values)
+    general_test = factory.SubFactory(GeneralTest, type=models.TestType.PATHOLOGY)
+    identifier_code = 'SPSPECI'
+    identifier_text = 'SPECIMEN'
+    value = "Left breast mass three o'clock previously collagenous stroma"
     observed_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
 
     class Meta:
-        model = models.Observation
+        model = models.PathologyObservation
+
+
+class LabObservationFactory(DjangoModelFactory):
+    """Model factory to create LabObservations models."""
+
+    general_test = factory.SubFactory(GeneralTest, type=models.TestType.LAB)
+    identifier_code = 'WBC'
+    identifier_text = 'WHITE BLOOD CELL'
+    value = 30.02
+    value_units = '10^9/L'
+    value_abnormal = factory.Iterator(models.AbnormalFlag.values)
+    value_min_range = 3.0
+    value_max_range = 15.0
+    observed_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+
+    class Meta:
+        model = models.LabObservation
 
 
 class Note(DjangoModelFactory):
