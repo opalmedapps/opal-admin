@@ -152,10 +152,10 @@ class Patient(models.Model):
         """Validate date fields.
 
         Raises:
-            ValidationError: the error shows when enteries do not comply with the validation rules.
+            ValidationError: If the date of death is earlier than the date of birth.
         """
-        if self.date_of_death is not None and self.date_of_birth >= self.date_of_death.date():
-            raise ValidationError({'date_of_death': _('Date of death should be later than date of birth.')})
+        if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
+            raise ValidationError({'date_of_death': _('Date of death must be later than date of birth.')})
 
 
 class RelationshipStatus(models.TextChoices):

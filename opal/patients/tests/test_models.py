@@ -2,6 +2,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -466,13 +467,13 @@ def test_relationship_same_relation_diff_type() -> None:
     factories.Relationship(patient=patient, caregiver=profile, type=type2)
 
 
-def test_ivalid_date_of_death() -> None:
+def test_invalid_date_of_death() -> None:
     """Ensure that the date of death is invalid if date of birth is later."""
     patient = factories.Patient()
     patient.date_of_birth = datetime.date(2022, 11, 20)
-    patient.date_of_death = datetime.datetime(2022, 10, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 10, 20))
 
-    expected_message = 'Date of death should be later than date of birth.'
+    expected_message = 'Date of death must be later than date of birth.'
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         patient.clean()
 
@@ -481,6 +482,15 @@ def test_valid_date_of_death() -> None:
     """Ensure that the date of death is entered and valid."""
     patient = factories.Patient()
     patient.date_of_birth = datetime.date(2022, 10, 20)
-    patient.date_of_death = datetime.datetime(2022, 11, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 11, 20))
+
+    patient.clean()
+
+
+def test_same_birth_and_death_date() -> None:
+    """Ensure that the date of death is valid if same as date of birth."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 1, 23)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 1, 23))
 
     patient.clean()
