@@ -6,7 +6,6 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, TypeAlias, Union
 
-from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import connections, models, transaction
 from django.utils import timezone
@@ -668,24 +667,3 @@ def generate_questionnaire_report(
         ),
         questionnaires=combined_questionnaire_data,
     )
-
-
-def path_to_questionnaire_report(patient: Patient, pdf_report: bytearray) -> Path:
-    """Generate a path to the pdf for the encoded base64 to send to OIE.
-
-    Args:
-        patient (Patient): patient instance for whom a new PDF questionnaire report being generated
-        pdf_report (bytearray): list of questionnaireData required to generate the PDF report
-
-    Returns:
-        Path: path to the generated questionnaire report
-    """
-    generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
-    report_file_name = f'{patient.first_name}_{patient.last_name}_{generated_at}_questionnaire.pdf'
-    report_path = settings.QUESTIONNAIRE_REPORTS_PATH / f'{report_file_name}.pdf'
-
-    # Save the PDF bytearray to a file
-    with open(report_path, 'wb') as report_file:
-        report_file.write(pdf_report)
-
-    return report_path

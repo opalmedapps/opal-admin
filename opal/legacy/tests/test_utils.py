@@ -2,7 +2,6 @@ import datetime
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
 from django.core.management.base import CommandError
 from django.utils import timezone
 
@@ -846,24 +845,3 @@ def test_generate_questionnaire_report(
     # Verify pdf generation
     assert isinstance(result, bytearray), 'Output'
     assert result, 'PDF should not be empty'
-
-
-def test_path_to_questionnaire_report(mocker: MockerFixture, patient_mock: Any) -> None:  # noqa: WPS442
-    """Test `path_to_questionnaire_report`."""
-    mock_localtime = mocker.patch(
-        'opal.legacy.utils.timezone.localtime',
-        return_value=datetime.datetime(2023, 1, 1, 12, 0, 0),
-    )
-    mock_open = mocker.patch('builtins.open', mocker.mock_open())
-
-    pdf_report = bytearray(b'PDF content')
-    expected_filename = 'Bart_Simpson_2023-Jan-01_12-00-00_questionnaire.pdf'
-    expected_path = settings.QUESTIONNAIRE_REPORTS_PATH / f'{expected_filename}.pdf'
-
-    result = legacy_utils.path_to_questionnaire_report(patient_mock, pdf_report)
-
-    # Assertions
-    assert result == expected_path
-    mock_open.assert_called_once_with(expected_path, 'wb')
-    mock_open().write.assert_called_once_with(pdf_report)
-    mock_localtime.assert_called_once()
