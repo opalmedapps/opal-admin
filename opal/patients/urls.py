@@ -49,7 +49,7 @@ urlpatterns = [
     ),
     path(
         'relationships/search/<int:pk>/update/',
-        views.ManageSearchUpdateView.as_view(),
+        views.ManagePendingUpdateView.as_view(),
         name='relationships-search-update',
     ),
     # Patients pages
