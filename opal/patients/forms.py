@@ -1,5 +1,5 @@
 """This module provides forms for Patients."""
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Dict, Optional, Set, Union
 
 from django import forms
@@ -317,7 +317,7 @@ class RequestorDetailsForm(forms.Form):
         label=_('Caregiver relationship type'),
     )
 
-    def __init__(self, date_of_birth: datetime, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
@@ -337,7 +337,7 @@ class RequestorDetailsForm(forms.Form):
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )
-        self.age = Patient.calculate_age(Patient(date_of_birth=date_of_birth))
+        self.age = Patient.calculate_age(date_of_birth=date_of_birth)
         available_choices = RelationshipType.objects.filter_by_patient_age(
             patient_age=self.age,
         ).values_list('id', flat=True)

@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from typing import Tuple
 
 import pytest
@@ -111,7 +111,7 @@ def test_disabled_option_exists() -> None:
     }
     form = RequestorDetailsForm(
         data=form_data,
-        date_of_birth=datetime.strptime('2004-01-01 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
