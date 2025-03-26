@@ -173,7 +173,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
-        header_text_rvh = FPDFCellDictType(
+        header_text = FPDFCellDictType(
             w=0,
             h=0,
             align='R',
@@ -208,7 +208,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(70)
-        self.cell(**header_text_rvh)
+        self.cell(**header_text)
 
         self.ln(11)
         self.cell(8)
@@ -252,17 +252,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             border=0,
             align='R',
         )
-        footer_fmu_date = FPDFCellDictType(
+        source_date = FPDFCellDictType(
             w=0,
             h=5,
             text='Tempory text',
             border=0,
             align='L',
         )
-        self.line(10, 260, 200, 260)
         self.set_y(y=-35)
+        # Move the cursor to the bottom (e.g., 3.5 cm from the bottom).
+        self.line(10, 260, 200, 260)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=12)
-        self.cell(**footer_fmu_date)
+        self.cell(**source_date)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.cell(**footer_page)
         self.ln(10)
@@ -280,7 +281,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         super().add_page(*args, **kwargs)
 
         header_cursor_abscissa_position_in_mm: int = 35
-        # Set the cursor at the top (e.g., 4 cm from the top).
+        # Set the cursor at the top (e.g., 3.5 cm from the top).
         self.set_y(header_cursor_abscissa_position_in_mm)
 
     def _generate(self) -> None:
@@ -298,7 +299,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             border=0,
             text=f'{self.patient_data.patient_first_name} {self.patient_data.patient_last_name}',
         )
-        text_rvh = FPDFCellDictType(
+        patient_site_and_mrns = FPDFCellDictType(
             w=0,
             h=0,
             align='L',
@@ -311,7 +312,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.code39(text='NO-SCAN', x=160, y=30, w=1, h=18)  # barcode generation
         self.ln(6)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
-        self.cell(**text_rvh)
+        self.cell(**patient_site_and_mrns)
         self.ln(8)
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.set_x(162)
