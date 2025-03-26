@@ -15,7 +15,7 @@ from ..factories import HospitalPatient, Patient, Relationship
 
 
 def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> None:
-    """Test patient list endpoint to return an empty list if there is no relationship."""
+    """Test api registration code with summary serializer."""
     api_client.force_login(user=admin_user)
     # Build relationships: code -> relationship -> patient
     patient = Patient()
@@ -47,7 +47,7 @@ def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> N
 
 
 def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractUser) -> None:
-    """Test patient list endpoint to return an empty list if there is no relationship."""
+    """Test api registration code with detailed serializer."""
     api_client.force_login(user=admin_user)
     # Build relationships: code -> relationship -> patient
     patient = Patient()
