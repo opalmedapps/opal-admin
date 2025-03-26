@@ -428,7 +428,7 @@ class RegistrationCompletionView(APIView):
         Return the email address for a new caregiver.
 
         The email address is either coming from the related `EmailVerification`.
-        Or, from the request data (if the caregiver has an account at another institution, 
+        Or, from the request data (if the caregiver has an account at another institution,
         i.e., an existing Firebase account).
 
         Args:
