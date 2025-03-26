@@ -797,6 +797,24 @@ def test_relationship_end_date_with_end_age_set() -> None:
 
 
 @pytest.mark.django_db()
+def test_relationship_end_date_actual_value() -> None:
+    """Test relationsip end date if it is an actual date value."""
+    request = _init_session()
+
+    test_view = _TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    date_of_birth = date(2013, 4, 3)
+    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance._set_relationship_end_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == date(2031, 4, 3)
+
+
+@pytest.mark.django_db()
 def test_relationship_end_date_without_end_age_set() -> None:
     """Test relationsip end date if a relationship type has no end age set."""
     request = _init_session()
