@@ -1670,7 +1670,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         caregiver_user.refresh_from_db()
         assert caregiver_user.email == 'foo@bar.com'
 
-    @pytest.mark.django_db(databases=['default'])
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_confirmation_email_new_caregiver(
         self,
         api_client: APIClient,
@@ -1697,7 +1697,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert 'Thank you for registering for the Opal app.' in body
         assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
 
-    @pytest.mark.django_db(databases=['default'])
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_confirmation_email_existing_caregiver(
         self,
         api_client: APIClient,
