@@ -204,7 +204,7 @@ msgid ""
 "verification page:"
 msgstr ""
 "Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
-"code ci-dessous sur la page de vérification :"
+"code ci-dessous sur la page de vérification:"
 
 #: opal/templates/email/verification_code.txt
 #, python-format
