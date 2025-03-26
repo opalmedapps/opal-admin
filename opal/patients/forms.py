@@ -148,14 +148,18 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         card_type = self.cleaned_data.get('card_type')
         medical_number = self.cleaned_data.get('medical_number')
+        site = self.cleaned_data.get('site')
 
         if card_type and medical_number:
             if card_type == constants.MedicalCard.ramq.name:
                 self.patient = Patient.objects.filter(ramq=medical_number).first()
                 if not self.patient:
                     # TODO: handle connection errors here, i.e., raise helpful validation error
+                    # TODO: display regular error log system related error.
                     self.patient = self._fake_oie_response()
-
+            elif card_type == constants.MedicalCard.mrn.name:
+                patient_queryset = Patient.objects.filter(hospital_patients__mrn= medical_number, hospital_patients__site__code=site.code )
+                self.patient = patient_queryset.first()
         return self.cleaned_data
 
     def _fake_oie_response(self) -> OIEPatientData:
