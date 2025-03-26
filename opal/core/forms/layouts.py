@@ -49,13 +49,11 @@ class InlineSubmit(Layout):
 
     default_label = _('Submit')
     default_css_class = 'd-table'
-    default_css_active = 'btn-active active'
 
     def __init__(  # noqa: WPS211
         self,
-        name: Optional[str] = None,
+        name: str,
         label: Optional[str] = None,
-        active: bool = False,
         extra_css: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
@@ -67,7 +65,6 @@ class InlineSubmit(Layout):
         Args:
             name: the name of the submit button, empty string if you don't need to identify it
             label: label of the submit button, defaults to `Submit` otherwise
-            active: True if it should look active, False otherwise
             extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the submit button
         """
@@ -77,9 +74,6 @@ class InlineSubmit(Layout):
 
         if extra_css:
             css_class = f'{self.default_css_class} {extra_css}'
-
-        if active:
-            css_class = f'{css_class} {self.default_css_active}'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
@@ -101,12 +95,11 @@ class InlineReset(Layout):
 
     default_label = _('Reset')
     default_css_class = 'btn btn-secondary d-table'
-    default_css_active = 'btn-active active'
 
     def __init__(  # noqa: WPS210
         self,
         label: Optional[str] = None,
-        active: bool = False,
+        extra_css: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -116,7 +109,7 @@ class InlineReset(Layout):
 
         Args:
             label: label of the reset button, default to `Reset` otherwise
-            active: True if it should look active, False otherwise
+            extra_css: optional additional CSS classes
             kwargs: additional keyword arguments that are added to the reset button
         """
         the_label = label if label else self.default_label
@@ -126,8 +119,8 @@ class InlineReset(Layout):
 
         css_class = f'{self.default_css_class}'
 
-        if active:
-            css_class = f'{css_class} {self.default_css_active}'
+        if extra_css:
+            css_class = f'{self.default_css_class} {extra_css}'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
