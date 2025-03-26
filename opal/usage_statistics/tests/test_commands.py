@@ -7,11 +7,11 @@ from django.utils import timezone
 import pytest
 from faker import Faker
 
-from opal.caregivers import factories as caregivers_factories
+from opal.caregivers import factories as caregiver_factories
 from opal.core.test_utils import CommandTestMixin
 from opal.legacy import factories as legacy_factories
 from opal.legacy import models as legacy_models
-from opal.patients import factories as patients_factories
+from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import factories as statistics_factory
 from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
@@ -34,31 +34,31 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         """Ensure that the command's force-delete flag deletes the data in models."""
         monkeypatch.setattr('django.conf.settings.DEBUG', {'DEBUG': True})
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='marge'),
+            action_by_user=caregiver_factories.Caregiver(username='marge'),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='homer'),
+            action_by_user=caregiver_factories.Caregiver(username='homer'),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='bart'),
+            action_by_user=caregiver_factories.Caregiver(username='bart'),
         )
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
         )
-        caregiver_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        caregiver_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=marge_caregiver,
         )
-        mandatry_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.MANDATARY),
-            patient=patients_factories.Patient(legacy_id=53, ramq='TEST01161974'),
+        mandatry_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.MANDATARY),
+            patient=patient_factories.Patient(legacy_id=53, ramq='TEST01161974'),
             caregiver=marge_caregiver,
         )
         statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
@@ -76,12 +76,12 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_existing_statistics_delete_no(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Ensure that the command's force-delete stops execution if user enters 'no' to the prompt."""
-        self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(username='marge'),
+            action_by_user=caregiver_factories.Caregiver(username='marge'),
         )
         statistics_factory.DailyUserPatientActivity(user_relationship_to_patient=self_relationship)
         statistics_factory.DailyPatientDataReceived()
@@ -102,7 +102,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_previous_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics per user."""
-        caregiver = caregivers_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile()
 
         self._create_log_record(username=caregiver.user.username)
         self._create_log_record(request='Feedback', parameters='OMITTED', username=caregiver.user.username)
@@ -170,7 +170,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_current_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the current day app statistics per user."""
-        caregiver = caregivers_factories.CaregiverProfile()
+        caregiver = caregiver_factories.CaregiverProfile()
         self._create_log_record(username=caregiver.user.username, days_delta=0)
         self._create_log_record(
             request='Feedback',
@@ -245,12 +245,12 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     def test_populate_last_login_user_statistics(self) -> None:
         """Ensure that the command correctly populates the last login time per user per day."""
         fake = Faker()
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         start_datetime_period = dt.datetime.combine(
@@ -273,14 +273,14 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             start_datetime_period, end_datetime_period, timezone.get_current_timezone(),
         ) - dt.timedelta(days=1)
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             last_login=marge_two_days_ago_date_time,
             action_date=start_datetime_period.date() - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             last_login=homer_two_days_ago_date_time,
@@ -371,24 +371,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_login_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates logins count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_logins=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_logins=1,
@@ -425,24 +425,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_feedback_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates feedback count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_feedback=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_feedback=1,
@@ -495,24 +495,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_security_answer_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates updated security answers count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_update_security_answers=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_update_security_answers=1,
@@ -589,24 +589,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_password_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates updated passwords count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_update_passwords=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_update_passwords=1,
@@ -683,24 +683,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_language_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates language updates count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_update_language=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_update_language=1,
@@ -777,24 +777,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_android_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates android devices count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_device_android=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_device_android=1,
@@ -871,24 +871,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_ios_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates iOS devices count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_device_ios=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_device_ios=1,
@@ -966,24 +966,24 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_browser_device_user_statistics(self) -> None:
         """Ensure that the command correctly aggregates browser devices count per user per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
         date = dt.datetime.now().date()
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             count_device_browser=1,
             action_date=date - dt.timedelta(days=2),
         )
         statistics_factory.DailyUserAppActivity(
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             count_device_browser=1,
@@ -1062,14 +1062,14 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_previous_day_patient_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics per patient."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
 
-        patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1169,14 +1169,14 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_current_day_patient_statistics(self) -> None:
         """Ensure that the command successfully populates the current day app statistics per patient."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
 
-        patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1286,23 +1286,23 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_checkin_statistics(self) -> None:
         """Ensure that the command correctly aggregates checkins count per patient per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1310,7 +1310,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         date = dt.datetime.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
@@ -1319,7 +1319,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1412,23 +1412,23 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_document_statistics(self) -> None:
         """Ensure that the command correctly aggregates documents count per patient per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1436,7 +1436,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         date = dt.datetime.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
@@ -1445,7 +1445,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1538,23 +1538,23 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_educational_material_statistics(self) -> None:
         """Ensure that the command correctly aggregates educational materials count per patient per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1562,7 +1562,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         date = dt.datetime.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
@@ -1571,7 +1571,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1664,23 +1664,23 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_questionnaire_statistics(self) -> None:
         """Ensure that the command correctly aggregates questionnaires count per patient per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1688,7 +1688,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         date = dt.datetime.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
@@ -1697,7 +1697,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1806,23 +1806,23 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
 
     def test_populate_lab_statistics(self) -> None:
         """Ensure that the command correctly aggregates lab results count per patient per day."""
-        marge_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='marge'),
+        marge_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='marge'),
             legacy_id=1,
         )
-        marge_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+        marge_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
             caregiver=marge_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
-        homer_caregiver = caregivers_factories.CaregiverProfile(
-            user=caregivers_factories.Caregiver(username='homer'),
+        homer_caregiver = caregiver_factories.CaregiverProfile(
+            user=caregiver_factories.Caregiver(username='homer'),
             legacy_id=2,
         )
-        homer_self_relationship = patients_factories.Relationship(
-            type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-            patient=patients_factories.Patient(legacy_id=52, ramq='TEST01161973'),
+        homer_self_relationship = patient_factories.Relationship(
+            type=patient_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+            patient=patient_factories.Patient(legacy_id=52, ramq='TEST01161973'),
             caregiver=homer_caregiver,
             status=patient_models.RelationshipStatus.CONFIRMED,
         )
@@ -1830,7 +1830,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         date = dt.datetime.now().date()
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=marge_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=marge_caregiver.user.username,
             ),
             patient=marge_self_relationship.patient,
@@ -1839,7 +1839,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         )
         statistics_factory.DailyUserPatientActivity(
             user_relationship_to_patient=homer_self_relationship,
-            action_by_user=caregivers_factories.Caregiver(
+            action_by_user=caregiver_factories.Caregiver(
                 username=homer_caregiver.user.username,
             ),
             patient=homer_self_relationship.patient,
@@ -1939,8 +1939,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         legacy_factories.LegacyPatientControlFactory(patient=marge)
         legacy_factories.LegacyPatientControlFactory(patient=homer)
 
-        django_marge_patient = patients_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patients_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
         previous_day = timezone.make_aware(
             dt.datetime.now() - dt.timedelta(days=1),
@@ -2078,8 +2078,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         legacy_factories.LegacyPatientControlFactory(patient=marge)
         legacy_factories.LegacyPatientControlFactory(patient=homer)
 
-        django_marge_patient = patients_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
-        django_homer_patient = patients_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
 
         previous_day = timezone.make_aware(
             dt.datetime.now() - dt.timedelta(days=1),
