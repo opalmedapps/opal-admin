@@ -321,7 +321,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             self._draw_questions_results(data.questions)
 
     def _draw_questions_results(self, questions: Any) -> None:
-        """Logic regarding how to show the data for the different type of questions.
+        """Logic regarding how to show the data for the different types of questions.
 
         Args:
             questions: list of questions associated with the questionnaire
@@ -385,7 +385,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         Returns:
             DataFrame of the questions answer value
         """
-        if self.will_page_break(50):
+        if self.will_page_break(50):  # So the title and chart are on the same page
             self.add_page()
         self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
         self._insert_paragraph(
@@ -414,7 +414,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         Args:
             questions: question needing a table to be rendered
         """
-        if self.will_page_break(30):
+        if self.will_page_break(30):  # So the title and chart are on the same page
             self.add_page()
         self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
         self._insert_paragraph(

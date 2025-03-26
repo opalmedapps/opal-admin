@@ -38,7 +38,23 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = questionnaire.QuestionnaireReportRequestData
 
 QUESTION_REPORT_DATA = (
     questionnaire.Question(
-        question_text='Question demo for patient',
+        question_text='Question demo for patient 1',
+        question_label='demo for patient',
+        question_type_id=1,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                datetime(2024, 10, 20, 14, 0),
+                'Demo answer from patient 1',
+            ),
+        ],
+    ),
+    questionnaire.Question(
+        question_text='Question demo for patient 2',
         question_label='demo for patient',
         question_type_id=1,
         position=1,
@@ -49,11 +65,34 @@ QUESTION_REPORT_DATA = (
         values=[
             (
                 datetime(2024, 10, 21, 14, 0),
-                '3000',
+                'Demo answer from patient 2',
             ),
         ],
     ),
 )
+QUESTION_REPORT_DATA_CHARTS = (
+    questionnaire.Question(
+        question_text='Question charts demo for patient',
+        question_label='charts demo',
+        question_type_id=2,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                datetime(2024, 10, 20, 14, 0),
+                '5',
+            ),
+            (
+                datetime(2024, 10, 21, 14, 0),
+                '7',
+            ),
+        ],
+    ),
+)
+
 QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='BREAST-Q Reconstruction Module',
@@ -65,6 +104,12 @@ QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=QUESTION_REPORT_DATA,
+)
+QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS = questionnaire.QuestionnaireData(
+    questionnaire_id=1,
+    questionnaire_title='Questionnaire demo with charts for questions',
+    last_updated=datetime(2024, 10, 21, 14, 0),
+    questions=QUESTION_REPORT_DATA_CHARTS,
 )
 
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
@@ -382,6 +427,9 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
     assert caplog.records[0].message == 'The generated questionnaire PDF report is not in the base64 format.'
     assert caplog.records[0].levelname == 'ERROR'
+
+
+# TODO: add test for pdf generation with charts once it is in the container
 
 
 def test_generate_pdf_one_page() -> None:
