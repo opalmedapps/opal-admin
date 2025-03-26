@@ -52,6 +52,16 @@ def fixture_institution_form_files() -> dict:
             content=file_content,
             content_type='image/png',
         ),
+        'terms_of_use_en': SimpleUploadedFile(
+            name='terms_of_use_en.pdf',
+            content=b'test',
+            content_type='application/pdf',
+        ),
+        'terms_of_use_fr': SimpleUploadedFile(
+            name='terms_of_use_fr.pdf',
+            content=b'test',
+            content_type='application/pdf',
+        ),
     }
 
 
@@ -69,10 +79,7 @@ def institution_form(institution_form_files: dict) -> InstitutionForm:
     form_data = model_to_dict(instit, exclude=[
         'id',
         'logo',
-        'logo_en',
-        'logo_fr',
-        'terms_of_use_en',
-        'terms_of_use_fr',
+        'terms_of_use',
     ])
 
     return InstitutionForm(
@@ -99,6 +106,7 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
         'logo_en',
         'logo_fr',
         'code',
+        'terms_of_use',
         'terms_of_use_en',
         'terms_of_use_fr',
     ])

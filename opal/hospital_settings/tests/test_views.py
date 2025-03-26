@@ -217,6 +217,28 @@ def test_institution_with_no_logos_create(
 ) -> None:
     """Ensure that new incomplete institution (with missing logo images) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
+    form_data = institution_form.data
+    form_data.pop('logo_fr')
+    form_data.pop('logo_en')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
+    assert Institution.objects.count() == 0
+
+
+def test_institution_with_no_terms_of_use_create(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that new incomplete institution (with missing terms of use) form cannot be posted to the server."""
+    url = reverse('hospital-settings:institution-create')
+    form_data = institution_form.data
+    form_data.pop('terms_of_use_fr')
+    form_data.pop('terms_of_use_en')
 
     response = user_client.post(
         url,
@@ -290,6 +312,33 @@ def test_institution_with_no_logos_update(
     form_data = institution_form.data
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('logo_fr')
+    form_data.pop('logo_en')
+
+    response = user_client.post(
+        url,
+        data=form_data,
+    )
+
+    assertRedirects(response, reverse('hospital-settings:institution-list'))
+    assert Institution.objects.all()[0].name_en == 'updated name_en'
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+
+
+def test_institution_with_no_terms_of_use_update(
+    user_client: Client,
+    institution_form: InstitutionForm,
+) -> None:
+    """Ensure that institution form (with missing logo images) can update an existing institution."""
+    assert institution_form.is_valid()
+    institution_form.save()
+
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
+    form_data.pop('terms_of_use_fr')
+    form_data.pop('terms_of_use_en')
 
     response = user_client.post(
         url,
