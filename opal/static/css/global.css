@@ -66,3 +66,7 @@ h4 {
 border{
   background-color: white;
 }
+/* for content class style configurations */
+.content {
+    background-color: white;
+}
