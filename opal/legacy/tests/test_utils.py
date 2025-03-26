@@ -374,30 +374,13 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
 
 @pytest.mark.django_db(databases=['questionnaire'])
 def test_fetch_questionnaire_from_db(mocker: MockerFixture) -> None:
-    """Test successful execution of fetch_questionnaires_from_db."""
-    external_patient_id = 12345
-    mock_db_result = [
-        ('{"questionnaire": "questionnaire_value"}',),
-        ('[{"questionnaire1": "questionnaire_value1"}, {"questionnaire2": "questionnaire_value2"}]',),
-    ]
-
-    expected_output = [
-        {'questionnaire': 'questionnaire_value'},
-        [{'questionnaire1': 'questionnaire_value1'}, {'questionnaire2': 'questionnaire_value2'}],
-    ]
-
-    mock_cursor = mocker.MagicMock()
-    mock_cursor.fetchall.return_value = mock_db_result
-
+    """Test successful execution of fetch_questionnaires_from_db in the test questionnaire database."""
+    external_patient_id = 51
     result = legacy_utils.fetch_questionnaires_from_db(external_patient_id)
 
-    assert result == expected_output
-    mock_cursor.callproc.assert_called_once_with(
-        'getCompletedQuestionnairesList',
-        [external_patient_id, 1, 'EN'],
-    )
-
-    mock_cursor.fetchall.assert_called_once()
+    assert len(result) == 1
+    assert result[0]['questionnaire_id'] == 12
+    assert result[0]['questionnaire_nickname'] == 'Edmonton Symptom Assessment System'
 
 
 def test_parse_query_result_success() -> None:
