@@ -472,8 +472,6 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
 
-CORS_ALLOW_HEADERS = env.list('CORS_ALLOW_HEADERS')
-
 # Easy Audit
 #
 # Remove /admin to log requests to the admin site

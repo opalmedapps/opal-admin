@@ -23,6 +23,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
     """
 
     model = QuantitySample
+    template_name = 'chart_display.html'
     permission_required = ('health_data.view_quantitysample')
     http_method_names = ['get', 'head', 'options', 'trace']
 
@@ -57,26 +58,6 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
             },
         )
         return context
-
-    def get_template_names(self) -> list[str]:
-        """Return a list of template names to be used for the request based on the request type.
-
-        Provide partial HTML for the wearables data charts if receive AJAX GET request.
-        Otherwise return the whole page.
-
-        See `TemplateResponseMixin` for more details.
-
-        Returns:
-            List of template names
-        """
-        if (
-            self.request.method == 'GET'
-            and 'x-orms-wearablecharts' in self.request.headers
-            and self.request.headers.get('x-orms-wearablecharts') == 'True'
-        ):
-            return ['chart_display.html']
-
-        return ['index.html']
 
     def _generate_plot(self, title: str, label_x: str, label_y: str, data: QuerySet[QuantitySample]) -> Optional[str]:
         """Generate a plotly chart for the given sample type.
