@@ -60,6 +60,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -72,6 +73,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -82,6 +84,7 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -95,6 +98,7 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -106,6 +110,7 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -121,6 +126,7 @@ def test_invalid_field_value_type() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 'ffff',
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -152,6 +158,7 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
@@ -164,6 +171,7 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_reference_count': 99,
         'unread_research_questionnaire_count': 11,
         'unread_consent_questionnaire_count': 11,
     }
