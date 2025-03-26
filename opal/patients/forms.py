@@ -397,12 +397,19 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        patient: Patient | OIEPatientData,
+        existing_user: Optional[CaregiverProfile] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
             patient: a `Patient` or `OIEPatientData` instance
+            existing_user: a `CaregiverProfile` if it a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -425,7 +432,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = None
+        self.existing_user: Optional[CaregiverProfile] = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False

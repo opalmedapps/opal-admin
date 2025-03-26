@@ -24,6 +24,7 @@ from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin, SingleTableView
 
+from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.patients import forms, tables
@@ -34,7 +35,8 @@ from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
 from .utils import create_access_request
 
-_StorageValue = str | dict[str, Any]
+# TODO: consider changing this to a TypedDict
+_StorageValue = int | str | dict[str, Any]
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
@@ -170,7 +172,7 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
                 if next_step:
                     current_form.disable_fields()  # type: ignore[attr-defined]
                     next_form_class = self.forms[next_step]
-                    current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
+                    current_forms.append(next_form_class(**self._get_form_kwargs(next_step, is_current=True)))
                 else:
                     return self._done(current_forms)
 
@@ -326,7 +328,11 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         # the data for a step is always a dict
         return storage[f'step_{step}']  # type: ignore[return-value]
 
-    def _store_form_data(self, form: Form, step: str) -> None:  # noqa: WPS210
+    def _store_form_data(  # noqa: C901, WPS210 (too complex, too many local variables)
+        self,
+        form: Form,
+        step: str,
+    ) -> None:
         """
         Store the validated form data for the given step in the user's session.
 
@@ -352,20 +358,30 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         storage[f'step_{step}'] = cleaned_data
 
         if step == 'search':
+            # TODO: refactor into a patient_to_json function
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
             if isinstance(patient, Patient):
-                storage['patient'] = patient.pk  # type: ignore[assignment]
+                storage['patient'] = patient.pk
             else:
                 # convert it to a dictionary to be able to serialize it into JSON
                 data_dict = patient._asdict()  # noqa: WPS437
                 data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
                 # use DjangoJSONEncoder which supports date/datetime
                 storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
+        elif step == 'relationship':
+            caregiver: Optional[CaregiverProfile] = form.existing_user  # type: ignore[attr-defined]
+
+            if caregiver:
+                storage['caregiver'] = caregiver.pk
 
         self.request.session.modified = True
 
-    def _get_form_kwargs(self, step: str) -> dict[str, Any]:  # noqa: WPS210 (too many local variables)
+    def _get_form_kwargs(  # noqa: C901, WPS210 (too complex, too many local variables)
+        self,
+        step: str,
+        is_current: bool,
+    ) -> dict[str, Any]:
         """
         Return the kwargs for the form of the given step.
 
@@ -373,16 +389,22 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
 
         Args:
             step: the step to get the form's kwargs for
+            is_current: whether the step is the current step
 
         Returns:
             the dictionary of keyword arguments
         """
-        kwargs: dict[str, Any] = {'prefix': step}
+        kwargs: dict[str, Any] = {}
+
+        # only add prefix to the current/active form
+        # this avoids the form field values to return None as their value for previous forms
+        # e.g., form['card_type].value()
+        if is_current:
+            kwargs.update({'prefix': step})
+
         storage = self._get_storage()
 
         if step in {'patient', 'relationship'}:
-            # TODO: should also support a Patient instance that way
-            # i.e., the patient already exists
             # TODO: might be better to refactor into a function so it can be tested easier
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
             if isinstance(patient_data, int):
@@ -401,6 +423,14 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
             kwargs.update({
                 'patient': patient,
             })
+
+            if step == 'relationship':
+                caregiver_pk: Optional[int] = storage.get('caregiver', None)  # type: ignore[assignment]
+
+                if caregiver_pk:
+                    caregiver = CaregiverProfile.objects.get(pk=caregiver_pk)
+
+                    kwargs.update({'existing_user': caregiver})
         elif step == 'confirm':
             kwargs.update({
                 'username': self.request.user.username,
@@ -426,9 +456,10 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         form_list = []
 
         for step, form_class in self.forms.items():
+            is_current_step = step == current_step
             # use the request data for the current step
             # otherwise, load the form data from session storage
-            data = self.request.POST if step == current_step else self._get_saved_form_data(step)
+            data = self.request.POST if is_current_step else self._get_saved_form_data(step)
             # since form fields of previous forms are disabled, initial needs to be used
             # disabled form fields ignore the data and use initial instead
             #
@@ -440,14 +471,14 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
             }
 
             # use initial instead of data to avoid validating a form when up-validate is used
-            if step == current_step and 'X-Up-Validate' in self.request.headers:
+            if is_current_step and 'X-Up-Validate' in self.request.headers:
                 data = {}
 
             form = form_class(
                 # pass none instead of empty dict to not bind the form
                 data=data or None,
                 initial=initial,
-                **self._get_form_kwargs(step),
+                **self._get_form_kwargs(step, is_current_step),
             )
 
             # disable fields for all forms except the current one
