@@ -372,3 +372,13 @@ class TestUsersCaregiversMigration(TestBasicClass):
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
         assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
         assert 'Number of imported users is: 2\n' in message
+
+    def test_import_new_user_phone_number_converted(self) -> None:
+        pytest.fail('not implemented')
+
+        assert phone_number == '514123456789'
+
+    def test_import_new_user_phone_number_missing(self) -> None:
+        pytest.fail('not implemented')
+
+        assert phone_number == ''
