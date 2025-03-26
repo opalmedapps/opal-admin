@@ -344,6 +344,10 @@ msgid "Relationships"
 msgstr "Relations"
 
 #: opal/patients/models.py
+msgid "Start date cannot be earlier than patient's date of birth"
+msgstr ""
+
+#: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
 

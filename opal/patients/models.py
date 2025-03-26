@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 from collections import defaultdict
 from datetime import date
-from typing import Any, Optional
+from typing import Any, Optional, TypeAlias
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -29,6 +29,11 @@ class RoleType(models.TextChoices):
 
 class RelationshipType(models.Model):
     """A type of relationship between a user (aka caregiver) and patient."""
+
+    # TextChoices need to be defined outside to use them in constraints
+    # define them as class attributes for easier access
+    # see: https://stackoverflow.com/q/71522816
+    RoleType: TypeAlias = RoleType
 
     name = models.CharField(
         verbose_name=_('Name'),
@@ -168,7 +173,7 @@ class Patient(models.Model):
     # TextChoices need to be defined outside to use them in constraints
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
-    SexType = SexType
+    SexType: TypeAlias = SexType
 
     uuid = models.UUIDField(
         verbose_name=_('UUID'),
@@ -375,6 +380,25 @@ class Relationship(models.Model):
             type=str(self.type),
         )
 
+    def validate_start_date(self) -> list[str]:
+        """Validate the `start_date` field.
+
+        The start date has to be greater equals the patient's date of birth.
+        The start date has to be earlier than the end date.
+
+        Returns:
+            a list of error messages
+        """
+        errors = []
+
+        if self.start_date < self.patient.date_of_birth:
+            errors.append(gettext("Start date cannot be earlier than patient's date of birth"))
+
+        if self.end_date is not None and self.start_date >= self.end_date:
+            errors.append(gettext('Start date should be earlier than end date.'))
+
+        return errors
+
     def clean(self) -> None:
         """Validate date and reason fields.
 
@@ -384,8 +408,11 @@ class Relationship(models.Model):
         # support adding multiple errors for the same field/non-fields
         errors: dict[str, list[str]] = defaultdict(list)
 
-        if self.end_date is not None and self.start_date >= self.end_date:
-            errors['start_date'].append(gettext('Start date should be earlier than end date.'))
+        start_date_errors = self.validate_start_date()
+
+        if start_date_errors:
+            errors['start_date'].extend(start_date_errors)
+
         # validate status is not empty if status is revoked or denied.
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
             errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
