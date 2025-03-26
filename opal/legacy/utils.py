@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import Any, TypeAlias, Union
 
 from django.core.management.base import CommandError
-from django.db import connections, models, transaction
+from django.db import OperationalError, connections, models, transaction
 from django.utils import timezone
 
 from opal.caregivers.models import CaregiverProfile
@@ -465,22 +465,27 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
         patient: patient for data
 
     Raises:
-        CommandError: if there are deviations
+        OperationalError: if there are deviations
+        ValueError: value error given as arguments
 
     Returns:
         list of the questionnaireData
 
     """
-    external_patient_id = patient.legacy_id if patient.legacy_id else -1
+    if patient.legacy_id:
+        external_patient_id = patient.legacy_id
+    else:
+        raise ValueError('The patient has no legacy id.')
+
     try:
         query_result = _fetch_questionnaires_from_db(external_patient_id)
-    except Exception as exc:
-        raise CommandError(f'Error fetching questionnaires: {exc}')
+    except OperationalError as exc:
+        raise OperationalError(f'Error fetching questionnaires: {exc}')
 
     try:
         data_list = _parse_query_result(query_result)
     except ValueError as exc:  # noqa: WPS440
-        raise CommandError(f'Error parsing questionnaires: {exc}')
+        raise ValueError(f'Error parsing questionnaires: {exc}')
     return _process_questionnaire_data(data_list)
 
 
