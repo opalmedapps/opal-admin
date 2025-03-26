@@ -1,7 +1,8 @@
 """Command for Users migration."""
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.management.base import BaseCommand
@@ -15,8 +16,8 @@ class Access(Enum):
 
     # Legacy has 0-7 access privileges
     READ = 1
-    WRITE = 3
-    DELETE = 7
+    READ_WRITE = 3
+    READ_WRITE_DELETE = 7
 
 
 class Command(BaseCommand):
@@ -26,19 +27,19 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
-        Handle migrate OAUsers legacy DB to the new backend printout number of users imported.
+        Handle migrate OAUsers legacy DB to the new backend.
 
-        Return 'None'.
+        Print out number of users imported after completion.
 
         Args:
             args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
-        patient_module: LegacyModule = self._get_legacy_object(LegacyModule, 'Patient')
-        admin_role: LegacyOARole = self._get_legacy_object(LegacyOARole, 'Administration')
+        patient_module: LegacyModule = cast(LegacyModule, self._get_legacy_object(LegacyModule, 'Patient'))
+        admin_role: LegacyOARole = cast(LegacyOARole, self._get_legacy_object(LegacyOARole, 'Administration'))
 
-        admin_group = Group.objects.get(name='System Administrators')
-        registrant_group = Group.objects.get(name='Registrants')
+        admin_group = Group.objects.get(name=settings.ADMIN_GROUP_NAME)
+        registrant_group = Group.objects.get(name=settings.REGISTRANTS_GROUP_NAME)
 
         admin_users_counter = 0
         all_users_counter = 0
@@ -63,7 +64,7 @@ class Command(BaseCommand):
                 role_module = LegacyOARoleModule.objects.filter(
                     oaroleid=legacy_user.oaroleid,
                     moduleid=patient_module,
-                    access=Access.WRITE.value,
+                    access__gte=Access.READ_WRITE.value,
                 )
 
                 clinical_staff_user = ClinicalStaff(
@@ -117,7 +118,7 @@ class Command(BaseCommand):
         self,
         legacymodel: type[LegacyModule] | type[LegacyOARole],
         name: str,
-    ) -> Any:
+    ) -> LegacyModule | LegacyOARole | None:
         """
         Get the legacy object from the specified model name or return None.
 
