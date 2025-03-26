@@ -5,11 +5,12 @@ from django.forms import model_to_dict
 import pytest
 from pytest_mock.plugin import MockerFixture
 
+from opal.caregivers.factories import CaregiverProfile
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
-from ..models import Relationship, RelationshipStatus
+from ..models import Relationship, RelationshipStatus, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -420,6 +421,41 @@ def test_existing_user_form_user_not_found() -> None:
         + 'This may be an out-of-hospital account. '
         + 'Please proceed to generate a new QR code. '
         + 'Inform the user they must register at the Registration website.'
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == error_message
+
+
+def test_existing_user_not_more_than_one_self() -> None:
+    """Ensure that the existing user is not allowed to have more than one self relationship."""
+    form_data = {
+        'user_email': 'bart.simpson@gmail.com',
+        'user_phone': '+15142222222',
+    }
+    user_caregiver = Caregiver(
+        email='bart.simpson@gmail.com',
+        phone_number='+15142222222',
+        first_name='Bart',
+        last_name='Simpson',
+    )
+    caregiver = CaregiverProfile(user=user_caregiver)
+    patient = factories.Patient(first_name='Bart', last_name='Simpson')
+    relationship_type = factories.RelationshipType(
+        role_type=RoleType.SELF,
+        name='Self',
+        start_age=1,
+        form_required=True,
+    )
+    factories.Relationship(patient=patient, caregiver=caregiver, type=relationship_type)
+
+    form = forms.ExistingUserForm(
+        data=form_data,
+        relationship_type=relationship_type,
+    )
+
+    error_message = (
+        'This opal user already has a self-relationship with the patient.'
     )
 
     assert not form.is_valid()
