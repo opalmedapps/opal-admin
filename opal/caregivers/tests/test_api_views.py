@@ -22,10 +22,12 @@ from opal.caregivers import models as caregiver_models
 from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import factories as hospital_factories
 from opal.legacy import factories as legacy_factories
-from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier
+from opal.legacy import utils as legacy_utils
+from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUsers
 from opal.patients import factories as patient_factories
 from opal.patients import utils
 from opal.patients.factories import Relationship
+from opal.patients.models import RelationshipType
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
@@ -1068,7 +1070,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     data_new_caregiver = {
         'caregiver': {
-            'language': 'fr',
+            'language': 'en',
             'phone_number': '+15141112222',
             'username': 'test-username',
         },
@@ -1085,7 +1087,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     }
     data_existing_caregiver = {
         'caregiver': {
-            'language': 'fr',
+            'language': 'en',
             'email': 'marge@opalmedapps.ca',
             'username': 'test-username',
         },
@@ -1094,7 +1096,9 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     def _build_access_request(
         self,
         new_patient: bool = False,
+        new_caregiver: bool = True,
         email_verified: bool = False,
+        self_relationship: bool = False,
     ) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
         # Build relationships: code -> relationship -> patient
         skeleton = user_factories.Caregiver(
@@ -1104,9 +1108,15 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             is_active=False,
         )
         registration_code = caregiver_factories.RegistrationCode(
+            relationship__caregiver__legacy_id=None if new_caregiver else 24,
             relationship__caregiver__user=skeleton,
             relationship__patient__legacy_id=None if new_patient else 42,
         )
+
+        if self_relationship:
+            relationship = registration_code.relationship
+            relationship.type = RelationshipType.objects.self_type()
+            relationship.save()
 
         if email_verified:
             caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
@@ -1153,8 +1163,16 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert response.status_code == HTTPStatus.OK
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
-    def test_register_success_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
-        """The skeleton user is updated."""
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_success_new_caregiver(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The skeleton user is updated and the legacy data updated."""
+        mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
+
         api_client.force_login(user=admin_user)
         registration_code, skeleton = self._build_access_request(email_verified=True)
 
@@ -1169,12 +1187,52 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert response.status_code == HTTPStatus.OK
         security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert len(security_answers) == 2
-        assert caregiver_models.CaregiverProfile.objects.get().legacy_id == 1
+        assert caregiver_models.CaregiverProfile.objects.get().legacy_id == LegacyUsers.objects.get().usersernum
         skeleton.refresh_from_db()
         assert skeleton.is_active
         assert skeleton.username == 'test-username'
         assert skeleton.phone_number == '+15141112222'
-        assert skeleton.language == 'fr'
+        assert skeleton.language == 'en'
+
+        # check legacy data
+        # we skipped insertion of the actual patient for this test
+        assert LegacyPatient.objects.count() == 1
+        mock_create.assert_called_once_with(
+            registration_code.relationship,
+            'test-username',
+            'en',
+            'opal@muhc.mcgill.ca',
+        )
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_success_new_caregiver_self(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The skeleton user is updated and the legacy user updated due to the self relationship."""
+        mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
+
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(email_verified=True, self_relationship=True)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert caregiver_models.CaregiverProfile.objects.get().legacy_id == 1
+
+        # check legacy data
+        # no dummy patient was added
+        assert LegacyPatient.objects.count() == 0
+        assert LegacyUsers.objects.get().usertypesernum == 42
+        mock_create.assert_called_once()
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_register_success_new_legacy_patient(
@@ -1184,7 +1242,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """A new patient is added to the legacy DB if it doesn't exist yet."""
-        mocker_init = mocker.spy(utils, name='initialize_new_opal_patient')
+        mock_init = mocker.spy(utils, name='initialize_new_opal_patient')
         RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
 
         api_client.force_login(user=admin_user)
@@ -1208,9 +1266,12 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         )
 
         assert response.status_code == HTTPStatus.OK
-        mocker_init.assert_called_once()
+        mock_init.assert_called_once()
         patient.refresh_from_db()
-        legacy_patient = LegacyPatient.objects.get()
+
+        # actual patient plus dummy patient
+        assert LegacyPatient.objects.count() == 2
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
         assert patient.legacy_id == legacy_patient.patientsernum
         assert LegacyPatientControl.objects.count() == 1
         assert LegacyPatientHospitalIdentifier.objects.count() == 2

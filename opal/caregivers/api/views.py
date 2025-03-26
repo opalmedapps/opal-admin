@@ -33,6 +33,7 @@ from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, 
 from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
+from opal.legacy import utils as legacy_utils
 from opal.patients import utils
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -357,7 +358,9 @@ class RegistrationCompletionView(APIView):
 
         try:  # noqa: WPS229
             if relationship.patient.legacy_id is None:
+                # also creates the legacy patient and sets patient.legacy_id
                 utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
+
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
@@ -413,6 +416,16 @@ class RegistrationCompletionView(APIView):
         # this can happen if the caregiver has an account at another institution
         email: str = email_verification.email if email_verification is not None else data_email
         self._update_caregiver(relationship.caregiver, email, caregiver_data)
+
+        # Handle creation of legacy user and dummy patient (if necessary)
+        user_data = caregiver_data['user']
+        legacy_user = legacy_utils.create_caregiver_user(
+            relationship,
+            user_data['username'],
+            user_data['language'],
+            email,
+        )
+        utils.update_caregiver_profile(relationship.caregiver, legacy_user.usersernum)
 
     def _update_caregiver(
         self,
