@@ -2,8 +2,10 @@ from io import StringIO
 from typing import Any
 
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 import pytest
+from django_test_migrations.migrator import Migrator
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
@@ -295,6 +297,14 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
 
 class TestUsersCaregiversMigration(TestBasicClass):
     """Test class for users and caregivers migrations from legacy DB."""
+
+    def test_import_user_no_self_relationshiptype(self, migrator: Migrator) -> None:
+        """Test import fails if no self relationship type exists."""
+        # Must revert to state before prepopulation to test command error
+        migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
+
+        with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
+            self._call_command('migrate_users')
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
