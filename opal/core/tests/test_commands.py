@@ -101,6 +101,17 @@ class TestInsertTestData(CommandTestMixin):
         assert Relationship.objects.count() == 9
         assert SecurityAnswer.objects.count() == 9
 
+    def test_insert_existing_data_force_delete(self) -> None:
+        """The existing data is deleted without confirmation."""
+        relationship = factories.Relationship()
+        factories.HospitalPatient()
+        caregiver_factories.SecurityAnswer(user=relationship.caregiver)
+
+        stdout, _stderr = self._call_command('insert_test_data', 'MUHC', '--force-delete')
+
+        assert 'Existing test data deleted' in stdout
+        assert 'Test data successfully created' in stdout
+
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
         self._call_command('insert_test_data', 'MUHC')

@@ -153,6 +153,12 @@ class Command(BaseCommand):
             choices=list(InstitutionOption),
             help='Choose the institution for which to insert test data',
         )
+        parser.add_argument(
+            '--force-delete',
+            action='store_true',
+            default=False,
+            help='Force deleting existing test data without prior confirmation',
+        )
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
@@ -173,17 +179,20 @@ class Command(BaseCommand):
             Institution.objects.all().exists(),
             SecurityAnswer.objects.all().exists(),
         ]):
-            confirm = input(
-                'Database already contains data.\n'
-                + 'To continue, existing data has to be deleted.\n'
-                + 'Are you sure you want to do this?\n'
-                + '\n'
-                + "Type 'yes' to continue, or 'no' to cancel: ",
-            )
+            force_delete: bool = options['force_delete']
 
-            if confirm != 'yes':
-                self.stdout.write('Test data insertion cancelled')
-                return
+            if not force_delete:
+                confirm = input(
+                    'Database already contains data.\n'
+                    + 'To continue, existing data has to be deleted.\n'
+                    + 'Are you sure you want to do this?\n'
+                    + '\n'
+                    + "Type 'yes' to continue, or 'no' to cancel: ",
+                )
+
+                if confirm != 'yes':
+                    self.stdout.write('Test data insertion cancelled')
+                    return
 
             _delete_existing_data()
             self.stdout.write('Existing test data deleted')
