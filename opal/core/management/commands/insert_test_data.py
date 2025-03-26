@@ -61,7 +61,7 @@ SITE_DATA = MappingProxyType({
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5149341934', '5149341934'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5149341934', ''),
         ),
         (
             'Montreal General Hospital',
@@ -74,7 +74,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.496828'),
             Decimal('-73.588782'),
-            ('Cedar Avenue', '1650', 'H3G1A4', 'Montreal', 'QC', '5149341934', '5149341934'),
+            ('Cedar Avenue', '1650', 'H3G1A4', 'Montreal', 'QC', '5149341934', ''),
         ),
         (
             "Montreal Children's Hospital",
@@ -84,7 +84,7 @@ SITE_DATA = MappingProxyType({
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
             Decimal('-73.600802'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5144124400', '5144124400'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5144124400', ''),
         ),
         (
             'Lachine Hospital',
@@ -94,7 +94,7 @@ SITE_DATA = MappingProxyType({
             ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
             Decimal('45.44121'),
             Decimal('-73.676791'),
-            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', '5149341934'),
+            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
         ),
     ],
     InstitutionOption.chusj: [
@@ -113,7 +113,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.503426'),
             Decimal('-73.624549'),
-            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T1C5', 'Montréal', 'QC', '5143454931', '5143454931'),
+            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T1C5', 'Montréal', 'QC', '5143454931', ''),
         ),
     ],
 })
