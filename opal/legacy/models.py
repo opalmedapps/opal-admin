@@ -114,7 +114,7 @@ class LegacyAlias(models.Model):
 
 
 class LegacyAppointmentcheckin(models.Model):
-    """Legacy appointment checkin mapping appointment checkin table from the legacu database."""
+    """Legacy appointment checkin mapping appointment checkin table from the legacy database."""
 
     aliassernum = models.OneToOneField(
         'LegacyAlias',

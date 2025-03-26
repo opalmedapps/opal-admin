@@ -27,14 +27,13 @@ class RelationshipManager(models.Manager):
 
     def get_patient_id_list_for_caregiver(self, user_id: str) -> list[int]:
         """
-        Query manager to get a array of patients legacy ID for a given caregiver.
+        Get a array of patients legacy IDs for a given caregiver.
 
         Args:
             user_id: User id making the request
 
         Returns:
-            List of patient legacy id
-
+            Return list of patient legacy IDs
         """
         relationships = self.get_patient_list_for_caregiver(user_id=user_id)
         return list(relationships.values_list('patient__legacy_id', flat=True))

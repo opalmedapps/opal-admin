@@ -116,7 +116,7 @@ class LegacyAnnouncementManager(models.Manager):
 
     def get_unread_queryset(self, patient_sernum_list: list[int]) -> int:
         """
-        Get the count of unread announcement(s) for a given user and it's relationship(s).
+        Get the count of unread announcement(s) for a given user and their relationship(s).
 
         Args:
             patient_sernum_list: List of legacy patient sernum to fetch the annoucements for.
