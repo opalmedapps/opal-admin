@@ -190,7 +190,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
 
-        path = settings.REPORT_FILE_PATH
+        path = settings.REPORT_DIR_PATH
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         filename_long = smart_str(f'{path}/{filename}')
