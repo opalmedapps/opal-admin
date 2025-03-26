@@ -86,7 +86,7 @@ class TestHomeAppView:
         assert daily_appointments[0] == appointment
 
 
-class TestCaregiverPermissionsView:  # noqa: WPS214
+class TestCaregiverPermissionsView:
     """Class wrapper for CaregiverPermissionsView tests."""
 
     def authenticate(self, api_client: APIClient, admin_user: User, appuserid: str = '') -> None:
