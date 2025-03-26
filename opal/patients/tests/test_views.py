@@ -12,6 +12,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.test import Client, RequestFactory
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 import pytest
 from bs4 import BeautifulSoup
@@ -26,7 +27,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import AccessRequestView, ManagePendingUpdateView, PendingRelationshipListView
+from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -60,7 +61,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-pending-list'), 'patients/relationships/pending_relationship_list.html'),
+    (reverse('patients:relationships-list'), 'patients/relationships/pending_relationship_list.html'),
 ]
 
 
@@ -179,13 +180,13 @@ test_patient_multiform_url_template_data: list[Tuple] = [
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_initial_call(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that steps are called initially."""
     url = reverse(url_name)
-    response = user_client.get(url)
+    response = registration_user.get(url)
     wizard = response.context['wizard']
 
     assert response.status_code == HTTPStatus.OK
@@ -197,7 +198,7 @@ def test_initial_call(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_error(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
@@ -206,7 +207,7 @@ def test_form_post_error(
     step_one_data = {
         'access_request_view-current_step': 'site',
     }
-    response = user_client.post(url, step_one_data)
+    response = registration_user.post(url, step_one_data)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
@@ -241,7 +242,7 @@ def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict, dict, dict]:
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_mgmt_data_missing(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
@@ -254,21 +255,21 @@ def test_form_post_mgmt_data_missing(
         if 'current_step' in key:
             wizard_step_one_data.pop(key)
 
-    response = user_client.post(url, wizard_step_one_data)
+    response = registration_user.post(url, wizard_step_one_data)
     # view should return HTTP 400 Bad Request
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_success(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that the form submission with POST is successful."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['wizard']['steps'].step0 == 1
@@ -278,22 +279,22 @@ def test_form_post_success(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_stepback(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that the form can go back to the previous step."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
 
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
 
-    response = user_client.post(url, {
+    response = registration_user.post(url, {
         'wizard_goto_step': response.context['wizard']['steps'].prev,
     })
     assert response.status_code == HTTPStatus.OK
@@ -302,7 +303,7 @@ def test_form_stepback(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_finish(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -318,22 +319,22 @@ def test_form_finish(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
     assert response.context['header_title'] == 'Hospital Information'
 
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['header_title'] == 'Patient Details'
 
-    response = user_client.post(url, wizard_step_data[1])
+    response = registration_user.post(url, wizard_step_data[1])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
 
-    response = user_client.post(url, wizard_step_data[2])
+    response = registration_user.post(url, wizard_step_data[2])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'relationship'
     assert response.context['header_title'] == 'Requestor Details'
@@ -341,7 +342,7 @@ def test_form_finish(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_error_in_template(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -379,12 +380,12 @@ def test_form_error_in_template(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
     assert response.context['header_title'] == 'Hospital Information'
 
-    response = user_client.post(url, wizard_step_data[1])
+    response = registration_user.post(url, wizard_step_data[1])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
@@ -392,7 +393,10 @@ def test_form_error_in_template(
     assertTemplateUsed(response, template)
 
 
-def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerFixture) -> None:  # noqa: C901 WPS231
+def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
+    registration_user: Client,
+    mocker: MockerFixture,
+) -> None:
     """Ensure that when the page is submitted it redirects to the final page."""
     mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
@@ -422,7 +426,7 @@ def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerF
         ('existing', {'is_correct': True, 'is_id_checked': True}),
         ('password', {'confirm_password': 'testpassword'}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
 
@@ -432,7 +436,7 @@ def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerF
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
         assert response.status_code == HTTPStatus.OK
 
         if 'site' in step:  # noqa: WPS223
@@ -462,7 +466,12 @@ class _TestAccessRequestView(AccessRequestView):
     It requires since the WizardView needs to be fully set up.
     """
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, '_TestAccessRequestView']:
+    def dispatch(   # type: ignore[override]
+        self,
+        request: HttpRequest,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Tuple[Any, '_TestAccessRequestView']:
         """
         Process the request.
 
@@ -490,14 +499,17 @@ class _TestAccessRequestView(AccessRequestView):
         return None  # noqa: WPS324
 
 
-def _init_session() -> HttpRequest:
+def _init_session(registration_user: Client) -> HttpRequest:
     """
     Initialize the session.
 
     Returns:
         the request
     """
-    request = RequestFactory().get('/')
+    response = registration_user.get(reverse('patients:access-request'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = response.context['user']
+
     # adding session
     middleware = SessionMiddleware(_TestAccessRequestView.dummy_get_response)  # type: ignore[arg-type]
     middleware.process_request(request)
@@ -506,9 +518,9 @@ def _init_session() -> HttpRequest:
 
 
 @pytest.mark.django_db()
-def test_unexpected_step() -> None:
+def test_unexpected_step(registration_user: Client) -> None:
     """Test unexpected step 'confirm'."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -518,9 +530,9 @@ def test_unexpected_step() -> None:
 
 
 @pytest.mark.django_db()
-def test_search_step_with_valid_id_in_session() -> None:
+def test_search_step_with_valid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'search' with session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 2
     # adding Site records
     factories.Site(pk=1)
@@ -536,9 +548,9 @@ def test_search_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_search_step_with_invalid_id_in_session() -> None:
+def test_search_step_with_invalid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'search' with an invalid session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 3
     # adding Site records
     factories.Site(pk=1)
@@ -552,9 +564,9 @@ def test_search_step_with_invalid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_expected_step_without_session_storage() -> None:
+def test_expected_step_without_session_storage(registration_user: Client) -> None:
     """Test expected step 'site' without session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -564,9 +576,9 @@ def test_expected_step_without_session_storage() -> None:
 
 
 @pytest.mark.django_db()
-def test_site_step_with_valid_id_in_session() -> None:
+def test_site_step_with_valid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'site' with session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 2
     # adding Site records
     factories.Site(pk=1)
@@ -582,9 +594,9 @@ def test_site_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_site_step_with_invalid_id_in_session() -> None:
+def test_site_step_with_invalid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'site' with an invalid session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 3
     # adding Site records
     factories.Site(pk=1)
@@ -598,9 +610,9 @@ def test_site_step_with_invalid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_process_step_select_site_form() -> None:
+def test_process_step_select_site_form(registration_user: Client) -> None:
     """Test expected form 'SelectSiteForm'."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -620,7 +632,7 @@ def test_process_step_select_site_form() -> None:
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_new_user_form_by_user_choice(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -644,14 +656,14 @@ def test_new_user_form_by_user_choice(
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 0}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.NewUserForm
@@ -659,7 +671,7 @@ def test_new_user_form_by_user_choice(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_existing_user_form_by_user_choice(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -683,14 +695,14 @@ def test_existing_user_form_by_user_choice(
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 1}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.ExistingUserForm
@@ -700,7 +712,7 @@ def test_existing_user_form_by_user_choice(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_new_user_case_in_password_step(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -726,23 +738,23 @@ def test_new_user_case_in_password_step(
         ('account', {'user_type': 0}),
         ('requestor', {'first_name': 'Marge', 'last_name': 'Simpson', 'is_id_checked': True}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.ConfirmPasswordForm
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_existing_user() -> None:
+def test_create_caregiver_profile_existing_user(registration_user: Client) -> None:
     """Test create caregiver profile for the existing user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -764,9 +776,9 @@ def test_create_caregiver_profile_existing_user() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_failed() -> None:
+def test_create_caregiver_profile_failed(registration_user: Client) -> None:
     """Test create caregiver profile failed for the existing user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -785,9 +797,9 @@ def test_create_caregiver_profile_failed() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_new_user() -> None:
+def test_create_caregiver_profile_new_user(registration_user: Client) -> None:
     """Test create caregiver profile for the new user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -812,9 +824,9 @@ def test_create_caregiver_profile_new_user() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_patient() -> None:
+def test_create_patient(registration_user: Client) -> None:
     """Test create patient instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -835,9 +847,9 @@ def test_create_patient() -> None:
 
 
 @pytest.mark.django_db()
-def test_get_current_relationship() -> None:
+def test_get_current_relationship(registration_user: Client) -> None:
     """Test get an existing relationship instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -877,9 +889,9 @@ def test_get_current_relationship() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_new_relationship() -> None:
+def test_create_new_relationship(registration_user: Client) -> None:
     """Test create a new relationship instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -947,9 +959,9 @@ def test_create_new_relationship() -> None:
 
 
 @pytest.mark.django_db()
-def test_process_form_data() -> None:
+def test_process_form_data(registration_user: Client) -> None:
     """Test process the list form data and then return a dictionay form data."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -985,9 +997,9 @@ def test_process_form_data() -> None:
 
 
 @pytest.mark.django_db()
-def test_qr_code_class_type() -> None:
+def test_qr_code_class_type(registration_user: Client) -> None:
     """Test QR-code image stream class type."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -1110,14 +1122,14 @@ def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
     factories.Relationship(status=models.RelationshipStatus.PENDING)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
 def test_relationships_list_empty(relationship_user: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -1133,7 +1145,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
         factories.Relationship(type=caregivertype3, request_date='2016-01-01'),
     ]
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
@@ -1151,14 +1163,14 @@ def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert len(response.context['relationship_list']) == 2
 
 
 def test_relationships_pending_list_table(relationship_user: Client) -> None:
     """Ensures that pending relationships list uses the corresponding table."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
@@ -1168,10 +1180,10 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assert response.context['cancel_url'] == reverse('patients:relationships-pending-list')
-    assert response.context['view'].get_success_url() == reverse('patients:relationships-pending-list')
+    assert response.context['cancel_url'] == reverse('patients:relationships-list')
+    assert response.context['view'].get_success_url() == reverse('patients:relationships-list')
 
 
 def test_form_pending_readonly_update_template(relationship_user: Client) -> None:
@@ -1187,11 +1199,11 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         status=models.RelationshipStatus.EXPIRED,
     )
 
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # test in case of EXPIRED status, readonly view
     assertContains(response, '<p>{0}</p>'.format(str(relationship_record.patient)))
-    assertContains(response, '{0}:&nbsp;{1}'.format(hospital_patient.site.code, hospital_patient.mrn))
+    assertContains(response, '{0}: {1}'.format(hospital_patient.site.code, hospital_patient.mrn))
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 
@@ -1203,7 +1215,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         status=models.RelationshipStatus.PENDING,
     )
 
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 2}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 2}))
 
     # test in case of PENDING status, update view
     assertContains(response, str(relationship_record.patient.first_name))
@@ -1218,7 +1230,6 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
         models.RelationshipStatus.PENDING,
         models.RelationshipStatus.CONFIRMED,
         models.RelationshipStatus.REVOKED,
-        models.RelationshipStatus.EXPIRED,
         models.RelationshipStatus.DENIED,
     ],
 )
@@ -1226,7 +1237,7 @@ def test_relationships_search_result_form(relationship_user: Client, status: mod
     """Ensures that edit search results uses the right form for each all relationship statuses."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype, status=status)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
 
@@ -1236,7 +1247,7 @@ def test_relationships_search_result_content(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
@@ -1246,7 +1257,7 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # assert getter
     assert response_get.status_code == HTTPStatus.OK
@@ -1259,7 +1270,7 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
 
     # post
-    relationship_user.post(reverse('patients:relationships-pending-update', kwargs={'pk': 1}), data=data)
+    relationship_user.post(reverse('patients:relationships-view-update', kwargs={'pk': 1}), data=data)
 
     # assert successful update
     relationship_record = models.Relationship.objects.get(pk=1)
@@ -1271,10 +1282,10 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm  # type: ignore[attr-defined]
-    assert response_get.context_data['view'].__class__ == ManagePendingUpdateView  # type: ignore[attr-defined]
+    assert response_get.context_data['view'].__class__ == ManageCaregiverAccessUpdateView  # type: ignore[attr-defined]
 
 
 def test_form_search_result_default_sucess_url(relationship_user: Client) -> None:
@@ -1282,13 +1293,13 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
     assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
 
 
@@ -1299,7 +1310,7 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
     response_get = relationship_user.get(
         reverse(
-            'patients:relationships-pending-update',
+            'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
         HTTP_REFERER='patient/test/?search-query',
@@ -1311,7 +1322,7 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
 
     response_post = relationship_user.post(
         reverse(
-            'patients:relationships-pending-update',
+            'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
         {
@@ -1326,50 +1337,108 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     assert success_url == cancel_url
 
 
-# Readonly view for expired caregiver requests
-def test_form_readonly_expired_access_requests(relationship_user: Client) -> None:
-    """Ensures that post is not allowed for readonly pending relationship view."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
-    caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-readonly', kwargs={'pk': 1}))
-
-    # assert getter
-    assert response_get.status_code == HTTPStatus.OK
-
-    # post
-    response_post = relationship_user.post(reverse('patients:relationships-pending-readonly', kwargs={'pk': 1}))
-    assert response_post.status_code == HTTPStatus.METHOD_NOT_ALLOWED
-
-
 def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Client) -> None:
     """Ensures that post is not allowed for readonly pending even if front-end is bypassed."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.EXPIRED)
-    response_get = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.EXPIRED,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     # assert getter
     assert response_get.status_code == HTTPStatus.OK
 
     # prepare data to post
-    data = model_to_dict(response_get.context_data['object'])  # type: ignore[attr-defined]
+    data = model_to_dict(relationship)
     data['status'] = models.RelationshipStatus.CONFIRMED
     data['first_name'] = 'test_firstname'
     data['last_name'] = 'test_lastname'
-    data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
+    data['cancel_url'] = response_get.context['cancel_url']
 
     # post
     response_post = relationship_user.post(
-        reverse('patients:relationships-pending-update', kwargs={'pk': 1}),
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
         data=data,
     )
 
     # make sure that update is not applied and response is `NOT_ALLOWED`
     assert response_post.status_code == HTTPStatus.METHOD_NOT_ALLOWED
-    relationship = models.Relationship.objects.get(pk=1)
-    new_caregiver = relationship.caregiver.user
+    relationship_object = models.Relationship.objects.get(pk=1)
+    new_caregiver = relationship_object.caregiver.user
     assert new_caregiver.first_name != 'test_firstname'
+
+
+def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> None:
+    """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    longname = ''.join('a' for letter in range(200))
+    error_message = 'Ensure this value has at most 150 characters (it has 200).'
+
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = longname
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    response_post = relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    form = response_post.context['form']
+    assert not form.is_valid()
+    assert form.errors['last_name'][0] == error_message
+
+
+def test_relationship_update_success(relationship_user: Client) -> None:
+    """Ensures that post is successful for correct entries."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = 'test_lastname'
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    # assertions
+    relationship_record = models.Relationship.objects.get(pk=1)
+    assert relationship_record.caregiver.user.last_name == data['last_name']
 
 
 # relationshiptype tests
@@ -1409,7 +1478,7 @@ def test_relationships_pending_form(relationship_user: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipAccessForm
 
@@ -1419,7 +1488,7 @@ def test_relationships_pending_form_content(relationship_user: Client) -> None:
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
@@ -1430,7 +1499,7 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
     caregiver = factories.CaregiverProfile()
     patient = factories.Patient()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
-    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
     response.content.decode('utf-8')
 
     assertContains(response, patient)
@@ -1441,8 +1510,8 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
-        reverse('patients:relationships-pending-update', args=(1,)),
+        reverse('patients:relationships-list'),
+        reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
 def test_relationship_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
@@ -1454,13 +1523,13 @@ def test_relationship_permission_required_fail(user_client: Client, django_user_
     request = RequestFactory().get(response)  # type: ignore[arg-type]
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
-        reverse('patients:relationships-pending-update', args=(1,)),
+        reverse('patients:relationships-list'),
+        reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
 def test_relationship_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
@@ -1520,7 +1589,7 @@ def test_relationshiptype_perm_required_fail(user_client: Client, django_user_mo
 
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
@@ -1561,6 +1630,46 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     assertNotContains(response, 'Relationship Types')
 
 
+# can perform registration permissions
+
+
+def test_registration_permission_required_success(registration_user: Client) -> None:
+    """Ensure that registration can be performed with the required permission."""
+    response = registration_user.get(reverse('patients:access-request'))
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_registration_permission_required_fail(user_client: Client, django_user_model: User) -> None:
+    """Ensure that registration permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_registration_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:access-request'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        AccessRequestView.as_view()(request)
+
+
+def test_registration_response_contains_menu(registration_user: Client) -> None:
+    """Ensures that Opal Registration is displayed for users with permission."""
+    response = registration_user.get(reverse('patients:access-request'))
+
+    assertContains(response, 'Opal Registration')
+
+
+def test_registration_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that Opal Registration is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_registration_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('hospital-settings:index'))
+
+    assertNotContains(response, 'Opal Registration')
+
+
 def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, django_user_model: User) -> None:
     """
     Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
@@ -1592,13 +1701,12 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
     # Check 'medical_number' field name
     mrn_filter = response.context['filter']
-    assert mrn_filter.filters['medical_number'].field_name == 'patient__hospital_patients__mrn'
 
     # Check filter's queryset
     assertQuerysetEqual(
@@ -1615,6 +1723,74 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     # Check how many patients are displayed
     patients = search_tables[0].find_all('tr')
     assert len(patients) == 3
+
+
+def test_not_display_duplicated_patients(relationship_user: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template does not display duplicated `Patient Details` search results.
+
+    The search is performed by using MRN number and Site name.
+    """
+    patient1 = factories.Patient(first_name='aaa', ramq='OTES01161973')
+    patient2 = factories.Patient(first_name='bbb', ramq='OTES01161972')
+
+    site1 = factories.Site(name='MCH')
+    site2 = factories.Site(name='RVH')
+
+    hospital_patient1 = factories.HospitalPatient(mrn='9999991', site=site1, patient=patient1)
+    factories.HospitalPatient(mrn='9999992', site=site2, patient=patient1)
+    factories.HospitalPatient(mrn='9999991', site=site2, patient=patient2)
+
+    user = Caregiver()
+    caregiver_profile = factories.CaregiverProfile(user=user)
+    factories.Relationship(
+        caregiver=caregiver_profile,
+        patient=patient1,
+        type=models.RelationshipType.objects.self_type(),
+    )
+    factories.Relationship(
+        caregiver=caregiver_profile,
+        patient=patient2,
+        type=models.RelationshipType.objects.guardian_caregiver(),
+    )
+
+    form_data = {
+        'card_type': 'mrn',
+        'site': site2.id,
+        'medical_number': hospital_patient1.mrn,
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = relationship_user.get(
+        path=reverse('patients:relationships-list'),
+        QUERY_STRING=query_string,
+    )
+
+    # get filter
+    mrn_filter = response.context['filter']
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        mrn_filter.qs,
+        models.Relationship.objects.filter(
+            patient__hospital_patients__mrn=hospital_patient1.mrn,
+            patient__hospital_patients__site=site2,
+        ),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 1
+
+    # Check how many patients are displayed, should be one
+    # To confirm there is no duplicated patients
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+    # Assert patient name to make sure the search result is patient2
+    patient_names = patients[0].find_all('td')
+    assert strip_tags(patient_names[0]) == str(patient2)
 
 
 def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, django_user_model: User) -> None:
@@ -1650,7 +1826,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
     response.content.decode('utf-8')
@@ -1658,7 +1834,6 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
 
     # Check 'medical_number' field name
     ramq_filter = response.context['filter']
-    assert ramq_filter.filters['medical_number'].field_name == 'patient__ramq'
 
     # Check filter's queryset
     assertQuerysetEqual(

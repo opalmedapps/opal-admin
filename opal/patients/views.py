@@ -3,13 +3,14 @@ import base64
 import io
 from collections import Counter
 from datetime import date
+from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.forms import Form
 from django.forms.models import ModelForm
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import HttpResponse
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -31,7 +32,7 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
+from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
@@ -78,7 +79,7 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class AccessRequestView(SessionWizardView):  # noqa: WPS214
+class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WPS214
     """
     Form wizard view providing the steps for a caregiver's patient access request.
 
@@ -87,6 +88,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
     """
 
     model = Site
+    permission_required = ('patients.can_perform_registration',)
     form_list = [
         ('site', forms.SelectSiteForm),
         ('search', forms.SearchForm),
@@ -143,7 +145,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             self.request.session['site_selection'] = site_selection
         return form_step_data
 
-    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -154,7 +156,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             the template context for a step
         """
-        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
+        context: dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
             patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
             context = self._update_patient_confirmation_context(context, patient_record)
@@ -235,6 +237,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         kwargs = {}
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
+            kwargs['ramq'] = patient_record.ramq
+            kwargs['mrn'] = patient_record.mrns[0].mrn
+            kwargs['site'] = patient_record.mrns[0].site
             kwargs['date_of_birth'] = patient_record.date_of_birth
         elif step == 'requestor':
             relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
@@ -480,9 +485,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
     def _update_patient_confirmation_context(
         self,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         patient_record: OIEPatientData,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update the context for patient confirmation form.
 
@@ -509,7 +514,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         return context
 
 
-class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
+class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = Relationship
@@ -576,48 +581,32 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
         return context_data
 
 
-class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relationship]]):
+class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]]):
     """
-    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManagePendingReadOnlyView`.
+    This view is to handle relationship updates and view only requests.
 
-    It provides common features among the inherited views.
+    It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
+
+    It overrides `get_form_kwargs()` to provide data needed for instantiating the form.
     """
 
     model = Relationship
+    permission_required = ('patients.can_manage_relationships',)
     template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
-
-    def get_form_kwargs(self) -> Dict[str, Any]:
-        """
-        Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
-
-        Returns:
-            keyword arguments for instantiating the `RelationshipAccessForm`
-        """
-        kwargs = super().get_form_kwargs()
-
-        relationship = self.object
-        patient = relationship.patient
-        kwargs['date_of_birth'] = patient.date_of_birth
-        kwargs['relationship_type'] = relationship.type
-        kwargs['request_date'] = relationship.request_date
-
-        return kwargs
-
-
-class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
-    """
-    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
-
-    It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
-    """
+    success_url = reverse_lazy('patients:relationships-list')
+    queryset = Relationship.objects.select_related(
+        'patient', 'caregiver__user', 'type',
+    ).prefetch_related(
+        'patient__hospital_patients__site',
+    )
 
     permission_required = ('patients.can_manage_relationships',)
     success_url = reverse_lazy('patients:relationships-pending-list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """
-        Return the template context for `ManagePendingUpdateView` update view.
+        Return the template context for `ManageCaregiverAccessUpdateView` update view.
 
         Args:
             kwargs: additional keyword arguments
@@ -626,7 +615,7 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
             the template context for `ManagePendingUpdateView`
         """
         context_data = super().get_context_data(**kwargs)
-        default_success_url = reverse_lazy('patients:relationships-pending-list')
+        default_success_url = reverse_lazy('patients:relationships-list')
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
         elif self.request.META.get('HTTP_REFERER'):
@@ -643,56 +632,88 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
         Returns:
             the success url link
         """
-        success_url: str = reverse_lazy('patients:relationships-pending-list')
+        success_url: str = reverse_lazy('patients:relationships-list')
         if self.request.POST.get('cancel_url', False):
             success_url = self.request.POST['cancel_url']
 
         return success_url
 
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        """
+        Return a view-only page if the relationship is expired, otherwise return the edit page.
+
+        Args:
+            request: the http request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            regular response for continuing get functionlity for `ManageCaregiverAccessUpdateView`
+        """
+        relationship_record = self.get_object()
+        http_referer = self.request.META.get('HTTP_REFERER')
+        cancel_url = http_referer if http_referer else self.get_success_url()
+        if relationship_record.status == RelationshipStatus.EXPIRED:
+            return render(
+                request,
+                'patients/relationships/view_relationship.html',
+                {
+                    'relationship': relationship_record,
+                    'cancel_url': cancel_url,
+                },
+            )
+
+        return super().get(request, *args, **kwargs)
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
         Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
 
+        Relationships of status expired are not allowed to post, they are redirected to view only page.
+
         Args:
             request: the http request
             args: additional arguments
             kwargs: additional keyword arguments
 
         Returns:
-            regular response for continuing post functionality of the `ManagePendingUpdateView`
+            regular response for continuing post functionality of the `ManageCaregiverAccessUpdateView`
         """
-        relationship_record = Relationship.objects.get(pk=kwargs['pk'])
+        relationship_record = self.get_object()
         # to refuse any post request when status is EXPIRED even if front-end restrictions are bypassed
         if relationship_record.status == RelationshipStatus.EXPIRED:
-            return HttpResponseNotAllowed(['GET'])
+            return render(
+                request,
+                'patients/relationships/view_relationship.html',
+                {
+                    'relationship': relationship_record,
+                    'cancel_url': self.get_success_url(),
+                },
+                status=HTTPStatus.METHOD_NOT_ALLOWED,
+            )
 
-        user_record = relationship_record.caregiver.user
-        user_record.first_name = request.POST['first_name']
-        user_record.last_name = request.POST['last_name']
-        # TODO: run standard validations on the first/last field that are relevant to the user module.
-        user_record.save()
+        return super().post(request, **kwargs)
 
-        return super().post(request, kwargs['pk'])
-
-
-class ManagePendingReadOnlyView(ManagePendingUpdateView):
-    """
-    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
-
-    It is used for readonly requests and overrides `post()` to disable post functionality.
-    """
-
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseNotAllowed:
+    def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
         """
-        Disable post request for readonly pages to make sure it is not passed even if front end allows it.
+        Save validates user form and return valid_form only if user details are validated.
 
         Args:
-            request: the http request
-            args: additional arguments
-            kwargs: additional keyword arguments
+            form: an instance of `ManageCaregiverAccessUpdateForm`
 
         Returns:
-            http not allowed response `HttpResponseNotAllowed`
+            HttpResponse: form_valid if user form is valid, or form_invalid if it is invalid
         """
-        post_return: HttpResponseNotAllowed = HttpResponseNotAllowed(['GET'])
-        return post_return  # noqa: WPS331
+        user_record = self.get_object().caregiver.user
+        user_form = ManageCaregiverAccessUserForm(self.request.POST or None, instance=user_record)
+
+        if user_form.is_valid():
+            user_form.save()
+        else:
+            # to show errors and display messages on the field
+            for field, _value in user_form.errors.items():
+                form.add_error(field, user_form.errors.get(field))  # type: ignore[arg-type]
+
+            return self.form_invalid(form)
+
+        return super().form_valid(form)

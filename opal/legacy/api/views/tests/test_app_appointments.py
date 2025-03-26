@@ -63,7 +63,7 @@ class TestAppAppointmentsView:
         relationship = patient_factories.Relationship(status='CON')
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
         # create an appointment close to the end of the day
         appointment = factories.LegacyAppointmentFactory(
             patientsernum=patient,
@@ -91,7 +91,7 @@ class TestAppAppointmentsView:
         relationship = patient_factories.Relationship(status='PEN')
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
         # create an appointment close to the end of the day
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
@@ -119,7 +119,7 @@ class TestAppAppointmentsView:
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         hospital_map = factories.LegacyHospitalMapFactory()
         alias = factories.LegacyAliasFactory(hospitalmapsernum=hospital_map)
-        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
         # create an appointment close to the end of the day
         factories.LegacyAppointmentFactory(
             patientsernum=patient,

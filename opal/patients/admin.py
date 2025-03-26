@@ -9,9 +9,35 @@ from modeltranslation.admin import TranslationAdmin
 from . import models
 
 
+class HospitalPatientAdmin(admin.ModelAdmin):
+    """Admin options for the `HospitalPatient` model."""
+
+    list_display = ['__str__', 'mrn', 'site', 'is_active', 'patient']
+    list_select_related = ['patient', 'site']
+    list_filter = ['site']
+
+
+class PatientAdmin(admin.ModelAdmin):
+    """Admin options for the `Patient` model."""
+
+    list_display = ['__str__', 'date_of_birth', 'date_of_death', 'sex', 'ramq', 'legacy_id']
+    list_filter = ['sex', 'date_of_birth', 'date_of_death']
+    readonly_fields = ['uuid']
+    search_fields = ['first_name', 'last_name', 'ramq']
+
+
 class RelationshipTypeAdmin(TranslationAdmin):
     """This class provides admin options for `RelationshipType`."""
 
+    list_display = [
+        '__str__',
+        'description',
+        'start_age',
+        'end_age',
+        'form_required',
+        'can_answer_questionnaire',
+        'role_type',
+    ]
     readonly_fields = ['role_type']
 
     # Django Admin deletion privileges discussion:
@@ -32,13 +58,16 @@ class RelationshipTypeAdmin(TranslationAdmin):
         return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
 
 
-class PatientAdmin(admin.ModelAdmin):
-    """Admin options for the `Patient` model."""
+class RelationshipAdmin(admin.ModelAdmin):
+    """Admin options for the `Relationship` model."""
 
-    readonly_fields = ['uuid']
+    date_hierarchy = 'request_date'
+    list_display = ['__str__', 'patient', 'caregiver', 'type', 'status', 'request_date', 'start_date', 'end_date']
+    list_select_related = ['patient', 'caregiver', 'caregiver__user', 'type']
+    list_filter = ['type', 'status']
 
 
-admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
-admin.site.register(models.Relationship, admin.ModelAdmin)
-admin.site.register(models.HospitalPatient, admin.ModelAdmin)
+admin.site.register(models.HospitalPatient, HospitalPatientAdmin)
 admin.site.register(models.Patient, PatientAdmin)
+admin.site.register(models.RelationshipType, RelationshipTypeAdmin)
+admin.site.register(models.Relationship, RelationshipAdmin)

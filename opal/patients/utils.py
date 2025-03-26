@@ -1,13 +1,14 @@
 """App patients util functions."""
 from datetime import date
-from typing import Any
+from typing import Optional
 
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
-from .models import Patient, RelationshipType
+from .models import Patient, Relationship, RelationshipType, RoleType
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR = 50
@@ -104,7 +105,7 @@ def insert_security_answers(
     caregiver_models.SecurityAnswer.objects.bulk_create(answers)
 
 
-def search_valid_relationship_types(date_of_birth: date) -> list[dict[str, Any]]:
+def search_relationship_types_by_patient_age(date_of_birth: date) -> QuerySet[RelationshipType]:
     """
     Search for valid relationship types according to the patient's age.
 
@@ -112,8 +113,46 @@ def search_valid_relationship_types(date_of_birth: date) -> list[dict[str, Any]]
         date_of_birth: date of birth of the patient
 
     Returns:
-        list of ids of filtered relationship types
+        Queryset of relationship types according to the patient's age
     """
     age = Patient.calculate_age(date_of_birth=date_of_birth)
-    queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age).values_list('id', flat=True)
-    return list(queryset)
+    return RelationshipType.objects.filter_by_patient_age(patient_age=age)  # type: ignore[no-any-return]
+
+
+def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
+    """
+    Get the queryset of valid relationship types according to the patient's age and existing self role.
+
+    Args:
+        patient: Patient object
+
+    Returns:
+        Queryset of valid relationship types
+    """
+    relationship_types_queryset = search_relationship_types_by_patient_age(patient.date_of_birth)
+    if Relationship.objects.filter(
+        patient=patient,
+        type__role_type=RoleType.SELF,
+    ).exists():
+        return relationship_types_queryset.exclude(role_type=RoleType.SELF)
+    return relationship_types_queryset
+
+
+def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Optional[Patient]:
+    """
+    Get a `Patient` object filtered by a given RAMQ or sites and MRNs.
+
+    Args:
+        ramq: patient's RAMQ
+        mrn: patient's MRN
+        site: patient's site code
+
+    Returns:
+        `Patient` object
+    """
+    if ramq:
+        return Patient.objects.filter(ramq=ramq).first()
+    return Patient.objects.filter(
+        hospital_patients__mrn=mrn,
+        hospital_patients__site__code=site,
+    ).first()

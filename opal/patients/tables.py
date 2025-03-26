@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
@@ -158,8 +159,15 @@ class PendingRelationshipTable(tables.Table):
 
         if value == RelationshipStatus.PENDING.label:
             today = timezone.now().date()
-            status_since = today - record.request_date
-            pending_since_text = _('{days} days'.format(days=status_since.days))
+            number_of_days = (today - record.request_date).days
+            pending_since_text = ngettext(
+                '%(number_of_days)d day',  # noqa: WPS323
+                '%(number_of_days)d days',  # noqa: WPS323
+                number_of_days,
+            ) % {
+                'number_of_days': number_of_days,
+            }
+
             status_value = f'{value} ({pending_since_text})'
 
         return status_value
@@ -187,13 +195,13 @@ class PendingRelationshipTable(tables.Table):
         """
         if record.status == RelationshipStatus.EXPIRED:
             column.extra_context.update({
-                'urlname_view': 'patients:relationships-pending-readonly',
+                'urlname_view': 'patients:relationships-view-update',
                 'urlname_update': '',
             })
         else:
             column.extra_context.update({
                 'urlname_view': '',
-                'urlname_update': 'patients:relationships-pending-update',
+                'urlname_update': 'patients:relationships-view-update',
             })
 
         return column.render(record, *args, **kwargs)  # type: ignore[no-any-return]

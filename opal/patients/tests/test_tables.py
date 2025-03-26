@@ -1,3 +1,4 @@
+import datetime
 import urllib
 
 from django.test import Client
@@ -24,15 +25,39 @@ def test_patienttable_mrn_render() -> None:
     assert site_mrn == 'TSITE: 999999'
 
 
-def test_relationshiptable_pending_status_render() -> None:
-    """Ensure that pending status is rendered in the form `STATUS (number of days)` in `PendingRelationshipTable`."""
-    relationship_record = factories.Relationship()
+def test_relationshiptable_pending_status_render_singular() -> None:
+    """Ensure that pending status is rendered in the form `STATUS (number of days)` in singular form."""
+    # in case of `zero` number of days
+    today_date = datetime.date.today()
+    relationship_record = factories.Relationship(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
     relationship_table = tables.PendingRelationshipTable(relationships)
     status_format = relationship_table.render_status('Pending', relationship_record)
 
     assert status_format == 'Pending (0 days)'
+
+    # in case of `one` number of days
+    today_date = datetime.date.today() - datetime.timedelta(days=1)
+    relationship_record = factories.Relationship(request_date=today_date)
+    relationships = models.Relationship.objects.filter()
+
+    relationship_table = tables.PendingRelationshipTable(relationships)
+    status_format = relationship_table.render_status('Pending', relationship_record)
+
+    assert status_format == 'Pending (1 day)'
+
+
+def test_relationshiptable_pending_status_render_plural() -> None:
+    """Ensure that pending status is rendered in the form `STATUS (number of days)` in plural form."""
+    today_date = datetime.date.today() - datetime.timedelta(days=5)
+    relationship_record = factories.Relationship(request_date=today_date)
+    relationships = models.Relationship.objects.filter()
+
+    relationship_table = tables.PendingRelationshipTable(relationships)
+    status_format = relationship_table.render_status('Pending', relationship_record)
+
+    assert status_format == 'Pending (5 days)'
 
 
 def test_relationships_table_readonly_url(relationship_user: Client) -> None:
@@ -52,7 +77,7 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
@@ -61,7 +86,7 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
 
     url_link = action_column.column.extra_context
     assert url_link['urlname_update'] == ''
-    assert url_link['urlname_view'] == 'patients:relationships-pending-readonly'
+    assert url_link['urlname_view'] == 'patients:relationships-view-update'
     assert 'fa-solid fa-fas fa-eye' in action_content
 
 
@@ -83,13 +108,13 @@ def test_relationships_table_update_url(relationship_user: Client) -> None:
 
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
     action_column = response.context['table'].columns['actions']
     action_content = action_column.current_value
     url_link = action_column.column.extra_context
-    assert url_link['urlname_update'] == 'patients:relationships-pending-update'
+    assert url_link['urlname_update'] == 'patients:relationships-view-update'
     assert url_link['urlname_view'] == ''
     assert 'fa-solid fa-pencil-alt' in action_content
