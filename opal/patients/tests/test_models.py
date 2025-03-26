@@ -11,7 +11,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType
+from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -99,6 +99,12 @@ def test_relationshiptype_max_age_upperbound() -> None:
 
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE
     relationship_type.full_clean()
+
+
+def test_relationshiptype_default_role() -> None:
+    """Ensure a new relationshiptype (factory) role defaults to caregiver."""
+    relationship_type = factories.RelationshipType()
+    assert relationship_type.role_type == RoleType.CAREGIVER
 
 
 def test_patient_str() -> None:
@@ -214,7 +220,7 @@ def test_relationship_str() -> None:
 
     relationship = factories.Relationship.build(patient=patient, caregiver=profile)
 
-    assert str(relationship) == 'Kobe Briant <--> John Wayne [Self]'
+    assert str(relationship) == 'Kobe Briant <--> John Wayne [Caregiver]'
 
 
 def test_relationship_factory() -> None:
@@ -306,28 +312,28 @@ def test_hospitalpatient_factory_multiple() -> None:
 def test_hospitalpatient_str() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
     site = factories.Site(name="Montreal Children's Hospital")
-    hospitalpatient = factories.HospitalPatient(site=site)
+    hospital_patient = factories.HospitalPatient(site=site)
 
-    assert str(hospitalpatient) == 'Bart Simpson (MON: 9999996)'
+    assert str(hospital_patient) == 'Bart Simpson (MON: 9999996)'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:
-    """Test one patient has many hospital_patients."""
+    """Ensure a patient can have MRNs at different sites."""
     patient = factories.Patient(first_name='aaa', last_name='bbb')
     site1 = factories.Site(name="Montreal Children's Hospital")
     site2 = factories.Site(name='Royal Victoria Hospital')
 
     HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
     HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
-    hospitalpatients = HospitalPatient.objects.all()
-    assert len(hospitalpatients) == 2
+
+    assert HospitalPatient.objects.count() == 2
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
 
 
 def test_hospitalpatient_many_patients_one_site() -> None:
-    """Test many patients have the same site and mrn."""
+    """Ensure a (site, MRN) pair can only be used once."""
     patient1 = factories.Patient(first_name='aaa', last_name='111')
     patient2 = factories.Patient(
         first_name='bbb',
@@ -339,6 +345,18 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
+
+
+def test_hospitalpatient_patient_site_unique() -> None:
+    """Ensure a patient can only have one MRN at a specific site."""
+    patient = factories.Patient()
+    site = factories.Site()
+
+    HospitalPatient.objects.create(patient=patient, site=site, mrn='9999996')
+
+    expected_message = r"Duplicate entry '(\d+\-\d+)' for key 'patients_hospitalpatient_patient_id_site_id_(\d+)_uniq"
+    with pytest.raises(IntegrityError, match=expected_message):
+        HospitalPatient.objects.create(patient=patient, site=site, mrn='9999997')
 
 
 def test_can_answer_questionnaire_default() -> None:
@@ -485,3 +503,48 @@ def test_same_birth_and_death_date() -> None:
     patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 1, 23))
 
     patient.clean()
+
+
+def test_relationshiptype_default() -> None:
+    """Ensure there are two relationship types by default."""
+    assert RelationshipType.objects.count() == 2
+    assert RelationshipType.objects.filter(role_type=RoleType.SELF).count() == 1
+    assert RelationshipType.objects.filter(role_type=RoleType.PARENTGUARDIAN).count() == 1
+
+
+def test_relationshiptype_self_role_delete_error() -> None:
+    """Ensure operator can not delete a self role type."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.role_type = RoleType.SELF
+    message = "['The relationship type with this role type cannot be deleted']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.delete()
+
+
+def test_relationshiptype_par_role_delete_error() -> None:
+    """Ensure operator can not delete a parent/guardian role type."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.role_type = RoleType.PARENTGUARDIAN
+    message = "['The relationship type with this role type cannot be deleted']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        relationship_type.delete()
+
+
+def test_relationshiptype_duplicate_self_role() -> None:
+    """Ensure validation error when creating a second self role type."""
+    roletype_self_copy = factories.RelationshipType()
+    roletype_self_copy.role_type = RoleType.SELF
+
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        roletype_self_copy.full_clean()
+
+
+def test_relationshiptype_duplicate_parent_role() -> None:
+    """Ensure validation error when creating a second parent/guardian role type."""
+    roletype_parent_copy = factories.RelationshipType()
+    roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
+
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        roletype_parent_copy.full_clean()
