@@ -1,8 +1,9 @@
 """Module providing reusable views for the whole project."""
 
-from typing import Any
+from typing import Any, TypeVar
 
 from django.conf import settings
+from django.db.models import Model
 from django.http import HttpRequest
 
 from rest_framework.generics import CreateAPIView
@@ -13,6 +14,8 @@ from opal.core.drf_parsers.hl7_parser import HL7Parser
 from opal.core.drf_permissions import IsRegistrationListener
 
 from .serializers import LanguageSerializer
+
+_Model = TypeVar('_Model', bound=Model)
 
 
 class LanguagesView(APIView):
@@ -35,7 +38,7 @@ class LanguagesView(APIView):
         return Response(response)
 
 
-class HL7CreateView(CreateAPIView[Any]):
+class HL7CreateView(CreateAPIView[_Model]):
     """APIView Superclass for all endpoints requiring HL7 parsing."""
 
     parser_classes = (HL7Parser,)

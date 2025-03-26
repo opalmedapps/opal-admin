@@ -2,18 +2,22 @@
 from typing import Any
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from opal.core.api.serializers import DynamicFieldsSerializer
 
 from ..models import CodedElement, PharmacyComponent, PharmacyEncodedOrder, PharmacyRoute, PhysicianPrescriptionOrder
 
 
-def clean_coded_element_internal_blanks(serializer_data: Any, coded_element_fields: list[str]) -> Any:
+def clean_coded_element_internal_blanks(
+    serializer_data: dict[str, Any],
+    coded_element_fields: list[str],
+) -> dict[str, Any]:
     """Check if all subfields of a CodedElement instance field are blank and set it to None if true.
 
     This is required because for the majority of pharmacy data (and in the RxTFC docs), CodedElement fields
     are required and are generally sent correctly in the source system HL7.
-    But in some instances, the hospital send data with all blank subfields within CodedElement instances.
+    But in some instances, the hospital sends data with all blank subfields within CodedElement instances.
     This will be parsed as a dictionary with keys pointing to blanks, which is technically not null,
     causing an attempted CodedElement model save which will error on the required fields being blank.
 
@@ -61,8 +65,17 @@ class _NestedCodedElementSerializer(CodedElementSerializer):
     https://medium.com/django-rest-framework/dealing-with-unique-constraints-in-nested-serializers-dade33b831d9
     """
 
-    class Meta(CodedElementSerializer.Meta):
-        validators: list[Any] = []
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # Dynamically remove just the UniqueTogetherValidator
+        self.validators = [
+            validator for validator in self.validators if not (  # type: ignore[redundant-expr]
+                isinstance(
+                    validator,
+                    UniqueTogetherValidator,
+                ) and set(validator.fields) == {'identifier', 'text', 'coding_system'}  # type: ignore[unreachable]
+            )
+        ]
 
 
 class PharmacyRouteSerializer(serializers.ModelSerializer[PharmacyRoute]):

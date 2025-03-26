@@ -291,7 +291,7 @@ class HL7Parser(BaseParser):
         try:
             raw_data_str = raw_data_bytes.decode('utf-8')
         except AttributeError as err:
-            raise exceptions.ParseError(f'Error decoding HL7 message: {str(err)}')
+            raise exceptions.ParseError(f'Error decoding HL7 message: {err}')
 
         # Normalize line endings to CR
         hl7_message = raw_data_str.replace('\r\n', '\r').replace('\n', '\r')

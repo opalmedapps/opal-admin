@@ -2,12 +2,12 @@
 import uuid
 from typing import Any
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from opal.core.api.views import HL7CreateView
@@ -16,9 +16,10 @@ from opal.hospital_settings.models import Site
 from opal.patients.models import Patient
 
 from .serializers import PhysicianPrescriptionOrderSerializer
+from ..models import PhysicianPrescriptionOrder
 
 
-class CreatePrescriptionView(HL7CreateView):
+class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
     """`HL7CreateView` for handling POST requests to create prescription pharmacy data."""
 
     segments_to_parse = ('PID', 'PV1', 'ORC', 'RXE', 'RXR', 'RXC', 'NTE')
@@ -26,7 +27,7 @@ class CreatePrescriptionView(HL7CreateView):
     permission_classes = (IsInterfaceEngine,)
 
     @transaction.atomic
-    def create(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Extract and transform the parsed data from the request.
 
         Args:
@@ -69,7 +70,7 @@ class CreatePrescriptionView(HL7CreateView):
             ValidationError: If no patient could be found at all, or multiple are found
 
         Returns:
-            True if the patient identified in the PID segment exists in Django and matches the url uuid
+            True if the patient identified in the PID segment exists in the database and matches the UUID
         """
         # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
         valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
@@ -85,12 +86,12 @@ class CreatePrescriptionView(HL7CreateView):
                     } for mrn, site in valid_pid_mrn_sites
                 ],
             )
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
             raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.')
         return url_uuid == patient.uuid
 
     def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:  # noqa: WPS210
-        """Transform the parsed defaultdict segment data into the expected structure for the serializer.
+        """Transform the parsed segment data dictionary into the expected structure for the serializer.
 
         Args:
             parsed_data: segmented dictionary parsed from the HL7 request data
