@@ -13,8 +13,11 @@ services:
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
   app:
-    image: opalmedapps/backend:latest
-    build: .
+    build:
+      context: .
+      args:
+        # install development dependencies in the local image
+        - ENV=development
     command: python manage.py runserver 0:8000
     environment:
       # overwrite for container to allow both container and local venv

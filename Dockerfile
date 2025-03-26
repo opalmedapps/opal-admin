@@ -10,7 +10,7 @@ RUN apk add --no-cache build-base \
   && apk add --no-cache libffi-dev
 
 # for which environment the build is done: development or production
-ARG ENV=development
+ARG ENV=production
 
 # Install pip requirements
 COPY ./requirements /tmp/
@@ -23,7 +23,7 @@ FROM python:3.11.9-alpine3.19
 RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
   && apk add --no-cache mariadb-dev \
-  # Translations dependencies
+  # Translation dependencies
   && apk add --no-cache gettext
 
 # Keeps Python from generating .pyc files in the container
@@ -51,7 +51,7 @@ COPY .env.sample .
 # Set up the cron jobs
 COPY ./docker/crontab /tmp/crontab
 
-# Add new cron jobs to the cron tab and compile languages
+# Add new cron jobs to the cron tab and compile messages
 RUN crontab /tmp/crontab \
   && cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
