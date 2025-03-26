@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-23 21:38-0400\n"
+"POT-Creation-Date: 2024-11-18 14:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -303,8 +303,12 @@ msgid "Usage Statistics"
 msgstr "Statistiques d'utilisation"
 
 #: opal/templates/sidebar_menu.html
-msgid "Export Data"
-msgstr "Exporter les données"
+msgid "Group Reports"
+msgstr "Rapports groupés"
+
+#: opal/templates/sidebar_menu.html
+msgid "Individual Reports"
+msgstr "Rapports individuels"
 
 #: opal/templates/tables/action_column.html
 msgid "View"

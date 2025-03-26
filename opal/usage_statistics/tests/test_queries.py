@@ -35,6 +35,10 @@ def test_empty_fetch_registration_summary() -> None:
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
+    # fake the current time to avoid crossing over to the next day if the current time is 10pm or later
+    now = timezone.make_aware(dt.datetime(2022, 11, 29, 11, 2, 3))
+    mock_timezone = mocker.patch('django.utils.timezone.now', return_value=now)
+
     relationships = _create_relationship_records()
 
     caregiver_models.RegistrationCode.objects.bulk_create([
@@ -94,6 +98,7 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
         start_date=today,
         end_date=today,
     )
+
     assert population_summary == {
         'uncompleted_registration': 2,
         'completed_registration': 6,

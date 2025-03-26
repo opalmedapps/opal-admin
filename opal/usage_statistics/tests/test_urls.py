@@ -10,7 +10,11 @@ TestData = tuple[type, str, str]
 
 # tuple with expected data (view class, url name, url path)
 testdata: list[TestData] = [
-    (views.UsageStatisticsExportTemplateView, 'usage-statistics:data-export', '/usage-statistics/export/'),
+    (views.GroupUsageStatisticsView, 'usage-statistics:reports-group-export', '/usage-statistics/reports/group/'),
+    (
+        views.IndividualUsageStatisticsView,
+        'usage-statistics:reports-individual-export', '/usage-statistics/reports/individual/',
+    ),
 ]
 
 
