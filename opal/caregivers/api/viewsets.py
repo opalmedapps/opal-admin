@@ -79,7 +79,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
             Http response with the data needed to return a random pair of security question and answer.
         """
         answer_queryset = self.get_queryset().order_by('?').first()
-        serializer = self.get_serializer(answer_queryset)
+        serializer = serializers.SecurityAnswerSerializer(answer_queryset)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])

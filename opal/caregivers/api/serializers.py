@@ -109,7 +109,7 @@ class SecurityAnswerQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SecurityAnswer
-        fields = ['id', 'question', 'answer']
+        fields = ['id', 'question']
 
 
 class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
