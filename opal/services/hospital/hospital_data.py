@@ -41,7 +41,7 @@ class OIEPatientData(NamedTuple):
     Attributes:
         date_of_birth: the date of birth
         first_name: patient first name
-        last_name): patient last name
+        last_name: patient last name
         sex: patient sex
         alias: alias name
         deceased: True if the patient is deceased, False otherwise
