@@ -317,3 +317,31 @@ class HospitalPatient(models.Model):
             site_code=str(self.site.code),
             mrn=str(self.mrn),
         )
+
+
+def filter_on_initial(initial: RelationshipStatus) -> list:
+    """
+    Filter available choices in the options field of the form based on initial value.
+
+    Args:
+        initial: initial selected value of the option field
+
+    Returns:
+        list of choices
+
+    """
+    if initial.value == RelationshipStatus.PENDING:
+        return [RelationshipStatus.PENDING, RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
+    elif initial.value == RelationshipStatus.CONFIRMED:
+        return [
+            RelationshipStatus.CONFIRMED,
+            RelationshipStatus.PENDING,
+            RelationshipStatus.DENIED,
+            RelationshipStatus.REVOKED,
+        ]
+    elif initial.value == RelationshipStatus.DENIED:
+        return [RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
+    elif initial.value == RelationshipStatus.REVOKED:
+        return [RelationshipStatus.REVOKED, RelationshipStatus.CONFIRMED]
+    # for initial value = Expired
+    return [RelationshipStatus.EXPIRED]

@@ -29,7 +29,7 @@
                       <form method="post">
                         {% csrf_token %}
 
-                        {{ form | crispy }}
+                        {% crispy form %}
                         <a class="btn btn-secondary mr-2" href="{% url 'patients:relationships-pending-list' %}">
                           {% translate "Cancel" %}
                         </a>
