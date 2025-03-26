@@ -35,7 +35,7 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.get().acronym == 'MUHC'
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 9
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
@@ -103,7 +103,7 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 7
-        assert HospitalPatient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 9
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
