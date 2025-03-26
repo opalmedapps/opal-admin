@@ -1,24 +1,30 @@
-FROM python:3.11.8-slim-bookworm
+FROM python:3.11.8-alpine3.19 as build
+
+# dependencies for building Python packages
+RUN apk add --no-cache build-base \
+  # install git in case dependencies are installed from version control
+  && apk add --no-cache git \
+  # mysqlclient dependencies
+  && apk add --no-cache mariadb-dev \
+  # argon2-cffi dependencies
+  && apk add --no-cache libffi-dev
 
 # for which environment the build is done: development or production
 ARG ENV=development
 
-RUN apt-get update \
-  # dependencies for building Python packages
-  && apt-get install -y build-essential \
-  # install git
-  && apt-get install git -y \
-  # mysqlclient dependencies
-  && apt-get install -y default-libmysqlclient-dev pkg-config \
-  # argon2-cffi dependencies
-  && apt-get install -y libffi-dev libssl-dev \
+# Install pip requirements
+COPY ./requirements /tmp/
+RUN python -m pip install --no-cache-dir --upgrade pip \
+  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+
+
+FROM python:3.11.8-alpine3.19
+
+RUN apk upgrade --no-cache \
+  # mysqlclient runtime dependencies
+  && apk add --no-cache mariadb-dev \
   # Translations dependencies
-  && apt-get install -y gettext \
-  # cron dependencies
-  && apt-get install -y cron \
-  # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
+  && apk add --no-cache gettext
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -26,24 +32,27 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED 1
 
-# Install pip requirements
-COPY ./requirements /tmp/
-RUN python -m pip install --upgrade pip \
-  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
-
 EXPOSE 8000
 
+# get Python packages lib and bin
+COPY --from=build /usr/local/bin /usr/local/bin
+COPY --from=build /usr/local/lib /usr/local/lib
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /app
 
-COPY . /app
+# copy only the required files
+COPY ./config/ ./config
+COPY ./opal/ ./opal
+COPY ./locale/ ./locale
+COPY manage.py .
+COPY .env.sample .
 
 # Set up the cron jobs
-COPY ./scripts/cron/* /etc/cron.d/
+COPY ./docker/crontab /tmp/crontab
 
 # Add new cron jobs to the cron tab and compile languages
-RUN crontab /etc/cron.d/crontab \
+RUN crontab /tmp/crontab \
   && cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
   && rm .env

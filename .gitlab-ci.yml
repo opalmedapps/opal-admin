@@ -1,14 +1,6 @@
-# run pipelines for default branch, tags, and all types of merge request pipelines
-# to support merge trains
-# see: https://gitlab.com/gitlab-org/gitlab/-/issues/13159#note_373865588
-include:
-  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Workflows/MergeRequest-Pipelines.gitlab-ci.yml
-  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
-
-# set up
-# see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
+# see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   MARIADB_ROOT_PASSWORD: $DB_ROOT_PASSWORD
@@ -21,6 +13,20 @@ default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:
     - uname -a
+
+stages:
+  - build
+  - static analysis
+  - checks
+  - test
+  - documentation
+
+.default_needs:
+  needs:
+    - job: build image
+
+.default_before:
+  before_script:
     - python --version
     # set up env file for DB service
     # use sample env file
@@ -42,19 +48,8 @@ default:
     - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
-stages:
-  - Build
-  - Static Analysis
-  - Checks
-  - Test
-  - Documentation
-
-.default_needs:
-  needs:
-    - job: build image
-
 build image:
-  stage: Build
+  stage: build
   image: docker:25.0.3
   services:
     - docker:25.0.3-dind
@@ -86,39 +81,11 @@ build image:
         docker push $IMAGE_COMMIT
       fi
 
-# Run additional Repository X-Ray job to enhance code suggestions with additional context
-# https://docs.gitlab.com/ee/user/project/repository/code_suggestions/repository_xray.html
-xray:
-  stage: Build
-  image: registry.gitlab.com/gitlab-org/code-creation/repository-x-ray:latest
-  allow_failure: true
-  rules:
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  variables:
-    OUTPUT_DIR: reports
-  # replace default before_script section
-  before_script:
-    - uname -a
-    - x-ray-scan -version
-  script:
-    # x-ray-scan currently requires the requirements.txt file
-    # it also doesn't support references to other requirements files yet
-    # see: https://gitlab.com/gitlab-org/code-creation/repository-x-ray/-/issues/21
-    # prepare a single requirements.txt that contains all relevant dependencies
-    - mv requirements/base.txt requirements.txt
-    # remove the first line ("-r ...")
-    - tail -n +2 requirements/development.txt >> requirements.txt
-    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
-  artifacts:
-    reports:
-      repository_xray: "$OUTPUT_DIR/*/*.json"
-    paths:
-      - "$OUTPUT_DIR/*/*.json"
-
 flake8:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
+    - .default_before
   script:
     - flake8 --version
     # install plugin to produce code climate report
@@ -133,9 +100,10 @@ flake8:
       codequality: gl-code-quality-report.json
 
 mypy:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
+    - .default_before
   script:
     # install plugin to produce code climate report
     - pip install mypy-gitlab-code-quality
@@ -151,7 +119,7 @@ mypy:
       codequality: codequality.json
 
 markdownlint:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
   image:
@@ -169,16 +137,17 @@ markdownlint:
     reports:
       codequality: markdownlint-cli2-codequality.json
 
-test:
-  stage: Test
+pytest:
+  stage: test
   extends:
     - .default_needs
+    - .default_before
   # set up DB service only for the test job since it is not used by others
   services:
     - mariadb:10.6.17-focal
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
-    - apt update && apt-get install -y default-mysql-client
+    - apk add --no-cache mariadb-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
@@ -192,13 +161,15 @@ test:
       - .coverage
 
 coverage:
-  stage: Test
+  stage: test
+  extends:
+    - .default_before
   script:
     # allow XML creation to fail to be able to parse coverage out of text report
     - coverage xml || true
     - coverage report
   needs:
-    - job: test
+    - job: pytest
   coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   # min coverage is set to 100, allow job to fail in order to signal that the coverage dropped
   # it does not mean it always has to be fixed
@@ -211,21 +182,22 @@ coverage:
         path: coverage.xml
 
 django migrations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
+    - .default_before
   script:
     # Missing migrations
     - echo "Checking that there are no model changes for which there is no migration..."
     - python manage.py makemigrations --dry-run --check
 
 django translations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
   script:
-    # install dependencies for makemessages and git diff
-    - apt update && apt-get install -y gettext git
+    # install dependencies for git diff
+    - apk add --no-cache git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
@@ -233,12 +205,9 @@ django translations:
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code *.po
 
 django translations fuzzy:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
-  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
-  before_script:
-    - python --version
   script:
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
@@ -251,12 +220,9 @@ django translations fuzzy:
 
 
 django translations commented:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
-  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
-  before_script:
-    - python --version
   script:
     # Ensure there are no commented out translation strings
     - echo "Checking for presence of commented out translation strings ..."
@@ -268,12 +234,9 @@ django translations commented:
         fi
 
 django auto-named migrations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
-  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
-  before_script:
-    - python --version
   script:
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
@@ -283,41 +246,54 @@ django auto-named migrations:
     - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
 
 django checks:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
+    - .default_before
   script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
     - python manage.py check --fail-level WARNING
 
 django template validation:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
+    - .default_before
   script:
     # Check templates
     - echo "Validating templates ..."
     - python manage.py validate_templates
 
+check crontab:
+  stage: checks
+  extends:
+    - .default_needs
+    - .default_before
+  script:
+    # Check that the crontab references the correct commands and that they execute
+    - scripts/check_crontab.sh
+
 # Try building the documentation site to ensure there are no issues
 build docs:
-  stage: Documentation
+  stage: documentation
+  extends:
+    - .default_before
+  needs:
+    - job: markdownlint
   script:
     - pip install -r requirements/docs.txt
     - mkdocs --version
     # abort on warnings to catch invalid cross-references
     - mkdocs build --strict
-  # cannot restrict to only merge requests due to the following issue:
-  # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
-  needs:
-    - job: markdownlint
 
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
 #
 pages:
-  stage: Documentation
+  stage: documentation
+  extends:
+    - .default_before
   only:
     - main
   script:
@@ -329,3 +305,56 @@ pages:
       - public
   needs:
     - build docs
+
+
+include:
+  # run pipelines for default branch, tags, and all types of merge request pipelines
+  # to support merge trains
+  # see: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html#enable-merge-trains
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Workflows/MergeRequest-Pipelines.gitlab-ci.yml
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+  # use latest template versions to run security scanning jobs also in merge request pipelines:
+  # https://docs.gitlab.com/ee/user/application_security/index.html#use-security-scanning-tools-with-merge-request-pipelines
+  # Secret Detection: https://docs.gitlab.com/ee/user/application_security/secret_detection/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Secret-Detection.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
+  # Dependency Scanning: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  # Container Scanning: https://docs.gitlab.com/ee/user/application_security/container_scanning/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Container-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
+  # SAST Scanning: https://docs.gitlab.com/ee/user/application_security/sast/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/SAST.latest.gitlab-ci.yml
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+
+# Customizations
+#
+
+# Dependency Scanning
+# https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-analyzer-behavior
+gemnasium-dependency_scanning:
+  variables:
+    # ensure that the JS lockfile gets detected in opal/static/thirdparty
+    DS_MAX_DEPTH: 3
+
+gemnasium-python-dependency_scanning:
+  variables:
+    # enforce running this without the "exists: **/requirements.txt" rule
+    PIP_REQUIREMENTS_FILE: "requirements.txt"
+  # the scanner actually installs the dependencies via pip and therefore requires the mysql client to be installed
+  before_script:
+    # install dependencies for mysqlclient
+    - apt update && apt-get install -y libmariadb-dev pkg-config
+    # prepare a single requirements file
+    # prepare a single requirements.txt that contains all relevant dependencies
+    - mv requirements/base.txt requirements.txt
+    # remove the first line ("-r ...")
+    - tail -n +2 requirements/development.txt >> requirements.txt
+    - tail -n +2 requirements/production.txt >> requirements.txt
+
+# Container Scanning
+# https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG

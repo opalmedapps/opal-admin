@@ -2,7 +2,7 @@
 # This is therefore a temporary solution.
 
 # Run the Patient recrods deviations check daily at 2am.
-0 2 * * * . /etc/profile; /usr/local/bin/python /app/manage.py find_patients_deviations > /proc/1/fd/1 2> /proc/1/fd/2
+0 2 * * * . /etc/profile; /usr/local/bin/python /app/manage.py find_deviations > /proc/1/fd/1 2> /proc/1/fd/2
 
 # Run the Questionnaire respondents sync check daily at 2am.
 0 2 * * * . /etc/profile; /usr/local/bin/python /app/manage.py find_questionnaire_respondent_deviations > /proc/1/fd/1 2> /proc/1/fd/2
