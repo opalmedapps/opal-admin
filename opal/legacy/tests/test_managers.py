@@ -203,7 +203,12 @@ def test_get_unread_lab_results_queryset() -> None:
         patient_ser_num=patient,
         available_at=available_at,
     )
+    factories.LegacyPatientTestResultFactory(
+        patient_ser_num=patient,
+        test_expression_ser_num__test_control_ser_num__publish_flag=0,
+    )
 
+    assert legacy_models.LegacyPatientTestResult.objects.count() == 5
     assert legacy_models.LegacyPatientTestResult.objects.get_unread_queryset(
         patient_sernum=patient.patientsernum,
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',

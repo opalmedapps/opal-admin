@@ -470,6 +470,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         """
         return self.filter(
             patient_ser_num=patient_sernum,
+            test_expression_ser_num__test_control_ser_num__publish_flag=1,
             available_at__lte=timezone.now(),
         ).exclude(
             read_by__contains=username,
