@@ -25,12 +25,10 @@ class Patient(models.Model):
     first_name = models.CharField(
         verbose_name=_('First Name'),
         max_length=150,
-        blank=True,
     )
     last_name = models.CharField(
         verbose_name=_('Last Name'),
         max_length=150,
-        blank=True,
     )
     day_of_birth = models.DateField()
     caregivers = models.ManyToManyField(
