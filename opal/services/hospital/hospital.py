@@ -2,9 +2,9 @@
 from datetime import datetime
 from typing import Any
 
+from ..general.service_error import ServiceErrorHandler
 from .hospital_communication import OIEHTTPCommunicationManager
 from .hospital_data import OIEMRNData, OIEPatientData, OIEReportExportData
-from .hospital_error import OIEErrorHandler
 from .hospital_validation import OIEValidator
 
 
@@ -21,7 +21,7 @@ class OIEService:
     def __init__(self) -> None:
         """Initialize OIE helper services."""
         self.communication_manager = OIEHTTPCommunicationManager()
-        self.error_handler = OIEErrorHandler()
+        self.error_handler = ServiceErrorHandler()
         self.validator = OIEValidator()
 
     def export_pdf_report(

@@ -1,9 +1,9 @@
-"""Module providing functionality for handling Opal Integration Engine (OIE) errors and generating error messages."""
+"""Module providing functionality for handling errors from external components and generating error messages."""
 from typing import Any
 
 
-class OIEErrorHandler:
-    """OIE helper service that handles OIE errors and produces error messages."""
+class ServiceErrorHandler:
+    """Helper that handles external component errors and produces error messages."""
 
     def generate_error(
         self,

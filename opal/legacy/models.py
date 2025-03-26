@@ -23,11 +23,18 @@ from django.utils import timezone
 from . import managers
 
 
+class LegacyUserType(models.TextChoices):
+    """The possible user type values."""
+
+    PATIENT = 'Patient'
+    CAREGIVER = 'Caregiver'
+
+
 class LegacyUsers(models.Model):
     """User model from the legacy database OpalDB."""
 
     usersernum = models.AutoField(db_column='UserSerNum', primary_key=True)
-    usertype = models.CharField(db_column='UserType', max_length=255)
+    usertype = models.CharField(db_column='UserType', max_length=255, choices=LegacyUserType.choices)
     usertypesernum = models.IntegerField(db_column='UserTypeSerNum')
     username = models.CharField(db_column='Username', max_length=255)
 

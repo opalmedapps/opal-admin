@@ -396,8 +396,8 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import pass for multiple caregiver profiles and their relations."""
         legacy_patient1 = legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_patient2 = legacy_factories.LegacyPatientFactory(patientsernum=100)
-        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, usertype='Patient', username='test1')
-        legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, username='test1')
+        legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, username='test2')
         patient_factories.Patient(
             legacy_id=99,
             first_name=legacy_patient1.first_name,

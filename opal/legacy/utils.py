@@ -16,6 +16,7 @@ from .models import (
     LegacyPatientHospitalIdentifier,
     LegacySexType,
     LegacyUsers,
+    LegacyUserType,
 )
 
 #: Mapping from sex type to the corresponding legacy sex type
@@ -45,7 +46,7 @@ def get_patient_sernum(username: str) -> int:
     """
     user = LegacyUsers.objects.filter(
         username=username,
-        usertype='Patient',
+        usertype=LegacyUserType.PATIENT,
     ).first()
     if user:
         return user.usertypesernum
@@ -184,3 +185,14 @@ def initialize_new_patient(
     create_patient_control(legacy_patient)
 
     return legacy_patient
+
+
+def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) -> None:
+    """
+    Update a user's UserType in the legacy Users table.
+
+    Args:
+        caregiver_legacy_id: The user's UserSerNum in the legacy Users table.
+        new_type: The new UserType to set for the user.
+    """
+    LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
