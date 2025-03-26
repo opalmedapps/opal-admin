@@ -139,11 +139,11 @@ def _manage_unmanaged_models() -> None:
 
 @pytest.fixture(autouse=True)
 def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
-    """Fixture changing the `MEDIA_ROOT` value of the `settings.py`.
+    """Fixture changing the `MEDIA_ROOT` value of the settings.
 
     Args:
-        tmp_path (Path): Object to a temporary directory which is unique to each test function
-        settings (LazySettings): All the configurations of the `opalAdmin backend` service
+        tmp_path: Object to a temporary directory which is unique to each test function
+        settings: All the configurations of the `opalAdmin backend` service
     """
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
 

@@ -31,3 +31,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 # Don't watch model events by default.
 # Also helps suppressing data migration errors during test initialization.
 DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = False
+
+# Whitenoise
+# ------------------------------------------------------------------------------
+# Get rid of whitenoise "No directory at" warning, as it's not helpful when running tests.
+# Related:
+#     - https://github.com/evansd/whitenoise/issues/215
+#     - https://github.com/evansd/whitenoise/issues/191
+#     - https://github.com/evansd/whitenoise/commit/4204494d44213f7a51229de8bc224cf6d84c01eb
+#
+# https://whitenoise.readthedocs.io/en/stable/base.html#autorefresh
+WHITENOISE_AUTOREFRESH = True
