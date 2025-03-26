@@ -1,6 +1,4 @@
 """Collection of serializers for the app ApiViews."""
-from typing import Dict
-
 from rest_framework import serializers
 
 from opal.legacy.models import LegacyAppointment
@@ -53,26 +51,3 @@ class UnreadCountSerializer(serializers.Serializer):
     unread_txteammessage_count = serializers.IntegerField()
     unread_educationalmaterial_count = serializers.IntegerField()
     unread_questionnaire_count = serializers.IntegerField()
-
-    def validate(self, data: Dict) -> Dict:
-        """
-        Check that data member is integer or not.
-
-        Args:
-            data: a dictionary of field values
-
-        Raises:
-            ValidationError: the field values are wrong type
-
-        Returns:
-            the data object if not catching error
-        """
-        if (
-            isinstance(data['unread_appointment_count'], int)  # noqa: WPS222
-            and isinstance(data['unread_document_count'], int)
-            and isinstance(data['unread_txteammessage_count'], int)
-            and isinstance(data['unread_educationalmaterial_count'], int)
-            and isinstance(data['unread_questionnaire_count'], int)
-        ):
-            raise serializers.ValidationError('Field values must be the integer')
-        return data

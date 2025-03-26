@@ -53,10 +53,11 @@ class LegacyAppointmentManager(models.Manager):
             Queryset of uncompleted appointments.
         """
         return self.filter(
-            scheduledstarttime__gt=timezone.localtime(timezone.now()).date(),
             patientsernum=patient_sernum,
             readstatus=0,
             state='Active',
+        ).exclude(
+            status='Deleted',
         )
 
     def get_daily_appointments(self, patient_sernum: int) -> models.QuerySet['LegacyAppointment']:
