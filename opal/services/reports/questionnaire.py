@@ -73,6 +73,7 @@ class QuestionnaireData(NamedTuple):
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
+NUMERIC_TYPE_QUESTION = 2
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
@@ -308,7 +309,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(data.questionnaire_title)  # create new section for table of contents
-            self.set_y(35)
             # Display the questionnaire title and the most recent questionnaire date, centered at the top of the page.
             self._insert_paragraph(data.questionnaire_title, align=Align.C)
             self.ln(1)
@@ -327,7 +327,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             questions: list of questions associated with the questionnaire
         """
         for question in questions:
-            if question.question_type_id == 2:
+            if question.question_type_id == NUMERIC_TYPE_QUESTION:
                 self._draw_chart_for_numeric_question(question)
             else:
                 self._draw_text_answer_question(question)
