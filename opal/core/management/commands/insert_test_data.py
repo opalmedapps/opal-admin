@@ -249,7 +249,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C901
     """
     Create all test data.
 
@@ -343,14 +343,14 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
 
     if is_pediatric:
         lisa = _create_patient(
-                first_name='Lisa',
-                last_name='Simpson',
-                date_of_birth=_create_date(8, 5, 9),
-                sex=Patient.SexType.FEMALE,
-                ramq='SIML14550999',
-                legacy_id=54,
-                mrns=mrn_data['Lisa Simpson'],
-            )
+            first_name='Lisa',
+            last_name='Simpson',
+            date_of_birth=_create_date(8, 5, 9),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIML14550999',
+            legacy_id=54,
+            mrns=mrn_data['Lisa Simpson'],
+        )
 
     # Bart exists at both institutions
     bart = _create_patient(
@@ -362,8 +362,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         legacy_id=53,
         mrns=mrn_data['Bart Simpson'],
     )
-
-
 
     # caregivers
     user_marge = _create_caregiver(
@@ -568,62 +566,104 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         _create_pathology_result(
             patient=marge,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=2)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=2)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=2)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=2),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=2),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=2),
+            ),
             legacy_document_id=7,
         )
         _create_pathology_result(
             patient=marge,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=12)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=12)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=12)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
             legacy_document_id=8,
         )
         # Homer received his pathology 8 days ago
         _create_pathology_result(
             patient=homer,
             site=sites['MGH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=8)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=8)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=8)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=8),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=8),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=8),
+            ),
             legacy_document_id=6,
         )
         # Fred received his pathology 4 days ago
         _create_pathology_result(
             patient=fred,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
             legacy_document_id=12,
         )
         # Bart received his pathology 5 days ago
         _create_pathology_result(
             patient=bart,
             site=sites['MCH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=5)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=5)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=5)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=5),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=5),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=5),
+            ),
             legacy_document_id=5,
         )
         # Pebbles received her pathology 4 days ago
         _create_pathology_result(
             patient=pebbles,
             site=sites['MCH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=4)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=4),
+            ),
             legacy_document_id=13,
         )
         # Wednesday received her pathology 15 days ago
         _create_pathology_result(
             patient=wednesday,
             site=sites['RVH'],
-            collected_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=15)),
-            received_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=15)),
-            reported_at=timezone.make_aware(datetime.now() - relativedelta(years=0, months=0, days=15)),
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=15),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=15),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=15),
+            ),
             legacy_document_id=16,
         )
 
