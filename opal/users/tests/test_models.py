@@ -1,5 +1,3 @@
-from typing import Type
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
@@ -12,7 +10,7 @@ from config.settings.base import ADMIN_GROUP_NAME, ORMS_GROUP_NAME
 from .. import factories
 from ..models import Caregiver, ClinicalStaff, User, UserType
 
-UserModel: Type[User] = get_user_model()
+UserModel: type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
 
 

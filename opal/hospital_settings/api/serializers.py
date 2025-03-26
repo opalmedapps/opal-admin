@@ -35,7 +35,7 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer):
+class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer[Institution]):
     """
     This class defines how an `Institution` model is serialized for the REST API.
 

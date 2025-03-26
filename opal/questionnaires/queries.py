@@ -1,6 +1,7 @@
 """This file contains SQL queries for the ePRO reporting tool."""
 import html
 import logging
+from typing import Any
 
 from django.conf import settings
 from django.db import connections, transaction
@@ -57,7 +58,7 @@ def _get_description(qid: int, lang_id: int) -> str:
     return description
 
 
-def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict]:
+def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict[str, Any]]:
     """Return all rows from a cursor as a dict.
 
     Args:
@@ -75,7 +76,7 @@ def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict]:
 
 
 @transaction.atomic
-def get_all_questionnaires(lang_id: int) -> list[dict]:
+def get_all_questionnaires(lang_id: int) -> list[dict[str, Any]]:
     """Get list of questionnaires which have non-zero number of responses.
 
     Args:
@@ -107,7 +108,7 @@ def get_all_questionnaires(lang_id: int) -> list[dict]:
 
 
 @transaction.atomic
-def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210
+def get_questionnaire_detail(qid: int, lang_id: int) -> dict[str, Any]:  # noqa: WPS210
     """Get details for desired questionnaire (questions, patients, dates).
 
     Args:
@@ -363,7 +364,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
     return True
 
 
-def get_temp_table() -> list[dict]:
+def get_temp_table() -> list[dict[str, Any]]:
     """Retrieve the previously generated report in the temporary table.
 
     Returns:

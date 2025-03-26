@@ -1,5 +1,5 @@
 """Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
@@ -75,8 +75,8 @@ class Command(BaseCommand):
 
     def _get_respondents_sync_err(
         self,
-        legacy_respondents: List[Tuple],
-        django_respondents: List[Tuple],
+        legacy_respondents: list[tuple[str, ...]],
+        django_respondents: list[tuple[str, ...]],
     ) -> Optional[str]:
         """Build error string based on the questionnaire respondents' first & last names deviations.
 

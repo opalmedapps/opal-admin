@@ -5,9 +5,9 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db import transaction
 from django.db.models.query import QuerySet
 
-from rest_framework import serializers, status
+from rest_framework import mixins, serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,11 +29,12 @@ from ..api.serializers import (
     HospitalPatientSerializer,
     PatientDemographicSerializer,
     PatientSerializer,
+    PatientUpdateSerializer,
 )
 from ..models import Patient, Relationship
 
 
-class RetrieveRegistrationDetailsView(RetrieveAPIView):
+class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
     """Class handling GET requests for registration code values."""
 
     queryset = (
@@ -52,7 +53,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
-    def get_object(self) -> Any:
+    def get_object(self) -> caregiver_models.RegistrationCode:
         """
         Override get_object to filter RegistrationCode by patient date_of_death.
 
@@ -67,7 +68,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer]:
+    def get_serializer_class(
+        self, *args: Any, **kwargs: Any,
+    ) -> type[serializers.BaseSerializer[caregiver_models.RegistrationCode]]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
@@ -150,7 +153,7 @@ class RegistrationCompletionView(APIView):
         return Response()
 
 
-class CaregiverRelationshipView(ListAPIView):
+class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
@@ -169,7 +172,7 @@ class CaregiverRelationshipView(ListAPIView):
         )
 
 
-class PatientDemographicView(UpdateAPIView):
+class PatientDemographicView(UpdateAPIView[Patient]):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
     permission_classes = (IsInterfaceEngine,)
@@ -219,14 +222,12 @@ class PatientDemographicView(UpdateAPIView):
         return patient
 
 
-class PatientCaregiverDevicesView(RetrieveAPIView):
+class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     """Class handling GET requests for patient caregivers."""
 
-    queryset = (
-        Patient.objects.prefetch_related(
-            'relationships__caregiver__user',
-            'relationships__caregiver__devices',
-        )
+    queryset = Patient.objects.prefetch_related(
+        'relationships__caregiver__user',
+        'relationships__caregiver__devices',
     )
     permission_classes = (IsLegacyBackend,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
@@ -235,31 +236,45 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
     lookup_field = 'legacy_id'
 
 
-class PatientUpdateView(UpdateAPIView):
-    """Class handling PUT requests for patient access level update."""
+class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView[Patient]):
+    """View supporting patient retrieval and (limited) update based on their legacy ID."""
 
+    # clinical staff in OpalAdmin can update a patient (requires `change_patient`)
+    # opal-labs/legacy backend retrieves patient information (requires (`view_patient`)
     permission_classes = (FullDjangoModelPermissions,)
     queryset = Patient.objects.all()
-    serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
-    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer:
-        """Return the serializer instance that should be used for validating.
-
-        And deserializing input, and for serializing output.
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle a GET request to retrieve a patient instance.
 
         Args:
-            args: varied amount of non-keyword arguments
-            kwargs: varied amount of keyword arguments
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
-            BaseSerializer
+            the HTTP response
         """
-        serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        kwargs['fields'] = ['data_access']
-        return serializer_class(*args, **kwargs)
+        self.serializer_class = PatientSerializer
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle a PUT request to update a patient instance.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        self.serializer_class = PatientUpdateSerializer
+        return self.update(request, *args, **kwargs)
 
 
 class PatientExistsView(APIView):

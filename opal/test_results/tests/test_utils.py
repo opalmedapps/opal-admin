@@ -19,7 +19,7 @@ from ..utils import (  # noqa: WPS450
 pytestmark = pytest.mark.django_db
 
 
-def _create_empty_parsed_observations() -> dict[str, list]:
+def _create_empty_parsed_observations() -> dict[str, list[str]]:
     """Create empty parsed observations dictionary with SPCI, SPSPECI, SPGROS, SPDX fields.
 
     Returns:

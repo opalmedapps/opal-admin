@@ -31,7 +31,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
             kwargs: the context data
 
         Returns:
-            Dict[str, Any]
+            the context data
         """
         context = super().get_context_data(**kwargs)
         patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])

@@ -1,4 +1,5 @@
 """Collection of serializers for the app ApiViews."""
+from typing import Any
 
 from rest_framework import serializers
 
@@ -6,7 +7,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyHospitalMap, LegacyPatient
 
 
-class LegacyAliasSerializer(DynamicFieldsSerializer):
+class LegacyAliasSerializer(DynamicFieldsSerializer[LegacyAlias]):
     """Serializer for the `LegacyAlias` model."""
 
     class Meta:
@@ -14,7 +15,7 @@ class LegacyAliasSerializer(DynamicFieldsSerializer):
         fields = ['aliassernum', 'aliastype', 'aliasname_en', 'aliasname_fr']
 
 
-class LegacyHospitalMapSerializer(DynamicFieldsSerializer):
+class LegacyHospitalMapSerializer(DynamicFieldsSerializer[LegacyHospitalMap]):
     """Serializer for the `LegacyHospitalMap` model."""
 
     class Meta:
@@ -30,7 +31,7 @@ class LegacyHospitalMapSerializer(DynamicFieldsSerializer):
         ]
 
 
-class LegacyPatientSerializer(DynamicFieldsSerializer):
+class LegacyPatientSerializer(DynamicFieldsSerializer[LegacyPatient]):
     """Serializer for the `LegacyPatient` model."""
 
     class Meta:
@@ -38,7 +39,7 @@ class LegacyPatientSerializer(DynamicFieldsSerializer):
         fields = ['patientsernum', 'first_name', 'last_name', 'email', 'ramq']
 
 
-class LegacyAppointmentSerializer(serializers.ModelSerializer):
+class LegacyAppointmentSerializer(serializers.ModelSerializer[LegacyAppointment]):
     """Serializer for the `LegacyAppointment` model."""
 
     checkinpossible = serializers.IntegerField(
@@ -50,7 +51,7 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
         fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible', 'patientsernum']
 
 
-class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
+class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppointment]):
     """Serializer for the `LegacyAppointment` model to get more appointment details."""
 
     checkinpossible = serializers.IntegerField(
@@ -111,7 +112,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
         ]
 
 
-class QuestionnaireReportRequestSerializer(serializers.Serializer):
+class QuestionnaireReportRequestSerializer(serializers.Serializer[tuple[str, str]]):
     """This class defines how a `QuestionnairesReport` request data are serialized."""
 
     mrn = serializers.CharField(
@@ -129,7 +130,7 @@ class QuestionnaireReportRequestSerializer(serializers.Serializer):
     )  # TODO: min_length?
 
 
-class UnreadCountSerializer(serializers.Serializer):
+class UnreadCountSerializer(serializers.Serializer[dict[str, Any]]):
     """Serializer a dictionary having several key-value pairs."""
 
     unread_appointment_count = serializers.IntegerField()
@@ -141,7 +142,7 @@ class UnreadCountSerializer(serializers.Serializer):
     unread_consent_questionnaire_count = serializers.IntegerField()
 
 
-class AnnouncementUnreadCountSerializer(serializers.Serializer):
+class AnnouncementUnreadCountSerializer(serializers.Serializer[dict[str, int]]):
     """Serializer for the unread count of Announcement queryset."""
 
     unread_announcement_count = serializers.IntegerField(min_value=0)

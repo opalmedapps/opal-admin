@@ -9,7 +9,7 @@ from ..models import Institution, Site
 from .serializers import InstitutionSerializer, SiteSerializer, TermsOfUseSerializer
 
 
-class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
+class InstitutionViewSet(viewsets.ReadOnlyModelViewSet[Institution]):
     """
     This viewset provides an API view for `Institution`.
 
@@ -36,7 +36,7 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class SiteViewSet(viewsets.ReadOnlyModelViewSet):
+class SiteViewSet(viewsets.ReadOnlyModelViewSet[Site]):
     """
     This viewset provides an API view for `Site`.
 

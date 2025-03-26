@@ -9,7 +9,8 @@ from .models import Institution, Site
 
 # need to use modeltranslation's admin
 # see: https://django-modeltranslation.readthedocs.io/en/latest/admin.html
-class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
+@admin.register(Institution)
+class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin[Institution]):
     """This class provides admin options for `Institution`."""
 
     list_display = ['__str__', 'acronym']
@@ -32,11 +33,8 @@ class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
         return super().has_add_permission(request)
 
 
+@admin.register(Site)
 class SiteAdmin(TranslationAdmin):
     """This class provides admin options for `Site`."""
 
     list_display = ['__str__', 'acronym', 'institution']
-
-
-admin.site.register(Institution, InstitutionAdmin)
-admin.site.register(Site, SiteAdmin)

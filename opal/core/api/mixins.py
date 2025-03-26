@@ -14,8 +14,9 @@ In general, a view inheriting this mixin should specify:
     get_queryset: return the targeted model object using the keyword args or request data
 
 """
-from typing import Any
+from typing import Any, TypeVar
 
+from django.db.models import Model
 from django.http import Http404
 
 from rest_framework import status
@@ -23,8 +24,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request, clone_request
 from rest_framework.response import Response
 
+_Model = TypeVar('_Model', bound=Model, covariant=True)
 
-class AllowPUTAsCreateMixin(GenericAPIView):
+
+class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
     """
     The following mixin class may be used in order to update or create records in the targeted model.
 
@@ -72,7 +75,7 @@ class AllowPUTAsCreateMixin(GenericAPIView):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
-    def _get_object_or_none(self) -> Any:
+    def _get_object_or_none(self) -> _Model | None:
         """Attempt to retrieve object.
 
         If not found we use clone_request to check if the caller has the required permissions for a POST request.
@@ -97,3 +100,5 @@ class AllowPUTAsCreateMixin(GenericAPIView):
                 # PATCH requests where the object does not exist should still
                 # return a 404 response.
                 raise
+
+        return None

@@ -5,7 +5,7 @@ from . import models
 
 
 @admin.register(models.DatabankConsent)
-class DatabankConsentAdmin(admin.ModelAdmin):
+class DatabankConsentAdmin(admin.ModelAdmin[models.DatabankConsent]):
     """The admin class for `DatabankConsent` models."""
 
     list_display = [

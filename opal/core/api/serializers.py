@@ -1,10 +1,14 @@
 """Collection of serializers for the core ApiViews."""
-from typing import Any
+from typing import Any, TypeVar
+
+from django.db.models import Model
 
 from rest_framework import serializers
 
+_Model = TypeVar('_Model', bound=Model)
 
-class DynamicFieldsSerializer(serializers.ModelSerializer):
+
+class DynamicFieldsSerializer(serializers.ModelSerializer[_Model]):
     """Dynamic fields serializer for models.
 
     A ModelSerializer that takes an additional `fields` argument that
@@ -35,7 +39,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
                 self.fields.pop(field_name)
 
 
-class LanguageSerializer(serializers.Serializer):
+class LanguageSerializer(serializers.Serializer[list[dict[str, Any]]]):
     """Serializer for a supported language."""
 
     code = serializers.CharField(min_length=2, max_length=2)

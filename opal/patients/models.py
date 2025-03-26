@@ -34,7 +34,7 @@ class RoleType(models.TextChoices):
 
 # defined here instead of constants to avoid circular import
 #: Set of role types for which a relationship type is predefined via a data migration
-PREDEFINED_ROLE_TYPES: Final[set] = {  # noqa: WPS407
+PREDEFINED_ROLE_TYPES: Final[set[RoleType]] = {  # noqa: WPS407
     RoleType.SELF,
     RoleType.PARENT_GUARDIAN,
     RoleType.GUARDIAN_CAREGIVER,

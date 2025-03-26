@@ -88,7 +88,7 @@ class OIEValidator:  # noqa: WPS214
     def is_patient_response_valid(  # noqa: C901, WPS231
         self,
         response_data: Any,
-    ) -> list:
+    ) -> list[str]:
         """Check if the OIE patient response data is valid.
 
         Args:
@@ -148,7 +148,7 @@ class OIEValidator:  # noqa: WPS214
 
         return success, errors
 
-    def check_patient_data(self, patient_data: Any) -> list:  # noqa: C901 WPS210 WPS213 WPS231
+    def check_patient_data(self, patient_data: Any) -> list[str]:  # noqa: C901 WPS210 WPS213 WPS231
         """Check if the patient data is valid.
 
         Args:
@@ -240,7 +240,7 @@ class OIEValidator:  # noqa: WPS214
 
         return errors
 
-    def _check_mrn_data(self, mrn_data: Any) -> list:  # noqa: C901
+    def _check_mrn_data(self, mrn_data: Any) -> list[str]:  # noqa: C901
         """Check if the patient MRN data is valid.
 
         Args:

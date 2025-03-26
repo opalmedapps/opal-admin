@@ -160,7 +160,7 @@ def update_caregiver_profile(profile: caregiver_models.CaregiverProfile, info: d
 
 def insert_security_answers(
     caregiver_profile: caregiver_models.CaregiverProfile,
-    security_answers: list,
+    security_answers: list[dict[str, str]],
 ) -> None:
     """
     Insert security answers.

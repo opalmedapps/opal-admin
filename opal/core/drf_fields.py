@@ -13,10 +13,10 @@ from rest_framework import serializers
 from ..utils.base64 import Base64Util
 
 
-class Base64FileField(serializers.Field):
+class Base64FileField(serializers.Field[FieldFile, FieldFile, Optional[str], Any]):
     """This class is a reuseable field for encoding the file and return the base64 encoded file contents."""
 
-    def to_representation(self, file: FieldFile) -> Optional[Any]:
+    def to_representation(self, file: FieldFile) -> Optional[str]:
         """Represent a file content in base64 encoded form.
 
         Args:

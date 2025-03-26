@@ -11,7 +11,7 @@ from ..models import DatabankConsent
 from .serializers import DatabankConsentSerializer
 
 
-class CreateDatabankConsentView(generics.CreateAPIView):
+class CreateDatabankConsentView(generics.CreateAPIView[DatabankConsent]):
     """`CreateAPIView` for handling POST requests for the `DatabankConsent` instances."""
 
     queryset = DatabankConsent.objects.none()

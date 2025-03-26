@@ -5,7 +5,7 @@ from .models import GeneralTest, Note, PathologyObservation
 
 
 @admin.register(GeneralTest)
-class GeneralTestAdmin(admin.ModelAdmin):
+class GeneralTestAdmin(admin.ModelAdmin[GeneralTest]):
     """The admin class for `GeneralTest` models."""
 
     list_display = ('patient', 'type', 'collected_at', 'received_at', 'reported_at')
@@ -19,7 +19,7 @@ class GeneralTestAdmin(admin.ModelAdmin):
 
 
 @admin.register(PathologyObservation)
-class ObservationAdmin(admin.ModelAdmin):
+class ObservationAdmin(admin.ModelAdmin[PathologyObservation]):
     """The admin class for `Observation` models."""
 
     list_display = (
@@ -41,7 +41,7 @@ class ObservationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Note)
-class NoteAdmin(admin.ModelAdmin):
+class NoteAdmin(admin.ModelAdmin[Note]):
     """The admin class for `Note` models."""
 
     list_display = ('general_test', 'note_text', 'note_source', 'updated_at')

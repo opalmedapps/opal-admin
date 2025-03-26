@@ -72,7 +72,7 @@ def generate_pathology_report(
 
 def _parse_observations(
     observations: list[dict[str, Any]],
-) -> dict[str, list]:
+) -> dict[str, list[str]]:
     """Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
 
     Args:
@@ -81,7 +81,7 @@ def _parse_observations(
     Returns:
         dictionary of the observations' SPCI, SPSPECI, SPGROS, SPDX values
     """
-    parsed_observations: dict[str, list] = {
+    parsed_observations: dict[str, list[str]] = {
         'SPCI': [],
         'SPSPECI': [],
         'SPGROS': [],

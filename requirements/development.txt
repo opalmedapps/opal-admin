@@ -2,7 +2,7 @@
 
 # Testing
 #
-mypy==1.7.0  # https://github.com/python/mypy
+mypy==1.7.1  # https://github.com/python/mypy
 pytest==7.4.3  # https://github.com/pytest-dev/pytest
 pytest-mock==3.12.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.6.0  # https://github.com/miketheman/pytest-socket
@@ -19,7 +19,7 @@ django-stubs==4.2.6  # https://github.com/typeddjango/django-stubs
 djangorestframework-stubs==3.14.4  # https://github.com/typeddjango/djangorestframework-stubs
 pandas-stubs==2.1.1.230928
 types-beautifulsoup4==4.12.0.7
-types-fpdf2==2.7.6.0
+types-fpdf2==2.7.6.1
 types-requests==2.31.0.10
 types-python-dateutil==2.8.19.14
 

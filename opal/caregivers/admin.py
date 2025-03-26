@@ -6,7 +6,8 @@ from modeltranslation.admin import TranslationAdmin
 from . import models
 
 
-class CaregiverProfileAdmin(admin.ModelAdmin):
+@admin.register(models.CaregiverProfile)
+class CaregiverProfileAdmin(admin.ModelAdmin[models.CaregiverProfile]):
     """Admin options for the `CaregiverProfile` model."""
 
     list_display = ['__str__', 'uuid', 'legacy_id', 'user']
@@ -15,21 +16,24 @@ class CaregiverProfileAdmin(admin.ModelAdmin):
     list_select_related = ['user']
 
 
-class DeviceAdmin(admin.ModelAdmin):
+@admin.register(models.Device)
+class DeviceAdmin(admin.ModelAdmin[models.Device]):
     """Admin options for the `Device` model."""
 
     list_display = ['__str__', 'type', 'is_trusted', 'modified', 'caregiver']
     list_filter = ['type', 'modified']
 
 
-class EmailVerificationAdmin(admin.ModelAdmin):
+@admin.register(models.EmailVerification)
+class EmailVerificationAdmin(admin.ModelAdmin[models.EmailVerification]):
     """Admin options for the `EmailVerification` model."""
 
     list_display = ['__str__', 'email', 'is_verified', 'sent_at', 'caregiver']
     list_filter = ['is_verified', 'sent_at']
 
 
-class RegistrationCodeAdmin(admin.ModelAdmin):
+@admin.register(models.RegistrationCode)
+class RegistrationCodeAdmin(admin.ModelAdmin[models.RegistrationCode]):
     """Admin options for the `RegistrationCode` model."""
 
     list_display = ['__str__', 'status', 'created_at', 'attempts', 'relationship']
@@ -38,7 +42,8 @@ class RegistrationCodeAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
 
 
-class SecurityAnswerAdmin(admin.ModelAdmin):
+@admin.register(models.SecurityAnswer)
+class SecurityAnswerAdmin(admin.ModelAdmin[models.SecurityAnswer]):
     """Admin options for the `SecurityAnswer` model."""
 
     list_display = ['question', 'user']
@@ -47,15 +52,8 @@ class SecurityAnswerAdmin(admin.ModelAdmin):
     list_select_related = ['user__user']
 
 
-class SecurityQuestionAdmin(TranslationAdmin):
+@admin.register(models.SecurityQuestion)
+class SecurityQuestionAdmin(TranslationAdmin, admin.ModelAdmin[models.SecurityQuestion]):
     """This class provides admin options for `SecurityQuestion`."""
 
     list_display = ['__str__', 'is_active']
-
-
-admin.site.register(models.CaregiverProfile, CaregiverProfileAdmin)
-admin.site.register(models.Device, DeviceAdmin)
-admin.site.register(models.EmailVerification, EmailVerificationAdmin)
-admin.site.register(models.RegistrationCode, RegistrationCodeAdmin)
-admin.site.register(models.SecurityQuestion, SecurityQuestionAdmin)
-admin.site.register(models.SecurityAnswer, SecurityAnswerAdmin)

@@ -1,5 +1,5 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.db import transaction
 
@@ -10,7 +10,7 @@ from opal.hospital_settings.models import Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
-class PatientSerializer(DynamicFieldsSerializer):
+class PatientSerializer(DynamicFieldsSerializer[Patient]):
     """
     Patient serializer.
 
@@ -21,6 +21,7 @@ class PatientSerializer(DynamicFieldsSerializer):
     class Meta:
         model = Patient
         fields = [
+            'uuid',
             'legacy_id',
             'first_name',
             'last_name',
@@ -29,27 +30,34 @@ class PatientSerializer(DynamicFieldsSerializer):
             'data_access',
             'sex',
             'ramq',
-            'uuid',
+            'is_adult',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
-        # enforce proper value for legacy_id
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer[Patient]):
+    """Patient serializer to update a patient instance."""
+
+    class Meta:
+        model = Patient
+        fields = [
+            'data_access',
+        ]
         extra_kwargs: dict[str, dict[str, Any]] = {
-            'legacy_id': {
-                'allow_null': False,
-                'required': True,
-            },
             'data_access': {
                 'required': True,
             },
         }
 
 
-class PatientUUIDSerializer(serializers.Serializer):
+class PatientUUIDSerializer(serializers.Serializer[Patient]):
     """Serializer for patient's UUID."""
 
     patient_uuid = serializers.UUIDField(required=True, allow_null=False)
 
 
-class HospitalPatientSerializer(DynamicFieldsSerializer):
+class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.
 
@@ -84,7 +92,7 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
         return value
 
 
-class RelationshipTypeSerializer(DynamicFieldsSerializer):
+class RelationshipTypeSerializer(DynamicFieldsSerializer[RelationshipType]):
     """Serializer for the RelationshipType model."""
 
     class Meta:
@@ -101,7 +109,7 @@ class RelationshipTypeSerializer(DynamicFieldsSerializer):
         ]
 
 
-class CaregiverPatientSerializer(serializers.ModelSerializer):
+class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of patients for a given caregiver."""
 
     patient_uuid = serializers.UUIDField(source='patient.uuid')
@@ -132,7 +140,7 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         ]
 
 
-class CaregiverRelationshipSerializer(serializers.ModelSerializer):
+class CaregiverRelationshipSerializer(serializers.ModelSerializer[Relationship]):
     """Serializer for the list of caregivers for a given patient."""
 
     caregiver_id = serializers.IntegerField(source='caregiver.user.id')
@@ -144,7 +152,7 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer):
         fields = ['caregiver_id', 'first_name', 'last_name', 'status']
 
 
-class PatientDemographicSerializer(DynamicFieldsSerializer):
+class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
     """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
 
     mrns = HospitalPatientSerializer(many=True, allow_empty=False, required=True)
@@ -165,8 +173,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
     def update(
         self,
         instance: Patient,
-        validated_data: Dict[str, Any],
-    ) -> Optional[Patient]:
+        validated_data: dict[str, Any],
+    ) -> Patient:
         """Update `Patient` instance during patient demographic update call.
 
         It updates `User` fields as well.
@@ -176,7 +184,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             validated_data: dictionary containing validated request data
 
         Returns:
-            Optional[Patient]: updated `Patient` record
+            updated `Patient` record
         """
         # Update the fields of the `Patient` instance
         super().update(instance, validated_data)

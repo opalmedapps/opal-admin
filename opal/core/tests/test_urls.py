@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Type
 
 from django.contrib.auth.views import LogoutView
 from django.test.client import Client
@@ -11,7 +10,7 @@ from pytest_django.fixtures import SettingsWrapper
 from opal.core.views import LoginView
 
 
-def assert_path_uses_view(path: str, view_class: Type) -> None:
+def assert_path_uses_view(path: str, view_class: type) -> None:
     """
     Assert that the view resolved via the provided path uses the given view class.
 

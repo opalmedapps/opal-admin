@@ -18,7 +18,7 @@ from opal.patients.api.serializers import HospitalPatientSerializer, PatientSeri
 from opal.patients.models import Patient
 
 
-class EmailVerificationSerializer(DynamicFieldsSerializer):
+class EmailVerificationSerializer(DynamicFieldsSerializer[EmailVerification]):
     """Serializer for model EmailVerification."""
 
     class Meta:
@@ -26,7 +26,7 @@ class EmailVerificationSerializer(DynamicFieldsSerializer):
         fields = ['id', 'code', 'email', 'is_verified', 'sent_at']
 
 
-class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
+class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer[RegistrationCode]):
     """Serializer for the return value of registration encryption info."""
 
     patient = PatientSerializer(
@@ -47,7 +47,7 @@ class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
         fields = ['code', 'status', 'patient', 'hospital_patients']
 
 
-class RegistrationCodePatientSerializer(serializers.ModelSerializer):
+class RegistrationCodePatientSerializer(serializers.ModelSerializer[RegistrationCode]):
     """Serializer that is providing summary info of a patient using `RegistrationCode` model."""
 
     patient = PatientSerializer(
@@ -75,7 +75,7 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
         fields = ['patient', 'institution']
 
 
-class SecurityQuestionSerializer(serializers.ModelSerializer):
+class SecurityQuestionSerializer(serializers.ModelSerializer[SecurityQuestion]):
     """Serializer for security questions."""
 
     class Meta:
@@ -83,7 +83,7 @@ class SecurityQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title_en', 'title_fr']
 
 
-class SecurityAnswerQuestionSerializer(serializers.ModelSerializer):
+class SecurityAnswerQuestionSerializer(serializers.ModelSerializer[SecurityAnswer]):
     """Serializer for `SecurityAnswer` questions without answers."""
 
     class Meta:
@@ -91,7 +91,7 @@ class SecurityAnswerQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'question']
 
 
-class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
+class VerifySecurityAnswerSerializer(serializers.ModelSerializer[SecurityAnswer]):
     """Serializer for Verify security answers."""
 
     answer = serializers.CharField(max_length=128)  # noqa: WPS432
@@ -101,7 +101,7 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['answer']
 
 
-class DeviceSerializer(DynamicFieldsSerializer):
+class DeviceSerializer(DynamicFieldsSerializer[Device]):
     """Serializer for devices."""
 
     class Meta:
@@ -110,7 +110,7 @@ class DeviceSerializer(DynamicFieldsSerializer):
 
 
 # Security: this serializer includes security answer hashes, and should only be used in secure contexts
-class SecurityAnswerSerializer(DynamicFieldsSerializer):
+class SecurityAnswerSerializer(DynamicFieldsSerializer[SecurityAnswer]):
     """Serializer for security answers with corresponding questions."""
 
     class Meta:
@@ -118,7 +118,7 @@ class SecurityAnswerSerializer(DynamicFieldsSerializer):
         fields = ['id', 'question', 'answer']
 
 
-class CaregiverSerializer(DynamicFieldsSerializer):
+class CaregiverSerializer(DynamicFieldsSerializer[CaregiverProfile]):
     """Serializer for caregiver profile."""
 
     first_name = serializers.CharField(source='user.first_name')
@@ -152,7 +152,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
         }
 
 
-class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
+class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer[RegistrationCode]):
     """Serializer that is providing detailed info of a patient using `RegistrationCode` model."""
 
     caregiver = CaregiverSerializer(
@@ -212,11 +212,16 @@ class _NestedPatientSerializer(PatientSerializer):
 
     class Meta(PatientSerializer.Meta):
         extra_kwargs = {
-            'legacy_id': dict(PatientSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
+            # enforce proper value for legacy_id
+            'legacy_id': {
+                'allow_null': False,
+                'required': True,
+                'validators': [],
+            },
         }
 
 
-class RegistrationRegisterSerializer(DynamicFieldsSerializer):
+class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
     """RegistrationCode serializer used to get patient and caregiver information.
 
     The information include Patient and Caregiver data.
@@ -243,7 +248,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
         fields = ['patient', 'caregiver', 'security_answers']
 
 
-class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
+class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
     """
     Serializer for patient and caregiver information.
 
