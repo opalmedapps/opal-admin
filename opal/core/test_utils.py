@@ -44,7 +44,7 @@ class RequestMockerTest:
     """Class that provides methods to mock HTTP requests."""
 
     @classmethod
-    def _mock_requests_post(
+    def mock_requests_post(
         cls,
         mocker: MockerFixture,
         response_data: dict[str, Any],
@@ -68,7 +68,7 @@ class RequestMockerTest:
         return mock_post
 
     @classmethod
-    def _mock_requests_get(
+    def mock_requests_get(
         cls,
         mocker: MockerFixture,
         generated_response_data: dict[str, str],

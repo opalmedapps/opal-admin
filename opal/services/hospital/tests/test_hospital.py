@@ -82,7 +82,7 @@ def test_export_pdf_report(mocker: MockerFixture) -> None:
     """Ensure successful report export request returns json response with successful HTTP status."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     report_data = oie_service.export_pdf_report(
         OIEReportExportData(
@@ -112,7 +112,7 @@ def test_export_pdf_report_error(mocker: MockerFixture) -> None:
             'message': 'OIE response format is not valid.',
         },
     }
-    RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     report_data = oie_service.export_pdf_report(
         OIEReportExportData(
@@ -138,7 +138,7 @@ def test_export_pdf_report_response_invalid(mocker: MockerFixture) -> None:
     generated_report_data: dict[str, Any] = {
         'invalidStatus': 'error',
     }
-    RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     report_data = oie_service.export_pdf_report(
         OIEReportExportData(
@@ -165,7 +165,7 @@ def test_export_pdf_report_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure response json decode failure is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
@@ -192,7 +192,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
 
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     report_data = oie_service.export_pdf_report(
         OIEReportExportData(
@@ -229,7 +229,7 @@ def test_export_pdf_report_invalid_mrn(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid MRN is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     report_data = oie_service.export_pdf_report(
@@ -251,7 +251,7 @@ def test_export_pdf_report_invalid_site(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid site is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
 
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
@@ -274,7 +274,7 @@ def test_export_pdf_report_invalid_base64(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid base64 content is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     report_data = oie_service.export_pdf_report(
@@ -296,7 +296,7 @@ def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
     """Ensure report export request with invalid document type is handled and does not result in an error."""
     # mock actual OIE API call
     generated_report_data = _create_report_export_response_data()
-    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_report_data)
+    mock_post = RequestMockerTest.mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     report_data = oie_service.export_pdf_report(
@@ -317,7 +317,7 @@ def test_export_pdf_report_invalid_doc_type(mocker: MockerFixture) -> None:
 def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return the expected OIE data structure."""
     # mock find_patient_by_mrn and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'success',
@@ -361,7 +361,7 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     oie_patient_data_copy = OIE_PATIENT_DATA.copy()
     oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
     # mock find_patient_by_mrn and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'success',
@@ -397,7 +397,7 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
 def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn handles the not found error accordingly."""
     # mock find_patient_by_mrn and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'error',
@@ -413,7 +413,7 @@ def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
 def test_find_by_mrn_patient_not_test_patient(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn handles the not a test patient error accordingly."""
     # mock find_patient_by_mrn and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'error',
@@ -429,7 +429,7 @@ def test_find_by_mrn_patient_not_test_patient(mocker: MockerFixture) -> None:
 def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn handles the not found error accordingly."""
     # mock find_patient_by_mrn and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'error',
@@ -489,7 +489,7 @@ def test_find_patient_by_mrn_invalid_site(mocker: MockerFixture) -> None:
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return the expected OIE data structure."""
     # mock find_patient_by_ramq and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'success',
@@ -533,7 +533,7 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     oie_patient_data_copy = OIE_PATIENT_DATA.copy()
     oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
     # mock find_patient_by_ramq and pretend it was successful
-    RequestMockerTest._mock_requests_post(
+    RequestMockerTest.mock_requests_post(
         mocker,
         {
             'status': 'success',
@@ -599,7 +599,7 @@ def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFi
 def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
     """Ensure find_patient_by_ramq request with invalid ramq is handled and does not result in an error."""
     # mock find_patient_by_mrn and pretend it was failed
-    RequestMockerTest._mock_requests_post(mocker, {'status': 'success'})
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
 
     response = oie_service.find_patient_by_ramq(RAMQ_INVALID)
     assert response['status'] == 'error'

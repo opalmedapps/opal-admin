@@ -741,7 +741,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Create test data
         self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
-        mock_post = RequestMockerTest._mock_requests_post(mocker, {})
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
         mock_post.side_effect = requests.RequestException('request failed')
         mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
         # Call the command
@@ -755,7 +755,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Create test data
         self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
-        mock_post = RequestMockerTest._mock_requests_post(mocker, {})
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
         mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
         # Call the command
         message, error = self._call_command('update_orms_patients')
@@ -769,7 +769,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Create test data
         self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
-        mock_post = RequestMockerTest._mock_requests_post(mocker, {})
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
         mock_post.return_value.status_code = HTTPStatus.OK
         # Call the command
         message, error = self._call_command('update_orms_patients')
