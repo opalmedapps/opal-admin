@@ -30,8 +30,8 @@ TRAVEL_URLS_CRE = (
 class InstitutionOption(Enum):
     """The institutions that test data can be created for."""
 
-    muhc = 'MUHC'
-    chusj = 'CHUSJ'
+    muhc = 'OMI'
+    chusj = 'OHIGHP'
 
     def __str__(self) -> str:
         """
@@ -45,15 +45,15 @@ class InstitutionOption(Enum):
 
 INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.muhc: {
-        'name': 'McGill University Health Centre',
-        'name_fr': 'Centre universitaire de santé McGill',
-        'acronym_fr': 'CUSM',
+        'name': 'Opal Medical Institution',
+        'name_fr': 'Établissement Médical Opal',
+        'acronym_fr': 'ÉMO',
         'support_email': 'opal@muhc.mcgill.ca',
     },
     InstitutionOption.chusj: {
-        'name': 'CHU Sainte-Justine - Mother and child university hospital center',
-        'name_fr': 'CHU Sainte-Justine - Le centre hospitalier universitaire mère-enfant',
-        'acronym_fr': 'CHUSJ',
+        'name': 'OHIG Pediatric Hospital',
+        'name_fr': 'Hôpital Pédiatrique OHIG',
+        'acronym_fr': 'HPOHIG',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
     },
 })
