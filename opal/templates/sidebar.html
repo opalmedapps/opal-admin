@@ -45,17 +45,14 @@
       {% endif %}
       {% if perms.hospital_settings.can_manage_sites %}
         {% #menu_item url_name="patients:access-request" request=request %}
-          {% translate "New Access Request" %}
+          {% translate "Opal Registration" %}
         {% /menu_item %}
       {% endif %}
       {% if perms.patients.can_manage_relationships %}
         {% #menu_item url_name="patients:relationships-pending-list" request=request %}
-          {% translate "Pending Access Requests" %}
+          {% translate "Manage Caregiver Access" %}
         {% /menu_item %}
       {% endif %}
-      {% #menu_item url_name="patients:relationships-search-list" request=request %}
-        {% translate "Manage Caregiver Access" %}
-      {% /menu_item %}
     {% /menu_group %}
 
     {# Questionnaires #}

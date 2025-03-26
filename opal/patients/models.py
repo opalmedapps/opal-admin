@@ -258,7 +258,7 @@ class Patient(models.Model):
         Returns:
             the name of the associated patient
         """
-        return '{first} {last}'.format(first=self.first_name, last=self.last_name)
+        return '{last}, {first}'.format(first=self.first_name, last=self.last_name)
 
     def clean(self) -> None:
         """Validate date fields.
