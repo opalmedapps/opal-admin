@@ -211,3 +211,10 @@ def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
     auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
     assert reverse('api:orms-login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:orms-login'
+
+
+def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
+    """Ensure the patient demographic update endpoint is defined."""
+    url_path = '/{api_root}/patients/demographic/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:patient-demographic-update') == url_path
+    assert resolve(url_path).view_name == 'api:patient-demographic-update'

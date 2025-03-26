@@ -1,9 +1,13 @@
 """Collection of managers for the caregiver app."""
+import operator
+from functools import reduce
+from typing import Any
 
 from django.db import models
 from django.db.models.functions import Coalesce
 
 from . import constants
+from . import models as patient_models
 
 
 class RelationshipManager(models.Manager):
@@ -83,8 +87,8 @@ class HospitalPatientManager(models.Manager):
         Query manager to get a `HospitalPatient` record filtered by given site code and MRN.
 
         Args:
-            site (str): site code used to filter the records (e.g., MGH)
-            mrn (str): medical record number (MRN) used to filter the records (e.g., 9999996)
+            site: site code used to filter the records (e.g., MGH)
+            mrn: medical record number (MRN) used to filter the records (e.g., 9999996)
 
         Returns:
             Queryset to get the filtered `HospitalPatient` record
@@ -113,3 +117,41 @@ class RelationshipTypeManager(models.Manager):
         return self.annotate(  # type: ignore[no-any-return]
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
+
+
+class PatientQueryset(models.QuerySet['patient_models.Patient']):
+    """Custom QuerySet class for the `Patient` model."""
+
+    def get_patient_by_site_mrn_list(
+        self,
+        site_mrn_list: list[dict[str, Any]],
+    ) -> 'patient_models.Patient':
+        """
+        Query manager to get a `Patient` object filtered by a given list of dictionaries with sites and MRNs.
+
+        Args:
+            site_mrn_list: list of dictionaries containing sites and MRNs
+
+        Returns:
+            `Patient` object
+        """
+        # Create list of Q objects to filter by MRN/site pairs exclusively
+        # E.g., [Q(mrn='9999996', site='RVH'), Q(mrn='9999997', site='MGH')]
+        filters = [
+            models.Q(
+                hospital_patients__mrn=item.get('mrn'),
+                hospital_patients__site__code=item['site']['code'],
+            ) for item in site_mrn_list
+        ]
+
+        # Use 'reduce' operation with 'operator.or_' to combine the Q objects
+        # https://www.geeksforgeeks.org/reduce-in-python/
+        # The resulting query: {... WHERE ((mrn=9999996 AND code=RVH) OR (mrn=99999997 AND code=MGH)) }
+        query = reduce(operator.or_, filters)
+
+        # Get `Patient` object filtered by MRNs AND sites
+        return self.filter(query).distinct().get()
+
+
+class PatientManager(models.Manager['patient_models.Patient']):
+    """Manager class for the `Patient` model."""

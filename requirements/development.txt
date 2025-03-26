@@ -18,8 +18,8 @@ isort==5.12.0  # https://github.com/PyCQA/isort
 django-stubs==1.14.0  # https://github.com/typeddjango/django-stubs
 # djangorestframework-stubs==1.8.0  # https://github.com/typeddjango/djangorestframework-stubs
 git+https://github.com/typeddjango/djangorestframework-stubs.git@728da9c1ba7fa2a6eb3442eb599d0b38e6529492
-types-requests==2.28.11.12
-types-python-dateutil==2.8.19.6
+types-requests==2.28.11.13
+types-python-dateutil==2.8.19.7
 
 # Code quality
 #
@@ -48,7 +48,7 @@ wemake-python-styleguide==0.17.0
 flake8-builtins==2.1.0  # https://github.com/gforcada/flake8-builtins
 flake8-django==1.1.5  # https://github.com/rocioar/flake8-django
 flake8-pytest==1.4  # https://github.com/vikingco/flake8-pytest
-flake8-pytest-style==1.6.0  # https://github.com/m-burst/flake8-pytest-style
+flake8-pytest-style==1.7.2  # https://github.com/m-burst/flake8-pytest-style
 
 
 # Django

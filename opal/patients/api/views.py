@@ -2,13 +2,13 @@
 
 from typing import Any, Type
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django.db.models.query import QuerySet
 
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
+from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,10 +16,10 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions
-from opal.patients.api.serializers import CaregiverRelationshipSerializer
+from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
 
-from ..models import Relationship
+from ..api.serializers import CaregiverRelationshipSerializer, HospitalPatientSerializer, PatientDemographicSerializer
+from ..models import Patient, Relationship
 from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 
@@ -149,3 +149,54 @@ class CaregiverRelationshipView(ListAPIView):
         ).filter(
             patient__legacy_id=self.kwargs['legacy_id'],
         )
+
+
+class PatientDemographicView(UpdateAPIView):
+    """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
+
+    permission_classes = [IsAuthenticated, UpdateModelPermissions]
+    queryset = Patient.objects.prefetch_related(
+        'hospital_patients__site',
+        'relationships__type',
+        'relationships__caregiver__user',
+    )
+    serializer_class = PatientDemographicSerializer
+    pagination_class = None
+
+    def get_object(self) -> Patient:
+        """Perform a custom lookup for a `Patient` object.
+
+        Since there is no `lookup_url` parameter in the endpoints, the lookup is performed by using the provided `mrns`.
+
+        Returns:
+            `Patient` object
+
+        Raises:
+            NotFound: if `Patient` record has not be found through the provided `mrns` list of `HospitalPatients`
+        """
+        # Validate the `MRNs` from input
+        hospital_patient_serializer = HospitalPatientSerializer(
+            data=self.request.data.get('mrns', []),
+            many=True,
+            allow_empty=False,
+        )
+        # TODO: custom error message: {'mrns': 'This list may not be empty.'}
+        hospital_patient_serializer.is_valid(raise_exception=True)
+
+        try:
+            patient = self.queryset.get_patient_by_site_mrn_list(
+                hospital_patient_serializer.validated_data,
+            )
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            # Raise `NotFound` if `Patient` object is empty
+            raise NotFound(
+                '{0} {1}'.format(
+                    'Cannot find patient record with the provided MRNs and sites.',
+                    'Make sure that MRN/site pairs refer to the same patient.',
+                ),
+            )
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, patient)
+
+        return patient

@@ -1,5 +1,4 @@
-"""
-This module provides custom permissions for the Django REST framework.
+"""This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
@@ -28,13 +27,13 @@ class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
 
     # taken from DjangoModelPermissions and added the permission for GET
     perms_map = {
-        'GET': ['%(app_label)s.view_%(model_name)s'],  # noqa: WPS323
+        'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['%(app_label)s.add_%(model_name)s'],  # noqa: WPS323
-        'PUT': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
-        'PATCH': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
-        'DELETE': ['%(app_label)s.delete_%(model_name)s'],  # noqa: WPS323
+        'POST': ['%(app_label)s.add_%(model_name)s'],
+        'PUT': ['%(app_label)s.change_%(model_name)s'],
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],
+        'DELETE': ['%(app_label)s.delete_%(model_name)s'],
     }
 
 
@@ -88,7 +87,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         caregiver_username = request.headers.get('Appuserid')
         if not caregiver_username or not isinstance(caregiver_username, str):
             raise exceptions.ParseError(
-                "Requests to APIs using CaregiverPatientPermissions must provide a string 'Appuserid' header representing the current user.",  # noqa: E501
+                'Requests to APIs using CaregiverPatientPermissions must provide a string'
+                + " 'Appuserid' header representing the current user.",
             )
         return caregiver_username
 
@@ -108,7 +108,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         patient_legacy_id = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
-                "Requests to APIs using CaregiverPatientPermissions must provide an integer 'legacy_id' URL argument representing the target patient.",  # noqa: E501
+                'Requests to APIs using CaregiverPatientPermissions must provide an integer'
+                + " 'legacy_id' URL argument representing the target patient.",
             )
         return patient_legacy_id
 
@@ -130,7 +131,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied('Caregiver not found.')
         return caregiver_profile
 
-    def _check_has_relationship_with_target(self, caregiver_profile: CaregiverProfile, patient_legacy_id: int) -> QuerySet[Relationship]:  # noqa: E501
+    def _check_has_relationship_with_target(
+        self,
+        caregiver_profile: CaregiverProfile,
+        patient_legacy_id: int,
+    ) -> QuerySet[Relationship]:
         """
         Validate the existence of one or more Relationships between a caregiver and a patient, and return them if found.
 
@@ -146,7 +151,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         """
         relationships_with_target = caregiver_profile.relationships.filter(
             patient__legacy_id=patient_legacy_id,
-        ) if caregiver_profile else Relationship.objects.none()
+        )
         if not relationships_with_target:
             raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
         return relationships_with_target
@@ -168,6 +173,22 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied(
                 "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
             )
+
+
+class UpdateModelPermissions(permissions.DjangoModelPermissions):
+    """
+    Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
+
+    Restricts PUT and PATCH operations to require the `view` permission on the model.
+
+    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
+    """
+
+    # taken from DjangoModelPermissions and added the permission for PUT and PATCH
+    perms_map = {
+        'PUT': ['%(app_label)s.change_%(model_name)s'],
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],
+    }
 
 
 class CaregiverSelfPermissions(CaregiverPatientPermissions):

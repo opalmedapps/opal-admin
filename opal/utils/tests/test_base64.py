@@ -39,7 +39,7 @@ def test_is_base64_type_error_returns_false() -> None:
     """Ensure `False` value is returned for a passed non-string value."""
     is_base64 = False
     try:
-        assert base64_util.is_base64(b'OPALTEST') is False  # type: ignore
+        assert base64_util.is_base64(b'OPALTEST') is False  # type: ignore[arg-type]
     except TypeError:
         assert is_base64 is False
 
