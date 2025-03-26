@@ -293,3 +293,11 @@ def create_caregiver_user(relationship: Relationship, username: str, language: s
         user_type = LegacyUserType.CAREGIVER
 
     return create_user(user_type, user_patient_legacy_id, username)
+
+
+def change_caregiver_to_patient(caregiver_legacy_id: int, patient: Patient) -> None:
+    update_legacy_user_type(caregiver_legacy_id, LegacyUserType.PATIENT)
+    patient_user = LegacyUsers.objects.get(usertypesernum=caregiver_legacy_id)
+    dummy_patient = LegacyPatient.objects.get(patient_user.usertypesernum)
+    sex = SEX_TYPE_MAPPING[patient.sex]
+    update_patient(dummy_patient, sex, patient.date_of_birth, patient.ramq)

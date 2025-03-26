@@ -363,6 +363,12 @@ class RegistrationCompletionView(APIView):
 
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
+                # if an existing caregiver gets access to themself the legacy data needs to be updated
+                if relationship.type.is_self:
+                    caregiver_profile = CaregiverProfile.objects.get(user=existing_caregiver)
+                    # an existing caregiver will have a legacy ID
+                    caregiver_id: int = caregiver_profile.legacy_id  # type: ignore[assignment]
+                    legacy_utils.change_caregiver_to_patient(caregiver_id, relationship.patient)
             else:
                 self._handle_new_caregiver(relationship, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])

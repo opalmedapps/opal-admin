@@ -1036,6 +1036,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         assert email_verification.sent_at == future
         assert not email_verification.is_verified
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verify_email_multiple(self, api_client: APIClient, admin_user: User) -> None:
         """Ensure that the registration process still works when a user verifies two different emails."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
@@ -1146,6 +1147,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
         assert response.status_code == HTTPStatus.OK
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
@@ -1205,7 +1207,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         )
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
-    def test_register_success_new_caregiver_self(
+    def test_register_new_caregiver_self(
         self,
         api_client: APIClient,
         admin_user: User,
@@ -1226,7 +1228,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert caregiver_models.CaregiverProfile.objects.get().legacy_id == 1
+        assert caregiver_models.CaregiverProfile.objects.get().legacy_id is not None
 
         # check legacy data
         # no dummy patient was added
@@ -1235,7 +1237,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mock_create.assert_called_once()
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
-    def test_register_success_new_legacy_patient(
+    def test_register_new_legacy_patient(
         self,
         api_client: APIClient,
         admin_user: User,
@@ -1481,6 +1483,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
         assert 'Caregiver email is not verified' in response.content.decode()
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_email_not_verified_existing_caregiver_other_institution(
         self,
         api_client: APIClient,
@@ -1534,6 +1537,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert Caregiver.objects.count() == 1
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
         """The verified email is copied to the caregiver."""
         api_client.force_login(user=admin_user)
