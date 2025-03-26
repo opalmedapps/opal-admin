@@ -76,11 +76,11 @@ msgstr "Diagnostics"
 
 #: opal/databank/models.py
 msgid "Demographics"
-msgstr "La démographie"
+msgstr "Informations démographiques"
 
 #: opal/databank/models.py
 msgid "Labs"
-msgstr "Laboratoires"
+msgstr "Résultats de laboratoire"
 
 #: opal/databank/models.py
 msgid "Questionnaires"
@@ -88,11 +88,11 @@ msgstr "Questionnaires"
 
 #: opal/databank/models.py
 msgid "Sent At"
-msgstr "Envoyé en"
+msgstr "Envoyé à"
 
 #: opal/databank/models.py
 msgid "Data ID"
-msgstr "ID de données"
+msgstr "ID des données"
 
 #: opal/databank/models.py
 msgid "Data Type"

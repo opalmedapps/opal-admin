@@ -19,12 +19,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: opal/patients/api/serializers.py
-msgid "Opal Account Inactivated"
-msgstr "Compte Opal Inactivé"
+msgid "Opal Account Deactivated"
+msgstr "Compte Opal désactivé"
 
 #: opal/patients/api/serializers.py
 msgid "Date of death submitted from ADT"
-msgstr "Date de décès soumise par ADT"
+msgstr "Date de décès soumise par l'ADT"
 
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
@@ -401,12 +401,12 @@ msgstr "Relations"
 #: opal/patients/models.py
 msgid "Start date cannot be earlier than patient's date of birth"
 msgstr ""
-"La date de début ne peut pas être antérieure à la date de naissance du "
+"La date de début d'accès ne peut pas précéder la date de naissance du "
 "patient"
 
 #: opal/patients/models.py
 msgid "Start date should be earlier than end date."
-msgstr "Date de début doit être antérieure à la date de fin."
+msgstr "La date de début doit précéder la date de fin."
 
 #: opal/patients/models.py
 #, python-brace-format
@@ -419,7 +419,7 @@ msgstr ""
 
 #: opal/patients/models.py
 msgid "End date should be later than start date."
-msgstr "La date de fin doit être postérieure à la date de début."
+msgstr "La date de fin doit être après la date de début."
 
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
@@ -427,11 +427,11 @@ msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
 
 #: opal/patients/models.py
 msgid "The patient already has a self-relationship"
-msgstr "Le patient a déjà une relation à soi"
+msgstr "Le patient a déjà une relation de type « soi »"
 
 #: opal/patients/models.py
 msgid "The caregiver already has a self-relationship"
-msgstr "Le proche aidant a déjà une relation à soi"
+msgstr "Le proche aidant a déjà une relation de type « soi »"
 
 #: opal/patients/models.py
 msgid "Site"

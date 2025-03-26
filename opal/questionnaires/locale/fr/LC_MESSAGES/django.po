@@ -45,11 +45,11 @@ msgstr "Liste des questionnaires"
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire Profile"
-msgstr "Profil du questionnaire"
+msgstr "Profil de questionnaires"
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire Profiles"
-msgstr "Profils des questionnaires"
+msgstr "Profils de questionnaires"
 
 #: opal/questionnaires/queries.py
 #, python-brace-format
@@ -58,7 +58,7 @@ msgid ""
 "production database? \n"
 " Error:  {error} "
 msgstr ""
-"DatabaseError: Aucun questionnaire trouvé, êtes-vous sûr d'être connecté à un "
+"DatabaseError: Aucun questionnaire trouvé, êtes-vous sûr d'être connecté à une "
 "base de données de production? \n"
 " Erreur:  {error} "
 
@@ -160,7 +160,7 @@ msgstr "Questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Follow in my dashboard"
-msgstr "Suivez dans mon tableau de bord"
+msgstr "Suivre dans mon tableau de bord"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
 msgid "Description"

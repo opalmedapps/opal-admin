@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/core/forms/layouts.py
 msgid "Reset"
-msgstr "Remettre"
+msgstr "Réinitialiser"
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
@@ -127,7 +127,7 @@ msgstr "nouveau"
 
 #: opal/templates/sidebar.html
 msgid "Go back to Legacy OpalAdmin"
-msgstr "Retourner à Legacy OpalAdmin"
+msgstr "Retourner à l'ancien OpalAdmin"
 
 #: opal/templates/sidebar.html
 msgid "Home"
@@ -159,11 +159,11 @@ msgstr "Types de Relations"
 
 #: opal/templates/sidebar.html
 msgid "Opal Registration"
-msgstr "Enregistrement d'Opal"
+msgstr "Inscription à Opal"
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
-msgstr "Gérer l'accès du proche aidant"
+msgstr "Gestion d'accès des proches aidants"
 
 #: opal/templates/sidebar.html
 msgid "Questionnaires"

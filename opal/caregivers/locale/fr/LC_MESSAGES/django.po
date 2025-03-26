@@ -21,7 +21,7 @@ msgstr ""
 #: opal/caregivers/api/views.py
 msgid "Please wait 10 seconds before requesting a new verification code."
 msgstr ""
-"Veuillez patienter 10 secondes avant de demander un nouveau code de "
+"Veuillez attendre 10 secondes avant de demander un nouveau code de "
 "vérification."
 
 #: opal/caregivers/api/views.py
@@ -166,11 +166,11 @@ msgstr "Tentatives"
 
 #: opal/caregivers/models.py
 msgid "Registration Code"
-msgstr "Code d'enregistrement"
+msgstr "Code d'inscription"
 
 #: opal/caregivers/models.py
 msgid "Registration Codes"
-msgstr "Codes d'enregistrement"
+msgstr "Codes d'inscription"
 
 #: opal/caregivers/models.py
 msgid "Verification Code"
