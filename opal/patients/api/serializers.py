@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -36,6 +36,23 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
         fields = ['mrn', 'is_active', 'site_code']
 
 
+class RelationshipTypeSerializer(DynamicFieldsSerializer):
+    """Serializer for the RelationshipType model."""
+
+    class Meta:
+        model = RelationshipType
+        fields = [
+            'id',
+            'name',
+            'description',
+            'start_age',
+            'end_age',
+            'form_required',
+            'can_answer_questionnaire',
+            'role_type',
+        ]
+
+
 class CaregiverPatientSerializer(serializers.ModelSerializer):
     """Serializer for the list of patients for a given caregiver."""
 
@@ -43,10 +60,15 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
     patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
     first_name = serializers.CharField(source='patient.first_name')
     last_name = serializers.CharField(source='patient.last_name')
+    relationship_type = RelationshipTypeSerializer(
+        source='type',
+        fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
+        many=False,
+    )
 
     class Meta:
         model = Relationship
-        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
+        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
 
 
 class CaregiverRelationshipSerializer(serializers.ModelSerializer):

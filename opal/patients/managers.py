@@ -21,6 +21,7 @@ class RelationshipManager(models.Manager):
             'patient',
             'caregiver',
             'caregiver__user',
+            'type',
         ).filter(
             caregiver__user__username=user_name,
         )

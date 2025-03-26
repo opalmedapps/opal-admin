@@ -37,7 +37,7 @@ def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user
     response = api_client.get(reverse('api:caregivers-patient-list'))
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 1
-    assert relationship_type.id == relationship.type_id
+    assert relationship.type_id == response.data[0]['relationship_type']['id']
     assert relationship.patient_id == response.data[0]['patient_id']
 
 
@@ -49,11 +49,14 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
-    assert response.data[0]['patient_id']
-    assert response.data[0]['patient_legacy_id']
-    assert response.data[0]['first_name']
-    assert response.data[0]['last_name']
-    assert response.data[0]['status']
+
+    data_fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
+    for data_field in data_fields:
+        assert data_field in response.data[0]
+
+    relationship_type_fields = ['id', 'name', 'can_answer_questionnaire', 'role_type']
+    for relationship_type_field in relationship_type_fields:
+        assert relationship_type_field in response.data[0]['relationship_type']
 
 
 def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
