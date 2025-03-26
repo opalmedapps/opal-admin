@@ -16,6 +16,11 @@ urlpatterns = [
         views.PendingRelationshipListView.as_view(),
         name='relationships-pending-list',
     ),
+    path(
+        'relationships/pending/<int:pk>/update/',
+        views.PendingRelationshipUpdateView.as_view(),
+        name='relationships-pending-update',
+    ),
     # Relationship Types Pages
     path(
         'relationship-types/',
@@ -36,5 +41,10 @@ urlpatterns = [
         'relationship-type/<int:pk>/delete/',
         views.RelationshipTypeDeleteView.as_view(),
         name='relationshiptype-delete',
+    ),
+    path(
+        'relationships/search',
+        views.CaregiverAccessView.as_view(),
+        name='relationships-search',
     ),
 ]

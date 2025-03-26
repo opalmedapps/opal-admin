@@ -69,12 +69,14 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <li>
-                <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
-                  <i class="nav-icon fas fa-building"></i>
-                  <p class="text">{% translate "Institutions" %}</p>
-                </a>
-              </li>
+              {% if perms.hospital_settings.can_manage_institutions %}
+                <li>
+                  <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
+                    <i class="nav-icon fas fa-building"></i>
+                    <p class="text">{% translate "Institutions" %}</p>
+                  </a>
+                </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="{% url 'hospital-settings:site-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-sitemap"></i>
@@ -102,6 +104,12 @@
                 <a href="{% url 'patients:relationships-pending-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-hourglass-start"></i>
                   <p class="text">{% translate "Pending Requests" %}</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'patients:relationships-search' %}" class="nav-link">
+                  <i class="nav-icon fas fa-handshake"></i>
+                  <p class="text">{% translate "Search Patient Access" %}</p>
                 </a>
               </li>
             </ul>
@@ -158,10 +166,13 @@
     <section class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
+          <div class="col-sm-12">
             <h1>{% block content-header-page-name %}{% endblock %}</h1>
           </div>
-          <div class="col-sm-6">
+        </div>
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <h5>{% block content-header-page-description %}{% endblock %}</h5>
           </div>
         </div>
       </div>

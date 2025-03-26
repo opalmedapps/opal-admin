@@ -3,6 +3,8 @@
 <a class="btn btn-primary btn-sm mr-2" href="{% url urlname_update record.id %}">
   <i class="fas fa-pencil-alt"></i> {% translate "Edit" %}
 </a>
-<a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
-  <i class="fas fa-trash"></i> {% translate "Delete" %}
-</a>
+{% if urlname_delete %}
+  <a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
+    <i class="fas fa-trash"></i> {% translate "Delete" %}
+  </a>
+{% endif %}

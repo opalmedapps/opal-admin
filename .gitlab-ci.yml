@@ -108,21 +108,19 @@ mypy:
 markdownlint:
   stage: Static Analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.5.1
+    name: davidanson/markdownlint-cli2:next
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
     - markdownlint-cli2 --version
-    # install our custom GitLab formatter to convert output to code quality artefact
-    - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
   script:
     # use the config file that is stored outside the root
-    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv" "#node_modules"
+    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv"
   artifacts:
     when: always
     reports:
-      codequality: markdownlint-cli2-results.json
+      codequality: markdownlint-cli2-codequality.json
 
 test:
   stage: Test
@@ -160,35 +158,83 @@ coverage:
         coverage_format: cobertura
         path: coverage.xml
 
-django:
+django migrations:
+  stage: Checks
+  script:
+    # Missing migrations
+    - echo "Checking that there are no model changes for which there is no migration..."
+    - python manage.py makemigrations --dry-run --check
+  needs:
+    - job: setup
+
+django translations:
   stage: Checks
   script:
     # install dependencies for makemessages and git diff
     - apt update && apt-get install -y gettext git
-    # Missing migrations
-    - echo "Checking that there are no model changes for which there is no migration..."
-    - python manage.py makemigrations --dry-run --check
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
+  needs:
+    - job: setup
+
+django translations fuzzy:
+  stage: Checks
+  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
+  before_script:
+    - python --version
+  script:
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
-    - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep '#| msgid' -B02 -A01 || true)
+    - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep -E '#[~]?\| msgid' -B02 -A01 || true)
     - >
         if [[ $FUZZY_STRINGS ]]; then
           echo "$FUZZY_STRINGS"
           (! echo "$FUZZY_STRINGS" | grep -q .)
         fi
+
+
+django translations commented:
+  stage: Checks
+  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
+  before_script:
+    - python --version
+  script:
+    # Ensure there are no commented out translation strings
+    - echo "Checking for presence of commented out translation strings ..."
+    - COMMENTED_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#~ msgid" -B01 -A03 || true)
+    - >
+        if [[ $COMMENTED_STRINGS ]]; then
+          echo "$COMMENTED_STRINGS"
+          (! echo "$COMMENTED_STRINGS" | grep -q .)
+        fi
+
+django auto-named migrations:
+  stage: Checks
+  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
+  before_script:
+    - python --version
+  script:
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
     # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
     # Return exit code of 1 if results found, 0 otherwise
     # See: https://serverfault.com/q/225798 and https://stackoverflow.com/a/53753605
     - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
+
+django checks:
+  stage: Checks
+  script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
     - python manage.py check --fail-level WARNING
+  needs:
+    - job: setup
+
+django template validation:
+  stage: Checks
+  script:
     # Check templates
     - echo "Validating templates ..."
     - python manage.py validate_templates

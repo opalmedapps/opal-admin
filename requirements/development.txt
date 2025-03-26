@@ -50,7 +50,7 @@ flake8-pytest-style==1.6.0  # https://github.com/m-burst/flake8-pytest-style
 
 # Django
 #
-django-coverage-plugin==2.0.4  # https://github.com/nedbat/django_coverage_plugin
+django-coverage-plugin==3.0.0  # https://github.com/nedbat/django_coverage_plugin
 pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
 
 # Pre-commit
