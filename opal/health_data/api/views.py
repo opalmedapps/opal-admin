@@ -4,7 +4,7 @@ from typing import Any
 from django.db import models
 from django.utils import timezone
 
-from rest_framework import generics, permissions, serializers, status
+from rest_framework import generics, permissions, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -78,7 +78,7 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         serializer.save(patient=self.patient)
 
 
-class UnviewedQuantitySampleView(generics.GenericAPIView):
+class UnviewedQuantitySampleView(APIView):
     """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
 
     permission_classes = (FullDjangoModelPermissions,)
@@ -96,22 +96,25 @@ class UnviewedQuantitySampleView(generics.GenericAPIView):
         Returns:
             Response: list of unviewed `QuantitySample` counts for each patient
         """
-        serializer = self.get_serializer(
+        serializer = self.serializer_class(
             many=True,
             allow_empty=False,
             required=True,
-            data=request.data,
+            data=self.request.data,
         )
         serializer.is_valid(raise_exception=True)
 
-        # Use `order_by` to count distinct patient UUIDs
-        # https://docs.djangoproject.com/en/4.2/topics/db/aggregation/#interaction-with-order-by
-        unviewed_counts = QuantitySample.objects.filter(
-            patient__uuid__in=[patient['uuid'] for patient in serializer.validated_data],
-        ).exclude(
+        # Return patients' unviewed counts of the QuantitySamples
+        unviewed_samples = QuantitySample.objects.exclude(
             viewed_at=None,
             viewed_by='',
-        ).values(
+        ).filter(
+            patient__uuid__in=[quantity['uuid']['uuid'] for quantity in serializer.validated_data],
+        )
+
+        # Use `order_by` to count distinct patient UUIDs
+        # https://docs.djangoproject.com/en/4.2/topics/db/aggregation/#interaction-with-order-by
+        unviewed_counts = unviewed_samples.values(
             'patient__uuid',
         ).annotate(
             patient_uuid=models.F('patient__uuid'),
@@ -120,9 +123,7 @@ class UnviewedQuantitySampleView(generics.GenericAPIView):
             'patient_uuid',
             'count',
         )
-
-        # Return patients' unviewed counts of the QuantitySamples
-        return Response(data=unviewed_counts, status=status.HTTP_200_OK)
+        return Response(data=unviewed_counts)
 
 
 class ViewedQuantitySampleView(APIView):
