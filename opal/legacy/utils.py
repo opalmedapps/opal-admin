@@ -6,7 +6,7 @@ from typing import TypeAlias, Union
 from django.db import transaction
 from django.utils import timezone
 
-from rest_framework.exceptions import NotFound, ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
@@ -401,7 +401,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
             readstatus=0,
             date_added=timezone.make_aware(dt.datetime.now()),
         )
-    except (NotFound, ValidationError):
+    except ObjectDoesNotExist:
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)
         return False

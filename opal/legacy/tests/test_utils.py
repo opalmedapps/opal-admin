@@ -435,3 +435,12 @@ def test_create_databank_patient_consent_data(
     assert inserted_answer_questionnaire.status == 0
     assert inserted_answer_questionnaire.patient_id == qdb_patient.id
     assert inserted_answer_questionnaire.questionnaire_id == consent_form.id
+
+
+def test_legacy_patient_not_found(
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+) -> None:
+    """Test behaviour when the legacy patient record is not found."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    assert not legacy_utils.create_databank_patient_consent_data(django_patient)
