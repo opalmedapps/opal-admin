@@ -1,5 +1,3 @@
-from typing import Dict, cast
-
 from pytest_mock.plugin import MockerFixture
 
 from ..hospital import OIECommunicationService
@@ -36,7 +34,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     }
 
     response = communicate_service.find_patient_by_mrn('9999993', 'MGH')
-    data = cast(Dict[str, dict], response)['data']
+    data = response['data']
     assert data is not None
 
 
@@ -50,7 +48,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
     }
 
     response = communicate_service.find_patient_by_mrn('9999993', 'MGH')
-    data = cast(Dict[str, dict], response)['data']
+    data = response['data']
     assert data is None
 
 
@@ -64,7 +62,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     }
 
     response = communicate_service.find_patient_by_ramq('AAAA9999999')
-    data = cast(Dict[str, dict], response)['data']
+    data = response['data']
     assert data is not None
 
 
@@ -78,5 +76,5 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
     }
 
     response = communicate_service.find_patient_by_ramq('AAAA9999999')
-    data = cast(Dict[str, dict], response)['data']
+    data = response['data']
     assert data is None

@@ -28,7 +28,7 @@ class OIECommunicationService:
         }
         response = requests.post(url, data=data)
         if response.status_code == HTTPStatus.OK:
-            response = {data: response.data}
+            response = {data: response.json()}
         else:
             response = {data: None}
         return response
@@ -49,7 +49,7 @@ class OIECommunicationService:
         }
         response = requests.post(url, data=data)
         if response.status_code == HTTPStatus.OK:
-            response = {data: response.data}
+            response = {data: response.json()}
         else:
             response = {data: None}
         return response
