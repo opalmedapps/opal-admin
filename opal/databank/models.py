@@ -53,7 +53,7 @@ class DatabankConsent(models.Model):
     )
     consent_granted = models.DateTimeField(
         verbose_name=_('Consent Granted'),
-        default=timezone.now,
+        auto_now_add=True,
     )
     consent_updated = models.DateTimeField(
         verbose_name=_('Consent Updated'),
@@ -76,11 +76,6 @@ class DatabankConsent(models.Model):
         Returns:
             The patient's consent information.
         """
-        return '{patient} : {appointments}{diagnosis}{demographics}{labs}{questionnaires}'.format(
+        return "{patient}'s Databank Consent".format(
             patient=str(self.patient),
-            appointments='appointments, ' if self.has_appointments else '',
-            diagnosis='diagnosis, ' if self.has_diagnosis else '',
-            demographics='demographics, ' if self.has_demographics else '',
-            labs='labs, ' if self.has_labs else '',
-            questionnaires='questionnaires' if self.has_questionnaires else '',
         )
