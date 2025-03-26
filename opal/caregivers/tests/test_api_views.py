@@ -23,11 +23,19 @@ from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import factories as hospital_factories
 from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
-from opal.legacy.models import LegacyPatient, LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUsers
+from opal.legacy.models import (
+    LegacyLanguage,
+    LegacyPatient,
+    LegacyPatientControl,
+    LegacyPatientHospitalIdentifier,
+    LegacySexType,
+    LegacyUsers,
+    LegacyUserType,
+)
 from opal.patients import factories as patient_factories
 from opal.patients import utils
 from opal.patients.factories import Relationship
-from opal.patients.models import RelationshipType
+from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
@@ -1097,7 +1105,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     def _build_access_request(
         self,
         new_patient: bool = False,
-        new_caregiver: bool = True,
         email_verified: bool = False,
         self_relationship: bool = False,
     ) -> tuple[caregiver_models.RegistrationCode, Caregiver]:
@@ -1109,7 +1116,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             is_active=False,
         )
         registration_code = caregiver_factories.RegistrationCode(
-            relationship__caregiver__legacy_id=None if new_caregiver else 24,
+            relationship__caregiver__legacy_id=None,
             relationship__caregiver__user=skeleton,
             relationship__patient__legacy_id=None if new_patient else 42,
         )
@@ -1117,6 +1124,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         if self_relationship:
             relationship = registration_code.relationship
             relationship.type = RelationshipType.objects.self_type()
+            relationship.status = RelationshipStatus.CONFIRMED
             relationship.save()
 
         if email_verified:
@@ -1281,6 +1289,55 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             {'hospital': 'RVH', 'mrn': '9999996', 'is_active': True},
             {'hospital': 'MCH', 'mrn': '9999996', 'is_active': False},
         ]
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_register_existing_caregiver_self(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """The legacy user and patient are updated due to the self relationship."""
+        mock_create = mocker.spy(legacy_utils, name='change_caregiver_user_to_patient')
+        legacy_patient = legacy_utils.create_dummy_patient(
+            'Marge',
+            'Simpson',
+            'marge@opalmedapps.ca',
+            LegacyLanguage.ENGLISH,
+        )
+        legacy_user = legacy_utils.create_user(LegacyUserType.CAREGIVER, legacy_patient.patientsernum, 'test-username')
+
+        api_client.force_login(user=admin_user)
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='Marge',
+            last_name='Simpson',
+        )
+        caregiver_factories.CaregiverProfile(user=caregiver)
+        registration_code, _ = self._build_access_request(self_relationship=True)
+        patient = registration_code.relationship.patient
+
+        url = reverse(
+            'api:registration-register',
+            kwargs={'code': registration_code.code},
+        )
+        response = api_client.post(
+            f'{url}?existingUser',
+            data=self.data_existing_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        # check legacy data
+        legacy_user.refresh_from_db()
+        assert legacy_user.usertype == LegacyUserType.PATIENT
+        legacy_patient.refresh_from_db()
+        assert legacy_patient.ramq == patient.ramq
+        assert legacy_patient.sex == LegacySexType.MALE
+        assert legacy_patient.date_of_birth.date() == patient.date_of_birth
+
+        mock_create.assert_called_once()
 
     def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Existing patient and caregiver don't cause the serializer to fail."""

@@ -368,7 +368,7 @@ class RegistrationCompletionView(APIView):
                     caregiver_profile = CaregiverProfile.objects.get(user=existing_caregiver)
                     # an existing caregiver will have a legacy ID
                     caregiver_id: int = caregiver_profile.legacy_id  # type: ignore[assignment]
-                    legacy_utils.change_caregiver_to_patient(caregiver_id, relationship.patient)
+                    legacy_utils.change_caregiver_user_to_patient(caregiver_id, relationship.patient)
             else:
                 self._handle_new_caregiver(relationship, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
