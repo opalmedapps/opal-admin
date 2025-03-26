@@ -34,3 +34,10 @@ def test_relationships_pending_list() -> None:
     url = '/patients/relationships/pending/'
     assert reverse('patients:relationships-pending-list') == url
     assert resolve(url).view_name == 'patients:relationships-pending-list'
+
+
+def test_relationships_pending_update() -> None:
+    """Ensures a url for relationships pending access update view exists."""
+    url = '/patients/relationships/pending/12/update/'
+    assert reverse('patients:relationships-pending-update', kwargs={'pk': 12}) == url
+    assert resolve(url).view_name == 'patients:relationships-pending-update'

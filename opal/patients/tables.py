@@ -42,9 +42,14 @@ class PendingRelationshipTable(tables.Table):
     Defines an additional action column for action buttons.
     """
 
-    actions = tables.Column(
+    actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
+        template_name='tables/action_column.html',
         orderable=False,
+        extra_context={
+            'urlname_update': 'patients:relationships-pending-update',
+            'urlname_delete': 'patients:relationships-pending-delete',
+        },
     )
     type = tables.Column(  # noqa: A003
         verbose_name=_('Relationship'),
@@ -55,7 +60,7 @@ class PendingRelationshipTable(tables.Table):
 
     class Meta:
         model = Relationship
-        fields = ['caregiver', 'type', 'patient', 'request_date', 'form_required', 'actions']
+        fields = ['caregiver', 'type', 'patient', 'request_date', 'actions']
         empty_text = _('No caregiver pending access requests.')
         attrs = {
             'class': 'table table-bordered table-hover',
