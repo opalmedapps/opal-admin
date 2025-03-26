@@ -498,11 +498,12 @@ def fetch_received_questionnaires_summary(
 
 
 # INDIVIDUAL REPORTS
-def fetch_user_last_login_year_report(report_date: dt.date) -> dict[str, int]:
+def fetch_user_last_login_year_report(report_date: dt.date, start_year: int = 2016) -> dict[str, int]:
     """Fetch the daily report of basic information for user last login year before the given date.
 
     Args:
         report_date: the date required of the daily basic statistics report for user last login.
+        start_year: the start year of the report, 2016 by default.
 
     Returns:
         the daily basic statistics report for user last login.
@@ -512,9 +513,8 @@ def fetch_user_last_login_year_report(report_date: dt.date) -> dict[str, int]:
     ).values('action_by_user_id').annotate(
         last_login_year=TruncYear(models.Max('last_login')),
     )
-    start_year = 2016
     login_report = {
-        'last_login_with_the_year_{0}'.format(year): last_login_records.aggregate(
+        f'last_login_with_the_year_{year}': last_login_records.aggregate(
             login_stats=models.Sum(
                 models.Case(
                     models.When(last_login_year__year=year - 1, then=1),

@@ -2772,7 +2772,7 @@ def test_fetch_user_last_login_year_report_user_multiple_records() -> None:
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    user_last_login_year_report = stats_queries.fetch_user_last_login_year_report(dt.datetime(2024, 8, 20))
+    user_last_login_year_report = stats_queries.fetch_user_last_login_year_report(dt.datetime(2024, 8, 20), 2019)
     assert not user_last_login_year_report['last_login_with_none_date']
     assert user_last_login_year_report['last_login_with_the_year_2024'] == 1
     assert not user_last_login_year_report['last_login_with_the_year_2023']
@@ -2780,9 +2780,6 @@ def test_fetch_user_last_login_year_report_user_multiple_records() -> None:
     assert not user_last_login_year_report['last_login_with_the_year_2021']
     assert not user_last_login_year_report['last_login_with_the_year_2020']
     assert not user_last_login_year_report['last_login_with_the_year_2019']
-    assert not user_last_login_year_report['last_login_with_the_year_2018']
-    assert not user_last_login_year_report['last_login_with_the_year_2017']
-    assert not user_last_login_year_report['last_login_with_the_year_2016']
 
 
 def test_fetch_user_last_login_year_report_daily_multiple_records() -> None:
