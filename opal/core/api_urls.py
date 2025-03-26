@@ -56,22 +56,22 @@ urlpatterns = [
         name='caregivers-patient-list',
     ),
     path(  # Only use this endpoint between the Listener and the backend
-        'caregivers/<uuid:uuid>/security-questions/',
+        'caregivers/<str:username>/security-questions/',
         SecurityAnswerViewSet.as_view({'get': 'list'}),
         name='caregivers-securityquestions-list',
     ),
     path(
-        'caregivers/<uuid:uuid>/security-questions/<int:pk>/',
+        'caregivers/<str:username>/security-questions/<int:pk>/',
         SecurityAnswerViewSet.as_view({'get': 'retrieve', 'put': 'update'}),
         name='caregivers-securityquestions-detail',
     ),
     path(
-        'caregivers/<uuid:uuid>/security-questions/random/',
+        'caregivers/<str:username>/security-questions/random/',
         SecurityAnswerViewSet.as_view({'get': 'random'}),
         name='caregivers-securityquestions-random',
     ),
     path(
-        'caregivers/<uuid:uuid>/security-questions/<int:pk>/verify/',
+        'caregivers/<str:username>/security-questions/<int:pk>/verify/',
         SecurityAnswerViewSet.as_view({'post': 'verify_answer'}),
         name='caregivers-securityquestions-verify',
     ),
