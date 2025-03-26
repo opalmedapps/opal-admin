@@ -201,16 +201,15 @@ class HospitalPatient(models.Model):
         to=Site,
         verbose_name=_('Site'),
         related_name='hospital_patients',
-        max_length=20,
         on_delete=models.CASCADE,
     )
     mrn = models.CharField(
         verbose_name=_('MRN'),
-        max_length=20,
+        max_length=10,
     )
-    is_active = models.SmallIntegerField(
+    is_active = models.BooleanField(
         verbose_name=_('Is Active'),
-        default='1',
+        default=True,
     )
 
     class Meta:
@@ -224,7 +223,8 @@ class HospitalPatient(models.Model):
         Returns:
             the Patient Hospital Identifier of the Patient
         """
-        return '{patient} {location}'.format(
+        return '{patient} ({site_code}: {mrn})'.format(
             patient=str(self.patient),
-            location=str(self.site),
+            site_code=str(self.site.code),
+            mrn=str(self.mrn),
         )
