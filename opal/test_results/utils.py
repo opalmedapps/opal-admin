@@ -95,4 +95,4 @@ def find_note_date(note_text: str) -> datetime:
         date and time of note creation
     """
     # TODO: implement regex
-    return datetime(1, 1, 1, 19, 36)
+    return datetime(1, 1, 1)
