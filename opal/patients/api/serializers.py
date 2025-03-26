@@ -21,6 +21,7 @@ class PatientSerializer(DynamicFieldsSerializer):
     class Meta:
         model = Patient
         fields = [
+            'uuid',
             'legacy_id',
             'first_name',
             'last_name',
@@ -29,7 +30,8 @@ class PatientSerializer(DynamicFieldsSerializer):
             'data_access',
             'sex',
             'ramq',
-            'uuid',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
 
 
