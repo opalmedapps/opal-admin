@@ -108,7 +108,11 @@ class LegacyAppointment(models.Model):
     scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
     appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
     last_updated = models.DateTimeField(db_column='LastUpdated')
-    source_database_ser_num = models.ForeignKey(LegacySourceDatabase, on_delete=models.CASCADE)
+    source_database_ser_num = models.ForeignKey(
+        LegacySourceDatabase,
+        on_delete=models.CASCADE,
+        db_column='SourceDatabaseSerNum',
+    )
 
     objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
@@ -342,6 +346,7 @@ class LegacyHospitalMap(models.Model):
 class LegacyMasterSourceAlias(models.Model):
     """MasterSourceAlias from the legacy database OpalDB."""
 
+    id = models.AutoField(primary_key=True, db_column='ID')  # noqa: A003
     external_id = models.CharField(db_column='externalId', max_length=512)
     code = models.CharField(db_column='code', max_length=128)
     description = models.CharField(db_column='description', max_length=128)
@@ -356,7 +361,11 @@ class LegacyDiagnosis(models.Model):
 
     diagnosis_ser_num = models.AutoField(primary_key=True)
     patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    source_database_ser_num = models.ForeignKey(LegacySourceDatabase, on_delete=models.CASCADE)
+    source_database_ser_num = models.ForeignKey(
+        LegacySourceDatabase,
+        on_delete=models.CASCADE,
+        db_column='SourceDatabaseSerNum',
+    )
     diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
     diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=50)
     last_updated = models.DateTimeField(db_column='LastUpdated')
@@ -401,12 +410,16 @@ class LegacyDiagnosisCode(models.Model):
 class LegacyTestResult(models.Model):
     """TestResult from the legacy database OpalDB."""
 
-    test_result_ser_num = models.IntegerField(db_column='TestResultSerNum', primary_key=True)
+    test_result_ser_num = models.AutoField(db_column='TestResultSerNum', primary_key=True)
     test_result_group_ser_num = models.IntegerField(db_column='TestResultGroupSerNum')
     test_result_control_ser_num = models.IntegerField(db_column='TestResultControlSerNum')
     test_result_expression_ser_num = models.IntegerField(db_column='TestResultExpressionSerNum')
     patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    source_database_ser_num = models.ForeignKey(LegacySourceDatabase, on_delete=models.CASCADE)
+    source_database_ser_num = models.ForeignKey(
+        LegacySourceDatabase,
+        on_delete=models.CASCADE,
+        db_column='SourceDatabaseSerNum',
+    )
     test_result_aria_ser = models.CharField(db_column='TestResultAriaSer', max_length=100)
     component_name = models.CharField(db_column='ComponentName', max_length=30)
     fac_component_name = models.CharField(db_column='FacComponentName', max_length=30)
@@ -431,14 +444,18 @@ class LegacyTestResult(models.Model):
 class LegacyTestResultControl(models.Model):
     """LegacyTestResultControl from the legacy database OpalDB."""
 
-    test_result_control_ser_num = models.IntegerField(primary_key=True, db_column='TestResultControlSerNum')
+    test_result_control_ser_num = models.AutoField(primary_key=True, db_column='TestResultControlSerNum')
     name_en = models.CharField(max_length=200, db_column='Name_EN')
     name_fr = models.CharField(max_length=200, db_column='Name_FR')
     description_en = models.TextField(db_column='Description_EN')
     description_fr = models.TextField(db_column='Description_FR')
     group_en = models.CharField(max_length=200, db_column='Group_EN')
     group_fr = models.CharField(max_length=200, db_column='Group_FR')
-    source_database_ser_num = models.ForeignKey(LegacySourceDatabase, on_delete=models.CASCADE)
+    source_database_ser_num = models.ForeignKey(
+        LegacySourceDatabase,
+        on_delete=models.CASCADE,
+        db_column='SourceDatabaseSerNum',
+    )
     educational_material_control_ser_num = models.IntegerField(null=True, db_column='EducationalMaterialControlSerNum')
     publish_flag = models.IntegerField(db_column='PublishFlag')
     date_added = models.DateTimeField(db_column='DateAdded')

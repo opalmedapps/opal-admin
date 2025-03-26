@@ -81,7 +81,6 @@ class LegacySourceDatabaseFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacySourceDatabase
 
-    source_database_ser_num = 1
     source_database_name = Faker('word')
     enabled = True
 
@@ -92,7 +91,7 @@ class LegacyAliasExpressionFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyAliasExpression
 
-    aliasexpressionsernum = 7399
+    aliasexpressionsernum = Sequence(lambda number: number + 1)
     aliassernum = SubFactory(LegacyAliasFactory)
     master_source_alias_id = SubFactory(LegacyMasterSourceAliasFactory)
     description = Faker('sentence', nb_words=5)
@@ -289,7 +288,6 @@ class LegacyTestResultFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyTestResult
 
-    test_result_ser_num = Sequence(lambda number: number + 1)
     test_result_group_ser_num = Sequence(lambda number: number + 1)
     test_result_control_ser_num = Sequence(lambda number: number + 1)
     test_result_expression_ser_num = Sequence(lambda number: number + 1)
@@ -306,7 +304,7 @@ class LegacyTestResultFactory(DjangoModelFactory):
     test_value = Faker('pyfloat', positive=True)
     test_value_string = Faker('sentence')
     unit_description = Faker('word')
-    valid_entry = Faker('word')
+    valid_entry = 'Y'
     date_added = timezone.make_aware(datetime(2018, 1, 1))
     read_status = Faker('random_int', min=0, max=1)
 
@@ -317,7 +315,6 @@ class LegacyTestResultControlFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyTestResultControl
 
-    test_result_control_ser_num = Sequence(lambda number: number)
     name_en = Faker('sentence', nb_words=5)
     name_fr = Faker('sentence', nb_words=5)
     description_en = Faker('paragraph', nb_sentences=3)
