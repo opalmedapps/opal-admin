@@ -122,7 +122,7 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['answer']
 
 
-class UpdateDeviceSerializer(DynamicFieldsSerializer):
+class DeviceSerializer(DynamicFieldsSerializer):
     """Serializer for devices."""
 
     class Meta:
@@ -143,7 +143,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
-    devices = UpdateDeviceSerializer(
+    devices = DeviceSerializer(
         fields=('type', 'push_token'),
         many=True,
     )
@@ -187,14 +187,13 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
 class PatientCaregiversSerializer(DynamicFieldsSerializer):
     """
-    PatientCaregivers serializer.
+    Serializer for patient and caregiver information.PatientCaregivers serializer.
 
-    The serializer, which inherits from core.api.serializers.DynamicFieldsSerializer,
-    is used to get patient caregover information according to the 'fields' arguments.
+    The serializer provides the name of the patient as well as the patient's caregivers and their devices.
     """
 
     caregivers = CaregiverSerializer(
-        fields=('language', 'phone_number', 'devices'),
+        fields=('language', 'devices'),
         many=True,
     )
 
@@ -208,7 +207,7 @@ class PatientCaregiversSerializer(DynamicFieldsSerializer):
             obj: Object of Patient.
 
         Returns:
-            `Institution_code` of the institution.
+            code of the singleton institution
         """
         return Institution.objects.get().code
 

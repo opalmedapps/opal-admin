@@ -203,11 +203,12 @@ class PatientDemographicView(UpdateAPIView):
 
 
 class PatientCaregiversView(RetrieveAPIView):
-    """Class handling GET requests for paitent caregivers."""
+    """Class handling GET requests for patient caregivers."""
 
     queryset = (
         Patient.objects.prefetch_related(
-            'relationships__caregiver',
+            'relationships__caregiver__user',
+            'relationships__caregiver__devices',
         )
     )
     serializer_class = caregiver_serializers.PatientCaregiversSerializer

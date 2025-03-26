@@ -736,7 +736,6 @@ class TestPatientCaregiversView:
             kwargs={'legacy_id': legacy_id},
         ))
         assert response.status_code == HTTPStatus.OK
-        print(response.json())
         assert response.json() == {
             'first_name': hospital_patient.patient.first_name,
             'last_name': hospital_patient.patient.last_name,
@@ -744,7 +743,6 @@ class TestPatientCaregiversView:
             'caregivers': [
                 {
                     'language': user1.language,
-                    'phone_number': user1.phone_number,
                     'devices': [
                         {
                             'type': device1.type,
@@ -754,7 +752,6 @@ class TestPatientCaregiversView:
                 },
                 {
                     'language': user2.language,
-                    'phone_number': user2.phone_number,
                     'devices': [
                         {
                             'type': device2.type,
