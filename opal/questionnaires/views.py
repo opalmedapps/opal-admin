@@ -151,6 +151,8 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         """
         request_event = RequestEvent.objects.filter(
             url=request.path,
+            user=request.user,
+            method='POST',
         ).order_by('-datetime').first()
         request_event.query_string = {
             'username: {0}'.format(request.user),

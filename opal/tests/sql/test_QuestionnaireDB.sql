@@ -19,7 +19,6 @@
 USE `test_QuestionnaireDB`;
 
 -- Dumping structure for table test_QuestionnaireDB.answer
-DROP TABLE IF EXISTS `answer`;
 CREATE TABLE IF NOT EXISTS `answer` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionnaireId` bigint(20) NOT NULL,
@@ -52,6 +51,8 @@ CREATE TABLE IF NOT EXISTS `answer` (
   CONSTRAINT `fk_answer_questionnaireId_questionnaire_ID` FOREIGN KEY (`questionnaireId`) REFERENCES `questionnaire` (`ID`),
   CONSTRAINT `fk_answer_sectionId_section_ID` FOREIGN KEY (`sectionId`) REFERENCES `section` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=46277 DEFAULT CHARSET=utf8;
+
+DELETE FROM `answer`;
 
 -- Dumping data for table test_QuestionnaireDB.answer: ~264 rows (approximately)
 /*!40000 ALTER TABLE `answer` DISABLE KEYS */;
@@ -323,7 +324,6 @@ INSERT INTO `answer` (`ID`, `questionnaireId`, `sectionId`, `questionId`, `typeI
 /*!40000 ALTER TABLE `answer` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.answerCheckbox
-DROP TABLE IF EXISTS `answerCheckbox`;
 CREATE TABLE IF NOT EXISTS `answerCheckbox` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
@@ -335,8 +335,7 @@ CREATE TABLE IF NOT EXISTS `answerCheckbox` (
   CONSTRAINT `fk_answerCheckbox_value_checkboxOption_ID` FOREIGN KEY (`value`) REFERENCES `checkboxOption` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=2567 DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `answerDate`;
-CREATE TABLE `answerDate` (
+CREATE TABLE IF NOT EXISTS `answerDate` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
   `value` datetime NOT NULL,
@@ -345,8 +344,7 @@ CREATE TABLE `answerDate` (
   CONSTRAINT `fk_answerDate_answerId_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-DROP TABLE IF EXISTS `answerLabel`;
-CREATE TABLE `answerLabel` (
+CREATE TABLE IF NOT EXISTS `answerLabel` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
   `selected` tinyint(4) NOT NULL DEFAULT 1,
@@ -362,7 +360,6 @@ CREATE TABLE `answerLabel` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping structure for table test_QuestionnaireDB.answerQuestionnaire
-DROP TABLE IF EXISTS `answerQuestionnaire`;
 CREATE TABLE IF NOT EXISTS `answerQuestionnaire` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionnaireId` bigint(20) NOT NULL,
@@ -381,6 +378,8 @@ CREATE TABLE IF NOT EXISTS `answerQuestionnaire` (
   CONSTRAINT `fk_answerQuestionnaire_patientId_patient_ID` FOREIGN KEY (`patientId`) REFERENCES `patient` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_answerQuestionnaire_questionnaireId_questionnaire_ID` FOREIGN KEY (`questionnaireId`) REFERENCES `questionnaire` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11658 DEFAULT CHARSET=utf8;
+
+DELETE FROM `answerQuestionnaire`;
 
 -- Dumping data for table test_QuestionnaireDB.answerQuestionnaire: ~373 rows (approximately)
 /*!40000 ALTER TABLE `answerQuestionnaire` DISABLE KEYS */;
@@ -761,7 +760,6 @@ INSERT INTO `answerQuestionnaire` (`ID`, `questionnaireId`, `patientId`, `status
 /*!40000 ALTER TABLE `answerQuestionnaire` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.answerRadioButton
-DROP TABLE IF EXISTS `answerRadioButton`;
 CREATE TABLE IF NOT EXISTS `answerRadioButton` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
@@ -772,6 +770,8 @@ CREATE TABLE IF NOT EXISTS `answerRadioButton` (
   CONSTRAINT `fk_answerRadioButton_answerId_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`),
   CONSTRAINT `fk_¸answerRadioButton_value_radioButtonOption_ID` FOREIGN KEY (`value`) REFERENCES `radioButtonOption` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=31074 DEFAULT CHARSET=utf8;
+
+DELETE FROM `answerRadioButton`;
 
 -- Dumping data for table test_QuestionnaireDB.answerRadioButton: ~1,545 rows (approximately)
 /*!40000 ALTER TABLE `answerRadioButton` DISABLE KEYS */;
@@ -2324,7 +2324,6 @@ INSERT INTO `answerRadioButton` (`ID`, `answerId`, `value`) VALUES
 /*!40000 ALTER TABLE `answerRadioButton` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.answerSection
-DROP TABLE IF EXISTS `answerSection`;
 CREATE TABLE IF NOT EXISTS `answerSection` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerQuestionnaireId` bigint(20) NOT NULL,
@@ -2335,6 +2334,8 @@ CREATE TABLE IF NOT EXISTS `answerSection` (
   CONSTRAINT `fk_answerSection_answerQuestionnaire_ID` FOREIGN KEY (`answerQuestionnaireId`) REFERENCES `answerQuestionnaire` (`ID`),
   CONSTRAINT `fk_answerSection_section_ID` FOREIGN KEY (`sectionId`) REFERENCES `section` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=3979 DEFAULT CHARSET=utf8;
+
+DELETE FROM `answerSection`;
 
 -- Dumping data for table test_QuestionnaireDB.answerSection: ~40 rows (approximately)
 /*!40000 ALTER TABLE `answerSection` DISABLE KEYS */;
@@ -2382,7 +2383,6 @@ INSERT INTO `answerSection` (`ID`, `answerQuestionnaireId`, `sectionId`) VALUES
 /*!40000 ALTER TABLE `answerSection` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.answerSlider
-DROP TABLE IF EXISTS `answerSlider`;
 CREATE TABLE IF NOT EXISTS `answerSlider` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
@@ -2392,6 +2392,7 @@ CREATE TABLE IF NOT EXISTS `answerSlider` (
   CONSTRAINT `fk_answerSlider_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6075 DEFAULT CHARSET=utf8;
 
+DELETE FROM `answerSlider`;
 -- Dumping data for table test_QuestionnaireDB.answerSlider: ~542 rows (approximately)
 /*!40000 ALTER TABLE `answerSlider` DISABLE KEYS */;
 INSERT INTO `answerSlider` (`ID`, `answerId`, `value`) VALUES
@@ -2940,7 +2941,6 @@ INSERT INTO `answerSlider` (`ID`, `answerId`, `value`) VALUES
 /*!40000 ALTER TABLE `answerSlider` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.answerTextBox
-DROP TABLE IF EXISTS `answerTextBox`;
 CREATE TABLE IF NOT EXISTS `answerTextBox` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
@@ -2950,6 +2950,7 @@ CREATE TABLE IF NOT EXISTS `answerTextBox` (
   CONSTRAINT `fk_answerTextBox_answerId_answer_ID` FOREIGN KEY (`answerId`) REFERENCES `answer` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5231 DEFAULT CHARSET=utf8;
 
+DELETE FROM `answerTextBox`;
 -- Dumping data for table test_QuestionnaireDB.answerTextBox: ~209 rows (approximately)
 /*!40000 ALTER TABLE `answerTextBox` DISABLE KEYS */;
 INSERT INTO `answerTextBox` (`ID`, `answerId`, `value`) VALUES
@@ -3164,8 +3165,7 @@ INSERT INTO `answerTextBox` (`ID`, `answerId`, `value`) VALUES
 	(5230, 46276, 'test');
 /*!40000 ALTER TABLE `answerTextBox` ENABLE KEYS */;
 
-DROP TABLE IF EXISTS `answerTime`;
-CREATE TABLE `answerTime` (
+CREATE TABLE IF NOT EXISTS `answerTime` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `answerId` bigint(20) NOT NULL,
   `value` time NOT NULL,
@@ -3175,7 +3175,6 @@ CREATE TABLE `answerTime` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping structure for table test_QuestionnaireDB.checkbox
-DROP TABLE IF EXISTS `checkbox`;
 CREATE TABLE IF NOT EXISTS `checkbox` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
@@ -3186,6 +3185,7 @@ CREATE TABLE IF NOT EXISTS `checkbox` (
   CONSTRAINT `fk_checkbox_questionId_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
 
+DELETE FROM `checkbox`;
 -- Dumping data for table test_QuestionnaireDB.checkbox: ~80 rows (approximately)
 /*!40000 ALTER TABLE `checkbox` DISABLE KEYS */;
 INSERT INTO `checkbox` (`ID`, `questionId`, `minAnswer`, `maxAnswer`) VALUES
@@ -3198,7 +3198,6 @@ INSERT INTO `checkbox` (`ID`, `questionId`, `minAnswer`, `maxAnswer`) VALUES
 /*!40000 ALTER TABLE `checkbox` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.checkboxOption
-DROP TABLE IF EXISTS `checkboxOption`;
 CREATE TABLE IF NOT EXISTS `checkboxOption` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `parentTableId` bigint(20) NOT NULL,
@@ -3212,6 +3211,8 @@ CREATE TABLE IF NOT EXISTS `checkboxOption` (
   CONSTRAINT `fk_checkboxOption_parentTableId_checkBox_ID` FOREIGN KEY (`parentTableId`) REFERENCES `checkbox` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=730 DEFAULT CHARSET=utf8;
 
+
+DELETE FROM `checkboxOption`;
 -- Dumping data for table test_QuestionnaireDB.checkboxOption: ~725 rows (approximately)
 /*!40000 ALTER TABLE `checkboxOption` DISABLE KEYS */;
 INSERT INTO `checkboxOption` (`ID`, `parentTableId`, `order`, `description`, `specialAction`) VALUES
@@ -3943,13 +3944,13 @@ INSERT INTO `checkboxOption` (`ID`, `parentTableId`, `order`, `description`, `sp
 /*!40000 ALTER TABLE `checkboxOption` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.definitionTable
-DROP TABLE IF EXISTS `definitionTable`;
 CREATE TABLE IF NOT EXISTS `definitionTable` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8;
 
+DELETE FROM `definitionTable`;
 -- Dumping data for table test_QuestionnaireDB.definitionTable: ~54 rows (approximately)
 /*!40000 ALTER TABLE `definitionTable` DISABLE KEYS */;
 INSERT INTO `definitionTable` (`ID`, `name`) VALUES
@@ -4010,7 +4011,6 @@ INSERT INTO `definitionTable` (`ID`, `name`) VALUES
 /*!40000 ALTER TABLE `definitionTable` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.dictionary
-DROP TABLE IF EXISTS `dictionary`;
 CREATE TABLE IF NOT EXISTS `dictionary` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `tableId` bigint(20) NOT NULL,
@@ -4029,6 +4029,7 @@ CREATE TABLE IF NOT EXISTS `dictionary` (
   CONSTRAINT `fk_dictionary_tableId_definitionTable_ID` FOREIGN KEY (`tableId`) REFERENCES `definitionTable` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=24108 DEFAULT CHARSET=utf8;
 
+DELETE FROM `dictionary`;
 -- Dumping data for table test_QuestionnaireDB.dictionary: ~10,230 rows (approximately)
 /*!40000 ALTER TABLE `dictionary` DISABLE KEYS */;
 INSERT INTO `dictionary` (`ID`, `tableId`, `languageId`, `contentId`, `content`, `deleted`, `creationDate`, `lastUpdated`) VALUES
@@ -4293,8 +4294,7 @@ BEGIN
 	Return wsReturn;
 END;
 
-DROP TABLE IF EXISTS `label`;
-CREATE TABLE `label` (
+CREATE TABLE IF NOT EXISTS `label` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
   `displayIntensity` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0 = patient cannot select intensity, 1 = patient can select intensity',
@@ -4304,8 +4304,7 @@ CREATE TABLE `label` (
   CONSTRAINT `fk_label_questionId_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-DROP TABLE IF EXISTS `labelOption`;
-CREATE TABLE `labelOption` (
+CREATE TABLE IF NOT EXISTS `labelOption` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `parentTableId` bigint(20) NOT NULL,
   `description` bigint(20) NOT NULL,
@@ -4323,7 +4322,6 @@ CREATE TABLE `labelOption` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- Dumping structure for table test_QuestionnaireDB.language
-DROP TABLE IF EXISTS `language`;
 CREATE TABLE IF NOT EXISTS `language` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `isoLang` varchar(2) NOT NULL,
@@ -4340,6 +4338,8 @@ CREATE TABLE IF NOT EXISTS `language` (
   CONSTRAINT `fk_language_name_dictionary_ID` FOREIGN KEY (`name`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
+
+DELETE FROM `language`;
 -- Dumping data for table test_QuestionnaireDB.language: ~2 rows (approximately)
 /*!40000 ALTER TABLE `language` DISABLE KEYS */;
 INSERT INTO `language` (`ID`, `isoLang`, `name`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`) VALUES
@@ -4348,7 +4348,6 @@ INSERT INTO `language` (`ID`, `isoLang`, `name`, `deleted`, `deletedBy`, `creati
 /*!40000 ALTER TABLE `language` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.legacyType
-DROP TABLE IF EXISTS `legacyType`;
 CREATE TABLE IF NOT EXISTS `legacyType` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `legacyName` varchar(255) NOT NULL,
@@ -4360,6 +4359,7 @@ CREATE TABLE IF NOT EXISTS `legacyType` (
   CONSTRAINT `fk_legacyType_typeId_type_ID` FOREIGN KEY (`typeId`) REFERENCES `type` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COMMENT='This table is a direct replication from the legacy table QuestionType in questionnaireDB. It is required for the time of the migration. When the migration will be over and the triggers will stop, this table needs to be deleted.';
 
+DELETE FROM `legacyType`;
 -- Dumping data for table test_QuestionnaireDB.legacyType: ~9 rows (approximately)
 /*!40000 ALTER TABLE `legacyType` DISABLE KEYS */;
 INSERT INTO `legacyType` (`ID`, `legacyName`, `legacyTableName`, `typeId`, `default`) VALUES
@@ -4375,7 +4375,6 @@ INSERT INTO `legacyType` (`ID`, `legacyName`, `legacyTableName`, `typeId`, `defa
 /*!40000 ALTER TABLE `legacyType` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.library
-DROP TABLE IF EXISTS `library`;
 CREATE TABLE IF NOT EXISTS `library` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `OAUserId` bigint(20) NOT NULL DEFAULT -1,
@@ -4395,6 +4394,7 @@ CREATE TABLE IF NOT EXISTS `library` (
   CONSTRAINT `fk_library_name_dictionary_ID` FOREIGN KEY (`name`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8;
 
+DELETE FROM `library`;
 -- Dumping data for table test_QuestionnaireDB.library: ~84 rows (approximately)
 /*!40000 ALTER TABLE `library` DISABLE KEYS */;
 INSERT INTO `library` (`ID`, `OAUserId`, `name`, `order`, `private`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`) VALUES
@@ -4485,7 +4485,6 @@ INSERT INTO `library` (`ID`, `OAUserId`, `name`, `order`, `private`, `deleted`, 
 /*!40000 ALTER TABLE `library` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.patient
-DROP TABLE IF EXISTS `patient`;
 CREATE TABLE IF NOT EXISTS `patient` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `hospitalId` bigint(20) NOT NULL,
@@ -4502,6 +4501,7 @@ CREATE TABLE IF NOT EXISTS `patient` (
   KEY `idx_patient_externalId` (`externalId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
+DELETE FROM `patient`;
 -- Dumping data for table test_QuestionnaireDB.patient: ~0 rows (approximately)
 /*!40000 ALTER TABLE `patient` DISABLE KEYS */;
 INSERT INTO `patient` (`ID`, `hospitalId`, `externalId`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`) VALUES
@@ -4509,7 +4509,6 @@ INSERT INTO `patient` (`ID`, `hospitalId`, `externalId`, `deleted`, `deletedBy`,
 /*!40000 ALTER TABLE `patient` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.purpose
-DROP TABLE IF EXISTS `purpose`;
 CREATE TABLE IF NOT EXISTS `purpose` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `title` bigint(20) NOT NULL,
@@ -4521,6 +4520,7 @@ CREATE TABLE IF NOT EXISTS `purpose` (
   CONSTRAINT `fk_purpose_title_dictionary_contentId` FOREIGN KEY (`title`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
+DELETE FROM `purpose`;
 -- Dumping data for table test_QuestionnaireDB.purpose: ~6 rows (approximately)
 /*!40000 ALTER TABLE `purpose` DISABLE KEYS */;
 INSERT INTO `purpose` (`ID`, `title`, `description`) VALUES
@@ -4533,7 +4533,6 @@ INSERT INTO `purpose` (`ID`, `title`, `description`) VALUES
 /*!40000 ALTER TABLE `purpose` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.question
-DROP TABLE IF EXISTS `question`;
 CREATE TABLE IF NOT EXISTS `question` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `OAUserId` bigint(20) NOT NULL DEFAULT -1,
@@ -4570,6 +4569,7 @@ CREATE TABLE IF NOT EXISTS `question` (
   CONSTRAINT `fk_question_typeId_type_ID` FOREIGN KEY (`typeId`) REFERENCES `type` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=1940 DEFAULT CHARSET=utf8;
 
+DELETE FROM `question`;
 -- Dumping data for table test_QuestionnaireDB.question: ~1,121 rows (approximately)
 /*!40000 ALTER TABLE `question` DISABLE KEYS */;
 INSERT INTO `question` (`ID`, `OAUserId`, `display`, `definition`, `question`, `typeId`, `version`, `parentId`, `polarity`, `private`, `final`, `optionalFeedback`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`, `legacyTypeId`) VALUES
@@ -5696,7 +5696,6 @@ INSERT INTO `question` (`ID`, `OAUserId`, `display`, `definition`, `question`, `
 /*!40000 ALTER TABLE `question` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.questionnaire
-DROP TABLE IF EXISTS `questionnaire`;
 CREATE TABLE IF NOT EXISTS `questionnaire` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `OAUserId` bigint(20) NOT NULL DEFAULT -1,
@@ -5739,6 +5738,7 @@ CREATE TABLE IF NOT EXISTS `questionnaire` (
   CONSTRAINT `fk_questionnaire_title_dictionary_contentId` FOREIGN KEY (`title`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8;
 
+DELETE FROM `questionnaire`;
 -- Dumping data for table test_QuestionnaireDB.questionnaire: ~176 rows (approximately)
 /*!40000 ALTER TABLE `questionnaire` DISABLE KEYS */;
 INSERT INTO `questionnaire` (`ID`, `OAUserId`, `purposeId`, `respondentId`, `title`, `nickname`, `category`, `description`, `instruction`, `final`, `version`, `parentId`, `private`, `optionalFeedback`, `visualization`, `logo`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`, `legacyName`) VALUES
@@ -5921,7 +5921,6 @@ INSERT INTO `questionnaire` (`ID`, `OAUserId`, `purposeId`, `respondentId`, `tit
 /*!40000 ALTER TABLE `questionnaire` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.questionSection
-DROP TABLE IF EXISTS `questionSection`;
 CREATE TABLE IF NOT EXISTS `questionSection` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
@@ -5936,6 +5935,7 @@ CREATE TABLE IF NOT EXISTS `questionSection` (
   CONSTRAINT `fk_questionSection_sectionId_section_ID` FOREIGN KEY (`sectionId`) REFERENCES `section` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2651 DEFAULT CHARSET=utf8;
 
+DELETE FROM `questionSection`;
 -- Dumping data for table test_QuestionnaireDB.questionSection: ~5 rows (approximately)
 /*!40000 ALTER TABLE `questionSection` DISABLE KEYS */;
 INSERT INTO `questionSection` (`ID`, `questionId`, `sectionId`, `order`, `orientation`, `optional`) VALUES
@@ -5947,7 +5947,6 @@ INSERT INTO `questionSection` (`ID`, `questionId`, `sectionId`, `order`, `orient
 /*!40000 ALTER TABLE `questionSection` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.radioButton
-DROP TABLE IF EXISTS `radioButton`;
 CREATE TABLE IF NOT EXISTS `radioButton` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
@@ -5956,6 +5955,7 @@ CREATE TABLE IF NOT EXISTS `radioButton` (
   CONSTRAINT `fk_radioButton_questionId_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=784 DEFAULT CHARSET=utf8;
 
+DELETE FROM `radioButton`;
 -- Dumping data for table test_QuestionnaireDB.radioButton: ~784 rows (approximately)
 /*!40000 ALTER TABLE `radioButton` DISABLE KEYS */;
 INSERT INTO `radioButton` (`ID`, `questionId`) VALUES
@@ -6745,7 +6745,6 @@ INSERT INTO `radioButton` (`ID`, `questionId`) VALUES
 /*!40000 ALTER TABLE `radioButton` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.radioButtonOption
-DROP TABLE IF EXISTS `radioButtonOption`;
 CREATE TABLE IF NOT EXISTS `radioButtonOption` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `parentTableId` bigint(20) NOT NULL,
@@ -6758,6 +6757,7 @@ CREATE TABLE IF NOT EXISTS `radioButtonOption` (
   CONSTRAINT `fk_radioButtonOption_parentTableId_radioButton_ID` FOREIGN KEY (`parentTableId`) REFERENCES `radioButton` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3764 DEFAULT CHARSET=utf8;
 
+DELETE FROM `radioButtonOption`;
 -- Dumping data for table test_QuestionnaireDB.radioButtonOption: ~3,754 rows (approximately)
 /*!40000 ALTER TABLE `radioButtonOption` DISABLE KEYS */;
 INSERT INTO `radioButtonOption` (`ID`, `parentTableId`, `description`, `order`) VALUES
@@ -10517,7 +10517,6 @@ INSERT INTO `radioButtonOption` (`ID`, `parentTableId`, `description`, `order`) 
 /*!40000 ALTER TABLE `radioButtonOption` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.respondent
-DROP TABLE IF EXISTS `respondent`;
 CREATE TABLE IF NOT EXISTS `respondent` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `title` bigint(20) NOT NULL,
@@ -10529,6 +10528,7 @@ CREATE TABLE IF NOT EXISTS `respondent` (
   CONSTRAINT `fk_respondent_title_dictionary_contentId` FOREIGN KEY (`title`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
+DELETE FROM `respondent`;
 -- Dumping data for table test_QuestionnaireDB.respondent: ~5 rows (approximately)
 /*!40000 ALTER TABLE `respondent` DISABLE KEYS */;
 INSERT INTO `respondent` (`ID`, `title`, `description`) VALUES
@@ -10834,7 +10834,6 @@ END;
 
 
 -- Dumping structure for table test_QuestionnaireDB.section
-DROP TABLE IF EXISTS `section`;
 CREATE TABLE IF NOT EXISTS `section` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionnaireId` bigint(20) NOT NULL,
@@ -10857,6 +10856,7 @@ CREATE TABLE IF NOT EXISTS `section` (
   CONSTRAINT `fk_section_title_dictionary_contentId` FOREIGN KEY (`title`) REFERENCES `dictionary` (`contentId`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=utf8;
 
+DELETE FROM `section`;
 -- Dumping data for table test_QuestionnaireDB.section: ~3 rows (approximately)
 /*!40000 ALTER TABLE `section` DISABLE KEYS */;
 INSERT INTO `section` (`ID`, `questionnaireId`, `title`, `instruction`, `order`, `deleted`, `deletedBy`, `creationDate`, `createdBy`, `lastUpdated`, `updatedBy`) VALUES
@@ -10866,7 +10866,6 @@ INSERT INTO `section` (`ID`, `questionnaireId`, `title`, `instruction`, `order`,
 /*!40000 ALTER TABLE `section` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.slider
-DROP TABLE IF EXISTS `slider`;
 CREATE TABLE IF NOT EXISTS `slider` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
@@ -10884,6 +10883,7 @@ CREATE TABLE IF NOT EXISTS `slider` (
   CONSTRAINT `fk_slider_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8;
 
+DELETE FROM `slider`;
 -- Dumping data for table test_QuestionnaireDB.slider: ~160 rows (approximately)
 /*!40000 ALTER TABLE `slider` DISABLE KEYS */;
 INSERT INTO `slider` (`ID`, `questionId`, `minValue`, `maxValue`, `minCaption`, `maxCaption`, `increment`) VALUES
@@ -11050,7 +11050,6 @@ INSERT INTO `slider` (`ID`, `questionId`, `minValue`, `maxValue`, `minCaption`, 
 /*!40000 ALTER TABLE `slider` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.textBox
-DROP TABLE IF EXISTS `textBox`;
 CREATE TABLE IF NOT EXISTS `textBox` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `questionId` bigint(20) NOT NULL,
@@ -11059,6 +11058,7 @@ CREATE TABLE IF NOT EXISTS `textBox` (
   CONSTRAINT `fk_textBox_questionId_question_ID` FOREIGN KEY (`questionId`) REFERENCES `question` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8;
 
+DELETE FROM `textBox`;
 -- Dumping data for table test_QuestionnaireDB.textBox: ~97 rows (approximately)
 /*!40000 ALTER TABLE `textBox` DISABLE KEYS */;
 INSERT INTO `textBox` (`ID`, `questionId`) VALUES
@@ -11162,7 +11162,6 @@ INSERT INTO `textBox` (`ID`, `questionId`) VALUES
 /*!40000 ALTER TABLE `textBox` ENABLE KEYS */;
 
 -- Dumping structure for table test_QuestionnaireDB.type
-DROP TABLE IF EXISTS `type`;
 CREATE TABLE IF NOT EXISTS `type` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `description` bigint(20) NOT NULL,
@@ -11183,6 +11182,7 @@ CREATE TABLE IF NOT EXISTS `type` (
   CONSTRAINT `fk_type_templateTableId_definitionTable_ID` FOREIGN KEY (`templateTableId`) REFERENCES `definitionTable` (`ID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
+DELETE FROM `type`;
 -- Dumping data for table test_QuestionnaireDB.type: ~7 rows (approximately)
 /*!40000 ALTER TABLE `type` DISABLE KEYS */;
 INSERT INTO `type` (`ID`, `description`, `tableId`, `subTableId`, `templateTableId`, `templateSubTableId`) VALUES
