@@ -28,7 +28,7 @@ def test_get_appointment_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'appointment_ser_num',
+        'appointment_id',
         'date_created',
         'source_db_name',
         'source_db_alias_code',
@@ -60,7 +60,7 @@ def test_get_demographics_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'patient_ser_num',
+        'patient_id',
         'opal_registration_date',
         'patient_sex',
         'patient_dob',
@@ -69,7 +69,7 @@ def test_get_demographics_databank_data() -> None:
         'last_updated',
     }
     assert databank_data[0]['last_updated'] > last_cron_sync_time
-    assert databank_data[0]['patient_ser_num'] == consenting_patient.patientsernum
+    assert databank_data[0]['patient_id'] == consenting_patient.patientsernum
     assert databank_data.count() == 1
     assert not (set(expected_returned_fields) - set(databank_data[0].keys()))
 
@@ -92,10 +92,10 @@ def test_get_diagnosis_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'diagnosis_ser_num',
+        'diagnosis_id',
         'date_created',
         'source_system',
-        'source_system_ser',
+        'source_system_id',
         'source_system_code',
         'source_system_code_description',
         'stage',
@@ -113,11 +113,13 @@ def test_get_labs_databank_data() -> None:
     """Ensure labs data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
+    non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
     # Prepare labs data
     factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
     factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
     factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
+    factories.LegacyTestResultFactory(patient_ser_num=non_consenting_patient)
     # Fetch the data
     databank_data = LegacyTestResult.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
@@ -126,7 +128,7 @@ def test_get_labs_databank_data() -> None:
 
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
-        'test_result_ser_num',
+        'test_result_id',
         'test_component_date',
         'test_group_name',
         'test_component_name',
@@ -139,7 +141,7 @@ def test_get_labs_databank_data() -> None:
         'approved_flag',
         'valid_flag',
         'source_system',
-        'source_system_ser',
+        'source_system_id',
         'last_updated',
     }
     for lab in databank_data:
