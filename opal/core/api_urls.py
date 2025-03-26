@@ -66,6 +66,8 @@ urlpatterns = [
         name='caregivers-securityquestions-detail',
     ),
     path(
+        # Security: this endpoint exposes security answers, and should only be called by the listener
+        # TODO: Use permissions (e.g. group permissions) to restrict access of this endpoint only to the listener
         'caregivers/<str:username>/security-questions/random/',
         SecurityAnswerViewSet.as_view({'get': 'random'}),
         name='caregivers-securityquestions-random',

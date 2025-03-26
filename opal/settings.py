@@ -475,3 +475,8 @@ ORMS_USER_GROUP = 'orms'
 
 # Institution code for registration
 INSTITUTION_CODE = env.str('INSTITUTION_CODE')
+
+# Sending SMS message settings
+TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
+SMS_FROM = env.str('SMS_FROM')

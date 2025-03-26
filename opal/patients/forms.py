@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any
+from typing import Any, Optional
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -18,9 +18,8 @@ from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.users.models import Caregiver, User
 
-from . import constants
+from . import constants, utils
 from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
-from .utils import search_valid_relationship_types
 
 
 class SelectSiteForm(forms.Form):
@@ -181,11 +180,22 @@ class RequestorDetailsForm(forms.Form):
         initial=False,
     )
 
-    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        ramq: Optional[str],
+        mrn: str,
+        site: str,
+        date_of_birth: date,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
-        Initialize the layout for card type select box and card number input box.
+        Initialize the available choice of valid relationship types.
 
         Args:
+            ramq: patient's RAMQ
+            mrn: patient's MRN
+            site: patient's site code
             date_of_birth: patient's date of birth
             args: additional arguments
             kwargs: additional keyword arguments
@@ -205,8 +215,14 @@ class RequestorDetailsForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-        available_choices = search_valid_relationship_types(date_of_birth)
-        self.fields['relationship_type'].widget.available_choices = available_choices
+        patient = utils.get_patient_by_ramq_or_mrn(ramq, mrn, site)
+        if patient:
+            available_choices = utils.valid_relationship_types(patient).values_list('id', flat=True)
+        else:
+            available_choices = utils.search_relationship_types_by_patient_age(
+                date_of_birth,
+            ).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = list(available_choices)
 
     def clean(self) -> None:
         """Validate if relationship type requested requires a form."""
@@ -482,8 +498,9 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=_('Last Name'),
     )
     type = forms.ModelChoiceField(  # noqa: A003
-        queryset=RelationshipType.objects.all(),
+        queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
+        empty_label=None,
     )
     status = forms.ChoiceField(
         label=_('Status'),
@@ -515,23 +532,14 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'status',
             'reason',
             'cancel_url',
+            'type',
         )
 
-    def __init__(   # noqa: WPS211
-        self,
-        date_of_birth: date,
-        relationship_type: RelationshipType,
-        request_date: date,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Set the layout.
 
         Args:
-            request_date: the date when the requestor submit the access request
-            date_of_birth: patient's date of birth
-            relationship_type: user selection for relationship type
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
@@ -542,19 +550,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             )
         ]
         self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
-            'min': date_of_birth,
+            'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
-                date_of_birth,
-                relationship_type,
+                self.instance.patient.date_of_birth,
+                self.instance.type,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
-            'min': date_of_birth + timedelta(days=1),
+            'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
-                date_of_birth,
-                relationship_type,
+                self.instance.patient.date_of_birth,
+                self.instance.type,
             ),
         })
+        available_choices = utils.valid_relationship_types(self.instance.patient)
+        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         # setting the value of caregiver first and last names
         self.fields['last_name'].initial = self.instance.caregiver.user.last_name

@@ -391,6 +391,10 @@ msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
+msgid "Can perform registration"
+msgstr "Peut effectuer l'enregistrement"
+
+#: opal/patients/models.py
 msgid "Relationships"
 msgstr "Relations"
 
