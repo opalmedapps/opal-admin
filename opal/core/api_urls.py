@@ -9,9 +9,12 @@ from django.urls.conf import include
 
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from opal.caregivers.api.views import GetRegistrationEncryptionInfoView
+from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView
+from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
+from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_home import AppHomeView
+from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportCreateAPIView
 
 # show APIRootView only in debug mode
@@ -28,8 +31,16 @@ router.register('sites', settings_views.SiteViewSet, basename='sites')
 app_name = 'core'
 
 urlpatterns = [
-    path('auth/', include('dj_rest_auth.urls')),
+    path('app/chart/<int:legacy_id>/', AppChartView.as_view(), name='app-chart'),
     path('app/home/', AppHomeView.as_view(), name='app-home'),
+    path('auth/', include('dj_rest_auth.urls')),
+    path('caregivers/patients/', GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
+    path('languages/', core_views.LanguagesView.as_view(), name='languages'),
+    path(
+        'patients/legacy/<int:legacy_id>/check_permissions/',
+        CaregiverPermissionsView.as_view(),
+        name='caregiver-permissions',
+    ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
     path('questionnaires/reviewed/', QuestionnairesReportCreateAPIView.as_view(), name='questionnaires-reviewed'),
     path('', include(router.urls)),

@@ -55,3 +55,13 @@ class QuestionnaireReportRequestSerializer(serializers.Serializer):
         if not HospitalPatient.objects.filter(site__name=value).exists():
             raise serializers.ValidationError('Provided MRN does not exist.')
         return value
+
+
+class UnreadCountSerializer(serializers.Serializer):
+    """Serializer a dictionary having several key-value pairs."""
+
+    unread_appointment_count = serializers.IntegerField()
+    unread_document_count = serializers.IntegerField()
+    unread_txteammessage_count = serializers.IntegerField()
+    unread_educationalmaterial_count = serializers.IntegerField()
+    unread_questionnaire_count = serializers.IntegerField()

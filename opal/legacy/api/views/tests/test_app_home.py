@@ -7,10 +7,9 @@ import pytest
 from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
+from opal.legacy import factories, models
+from opal.legacy.api.views.app_home import AppHomeView
 from opal.users.models import User
-
-from .. import factories, models
-from ..api.views.app_home import AppHomeView
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -52,7 +51,7 @@ class TestHomeAppView:
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient, readstatus=1)
-        notifications = self.class_instance.get_unread_notification_count(patient.patientsernum)
+        notifications = models.LegacyNotification.objects.get_unread_queryset(patient.patientsernum).count()
         assert notifications == 2
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
@@ -75,7 +74,7 @@ class TestHomeAppView:
         # mock the current timezone to simulate the UTC time already on the next day
         current_time = datetime(2022, 6, 2, 2, 0, tzinfo=timezone.utc)
         mocker.patch.object(timezone, 'now', return_value=current_time)
-        daily_appointments = self.class_instance.get_daily_appointments(patient.patientsernum)
+        daily_appointments = models.LegacyAppointment.objects.get_daily_appointments(patient.patientsernum)
 
         assert daily_appointments.count() == 1
         assert daily_appointments[0] == appointment

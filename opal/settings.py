@@ -264,7 +264,7 @@ STATICFILES_FINDERS = [
 # Serving files uploaded by a user during development
 # https://docs.djangoproject.com/en/4.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development
 #
-# For the prod deployemnt, follow the guides:
+# For the prod deployment, follow the guides:
 # https://docs.djangoproject.com/en/4.0/howto/static-files/deployment/#how-to-deploy-static-files
 # https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Deployment
 MEDIA_URL = '/media/'
@@ -328,7 +328,6 @@ LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').g
 
 # Opal Integration Engine (OIE)
 OIE_HOST = env.url('OIE_HOST').geturl()
-OIE_DEFAULT_PORT = env.int('OIE_DEFAULT_PORT')
 # OIE Credentials
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')

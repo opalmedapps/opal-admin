@@ -3,7 +3,6 @@ from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pytest
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
@@ -21,8 +20,6 @@ PATIENT_SER_NUM = 51
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
 reports_service = ReportService()
-
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def _create_generated_report_data(status: str) -> dict[str, dict[str, str]]:

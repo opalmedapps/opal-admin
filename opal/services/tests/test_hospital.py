@@ -8,10 +8,10 @@ import requests
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
-from opal.services.hospital import OIEReportExportData, OIEService
-from opal.services.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.hospital_error import OIEErrorHandler
-from opal.services.hospital_validation import OIEValidator
+from opal.services.hospital.hospital import OIEReportExportData, OIEService
+from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
+from opal.services.hospital.hospital_error import OIEErrorHandler
+from opal.services.hospital.hospital_validation import OIEValidator
 
 ENCODING = 'utf-8'
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
@@ -62,14 +62,14 @@ def _mock_requests_post(
 # __init__
 
 def test_init_types() -> None:
-    """Ensuer init function creates helper services of certain types."""
+    """Ensure init function creates helper services of certain types."""
     assert isinstance(oie_service.communication_manager, OIEHTTPCommunicationManager)
     assert isinstance(oie_service.error_handler, OIEErrorHandler)
     assert isinstance(oie_service.validator, OIEValidator)
 
 
 def test_init_not_none() -> None:
-    """Ensuer init function creates helper services that are not `None`."""
+    """Ensure init function creates helper services that are not `None`."""
     assert oie_service.communication_manager is not None
     assert oie_service.error_handler is not None
     assert oie_service.validator is not None

@@ -144,9 +144,8 @@ def test_submit_invalid_port(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, error_response)
 
     response_data = communication_manager.submit(
-        endpoint='/test/endpoint',
+        endpoint=':-1/test/endpoint',
         payload={},
-        port=-1,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -162,7 +161,7 @@ def test_submit_invalid_metadata(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, error_response)
 
     response_data = communication_manager.submit(
-        endpoint='/test/endpoint',
+        endpoint='6682/test/endpoint',
         payload={},
         metadata=123,  # type: ignore
     )
@@ -263,8 +262,7 @@ def test_fetch_invalid_port(mocker: MockerFixture) -> None:
     mock_get = _mock_requests_get(mocker, error_response)
 
     response_data = communication_manager.fetch(
-        endpoint='/test/endpoint',
-        port=-1,
+        endpoint=':-1/test/endpoint',
     )
 
     assert mock_get.return_value.status_code == HTTPStatus.OK

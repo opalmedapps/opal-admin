@@ -52,7 +52,7 @@ class OIEService:
         }
 
         response_data = self.communication_manager.submit(
-            endpoint='/reports/post',
+            endpoint=':6682/reports/post',
             payload=payload,
         )
 

@@ -6,14 +6,14 @@ from typing import Any
 
 from django.utils import timezone
 
-from rest_framework import permissions
-from rest_framework import request as rest_request
-from rest_framework import response, status
+from rest_framework import permissions, response, status
+from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from opal.hospital_settings.models import Institution
 from opal.patients.models import HospitalPatient
-from opal.services import hospital, reports
+from opal.services.hospital.hospital import OIEReportExportData, OIEService
+from opal.services.reports import QuestionnaireReportRequestData, ReportService
 
 from ..serializers import QuestionnaireReportRequestSerializer
 
@@ -26,13 +26,13 @@ class QuestionnairesReportCreateAPIView(APIView):
     # Get an instance of a logger
     logger = logging.getLogger(__name__)
     # OIE service
-    oie = hospital.OIEService()
+    oie = OIEService()
     # Report service
-    report_service = reports.ReportService()
+    report_service = ReportService()
 
     def post(
         self,
-        request: rest_request.Request,
+        request: Request,
         *args: Any,
         **kwargs: Any,
     ) -> response.Response:
@@ -73,7 +73,7 @@ class QuestionnairesReportCreateAPIView(APIView):
 
         # Generate questionnaire report
         encoded_report = self.report_service.generate_questionnaire_report(
-            reports.QuestionnaireReportRequestData(
+            QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 logo_path=Path(Institution.objects.get(pk=1).logo.path),
                 language=request.headers['Accept-Language'],
@@ -87,7 +87,7 @@ class QuestionnairesReportCreateAPIView(APIView):
 
         # Submit report to the OIE
         export_result = self.oie.export_pdf_report(
-            hospital.OIEReportExportData(
+            OIEReportExportData(
                 mrn=serializer.validated_data.get('mrn'),
                 site=serializer.validated_data.get('site_name'),
                 base64_content=encoded_report,

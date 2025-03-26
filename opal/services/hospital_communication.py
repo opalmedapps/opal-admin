@@ -28,7 +28,6 @@ class OIEHTTPCommunicationManager:
         self,
         endpoint: str,
         payload: dict[str, Any],
-        port: int = settings.OIE_DEFAULT_PORT,
         metadata: dict[str, Any] = None,
     ) -> Any:
         """Send data to the OIE by making HTTP POST request.
@@ -36,7 +35,6 @@ class OIEHTTPCommunicationManager:
         Args:
             endpoint (str): communication endpoint exposed by the OIE for communication with it through the network
             payload (dict[str, Any]): data being transmitted to the OIE
-            port (int): network port number exposed by the OIE
             metadata (dict[str, Any]): auxiliary data transmitted to the OIE (e.g., HTTP language header)
 
         Returns:
@@ -48,7 +46,7 @@ class OIEHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.post
             # https://www.w3schools.com/python/ref_requests_post.asp
             response = requests.post(
-                url='{0}:{1}{2}'.format(settings.OIE_HOST, port, endpoint),
+                url='{0}{1}'.format(settings.OIE_HOST, endpoint),
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 headers=metadata,
                 json=json.dumps(payload),
@@ -69,7 +67,6 @@ class OIEHTTPCommunicationManager:
         self,
         endpoint: str,
         params: dict[str, Any] = None,
-        port: int = settings.OIE_DEFAULT_PORT,
         metadata: dict[str, Any] = None,
     ) -> Any:
         """Retrieve data from the OIE by making HTTP GET request.
@@ -77,7 +74,6 @@ class OIEHTTPCommunicationManager:
         Args:
             endpoint (str): communication endpoint exposed by the OIE for communication with it through the network
             params (dict[str, Any]): URL parameters (a.k.a query string)
-            port (int): network port number exposed by the OIE
             metadata (dict[str, Any]): auxiliary data transmitted to the OIE (e.g., HTTP language header)
 
         Returns:
@@ -89,7 +85,7 @@ class OIEHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.get
             # https://www.w3schools.com/python/ref_requests_get.asp
             response = requests.get(
-                url='{0}:{1}{2}'.format(settings.OIE_HOST, port, endpoint),
+                url='{0}{1}'.format(settings.OIE_HOST, endpoint),
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 headers=metadata,
                 params=params,
