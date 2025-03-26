@@ -173,7 +173,7 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
     )
 
 
-class LagacyHospitalIdentifierTypeFactory(DjangoModelFactory):
+class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
     """Hospital_Identifier_Type factory from the legacy database OpalDB."""
 
     class Meta:
@@ -191,6 +191,6 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
 
     patienthospitalidentifierid = 1
     patientsernum = SubFactory(LegacyPatientFactory)
-    hospitalidentifiertypecode = SubFactory(LagacyHospitalIdentifierTypeFactory)
+    hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
     mrn = '9999996'
     isactive = True

@@ -20,7 +20,7 @@ class Command(BaseCommand):
         Return 'None'.
 
         Args:
-            args: non-keyward input arguments.
+            args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
         legacy_patients = LegacyPatient.objects.all()
@@ -49,7 +49,6 @@ class Command(BaseCommand):
                     first_name=legacy_patient.firstname,
                     last_name=legacy_patient.lastname,
                     ramq=legacy_patient.ssn,
-                    phone_number=legacy_patient.telnum,
                 )
                 self.stdout.write(
                     'Imported patients, legacy_id: {patientsernum}'.format(
