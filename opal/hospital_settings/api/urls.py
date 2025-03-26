@@ -18,5 +18,5 @@ router.register('sites', views.SiteViewSet, basename='site')
 
 
 urlpatterns = [
-    path('', include((router.urls, 'api-hospital-settings'))),
+    path('', include((router.urls, 'api'))),
 ]

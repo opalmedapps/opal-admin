@@ -9,6 +9,8 @@ from django.views.generic.base import RedirectView
 
 from . import views
 
+app_name = 'hospital-settings'
+
 urlpatterns = [
     # REST API
     path('api/', include('opal.hospital_settings.api.urls')),

@@ -71,21 +71,21 @@
                                         {{ site.parking_url_fr }}
                                       </td> -->
                                       <td>
-                                        <a href="{% url 'institution-detail' site.institution.id %}">
+                                        <a href="{% url 'hospital-settings:institution-detail' site.institution.id %}">
                                           {{ site.institution }}
                                         </a>
                                       </td>
                                       <td class="project-actions text-right">
                                         <div class="btn-toolbar" role="group">
-                                          <a class="btn btn-primary btn-sm mr-2" href="{% url 'site-detail' site.id %}">
+                                          <a class="btn btn-primary btn-sm mr-2" href="{% url 'hospital-settings:site-detail' site.id %}">
                                               <i class="fas fa-eye"></i>
                                               View
                                           </a>
-                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'site-update' site.id %}">
+                                          <a class="btn btn-info btn-sm mr-2" href="{% url 'hospital-settings:site-update' site.id %}">
                                               <i class="fas fa-pencil-alt"></i>
                                               Edit
                                           </a>
-                                          <a class="btn btn-danger btn-sm mr-2" href="{% url 'site-delete' site.id %}">
+                                          <a class="btn btn-danger btn-sm mr-2" href="{% url 'hospital-settings:site-delete' site.id %}">
                                             Delete
                                           </a>
                                         </div>
