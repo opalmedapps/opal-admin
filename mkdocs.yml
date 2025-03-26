@@ -23,6 +23,7 @@ nav:
       - Legacy DB Setup: database/legacy_db.md
   - REST API:
       - Authentication: authentication.md
+      - Custom Permissions: apps/standard_and_custom_permissions.md
   - Translation: translation.md
   - Changelog: changelog.md
   - Code Reference: reference/
