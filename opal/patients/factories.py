@@ -9,7 +9,7 @@ reference from:
 
 import datetime
 
-from factory import RelatedFactory, Sequence, SubFactory, SelfAttribute
+from factory import RelatedFactory, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile

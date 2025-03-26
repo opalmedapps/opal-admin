@@ -210,7 +210,7 @@ class HospitalPatient(models.Model):
     )
     is_active = models.SmallIntegerField(
         verbose_name=_('Is Active'),
-        default='1'
+        default='1',
     )
 
     class Meta:

@@ -5,6 +5,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    """Create table for HospitalPatient model."""
 
     dependencies = [
         ('hospital_settings', '0005_add_site_direction_url'),

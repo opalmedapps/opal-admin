@@ -9,12 +9,8 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
-from opal.hospital_settings.models import Site
-
 from .. import constants, factories
-from ..models import RelationshipStatus, RelationshipType
-from ..models import Patient
-from ..models import HospitalPatient
+from ..models import HospitalPatient, RelationshipStatus, RelationshipType
 
 pytestmark = pytest.mark.django_db
 
@@ -178,26 +174,23 @@ def test_relationship_status_constraint() -> None:
         relationship.save()
 
 
-"""======================= Test model HospitalPatient =========================="""
-
-
-def test_HospitalPatient_onePatient_oneSite() -> None:
+def test_hospitalpatient_one_patient_one_site() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
-    hospitalPatient = factories.HospitalPatient()
-    hospitalPatient.site = factories.Site(name='Montreal Children''s Hospital')
-    assert str(hospitalPatient) == 'Patient First Name Patient Last Name Montreal Children''s Hospital'
+    hospitalpatient = factories.HospitalPatient()
+    hospitalpatient.site = factories.Site(name="Montreal Children's Hospital")
+    assert str(hospitalpatient) == "Patient First Name Patient Last Name Montreal Children's Hospital"
 
 
-def test_HospitalPatient_onePatient_manySites() -> None:
-    """test one patient has many hospital_patients."""
+def test_hospitalpatient_one_patient_many_sites() -> None:
+    """Test one patient has many hospital_patients."""
     patient = factories.Patient(first_name='aaa', last_name='bbb')
-    site1 = factories.Site(name='Montreal Children''s Hospital')
+    site1 = factories.Site(name="Montreal Children's Hospital")
     site2 = factories.Site(name='Royal Victoria Hospital')
 
     HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
     HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
-    hopitalPatients = Site.objects.all()
-    assert len(hopitalPatients) == 2
+    hospitalpatients = Site.objects.all()
+    assert len(hospitalpatients) == 2
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
