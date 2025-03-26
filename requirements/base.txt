@@ -1,7 +1,7 @@
 # Django
 #
 django==4.1.7
-django-environ==0.9.0  # https://github.com/joke2k/django-environ
+django-environ==0.10.0  # https://github.com/joke2k/django-environ
 django-extensions==3.2.1  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.9  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.14.0  # https://www.django-rest-framework.org/
