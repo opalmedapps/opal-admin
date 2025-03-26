@@ -22,6 +22,13 @@ class DeviceAdmin(admin.ModelAdmin):
     list_filter = ['type', 'modified']
 
 
+class EmailVerificationAdmin(admin.ModelAdmin):
+    """Admin options for the `EmailVerification` model."""
+
+    list_display = ['__str__', 'email', 'is_verified', 'sent_at', 'caregiver']
+    list_filter = ['is_verified', 'sent_at']
+
+
 class RegistrationCodeAdmin(admin.ModelAdmin):
     """Admin options for the `RegistrationCode` model."""
 
@@ -47,7 +54,8 @@ class SecurityQuestionAdmin(TranslationAdmin):
 
 
 admin.site.register(models.CaregiverProfile, CaregiverProfileAdmin)
+admin.site.register(models.Device, DeviceAdmin)
+admin.site.register(models.EmailVerification, EmailVerificationAdmin)
 admin.site.register(models.RegistrationCode, RegistrationCodeAdmin)
 admin.site.register(models.SecurityQuestion, SecurityQuestionAdmin)
 admin.site.register(models.SecurityAnswer, SecurityAnswerAdmin)
-admin.site.register(models.Device, DeviceAdmin)

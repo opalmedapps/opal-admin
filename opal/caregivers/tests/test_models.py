@@ -290,7 +290,7 @@ class TestEmailVerification:
     def test_model_str(self) -> None:
         """The `str` method returns the email verification code and status."""
         email_verification = EmailVerification(email='opal@muhc.mcgill.ca', is_verified=True)
-        assert str(email_verification) == 'Email: opal@muhc.mcgill.ca (Verified: True)'
+        assert str(email_verification) == email_verification.code
 
     def test_factory(self) -> None:
         """Ensure the EmailVerification factory is building properly."""
