@@ -159,7 +159,9 @@ class Patient(models.Model):
         # Get today's date object
         today = date.today()
         # A bool that represents if today's day/month precedes the birth day/month
-        one_or_zero = ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))  # noqa: WPS221
+        one_or_zero = (
+            (today.month, today.day) < (date_of_birth.month, date_of_birth.day)
+        )
         # Calculate the difference in years from the date object's components
         year_difference = today.year - date_of_birth.year
         # The difference in years is not enough.
