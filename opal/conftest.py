@@ -42,8 +42,10 @@ def user_client(client: Client, django_user_model: User) -> Client:
     user = django_user_model.objects.create(username='testuser')
     manage_institution_permission = Permission.objects.get(codename='can_manage_institutions')
     manage_relationship_permission = Permission.objects.get(codename='can_manage_relationships')
+    manage_relationshiptype_permission = Permission.objects.get(codename='can_manage_relationshiptypes')
     user.user_permissions.add(manage_institution_permission)
     user.user_permissions.add(manage_relationship_permission)
+    user.user_permissions.add(manage_relationshiptype_permission)
     client.force_login(user)
 
     return client
