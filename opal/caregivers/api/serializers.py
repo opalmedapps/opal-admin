@@ -200,7 +200,7 @@ class PatientCaregiversSerializer(DynamicFieldsSerializer):
 
     institution_code = serializers.SerializerMethodField()
 
-    def get_institution_code(self, obj: Patient) -> Dict:  # noqa: WPS615
+    def get_institution_code(self, obj: Patient) -> str:  # noqa: WPS615
         """
         Get a single institution code.
 
