@@ -574,7 +574,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
 
         return filterset_kwargs
 
-    def get_context_data(self, **kwargs: Any) -> Any:
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """
         Return the template context for `PendingRelationshipListView` update view.
 
