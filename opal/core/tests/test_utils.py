@@ -33,6 +33,6 @@ def test_random_registration_code_format() -> None:
 
 def test_random_registration_code_is_unique() -> None:
     """Ensure the random registration code is unique."""
-    code1 = generate_random_uuid(10)
-    code2 = generate_random_uuid(10)
+    code1 = generate_random_registration_code('XX', 10)
+    code2 = generate_random_registration_code('XX', 10)
     assert code1 != code2
