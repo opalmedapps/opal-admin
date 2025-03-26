@@ -558,8 +558,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Args:
             cleaned_data: the form's cleaned data, None if not available
         """
-        cleaned_data = self.cleaned_data
-
         # at the beginning (empty form) they are not in the cleaned data
         if 'user_email' in cleaned_data and 'user_phone' in cleaned_data:
             user_email = cleaned_data['user_email']
@@ -640,7 +638,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Args:
             cleaned_data: the form's cleaned data, None if not available
         """
-        cleaned_data = self.cleaned_data
         # at the beginning (empty form) they are not in the cleaned data
         if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
             first_name = cleaned_data['first_name']
@@ -649,16 +646,16 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             existing_relationship = Relationship.objects.filter(
                 caregiver__user__first_name=first_name,
                 caregiver__user__last_name=last_name,
-            ).first()
+                status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
+            ).exists()
 
             if existing_relationship:
                 self.add_error(
                     NON_FIELD_ERRORS,
-                    _('This access request already exists.'),
+                    _('An active relationship with a caregiver with this name already exists.'),
                 )
 
 
-# TODO: move this to the core app
 class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 

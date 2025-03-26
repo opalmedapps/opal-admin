@@ -152,8 +152,8 @@ msgid " and older"
 msgstr " et plus"
 
 #: opal/patients/forms.py
-msgid "This access request already exists."
-msgstr "Cette demande d'accès déjà existe."
+msgid "An active relationship with a caregiver with this name already exists."
+msgstr "Une relation active avec le proche aidant portant ce nom déjà existe."
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
