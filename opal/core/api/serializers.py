@@ -9,6 +9,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
 
     A ModelSerializer that takes an additional `fields` argument that
     controls which fields should be displayed.
+    Reference: https://www.django-rest-framework.org/api-guide/serializers/#example
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
