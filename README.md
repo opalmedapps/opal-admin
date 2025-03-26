@@ -161,7 +161,7 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-!! note
+!!! note
 
 The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
 
