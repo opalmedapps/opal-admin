@@ -36,6 +36,7 @@ def test_update_legacy_user_type() -> None:
 
 
 def test_create_patient() -> None:
+    """The patient is created successfully."""
     legacy_utils.create_patient(
         'Marge',
         'Simpson',
