@@ -802,7 +802,7 @@ def test_accessrequestsearchform_invalid_dateofbirth(mocker: MockerFixture) -> N
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'error',
-            'data': {'message': ['dateOfBirth is invalid.']},
+            'data': {'message': ['Patient Date of Birth is invalid.']},
         },
     )
 
@@ -815,7 +815,7 @@ def test_accessrequestsearchform_invalid_dateofbirth(mocker: MockerFixture) -> N
     assert not form.is_valid()
     assert form.patient is None
     assert len(form.non_field_errors()) == 1
-    assert form.non_field_errors()[0] == 'Patient dateOfBirth is invalid.'
+    assert form.non_field_errors()[0] == 'Patient Date of Birth is invalid.'
 
 
 def test_accessrequestsearchform_invalid_mrn(mocker: MockerFixture) -> None:
