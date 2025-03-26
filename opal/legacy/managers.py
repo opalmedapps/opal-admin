@@ -11,7 +11,6 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 import logging
-from collections import namedtuple
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
@@ -45,17 +44,6 @@ if TYPE_CHECKING:
 _Model = TypeVar('_Model', bound=models.Model)
 
 logger = logging.getLogger(__name__)
-
-ReceivedDataLegacyModels = namedtuple(
-    'ReceivedDataLegacyModels',
-    [
-        'LegacyAppointment',
-        'LegacyDocument',
-        'LegacyEducationalMaterial',
-        'LegacyQuestionnaire',
-        'LegacyPatientTestResult',
-    ],
-)
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
