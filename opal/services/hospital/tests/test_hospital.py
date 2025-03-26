@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from http import HTTPStatus
+from types import MappingProxyType
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -24,7 +25,7 @@ OIE_CREDENTIALS_USER = 'questionnaire'
 OIE_CREDENTIALS = '12345Opal!!'
 OIE_HOST = 'https://localhost'
 
-OIE_PATIENT_DATA = dict({
+OIE_PATIENT_DATA = MappingProxyType({
     'dateOfBirth': '1953-01-01 00:00:00',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
