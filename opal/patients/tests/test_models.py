@@ -376,7 +376,7 @@ def test_relationship_can_update_existing_self() -> None:
     self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(type=self_type)
-
+    relationship.status = RelationshipStatus.CONFIRMED
     relationship.end_date = None  # type: ignore[assignment]
     relationship.full_clean()
 
@@ -388,6 +388,7 @@ def test_relationship_clean_unsaved_instance() -> None:
     patient = factories.Patient()
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
+    relationship.status = RelationshipStatus.CONFIRMED
 
     relationship.full_clean()
 
