@@ -46,22 +46,22 @@ class SelectSiteForm(forms.Form):
         )
 
 
-def _patient_data() -> Any:
+def _patient_data() -> OIEPatientData:
     """
     Return the fake patient data pretended to get from OIE calling.
 
     Returns:
-        patient data in JSON format
+        patient data structure in 'OIEPatientData'
     """
-    return {
-        'dateOfBirth': '2007-01-01 09:20:30',
-        'firstName': 'SANDRA',
-        'lastName': 'TESTMUSEMGHPROD',
-        'sex': 'F',
-        'alias': '',
-        'ramq': 'TESS53510111',
-        'ramqExpiration': '2018-01-31 23:59:59',
-        'mrns': [
+    return OIEPatientData(
+        date_of_birth=datetime.strptime('2007-01-01 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        first_name='SANDRA',
+        last_name='TESTMUSEMGHPROD',
+        sex='F',
+        alias='',
+        ramq='TESS53510111',
+        ramq_expiration=datetime.strptime('2018-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+        mrns=[
             OIEMRNData(
                 site='MGH',
                 mrn='9999993',
@@ -78,7 +78,7 @@ def _patient_data() -> Any:
                 active=True,
             ),
         ],
-    }
+    )
 
 
 def _find_patient_by_mrn_fail(mrn: str, site: str) -> Any:
@@ -114,16 +114,7 @@ def _find_patient_by_mrn_success(mrn: str, site: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': OIEPatientData(
-            date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
-            first_name=_patient_data()['firstName'],
-            last_name=_patient_data()['lastName'],
-            sex=_patient_data()['sex'],
-            alias=_patient_data()['alias'],
-            ramq=_patient_data()['ramq'],
-            ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
-            mrns=_patient_data()['mrns'],
-        ),
+        'data': _patient_data(),
     }
 
 
@@ -139,16 +130,7 @@ def _find_patient_by_ramq(ramq: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': OIEPatientData(
-            date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
-            first_name=_patient_data()['firstName'],
-            last_name=_patient_data()['lastName'],
-            sex=_patient_data()['sex'],
-            alias=_patient_data()['alias'],
-            ramq=_patient_data()['ramq'],
-            ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
-            mrns=_patient_data()['mrns'],
-        ),
+        'data': _patient_data(),
     }
 
 
@@ -348,7 +330,7 @@ class RequestorDetailsForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column('relationship_type', css_class='form-group col-md-3 mb-0'),
+                Column('relationship_type', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row',
             ),
             ButtonHolder(
