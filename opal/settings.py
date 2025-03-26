@@ -61,6 +61,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'opal.hospital_settings',
     'opal.users',
+    'opal.patients',
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
