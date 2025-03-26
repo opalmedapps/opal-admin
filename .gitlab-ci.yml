@@ -296,6 +296,8 @@ django template validation:
 # Try building the documentation site to ensure there are no issues
 build docs:
   stage: Documentation
+  extends:
+    - .default_before
   needs:
     - job: markdownlint
   script:
@@ -309,6 +311,8 @@ build docs:
 #
 pages:
   stage: Documentation
+  extends:
+    - .default_before
   only:
     - main
   script:
@@ -333,10 +337,3 @@ include:
   # Secret Detection: https://docs.gitlab.com/ee/user/application_security/secret_detection/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Secret-Detection.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
-
-
-# Secret Detection:
-# https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-secret_detection:
-  variables:
-    SECRET_DETECTION_HISTORIC_SCAN: "true"
