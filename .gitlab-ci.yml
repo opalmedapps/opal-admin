@@ -147,7 +147,7 @@ pytest:
     - mariadb:10.6.17-focal
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
-    - apt update && apt-get install -y default-mysql-client
+    - apk add --no-cache mariadb-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
@@ -196,6 +196,8 @@ django translations:
   extends:
     - .default_needs
   script:
+    # install dependencies for git diff
+    - apk add --no-cache git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
