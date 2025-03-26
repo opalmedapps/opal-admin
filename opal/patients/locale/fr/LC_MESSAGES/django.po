@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 01:08+0000\n"
+"POT-Creation-Date: 2023-04-30 09:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,6 +65,10 @@ msgstr ""
 #: opal/patients/filters.py
 msgid "Search Specific Patient"
 msgstr "Rechercher l'accès des patients"
+
+#: opal/patients/filters.py
+msgid "Show Pending Requests"
+msgstr "En attendant"
 
 #: opal/patients/forms.py
 msgid "At which hospital is the patient?"
