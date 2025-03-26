@@ -7,9 +7,9 @@ django-modeltranslation==0.17.3  # https://django-modeltranslation.readthedocs.i
 djangorestframework==3.13.1  # https://www.django-rest-framework.org/
 django-filter==21.1  # https://github.com/carltongibson/django-filter
 
-# PostgreSQL
+# MySQL/MariaDB
 #
-psycopg2-binary==2.9.2 # https://github.com/psycopg/psycopg2
+mysqlclient==2.1.0 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #

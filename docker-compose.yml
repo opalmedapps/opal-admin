@@ -1,14 +1,13 @@
-version: '3.7'
+version: '3'
 
 services:
   db:
-    # using 14.1-bullseye causes "django.db.utils.OperationalError: SCRAM authentication requires libpq version 10 or above" in app
-    # could be an Apple Silicon problem only
-    image: postgres:13.5-bullseye
+    image: mariadb:10.7.1-focal
     env_file:
-      - .envs/postgres.dev
+      - .envs/mariadb.dev
+    # expose DB locally to be able to access it through venv
     ports:
-      - 5432:5432
+      - 3306:3306
   app:
     image: opalmedapps/backend:latest
     build: .

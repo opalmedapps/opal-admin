@@ -1,0 +1,4 @@
+MARIADB_RANDOM_ROOT_PASSWORD=yes
+MARIADB_USER=opal
+MARIADB_PASSWORD=derivate-lin-surmise-earthy-trend-natural
+MARIADB_DATABASE=opal
