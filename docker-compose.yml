@@ -23,7 +23,7 @@ services:
       # for linux users, you can replace the host.docker.internal by 172.17.0.1 which is the
       # default docker address, because host.docker.internal does not work in linux - docker-compose
       - DATABASE_HOST=db
-      - LEGACY_DATABASE_HOST=172.17.0.1
+      - LEGACY_DATABASE_HOST=host.docker.internal
     volumes:
       - .:/app
     ports:
