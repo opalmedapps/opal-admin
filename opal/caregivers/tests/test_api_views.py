@@ -1192,6 +1192,7 @@ class TestRegistrationCompletionView:
             data=input_data_without_security_answers,
         )
 
+        registration_code.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
