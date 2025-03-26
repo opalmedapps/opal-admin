@@ -71,7 +71,7 @@ msgid "Creation Date"
 msgstr "Date de création"
 
 #: opal/caregivers/models.py
-msgid "Attemps"
+msgid "Attempts"
 msgstr "Tentatives"
 
 #: opal/caregivers/models.py

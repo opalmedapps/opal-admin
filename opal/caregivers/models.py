@@ -77,7 +77,7 @@ class RegistrationCode(models.Model):
     )
 
     attempts = models.PositiveIntegerField(
-        verbose_name=_('Attemps'),
+        verbose_name=_('Attempts'),
         default=0,
     )
 

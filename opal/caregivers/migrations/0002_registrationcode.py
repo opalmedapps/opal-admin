@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('relationship', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='registration_codes', to='patients.relationship', verbose_name='Relationship')),
                 ('code', models.CharField(max_length=12, unique=True, validators=[django.core.validators.MinLengthValidator(12)], verbose_name='Code')),
                 ('status', models.CharField(choices=[('NEW', 'New'), ('REG', 'Registered'), ('EXP', 'Expired'), ('BLK', 'Blocked')], default='NEW', max_length=3, verbose_name='Status')),
-                ('attempts', models.PositiveIntegerField(default=0, verbose_name='Attemps')),
+                ('attempts', models.PositiveIntegerField(default=0, verbose_name='Attempts')),
                 ('email_verification_code', models.CharField(max_length=6, validators=[django.core.validators.MinLengthValidator(6)], verbose_name='Email Verification Code')),
                 ('creation_date', models.DateField(auto_now_add=True, verbose_name='Creation Date')),
             ],
