@@ -78,9 +78,9 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
 
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = (IsListener, CaregiverSelfPermissions)
-    queryset = Relationship.objects.none()  # noqa: WPS615
+    queryset = Relationship.objects.none()
 
-    def get_queryset(self) -> QuerySet[Relationship]:
+    def get_queryset(self) -> QuerySet[Relationship]:  # noqa: WPS615
         """Query set to retrieve list of caregivers for the input patient.
 
         Returns:
