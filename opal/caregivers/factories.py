@@ -1,5 +1,7 @@
 """Module providing model factories for caregiver app models."""
 
+from datetime import datetime
+
 from factory import Faker, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 from faker.generator import random
@@ -79,4 +81,18 @@ class RegistrationCode(DjangoModelFactory):
     # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
-    email_verification_code = '123456'
+
+
+class EmailVerification(DjangoModelFactory):
+    """Model factory to create [opal.caregivers.models.EmailVerification][] models."""
+
+    class Meta:
+        model = models.EmailVerification
+
+    caregiver = SubFactory(CaregiverProfile)
+    code = '123456'
+    email = 'opal@muhc.mcgill.ca'
+    sent_at = datetime.strptime(
+        '2022-10-04 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )

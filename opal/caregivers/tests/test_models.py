@@ -10,7 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.users import factories as user_factories
 
 from .. import factories
-from ..models import CaregiverProfile, Device, DeviceType
+from ..models import CaregiverProfile, Device, DeviceType, EmailVerification
 
 pytestmark = pytest.mark.django_db
 
@@ -233,25 +233,10 @@ def test_registrationcode_code_length_gt_max() -> None:
         registration_code.clean_fields()
 
 
-def test_registrationcode_email_code_too_long() -> None:
-    """Ensure the length of email verification code is not greater than 6."""
-    registration_code = factories.RegistrationCode()
-    registration_code.email_verification_code = '1234567'
-    expected_message = "'email_verification_code': ['Ensure this value has at most 6 characters (it has 7).']"
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        registration_code.clean_fields()
-
-
 def test_registrationcode_codes_length_lt_min() -> None:
     """Ensure the length of registration code is not less than 12."""
-    registration_code = factories.RegistrationCode(
-        code='123456',
-        email_verification_code='1234',
-    )
-    expected_message = '{0}{1}'.format(
-        "'code': ['Ensure this value has at least 12 characters (it has 6).'], ",
-        "'email_verification_code': ['Ensure this value has at least 6 characters (it has 4).'",
-    )
+    registration_code = factories.RegistrationCode(code='123456')
+    expected_message = "'code': ['Ensure this value has at least 12 characters (it has 6).']"
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         registration_code.clean_fields()
 
@@ -260,3 +245,46 @@ def test_registrationcode_creation_date_is_today() -> None:
     """Ensure the creation date is tody when creating a new registration code."""
     registration_code = factories.RegistrationCode()
     assert str(registration_code.creation_date) == str(datetime.date.today())
+
+
+class TestEmailVerification:
+    """A class is used to test Model EmailVerification."""
+
+    def test_model_str(self) -> None:
+        """The `str` method returns the email verification code and status."""
+        email_verification = EmailVerification(email='opal@muhc.mcgill.ca', is_verified=True)
+        assert str(email_verification) == 'Email: opal@muhc.mcgill.ca (Verified: True)'
+
+    def test_factory(self) -> None:
+        """Ensure the EmailVerification factory is building properly."""
+        email_verification = factories.EmailVerification()
+        email_verification.full_clean()
+
+    def test_default_email_not_verified(self) -> None:
+        """Ensure the email is not verified as default."""
+        email_verification = EmailVerification()
+        assert email_verification.is_verified is False
+
+    def test_email_code_too_long(self) -> None:
+        """Ensure the length of email verification code is not greater than 6."""
+        email_verification = factories.EmailVerification()
+        email_verification.code = '1234567'
+        expected_message = "'code': ['Ensure this value has at most 6 characters (it has 7).']"
+        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+            email_verification.clean_fields()
+
+    def test_email_code_too_short(self) -> None:
+        """Ensure the length of email verification code is not less than 6."""
+        email_verification = factories.EmailVerification()
+        email_verification.code = '1234'
+        expected_message = "'code': ['Ensure this value has at least 6 characters (it has 4).'"
+        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+            email_verification.clean_fields()
+
+    def test_email_not_empty(self) -> None:
+        """Ensure the field email is not empty."""
+        email_verification = factories.EmailVerification()
+        email_verification.email = ''
+        expected_message = "'email': ['This field cannot be blank.']"
+        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+            email_verification.clean_fields()

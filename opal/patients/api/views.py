@@ -4,11 +4,12 @@ from typing import Any, Type
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,9 +17,10 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
+from opal.patients.api.serializers import CaregiverRelationshipSerializer
 from opal.users.models import User
 
-from ..models import Patient
+from ..models import Patient, Relationship
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -48,7 +50,6 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
         """
         if 'detailed' in self.request.query_params:
             return caregiver_serializers.RegistrationCodePatientDetailedSerializer
-
         return caregiver_serializers.RegistrationCodePatientSerializer
 
 
@@ -184,3 +185,22 @@ class RegistrationRegisterView(APIView):
                 ),
             )
         caregiver_models.SecurityAnswer.objects.bulk_create(object_list)
+
+
+class CaregiverRelationshipView(ListAPIView):
+    """REST API `ListAPIView` returning list of caregivers for a given patient."""
+
+    serializer_class = CaregiverRelationshipSerializer
+    pagination_class = None
+
+    def get_queryset(self) -> QuerySet[Relationship]:
+        """Query set to retrieve list of caregivers for the input patient.
+
+        Returns:
+            List of caregiver profiles for a given patient
+        """
+        return Relationship.objects.select_related(
+            'caregiver__user',
+        ).filter(
+            patient__legacy_id=self.kwargs['legacy_patient_id'],
+        )
