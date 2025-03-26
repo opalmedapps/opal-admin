@@ -9,7 +9,7 @@ class SecurityQuestionTranslationOptions(TranslationOptions):
     """
     This class provides translation options for `SecurityQuestion`.
 
-    See [SecurityQuestion][opal.cargivers.models.SecurityQuestion].
+    See [SecurityQuestion][opal.caregivers.models.SecurityQuestion].
     """
 
     fields = ('title',)
@@ -21,7 +21,7 @@ class SSecurityAnswerTranslationOptions(TranslationOptions):
     """
     This class provides translation options for `SecurityAnswer`.
 
-    See [SecurityAnswer][opal.cargivers.models.SecurityAnswer].
+    See [SecurityAnswer][opal.caregivers.models.SecurityAnswer].
     """
 
     fields = ('question', 'answer')
