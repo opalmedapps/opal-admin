@@ -151,7 +151,7 @@ class ReportService():
             date=generated_at,
         )
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        pdf.output(report_path)
+        pdf.output(str(report_path))
         return report_path
 
     def _request_base64_report(
