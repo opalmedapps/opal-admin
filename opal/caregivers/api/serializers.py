@@ -231,7 +231,7 @@ class _NestedPatientSerializer(PatientSerializer):
 
 
 class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information for new patients.
+    """RegistrationCode serializer used to get patient and caregiver information for new users.
 
     The information include Patient and Caregiver data.
     """
@@ -258,7 +258,7 @@ class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registration
 
 
 class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information for existing patient.
+    """RegistrationCode serializer used to get patient and caregiver information for existing users.
 
     The information include Patient and Caregiver data.
     """

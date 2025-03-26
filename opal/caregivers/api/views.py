@@ -331,8 +331,8 @@ class RegistrationCompletionView(APIView):
         Returns:
             HTTP response with the error or success status.
         """
-        self.serializer_class = self._get_serializer_class()
-        serializer = self.serializer_class(
+        serializer_class = self._get_serializer_class()
+        serializer = serializer_class(
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
@@ -363,7 +363,8 @@ class RegistrationCompletionView(APIView):
         return Response()
 
     def _get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
-        """Override 'get_serializer_class' to switch the serializer based on the parameter `existingUser`.
+        """
+        Switch the serializer based on the parameter `existingUser`.
 
         Args:
             args: request parameters
