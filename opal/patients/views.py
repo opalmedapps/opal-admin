@@ -300,11 +300,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             )
 
         # Check if the caregiver record exists. If not, create a new record.
-        try:
-            caregiver = CaregiverProfile.objects.get(user_id=caregiver_user.id)
-        except CaregiverProfile.DoesNotExist:
-            caregiver = CaregiverProfile.objects.create(user=caregiver_user)
-
+        caregiver, created = CaregiverProfile.objects.get_or_create(
+            user_id=caregiver_user.id,
+            defaults={'user': caregiver_user},
+        )
         return {
             'caregiver_user': caregiver_user,
             'caregiver': caregiver,
@@ -322,16 +321,16 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         patient_record = form_data['patient_record']
         # Check if the patient record exists searching by RAMQ. If not, create a new record.
-        try:
-            patient = Patient.objects.get(ramq=patient_record.ramq)
-        except Patient.DoesNotExist:
-            patient = Patient.objects.create(
-                first_name=patient_record.first_name,
-                last_name=patient_record.last_name,
-                date_of_birth=patient_record.date_of_birth,
-                sex=patient_record.sex,
-                ramq=patient_record.ramq,
-            )
+        patient, created = Patient.objects.get_or_create(
+            ramq=patient_record.ramq,
+            defaults={
+                'first_name': patient_record.first_name,
+                'last_name': patient_record.last_name,
+                'date_of_birth': patient_record.date_of_birth,
+                'sex': patient_record.sex,
+                'ramq': patient_record.ramq,
+            },
+        )
 
         return patient
 
