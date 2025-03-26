@@ -1,5 +1,3 @@
-image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
@@ -12,34 +10,31 @@ variables:
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
 
+default:
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  before_script:
+    - uname -a
+    - python --version
+    # set up env file for DB service
+    # use sample env file
+    - cp .env.sample .env
+    - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
+    - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
+    - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
+    - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+    # set up legacy DB connection
+    # reuse the same database as for the other tests to make it easier
+    - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+    - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+    - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
+    - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+    - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+    # set up QuestionnaireDB connection as well
+    - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
+    # generate secret key
+    - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+    - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
-# before_script:
-#   - uname -a
-#   - python --version
-#   - which python
-#   # install dependencies for mysqlclient
-#   - apt update && apt-get install -y build-essential libmariadb-dev
-#   # don't fail if venv is not set up yet (during setup)
-#   - source .venv/bin/activate || true
-#   # set up env file for DB service
-#   # use sample env file
-#   - cp .env.sample .env
-#   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
-#   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
-#   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
-#   - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
-#   # set up legacy DB connection
-#   # reuse the same database as for the other tests to make it easier
-#   - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-#   - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-#   - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
-#   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-#   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
-#   # set up QuestionnaireDB connection as well
-#   - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
-#   # generate secret key
-#   - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-#   - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 stages:
   - Static Analysis
@@ -58,7 +53,8 @@ setup:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # login to CI registry: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#option-1-run-docker-login
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
   script:
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
