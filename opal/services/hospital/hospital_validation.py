@@ -115,7 +115,7 @@ class OIEValidator:
 
             if message:
                 # TODO: improve
-                friendly_message = message.replace('Patient 00000000null not found', 'not_found')
+                friendly_message = message.replace('Patient not found', 'not_found')
                 friendly_message = friendly_message.replace(
                     'Not Opal test patient',
                     'no_test_patient',
