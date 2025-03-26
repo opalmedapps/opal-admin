@@ -11,6 +11,8 @@ import requests
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
+from opal.legacy.models import LegacyPatient
+
 
 class ReportService():
     """Service that provides functionality for generating questionnaire pdf reports."""
@@ -33,7 +35,20 @@ class ReportService():
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        base64_report = self._request_base64_report(patient_id, Path(logo_path), language)
+        # return an empty string if patient_id (PatientSerNum) does not exist
+        if not LegacyPatient.objects.filter(patientsernum=patient_id).exists():
+            return ''
+
+        # return an empty string if logo_path does not exist
+        if not logo_path.exists():
+            return ''
+
+        # return an empty string if language does not exist
+        languages = dict(settings.LANGUAGES)
+        if language not in languages:
+            return ''
+
+        base64_report = self._request_base64_report(patient_id, logo_path, language)
 
         return base64_report if self._is_base64(base64_report) is True else ''
 
