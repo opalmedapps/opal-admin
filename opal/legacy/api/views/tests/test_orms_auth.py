@@ -58,6 +58,6 @@ class TestORMSLoginView:
 
         assertContains(
             response=response,
-            text='Unable to log in with provided credentials.',
-            status_code=status.HTTP_400_BAD_REQUEST,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
         )
