@@ -31,7 +31,25 @@ class UserCaregiverUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'email',
         ]
-        extra_kwargs = {'email': {'allow_blank': False, 'required': True}}
+        extra_kwargs = {
+            'email': {'allow_blank': False, 'required': True},
+        }
+
+
+class ClinicalStaffDetailSerializer(serializers.ModelSerializer):
+    """
+    ClinicalStaff data serializer.
+
+    The serializer is used to provide details of a clinical staff user.
+    """
+
+    class Meta:
+        model = ClinicalStaff
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+        ]
 
 
 class UserClinicalStaffSerializer(serializers.ModelSerializer):
