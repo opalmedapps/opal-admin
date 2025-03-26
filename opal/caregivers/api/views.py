@@ -146,25 +146,26 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         email = input_serializer.validated_data['email']
         #  Check whether the email is already registered
-        if User.objects.filter(email=email).exists():
+        caregiver = User.objects.filter(email=email).first()
+        if caregiver:
             raise drf_serializers.ValidationError(
                 _('The email is already registered.'),
             )
 
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
-        caregiver = registration_code.relationship.caregiver
+        caregiver_profile = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
             email_verification = EmailVerification.objects.create(
-                caregiver=caregiver,
+                caregiver=caregiver_profile,
                 code=verification_code,
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_verification_code_email(email_verification, caregiver.user)
+            self._send_verification_code_email(email_verification, caregiver_profile.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -177,7 +178,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_verification_code_email(email_verification, caregiver.user)
+                self._send_verification_code_email(email_verification, caregiver_profile.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
