@@ -227,11 +227,12 @@ class LegacyAlias(models.Model):
     )
     alias_description_en = models.TextField(db_column='AliasDescription_EN')
     alias_description_fr = models.TextField(db_column='AliasDescription_FR')
-    educationalmaterialcontrolsernum = models.ForeignKey(
+    educational_material_control_ser_num = models.ForeignKey(
         'LegacyEducationalMaterialControl',
         models.DO_NOTHING,
         db_column='EducationalMaterialControlSerNum',
         to_field='educationalmaterialcontrolsernum',
+        null=True,
     )
 
     class Meta:

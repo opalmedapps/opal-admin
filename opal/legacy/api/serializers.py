@@ -74,11 +74,13 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
     )
 
     educational_material_url_en = serializers.CharField(
-        source='aliasexpressionsernum.aliassernum.educationalmaterialcontrolsernum.url_en',
+        source='aliasexpressionsernum.aliassernum.educational_material_control_ser_num.url_en',
+        required=False,
     )
 
     educational_material_url_fr = serializers.CharField(
-        source='aliasexpressionsernum.aliassernum.educationalmaterialcontrolsernum.url_fr',
+        source='aliasexpressionsernum.aliassernum.educational_material_control_ser_num.url_fr',
+        required=False,
     )
 
     patient = LegacyPatientSerializer(
