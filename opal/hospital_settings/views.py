@@ -60,15 +60,16 @@ class InstitutionDeleteView(PermissionRequiredMixin, DeleteView):
 
 
 # SITES
-class SiteListView(SingleTableView):
+class SiteListView(PermissionRequiredMixin, SingleTableView):
     """This table view provides a page that displays a list of site objects."""
 
     model = Site
+    permission_required = ('hospital_settings.can_manage_sites',)
     table_class = tables.SiteTable
     template_name = 'hospital_settings/site/site_list.html'
 
 
-class SiteCreateUpdateView(CreateUpdateView):
+class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     """
     This `CreateView` displays a form for creating and updating a site object.
 
@@ -76,6 +77,7 @@ class SiteCreateUpdateView(CreateUpdateView):
     """
 
     model = Site
+    permission_required = ('hospital_settings.can_manage_sites',)
     template_name = 'hospital_settings/site/site_form.html'
     fields = [
         'name_en',
@@ -92,7 +94,7 @@ class SiteCreateUpdateView(CreateUpdateView):
     success_url = reverse_lazy('hospital-settings:site-list')
 
 
-class SiteDeleteView(DeleteView):
+class SiteDeleteView(PermissionRequiredMixin, DeleteView):
     """
     A view that displays a confirmation page and deletes an existing site object.
 
@@ -102,5 +104,6 @@ class SiteDeleteView(DeleteView):
     """
 
     model = Site
+    permission_required = ('hospital_settings.can_manage_sites',)
     template_name = 'hospital_settings/site/site_confirm_delete.html'
     success_url = reverse_lazy('hospital-settings:site-list')
