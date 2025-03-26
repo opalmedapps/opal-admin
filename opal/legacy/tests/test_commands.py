@@ -6,6 +6,7 @@ from django.core.management.base import CommandError
 
 import pytest
 from django_test_migrations.migrator import Migrator
+from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
