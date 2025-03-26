@@ -7,7 +7,7 @@ from django.utils import timezone
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
-from .models import Patient, RelationshipType
+from .models import Patient, Relationship, RelationshipType, RoleType
 
 
 def update_registration_code_status(
@@ -81,3 +81,24 @@ def search_valid_relationship_types(date_of_birth: date) -> list[dict[str, Any]]
     age = Patient.calculate_age(date_of_birth=date_of_birth)
     queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age).values_list('id', flat=True)
     return list(queryset)
+
+
+def get_valid_relationship_types_queryset(date_of_birth: date, patient: Patient) -> Any:
+    """
+    Get the queryset of valid relationship types according to the patient's age and existing self role.
+
+    Args:
+        patient: Patient object
+        date_of_birth: date of birth of the patient
+
+    Returns:
+        Queryset of valid relationship types
+    """
+    age = Patient.calculate_age(date_of_birth=date_of_birth)
+    queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age)
+    if Relationship.objects.filter(
+        patient=patient,
+        type__role_type=RoleType.SELF,
+    ).exists():
+        queryset = RelationshipType.objects.filter_by_patient_age_and_self_role(patient_age=age)
+    return queryset

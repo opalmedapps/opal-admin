@@ -18,8 +18,8 @@ from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
-from .utils import search_valid_relationship_types
+from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .utils import get_valid_relationship_types_queryset, search_valid_relationship_types
 
 
 class SelectSiteForm(forms.Form):
@@ -626,9 +626,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 relationship_type,
             ),
         })
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=Patient.calculate_age(date_of_birth=date_of_birth),
-        )
+        available_choices = get_valid_relationship_types_queryset(date_of_birth, self.instance.patient)
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
         initial_index = (
             index

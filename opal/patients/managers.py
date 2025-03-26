@@ -100,6 +100,21 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
 
+    def filter_by_patient_age_and_self_role(self, patient_age: int) -> models.QuerySet['RelationshipType']:
+        """Return a new QuerySet filtered by the patient age and self role excluded.
+
+        Args:
+            patient_age: patient's ages.
+
+        Returns:
+            a queryset of the relationship type.
+        """
+        return self.annotate(
+            end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
+        ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age).exclude(
+            role_type=patient_models.RoleType.SELF,
+        )
+
     def self_type(self) -> 'RelationshipType':
         """
         Return the Self relationship type.
