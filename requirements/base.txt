@@ -6,7 +6,7 @@ django-extensions==3.2.1  # https://github.com/django-extensions/django-extensio
 django-modeltranslation==0.18.9  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.14.0  # https://www.django-rest-framework.org/
 dj-rest-auth==3.0.0  # https://github.com/iMerica/dj-rest-auth
-django-filter==22.1  # https://github.com/carltongibson/django-filter
+django-filter==23.2  # https://github.com/carltongibson/django-filter
 django-cors-headers==3.14.0  # https://github.com/adamchainz/django-cors-headers
 django-easy-audit==1.3.3  # https://github.com/soynatan/django-easy-audit
 django-tables2==2.5.3  # https://github.com/jieter/django-tables2
@@ -18,7 +18,7 @@ django-forms-dynamic==1.0.0  # https://github.com/dabapps/django-forms-dynamic
 django-crispy-forms==2.0  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5==0.7  # https://pypi.org/project/crispy-bootstrap5/
 qrcode==7.4.2  # https://pypi.org/project/qrcode/
-fontawesomefree==6.3.0  # https://fontawesome.com/docs/web/use-with/python-django
+fontawesomefree==6.4.0  # https://fontawesome.com/docs/web/use-with/python-django
 slippers==0.5.0  # https://github.com/mixxorz/slippers
 
 # MySQL/MariaDB
@@ -29,15 +29,15 @@ mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
 #
 # secure password hashes using argon2
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
-requests==2.28.2  # https://github.com/psf/requests
+requests==2.30.0  # https://github.com/psf/requests
 # required for ImageFields
-Pillow==9.4.0  # https://pypi.org/project/Pillow
+Pillow==9.5.0  # https://pypi.org/project/Pillow
 
 # Export Report functionality
 #
-pandas==1.5.3  # https://pypi.org/project/pandas/
+pandas==2.0.1  # https://pypi.org/project/pandas/
 openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
-plotly==5.13.1  # https://pypi.org/project/plotly/
+plotly==5.14.1  # https://pypi.org/project/plotly/
