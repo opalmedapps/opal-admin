@@ -29,7 +29,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     queryset = (
         caregiver_models.RegistrationCode.objects.select_related(
             'relationship',
+            'relationship__type',
             'relationship__patient',
+            'relationship__caregiver',
         ).prefetch_related(
             'relationship__patient__hospital_patients',
         ).filter(
@@ -122,6 +124,10 @@ class RegistrationCompletionView(APIView):
             else:
                 utils.update_caregiver(
                     registration_code.relationship.caregiver.user,
+                    register_data['relationship']['caregiver'],
+                )
+                utils.update_caregiver_profile(
+                    registration_code.relationship.caregiver,
                     register_data['relationship']['caregiver'],
                 )
 

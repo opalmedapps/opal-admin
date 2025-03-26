@@ -180,6 +180,35 @@ def test_replace_caregiver() -> None:
         user_models.User.objects.get(username=username2)
 
 
+def test_update_caregiver_profile_success() -> None:
+    """Test update caregiver profile information success."""
+    legacy_id1 = 1
+    legacy_id2 = 2
+    profile = CaregiverProfile(legacy_id=legacy_id1)
+    info: dict = {
+        'legacy_id': legacy_id2,
+    }
+    utils.update_caregiver_profile(profile, info)
+    profile.refresh_from_db()
+    assert profile.legacy_id == legacy_id2
+
+
+def test_update_caregiver_profile_failure() -> None:
+    """Test update caregiver profile information failure."""
+    legacy_id1 = 1
+    legacy_id2 = 'Two'
+    profile = CaregiverProfile(legacy_id=legacy_id1)
+    info: dict = {
+        'legacy_id': legacy_id2,
+    }
+    expected_message = "{'legacy_id': ['“Two” value must be an integer.']}"
+    with assertRaisesMessage(
+        ValidationError,
+        expected_message,
+    ):
+        utils.update_caregiver_profile(profile, info)
+
+
 def test_insert_security_answers_success() -> None:
     """Test insert security answers success."""
     caregiver = CaregiverProfile()

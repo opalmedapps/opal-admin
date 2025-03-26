@@ -1,14 +1,18 @@
+import uuid
 from datetime import date, datetime
+from http import HTTPStatus
 
 from django.db import connections
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
+from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
-from opal.core.test_utils import CommandTestMixin
+from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
@@ -714,3 +718,124 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
 
         message, error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
+
+
+class TestUpdateOrmsPatientsCommand(CommandTestMixin):
+    """Test class for the custom command that updates patients' UUIDs in the ORMS."""
+
+    def test_orms_patients_update_with_no_patients(self) -> None:
+        """Ensure the command does not fail if there are no patient records."""
+        message, error = self._call_command('update_orms_patients')
+        assert 'Updated 0 out of 0 patients.' in message
+
+    def test_orms_patients_update_with_no_hospital_patients(self) -> None:
+        """Ensure the command does not fail if there are no hospital patient records (e.g., MRN/site)."""
+        # Create patients
+        patient_factories.Patient(id=1, ramq='RAMQ11111111')
+        patient_factories.Patient(id=2, ramq='RAMQ22222222')
+        patient_factories.Patient(id=3, ramq='RAMQ33333333')
+        message, error = self._call_command('update_orms_patients')
+        assert 'Updated 0 out of 3 patients.' in message
+
+    def test_orms_patients_update_with_request_exception(self, mocker: MockerFixture) -> None:
+        """Ensure the command handles exceptions during POST requests to the ORMS."""
+        # Create test data
+        site = patient_factories.Site(code='RVH')
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
+            mrn='9999996',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=2, ramq='RAMQ22222222', uuid=uuid.uuid4()),
+            mrn='9999997',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=3, ramq='RAMQ33333333', uuid=uuid.uuid4()),
+            mrn='9999998',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=4, ramq='RAMQ44444444', uuid=uuid.uuid4()),
+            mrn='9999999',
+        )
+        # Create mock POST request
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
+        mock_post.side_effect = requests.RequestException('request failed')
+        mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
+        # Call the command
+        message, error = self._call_command('update_orms_patients')
+
+        number_of_patients = Patient.objects.all().count()
+        assert error.count("An error occurred during patient's UUID update!") == number_of_patients
+
+    def test_orms_patients_update_unsuccessful_response(self, mocker: MockerFixture) -> None:
+        """Ensure the command handles unsuccessful responses during POST requests to the ORMS."""
+        # Create test data
+        site = patient_factories.Site(code='RVH')
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
+            mrn='9999996',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=2, ramq='RAMQ22222222', uuid=uuid.uuid4()),
+            mrn='9999997',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=3, ramq='RAMQ33333333', uuid=uuid.uuid4()),
+            mrn='9999998',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=4, ramq='RAMQ44444444', uuid=uuid.uuid4()),
+            mrn='9999999',
+        )
+        # Create mock POST request
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
+        mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
+        # Call the command
+        message, error = self._call_command('update_orms_patients')
+
+        assert "An error occurred during patients' UUID update!" not in error
+        assert 'Updated 0 out of' in message
+        assert 'The following patients were not updated:' in error
+
+    def test_orms_patients_successful_update(self, mocker: MockerFixture) -> None:
+        """Ensure the command does not have any errors during successful ORMS patients update."""
+        # Create test data
+        site = patient_factories.Site(code='RVH')
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=1, ramq='RAMQ11111111', uuid=uuid.uuid4()),
+            mrn='9999996',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=2, ramq='RAMQ22222222', uuid=uuid.uuid4()),
+            mrn='9999997',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=3, ramq='RAMQ33333333', uuid=uuid.uuid4()),
+            mrn='9999998',
+        )
+        patient_factories.HospitalPatient(
+            site=site,
+            patient=patient_factories.Patient(legacy_id=4, ramq='RAMQ44444444', uuid=uuid.uuid4()),
+            mrn='9999999',
+        )
+        # Create mock POST request
+        mock_post = RequestMockerTest.mock_requests_post(mocker, {})
+        mock_post.return_value.status_code = HTTPStatus.OK
+        # Call the command
+        message, error = self._call_command('update_orms_patients')
+
+        patients_num = Patient.objects.all().count()
+        assert "An error occurred during patients' UUID update!" not in error
+        assert 'Updated {0} out of {1}'.format(patients_num, patients_num) in message
+        assert 'The following patients were not updated:' not in error

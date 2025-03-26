@@ -6,6 +6,8 @@ store the data itself. The data stored here includes patient consent information
 and identifiers for what data has already been sent to the databank.
 The actual patient data is sent to the databank via a set of API logic, after being deidentified.
 """
+import datetime
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -61,8 +63,7 @@ class DatabankConsent(models.Model):
     )
     last_synchronized = models.DateTimeField(
         verbose_name=_('Last Synchronized'),
-        null=True,
-        blank=True,
+        default=timezone.make_aware(datetime.datetime(1970, 1, 1)),
     )
 
     class Meta:
