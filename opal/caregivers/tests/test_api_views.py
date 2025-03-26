@@ -1187,7 +1187,7 @@ class TestRegistrationCompletionView:
         response = api_client.post(
             reverse(
                 'api:registration-register',
-                kwargs={'code': registration_code},
+                kwargs={'code': registration_code.code},
             ),
             data=input_data_without_security_answers,
         )
