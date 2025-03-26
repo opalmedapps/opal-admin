@@ -215,7 +215,7 @@ class HospitalPatient(models.Model):
     class Meta:
         verbose_name = _('Hospital Patient')
         verbose_name_plural = _('Hospital Patients')
-        unique_together = (('patient', 'site', 'mrn'),)
+        unique_together = (('site', 'mrn'),)
 
     def __str__(self) -> str:
         """Return the Patient Hospital Identifier of the Patient.
