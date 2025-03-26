@@ -143,6 +143,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
+    username = serializers.CharField(source='user.username')
     devices = DeviceSerializer(
         fields=('type', 'push_token'),
         many=True,
@@ -154,6 +155,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'uuid',
             'language',
             'phone_number',
+            'username',
             'devices',
         ]
 
@@ -193,7 +195,7 @@ class PatientCaregiversSerializer(DynamicFieldsSerializer):
     """
 
     caregivers = CaregiverSerializer(
-        fields=('language', 'devices'),
+        fields=('language', 'username', 'devices'),
         many=True,
     )
 
