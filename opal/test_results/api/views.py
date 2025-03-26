@@ -50,6 +50,8 @@ class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
         pathology_pdf_path = generate_pathology_report(
             patient=patient,
             pathology_data=serializer.validated_data,
+            patient_data=serializer.validated_data,
+            site_data=serializer.validated_data
         )
 
         # Insert a record to the legacy OpalDB.Documents table to indicate a new pathology report is available

@@ -81,18 +81,7 @@ class PathologyData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:
-        site_logo_path: file path of the site's logo image
-        site_name: the name of the site (e.g., Royal Victoria Hospital)
-        site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
-        site_city: the name of the city that is specified in the address (e.g., Montréal)
-        site_province: the name of the province that is specified in the address (e.g., Québec)
-        site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
-        site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
-        patient_first_name: patient's first name (e.g., Marge)
-        patient_last_name: patient's last name (e.g., Simpson)
-        patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
-        patient_ramq: patient's RAMQ number (SIMM99999999)
-        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
+
         test_number: the report number (e.g., AS-2021-62605)
         test_collected_at: date and time when the specimen was collected (e.g., 2021-Nov-25 09:55)
         test_reported_at: date and time when the specimen was reported (e.g., 2021-Nov-28 11:52)
@@ -103,19 +92,6 @@ class PathologyData(NamedTuple):
         prepared_by: the name of the person who prepared the report (e.g., Atilla Omeroglu, MD)
         prepared_at: the date and time when the report was prepared (e.g., 28-Nov-2021 11:52am)
     """
-
-    site_logo_path: Path
-    site_name: str
-    site_building_address: str
-    site_city: str
-    site_province: str
-    site_postal_code: str
-    site_phone: str
-    patient_first_name: str
-    patient_last_name: str
-    patient_date_of_birth: date
-    patient_ramq: str
-    patient_sites_and_mrns: list[dict[str, str]]
     test_number: str
     test_collected_at: datetime
     test_reported_at: datetime
@@ -125,6 +101,46 @@ class PathologyData(NamedTuple):
     observation_diagnosis: list[str]
     prepared_by: str
     prepared_at: datetime
+
+
+class SiteData(NamedTuple):
+    """`Typed NamedTuple` that describes data fields needed for generating a pathology PDF report.
+
+    Attributes:
+
+        site_logo_path: file path of the site's logo image
+        site_name: the name of the site (e.g., Royal Victoria Hospital)
+        site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
+        site_city: the name of the city that is specified in the address (e.g., Montréal)
+        site_province: the name of the province that is specified in the address (e.g., Québec)
+        site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
+        site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
+    """
+    site_logo_path: Path
+    site_name: str
+    site_building_address: str
+    site_city: str
+    site_province: str
+    site_postal_code: str
+    site_phone: str
+
+
+class PatientData(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
+
+    Attributes:
+
+        patient_first_name: patient's first name (e.g., Marge)
+        patient_last_name: patient's last name (e.g., Simpson)
+        patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
+        patient_ramq: patient's RAMQ number (SIMM99999999)
+        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
+    """
+    patient_first_name: str
+    patient_last_name: str
+    patient_date_of_birth: date
+    patient_ramq: str
+    patient_sites_and_mrns: list[dict[str, str]]
 
 
 FIRST_PAGE_NUMBER: int = 1
@@ -137,6 +153,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
     def __init__(
         self,
         pathology_data: PathologyData,
+        patient_data: PatientData,
+        site_data: SiteData,
     ) -> None:
         """Initialize a `PathologyPDF` instance for generating pathology reports.
 
@@ -150,10 +168,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         """
         super().__init__()
         self.pathology_data = pathology_data
-        self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
+        self.patient_data = patient_data
+        self.site_data = site_data
+        self.patient_name = f'{patient_data.patient_last_name}, {patient_data.patient_first_name}'.upper()
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
-            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
+            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.patient_data.patient_sites_and_mrns
         ]
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
@@ -305,7 +325,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
     def _draw_site_logo(self) -> None:
         """Draw the site logo that is shown at the top of the first page."""
         self.image(
-            str(self.pathology_data.site_logo_path),
+            str(self.site_data.site_logo_path),
             x=35,
             y=15,
             w=120,
@@ -464,18 +484,18 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         Returns:
             dictionary containing data needed to build a table that is shown at the top of the first page.
         """
-        sites_and_mrns = self.pathology_data.patient_sites_and_mrns
+        sites_and_mrns = self.patient_data.patient_sites_and_mrns
         mrns_and_sites_multiline = '\n'.join(
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
         site_city = (
-            f'{self.pathology_data.site_city} '
-            + f'({self.pathology_data.site_province}) '
-            + f'{self.pathology_data.site_postal_code}'
-        ) if str(self.pathology_data.site_city) else ''
+            f'{self.site_data.site_city} '
+            + f'({self.site_data.site_province}) '
+            + f'{self.site_data.site_postal_code}'
+        ) if str(self.site_data.site_city) else ''
         site_phone = (
-            f'Tél. : {self.pathology_data.site_phone}'
-        ) if str(self.pathology_data.site_phone) else ''
+            f'Tél. : {self.site_data.site_phone}'
+        ) if str(self.site_data.site_phone) else ''
 
         # Wrap the text with the maximum characters can be filled in each line.
         wrapper = textwrap.TextWrapper(
@@ -498,7 +518,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': self.pathology_data.site_name,
+                'text': self.site_data.site_name,
                 'priority': 0,
                 'multiline': False,
             },
@@ -515,7 +535,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': self.pathology_data.site_building_address,
+                'text': self.site_data.site_building_address,
                 'priority': 0,
                 'multiline': False,
             },
@@ -583,7 +603,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': f'DDN/DOB: {self.pathology_data.patient_date_of_birth.strftime("%m/%d/%Y")}',
+                'text': f'DDN/DOB: {self.patient_data.patient_date_of_birth.strftime("%m/%d/%Y")}',
                 'priority': 0,
                 'multiline': False,
             },
@@ -600,7 +620,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': f'NAM/RAMQ: {self.pathology_data.patient_ramq}',
+                'text': f'NAM/RAMQ: {self.patient_data.patient_ramq}',
                 'priority': 0,
                 'multiline': False,
             },
@@ -1162,6 +1182,8 @@ class ReportService():
     def generate_pathology_report(
         self,
         pathology_data: PathologyData,
+        patient_data: PatientData,
+        site_data: SiteData,
     ) -> Path:
         """Create a pathology PDF report.
 
@@ -1175,12 +1197,12 @@ class ReportService():
         """
         generated_at = timezone.localtime(timezone.now()).strftime('%Y-%b-%d_%H-%M-%S')
         report_file_name = '{first_name}_{last_name}_{date}_pathology'.format(
-            first_name=pathology_data.patient_first_name,
-            last_name=pathology_data.patient_last_name,
+            first_name=patient_data.patient_first_name,
+            last_name=patient_data.patient_last_name,
             date=generated_at,
         )
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        pathology_pdf = PathologyPDF(pathology_data)
+        pathology_pdf = PathologyPDF(pathology_data, patient_data, site_data)
         pathology_pdf.output(name=str(report_path))
 
         return report_path

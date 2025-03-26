@@ -9,7 +9,7 @@ from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
-from opal.services.reports import PathologyData, ReportService
+from opal.services.reports import PathologyData, PatientData, ReportService, SiteData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +17,8 @@ LOGGER = logging.getLogger(__name__)
 def generate_pathology_report(
     patient: Patient,
     pathology_data: dict[str, Any],
+    patient_data: dict[str, Any],
+    site_data: dict[str, Any]
 ) -> Path:
     """Generate the pathology PDF report by calling the ReportService.
 
@@ -37,26 +39,10 @@ def generate_pathology_report(
     report_service = ReportService()
 
     # Find Site record filtering by receiving_facility field (a.k.a. site code)
-    site = _get_site_instance(pathology_data['receiving_facility'])
+    site = _get_site_instance(site_data['receiving_facility'])
 
     return report_service.generate_pathology_report(
         pathology_data=PathologyData(
-            site_logo_path=Path(Institution.objects.get().logo.path),
-            site_name=site.name,
-            site_building_address=site.street_name,
-            site_city=site.city,
-            site_province=site.province_code,
-            site_postal_code=site.postal_code,
-            site_phone=site.contact_telephone,
-            patient_first_name=patient.first_name,
-            patient_last_name=patient.last_name,
-            patient_date_of_birth=patient.date_of_birth,
-            patient_ramq=patient.ramq if patient.ramq else '',
-            patient_sites_and_mrns=list(
-                patient.hospital_patients.all().annotate(
-                    site_code=models.F('site__acronym'),
-                ).values('mrn', 'site_code'),
-            ),
             test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
             test_collected_at=pathology_data['collected_at'],
             test_reported_at=pathology_data['reported_at'],
@@ -66,6 +52,26 @@ def generate_pathology_report(
             observation_diagnosis=observations['SPDX'],
             prepared_by=note_comment['prepared_by'],
             prepared_at=note_comment['prepared_at'],
+        ),
+        site_data=SiteData(
+            site_logo_path=Path(Institution.objects.get().logo.path),
+            site_name=site.name,
+            site_building_address=site.street_name,
+            site_city=site.city,
+            site_province=site.province_code,
+            site_postal_code=site.postal_code,
+            site_phone=site.contact_telephone,
+        ),
+        patient_data=PatientData(
+            patient_first_name=patient.first_name,
+            patient_last_name=patient.last_name,
+            patient_date_of_birth=patient.date_of_birth,
+            patient_ramq=patient.ramq if patient.ramq else '',
+            patient_sites_and_mrns=list(
+                patient.hospital_patients.all().annotate(
+                    site_code=models.F('site__acronym'),
+                ).values('mrn', 'site_code'),
+            ),
         ),
     )
 
