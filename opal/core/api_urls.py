@@ -178,7 +178,7 @@ urlpatterns = [
 
     # USERS ENDPOINTS
     path(
-        'users/caregivers/<username>/',
+        'users/caregivers/<str:username>/',
         users_views.UserCaregiverUpdateView.as_view(),
         name='users-caregivers',
     ),

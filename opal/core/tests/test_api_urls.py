@@ -260,7 +260,7 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
 
 
 def test_user_caregiver_update(settings: SettingsWrapper) -> None:
-    """Ensure that the endpoint for users/caregivers/<username> is defined."""
+    """Ensure that the endpoint for users/caregivers/<str:username> is defined."""
     url_path = '/{api_root}/users/caregivers/{username}/'.format(
         api_root=settings.API_ROOT,
         username='username',
