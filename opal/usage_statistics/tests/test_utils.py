@@ -8,6 +8,7 @@ from django.utils import timezone
 import pytest
 from django_stubs_ext.aliases import ValuesQuerySet
 from pytest_django.asserts import assertRaisesMessage
+from pytest_django.fixtures import SettingsWrapper
 
 from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories as legacy_factories
@@ -964,13 +965,17 @@ def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationsh
     )
 
 
-def test_export_data_csv() -> None:
+def test_export_data_csv(settings: SettingsWrapper) -> None:
     """Ensure the export function generate csv file with model queryset."""
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
     assert not os.path.isfile('test.csv')
-    stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.csv')
+    stats_utils.export_data(list(data_set), 'test.csv')
     assert os.path.isfile('test.csv')
     os.remove('test.csv')
 
@@ -980,8 +985,12 @@ def test_export_data_xlsx() -> None:
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
     assert not os.path.isfile('test.xlsx')
-    stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.xlsx')
+    stats_utils.export_data(list(data_set), 'test.xlsx')
     assert os.path.isfile('test.xlsx')
     os.remove('test.xlsx')
 
@@ -991,10 +1000,13 @@ def test_export_data_invalid_file_name() -> None:
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
-
+    query = stats_models.DailyUserPatientActivity.objects.all()
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    data_set = query.values(*model_fields)
     expected_message = 'Invalid file format, please use either csv or xlsx'
     with assertRaisesMessage(
         ValueError,
         expected_message,
     ):
-        stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.random')
+        stats_utils.export_data(list(data_set), 'test.random')
