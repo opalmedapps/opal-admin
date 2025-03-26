@@ -1,4 +1,4 @@
 -r base.txt
 
 whitenoise==6.5.0  # http://whitenoise.evans.io/en/stable/index.html
-gunicorn==20.1.0  # https://docs.gunicorn.org/en/stable/index.html
+gunicorn==21.0.1  # https://docs.gunicorn.org/en/stable/index.html
