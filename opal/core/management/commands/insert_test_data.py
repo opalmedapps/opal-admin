@@ -61,8 +61,8 @@ INSTITUTION_DATA = MappingProxyType({
 SITE_DATA = MappingProxyType({
     InstitutionOption.omi: [
         (
-            'Royal Victoria Hospital',
-            'Hôpital Royal Victoria',
+            'Opal General Hospital 1',
+            'Hôpital général Opal 1',
             'RVH',
             'HRV',
             PARKING_URLS_MUHC,
@@ -72,8 +72,8 @@ SITE_DATA = MappingProxyType({
             ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
-            'Montreal General Hospital',
-            'Hôpital général de Montréal',
+            'Opal General Hospital 2',
+            'Hôpital général Opal 2',
             'MGH',
             'HGM',
             PARKING_URLS_MUHC,
@@ -86,8 +86,8 @@ SITE_DATA = MappingProxyType({
             ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
-            "Montreal Children's Hospital",
-            "L'Hôpital de Montréal pour enfants",
+            'Opal Childrens Hospital',
+            "L'Hôpital Opal pour enfants",
             'MCH',
             'HME',
             PARKING_URLS_MUHC,
@@ -97,8 +97,8 @@ SITE_DATA = MappingProxyType({
             ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
         ),
         (
-            'Lachine Hospital',
-            'Hôpital de Lachine',
+            'Opal General Hospital 3',
+            'Hôpital général Opal 3',
             'LAC',
             'LAC',
             PARKING_URLS_MUHC,
@@ -108,8 +108,8 @@ SITE_DATA = MappingProxyType({
             ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
         ),
         (
-            'Cree Board Of Health And Social Services Of James Bay',
-            'Conseil Cri de la santé et des services sociaux de la Baie James',
+            'Opal General Hospital 4',
+            'Hôpital général Opal 4',
             'CRE',
             'CRE',
             TRAVEL_URLS_CRE,
@@ -121,8 +121,8 @@ SITE_DATA = MappingProxyType({
     ],
     InstitutionOption.ohigph: [
         (
-            'CHU Sainte-Justine',
-            'CHU Sainte-Justine',
+            'OHIG Pediatric Hospital',
+            'Hôpital Pédiatrique OHIG',
             'CHUSJ',
             'CHUSJ',
             (
