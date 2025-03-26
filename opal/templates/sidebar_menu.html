@@ -50,4 +50,13 @@
       {% /menu_item %}
     {% /menu_group %}
   {% endif %}
+
+  {# Usage Statistics #}
+  {% if request.user.is_superuser %}
+    {% #menu_group app_name="usage-statistics" group_id="statistics" title=_("Usage Statistics") request=request %}
+      {% #menu_item url_name="usage-statistics:data-export" request=request %}
+        {% translate "Export Data" %}
+      {% /menu_item %}
+    {% /menu_group %}
+  {% endif %}
 </ul>
