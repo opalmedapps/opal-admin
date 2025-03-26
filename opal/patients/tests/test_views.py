@@ -1667,7 +1667,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     assert len(patients) == 3
 
 
-def test_not_display_duplicated_patient(relationship_user: Client, django_user_model: User) -> None:
+def test_not_display_duplicated_patients(relationship_user: Client, django_user_model: User) -> None:
     """
     Ensure that `Search Patient Access` template does not display duplicated `Patient Details` search results.
 
