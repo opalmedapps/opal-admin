@@ -519,7 +519,7 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
 def test_verify_existing_caregiver(api_client: APIClient, admin_user: User) -> None:
     """Test the verification of the existence of a caregiver in database."""
     api_client.force_login(user=admin_user)
-    caregiver_factories.CaregiverProfile(user__username='johnwaynedabest')
+    user_factories.User(username='johnwaynedabest')
     response_one = api_client.get(reverse('api:caregivers-detail', kwargs={'username': 'johnwaynedabest'}))
     response_two = api_client.get(reverse('api:caregivers-detail', kwargs={'username': 'skeleton'}))
 
