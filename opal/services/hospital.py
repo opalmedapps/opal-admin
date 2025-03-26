@@ -58,7 +58,7 @@ class OIECommunicationService:
             'site': report_data.site,
             'reportContent': report_data.base64_content,
             'docType': report_data.document_type,
-            'documentDate': report_data.document_date,
+            'documentDate': report_data.document_date.strftime('%Y-%m-%d %H:%M:%S'),
         })
 
         # Try to send a request and get a response
