@@ -386,11 +386,6 @@ def test_fetch_logins_summary_by_month() -> None:
         action_date=dt.date(2024, 4, 4),
     )
     stats_factories.DailyUserAppActivity(
-        action_by_user=homer_caregiver.user,
-        count_logins=6,
-        action_date=dt.date(2024, 4, 4),
-    )
-    stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
         count_logins=1,
         action_date=dt.date(2024, 4, 4),
@@ -404,6 +399,11 @@ def test_fetch_logins_summary_by_month() -> None:
         action_by_user=homer_caregiver.user,
         count_logins=9,
         action_date=dt.date(2024, 3, 3),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        count_logins=9,
+        action_date=dt.date(2024, 3, 2),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=bart_caregiver.user,
@@ -427,15 +427,15 @@ def test_fetch_logins_summary_by_month() -> None:
         },
         {
             'month': dt.date(2024, 4, 1),
-            'total_logins': 12,
-            'unique_user_logins': 3,
-            'avg_logins_per_user': 4.0,
+            'total_logins': 6,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 3.0,
         },
         {
             'month': dt.date(2024, 3, 1),
-            'total_logins': 24,
+            'total_logins': 33,
             'unique_user_logins': 3,
-            'avg_logins_per_user': 8.0,
+            'avg_logins_per_user': 11.0,
         },
     ]
 
@@ -471,19 +471,19 @@ def test_fetch_logins_summary_by_year() -> None:
         action_date=dt.date(2023, 6, 4),
     )
     stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        count_logins=3,
+        action_date=dt.date(2023, 5, 4),
+    )
+    stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=10,
         action_date=dt.date(2022, 4, 3),
     )
     stats_factories.DailyUserAppActivity(
         action_by_user=homer_caregiver.user,
-        count_logins=9,
+        count_logins=8,
         action_date=dt.date(2022, 3, 3),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=bart_caregiver.user,
-        count_logins=5,
-        action_date=dt.date(2022, 2, 1),
     )
 
     logins_summary = stats_queries.fetch_logins_summary(
@@ -502,14 +502,14 @@ def test_fetch_logins_summary_by_year() -> None:
         },
         {
             'year': dt.date(2023, 1, 1),
-            'total_logins': 12,
+            'total_logins': 15,
             'unique_user_logins': 3,
-            'avg_logins_per_user': 4.0,
+            'avg_logins_per_user': 5.0,
         },
         {
             'year': dt.date(2022, 1, 1),
-            'total_logins': 24,
-            'unique_user_logins': 3,
-            'avg_logins_per_user': 8.0,
+            'total_logins': 18,
+            'unique_user_logins': 2,
+            'avg_logins_per_user': 9.0,
         },
     ]

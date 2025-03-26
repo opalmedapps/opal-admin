@@ -10,7 +10,7 @@ from django.db.models.functions import TruncDay, TruncMonth, TruncYear
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
-from opal.usage_statistics.models import DailyUserAppActivity
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity
 from opal.users import models as users_models
 
 # Create a type variable to represent any model type
@@ -177,8 +177,211 @@ def fetch_logins_summary(
             group_field,
         ).annotate(
             total_logins=models.Sum('count_logins'),
-            unique_user_logins=models.Count('id'),
-            avg_logins_per_user=models.Avg('count_logins'),
+            unique_user_logins=models.Count('action_by_user', distinct=True),
+            avg_logins_per_user=models.F('total_logins') / models.F('unique_user_logins'),
+        ).order_by(f'-{group_field}'),
+    )
+
+
+def fetch_received_labs_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received lab results statistics from the `DailyPatientDataReceived` model.
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received lab results summary (inclusive)
+        end_date: the end of the time period of the received lab results summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received lab results summary for a given time period
+    """
+    return _fetch_received_medical_records_summary(
+        start_date=start_date,
+        end_date=end_date,
+        filters={
+            'labs_received__gt': 0,
+        },
+        annotated_summary_fields={
+            'total_received_labs': models.Sum('labs_received'),
+            'total_unique_patients': models.Count('patient', distinct=True),
+            'avg_received_labs_per_patient': models.F('total_received_labs') / models.F('total_unique_patients'),
+        },
+        group_by=group_by,
+    )
+
+
+def fetch_received_appointments_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received appointments summary from the `DailyPatientDataReceived` model.
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received appointments summary (inclusive)
+        end_date: the end of the time period of the received appointments summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received appointments summary for a given time period
+    """
+    return _fetch_received_medical_records_summary(
+        start_date=start_date,
+        end_date=end_date,
+        filters={'appointments_received__gt': 0},
+        annotated_summary_fields={
+            'total_received_appointments': models.Sum('appointments_received'),
+            'total_unique_patients': models.Count('patient', distinct=True),
+            'avg_received_appointments_per_patient':
+                models.F('total_received_appointments') / models.F('total_unique_patients'),
+        },
+        group_by=group_by,
+    )
+
+
+# TODO: QSCCD-2173 - implement fetch_received_diagnoses_summary() function once diagnoses_received field is added.
+
+
+def fetch_received_educational_materials_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received educational materials summary from the `DailyPatientDataReceived` model.
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received educational materials summary (inclusive)
+        end_date: the end of the time period of the received educational materials summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received educational materials summary for a given time period
+    """
+    return _fetch_received_medical_records_summary(
+        start_date=start_date,
+        end_date=end_date,
+        filters={'educational_materials_received__gt': 0},
+        annotated_summary_fields={
+            'total_received_edu_materials': models.Sum('educational_materials_received'),
+            'total_unique_patients': models.Count('patient', distinct=True),
+            'avg_received_edu_materials_per_patient':
+                models.F('total_received_edu_materials') / models.F('total_unique_patients'),
+        },
+        group_by=group_by,
+    )
+
+
+def fetch_received_documents_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received documents summary from the `DailyPatientDataReceived` model.
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received documents summary (inclusive)
+        end_date: the end of the time period of the received documents summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received documents summary for a given time period
+    """
+    return _fetch_received_medical_records_summary(
+        start_date=start_date,
+        end_date=end_date,
+        filters={'documents_received__gt': 0},
+        annotated_summary_fields={
+            'total_received_documents': models.Sum('documents_received'),
+            'total_unique_patients': models.Count('patient', distinct=True),
+            'avg_received_documents_per_patient':
+                models.F('total_received_documents') / models.F('total_unique_patients'),
+        },
+        group_by=group_by,
+    )
+
+
+def fetch_received_questionnaires_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received questionnaires summary from the `DailyPatientDataReceived` model.
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received questionnaires summary (inclusive)
+        end_date: the end of the time period of the received questionnaires summary (inclusive)
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received questionnaires summary for a given time period
+    """
+    return _fetch_received_medical_records_summary(
+        start_date=start_date,
+        end_date=end_date,
+        filters={'questionnaires_received__gt': 0},
+        annotated_summary_fields={
+            'total_received_questionnaires': models.Sum('questionnaires_received'),
+            'total_unique_patients': models.Count('patient', distinct=True),
+            'avg_received_questionnaires_per_patient':
+                models.F('total_received_questionnaires') / models.F('total_unique_patients'),
+        },
+        group_by=group_by,
+    )
+
+
+def _fetch_received_medical_records_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    filters: dict[str, Any],
+    annotated_summary_fields: dict[str, Any],
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch received medical records summary from the `DailyPatientDataReceived` model.
+
+    The summary contains:
+        - the total number of received medical records
+        - the total number of unique patients
+        - the average number of received medical records per patient
+
+    The results can be grouped by date (by default), by month, by year.
+
+    Args:
+        start_date: the beginning of the time period of the received medical records summary (inclusive)
+        end_date: the end of the time period of the received medical records summary (inclusive)
+        filters: additional filters on the received medical records (e.g., to eliminate records where the count is 0)
+        annotated_summary_fields: annotation fields with the statistics/summary aggregation
+        group_by: the date component to group by. By default is grouped by date.
+
+    Returns:
+        grouped received medical records summary for a given time period
+    """
+    queryset = DailyPatientDataReceived.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+        **filters,
+    )
+
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
+
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            **annotated_summary_fields,
         ).order_by(f'-{group_field}'),
     )
 
