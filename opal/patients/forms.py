@@ -63,22 +63,6 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-def _is_not_mrn_or_single_site(form: forms.Form) -> bool:
-    """
-    Check whether the form's `card_type` has not MRN selected or there is only one site.
-
-    Args:
-        form: django form object expected to have a card type field
-
-    Returns:
-        True if there is only one site or the selected `card_type` is MRN, False otherwise
-    """
-    site_count = Site.objects.all().count()
-    card_type = form['card_type'].value()
-
-    return card_type != constants.MedicalCard.mrn.name or site_count == 1
-
-
 class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
@@ -92,7 +76,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         queryset=Site.objects.all(),
         label=_('Hospital'),
         required=lambda form: form.is_mrn_selected(),
-        disabled=_is_not_mrn_or_single_site,
+        disabled=lambda form: form.is_not_mrn_or_single_site(),
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -194,6 +178,17 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         """
         card_type: str = self['card_type'].value()
         return card_type == constants.MedicalCard.mrn.name
+
+    def is_not_mrn_or_single_site(self) -> bool:
+        """
+        Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
+
+        Returns:
+            True if there is only one site or the selected `card_type` is MRN, False otherwise
+        """
+        site_count = Site.objects.all().count()
+
+        return not self.is_mrn_selected() or site_count == 1
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
