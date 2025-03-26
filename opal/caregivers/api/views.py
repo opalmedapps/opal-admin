@@ -1,10 +1,10 @@
 """This module is an API view that return the encryption value required to handle registration listener's requests."""
 from django.db.models.functions import SHA512
-from django.http import HttpRequest, HttpResponse
 
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -35,7 +35,7 @@ class GetCaregiverPatientsList(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: HttpRequest) -> HttpResponse:
+    def get(self, request: Request) -> Response:
         """
         Handle GET requests from `caregivers/patients/`.
 

@@ -11,6 +11,16 @@ from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
 
 
+def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
+    """Test patient list endpoint to return an empty list if their is not relationship."""
+    api_client.force_login(user=admin_user)
+    caregiver = caregiver_factory.Caregiver()
+    api_client.credentials(HTTP_APPUSERID=caregiver.username)
+    response = api_client.get(reverse('api:caregivers-patient-list'))
+    assert response.status_code == 200
+    assert not response.data
+
+
 def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user: User) -> None:
     """Test patient list endpoint to return a list of patients with the correct patient_id and relationship type."""
     api_client.force_login(user=admin_user)
@@ -38,17 +48,6 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     assert response.data[0]['first_name']
     assert response.data[0]['last_name']
     assert response.data[0]['status']
-
-
-def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
-    """Test patient list endpoint to return an empty list should only found relationship 'Self'."""
-    api_client.force_login(user=admin_user)
-    patient_factory.Relationship()
-    caregiver = Caregiver.objects.get()
-    api_client.credentials(HTTP_APPUSERID=caregiver.username)
-    response = api_client.get(reverse('api:caregivers-patient-list'))
-    assert response.status_code == 200
-    assert not response.data
 
 
 def test_regitration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:

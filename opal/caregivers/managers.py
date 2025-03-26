@@ -19,8 +19,7 @@ class CaregiverManager(models.Manager):
         return self.prefetch_related(
             'patient',
             'caregiver',
+            'caregiver__user',
         ).filter(
             caregiver__user__username=user_id,
-        ).exclude(
-            type__name='Self',
         )
