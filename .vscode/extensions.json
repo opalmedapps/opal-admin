@@ -2,6 +2,9 @@
   "recommendations": [
     "ms-python.python",
     "ms-python.vscode-pylance",
+    "ms-python.flake8",
+    "ms-python.isort",
+    "ms-python.mypy-type-checker",
     "batisteo.vscode-django",
     "editorconfig.editorconfig",
     "redhat.vscode-yaml",
