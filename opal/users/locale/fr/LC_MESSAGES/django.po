@@ -39,8 +39,6 @@ msgid "User was deactivated successfully."
 msgstr "L'utilisateur a été désactivé avec succès."
 
 #: opal/users/api/viewsets.py
-#, fuzzy
-#| msgid "User was deactivated successfully."
 msgid "User was reactivated successfully."
 msgstr "L'utilisateur a été désactivé avec succès."
 
