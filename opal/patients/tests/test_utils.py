@@ -95,8 +95,8 @@ def test_get_caregiver_success() -> None:
     username1 = 'username-1'
     Caregiver(username=username1)
     caregiver = utils.get_caregiver(username1)
-    if caregiver:
-        assert caregiver.username == username1
+    assert caregiver is not None
+    assert caregiver.username == username1
 
 
 def test_get_caregiver_failure() -> None:
