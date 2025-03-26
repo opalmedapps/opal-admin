@@ -37,7 +37,7 @@ SECRET_KEY = env.str('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal','172.27.0.1','172.22.0.1','172.23.0.1','127.0.0.1:8086/orms','172.26.0.4','172.26.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal'])
 
 
 # APPS
@@ -473,8 +473,6 @@ API_ROOT = 'api'
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 # Easy Audit
 #
