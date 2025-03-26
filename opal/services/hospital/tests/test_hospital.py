@@ -340,7 +340,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': dict(OIE_PATIENT_DATA),
         },
     )
 
@@ -460,7 +460,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': dict(OIE_PATIENT_DATA),
         },
     )
 
