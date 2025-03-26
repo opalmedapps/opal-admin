@@ -248,7 +248,7 @@ class TestHL7Parser:  # noqa: WPS338
         with (FIXTURES_DIR / 'marge_pharmacy.hl7v2').open('r') as file:
             stream = StringIO(file.read())
             with pytest.raises(exceptions.ParseError, match='Error decoding HL7 message'):
-                self.parser.parse(stream)  # type: ignore[arg-type]
+                self.parser.parse(stream)
 
     def test_fix_breaking_characters(self) -> None:
         """Test parsing a message with breaking characters."""
