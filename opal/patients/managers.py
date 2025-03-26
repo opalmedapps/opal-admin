@@ -27,6 +27,43 @@ class RelationshipManager(models.Manager):
             caregiver__user__username=user_id,
         )
 
+    def get_relationship_by_patient_caregiver(  # noqa: WPS211
+        self,
+        relationship_type: str,
+        first_name: str,
+        last_name: str,
+        email: str,
+        phone_number: str,
+        ramq: str,
+    ) -> models.QuerySet:
+        """
+        Query manager to get a `Relationship` record filtered by given parameters.
+
+        Args:
+            relationship_type (str): caregiver relationship type
+            first_name (str): user first name
+            last_name (str): user last name
+            email (str): user email address
+            phone_number (str): user phone number
+            ramq (str): patient's RAMQ numebr
+
+        Returns:
+            Queryset to get the filtered `Relationship` record
+        """
+        return self.select_related(
+            'patient',
+            'type',
+            'caregiver',
+            'caregiver__user',
+        ).filter(
+            patient__first_name=first_name,
+            patient__last_name=last_name,
+            patient__ramq=ramq,
+            type__name=relationship_type,
+            caregiver__user__email=email,
+            caregiver__user__phone_number=phone_number,
+        )
+
 
 class HospitalPatientManager(models.Manager):
     """Manager class for the `HospitalPatient` model."""

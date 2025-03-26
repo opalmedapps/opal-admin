@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
 
+from opal.users.models import User
+
 from .models import Patient, RelationshipType
 
 
@@ -44,6 +46,22 @@ class PatientTable(tables.Table):
         model = Patient
         fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
         empty_text = _('No patient could be found.')
+        orderable = False
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
+
+
+class ExistingUserTable(tables.Table):
+    """A table for user types."""
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+        empty_text = _('No existing user could be found.')
         orderable = False
         attrs = {
             'class': 'table table-bordered table-hover',
