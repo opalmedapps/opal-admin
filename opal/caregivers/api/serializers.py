@@ -184,7 +184,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
         fields = ['caregiver', 'patient', 'hospital_patients', 'relationship_type']
 
 
-class UpdateCaregiverSerializer(CaregiverSerializer):
+class _NestedCaregiverSerializer(CaregiverSerializer):
     """
     Caregiver profile serializer that supports nested updates.
 
@@ -200,7 +200,7 @@ class UpdateCaregiverSerializer(CaregiverSerializer):
         }
 
 
-class UpdatePatientSerializer(PatientSerializer):
+class _NestedPatientSerializer(PatientSerializer):
     """
     Patient serializer that supports nested updates.
 
@@ -222,13 +222,13 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
     The information include Patient and Caregiver data.
     """
 
-    patient = UpdatePatientSerializer(
+    patient = _NestedPatientSerializer(
         source='relationship.patient',
         fields=('legacy_id',),
         many=False,
     )
 
-    caregiver = UpdateCaregiverSerializer(
+    caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
         fields=('language', 'phone_number', 'username', 'legacy_id'),
         many=False,
