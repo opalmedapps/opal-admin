@@ -835,7 +835,7 @@ class LegacyOARoleModule(models.Model):
 class LegacyPatientActivityLog(models.Model):
     """PatientActivityLog from the legacy database OpalDB."""
 
-    activity_ser_num = models.IntegerField(db_column='ActivitySerNum', primary_key=True)
+    activity_ser_num = models.BigAutoField(db_column='ActivitySerNum', primary_key=True)
     request = models.CharField(db_column='Request', max_length=255, null=False)
     parameters = models.CharField(db_column='Parameters', max_length=2048, default='')
     target_patient_id = models.IntegerField(db_column='TargetPatientId', null=True)
