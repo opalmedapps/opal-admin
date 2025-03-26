@@ -86,7 +86,7 @@ class ReportService():
                 url=settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
                 headers=headers,
                 data=payload,
-                timeout=10,
+                timeout=60,
             )
         except RequestException:
             return None
