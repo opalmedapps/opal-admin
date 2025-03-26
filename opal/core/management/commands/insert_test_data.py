@@ -46,11 +46,13 @@ INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.muhc: {
         'name': 'McGill University Health Centre',
         'name_fr': 'Centre universitaire de santé McGill',
+        'acronym_fr': 'MUHC',
         'support_email': 'opal@muhc.mcgill.ca',
     },
     InstitutionOption.chusj: {
         'name': 'CHU Sainte-Justine - Mother and child university hospital center',
         'name_fr': 'CHU Sainte-Justine - Le centre hospitalier universitaire mère-enfant',
+        'acronym_fr': 'CHUSJ',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
     },
 })
@@ -61,6 +63,7 @@ SITE_DATA = MappingProxyType({
             'Royal Victoria Hospital',
             'Hôpital Royal Victoria',
             'RVH',
+            'RVH',
             PARKING_URLS_MUHC,
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
@@ -70,6 +73,7 @@ SITE_DATA = MappingProxyType({
         (
             'Montreal General Hospital',
             'Hôpital général de Montréal',
+            'MGH',
             'MGH',
             PARKING_URLS_MUHC,
             (
@@ -84,6 +88,7 @@ SITE_DATA = MappingProxyType({
             "Montreal Children's Hospital",
             "L'Hôpital de Montréal pour enfants",
             'MCH',
+            'MCH',
             PARKING_URLS_MUHC,
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
@@ -94,6 +99,7 @@ SITE_DATA = MappingProxyType({
             'Lachine Hospital',
             'Hôpital de Lachine',
             'LAC',
+            'LAC',
             PARKING_URLS_MUHC,
             ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
             Decimal('45.44121'),
@@ -103,6 +109,7 @@ SITE_DATA = MappingProxyType({
         (
             'Cree Board Of Health And Social Services Of James Bay',
             'Conseil Cri de la santé et des services sociaux de la Baie James',
+            'CRE',
             'CRE',
             TRAVEL_URLS_CRE,
             TRAVEL_URLS_CRE,
@@ -115,6 +122,7 @@ SITE_DATA = MappingProxyType({
         (
             'CHU Sainte-Justine',
             'CHU Sainte-Justine',
+            'CHUSJ',
             'CHUSJ',
             (
                 'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
@@ -506,6 +514,7 @@ def create_institution(institution_option: InstitutionOption) -> Institution:
     institution = Institution(
         name=data['name'],
         name_fr=data['name_fr'],
+        acronym_fr=data['acronym_fr'],
         acronym=institution_option.value,
         support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
@@ -528,7 +537,7 @@ def create_sites(institution_option: InstitutionOption, institution: Institution
         institution: the institution instance
 
     Returns:
-        a mapping from site code to `Site` instance
+        a mapping from site acronym to `Site` instance
     """
     result: dict[str, Site] = {}
 
@@ -544,6 +553,7 @@ def _create_site(
     name: str,
     name_fr: str,
     acronym: str,
+    acronym_fr: str,
     parking_urls: tuple[str, str],
     direction_urls: tuple[str, str],
     latitude: Decimal,
@@ -558,6 +568,7 @@ def _create_site(
         name: the English name of the site
         name_fr: the French name of the site
         acronym: the acronym of the institution
+        acronym_fr: the acronym_fr of the institution
         parking_urls: a tuple of URLs to the English and French parking information
         direction_urls: a tuple of URLs to the English and French direction to the hospital information
         latitude: the latitude of the GPS location of the site
@@ -572,6 +583,7 @@ def _create_site(
         name=name,
         name_fr=name_fr,
         acronym=acronym,
+        acronym_fr=acronym_fr,
         parking_url=parking_urls[0],
         parking_url_fr=parking_urls[1],
         direction_url=direction_urls[0],

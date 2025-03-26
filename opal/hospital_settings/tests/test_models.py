@@ -67,7 +67,7 @@ def test_institution_string_method() -> None:
 def test_institution_ordered() -> None:
     """Ensure that the institutions are ordered by name."""
     factories.Institution(name='BTest Institution')
-    factories.Institution(name='ATest Institution', acronym='ATH')
+    factories.Institution(name='ATest Institution', acronym='ATH', acronym_fr='ATH_FR')
 
     first = Institution.objects.all()[0]
     assert first.name == 'ATest Institution'

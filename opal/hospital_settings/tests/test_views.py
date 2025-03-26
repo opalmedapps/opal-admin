@@ -89,9 +89,9 @@ def test_institution_urls_use_correct_template(
 
 def test_institution_list_displays_all(client: Client, institution_user: User) -> None:
     """Ensure that the institution list page template displays all the institutions."""
-    factories.Institution(name='INS1')
-    factories.Institution(name='INS2')
-    factories.Institution(name='INS3')
+    factories.Institution(name='INS1', acronym_fr='INSFR1')
+    factories.Institution(name='INS2', acronym_fr='INSFR2')
+    factories.Institution(name='INS3', acronym_fr='INSFR3')
 
     url = reverse('hospital-settings:institution-list')
     response = client.get(url)
@@ -485,6 +485,7 @@ def test_institution_with_no_labs_non_interpretable_update(
     form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
+    form_data['acronym_fr'] = 'updated acronym_fr'
     form_data.pop('non_interpretable_lab_result_delay')
 
     response = client.post(
@@ -495,6 +496,7 @@ def test_institution_with_no_labs_non_interpretable_update(
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
     assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
     assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].acronym_fr != 'updated acronym_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_with_no_labs_interpretable_update(
@@ -510,6 +512,7 @@ def test_institution_with_no_labs_interpretable_update(
     form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
+    form_data['acronym_fr'] = 'updated acronym_fr'
     form_data.pop('interpretable_lab_result_delay')
 
     response = client.post(
@@ -520,6 +523,7 @@ def test_institution_with_no_labs_interpretable_update(
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
     assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
     assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].acronym_fr != 'updated acronym_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_successful_update_redirects(
@@ -535,6 +539,7 @@ def test_institution_successful_update_redirects(
     form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
+    form_data['acronym_fr'] = 'updated acronym_fr'
 
     response = client.post(url, data=form_data, files=institution_form.files)
 

@@ -65,7 +65,7 @@ DJANGO_PATIENT_QUERY = """
 DJANGO_HOSPITAL_PATIENT_QUERY = """
     SELECT
         PP.legacy_id AS LegacyID,
-        UPPER(HSS.acronym) AS SiteCode,
+        UPPER(HSS.acronym) AS SiteAcronym,
         PHP.mrn AS MRN,
         PHP.is_active AS IsActive
     FROM patients_hospitalpatient PHP

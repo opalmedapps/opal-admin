@@ -18,6 +18,7 @@ class Institution(DjangoModelFactory):
     logo = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
     logo_fr = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
     acronym = factory.lazy_attribute(lambda institution: institution.name[:4].upper())
+    acronym_fr = factory.lazy_attribute(lambda institution: institution.name_fr[:4].upper())
     terms_of_use = factory.django.FileField(data=b'test PDF', filename='test_terms.pdf')
     terms_of_use_fr = factory.django.FileField(data=b'PDF pour tester', filename='test_terms.pdf')
     support_email = 'muhc@muhc.mcgill.ca'
@@ -39,6 +40,11 @@ class Site(DjangoModelFactory):
         # ensure that spaces in the name don't get used as part of the code
         # spaces are truncated leading to a code with a smaller length
         lambda site: site.name.replace(' ', 'x')[:4].upper(),
+    )
+    acronym_fr = factory.lazy_attribute(
+        # ensure that spaces in the name don't get used as part of the code
+        # spaces are truncated leading to a code with a smaller length
+        lambda site: site.name_fr.replace(' ', 'x')[:4].upper(),
     )
     parking_url = 'https://parking.example.com'
     parking_url_fr = 'https://parking.example.com/fr'

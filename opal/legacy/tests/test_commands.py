@@ -849,7 +849,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create hospital patient
         patient_factories.HospitalPatient(
             patient=patient,
-            site=hospital_settings_factories.Site(code='RVH'),
+            site=hospital_settings_factories.Site(acronym='RVH'),
         )
 
         # create another patient record
@@ -908,7 +908,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         patient_factories.HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=hospital_settings_factories.Site(code='MGH'),
+            site=hospital_settings_factories.Site(acronym='MGH'),
         )
 
     def _create_two_fully_registered_caregivers(self) -> None:

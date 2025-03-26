@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
         for patient in patients:
             # exclude LAC MRNs due to a mismatch with ORMS (ORMS seems to have some outdated ones)
-            hospital_patient = patient.hospital_patients.exclude(site__code='LAC').first()
+            hospital_patient = patient.hospital_patients.exclude(site__acronym='LAC').first()
             if not hospital_patient:
                 skipped_patients.append((patient, 'patient has no MRNs'))
                 continue
