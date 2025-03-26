@@ -16,7 +16,7 @@ from django.utils import timezone
 from opal.caregivers.models import CaregiverProfile
 from opal.legacy.models import LegacyPatientActivityLog
 from opal.patients.models import Patient, Relationship, RelationshipStatus
-from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
+from opal.usage_statistics.models import DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
 
 
@@ -114,6 +114,9 @@ class Command(BaseCommand):
         # NOTE! The date_added indicates the date when the activity statistics were populated.
         # It is not the date when the activities were made.
         date_added = timezone.now().date()
+        users = User.objects.all().values('id', 'username')
+        users_dict = {user['username']: user['id'] for user in users}
+
         activities = LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
@@ -122,7 +125,7 @@ class Command(BaseCommand):
         )
 
         for activity in activities:
-            activity['action_by_user'] = User.objects.filter(username=activity['username']).first()
+            activity['action_by_user'] = User(id=users_dict[activity['username']])
             activity.pop('username')
 
         DailyUserAppActivity.objects.bulk_create(
@@ -171,7 +174,7 @@ class Command(BaseCommand):
     def _delete_stored_statistics(self) -> None:
         """Delete daily application activity statistics data.
 
-        The records deleted from `DailyUserAppActivity`, `DailyUserPatientActivity`, `DailyPatientDataReceived` models.
+        The records deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity` models.
         """
         self.stdout.write(self.style.WARNING('Deleting existing usage statistics data'))
         confirm = input(
@@ -186,4 +189,3 @@ class Command(BaseCommand):
 
         DailyUserAppActivity.objects.all().delete()
         DailyUserPatientActivity.objects.all().delete()
-        DailyPatientDataReceived.objects.all().delete()
