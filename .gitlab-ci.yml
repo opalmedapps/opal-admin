@@ -116,6 +116,7 @@ build docs:
   stage: Build
   script:
     - pip install -r requirements/docs.txt
+    - pip list
     - mkdocs --version
     - mkdocs build
   # cannot restrict to only merge requests due to the following issue:
