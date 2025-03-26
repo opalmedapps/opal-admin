@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-06 18:15+0300\n"
+"POT-Creation-Date: 2022-12-19 09:34-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,6 +51,7 @@ msgid "Self"
 msgstr "Soi"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -97,6 +98,8 @@ msgstr "Le droit de répondre au questionnaire"
 #: opal/patients/models.py
 msgid "The caregiver can answer questionnaires on behalf of the patient."
 msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
+
+#: opal/patients/models.py
 msgid "Relationship Role Type"
 msgstr "Type de relation avec le proche aidant"
 
@@ -203,11 +206,6 @@ msgstr "Expiré"
 #: opal/patients/models.py
 msgid "Revoked"
 msgstr "Révoqué"
-
-#: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Caregiver"
-msgstr "Proche aidant"
 
 #: opal/patients/models.py
 #: opal/patients/templates/patients/relationship_type/form.html
