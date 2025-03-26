@@ -2,7 +2,8 @@
 
 import datetime as dt
 from collections import UserDict
-from typing import Any, Union
+from pathlib import Path
+from typing import Any
 
 from django.db import models
 
@@ -261,11 +262,8 @@ def get_aggregated_patient_received_data(
 
 
 def export_data(    # noqa: WPS234
-    data_set: Union[    # noqa: WPS320
-        list[dict[str, Any]],
-        dict[str, Any],
-    ],
-    file_name: str = 'data.csv',
+    data_set: list[dict[str, Any]] | dict[str, Any],
+    file_path: Path,
 ) -> None:
     """Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
 
@@ -273,7 +271,7 @@ def export_data(    # noqa: WPS234
 
     Args:
         data_set: the data set  to be exported
-        file_name: the name of the export file
+        file_path: the destination path of the export file
 
     Raises:
         ValueError: If the file_name format is not supported
@@ -291,11 +289,11 @@ def export_data(    # noqa: WPS234
         lambda col: _convert_to_naive(col) if isinstance(col, pd.Timestamp) else col,
     )
     # Generate the file in the required path and format
-    match file_name.split('.')[-1]:
-        case 'csv':
-            dataframe.to_csv(file_name, index=False)
-        case 'xlsx':
-            dataframe.to_excel(file_name, index=False)
+    match file_path.suffix:
+        case '.csv':
+            dataframe.to_csv(file_path, index=False)
+        case '.xlsx':
+            dataframe.to_excel(file_path, index=False)
         case _:
             raise ValueError('Invalid file format, please use either csv or xlsx')
 
