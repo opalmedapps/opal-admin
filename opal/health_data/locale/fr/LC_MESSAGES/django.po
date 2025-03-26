@@ -95,20 +95,20 @@ msgstr ""
 
 #: opal/health_data/templates/health_data_display.html
 msgid "No data found for body mass."
-msgstr ""
+msgstr "Aucune donnée(s) trouvée concernant masse la corporelle."
 
 #: opal/health_data/templates/health_data_display.html
 msgid "No data found for body temperature."
-msgstr ""
+msgstr "Aucune donnée(s) trouvée concernant la température corporelle."
 
 #: opal/health_data/templates/health_data_display.html
 msgid "No data found for heart rate."
-msgstr ""
+msgstr "Aucune donnée trouvée concernant la fréquence cardiaque."
 
 #: opal/health_data/templates/health_data_display.html
 msgid "No data found for heart rate variability."
-msgstr ""
+msgstr "Aucune donnée trouvée concernant la variabilité de la fréquence cardiaque."
 
 #: opal/health_data/templates/health_data_display.html
 msgid "No data found for oxygen saturation."
-msgstr ""
+msgstr "Aucune donnée trouvée concernant la saturation en oxygène."

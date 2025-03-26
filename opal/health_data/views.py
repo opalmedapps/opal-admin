@@ -42,7 +42,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 'bm_graph': self._generate_plot(
                     title='Body Mass',
                     xlab='Date',
-                    ylab=QuantitySampleType.BODY_MASS,
+                    ylab=str(QuantitySampleType.BODY_MASS.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
                         type__in=[QuantitySampleType.BODY_MASS],
@@ -51,7 +51,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 'bt_graph': self._generate_plot(
                     title='Body Temperature',
                     xlab='Date',
-                    ylab=QuantitySampleType.BODY_TEMPERATURE,
+                    ylab=str(QuantitySampleType.BODY_TEMPERATURE.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
                         type__in=[QuantitySampleType.BODY_TEMPERATURE],
@@ -60,7 +60,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 'hr_graph': self._generate_plot(
                     title='Heart Rate',
                     xlab='Date',
-                    ylab=QuantitySampleType.HEART_RATE,
+                    ylab=str(QuantitySampleType.HEART_RATE.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
                         type__in=[QuantitySampleType.HEART_RATE],
@@ -69,7 +69,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 'hrv_graph': self._generate_plot(
                     title='Heart Rate Variability',
                     xlab='Date',
-                    ylab=QuantitySampleType.HEART_RATE_VARIABILITY,
+                    ylab=str(QuantitySampleType.HEART_RATE_VARIABILITY.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
                         type__in=[QuantitySampleType.HEART_RATE_VARIABILITY],
@@ -78,7 +78,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 'os_graph': self._generate_plot(
                     title='Oxygen Saturation',
                     xlab='Date',
-                    ylab=QuantitySampleType.OXYGEN_SATURATION,
+                    ylab=str(QuantitySampleType.OXYGEN_SATURATION),
                     data=QuantitySample.objects.filter(
                         patient=patient,
                         type__in=[QuantitySampleType.OXYGEN_SATURATION],
