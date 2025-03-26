@@ -1,10 +1,10 @@
+"""This module provides ``ViewSets`` for the hospital-specific settings REST API."""
 from rest_framework import permissions, viewsets
 
 from ..models import Institution, Site
 from .serializers import InstitutionSerializer, SiteSerializer
 
 
-# REST API
 class InstitutionViewSet(viewsets.ModelViewSet):
     """
     This viewset provides an API view for ``Institution``.
