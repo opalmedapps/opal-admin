@@ -1679,7 +1679,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     ) -> None:
         """Test that the confirmation email is sent for new caregiver in French."""
         api_client.force_login(user=admin_user)
-        registration_code, _ = self._build_access_request(email_verified=True)
+        registration_code, _ = self._build_access_request(email_verified=True, new_patient=False)
 
         response = api_client.post(
             reverse(
@@ -1697,8 +1697,8 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert 'Thank you for registering for the Opal app.' in body
         assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
 
-    @pytest.mark.django_db(databases=['default', 'legacy'])
-    def test_confirmation_email_existing_caregiver_en(
+    @pytest.mark.django_db(databases=['default'])
+    def test_confirmation_email_existing_caregiver(
         self,
         api_client: APIClient,
         admin_user: User,
@@ -1714,7 +1714,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             last_name='test',
         )
         caregiver_factories.CaregiverProfile(user=caregiver)
-        registration_code, _ = self._build_access_request()
+        registration_code, _ = self._build_access_request(new_patient=False)
 
         url = reverse('api:registration-register', kwargs={'code': registration_code.code})
         response = api_client.post(
