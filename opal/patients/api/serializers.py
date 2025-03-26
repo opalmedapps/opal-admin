@@ -129,10 +129,6 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             'date_of_death',
             'sex',
             'mrns',
-            # TODO:
-            # 'phone',
-            # 'email',
-            # 'language',
         ]
 
     def validate_mrns(
