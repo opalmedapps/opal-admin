@@ -14,10 +14,10 @@ from django.db.backends.utils import CursorWrapper
 if TYPE_CHECKING:
     from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
 
+from opal.patients.models import RelationshipType
+
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
-
-from opal.patients.models import RelationshipType
 
 
 class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
