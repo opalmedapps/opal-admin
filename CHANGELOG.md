@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: add model for a user's mobile device (!187)
 * Add hospital service for communication with the OIE (!173)
 * Add REST API endpoint for the questionnaire report generation
+* Add REST API endpoint for the patient's caregiver(s) relationship(s) (!222)
 
 ### Documentation
 

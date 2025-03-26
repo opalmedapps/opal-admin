@@ -240,7 +240,7 @@ class EmailVerification(models.Model):
     caregiver = models.ForeignKey(
         to=CaregiverProfile,
         verbose_name=_('Caregiver Profile'),
-        related_name='emails',
+        related_name='email_verifications',
         on_delete=models.CASCADE,
     )
 
@@ -251,7 +251,7 @@ class EmailVerification(models.Model):
     )
 
     is_verified = models.BooleanField(
-        verbose_name=_('Verfied'),
+        verbose_name=_('Verified'),
         default=False,
     )
 
@@ -261,7 +261,7 @@ class EmailVerification(models.Model):
 
     class Meta:
         verbose_name = _('Email Verification')
-        verbose_name_plural = _('Email Verification')
+        verbose_name_plural = _('Email Verifications')
 
     def __str__(self) -> str:
         """
@@ -270,7 +270,7 @@ class EmailVerification(models.Model):
         Returns:
             the string email verification code and its status
         """
-        return 'Code: {code} (Active: {verified})'.format(
+        return 'Code: {code} (Verified: {verified})'.format(
             code=self.code,
             verified=str(self.is_verified),
         )

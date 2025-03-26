@@ -22,23 +22,26 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
     patient = Patient()
     caregiver1 = CaregiverProfile()
     caregiver2 = CaregiverProfile()
-    Relationship(patient=patient, caregiver=caregiver1)
-    Relationship(patient=patient, caregiver=caregiver2)
+    relationship1 = Relationship(patient=patient, caregiver=caregiver1)
+    relationship2 = Relationship(patient=patient, caregiver=caregiver2, status='CON')
 
     response = api_client.get(reverse(
         'api:caregivers-list',
         kwargs={'legacy_patient_id': patient.legacy_id},
     ))
+
     assert response.status_code == HTTPStatus.OK
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,
         'first_name': caregiver1.user.first_name,
         'last_name': caregiver1.user.last_name,
+        'status': relationship1.status,
     }
     assert response.json()[1] == {
         'caregiver_id': caregiver2.user.id,
         'first_name': caregiver2.user.first_name,
         'last_name': caregiver2.user.last_name,
+        'status': relationship2.status,
     }
 
 

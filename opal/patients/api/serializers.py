@@ -58,4 +58,4 @@ class CaregiverRelationshipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Relationship
-        fields = ['caregiver_id', 'first_name', 'last_name']
+        fields = ['caregiver_id', 'first_name', 'last_name', 'status']
