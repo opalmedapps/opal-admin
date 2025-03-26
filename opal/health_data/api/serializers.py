@@ -28,7 +28,7 @@ class QuantitySampleListSerializer(serializers.ListSerializer):
         return QuantitySample.objects.bulk_create(QuantitySample(**data) for data in validated_data)
 
 
-class QuantitySampleSerializer(serializers.ModelSerializer):
+class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
     """
     Serializer for `QuantitySample` instances.
 
@@ -36,7 +36,7 @@ class QuantitySampleSerializer(serializers.ModelSerializer):
     See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-listserializer-behavior
     """
 
-    def create(self, validated_data: dict[str, Any]) -> Any:
+    def create(self, validated_data: dict[str, Any]) -> QuantitySample:
         """
         Create a new `QuantitySample` instance.
 
