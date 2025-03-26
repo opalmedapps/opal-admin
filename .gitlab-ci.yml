@@ -42,6 +42,7 @@ before_script:
 stages:
   - Static Analysis
   - Test
+  - Checks
   - Build
   - Documentation
 
