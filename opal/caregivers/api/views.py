@@ -25,7 +25,7 @@ from opal.caregivers.models import Device, EmailVerification, RegistrationCode, 
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
-from opal.users.models import User
+from opal.users.models import Caregiver, User
 
 from .. import constants
 
@@ -146,7 +146,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         email = input_serializer.validated_data['email']
         #  Check whether the email is already registered
-        caregiver = User.objects.filter(email=email).first()
+        caregiver = Caregiver.objects.filter(email=email).first()
         if caregiver:
             raise drf_serializers.ValidationError(
                 _('The email is already registered.'),
