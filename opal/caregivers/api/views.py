@@ -12,7 +12,7 @@ from rest_framework.request import Request, clone_request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.caregivers.api.serializers import DeviceSerializer, RegistrationEncryptionInfoSerializer
+from opal.caregivers.api.serializers import RegistrationEncryptionInfoSerializer, UpdateDeviceSerializer
 from opal.caregivers.models import Device, RegistrationCode, RegistrationCodeStatus
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -38,7 +38,7 @@ class UpdateDeviceView(UpdateAPIView):
     """Class handling requests for updates or creations of device ids."""
 
     permission_classes = [IsAuthenticated]
-    serializer_class = DeviceSerializer
+    serializer_class = UpdateDeviceSerializer
     lookup_url_kwarg = 'device_id'
     lookup_field = 'device_id'
 
@@ -70,14 +70,14 @@ class UpdateDeviceView(UpdateAPIView):
         Returns:
             HTTP `Response` success or failure
         """
-        partial = kwargs.pop('partial', False)
+        partial = self.kwargs.pop('partial', False)
         device_instance = self.get_object_or_none()
         serializer = self.get_serializer(
             device_instance,
             data=request.data,
             partial=partial,
         )
-        serializer.is_valid(raise_exception=True)
+
         if device_instance is None:
             lookup_value = self.kwargs[self.lookup_url_kwarg]
             extra_kwargs = {self.lookup_field: lookup_value}
@@ -97,7 +97,7 @@ class UpdateDeviceView(UpdateAPIView):
         Returns:
             self.update()
         """
-        kwargs['partial'] = True
+        self.kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[Device]:
@@ -109,7 +109,9 @@ class UpdateDeviceView(UpdateAPIView):
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
     def get_object_or_none(self) -> Any:
-        """Attempt to retrieve object; fail on 404 Patch requests, call POST otherwise.
+        """Attempt to retrieve object.
+
+        If not found we use clone_request to check if the caller has the required permissions for a POST request.
 
         Returns:
             Device object, 404, or clone_request with POST action.

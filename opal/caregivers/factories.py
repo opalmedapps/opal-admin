@@ -69,6 +69,7 @@ class Device(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     type = models.DeviceType.IOS  # noqa: A003
     device_id = Faker('device_id')
+    is_trusted = Faker('pybool')
 
 
 class RegistrationCode(DjangoModelFactory):

@@ -112,9 +112,9 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['answer']
 
 
-class DeviceSerializer(serializers.ModelSerializer):
+class UpdateDeviceSerializer(serializers.ModelSerializer):
     """Serializer for devices."""
 
     class Meta:
         model = Device
-        fields = '__all__'
+        fields = ['id', 'caregiver', 'device_id', 'type', 'is_trusted']
