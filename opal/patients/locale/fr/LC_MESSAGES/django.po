@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-24 16:36-0400\n"
+"POT-Creation-Date: 2023-04-13 15:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,8 +43,20 @@ msgid "Card Type"
 msgstr "Type de Carte"
 
 #: opal/patients/filters.py
-msgid "Search"
-msgstr "Rechercher"
+msgid "Choose..."
+msgstr ""
+
+#: opal/patients/filters.py
+msgid "Hospital"
+msgstr "Nom de l'hôpital:"
+
+#: opal/patients/filters.py
+msgid "Identification Number"
+msgstr ""
+
+#: opal/patients/filters.py
+msgid "Search Specific Patient"
+msgstr "Rechercher l'accès des patients"
 
 #: opal/patients/forms.py
 msgid "At which hospital is the patient?"
@@ -416,12 +428,15 @@ msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
 #: opal/patients/tables.py
-msgid "Pending Since"
-msgstr "En attendant"
+#, python-brace-format
+msgid "{days} days"
+msgstr ""
 
 #: opal/patients/tables.py
-msgid "No caregiver pending access requests."
-msgstr ""
+#, fuzzy
+#| msgid "No caregiver could be found."
+msgid "No caregiver requests found."
+msgstr "Aucun aidant n'a pu être retrouvé."
 
 #: opal/patients/tables.py
 msgid "Start Date"
@@ -548,7 +563,6 @@ msgid "Update"
 msgstr "Mettre à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Create"
 msgstr "Créer"
 
@@ -561,11 +575,7 @@ msgid "New Relationship Type"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Manage"
-msgstr ""
-
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Caregiver Access Requests"
+msgid "Edit Caregiver Access Request"
 msgstr "Générer une demande d'accès"
 
 #: opal/patients/templates/patients/relationships/edit_relationships.html
@@ -573,8 +583,16 @@ msgid "RAMQ"
 msgstr "RAMQ"
 
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
-msgid "Pending Caregiver Access Requests"
-msgstr ""
+msgid "Manage Caregiver Access"
+msgstr "Générer une demande d'accès"
+
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
+msgid "Specific Patient"
+msgstr "Patient de l'hôpital"
+
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
+msgid "Pending Requests"
+msgstr "En attendant"
 
 #: opal/patients/templates/patients/relationships/relationship_filter.html
 msgid "Search Patient Access"
