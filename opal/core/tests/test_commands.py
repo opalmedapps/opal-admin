@@ -1,7 +1,10 @@
+from datetime import date
+
 from django.contrib.auth.models import Group
 from django.core.management.base import CommandError
 
 import pytest
+from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
@@ -132,6 +135,36 @@ class TestInsertTestData(CommandTestMixin):
         # if changed, assert that the French caregiver has a French security question
         assert caregiver_fr is None
 
+    def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
+        """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
+        # set today before Bart's birth day in the year (Feb 22nd)
+        # mocking date is tricky: https://stackoverflow.com/a/55187924
+        mock_date = mocker.patch(
+            'opal.core.management.commands.insert_test_data.date',
+            wraps=date,
+        )
+        mock_date.today.return_value = date(2024, 1, 18)
+
+        self._call_command('insert_test_data', 'MUHC')
+
+        bart = Patient.objects.get(first_name='Bart')
+        assert bart.date_of_birth == date(2009, 2, 23)
+
+    def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
+        """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
+        # set today after Bart's birth day in the year (Feb 22nd)
+        # mocking date is tricky: https://stackoverflow.com/a/55187924
+        mock_date = mocker.patch(
+            'opal.core.management.commands.insert_test_data.date',
+            wraps=date,
+        )
+        mock_date.today.return_value = date(2024, 2, 23)
+
+        self._call_command('insert_test_data', 'MUHC')
+
+        bart = Patient.objects.get(first_name='Bart')
+        assert bart.date_of_birth == date(2010, 2, 23)
+
 
 class TestInitializeData(CommandTestMixin):
     """Test class to group the `initialize_data` command tests."""
@@ -255,3 +288,21 @@ class TestInitializeData(CommandTestMixin):
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()
+
+    def test_delete_clinicalstaff_only(self) -> None:
+        """Only existing clinical staff users are deleted, not caregivers."""
+        # create a group to trigger the existing data check
+        Group.objects.create(name='Clinicians')
+        User.objects.create(username='johnwayne')
+        # a caregiver that should not be deleted by the command
+        caregiver = caregiver_factories.CaregiverProfile()
+
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
+
+        # ensure that the caregiver is not deleted but the user was
+        caregiver.refresh_from_db()
+        assert Caregiver.objects.count() == 1
+        assert not User.objects.filter(username='johnwayne').exists()
+        assert 'Deleting existing data\n' in stdout
+        assert 'Data successfully deleted\n' in stdout
+        assert 'Data successfully created\n' in stdout
