@@ -158,7 +158,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+            self._send_email(email_verification, caregiver.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -171,7 +171,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+                self._send_email(email_verification, caregiver.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
@@ -183,39 +183,36 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         self,
         email_verification: EmailVerification,
         user: User,
-        language: str,
     ) -> None:
         """
         Send verification email to the user with an template according to the user language.
 
         Args:
-            email_verification: object EmailVerification.
-            user: object User.
-            language: language code from the request data.
+            email_verification: object EmailVerification
+            user: object User
         """
-        email_subject = _('Opal Verification Code')
-
-        template_plain = 'email/verification_code.txt'
-        parameters = {
+        context = {
             'code': email_verification.code,
             'first_name': user.first_name,
             'last_name': user.last_name,
         }
-        msg_plain = render_to_string(
-            template_plain,
-            parameters,
+
+        email_plain = render_to_string(
+            'email/verification_code.txt',
+            context,
         )
-        template_html = 'email/verification_code.html'
-        msg_html = render_to_string(
-            template_html,
-            parameters,
+        email_html = render_to_string(
+            'email/verification_code.html',
+            context,
         )
+
         send_mail(
-            email_subject,
-            msg_plain,
+            _('Opal Verification Code'),
+            email_plain,
+            # TODO: change to a proper from email
             settings.EMAIL_HOST_USER,
             [email_verification.email],
-            html_message=msg_html,
+            html_message=email_html,
         )
 
 

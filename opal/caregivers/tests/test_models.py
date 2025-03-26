@@ -37,7 +37,7 @@ def test_caregiverprofile_uuid_unique() -> None:
     profile2 = factories.CaregiverProfile()
     profile.uuid = profile2.uuid
     message = 'Caregiver Profile with this UUID already exists.'
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, message):
         profile.full_clean()
 
 
@@ -57,7 +57,7 @@ def test_caregiverprofile_user_limited() -> None:
     clinical_staff = user_factories.User()
     profile = CaregiverProfile(user=clinical_staff)
 
-    with assertRaisesMessage(ValidationError, 'user'):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, 'user'):
         profile.full_clean()
 
     profile.user = caregiver
@@ -75,7 +75,7 @@ def test_caregiverprofile_cannot_delete_caregiver() -> None:
         + "protected foreign keys: 'CaregiverProfile.user'"
     )
 
-    with assertRaisesMessage(ProtectedError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ProtectedError, expected_message):
         caregiver.delete()
 
 
@@ -89,7 +89,7 @@ def test_caregiverprofile_legacy_id() -> None:
     profile.legacy_id = 0
 
     expected_message = 'Ensure this value is greater than or equal to 1.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         profile.full_clean()
 
     profile.legacy_id = 1
@@ -102,7 +102,7 @@ def test_caregiverprofile_legacy_id_unique() -> None:
 
     message = "Duplicate entry '1' for key"
 
-    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, message):
         factories.CaregiverProfile(legacy_id=1)
 
 
@@ -196,7 +196,8 @@ def test_device_same_caregiver_same_device() -> None:
     caregiver = factories.CaregiverProfile(id=1)
     factories.Device(caregiver=caregiver, device_id='1a2b3c')
 
-    with assertRaisesMessage(IntegrityError, "Duplicate entry '1-1a2b3c' for key 'caregivers_device_unique_caregiver_device'"):  # type: ignore[arg-type] # noqa: E501
+    expected_message = "Duplicate entry '1-1a2b3c' for key 'caregivers_device_unique_caregiver_device'"
+    with assertRaisesMessage(IntegrityError, expected_message):
         factories.Device(caregiver=caregiver, device_id='1a2b3c')
 
 
@@ -220,7 +221,7 @@ def test_device_push_token_length() -> None:
     caregiver = factories.CaregiverProfile(id=1)
     device = factories.Device(caregiver=caregiver)
     device.push_token = ''.join('a' for _ in range(260))
-    with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):  # type: ignore[arg-type]
+    with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):
         device.save()
 
 
@@ -255,7 +256,7 @@ def test_registrationcode_factory_multiple() -> None:
 def test_registrationcode_code_unique() -> None:
     """Ensure the code of registration code is unique."""
     registration_code = factories.RegistrationCode()
-    with assertRaisesMessage(IntegrityError, "Duplicate entry 'code12345678' for key 'code'"):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, "Duplicate entry 'code12345678' for key 'code'"):
         factories.RegistrationCode(relationship=registration_code.relationship)
 
 
@@ -264,7 +265,7 @@ def test_registrationcode_code_length_gt_max() -> None:
     registration_code = factories.RegistrationCode()
     registration_code.code = 'code1234567890'
     expected_message = "'code': ['Ensure this value has at most 12 characters (it has 14).']"
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         registration_code.clean_fields()
 
 
@@ -272,7 +273,7 @@ def test_registrationcode_codes_length_lt_min() -> None:
     """Ensure the length of registration code is not less than 12."""
     registration_code = factories.RegistrationCode(code='123456')
     expected_message = "'code': ['Ensure this value has at least 12 characters (it has 6).']"
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+    with assertRaisesMessage(ValidationError, expected_message):
         registration_code.clean_fields()
 
 
@@ -305,7 +306,7 @@ class TestEmailVerification:
         email_verification = factories.EmailVerification()
         email_verification.code = '1234567'
         expected_message = "'code': ['Ensure this value has at most 6 characters (it has 7).']"
-        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        with assertRaisesMessage(ValidationError, expected_message):
             email_verification.clean_fields()
 
     def test_email_code_too_short(self) -> None:
@@ -313,7 +314,7 @@ class TestEmailVerification:
         email_verification = factories.EmailVerification()
         email_verification.code = '1234'
         expected_message = "'code': ['Ensure this value has at least 6 characters (it has 4).'"
-        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        with assertRaisesMessage(ValidationError, expected_message):
             email_verification.clean_fields()
 
     def test_email_not_empty(self) -> None:
@@ -321,5 +322,5 @@ class TestEmailVerification:
         email_verification = factories.EmailVerification()
         email_verification.email = ''
         expected_message = "'email': ['This field cannot be blank.']"
-        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        with assertRaisesMessage(ValidationError, expected_message):
             email_verification.clean_fields()

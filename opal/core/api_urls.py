@@ -12,11 +12,13 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api import views as caregivers_views
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
+from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
+from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 
@@ -37,43 +39,19 @@ router.register('security-questions', SecurityQuestionViewSet, basename='securit
 app_name = 'core'
 
 urlpatterns = [
+    # APP ENDPOINTS
     path('app/chart/<int:legacy_id>/', AppChartView.as_view(), name='app-chart'),
     path('app/home/', AppHomeView.as_view(), name='app-home'),
-    path('auth/', include('dj_rest_auth.urls')),
-    path('caregivers/patients/', caregivers_views.GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
-    path('languages/', core_views.LanguagesView.as_view(), name='languages'),
-    path(
-        'patients/legacy/<int:legacy_id>/check_permissions/',
-        CaregiverPermissionsView.as_view(),
-        name='caregiver-permissions',
-    ),
-    path(
-        'patients/legacy/<int:legacy_id>/caregivers/',
-        patient_views.CaregiverRelationshipView.as_view(),
-        name='caregivers-list',
-    ),
-    path(
-        'registration/by-hash/<str:hash>/',
-        caregivers_views.GetRegistrationEncryptionInfoView.as_view(),
-        name='registration-by-hash',
-    ),
-    path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
-    path('registration/<str:code>/', patient_views.RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
+
+    # AUTH ENDPOINTS
+    path('auth/', include('dj_rest_auth.urls')),
+
+    # CAREGIVERS ENDPOINTS
     path(
-        'registration/<str:code>/register/',
-        patient_views.RegistrationCompletionView.as_view(),
-        name='registration-register',
-    ),
-    path(
-        'registration/<str:code>/verify-email/',
-        caregivers_views.VerifyEmailView.as_view(),
-        name='verify-email',
-    ),
-    path(
-        'registration/<str:code>/verify-email-code/',
-        caregivers_views.VerifyEmailCodeView.as_view(),
-        name='verify-email-code',
+        'caregivers/patients/',
+        caregivers_views.GetCaregiverPatientsList.as_view(),
+        name='caregivers-patient-list',
     ),
     path(
         'caregivers/<uuid:uuid>/security-questions/',
@@ -96,14 +74,80 @@ urlpatterns = [
         name='caregivers-securityquestions-verify',
     ),
     path(
-        'institutions/<int:pk>/terms-of-use/',
-        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
-        name='institutions-terms-of-use',
-    ),
-    path(
         'caregivers/devices/<str:device_id>/',
         caregivers_views.UpdateDeviceView.as_view(),
         name='devices-update-or-create',
     ),
+
+    # INSTITUTIONS ENDPOINTS
+    path(
+        'institutions/<int:pk>/terms-of-use/',
+        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        name='institutions-terms-of-use',
+    ),
+
+    # LANGUAGES ENDPOINTS
+    path('languages/', core_views.LanguagesView.as_view(), name='languages'),
+
+    # ORMS ENDPOINTS
+    path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
+
+    # PATIENTS ENDPOINTS
+    path(
+        'patients/legacy/<int:legacy_id>/check_permissions/',
+        CaregiverPermissionsView.as_view(),
+        name='caregiver-permissions',
+    ),
+    path(
+        'patients/legacy/<int:legacy_id>/caregivers/',
+        patient_views.CaregiverRelationshipView.as_view(),
+        name='caregivers-list',
+    ),
+    path(
+        'patients/demographic/',
+        patient_views.PatientDemographicView.as_view(),
+        name='patient-demographic-update',
+    ),
+    # patients (by new ID) for the health data quantity samples
+    path(
+        'patients/<int:patient_id>/health-data/quantity-samples/',
+        data_views.CreateQuantitySampleView.as_view(),
+        name='patients-data-quantity-create',
+    ),
+
+    # QUESTIONNAIRES ENDPOINTS
+    path(
+        'questionnaires/reviewed/',
+        QuestionnairesReportView.as_view(),
+        name='questionnaires-reviewed',
+    ),
+
+    # REGISTRATION ENDPOINTS
+    path(
+        'registration/by-hash/<str:hash>/',
+        caregivers_views.GetRegistrationEncryptionInfoView.as_view(),
+        name='registration-by-hash',
+    ),
+    path(
+        'registration/<str:code>/',
+        patient_views.RetrieveRegistrationDetailsView.as_view(),
+        name='registration-code',
+    ),
+    path(
+        'registration/<str:code>/verify-email/',
+        caregivers_views.VerifyEmailView.as_view(),
+        name='verify-email',
+    ),
+    path(
+        'registration/<str:code>/verify-email-code/',
+        caregivers_views.VerifyEmailCodeView.as_view(),
+        name='verify-email-code',
+    ),
+    path(
+        'registration/<str:code>/register/',
+        patient_views.RegistrationCompletionView.as_view(),
+        name='registration-register',
+    ),
+
     path('', include(router.urls)),
 ]

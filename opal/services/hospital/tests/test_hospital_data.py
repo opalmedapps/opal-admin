@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
+
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData, OIEReportExportData
 
 
@@ -22,6 +24,8 @@ def test_patient_data_type() -> None:
         last_name='bbb',
         sex='M',
         alias='',
+        deceased=True,
+        death_date_time=datetime.now() + relativedelta(years=70),
         ramq='RAMQ12345678',
         ramq_expiration=datetime.now() + timedelta(days=100),
         mrns=[

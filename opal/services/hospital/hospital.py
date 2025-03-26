@@ -115,8 +115,15 @@ class OIEService:
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
+                    deceased=patient_data['deceased'],
+                    death_date_time=None if patient_data['deathDateTime'] == ''
+                    else datetime.strptime(
+                        str(patient_data['deathDateTime']),
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=datetime.strptime(
+                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
+                    else datetime.strptime(
                         str(patient_data['ramqExpiration']),
                         '%Y-%m-%d %H:%M:%S',
                     ),
@@ -177,8 +184,15 @@ class OIEService:
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
                     alias=str(patient_data['alias']),
+                    deceased=patient_data['deceased'],
+                    death_date_time=None if patient_data['deathDateTime'] == ''
+                    else datetime.strptime(
+                        str(patient_data['deathDateTime']),
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
                     ramq=str(patient_data['ramq']),
-                    ramq_expiration=datetime.strptime(
+                    ramq_expiration=None if patient_data['ramqExpiration'] == ''
+                    else datetime.strptime(
                         str(patient_data['ramqExpiration']),
                         '%Y-%m-%d %H:%M:%S',
                     ),

@@ -1,10 +1,14 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest within hospital-settings app."""
 from pathlib import Path
 
+from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import model_to_dict
+from django.test import Client
 
 import pytest
+
+from opal.users.models import User
 
 from . import factories
 from .forms import InstitutionForm
@@ -116,3 +120,24 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
         files=institution_form_files,
         instance=instit,
     )
+
+
+@pytest.fixture()
+def site_user(client: Client, django_user_model: User) -> Client:
+    """
+    Fixture provides an instance of [Client][django.test.Client] with a logged in user with site permission.
+
+    Args:
+        client: the Django test client instance
+        django_user_model: the `User` model used in this project
+
+    Returns:
+        an instance of `Client` with a logged in user with `can_manage_sites` permission
+    """
+    user = django_user_model.objects.create_user(username='test_site_user')
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+
+    client.force_login(user)
+
+    return client

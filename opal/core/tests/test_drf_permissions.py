@@ -8,9 +8,9 @@ from rest_framework.views import APIView
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import RelationshipStatus
+from opal.patients.models import RelationshipStatus, RelationshipType, RoleType
 
-from ..drf_permissions import CaregiverPatientPermissions
+from ..drf_permissions import CaregiverPatientPermissions, CaregiverSelfPermissions
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -110,6 +110,54 @@ class TestCaregiverPatientPermissions:
     def test_success_confirmed_relationship(self) -> None:
         """Test a permissions check where the caregiver has a confirmed relationship with the patient."""
         relationship = patient_factories.Relationship(status=RelationshipStatus.CONFIRMED)
+        self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
+
+        assert self.has_permission()
+
+    @pytest.fixture(autouse=True)
+    def _before_each(self) -> None:
+        """Create request and view objects for each test."""
+        self.request = HttpRequest()
+        self.view = APIView()
+
+
+class TestCaregiverSelfPermissions:
+    """Class wrapper for CaregiverSelfPermissions tests."""
+
+    class_instance = CaregiverSelfPermissions()
+
+    def set_args(self, user_id: Optional[Any], patient_id: Optional[Any]) -> None:
+        """Set the input arguments expected by CaregiverPatientPermissions."""
+        if user_id:
+            self.request.META['HTTP_Appuserid'] = user_id
+        if patient_id:
+            self.view.kwargs = {'legacy_id': patient_id}
+
+    def has_permission(self) -> bool:
+        """
+        Execute the call to the permissions check.
+
+        Returns:
+            The result of calling CaregiverPatientPermissions; i.e., whether the permission is granted.
+        """
+        return self.class_instance.has_permission(self.request, self.view)
+
+    def test_non_self_relationship_type(self) -> None:
+        """Test a permissions check where the caregiver has a relationship with the patient, but it isn't self typed."""
+        relationship = patient_factories.Relationship(status=RelationshipStatus.CONFIRMED)
+        self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
+
+        with pytest.raises(exceptions.PermissionDenied) as exception_info:
+            self.has_permission()
+
+        assert 'role type is not SELF' in str(exception_info.value)  # noqa: WPS441
+
+    def test_success_self_relationship_type(self) -> None:
+        """Test a permissions check where the caregiver has a self relationship with the patient."""
+        relationship = patient_factories.Relationship(
+            status=RelationshipStatus.CONFIRMED,
+            type=RelationshipType.objects.get(role_type=RoleType.SELF),
+        )
         self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
 
         assert self.has_permission()

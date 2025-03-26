@@ -1,7 +1,8 @@
-from datetime import datetime
+import datetime
 from typing import Type
 
 from django.contrib.auth import get_user_model
+from django.forms import model_to_dict
 
 import pytest
 from pytest_mock.plugin import MockerFixture
@@ -10,6 +11,96 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
+from ..models import Relationship, RelationshipStatus
+
+pytestmark = pytest.mark.django_db
+
+
+def test_relationshippending_form_is_valid() -> None:
+    """Ensure that the `RelationshipPendingAccess` form is valid."""
+    relationship_info = factories.Relationship.create(reason='REASON')
+    form_data = model_to_dict(relationship_info)
+
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+
+    assert relationshippending_form.is_valid()
+
+
+def test_relationshippending_missing_startdate() -> None:
+    """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
+    relationship_info = factories.Relationship.build()
+    form_data = model_to_dict(relationship_info, exclude=[
+        'start_date',
+        'end_date',
+    ])
+
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    assert not relationshippending_form.is_valid()
+
+
+def test_relationshippending_update() -> None:
+    """Ensure that a valid `RelationshipPendingAccess` form can be saved."""
+    relationship_info = factories.Relationship.create(reason='REASON')
+    form_data = model_to_dict(relationship_info)
+
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form.save()
+
+    assert Relationship.objects.all()[0].start_date == relationshippending_form.data['start_date']
+
+
+def test_relationshippending_update_fail() -> None:
+    """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
+    relationship_info = factories.Relationship.build()
+    form_data = model_to_dict(relationship_info, exclude=[
+        'start_date',
+        'end_date',
+    ])
+
+    message = 'This field is required.'
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+
+    assert not relationshippending_form.is_valid()
+    assert relationshippending_form.errors['start_date'][0] == message
+
+
+def test_relationshippending_form_date_validated() -> None:
+    """Ensure that the `RelationshipPendingAccess` form is validated for startdate>enddate."""
+    relationship_info = factories.Relationship.build(
+        patient=factories.Patient(),
+        caregiver=factories.CaregiverProfile(),
+        type=factories.RelationshipType(),
+        start_date=datetime.date(2022, 6, 1),  # noqa: WPS432
+        end_date=datetime.date(2022, 5, 1),  # noqa: WPS432
+    )
+    form_data = model_to_dict(relationship_info)
+
+    message = 'Start date should be earlier than end date.'
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+
+    assert not relationshippending_form.is_valid()
+    assert relationshippending_form.errors['start_date'][0] == message
+
+
+def test_relationshippending_status_reason() -> None:
+    """Ensure that the `RelationshipPendingAccess` form is validated for reason is not empty when status is denied."""
+    relationship_info = factories.Relationship.build(
+        patient=factories.Patient(),
+        caregiver=factories.CaregiverProfile(),
+        type=factories.RelationshipType(),
+        status=RelationshipStatus.DENIED,
+        start_date=datetime.date(2022, 5, 1),  # noqa: WPS432
+        end_date=datetime.date(2022, 6, 1),  # noqa: WPS432
+        reason='',
+    )
+    form_data = model_to_dict(relationship_info)
+
+    message = 'Reason is mandatory when status is denied or revoked.'
+    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+
+    assert not relationshippending_form.is_valid()
+    assert relationshippending_form.errors['reason'][0] == message
+
 
 UserModel: Type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
@@ -64,8 +155,9 @@ def test_find_patient_by_mrn_invalid_mrn() -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
+
     assert 'This field is required.' in form.errors['medical_number']
-    assert 'Provided MRN or site is invalid.' in form.errors['medical_number']
+    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
 
 
 def test_find_patient_by_mrn_invalid_site_code() -> None:
@@ -78,7 +170,7 @@ def test_find_patient_by_mrn_invalid_site_code() -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['Provided MRN or site is invalid.']
+    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
 
 
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
@@ -92,7 +184,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'reponse data is invalid',
+                'message': 'Could not establish a connection to the hospital interface.',
             },
         },
     )
@@ -105,7 +197,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['reponse data is invalid']
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
 def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
@@ -155,7 +247,7 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'reponse data is invalid',
+                'message': 'Could not establish a connection to the hospital interface.',
             },
         },
     )
@@ -167,7 +259,7 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
 
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
-    assert form.errors['medical_number'] == ['reponse data is invalid']
+    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
@@ -223,7 +315,7 @@ def test_requestor_form_not_check_if_required() -> None:
 
     form = forms.RequestorDetailsForm(
         data=form_data,
-        date_of_birth=datetime(2004, 1, 1, 9, 20, 30),
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
     )
     assert not form.is_valid()
     assert form.errors['requestor_form'] == ['Form request is required.']
@@ -242,7 +334,7 @@ def test_disabled_option_exists() -> None:
     }
     form = forms.RequestorDetailsForm(
         data=form_data,
-        date_of_birth=datetime(2004, 1, 1, 9, 20, 30),
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')

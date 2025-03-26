@@ -186,3 +186,26 @@ def test_retrieve_device_update(settings: SettingsWrapper) -> None:
     url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
     assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
     assert resolve(url_path).view_name == 'api:devices-update-or-create'
+
+
+def test_quantitysample_create(settings: SettingsWrapper) -> None:
+    """Ensure the quantity sample endpoint is defined for a specific patient."""
+    patient_id = 42
+    url_path = f'/{settings.API_ROOT}/patients/{patient_id}/health-data/quantity-samples/'
+
+    assert reverse('api:patients-data-quantity-create', kwargs={'patient_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patients-data-quantity-create'
+
+
+def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth endpoint for the ORMS is defined."""
+    auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:orms-login') == auth_login_path
+    assert resolve(auth_login_path).view_name == 'api:orms-login'
+
+
+def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
+    """Ensure the patient demographic update endpoint is defined."""
+    url_path = '/{api_root}/patients/demographic/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:patient-demographic-update') == url_path
+    assert resolve(url_path).view_name == 'api:patient-demographic-update'
