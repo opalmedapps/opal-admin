@@ -89,20 +89,36 @@ Your IDE should be set up to use the Python interpreter in your virtual environm
 is interpreted correctly while developing. The following instructions will help you to check whether your interpreter is
 correctly set, and if not, to set it to the correct path.
 
+The steps below refer to an interpreter path, which is the following (depending on your OS):
+
+=== "macOS/Linux"
+
+    ```
+    .venv/bin/python
+    ```
+
+=== "Windows"
+
+    ```
+    .venv\Scripts\python.exe
+    ```
+
+---
+
 === "VSCode"
 
     1. Make sure that your project folder is open, and open any `.py` file.
     2. In the bottom-right corner of the screen, next to `Python`, you should see your Python version,
        followed by .venv, for example: `3.9.10 ('.venv':venv)`.
     3. If you don't see this, click on the version number or empty field next to `Python`.
-    4. Enter the interpreter path by browsing to `.venv/Scripts/python.exe` in your current project.
+    4. Select or browse to the interpreter path above.
 
 === "PyCharm"
 
     1. Go to `File > Settings/Preferences > Project: name > Project Interpreter`.
-    2. Check whether the value for `Python interpreter` is set to `python.exe` from your virtual environment folder (`.venv`).
+    2. Check whether the value for `Python interpreter` is already set to the interpreter from your virtual environment (`.venv`).
     3. If it isn't, click on the gear icon, click "Add", select the option for adding an existing Virtualenv environment,
-       and in the interpreter box, browse to `.venv/Scripts/python.exe` in your current project.
+       and in the interpreter box, browse to the interpreter path above.
 
 #### Install dependencies
 
