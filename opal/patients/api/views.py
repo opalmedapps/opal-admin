@@ -239,6 +239,8 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
 class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView):
     """View supporting patient retrieval and (limited) update based on their legacy ID."""
 
+    # clinical staff in OpalAdmin can update a patient (requires `change_patient`)
+    # opal-labs/legacy backend retrieves patient information (requires (`view_patient`)
     permission_classes = (FullDjangoModelPermissions,)
     queryset = Patient.objects.all()
     lookup_url_kwarg = 'legacy_id'
