@@ -726,19 +726,15 @@ class TestPatientCaregiversView:
         device1 = Device(caregiver=caregiver1)
         device2 = Device(caregiver=caregiver2)
 
-        # Build relationships: hospital_patient -> site -> institution
         institution = Institution()
-        site = Site(institution=institution)
-        hospital_patient = HospitalPatient(patient=patient, site=site)
-
         response = api_client.get(reverse(
             'api:patient-caregivers',
             kwargs={'legacy_id': legacy_id},
         ))
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
-            'first_name': hospital_patient.patient.first_name,
-            'last_name': hospital_patient.patient.last_name,
+            'first_name': patient.first_name,
+            'last_name': patient.last_name,
             'institution_code': institution.code,
             'caregivers': [
                 {

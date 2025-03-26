@@ -187,7 +187,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
 class PatientCaregiversSerializer(DynamicFieldsSerializer):
     """
-    Serializer for patient and caregiver information.PatientCaregivers serializer.
+    Serializer for patient and caregiver information.
 
     The serializer provides the name of the patient as well as the patient's caregivers and their devices.
     """
