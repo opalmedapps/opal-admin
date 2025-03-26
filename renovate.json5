@@ -2,17 +2,24 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
-    // ":rebaseStalePrs"
+    // https://docs.renovatebot.com/presets-default/#separatemultiplemajorreleases
+    ":separateMultipleMajorReleases",
+    // https://docs.renovatebot.com/presets-default/#separatepatchreleases
+    ":separatePatchReleases",
   ],
+  // https://docs.renovatebot.com/python/#alternative-file-names
   "pip_requirements": {
     "fileMatch": ["^requirements/.*\\.txt$"]
   },
+  // https://docs.renovatebot.com/configuration-options/#assignees
   "assignees": ["mschoettle"],
+  // https://docs.renovatebot.com/configuration-options/#labels
   "labels": ["dependencies"],
+  // https://docs.renovatebot.com/configuration-options/#packagerules
   "packageRules": [
     // Change commit type to build for Docker-related updates
     {
-      "matchDatasources": ["docker"],
+      "matchDatasources": ["docker", "docker-compose"],
       "semanticCommitType": "build"
     },
     // Group flake8-related updates
@@ -35,10 +42,15 @@
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
     },
-    // Allow to receive patch updates for Python while waiting with upgrading to the next minor version
+    // Allow to receive patch updates while waiting with upgrading to the next minor version
     {
-      "matchPackagePatterns": ["python"],
+      "matchPackagePatterns": ["python", "mariadb"],
       "separateMinorPatch": true
     },
-  ]
+  ],
+  // enable updates for pre-commit
+  // see: https://docs.renovatebot.com/modules/manager/pre-commit/
+  "pre-commit": {
+    "enabled": true
+  }
 }
