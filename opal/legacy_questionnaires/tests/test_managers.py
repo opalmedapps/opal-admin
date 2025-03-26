@@ -12,7 +12,7 @@ from ..models import LegacyAnswerQuestionnaire, LegacyDictionary, LegacyQuestion
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
-def test_get_questionnaire_databank_data() -> None:
+def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     """Ensure questionnaire data for databank is returned and formatted correctly.
 
     Note that the test data returned by this query is dependent on

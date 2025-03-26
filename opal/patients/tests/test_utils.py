@@ -897,9 +897,6 @@ def test_create_access_request_new_patient_and_databank_consent(
     qdb_patient = LegacyQuestionnairePatient.objects.get(
         external_id=patient.legacy_id,
     )
-    print(f'{qdb_patient.id=}')
-    print(f'{consent_form.id=}')
-    print(LegacyAnswerQuestionnaire.objects.all())
     inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
         questionnaire_id=consent_form.id,
         patient_id=qdb_patient.id,
@@ -952,7 +949,7 @@ def test_create_access_request_new_patient_databank_disabled(
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
     # Ensure records are not created
-    message = 'LegacyPatient matching query does not exist.'
+    message = 'LegacyQuestionnairePatient matching query does not exist.'
     with assertRaisesMessage(ObjectDoesNotExist, message):
         LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
             external_id=patient.legacy_id,

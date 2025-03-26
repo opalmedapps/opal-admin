@@ -310,7 +310,7 @@ def test_detail_template_download_csv(admin_client: Client) -> None:
     assert int(headers.get('Content-Length', 0)) > 0
 
 
-def test_detail_template_download_xlsx(admin_client: Client) -> None:
+def test_detail_template_download_xlsx(admin_client: Client, questionnaire_data: None) -> None:
     """Ensure downloading of xlsx data works as expected."""
     # trigger generation of temp tables
     response = admin_client.post(

@@ -67,10 +67,10 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
     deleted_by = 'Test User'
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = timezone.make_aware(datetime(2022, 9, 27))
     created_by = 'Test User'
     updated_by = 'Test User'
-    legacyname = 'Test Questionnaire'
+    legacy_name = 'Test Questionnaire'
 
 
 class LegacyQuestionnairePatientFactory(DjangoModelFactory):
@@ -305,7 +305,7 @@ class LegacyAnswerTimeFactory(DjangoModelFactory):
         model = models.LegacyAnswerTime
 
     answer = SubFactory(LegacyAnswerFactory)
-    value = Faker('datetime')
+    value = Faker('time')
 
 
 class LegacyAnswerLabelFactory(DjangoModelFactory):

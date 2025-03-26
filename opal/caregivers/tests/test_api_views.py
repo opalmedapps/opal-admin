@@ -1848,7 +1848,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         patient.refresh_from_db()
 
         # Ensure records are not created
-        message = 'LegacyPatient matching query does not exist.'
+        message = 'LegacyQuestionnairePatient matching query does not exist.'
         with assertRaisesMessage(ObjectDoesNotExist, message):
             LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
                 external_id=patient.legacy_id,
@@ -1904,7 +1904,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert legacy_patient.language == LegacyLanguage.FRENCH
 
         # We expect consent records to not be created
-        message = 'LegacyPatient matching query does not exist.'
+        message = 'LegacyQuestionnairePatient matching query does not exist.'
         with assertRaisesMessage(ObjectDoesNotExist, message):
             LegacyQuestionnairePatient.objects.get(
                 external_id=patient.legacy_id,

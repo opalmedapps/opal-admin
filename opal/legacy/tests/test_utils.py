@@ -376,10 +376,10 @@ def test_fetch_databank_control_records_patient_creation(
 
 def test_fetch_databank_control_records_not_found() -> None:
     """Test behaviour when one of the required controls isn't found."""
-    # Setup patient records
     django_patient = patient_factories.Patient(ramq='SIMB04100199')
     factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
     result = legacy_utils.fetch_databank_control_records(django_patient)
+
     assert not result
 
 
@@ -388,6 +388,7 @@ def test_create_databank_patient_consent_data_records_not_found() -> None:
     # Setup patient records
     django_patient = patient_factories.Patient(ramq='SIMB04100199')
     factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+
     assert not legacy_utils.create_databank_patient_consent_data(django_patient)
 
 

@@ -1080,7 +1080,10 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         message, error = self._call_command('find_questionnaire_respondent_deviations')
         assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
-    def test_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
+    def test_questionnaire_respondents_deviations(
+        self, questionnaire_data: None,
+        django_db_blocker: DjangoDbBlocker,
+    ) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
         with django_db_blocker.unblock():
             with connections['questionnaire'].cursor() as conn:

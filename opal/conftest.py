@@ -299,7 +299,7 @@ def is_legacy_model(model: type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label in ['legacy', 'legacy_questionnaires'] and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed  # noqa: WPS437
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -350,33 +350,26 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
             conn.execute(sql_content)
 
 
-# @pytest.fixture(autouse=True)
-# def check_data(db):
-#     print(LegacyQuestionnaire._meta.managed)
-#     print(LegacyQuestionnaire.objects.count())
-    # assert False
+@pytest.fixture
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
+    """
+    Initialize the QuestionnaireDB with data.
 
+    Existing data will be deleted.
 
-# @pytest.fixture
-# def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
-#     """
-#     Initialize the QuestionnaireDB with data.
+    Args:
+        django_db_blocker: pytest fixture to allow database access here only
+    """
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+        sql_data = handle.read()
 
-#     Existing data will be deleted.
-
-#     Args:
-#         django_db_blocker: pytest fixture to allow database access here only
-#     """
-#     with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
-#         sql_data = handle.read()
-
-#     with django_db_blocker.unblock():
-#         with connections['questionnaire'].cursor() as conn:
-#             conn.execute(sql_data)
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(sql_data)
 
 
 @pytest.fixture
-def databank_consent_questionnaire_and_response(  # noqa: WPS210
+def databank_consent_questionnaire_and_response(  # noqa: WPS210, WPS213
 ) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
     """Add a full databank consent questionnaire and simple response to test setup.
 
@@ -456,8 +449,6 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
     Returns:
         Consent questionnaire
     """
-    from opal.legacy_questionnaires.models import LegacyQuestionnaire
-    print(LegacyQuestionnaire.objects.all())
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
     middle_name_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
@@ -482,28 +473,22 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
         content='QSCC Databank Information',
         language_id=2,
     )
-    print(questionnaire_title)
     consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
-    print(consent_questionnaire.title)
     section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
-    print(consent_questionnaire.title)
     factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
-    print(consent_questionnaire.title)
     factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
-    print(consent_questionnaire.title)
     legacy_factories.LegacyQuestionnaireControlFactory(
         questionnaire_name_en='QSCC Databank Information',
         questionnaire_db_ser_num=consent_questionnaire.id,
         publish_flag=1,
     )
-    print(consent_questionnaire.title)
     info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory(
         educational_material_type_en='Factsheet',
         educational_material_type_fr='Fiche Descriptive',
         name_en='Information and Consent Factsheet - QSCC Databank',
         name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
     )
-    print(consent_questionnaire.title)
+
     return (consent_questionnaire, info_sheet)
 
 

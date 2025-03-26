@@ -91,7 +91,11 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert f'No Questionnaires data found for {pat1}' in message
         assert not error
 
-    def test_retrieve_databank_data_for_patient(self, capsys: pytest.CaptureFixture[str]) -> None:  # noqa: WPS213
+    def test_retrieve_databank_data_for_patient(  # noqa: WPS213
+        self,
+        capsys: pytest.CaptureFixture[str],
+        questionnaire_data: None,
+    ) -> None:
         """Test fetching the existing data of patients who have consented."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
