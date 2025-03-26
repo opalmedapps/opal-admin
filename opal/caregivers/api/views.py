@@ -253,14 +253,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             'code': email_verification.code,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'timeout': constants.EMAIL_VERIFICATION_TIMEOUT,
         }
 
         email_plain = render_to_string(
             'email/verification_code.txt',
-            context,
-        )
-        email_html = render_to_string(
-            'email/verification_code.html',
             context,
         )
 
@@ -269,7 +266,6 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             email_plain,
             settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
-            html_message=email_html,
         )
 
 
@@ -377,6 +373,10 @@ class RegistrationCompletionView(APIView):
         Raises:
             ValidationError: if the caregiver is already registered or there is no verified email
         """
+        # verify that security answers and phone number are in the request data
+        if 'security_answers' not in caregiver_data or 'phone_number' not in caregiver_data:
+            raise drf_serializers.ValidationError('New caregiver data missing')
+
         # a user can potentially verify multiple email address during the same process
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications

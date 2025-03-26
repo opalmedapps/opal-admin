@@ -768,13 +768,16 @@ class TestVerifyEmailView:
         )
 
         email_verification = caregiver_models.EmailVerification.objects.get(email=email)
+        user: User = registration_code.relationship.caregiver.user
 
         assert len(mail.outbox) == 1
         assert mail.outbox[0].from_email == settings.EMAIL_FROM_REGISTRATION
         assert mail.outbox[0].to == [email]
-        assert email_verification.code in mail.outbox[0].body
-        assert 'Dear' in mail.outbox[0].body
         assert mail.outbox[0].subject == 'Opal Verification Code'
+        body = mail.outbox[0].body
+        assert email_verification.code in body
+        assert f'Dear {user.first_name} {user.last_name}' in body
+        assert f'in {constants.EMAIL_VERIFICATION_TIMEOUT} minutes' in body
 
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: User) -> None:
         """Test resend verify email within 10 sec."""
