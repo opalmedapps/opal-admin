@@ -16,7 +16,7 @@ FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 class TestHL7Parser:
     """Class wrapper for HL7Parser tests."""
 
-    def test_parse_pid_segment(self):
+    def test_parse_pid_segment(self) -> None:
         """Test parsing a PID segment."""
         stream = self._load_hl7_fixture('marge_PID.hl7v2')
         parsed_data = self.parser.parse(stream)
