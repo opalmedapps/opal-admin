@@ -1,0 +1,16 @@
+/*
+  Change nav pills to have the Opal purple
+
+  See: Nav pills: https://getbootstrap.com/docs/5.3/components/navs-tabs/#pills
+*/
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--opal-purple);
+}
+
+.nav-link, .nav-link:hover, .nav-link:focus {
+  color: #000;
+}
+
+.nav-link:hover {
+  background-color: var(--opal-purple-light);
+}

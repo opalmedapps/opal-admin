@@ -49,7 +49,7 @@ def test_caregiverprofile_str() -> None:
     profile = CaregiverProfile()
     profile.user = caregiver
 
-    assert str(profile) == 'John Wayne'
+    assert str(profile) == 'Wayne, John'
 
 
 def test_caregiverprofile_user_limited() -> None:

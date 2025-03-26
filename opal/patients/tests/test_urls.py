@@ -43,17 +43,6 @@ def test_relationships_pending_list() -> None:
     assert resolve(url).view_name == 'patients:relationships-pending-list'
 
 
-def test_caregiver_access_list() -> None:
-    """
-    Ensure that 'patients:relationships-search-list' URL name resolves to the appropriate URL.
-
-    It also checks that the URL is served with the correct view.
-    """
-    url = '/patients/relationships/search/'
-    assert reverse('patients:relationships-search-list') == url
-    assert resolve(url).view_name == 'patients:relationships-search-list'
-
-
 def test_relationships_pending_update() -> None:
     """Ensures a url for relationships pending access update view exists."""
     url = '/patients/relationships/pending/12/update/'
@@ -61,12 +50,8 @@ def test_relationships_pending_update() -> None:
     assert resolve(url).view_name == 'patients:relationships-pending-update'
 
 
-def test_relationship_update_search_result() -> None:
-    """
-    Ensure that 'patients:relationship-search-update' URL name resolves to the appropriate URL.
-
-    It also checks that the URL is served with the correct view.
-    """
-    url = '/patients/relationships/search/12/update/'
-    assert reverse('patients:relationships-search-update', kwargs={'pk': 12}) == url
-    assert resolve(url).view_name == 'patients:relationships-search-update'
+def test_relationships_readonly_view() -> None:
+    """Ensures a url for relationships readonly access view exists."""
+    url = '/patients/relationships/pending/12/readonly/'
+    assert reverse('patients:relationships-pending-readonly', kwargs={'pk': 12}) == url
+    assert resolve(url).view_name == 'patients:relationships-pending-readonly'
