@@ -641,7 +641,7 @@ class Relationship(models.Model):  # noqa: WPS214
         Returns:
             the end date
         """
-        reference_date = None
+        reference_date = cls.get_max_end_date(date_of_birth)
 
         if relationship_type.end_age:
             # Calculate the date at which the patient turns to the end age of relationship type
