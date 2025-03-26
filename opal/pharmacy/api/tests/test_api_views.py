@@ -3,14 +3,17 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertJSONEqual
+from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from opal.patients.factories import Patient
+from opal.hospital_settings import factories as hospital_factories
+from opal.hospital_settings.models import Site
+from opal.patients import factories as patient_factories
 from opal.pharmacy import models
 from opal.users.models import User
 
@@ -24,8 +27,16 @@ FIXTURES_DIR = Path(__file__).resolve().parents[3].joinpath(
 PATIENT_UUID = uuid4()
 
 
-class TestCreatePrescriptionView:
+class TestCreatePrescriptionView:  # noqa: WPS338
     """Class wrapper for pharmacy endpoint tests."""
+
+    @pytest.fixture(autouse=True)
+    def _before_each(self) -> None:
+        """Fixture for pre-creating the valid site acronyms for the pytest env."""
+        hospital_factories.Site(acronym='RVH')
+        hospital_factories.Site(acronym='MGH')
+        hospital_factories.Site(acronym='MCH')
+        hospital_factories.Site(acronym='LAC')
 
     def test_pharmacy_create_unauthenticated(
         self,
@@ -75,28 +86,52 @@ class TestCreatePrescriptionView:
         assert 'Unsupported media type' in response.data['detail']
         assert response.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
-    def test_pharmacy_create_patient_uuid_does_not_exist(
+    def test_patient_not_found_by_pid_data(
         self,
         api_client: APIClient,
         interface_engine_user: User,
     ) -> None:
-        """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
+        """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
         api_client.force_login(interface_engine_user)
         data = self._load_hl7_fixture('marge_pharmacy.hl7v2')
+        message = 'Patient identified by HL7 PID could not be uniquely found in database.'
+        with assertRaisesMessage(ValidationError, message):
+            api_client.post(
+                reverse('api:patient-pharmacy-create', kwargs={'uuid': PATIENT_UUID}),
+                data=data,
+                content_type='application/hl7-v2+er7',
+            )
+
+    def test_patient_identified_by_pid_does_not_match_uuid(
+        self,
+        api_client: APIClient,
+        interface_engine_user: User,
+    ) -> None:
+        """Ensure the endpoint returns an error if patient identified in the PID doesn't match the uuid in the url."""
+        api_client.force_login(interface_engine_user)
+        patient = patient_factories.Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=Site.objects.get(acronym='RVH'),
+            mrn='9999996',
+        )
+        data = self._load_hl7_fixture('marge_pharmacy.hl7v2')
         response = api_client.post(
-            reverse('api:patient-pharmacy-create', kwargs={'uuid': PATIENT_UUID}),
+            reverse('api:patient-pharmacy-create', kwargs={'uuid': uuid4()}),
             data=data,
             content_type='application/hl7-v2+er7',
         )
-
         assertJSONEqual(
             raw=json.dumps(response.json()),
             expected_data={
-                'detail': 'No Patient matches the given query.',
+                'status': 'error',
+                'message': 'PID segment data did not match uuid provided in url.',
             },
         )
-
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_pharmacy_create_success(
         self,
@@ -104,9 +139,14 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can create pharmacy for a full input with no errors."""
-        patient = Patient(
+        patient = patient_factories.Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
+        )
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=Site.objects.get(acronym='RVH'),
+            mrn='9999996',
         )
         api_client.force_login(interface_engine_user)
 
@@ -128,9 +168,14 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can create several pharmacy, and re-uses CodedElements."""
-        patient = Patient(
+        patient = patient_factories.Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
+        )
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=Site.objects.get(acronym='RVH'),
+            mrn='9999996',
         )
         api_client.force_login(interface_engine_user)
 
@@ -156,9 +201,14 @@ class TestCreatePrescriptionView:
         interface_engine_user: User,
     ) -> None:
         """Ensure administration_method is properly None-ed if all subfields are blank."""
-        patient = Patient(
+        patient = patient_factories.Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
+        )
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=Site.objects.get(acronym='MGH'),
+            mrn='9999998',
         )
         api_client.force_login(interface_engine_user)
         #  Homer's pharmacy example has the case of blank administration_method subfields in RXR
