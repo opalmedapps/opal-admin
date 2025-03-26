@@ -8,7 +8,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from opal.users import factories as user_factories
-from opal.users.models import User
+from opal.users.models import ClinicalStaff, User
 
 pytestmark = pytest.mark.django_db
 
@@ -34,14 +34,14 @@ def test_api_retrieve_user_in_group_pass(api_client: APIClient, admin_user: User
     assert len(response.data['groups']) == 1
 
 
-def test_api_add_group_to_user_pass(api_client: APIClient, admin_user: User) -> None:
-    """Test the pass of the adding a user to a group."""
+def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User) -> None:
+    """Test the pass of the updating a user and add to a group."""
     api_client.force_login(user=admin_user)
     # add two groups
     group_1 = user_factories.GroupFactory(name='group1')
     group_2 = user_factories.GroupFactory(name='group2')
     # add one user and add it to one group
-    user = user_factories.ClinicalStaff()
+    user = user_factories.ClinicalStaff(username='test_clinical_user')
     group_2.user_set.add(user)
 
     # test retrieve
@@ -55,21 +55,31 @@ def test_api_add_group_to_user_pass(api_client: APIClient, admin_user: User) -> 
     assert response.data == {'groups': [group_2.pk]}
     assert len(response.data['groups']) == 1
 
-    # change the groups of the user by adding one more group
+    # change the groups and the name of the user
     response.data['groups'].append(group_1.pk)
-    groups = response.data
+    data = {
+        'groups': response.data['groups'],
+        'username': 'new_clinical_user',
+    }
     response_put = api_client.put(
         reverse(
             'api:users-detail',
             kwargs={'username': user.username},
         ),
-        data=groups,
+        data=data,
         format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 2
-    assert response_put.data == {'groups': [group_1.pk, group_2.pk]}
+    assert response_put.data == {
+        'groups': [group_1.pk, group_2.pk],
+        'username': 'new_clinical_user',
+    }
+    # assert the user and groups are updated in the database
+    clinical_user = ClinicalStaff.objects.get(pk=user.pk)
+    assert clinical_user.username == 'new_clinical_user'
+    assert clinical_user.groups.count() == 2
 
 
 def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user: User) -> None:
@@ -99,19 +109,25 @@ def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user:
     response.data['groups'].append(group_1.pk)
     response.data['groups'].append(group_3.pk)
 
-    groups = response.data
+    data = {
+        'groups': response.data['groups'],
+        'username': user.username,
+    }
     response_put = api_client.put(
         reverse(
             'api:users-detail',
             kwargs={'username': user.username},
         ),
-        data=groups,
+        data=data,
         format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 3
-    assert response_put.data == {'groups': [group_1.pk, group_2.pk, group_3.pk]}
+    assert response_put.data == {
+        'groups': [group_1.pk, group_2.pk, group_3.pk],
+        'username': user.username,
+    }
 
 
 def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User) -> None:
@@ -138,19 +154,25 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
 
     # change the groups of the user by adding one more group
     response.data['groups'].remove(group_1.pk)
-    groups = response.data
+    data = {
+        'groups': response.data['groups'],
+        'username': user.username,
+    }
     response_put = api_client.put(
         reverse(
             'api:users-detail',
             kwargs={'username': user.username},
         ),
-        data=groups,
+        data=data,
         format='json',
     )
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 1
-    assert response_put.data == {'groups': [group_2.pk]}
+    assert response_put.data == {
+        'groups': [group_2.pk],
+        'username': user.username,
+    }
 
 
 def test_api_create_user_in_group_pass(api_client: APIClient, admin_user: User) -> None:
@@ -380,20 +402,26 @@ def test_api_update_user_in_group_with_permission(api_client: APIClient, django_
     clinical_user = user_factories.ClinicalStaff()
 
     # adding clinical user to another group
-    groups = {'groups': [group_1.pk, group_2.pk]}
+    data = {
+        'groups': [group_1.pk, group_2.pk],
+        'username': clinical_user.username,
+    }
     response_put = api_client.put(
         reverse(
             'api:users-detail',
             kwargs={'username': clinical_user.username},
         ),
-        data=groups,
+        data=data,
         format='json',
     )
 
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 2
-    assert response_put.data == {'groups': [group_1.pk, group_2.pk]}
+    assert response_put.data == {
+        'groups': [group_1.pk, group_2.pk],
+        'username': clinical_user.username,
+    }
 
 
 def test_api_create_user_in_group_existing_user(api_client: APIClient, django_user_model: User) -> None:
