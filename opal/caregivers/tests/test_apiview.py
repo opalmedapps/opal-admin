@@ -131,6 +131,7 @@ class TestApiEmailVerification:
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
         assert email_verification.code in mail.outbox[0].body
         assert 'Dear' in mail.outbox[0].body
+        assert mail.outbox[0].subject == 'Opal Verification Code'
 
     def test_save_verify_email_fr_success(  # noqa: WPS218
         self,
@@ -161,6 +162,7 @@ class TestApiEmailVerification:
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
         assert email_verification.code in mail.outbox[0].body
         assert 'Cher' in mail.outbox[0].body
+        assert mail.outbox[0].subject == 'Code de vérification Opal'
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test verify verification code success."""
