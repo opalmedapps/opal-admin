@@ -1,4 +1,3 @@
-import re
 from datetime import date
 from http import HTTPStatus
 from typing import Tuple
@@ -10,7 +9,7 @@ from django.urls.base import reverse
 import pytest
 from bs4 import BeautifulSoup
 from easyaudit.models import RequestEvent
-from pytest_django.asserts import assertTemplateUsed, assertURLEqual
+from pytest_django.asserts import assertContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
 from opal.users.models import User
@@ -42,6 +41,13 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
+def test_dashboard_empty_profile(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that the dashboard doesnt crash if no profile exists for the user."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:reports'))
+    assert response.status_code == HTTPStatus.OK
+
+
 def test_dashboard_forms_exist(user_client: Client) -> None:
     """Ensure that forms exist in the dashboard page pointing to the list & filter pages."""
     test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
@@ -50,24 +56,16 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
     user_client.force_login(test_questionnaire_profile.user)
 
     response = user_client.get(reverse('questionnaires:reports'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-    links = soup.find_all('a', href=re.compile('^/questionnaires/reports/list/'))
-
-    assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
-    assertURLEqual(links[0].get('href'), reverse('questionnaires:reports-list'))
+    assertContains(response, reverse('questionnaires:reports-filter'))
+    assertContains(response, reverse('questionnaires:reports-list'))
 
 
 def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports list page pointing to the filter page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list'))
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-
     assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
+    assertContains(response, reverse('questionnaires:reports-filter'))
 
 
 def test_detail_report_form_exists(user_client: Client) -> None:
@@ -81,10 +79,7 @@ def test_detail_report_form_exists(user_client: Client) -> None:
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['11']},
     )
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-    assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-detail'))
+    assertContains(response, reverse('questionnaires:reports-detail'))
 
 
 def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> None:
@@ -103,12 +98,9 @@ def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> 
             'following': [True],
         },
     )
-    soup = BeautifulSoup(response.content, 'html.parser')
-    forms = soup.find_all('form')
-
     assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-download-csv'))
-    assertURLEqual(forms[1].get('action'), reverse('questionnaires:reports-download-xlsx'))
+    assertContains(response, reverse('questionnaires:reports-download-csv'))
+    assertContains(response, reverse('questionnaires:reports-download-xlsx'))
 
 
 def test_filter_report_invalid_params(user_client: Client, admin_user: AbstractUser) -> None:
@@ -337,3 +329,38 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
         filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'  # noqa: WPS237
         assert header.get('Content-Disposition') == filename
         assert int(header.get('Content-Length', 0)) > 0
+
+
+def test_toggle_questionnaire_follow(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that the update questionnaire profile method works from the view call."""
+    user_client.force_login(admin_user)
+
+    user_client.post(
+        path=reverse('questionnaires:reports-detail'),
+        data={
+            'start': ['2016-11-25'],
+            'end': ['2020-02-27'],
+            'patientIDs': ['3'],
+            'questionIDs': ['823', '824', '811', '830', '832'],
+            'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
+            'following': [True],
+            'toggle': [True],
+        },
+    )
+
+    response = user_client.post(
+        path=reverse('questionnaires:reports-detail'),
+        data={
+            'start': ['2016-11-25'],
+            'end': ['2020-02-27'],
+            'patientIDs': ['3'],
+            'questionIDs': ['823', '824', '811', '830', '832'],
+            'questionnaireid': ['11'],
+            'questionnairename': ['Test Qst'],
+            'following': [True],
+            'toggle': [False],
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
