@@ -106,11 +106,11 @@ class Command(BaseCommand):
 
         - `OpalDB.Patient` table against `opal.patients_patient` table (patients' records)
         - `OpalDB.Patient_Hospital_Identifier` table against `opal.patients_hospitalpatient` table
-        - `OpalDB.Patient` table against `opal.caregivers_caregiverprofile` table (caregivers' records)
+        - `OpalDB.Users` table against `opal.users_user` table for comparing caregivers' records
 
     by using Django's models.
 
-    NOTE!!! For the `patients` and `caregivers`, the comparison is performed only for fully inserted
+    NOTE!!! For the `patients` and `users/caregivers`, the comparison is performed only for fully inserted
     records (e.g., `patients` and `caregivers` that completed registration). This is to avoid/eliminate
     the following scenarios:
 
@@ -133,14 +133,14 @@ class Command(BaseCommand):
 
     help = """
         Check the legacy and new back end databases
-        for the data deviations in the `Patient` and `Caregiver` tables.
+        for the data deviations in the `Patient` and `User/Caregiver` tables.
     """  # noqa: A003
     requires_migrations_checks = True
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
-        Handle deviation check for the `Patient` and `Caregiver` models/tables.
+        Handle deviation check for the `Patient` and `User/Caregiver` models/tables.
 
         The implementation was inspired by the following articles:
 
