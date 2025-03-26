@@ -1,4 +1,4 @@
-"""This module is an API view that returns the patient detaild and non-detailed info via registration code."""
+"""This module provides `APIViews` for the `patients` app REST APIs."""
 
 from typing import Any, Type
 

@@ -1,4 +1,4 @@
-"""Test module for registration api endpoints."""
+"""Test module for the `patients` app REST API endpoints."""
 
 from datetime import datetime
 from http import HTTPStatus
@@ -6,12 +6,15 @@ from http import HTTPStatus
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
+import pytest
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 
 from ..factories import HospitalPatient, Patient, Relationship
+
+pytestmark = pytest.mark.django_db
 
 
 def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> None:
