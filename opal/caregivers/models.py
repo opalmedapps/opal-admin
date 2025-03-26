@@ -1,6 +1,6 @@
 """Module providing models for the caregivers app."""
-from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -59,7 +59,7 @@ class SecurityQuestion(models.Model):
     )
 
     is_active = models.BooleanField(
-        verbose_name=_('Is Active'),
+        verbose_name=_('Active'),
         default=True,
     )
 
