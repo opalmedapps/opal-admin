@@ -231,11 +231,11 @@ class Command(BaseCommand):  # noqa: WPS214
                 '{0}{1}: {2}'.format(
                     response.status_code,
                     ' oie response error ',
-                    response.content,
+                    response.content.decode(),
                 ),
             )
 
-    def _parse_aggregate_databank_response(  # noqa: C901, WPS231
+    def _parse_aggregate_databank_response(
         self,
         aggregate_response: dict[str, list[Any]],
         original_data_sent: CombinedModuleData,
