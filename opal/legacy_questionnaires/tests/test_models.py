@@ -5,6 +5,12 @@ from .. import factories
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
+def test_legacy_definition_factory() -> None:
+    """Test whether the factory creates a valid legacy definition table model instance."""
+    test_deftable = factories.LegacyDefinitionTableFactory()
+    test_deftable.full_clean()
+
+
 def test_legacy_dictionary_factory() -> None:
     """Test whether the factory creates a valid legacy dictionary model instance."""
     test_dictionary = factories.LegacyDictionaryFactory()
@@ -15,6 +21,12 @@ def test_legacy_purpose_factory() -> None:
     """Test whether the factory creates a valid legacy purpose model instance."""
     test_purpose = factories.LegacyPurposeFactory()
     test_purpose.full_clean()
+
+
+def test_legacy_respondent_factory() -> None:
+    """Test whether the factory creates a valid legacy respondent model instance."""
+    test_respondent = factories.LegacyRespondentFactory()
+    test_respondent.full_clean()
 
 
 def test_legacy_questionnaire_factory() -> None:
