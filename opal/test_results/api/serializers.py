@@ -92,7 +92,6 @@ class PathologySerializer(GeneralTestSerializer):
         fields = (
             'observations',
             'notes',
-            'type',
             'sending_facility',
             'receiving_facility',
             'collected_at',
