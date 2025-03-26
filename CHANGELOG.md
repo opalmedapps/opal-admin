@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add REST API endpoint for the questionnaire report generation
 * Add REST API endpoint for the patient's caregiver(s) relationship(s) (!222)
 * feat: Add can_answer_questionnaire field to RelationshipType model (!689)
+* Add unique constraint to Relationship model (!655)
+* Generate a random uuid for the caregiver username(!267)
 
 ### Documentation
 

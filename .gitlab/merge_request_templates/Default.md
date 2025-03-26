@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-next-line first-line-heading -->
 **By submitting this merge request, I confirm the following:** _please fill any appropriate checkboxes, e.g: [x]_
 
 * [ ] The merge request title follows the conventional commits convention (see `README.md`)
@@ -9,7 +10,7 @@
 * [ ] I have updated the documentation if necessary.
 * [ ] I have used translation strings in the code (and translation model fields) where appropriate.
 
-## Description:
+## Description
 
 <!--
     Describe what behaviour is changed by this MR.
@@ -22,4 +23,4 @@
     If this merge request addresses the corresponding ticket, you can use "Closes <issue>" to convey this.
     If it relates to an issue but does not close it, use "See <issue>" instead.
 -->
-Closes <ticket>
+Closes QSCCD-

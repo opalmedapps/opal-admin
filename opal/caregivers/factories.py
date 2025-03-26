@@ -83,6 +83,7 @@ class Device(DjangoModelFactory):
     type = models.DeviceType.IOS  # noqa: A003
     device_id = Faker('device_id')
     push_token = Faker('push_token')
+    is_trusted = Faker('pybool')
 
 
 class RegistrationCode(DjangoModelFactory):
@@ -104,4 +105,4 @@ class EmailVerification(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
     email = 'opal@muhc.mcgill.ca'
-    sent_at = timezone.now()
+    sent_at = timezone.now() - timezone.timedelta(seconds=10)

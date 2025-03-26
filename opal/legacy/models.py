@@ -15,6 +15,7 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 * Don't rename db_table or db_column values
 """
+
 from django.db import models
 
 from . import managers
@@ -113,7 +114,7 @@ class LegacyAlias(models.Model):
 
 
 class LegacyAppointmentcheckin(models.Model):
-    """Legacy appointment checkin mapping appointmentcheckin table from the legacu database."""
+    """Legacy appointment checkin mapping appointment checkin table from the legacy database."""
 
     aliassernum = models.OneToOneField(
         'LegacyAlias',
@@ -185,6 +186,7 @@ class LegacyAnnouncement(models.Model):
     """Announcement model from the legacy database OpalDB."""
 
     announcementsernum = models.AutoField(db_column='AnnouncementSerNum', primary_key=True)
+    postcontrolsernum = models.ForeignKey('LegacyPostcontrol', models.DO_NOTHING, db_column='PostControlSerNum')
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     objects: managers.LegacyAnnouncementManager = managers.LegacyAnnouncementManager()
@@ -192,6 +194,16 @@ class LegacyAnnouncement(models.Model):
     class Meta:
         managed = False
         db_table = 'Announcement'
+
+
+class LegacyPostcontrol(models.Model):
+    """PostControl model from the legacy database OpalDB."""
+
+    postcontrolsernum = models.AutoField(db_column='PostControlSerNum', primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'PostControl'
 
 
 class LegacySecurityQuestion(models.Model):

@@ -3,10 +3,19 @@ from typing import Dict
 
 from rest_framework import serializers
 
-from opal.caregivers.models import RegistrationCode, SecurityAnswer, SecurityQuestion
+from opal.caregivers.models import Device, EmailVerification, RegistrationCode, SecurityAnswer, SecurityQuestion
+from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
+
+
+class EmailVerificationSerializer(DynamicFieldsSerializer):
+    """Serializer for model EmailVerification."""
+
+    class Meta:
+        model = EmailVerification
+        fields = ['id', 'code', 'email', 'is_verified', 'sent_at']
 
 
 class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
@@ -110,3 +119,11 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecurityAnswer
         fields = ['answer']
+
+
+class UpdateDeviceSerializer(serializers.ModelSerializer):
+    """Serializer for devices."""
+
+    class Meta:
+        model = Device
+        fields = ['id', 'caregiver', 'device_id', 'type', 'is_trusted', 'push_token', 'modified']
