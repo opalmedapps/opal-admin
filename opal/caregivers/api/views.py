@@ -1,4 +1,6 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+from typing import Any
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
@@ -75,7 +77,7 @@ class GetCaregiverPatientsList(APIView):
         Handle GET requests from `caregivers/patients/`.
 
         Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
+            request: Http request made by the listener needed to retrieve `Appuserid`.
 
         Raises:
             ParseError: If the caregiver username was not provided.
@@ -87,8 +89,7 @@ class GetCaregiverPatientsList(APIView):
 
         if not user_id:
             raise exceptions.ParseError(
-                'Requests to APIs using CaregiverPatientPermissions must provide a string'
-                + " 'Appuserid' header representing the current user.",
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
             )
 
         relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
@@ -105,6 +106,33 @@ class CaregiverProfileView(RetrieveAPIView):
     queryset = CaregiverProfile.objects.all().select_related('user')
     lookup_field = 'user__username'
     lookup_url_kwarg = 'username'
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle retrieval of a caregiver profile.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+
+        Raises:
+            ParseError: if the Appuserid HTTP header is missing
+        """
+        user_id = request.headers.get('Appuserid')
+
+        if not user_id:
+            raise exceptions.ParseError(
+                "Requests to caregiver APIs must provide a header 'Appuserid' representing the current user.",
+            )
+
+        # manually set the username kwarg since it is not provided via the URL
+        self.kwargs['username'] = user_id
+
+        return super().retrieve(request, *args, **kwargs)
 
 
 class RetrieveRegistrationCodeMixin(APIView):

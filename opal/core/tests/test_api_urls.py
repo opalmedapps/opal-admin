@@ -110,12 +110,12 @@ def test_api_caregiver_patient_list_defined(settings: SettingsWrapper) -> None:
     assert resolve(url).view_name == 'api:caregivers-patient-list'
 
 
-def test_api_caregiver_detail_defined(settings: SettingsWrapper) -> None:
+def test_api_caregiver_profile_defined(settings: SettingsWrapper) -> None:
     """Ensure that the API for retrieving a caregiver's profile is defined."""
-    url = f'/{settings.API_ROOT}/caregivers/username/'
+    url = f'/{settings.API_ROOT}/caregivers/profile/'
 
-    assert reverse('api:caregivers-detail', kwargs={'username': 'username'}) == url
-    assert resolve(url).view_name == 'api:caregivers-detail'
+    assert reverse('api:caregivers-profile') == url
+    assert resolve(url).view_name == 'api:caregivers-profile'
 
 
 def test_api_security_question_random_defined(settings: SettingsWrapper) -> None:

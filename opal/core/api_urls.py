@@ -56,9 +56,9 @@ urlpatterns = [
         name='caregivers-patient-list',
     ),
     path(
-        'caregivers/<str:username>/',
+        'caregivers/profile/',
         caregivers_views.CaregiverProfileView.as_view(),
-        name='caregivers-detail',
+        name='caregivers-profile',
     ),
     path(  # Only use this endpoint between the Listener and the backend
         'caregivers/<str:username>/security-questions/',
