@@ -2,7 +2,6 @@ import io
 import zipfile
 
 from openpyxl import load_workbook
-from pytest_django.asserts import assertRaisesMessage
 
 from .. import utils
 
@@ -256,16 +255,30 @@ def test_dict_to_xlsx_long_sheet_name() -> None:
     assert truncated_sheet_name in workbook.sheetnames
 
 
-def test_dict_to_xlsx_invalid_sheet_name_characters() -> None:
-    """Ensure that invalid characters in sheet names are handled."""
+def test_dict_to_xlsx_invalid_sheet_name_characters_removed() -> None:
+    """Ensure that invalid characters in sheet names are removed."""
     invalid_sheet_name = r'Invalid:/\\*?[]'
     data: utils.WorkbookData = {
         invalid_sheet_name: [
             {'Data': 'Test'},
         ],
     }
-    with assertRaisesMessage(ValueError, 'Invalid character : found in sheet title'):
-        utils.dict_to_xlsx(data)
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'Invalid' in workbook.sheetnames
+
+
+def test_dict_to_xlsx_empty_sheet_name() -> None:
+    """Ensure that an empty sheet name is handled without errors."""
+    invalid_sheet_name = r':/\\*?[]'
+    data: utils.WorkbookData = {
+        invalid_sheet_name: [
+            {'Data': 'Test'},
+        ],
+    }
+    xlsx_bytes = utils.dict_to_xlsx(data)
+    workbook = load_workbook(io.BytesIO(xlsx_bytes))
+    assert 'Sheet' in workbook.sheetnames
 
 
 def test_dict_to_xlsx_none_values_in_data() -> None:

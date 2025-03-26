@@ -1,6 +1,7 @@
 """App core util functions."""
 import io
 import random
+import re
 import secrets
 import string
 import uuid
@@ -16,6 +17,7 @@ RowData: TypeAlias = dict[str, Any]
 SheetData: TypeAlias = list[RowData]
 WorkbookData: TypeAlias = dict[str, SheetData]
 
+FORBIDDEN_CHARACTERS = r'[\/\\\?\*\:\[\]]'
 SHEET_TITLE_MAX_LENGTH = 31
 
 
@@ -141,6 +143,7 @@ def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData)
         sheet_name: The name of the sheet.
         rows: the data rows to add to the sheet.
     """
+    sheet_name = re.sub(FORBIDDEN_CHARACTERS, '', sheet_name)
     sheet_name = sheet_name[:SHEET_TITLE_MAX_LENGTH] if len(sheet_name) > SHEET_TITLE_MAX_LENGTH else sheet_name
     worksheet = workbook.create_sheet(title=sheet_name)
     # If sheet data is empty, continue to next sheet
