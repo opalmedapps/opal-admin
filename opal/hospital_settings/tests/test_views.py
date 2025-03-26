@@ -97,8 +97,8 @@ def test_institution_update_object_displayed(client: Client, institution: Instit
     assertContains(response, 'TEST1_FR')
     assertContains(response, 'TEST1')
 
-
 # SITE
+
 
 # tuple with `Site` templates and corresponding url names
 test_site_url_template_data: List[Tuple] = [
