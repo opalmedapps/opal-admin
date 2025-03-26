@@ -438,6 +438,13 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
+# Default CSS classes for tables
+DJANGO_TABLES2_TABLE_ATTRS = {
+    'class': 'table table-bordered table-hover',
+    'thead': {
+        'class': 'table-light',
+    },
+}
 
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------
