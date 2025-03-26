@@ -61,7 +61,7 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
 
     # Composable permission classes:
     # https://www.django-rest-framework.org/community/3.9-announcement/#composable-permission-classes
-    permission_classes = [(IsListener | IsOrmsSystem)]
+    permission_classes = ((IsListener | IsOrmsSystem),)
     serializer_class = LegacyAppointmentCheckinSerializer
 
     def get_object(self) -> models.LegacyAppointment:
