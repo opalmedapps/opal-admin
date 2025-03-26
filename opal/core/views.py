@@ -1,5 +1,5 @@
 """Module providing reusable views for the whole project."""
-from typing import Any
+from typing import Any, Optional
 
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.db.models import QuerySet
@@ -29,7 +29,7 @@ class CreateUpdateView(UpdateView):
     See: https://stackoverflow.com/q/17192737
     """
 
-    def get_object(self, queryset: QuerySet = None) -> Any:
+    def get_object(self, queryset: Optional[QuerySet] = None) -> Any:
         """
         Return the object the view is displaying.
 

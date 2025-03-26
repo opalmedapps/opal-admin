@@ -168,7 +168,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         context.update({'header_title': self.form_title_list[self.steps.current]})
         return context
 
-    def get_form(self, step: str = None, data: Any = None, files: Any = None) -> Any:
+    def get_form(self, step: Optional[str] = None, data: Any = None, files: Any = None) -> Any:
         """
         Initialize the form for a given `step`.
 
