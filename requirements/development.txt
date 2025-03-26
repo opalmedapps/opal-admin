@@ -9,13 +9,13 @@ pytest-socket==0.6.0  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.12.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-migrations
-coverage==7.2.1  # https://github.com/nedbat/coveragepy
+coverage==7.2.2  # https://github.com/nedbat/coveragepy
 factory-boy==3.2.1  # https://github.com/FactoryBoy/factory_boy
 isort==5.12.0  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==1.15.0  # https://github.com/typeddjango/django-stubs
+django-stubs==1.16.0  # https://github.com/typeddjango/django-stubs
 # djangorestframework-stubs==1.8.0  # https://github.com/typeddjango/djangorestframework-stubs
 git+https://github.com/typeddjango/djangorestframework-stubs.git@728da9c1ba7fa2a6eb3442eb599d0b38e6529492
 types-requests==2.28.11.15
@@ -59,8 +59,8 @@ git+https://github.com/pytest-dev/pytest-django.git@42b7db2f4f5dbe785e57652d1d4e
 
 # Pre-commit
 #
-pre-commit==3.1.1  # https://github.com/pre-commit/pre-commit
+pre-commit==3.2.0  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
-beautifulsoup4==4.11.2  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+beautifulsoup4==4.12.0  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/

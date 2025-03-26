@@ -12,7 +12,7 @@ from . import models
 class RelationshipTypeAdmin(TranslationAdmin):
     """This class provides admin options for `RelationshipType`."""
 
-    readonly_fields = ['role_type', 'name']
+    readonly_fields = ['role_type']
 
     # Django Admin deletion privileges discussion:
     # https://stackoverflow.com/questions/38127581/django-admin-has-delete-permission-ignored-for-delete-action
@@ -21,14 +21,15 @@ class RelationshipTypeAdmin(TranslationAdmin):
 
         Args:
             request: Http request details.
-            obj: The relationshiptype object to be deleted.
+            obj: The relationship type object to be deleted.
 
         Returns:
             boolean delete permission (false if model has restricted role type).
         """
-        if obj:
-            return obj.role_type not in {models.RoleType.SELF, models.RoleType.PARENT_GUARDIAN}
-        return True
+        if obj and obj.role_type in models.PREDEFINED_ROLE_TYPES:
+            return False
+
+        return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
 
 
 admin.site.register(models.RelationshipType, RelationshipTypeAdmin)

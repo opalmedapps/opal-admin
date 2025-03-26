@@ -1,11 +1,11 @@
 """Command for Users Caregivers migration."""
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import CaregiverProfile
 from opal.legacy.models import LegacyPatient, LegacyUsers
-from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
+from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType
 from opal.users.models import Caregiver
 
 
@@ -18,18 +18,11 @@ class Command(BaseCommand):
         """
         Handle migrate Users from legacy DB to New backend DB.
 
-        Raises:
-            CommandError: if the self RelationshipType does not exist
-
         Args:
             args: input arguments.
             kwargs: input arguments.
         """
-        relationship_type = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
-
-        # force failure if the relationship type does not exist
-        if relationship_type is None:
-            raise CommandError("RelationshipType for 'Self' not found")
+        relationship_type = RelationshipType.objects.self_type()
 
         migrated_users_count = 0
 

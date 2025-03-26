@@ -3,7 +3,7 @@ from datetime import date
 from typing import Any, Dict, Optional, Union
 
 from django import forms
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from django.utils.translation import gettext
@@ -11,14 +11,14 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
+from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
 
 from ..core import validators
 from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -333,6 +333,7 @@ class ExistingUserForm(forms.Form):
     user_phone = forms.CharField(
         widget=forms.TextInput(),
         label=_('Phone Number'),
+        initial='+1',
     )
 
     user_record = forms.JSONField(
@@ -340,11 +341,12 @@ class ExistingUserForm(forms.Form):
         required=False,
     )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, relationship_type: RelationshipType, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for existing user form.
 
         Args:
+            relationship_type: requestor's choice of relationship type
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -360,6 +362,7 @@ class ExistingUserForm(forms.Form):
                 Submit('wizard_goto_step', _('Find Account')),
             ),
         )
+        self.relationship_type = relationship_type
 
     def clean(self) -> None:
         """Validate the user selection."""
@@ -418,6 +421,15 @@ class ExistingUserForm(forms.Form):
             user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
+        # Verify we cannot add an additional self role for an existing user who already has a self-relationship
+        if (
+            self.relationship_type.role_type == RoleType.SELF
+            and Relationship.objects.filter(
+                caregiver__user=user,
+                type__role_type=RoleType.SELF,
+            ).exists()
+        ):
+            raise ValidationError(gettext('This opal user already has a self-relationship with the patient.'))
 
         self.cleaned_data['user_record'] = {
             'first_name': user.first_name,
@@ -529,12 +541,12 @@ class ConfirmPasswordForm(forms.Form):
         super().clean()
         confirm_password = self.cleaned_data.get('confirm_password')
 
-        if not check_password(confirm_password, self.authorized_user.password):
+        if not authenticate(username=self.authorized_user.username, password=confirm_password):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 
-class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
-    """Form for updating an `Pending Relationship Access` object."""
+class RelationshipAccessForm(forms.ModelForm[Relationship]):
+    """Form for updating `Relationship Caregiver Access`  record."""
 
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -549,6 +561,10 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
         label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
         required=False,
     )
+    cancel_url = forms.CharField(
+        widget=forms.widgets.HiddenInput(),
+        required=False,
+    )
 
     class Meta:
         model = Relationship
@@ -557,6 +573,7 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
             'end_date',
             'status',
             'reason',
+            'cancel_url',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -573,15 +590,17 @@ class RelationshipPendingAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
+
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
             'end_date',
             'status',
             'reason',
+            Hidden('cancel_url', '{{cancel_url}}'),
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
-                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+                CancelButton('{{cancel_url}}'),
             ),
         )
 

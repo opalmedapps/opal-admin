@@ -17,9 +17,9 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.mixins.put_as_create import AllowPUTAsCreateMixin
 from opal.caregivers.api.serializers import (
+    DeviceSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
-    UpdateDeviceSerializer,
 )
 from opal.caregivers.models import Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.utils import generate_random_number
@@ -50,7 +50,7 @@ class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
     """Class handling requests for updates or creations of device ids."""
 
     permission_classes = [IsAuthenticated]
-    serializer_class = UpdateDeviceSerializer
+    serializer_class = DeviceSerializer
     lookup_url_kwarg = 'device_id'
     lookup_field = 'device_id'
 

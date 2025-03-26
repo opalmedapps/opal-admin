@@ -112,11 +112,13 @@ def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:
     """Ensure connection failure is handled and does not result in error."""
     # mock actual web API call to raise a connection error
     mock_post = mocker.patch('requests.post')
+    mock_logger = mocker.patch('logging.Logger.error', return_value=None)
     mock_post.side_effect = ConnectionError('connection failed')
 
     user_data = auth_backend._authenticate_fedauth('user', 'pass')
 
     assert user_data is None
+    mock_logger.assert_called_once_with('connection failed')
 
 
 @pytest.mark.django_db()
