@@ -596,7 +596,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
 
 class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relationship]]):
     """
-    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManageSearchUpdateView`.
+    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManagePendingUpdateView`.
 
     It provides common features among the inherited views.
     """
