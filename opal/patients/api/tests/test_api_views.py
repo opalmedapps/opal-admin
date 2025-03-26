@@ -152,17 +152,17 @@ class TestApiRetrieveRegistrationDetails:
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
             'caregiver': {
-                'uuid': str(caregiver.uuid),
+                'uuid': caregiver.uuid.value,
                 'first_name': caregiver.user.first_name,
                 'last_name': caregiver.user.last_name,
                 'legacy_id': caregiver.legacy_id,
             },
             'patient': {
-                'uuid': str(patient.uuid),
+                'uuid': patient.uuid.value,
                 'first_name': patient.first_name,
                 'last_name': patient.last_name,
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
-                'sex': str(patient.sex),
+                'sex': patient.sex.value,
                 'ramq': patient.ramq,
                 'legacy_id': patient.legacy_id,
             },
@@ -174,7 +174,7 @@ class TestApiRetrieveRegistrationDetails:
             ],
             'relationship_type': {
                 'name': relationship.type.name,
-                'role_type': str(relationship.type.role_type),
+                'role_type': relationship.type.role_type.value,
             },
         }
 
