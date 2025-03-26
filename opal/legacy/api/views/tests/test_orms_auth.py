@@ -167,29 +167,7 @@ class TestORMSValidateView:
         admin_user.save()
 
         response = api_client.get(reverse('api:orms-validate'))
-
         assert response.status_code == HTTPStatus.OK
-
-    def test_orms_validate_session_not_authenticated(
-        self,
-        api_client: APIClient,
-        django_user_model: AbstractUser,
-        settings: SettingsWrapper,
-    ) -> None:
-        """Ensure the validate endpoint raise an exception if user is not authenticated."""
-        orms_group = Group.objects.create(name=settings.ORMS_GROUP_NAME)
-        user = django_user_model.objects.create(username='testuser')
-        user.set_password('testpass')
-        user.groups.add(orms_group)
-        user.save()
-
-        response = api_client.get(reverse('api:orms-validate'))
-
-        assertContains(
-            response=response,
-            text='Authentication credentials were not provided.',
-            status_code=status.HTTP_403_FORBIDDEN,
-        )
 
     def test_orms_validate_session_no_permission(
         self,

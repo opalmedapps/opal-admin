@@ -4,11 +4,14 @@ from django.conf import settings
 
 from dj_rest_auth.views import LoginView
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from opal.users.api.serializers import UserCaregiverUpdateSerializer
+from opal.users.models import Caregiver
 
 
 class ORMSLoginView(LoginView):
@@ -57,7 +60,6 @@ class ORMSValidateView(APIView):
             request: the HTTP request.
 
         Raises:
-            NotAuthenticated: if not authorized.
             PermissionDenied: if no permission.
 
         Returns:
@@ -65,11 +67,14 @@ class ORMSValidateView(APIView):
         """
         user = request.user
 
-        if not user.is_authenticated:
-            raise NotAuthenticated()
-
-        if not user.groups.filter(
+        if user.is_authenticated and not user.groups.filter(
             name=settings.ORMS_GROUP_NAME,
         ).exists():
             raise PermissionDenied()
-        return Response(status=status.HTTP_200_OK)
+
+        return Response(
+            UserCaregiverUpdateSerializer(
+                Caregiver.objects.first(),
+            ).data,
+            status=status.HTTP_200_OK,
+        )

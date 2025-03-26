@@ -30,5 +30,9 @@ class UserCaregiverUpdateSerializer(serializers.ModelSerializer):
         model = Caregiver
         fields = [
             'email',
+            'username',
         ]
-        extra_kwargs = {'email': {'allow_blank': False, 'required': True}}
+        extra_kwargs = {
+            'email': {'allow_blank': False, 'required': True},
+            'username': {'allow_blank': False, 'required': True},
+        }
