@@ -1,13 +1,16 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
+from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
 from typing import IO, Any, Mapping
+
 from django.utils import timezone
+
 from hl7apy.core import Segment
 from hl7apy.parser import parse_message
 from rest_framework.parsers import BaseParser
-from collections import defaultdict
+
 from opal.hospital_settings.models import Site
+
 
 class HL7Parser(BaseParser):
     """Parse HL7-v2 messages and return dictionary data."""
