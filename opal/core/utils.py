@@ -16,6 +16,8 @@ RowData: TypeAlias = dict[str, Any]
 SheetData: TypeAlias = list[RowData]
 WorkbookData: TypeAlias = dict[str, SheetData]
 
+SHEET_TITLE_MAX_LENGTH = 31
+
 
 def generate_random_number(length: int) -> str:
     """Generate random number with the parameter length.
@@ -119,8 +121,9 @@ def dict_to_xlsx(dicts: WorkbookData) -> bytes:
         bytes: the XLSX file content as bytes.
     """
     workbook = Workbook()
-    # Remove the default sheet created by openpyxl
-    workbook.remove(workbook.active)
+    # Remove the default sheet created by openpyxl if dicts is not empty
+    if dicts:
+        workbook.remove(workbook.active)
 
     for sheet_name, rows in dicts.items():
         _add_sheet_to_workbook(workbook, sheet_name, rows)
@@ -138,11 +141,12 @@ def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData)
         sheet_name: The name of the sheet.
         rows: the data rows to add to the sheet.
     """
+    sheet_name = sheet_name[:SHEET_TITLE_MAX_LENGTH] if len(sheet_name) > SHEET_TITLE_MAX_LENGTH else sheet_name
+    worksheet = workbook.create_sheet(title=sheet_name)
     # If sheet data is empty, continue to next sheet
     if not rows:
         return
 
-    worksheet = workbook.create_sheet(title=sheet_name)
     headers = list(rows[0].keys())
     worksheet.append(headers)
 
