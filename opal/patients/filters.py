@@ -1,6 +1,7 @@
 """This module provides filters for `patients` app."""
 from typing import Any
 
+from django import forms
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
@@ -11,6 +12,18 @@ from opal.hospital_settings.models import Site
 
 from . import constants
 from .models import Patient
+
+
+class ManageCaregiverAccessForm(forms.Form):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        card_type = self.fields['medical_card_type']
+        card_type.widget.attrs.update({'up-validate': ''})
+        card_type_value = self['medical_card_type'].value()
+
+        if card_type_value == 'mrn':
+            self.fields['site'].required = True
 
 
 class ManageCaregiverAccessFilter(django_filters.FilterSet):
@@ -25,6 +38,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     medical_card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
+        initial=constants.MedicalCard.ramq.name,
         required=True,
     )
 
@@ -41,6 +55,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     )
 
     class Meta:
+        form = ManageCaregiverAccessForm
         model = Patient
         fields = ['site', 'medical_number']
 
