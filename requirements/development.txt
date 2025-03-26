@@ -9,15 +9,15 @@ pytest-socket==0.6.0  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.7  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.15.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.3.0  # https://github.com/wemake-services/django-test-migrations
-coverage==7.3.1  # https://github.com/nedbat/coveragepy
+coverage==7.3.2  # https://github.com/nedbat/coveragepy
 factory-boy==3.3.0  # https://github.com/FactoryBoy/factory_boy
 isort==5.12.0  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 django-stubs==4.2.4  # https://github.com/typeddjango/django-stubs
-djangorestframework-stubs==3.14.2  # https://github.com/typeddjango/djangorestframework-stubs
-types-requests==2.31.0.2
+djangorestframework-stubs==3.14.3  # https://github.com/typeddjango/djangorestframework-stubs
+types-requests==2.31.0.8
 types-python-dateutil==2.8.19.14
 
 # Code quality

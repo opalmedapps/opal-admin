@@ -22,7 +22,7 @@ from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
-from opal.legacy.api.views.orms_auth import ORMSLoginView
+from opal.legacy.api.views.orms_auth import ORMSLoginView, ORMSValidateView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
@@ -57,6 +57,8 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     # authentication endpoint for the ORMS
     path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
+    # validate session endpoint for the ORMS
+    path('auth/orms/validate/', ORMSValidateView.as_view(), name='orms-validate'),
 
     # CAREGIVERS ENDPOINTS
     path(

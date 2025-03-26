@@ -339,7 +339,7 @@ def test_create_patient() -> None:
         last_name='Wurst',
         date_of_birth=date(1990, 10, 23),
         sex=SexType.MALE,
-        ramq=None,
+        ramq='',
         mrns=[],
     )
 
@@ -347,7 +347,7 @@ def test_create_patient() -> None:
     assert patient.last_name == 'Wurst'
     assert patient.date_of_birth == date(1990, 10, 23)
     assert patient.sex == SexType.MALE
-    assert patient.ramq is None
+    assert patient.ramq == ''
     assert HospitalPatient.objects.count() == 0
 
 
