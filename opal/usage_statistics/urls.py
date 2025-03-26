@@ -13,8 +13,13 @@ app_name = 'usage-statistics'
 urlpatterns = [
     # Usage statistics pages
     path(
-        'export/',
-        views.UsageStatisticsExportTemplateView.as_view(),
-        name='data-export',
+        'group-reports/',
+        views.GroupUsageStatisticsView.as_view(),
+        name='group-reports-export',
+    ),
+    path(
+        'individual-reports/',
+        views.IndividualUsageStatisticsView.as_view(),
+        name='individual-reports-export',
     ),
 ]

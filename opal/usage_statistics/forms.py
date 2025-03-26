@@ -13,8 +13,8 @@ from opal.core.forms.layouts import CancelButton, FormActions, Submit
 from . import constants
 
 
-class GroupUsageStatisticsExportForm(forms.Form):
-    """Form for exporting group usage statistics data based on the provided filtering values."""
+class UsageStatisticsExportFormMixin(forms.Form):
+    """Form mixin that provide common fields and functionality for the usage statistics forms."""
 
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -24,6 +24,11 @@ class GroupUsageStatisticsExportForm(forms.Form):
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
         label=_('End Date'),
     )
+
+
+class GroupUsageStatisticsForm(UsageStatisticsExportFormMixin):
+    """Form for exporting group usage statistics data based on the provided filtering values."""
+
     group_by = forms.ChoiceField(
         choices=constants.TIME_INTERVAL_GROUPINGS,
         initial=constants.GroupByComponent.DAY.name,
@@ -56,7 +61,7 @@ class GroupUsageStatisticsExportForm(forms.Form):
             FormActions(
                 Submit('submit', _('Download csv')),
                 Submit('submit', _('Download xlsx')),
-                CancelButton(reverse('usage-statistics:data-export')),
+                CancelButton(reverse('usage-statistics:group-reports-export')),
             ),
         )
 
@@ -81,14 +86,29 @@ class GroupUsageStatisticsExportForm(forms.Form):
         return self.cleaned_data
 
 
-class IndividualUsageStatisticsExportForm(forms.Form):
+class IndividualUsageStatisticsForm(UsageStatisticsExportFormMixin):
     """Form for exporting individual usage statistics data based on the provided filtering values."""
 
-    start_date = forms.DateField(
-        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=_('Start Date'),
-    )
-    end_date = forms.DateField(
-        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
-        label=_('End Date'),
-    )
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Set the layout.
+
+        Args:
+            args: varied amount of non-keyworded arguments
+            kwargs: varied amount of keyworded arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+
+        self.helper.layout = Layout(
+            Row(
+                Column('start_date', css_class='col-6'),
+                Column('end_date', css_class='col-6'),
+            ),
+            FormActions(
+                Submit('submit', _('Download csv')),
+                Submit('submit', _('Download xlsx')),
+                CancelButton(reverse('usage-statistics:individual-reports-export')),
+            ),
+        )
