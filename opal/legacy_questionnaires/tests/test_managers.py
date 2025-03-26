@@ -1,10 +1,10 @@
+import re
 from datetime import datetime
 
 import pytest
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
-import re
 
 from .. import factories
 from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
