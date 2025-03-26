@@ -226,7 +226,7 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread annoucement(s) records.
         """
-        return self.select_related(  # noqa WPS221
+        return self.select_related(  # noqa: WPS221
             'postcontrolsernum',
         ).exclude(
             readby__contains=user_name,
