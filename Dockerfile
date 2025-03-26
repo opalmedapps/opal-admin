@@ -41,7 +41,12 @@ COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /app
 
-COPY . /app
+# copy only the required files
+COPY ./config/ ./config
+COPY ./opal/ ./opal
+COPY ./locale/ ./locale
+COPY manage.py .
+COPY .env.sample .
 
 # Set up the cron jobs
 COPY ./docker/crontab /tmp/crontab
