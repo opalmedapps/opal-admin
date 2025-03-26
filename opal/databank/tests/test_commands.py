@@ -1,6 +1,7 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from collections import defaultdict
+
 from django.utils import timezone
 
 import pytest
@@ -190,11 +191,10 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
         mock_post = RequestMockerTest.mock_requests_post(mocker, generated_data)
         mock_post.side_effect = requests.RequestException('request failed')
-        mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
         command = send_databank_data.Command()
         command._send_to_oie_and_handle_response({})
         captured = capsys.readouterr()
-        assert 'OIE Error: request failed' in captured.err
+        assert 'Databank sender OIE Error: request failed' in captured.err
 
     def test_demographics_success_response(self, mocker: MockerFixture) -> None:
         """Test the expected response for demographics data sending."""
