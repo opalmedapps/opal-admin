@@ -729,6 +729,6 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             for field, _value in user_form.errors.items():
                 form.add_error(field, user_form.errors.get(field))  # type: ignore[arg-type]
 
-            return super().form_invalid(form)  # noqa: WPS613
+            return self.form_invalid(form)
 
         return super().form_valid(form)

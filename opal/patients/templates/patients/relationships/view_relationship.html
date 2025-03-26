@@ -131,7 +131,7 @@
             <p><span class="fw-bold">{% translate "Explanation for Change(s)" %}</span>:</p>
           </div>
           <div class="row">
-            <p>{% if relationship.reason %}{{relationship.reason}}{% else %} {% translate "No explanation provided."%}{% endif %}</p>
+            <p>{% if relationship.reason %}{{relationship.reason}}{% else %} {% translate "No explanation provided"%}{% endif %}.</p>
           </div>
         </div>
         <div class="col">
@@ -139,7 +139,7 @@
         </div>
 
       </div>
-      <a class="btn btn-secondary float-end" href="{{ cancel_url }}" role="button">{% translate "Back" %}</a>
+      {% fragment as the_url %}{{ cancel_url }}{% endfragment %}{% form_back href=the_url %}
     </div>
   </div>
 {% endblock %}

@@ -620,7 +620,7 @@ msgstr "En attendant"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "View Caregiver Access"
-msgstr "Générer une demande d'accès"
+msgstr "Afficher l'accès des soignants"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "No explanation provided."
