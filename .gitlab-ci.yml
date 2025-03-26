@@ -189,7 +189,7 @@ django translations fuzzy:
   script:
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
-    - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep -E '#[~]?| msgid' -B02 -A01 || true)
+    - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep -E '#[~]?\| msgid' -B02 -A01 || true)
     - >
         if [[ $FUZZY_STRINGS ]]; then
           echo "$FUZZY_STRINGS"
