@@ -121,7 +121,7 @@ class UserClinicalStaffSerializer(serializers.ModelSerializer[ClinicalStaff]):
         Returns:
             the created or updated clinical staff instance
         """
-        # handle passwords if provided (optional for update)
+        # handle passwords if provided
         if 'password' in self.validated_data:
             self.validated_data.pop('password2')
             self.validated_data['password'] = make_password(self.validated_data['password'])  # noqa: WPS529

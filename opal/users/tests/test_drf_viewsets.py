@@ -267,7 +267,7 @@ def test_userviewset_create_user_password_mismatch(admin_api_client: APIClient) 
 
 
 def test_userviewset_create_user_password_invalid(admin_api_client: APIClient) -> None:
-    """The serializer fails when the passwords don't match."""
+    """The serializer fails when the password violates the password requirements."""
     data = {
         'username': 'testuser',
         'password': '12345Opal!!',
@@ -281,13 +281,9 @@ def test_userviewset_create_user_password_invalid(admin_api_client: APIClient) -
 
 
 def test_userviewset_create_user_no_group(admin_api_client: APIClient) -> None:
-    """The user is created with the correct password hash."""
-    token = secrets.token_urlsafe(12)
+    """The user is created with no groups."""
     data = {
         'username': 'testuser',
-        'password': token,
-        'password2': token,
-        'groups': [],
     }
 
     response = admin_api_client.post(reverse('api:users-list'), data=data)
@@ -381,7 +377,7 @@ def test_userviewset_update_user_password(admin_api_client: APIClient) -> None:
 
 
 def test_userviewset_update_user_password_unchanged(admin_api_client: APIClient) -> None:
-    """The user can be updated with a new password."""
+    """The user can be updated without changing the password."""
     user: ClinicalStaff = user_factories.ClinicalStaff(username='testuser')
 
     data = {
