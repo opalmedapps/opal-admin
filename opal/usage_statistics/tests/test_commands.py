@@ -2210,6 +2210,156 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert homer_received_data.last_lab_received == current_day
         assert homer_received_data.labs_received == 1
 
+    def test_populate_last_appointment_received(self) -> None:
+        """Ensure that the command correctly fetches the last appointment received per patient."""
+        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
+        legacy_factories.LegacyPatientControlFactory(patient=marge)
+        legacy_factories.LegacyPatientControlFactory(patient=homer)
+        legacy_factories.LegacyPatientControlFactory(patient=bart)
+
+        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+
+        marge_last_appointment = timezone.now() - dt.timedelta(days=3)
+        homer_last_appointment = timezone.now() - dt.timedelta(days=3)
+        bart_last_appointment = timezone.now() - dt.timedelta(days=1)
+
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.now() - dt.timedelta(days=14),
+            scheduledstarttime=timezone.now() - dt.timedelta(days=7),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.now() - dt.timedelta(days=7),
+            scheduledstarttime=marge_last_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.now() - dt.timedelta(days=21),
+            scheduledstarttime=timezone.now() - dt.timedelta(days=10),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.now() - dt.timedelta(days=10),
+            scheduledstarttime=homer_last_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=bart,
+            date_added=timezone.now() - dt.timedelta(days=10),
+            scheduledstarttime=bart_last_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=bart,
+            date_added=timezone.now() - dt.timedelta(days=1),
+            scheduledstarttime=timezone.now(),
+        )
+
+        stdout, _stderr = self._call_command('update_daily_usage_statistics')
+        assert stdout == 'Successfully populated daily statistics data\n'
+        assert DailyPatientDataReceived.objects.count() == 3
+        marge_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_marge_patient,
+        ).first()
+        assert marge_received_data
+        assert marge_received_data.last_appointment_received == marge_last_appointment
+
+        homer_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_homer_patient,
+        ).first()
+        assert homer_received_data
+        assert homer_received_data.last_appointment_received == homer_last_appointment
+
+        bart_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_bart_patient,
+        ).first()
+        assert bart_received_data
+        assert bart_received_data.last_appointment_received == bart_last_appointment
+
+    def test_populate_next_appointment_received(self) -> None:
+        """Ensure that the command correctly fetches the next appointment statistics per patient."""
+        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
+        bart = legacy_factories.LegacyPatientFactory(patientsernum=53, ramq='SIMM18510193')
+        legacy_factories.LegacyPatientControlFactory(patient=marge)
+        legacy_factories.LegacyPatientControlFactory(patient=homer)
+        legacy_factories.LegacyPatientControlFactory(patient=bart)
+
+        django_marge_patient = patient_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patient_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+        django_bart_patient = patient_factories.Patient(legacy_id=bart.patientsernum, ramq='SIMM18510193')
+
+        marge_next_appointment = timezone.now() + dt.timedelta(days=1)
+        homer_next_appointment = timezone.now() + dt.timedelta(days=5)
+        bart_next_appointment = timezone.now() + dt.timedelta(days=10)
+
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.now() - dt.timedelta(days=14),
+            scheduledstarttime=timezone.now() - dt.timedelta(days=1),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.now() - dt.timedelta(days=7),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=10),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.now() - dt.timedelta(days=5),
+            scheduledstarttime=marge_next_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.now() - dt.timedelta(days=21),
+            scheduledstarttime=timezone.now() - dt.timedelta(days=10),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.now() - dt.timedelta(days=10),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=1),
+            status='Cancelled',
+            state='Closed',
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.now() - dt.timedelta(days=10),
+            scheduledstarttime=homer_next_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=bart,
+            date_added=timezone.now() - dt.timedelta(days=5),
+            scheduledstarttime=timezone.now() + dt.timedelta(days=15),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=bart,
+            date_added=timezone.now() - dt.timedelta(days=1),
+            scheduledstarttime=bart_next_appointment,
+        )
+
+        stdout, _stderr = self._call_command('update_daily_usage_statistics')
+        assert stdout == 'Successfully populated daily statistics data\n'
+        assert DailyPatientDataReceived.objects.count() == 3
+        marge_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_marge_patient,
+        ).first()
+        assert marge_received_data
+        assert marge_received_data.next_appointment == marge_next_appointment
+
+        homer_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_homer_patient,
+        ).first()
+        assert homer_received_data
+        assert homer_received_data.next_appointment == homer_next_appointment
+
+        bart_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_bart_patient,
+        ).first()
+        assert bart_received_data
+        assert bart_received_data.next_appointment == bart_next_appointment
+
     def _create_log_record(
         self,
         request: str = 'Login',
