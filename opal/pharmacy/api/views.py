@@ -15,8 +15,8 @@ from opal.core.drf_permissions import IsInterfaceEngine
 from opal.hospital_settings.models import Site
 from opal.patients.models import Patient
 
-from .serializers import PhysicianPrescriptionOrderSerializer
 from ..models import PhysicianPrescriptionOrder
+from .serializers import PhysicianPrescriptionOrderSerializer
 
 
 class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
@@ -38,8 +38,8 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
         Returns:
             API Response with code and headers
         """
-        transformed_data = self._transform_parsed_to_serializer_structure(request.data)  # type: ignore[attr-defined]
-        if not self._validate_uuid_matches_pid_segment(request.data, self.kwargs['uuid']):  # type: ignore[attr-defined]
+        transformed_data = self._transform_parsed_to_serializer_structure(request.data)
+        if not self._validate_uuid_matches_pid_segment(request.data, self.kwargs['uuid']):
             return Response(
                 {
                     'status': 'error',
