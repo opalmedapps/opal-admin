@@ -3,46 +3,46 @@ from datetime import datetime
 from typing import Any
 
 from ..general.service_error import ServiceErrorHandler
-from .hospital_communication import OIEHTTPCommunicationManager
-from .hospital_data import OIEMRNData, OIEPatientData, OIEReportExportData
-from .hospital_validation import OIEValidator
+from .hospital_communication import SourceSystemHTTPCommunicationManager
+from .hospital_data import SourceSystemMRNData, SourceSystemPatientData, SourceSystemReportExportData
+from .hospital_validation import SourceSystemValidator
 
 
-class OIEService:
-    """Service that provides an interface (a.k.a., Facade) for interaction with the Opal Integration Engine (OIE).
+class SourceSystemService:
+    """Service that provides an interface (a.k.a., Facade) for interaction with the Integration Engine.
 
     All the provided functions contain the following business logic:
         * validate the input data (a.k.a., parameters)
-        * send an HTTP request to the OIE
-        * validate the response data received from the OIE
+        * send an HTTP request to the Source system
+        * validate the response data received from the Source system
         * return response data or an error in JSON format
     """
 
     def __init__(self) -> None:
-        """Initialize OIE helper services."""
-        self.communication_manager = OIEHTTPCommunicationManager()
+        """Initialize source system helper services."""
+        self.communication_manager = SourceSystemHTTPCommunicationManager()
         self.error_handler = ServiceErrorHandler()
-        self.validator = OIEValidator()
+        self.validator = SourceSystemValidator()
 
     def export_pdf_report(
         self,
-        report_data: OIEReportExportData,
+        report_data: SourceSystemReportExportData,
     ) -> Any:
-        """Send base64 encoded PDF report to the OIE.
+        """Send base64 encoded PDF report to the source system.
 
         Args:
-            report_data (OIEReportExportData): PDF report data needed to call OIE endpoint
+            report_data (SourceSystemReportExportData): PDF report data needed to call Source System endpoint
 
         Returns:
             Any: JSON object response
         """
-        # Return a JSON format error if `OIEReportExportData` is not valid
+        # Return a JSON format error if `SourceSystemReportExportData` is not valid
         if not self.validator.is_report_export_request_valid(report_data):
             return self.error_handler.generate_error(
                 {'message': 'Provided request data are invalid.'},
             )
 
-        # TODO: Change docType to docNumber once the OIE's endpoint is updated
+        # TODO: Change docType to docNumber once the source system endpoint is updated
         payload = {
             'mrn': report_data.mrn,
             'site': report_data.site,
@@ -62,7 +62,7 @@ class OIEService:
 
         return self.error_handler.generate_error(
             {
-                'message': 'OIE response format is not valid.',
+                'message': 'Source system response format is not valid.',
                 'responseData': response_data,
             },
         )
@@ -100,7 +100,7 @@ class OIEService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(OIEMRNData(
+                mrns.append(SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
@@ -108,7 +108,7 @@ class OIEService:
 
             return {
                 'status': 'success',
-                'data': OIEPatientData(
+                'data': SourceSystemPatientData(
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
                         '%Y-%m-%d',
@@ -170,7 +170,7 @@ class OIEService:
             patient_data = response_data['data']
 
             for mrn_dict in patient_data['mrns']:
-                mrns.append(OIEMRNData(
+                mrns.append(SourceSystemMRNData(
                     site=mrn_dict['site'],
                     mrn=mrn_dict['mrn'],
                     active=mrn_dict['active'],
@@ -178,7 +178,7 @@ class OIEService:
 
             return {
                 'status': 'success',
-                'data': OIEPatientData(
+                'data': SourceSystemPatientData(
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
                         '%Y-%m-%d',
@@ -211,15 +211,15 @@ class OIEService:
         )
 
     def new_opal_patient(self, active_mrn_list: list[tuple[str, str]]) -> dict[str, Any]:
-        """Notifies the OIE of a new Opal patient.
+        """Notifies the source system of a new Opal patient.
 
-        Tries calling the OIE using each of the patient's MRNs until one succeeds.
+        Tries calling the source system using each of the patient's MRNs until one succeeds.
 
         Args:
             active_mrn_list: a list of all active (site_code, mrn) tuples belonging to the patient
 
         Returns:
-            A wrapped success response from the OIE or an error in JSON format
+            A wrapped success response from the source system or an error in JSON format
         """
         errors, response_data = None, None
         if not active_mrn_list:

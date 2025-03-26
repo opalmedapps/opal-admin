@@ -32,8 +32,8 @@ from opal.core.forms.layouts import (
 )
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.hospital_settings.models import Institution
-from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.hospital.hospital import SourceSystemService
+from opal.services.hospital.hospital_data import SourceSystemPatientData
 from opal.services.twilio import TwilioService, TwilioServiceError
 from opal.users.models import Caregiver, Language, User
 
@@ -155,7 +155,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         super().__init__(*args, **kwargs)
 
         # store response for patient searched in hospital
-        self.patient: OIEPatientData | Patient | None = None
+        self.patient: SourceSystemPatientData | Patient | None = None
 
         # initialize site with a site object when there is a single site and card type is mrn
         site_field: forms.ModelChoiceField[Site] = self.fields['site']  # type: ignore[assignment]
@@ -216,8 +216,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             the cleaned data
         """
         super().clean()
-        # initialize the OIEService to communicate with oie
-        self.oie_service: OIEService = OIEService()
+        # initialize the SourceSystemService to communicate with integration engine
+        self.source_system_service: SourceSystemService = SourceSystemService()
 
         card_type: str | None = self.cleaned_data.get('card_type')
         medical_number: str | None = self.cleaned_data.get('medical_number')
@@ -230,7 +230,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
     def _search_patient(self, card_type: str, medical_number: str, site: Site | None) -> None:
         """
-        Perform patient search in `Patient` model then in OIE.
+        Perform patient search in `Patient` model then in source system.
 
         Args:
             card_type: card type either ramq or mrn
@@ -242,7 +242,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type == constants.MedicalCard.RAMQ.name:
             self.patient = Patient.objects.filter(ramq=medical_number).first()
             if not self.patient:
-                response = self.oie_service.find_patient_by_ramq(medical_number)
+                response = self.source_system_service.find_patient_by_ramq(medical_number)
         # MRN
         elif card_type == constants.MedicalCard.MRN.name and site:
             self.patient = Patient.objects.filter(
@@ -251,7 +251,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(medical_number, site.acronym)
+                response = self.source_system_service.find_patient_by_mrn(medical_number, site.acronym)
 
         if response:
             self._handle_response(response)
@@ -260,10 +260,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
-        """Handle the response from OIE service.
+        """Handle the response from source system service.
 
         Args:
-            response: OIE service response
+            response: source system service response
         """
         messages = []
         if response['status'] == 'success':
@@ -307,14 +307,14 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     # make form continue when clicking checkbox
     # "The correct patient was found and the patient data is correct"
 
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | SourceSystemPatientData, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
 
         The patient can either be an existing patient or a search result from the hospital.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance
+            patient: a `Patient` or `SourceSystemPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -350,7 +350,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
                 _('Unable to complete action with this patient. Please contact Medical Records.'),
             )
 
-        if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
+        if isinstance(self.patient, SourceSystemPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
             self.add_error(
                 NON_FIELD_ERRORS,
                 _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
@@ -412,7 +412,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
     def __init__(  # noqa: WPS231, WPS210 (too much cognitive complexity, too many local variables)
         self,
-        patient: Patient | OIEPatientData,
+        patient: Patient | SourceSystemPatientData,
         existing_user: CaregiverProfile | None = None,
         *args: Any,
         **kwargs: Any,
@@ -421,7 +421,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance
+            patient: a `Patient` or `SourceSystemPatientData` instance
             existing_user: a `CaregiverProfile` if a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments

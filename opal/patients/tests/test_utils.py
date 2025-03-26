@@ -43,7 +43,7 @@ from opal.patients.models import (
     RoleType,
     SexType,
 )
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import SourceSystemMRNData, SourceSystemPatientData
 from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
@@ -52,7 +52,7 @@ from .. import utils
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
-PATIENT_DATA = OIEPatientData(
+PATIENT_DATA = SourceSystemPatientData(
     date_of_birth=date.fromisoformat('1986-10-01'),
     first_name='Marge',
     last_name='Simpson',
@@ -64,8 +64,8 @@ PATIENT_DATA = OIEPatientData(
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
     mrns=[],
 )
-MRN_DATA_RVH = OIEMRNData(site='RVH', mrn='9999993', active=True)
-MRN_DATA_MGH = OIEMRNData(site='MGH', mrn='9999996', active=False)
+MRN_DATA_RVH = SourceSystemMRNData(site='RVH', mrn='9999993', active=True)
+MRN_DATA_MGH = SourceSystemMRNData(site='MGH', mrn='9999996', active=False)
 
 
 @pytest.mark.parametrize(('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'), [
@@ -539,8 +539,8 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
 
 
-def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
-    """An info message is logged when the call to the OIE to initialize a patient succeeds."""
+def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture) -> None:
+    """An info message is logged when the call to the source system to initialize a patient succeeds."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
@@ -552,12 +552,12 @@ def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
     mock_error_logger.assert_any_call(
-        f'Successfully initialized patient via the OIE; patient_uuid = {patient_uuid}',
+        f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}',
     )
 
 
-def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
-    """An error is logged when the call to the OIE to initialize a patient fails."""
+def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture) -> None:
+    """An error is logged when the call to the source system to initialize a patient fails."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
     mock_error_logger = mocker.patch('logging.Logger.error')
 
@@ -568,7 +568,7 @@ def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
-    mock_error_logger.assert_any_call('Failed to initialize patient via the OIE')
+    mock_error_logger.assert_any_call('Failed to initialize patient via the source system')
 
 
 def test_create_access_request_existing() -> None:
@@ -651,7 +651,7 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
 
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
-            OIEPatientData(**patient_data),
+            SourceSystemPatientData(**patient_data),
             caregiver_profile,
             self_type,
         )
@@ -675,7 +675,7 @@ def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     relationship, _ = utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         self_type,
     )
@@ -804,7 +804,7 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
     patient_data['date_of_birth'] = date(2008, 10, 23)
 
     relationship, registration_code = utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         self_type,
     )
@@ -831,7 +831,7 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
 
     utils.create_access_request(
-        OIEPatientData(**patient_data),
+        SourceSystemPatientData(**patient_data),
         caregiver_profile,
         relationship_type,
     )
@@ -892,6 +892,7 @@ def test_create_access_request_new_patient_and_databank_consent(
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
+    assert patient.legacy_id is not None
 
     # Search for the expected databank records
     qdb_patient = LegacyQuestionnairePatient.objects.get(

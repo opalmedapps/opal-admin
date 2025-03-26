@@ -1,6 +1,6 @@
 # Django
 #
-django==4.2.16
+django==4.2.17
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.19.11  # https://django-modeltranslation.readthedocs.io/en/latest/
@@ -48,11 +48,15 @@ plotly==5.24.1  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
-twilio==9.3.7  # https://github.com/twilio/twilio-python
+twilio==9.3.8  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
 fpdf2==2.8.1
+
+# Static image generation
+#
+kaleido==1.0.0rc0  # https://pypi.org/project/kaleido/1.0.0rc0
 
 # Unidecode for transliterating special characters during de-identification
 #

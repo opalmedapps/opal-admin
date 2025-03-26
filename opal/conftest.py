@@ -504,7 +504,7 @@ def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
 
 @pytest.fixture(autouse=True)
 def set_databank_enabled(settings: LazySettings) -> None:  # noqa: PT004
-    """Fixture disables the databank for the unit test.
+    """Fixture enables databank by default for all unit tests.
 
     Args:
         settings: the fixture providing access to the Django settings

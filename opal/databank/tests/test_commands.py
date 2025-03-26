@@ -33,16 +33,16 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert command.called_at is not None
 
     def test_pass_non_default_timeout(self) -> None:
-        """Verify the oie timeout argument is properly parsed."""
-        message, error = self._call_command('send_databank_data', '--oie-timeout', '90')
-        assert 'Sending databank data with 90 seconds timeout for OIE response.' in message
+        """Verify the source system timeout argument is properly parsed."""
+        message, error = self._call_command('send_databank_data', '--request-timeout', '90')
+        assert 'Sending databank data with 90 seconds timeout for source system response.' in message
         assert not error
 
     def test_no_consenting_patients_found_message(self) -> None:
         """Verify correct notifications show in stdout for no patients found."""
         message, error = self._call_command('send_databank_data')
         assert not error
-        assert 'Sending databank data with 120 seconds timeout for OIE response.' in message
+        assert 'Sending databank data with 120 seconds timeout for source system response.' in message
         assert 'No patients found consenting to Appointments data donation.' in message
         assert 'No patients found consenting to Demographics data donation.' in message
         assert 'No patients found consenting to Diagnoses data donation.' in message
@@ -170,12 +170,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
 
-    def test_send_to_oie_bad_configuration_exception(
+    def test_send_to_source_system_bad_configuration_exception(
         self,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
-        """Verify the request exception is handled when connection details for the OIE are wrong."""
+        """Verify the request exception is handled when connection details for the source system are wrong."""
         django_pat1 = patient_factories.Patient()
         yesterday = datetime.now() - timedelta(days=1)
         databank_factories.DatabankConsent(
@@ -197,11 +197,15 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response({}, 60)
+        command._request_and_handle_response({}, 60)
         captured = capsys.readouterr()
-        assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
+        assert 'Source system connection Error: No connection adapters were found for HOST' in captured.err
 
-    def test_send_to_oie_bad_gateway_error(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_send_to_source_system_bad_gateway_error(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
         """Verify bad gateway error is logged to stderr."""
         django_pat1 = patient_factories.Patient()
         last_sync = datetime(2022, 1, 1)
@@ -237,12 +241,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
+        command._request_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
-        assert '502 oie response error' in captured.err
+        assert '502 source system response error' in captured.err
         assert 'Bad Gateway' in captured.err
 
-    def test_send_to_oie_missing_endpoint_allowance_error(
+    def test_send_to_source_system_missing_endpoint_allowance_error(
         self,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
@@ -282,9 +286,9 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.NOT_FOUND
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
+        command._request_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
-        assert '404 oie response error' in captured.err
+        assert '404 source system response error' in captured.err
         assert 'Resource not found' in captured.err
 
     def test_demographics_success_response(self, mocker: MockerFixture) -> None:
@@ -316,7 +320,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         RequestMockerTest.mock_requests_post(
             mocker,
-            response_data=self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS),
+            response_data=self._create_custom_source_system_response(databank_models.DataModuleType.DEMOGRAPHICS),
         )
         message, error = self._call_command('send_databank_data')
         assert 'Number of Demographics-consenting patients is: 2' in message
@@ -358,7 +362,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat2)
         response = RequestMockerTest.mock_requests_post(
             mocker,
-            response_data=self._create_custom_oie_response(databank_models.DataModuleType.LABS),
+            response_data=self._create_custom_source_system_response(databank_models.DataModuleType.LABS),
         )
         message, error = self._call_command('send_databank_data')
         assert response.return_value.status_code == HTTPStatus.OK
@@ -368,7 +372,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 6
         assert not error
 
-    def test_unrecognized_module_prefix_in_oie_response(self, mocker: MockerFixture) -> None:
+    def test_unrecognized_module_prefix_in_source_system_response(self, mocker: MockerFixture) -> None:
         """Ensure an error is logged when the data type is unrecognized in the response data."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -422,7 +426,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         RequestMockerTest.mock_requests_post(
             mocker,
-            response_data=self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS),
+            response_data=self._create_custom_source_system_response(databank_models.DataModuleType.DEMOGRAPHICS),
         )
         command = send_databank_data.Command()
         # Pre-init one patients success tracker to test the pass over works correctly in parse_aggregate_response
@@ -683,7 +687,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
 
     def test_update_databank_patient_shared_data_call(self, mocker: MockerFixture) -> None:
         """Test correct calling of the metatdata update."""
-        response_data = self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS)
+        response_data = self._create_custom_source_system_response(databank_models.DataModuleType.DEMOGRAPHICS)
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
         django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
@@ -1045,8 +1049,8 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         ).count()
         assert shared_data_count2 == 1
 
-    def test_empty_oie_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
-        """Test that execution doesnt fail if oie response is empty."""
+    def test_empty_source_system_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test that execution doesnt fail if source system response is empty."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
         django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
@@ -1230,7 +1234,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
                 for key2 in inner_keys:
                     assert key2 in answer
 
-    def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
+    def _create_custom_source_system_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
         """Prepare a response message according to module and success/failure.
 
         Args:

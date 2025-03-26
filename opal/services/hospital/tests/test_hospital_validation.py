@@ -1,15 +1,15 @@
 from datetime import datetime
 from types import MappingProxyType
 
-from opal.services.hospital.hospital_data import OIEReportExportData
-from opal.services.hospital.hospital_validation import OIEValidator
+from opal.services.hospital.hospital_data import SourceSystemReportExportData
+from opal.services.hospital.hospital_validation import SourceSystemValidator
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 DOCUMENT_NUMBER = 'FMU-8624'
 MRN = '9999996'
 SITE_CODE = 'MUHC'
 
-OIE_PATIENT_DATA = MappingProxyType({
+SOURCE_SYSTEM_PATIENT_DATA = MappingProxyType({
     'dateOfBirth': '1953-01-01',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
@@ -26,14 +26,14 @@ OIE_PATIENT_DATA = MappingProxyType({
     ],
 })
 
-oie_validator = OIEValidator()
+source_system_validator = SourceSystemValidator()
 
 
 # is_report_export_request_valid
 
 def test_is_report_export_request_valid_success() -> None:
-    """Ensure `OIEReportExportData` successfully validates."""
-    report_data = OIEReportExportData(
+    """Ensure `SourceSystemReportExportData` successfully validates."""
+    report_data = SourceSystemReportExportData(
         mrn=MRN,
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
@@ -41,12 +41,12 @@ def test_is_report_export_request_valid_success() -> None:
         document_date=datetime.now(),
     )
 
-    assert oie_validator.is_report_export_request_valid(report_data)
+    assert source_system_validator.is_report_export_request_valid(report_data)
 
 
 def test_is_report_export_request_invalid_mrn() -> None:
-    """Ensure `OIEReportExportData` with invalid MRN are handled and does not result in an error."""
-    report_data = OIEReportExportData(
+    """Ensure `SourceSystemReportExportData` with invalid MRN are handled and does not result in an error."""
+    report_data = SourceSystemReportExportData(
         mrn='',
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
@@ -54,12 +54,12 @@ def test_is_report_export_request_invalid_mrn() -> None:
         document_date=datetime.now(),
     )
 
-    assert oie_validator.is_report_export_request_valid(report_data) is False
+    assert source_system_validator.is_report_export_request_valid(report_data) is False
 
 
 def test_is_report_export_request_invalid_site() -> None:
-    """Ensure `OIEReportExportData` with invalid site are handled and does not result in an error."""
-    report_data = OIEReportExportData(
+    """Ensure `SourceSystemReportExportData` with invalid site are handled and does not result in an error."""
+    report_data = SourceSystemReportExportData(
         mrn=MRN,
         site='',
         base64_content=BASE64_ENCODED_REPORT,
@@ -67,12 +67,12 @@ def test_is_report_export_request_invalid_site() -> None:
         document_date=datetime.now(),
     )
 
-    assert oie_validator.is_report_export_request_valid(report_data) is False
+    assert source_system_validator.is_report_export_request_valid(report_data) is False
 
 
 def test_is_report_export_request_invalid_content() -> None:
-    """Ensure `OIEReportExportData` with invalid base64 content are handled and does not result in an error."""
-    report_data = OIEReportExportData(
+    """Ensure `SourceSystemReportExportData` with invalid base64 content are handled and does not result in an error."""
+    report_data = SourceSystemReportExportData(
         mrn=MRN,
         site=SITE_CODE,
         base64_content='INVALID CONTENT',
@@ -80,12 +80,12 @@ def test_is_report_export_request_invalid_content() -> None:
         document_date=datetime.now(),
     )
 
-    assert oie_validator.is_report_export_request_valid(report_data) is False
+    assert source_system_validator.is_report_export_request_valid(report_data) is False
 
 
 def test_is_report_export_request_invalid_doctype() -> None:
-    """Ensure `OIEReportExportData` with invalid document type are handled and does not result in an error."""
-    report_data = OIEReportExportData(
+    """Ensure `SourceSystemReportExportData` with invalid document type are handled and does not result in an error."""
+    report_data = SourceSystemReportExportData(
         mrn=MRN,
         site=SITE_CODE,
         base64_content=BASE64_ENCODED_REPORT,
@@ -93,41 +93,41 @@ def test_is_report_export_request_invalid_doctype() -> None:
         document_date=datetime.now(),
     )
 
-    assert oie_validator.is_report_export_request_valid(report_data) is False
+    assert source_system_validator.is_report_export_request_valid(report_data) is False
 
 
 # is_report_export_response_valid
 
 def test_is_report_export_response_valid_success() -> None:
     """Ensure report export response data successfully validates."""
-    assert oie_validator.is_report_export_response_valid({'status': 'success'}) is True
-    assert oie_validator.is_report_export_response_valid({'status': 'error'}) is True
+    assert source_system_validator.is_report_export_response_valid({'status': 'success'}) is True
+    assert source_system_validator.is_report_export_response_valid({'status': 'error'}) is True
 
 
 def test_is_report_export_response_invalid() -> None:
     """Ensure that report export invalid response data are handled and do not result in an error."""
-    assert oie_validator.is_report_export_response_valid({'invalid': 'invalid'}) is False
-    assert oie_validator.is_report_export_response_valid({'invalid': 'success'}) is False
-    assert oie_validator.is_report_export_response_valid({'invalid': 'error'}) is False
-    assert oie_validator.is_report_export_response_valid({}) is False
+    assert source_system_validator.is_report_export_response_valid({'invalid': 'invalid'}) is False
+    assert source_system_validator.is_report_export_response_valid({'invalid': 'success'}) is False
+    assert source_system_validator.is_report_export_response_valid({'invalid': 'error'}) is False
+    assert source_system_validator.is_report_export_response_valid({}) is False
 
 
 def test_is_report_export_response_invalid_type() -> None:
     """Ensure that report export invalid response data type is handled and does not result in an error."""
-    assert oie_validator.is_report_export_response_valid({'status': {}}) is False
-    assert oie_validator.is_report_export_response_valid(None) is False
-    assert oie_validator.is_report_export_response_valid('test string') is False
-    assert oie_validator.is_report_export_response_valid(123) is False
-    assert oie_validator.is_report_export_response_valid({'status': {'success'}}) is False
+    assert source_system_validator.is_report_export_response_valid({'status': {}}) is False
+    assert source_system_validator.is_report_export_response_valid(None) is False
+    assert source_system_validator.is_report_export_response_valid('test string') is False
+    assert source_system_validator.is_report_export_response_valid(123) is False
+    assert source_system_validator.is_report_export_response_valid({'status': {'success'}}) is False
 
 
 # is_patient_response_valid
 
 def test_is_patient_response_valid_success() -> None:
     """Ensure patient response valid success."""
-    errors = oie_validator.is_patient_response_valid({
+    errors = source_system_validator.is_patient_response_valid({
         'status': 'success',
-        'data': OIE_PATIENT_DATA,
+        'data': SOURCE_SYSTEM_PATIENT_DATA,
     })
 
     assert not errors
@@ -135,8 +135,8 @@ def test_is_patient_response_valid_success() -> None:
 
 def test_patient_response_status_non_exists() -> None:
     """Ensure patient response data non-existent status return error message."""
-    errors = oie_validator.is_patient_response_valid({
-        'data': OIE_PATIENT_DATA,
+    errors = source_system_validator.is_patient_response_valid({
+        'data': SOURCE_SYSTEM_PATIENT_DATA,
     })
 
     assert errors == ['Patient response data does not have the attribute "status"']
@@ -144,7 +144,7 @@ def test_patient_response_status_non_exists() -> None:
 
 def test_patient_response_status_unexpected() -> None:
     """Ensure a patient response with unexpected status returns an error message."""
-    errors = oie_validator.is_patient_response_valid({
+    errors = source_system_validator.is_patient_response_valid({
         'status': 'other',
     })
 
@@ -155,164 +155,164 @@ def test_patient_response_status_unexpected() -> None:
 
 def test_check_patient_data_valid() -> None:
     """Ensure patient data valid."""
-    errors = oie_validator.check_patient_data(OIE_PATIENT_DATA)
+    errors = source_system_validator.check_patient_data(SOURCE_SYSTEM_PATIENT_DATA)
 
     assert not errors
 
 
 def test_check_patient_date_of_birth_non_exists() -> None:
     """Ensure patient data invalid date_of_birth return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('dateOfBirth')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute dateOfBirth']
 
 
 def test_check_patient_date_of_birth_invalid() -> None:
     """Ensure patient data invalid date_of_birth return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['dateOfBirth'] = '1953/01/01'
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ["dateOfBirth is invalid: time data '1953/01/01' does not match format '%Y-%m-%d'"]  # noqa: WPS323
 
 
 def test_check_patient_first_name_non_exists() -> None:
     """Ensure patient data invalid firstName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('firstName')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute firstName']
 
 
 def test_check_patient_first_name_empty() -> None:
     """Ensure patient data invalid firstName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['firstName'] = ''
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data firstName is empty']
 
 
 def test_check_patient_last_name_non_exists() -> None:
     """Ensure patient data invalid lastName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('lastName')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute lastName']
 
 
 def test_check_patient_last_name_empty() -> None:
     """Ensure patient data invalid lastName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['lastName'] = ''
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data lastName is empty']
 
 
 def test_check_patient_sex_non_exists() -> None:
     """Ensure patient data invalid lastName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('sex')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute sex']
 
 
 def test_check_patient_sex_empty() -> None:
     """Ensure patient data invalid lastName return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['sex'] = ''
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data sex is empty']
 
 
 def test_check_patient_alias_non_exists() -> None:
     """Ensure patient data invalid alias return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('alias')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute alias']
 
 
 def test_check_patient_ramq_non_exists() -> None:
     """Ensure patient data invalid ramq return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('ramq')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient ramq is missing']
 
 
 def test_check_patient_ramq_invalid() -> None:
     """Ensure patient data invalid ramq return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['ramq'] = 'ABC1111'
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient ramq is invalid']
 
 
 def test_check_patient_ramq_expiration_non_exists() -> None:
     """Ensure patient data invalid ramqExpiration return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('ramqExpiration')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute ramqExpiration']
 
 
 def test_check_patient_ramq_expiration_invalid() -> None:
     """Ensure patient data invalid ramqExpiration return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['ramqExpiration'] = '2018-01-31'
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ["Patient data ramqExpiration is invalid: time data '2018-01-31' does not match format '%Y%m'"]  # noqa: E501
 
 
 def test_check_patient_mrns_non_exists() -> None:
     """Ensure patient data invalid mrn site return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data.pop('mrns')
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data does not have the attribute mrns']
 
 
 def test_check_patient_mrns_empty() -> None:
     """Ensure patient data invalid mrn site return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = []
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient data mrns is empty']
 
 
 def test_check_patient_mrn_site_non_exists() -> None:
     """Ensure patient data invalid mrn site return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'mrn': '9999993',
@@ -320,14 +320,14 @@ def test_check_patient_mrn_site_non_exists() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data does not have the attribute site']
 
 
 def test_check_patient_mrn_site_empty() -> None:
     """Ensure patient data invalid mrn site return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'site': '',
@@ -336,14 +336,14 @@ def test_check_patient_mrn_site_empty() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data site is empty']
 
 
 def test_check_patient_mrn_mrn_non_exists() -> None:
     """Ensure patient data invalid mrn mrn return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'site': 'MGH',
@@ -351,14 +351,14 @@ def test_check_patient_mrn_mrn_non_exists() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data does not have the attribute mrn']
 
 
 def test_check_patient_mrn_mrn_empty() -> None:
     """Ensure patient data invalid mrn mrn return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'site': 'MGH',
@@ -367,14 +367,14 @@ def test_check_patient_mrn_mrn_empty() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data mrn is empty']
 
 
 def test_check_patient_mrn_active_non_exists() -> None:
     """Ensure patient data invalid mrn active return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'site': 'MGH',
@@ -382,14 +382,14 @@ def test_check_patient_mrn_active_non_exists() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data does not have the attribute active']
 
 
 def test_check_patient_mrn_active_invalid() -> None:
     """Ensure patient data invalid mrn active return error message."""
-    patient_data = OIE_PATIENT_DATA.copy()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA.copy()
     patient_data['mrns'] = [
         {
             'site': 'MGH',
@@ -398,7 +398,7 @@ def test_check_patient_mrn_active_invalid() -> None:
         },
     ]
 
-    errors = oie_validator.check_patient_data(patient_data)
+    errors = source_system_validator.check_patient_data(patient_data)
 
     assert errors == ['Patient MRN data active is not bool']
 
@@ -409,7 +409,7 @@ def test_new_patient_response_no_status() -> None:
         'error': 'Message',
     }
 
-    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    valid, errors = source_system_validator.is_new_patient_response_valid(response)
     assert not valid
     assert errors == ['Patient response data does not have the attribute "status"']
 
@@ -420,7 +420,7 @@ def test_new_patient_response_success() -> None:
         'status': 'success',
     }
 
-    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    valid, errors = source_system_validator.is_new_patient_response_valid(response)
     assert valid
     assert not errors
 
@@ -431,9 +431,9 @@ def test_new_patient_response_error() -> None:
         'status': 'error',
     }
 
-    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    valid, errors = source_system_validator.is_new_patient_response_valid(response)
     assert not valid
-    assert errors == ['Error response from the OIE']
+    assert errors == ['Error response from the source system']
 
 
 def test_new_patient_response_unexpected_status() -> None:
@@ -442,6 +442,6 @@ def test_new_patient_response_unexpected_status() -> None:
         'status': 'other',
     }
 
-    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    valid, errors = source_system_validator.is_new_patient_response_valid(response)
     assert not valid
     assert errors == ['New patient response data has an unexpected "status" value: other']
