@@ -51,7 +51,10 @@ class OIECommunicationService:
         """
         # return a `JsonResponse` with a BAD_REQUEST if `OIEReportExportData` is not valid
         if not self._is_report_export_data_valid(report_data):
-            return JsonResponse({'status': HTTPStatus.BAD_REQUEST, 'message': 'invalid export data'})
+            return JsonResponse(
+                data={'status': HTTPStatus.BAD_REQUEST, 'message': 'invalid export data'},
+                status=HTTPStatus.BAD_REQUEST,
+            )
 
         pload = json.dumps({
             'mrn': report_data.mrn,
@@ -72,15 +75,24 @@ class OIECommunicationService:
                 verify=False,  # noqa: S501
             )
         except requests.exceptions.RequestException as req_exp:
-            return JsonResponse({'status': HTTPStatus.BAD_REQUEST, 'message': str(req_exp)})
+            return JsonResponse(
+                data={'status': HTTPStatus.BAD_REQUEST, 'message': str(req_exp)},
+                status=HTTPStatus.BAD_REQUEST,
+            )
 
         # Try to return a JSON object of the response content
         try:
             json_data = response.json()
         except requests.exceptions.JSONDecodeError as decode_err:
-            return JsonResponse({'status': HTTPStatus.BAD_REQUEST, 'message': str(decode_err)})
+            return JsonResponse(
+                data={'status': HTTPStatus.BAD_REQUEST, 'message': str(decode_err)},
+                status=HTTPStatus.BAD_REQUEST,
+            )
 
-        return JsonResponse(json_data)
+        return JsonResponse(
+            data=json_data,
+            status=response.status_code,
+        )
 
     def _is_report_export_data_valid(
         self,
