@@ -261,7 +261,7 @@ class Command(BaseCommand):  # noqa: WPS214
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=oie_timeout,  # noqa: WPS432
+                timeout=oie_timeout,
             )
         except requests.exceptions.RequestException as exc:
             # Connection details for OIE might be misconfigured

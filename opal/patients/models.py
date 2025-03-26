@@ -270,15 +270,15 @@ class Patient(AbstractLabDelayModel):
         verbose_name_plural = _('Patients')
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_sex_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_sex_valid',
                 check=models.Q(sex__in=SexType.values),
             ),
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_date_valid',
                 check=models.Q(date_of_birth__lte=models.F('date_of_death')),
             ),
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_access_level_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_access_level_valid',
                 check=models.Q(data_access__in=DataAccessType.values),
             ),
         ]
@@ -418,15 +418,15 @@ class Relationship(models.Model):  # noqa: WPS214
 
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_status_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_status_valid',
                 check=models.Q(status__in=RelationshipStatus.values),
             ),
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_date_valid',
                 check=models.Q(start_date__lt=models.F('end_date')),
             ),
             models.UniqueConstraint(
-                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_unique_constraint',
                 fields=['patient', 'caregiver', 'type', 'status'],
             ),
         ]

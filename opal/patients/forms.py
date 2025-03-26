@@ -535,7 +535,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return user_type == constants.UserType.EXISTING.name
 
-    def clean(self) -> dict[str, Any]:  # noqa: WPS231
+    def clean(self) -> dict[str, Any]:
         """
         Validate the form.
 

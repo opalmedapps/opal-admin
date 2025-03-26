@@ -235,7 +235,7 @@ def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
 
 
 def fix_breaking_characters(field: str) -> str:
-    """Replace incorrectly encoded or interpretted characters with linebreaks.
+    """Replace incorrectly encoded or interpreted characters with linebreaks.
 
     Args:
         field: The HL7 er7 data to be cleaned

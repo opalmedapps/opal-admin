@@ -319,7 +319,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_models.SharedData.objects.all().count() == 2
         assert not error
 
-    def test_labs_success_response(self, mocker: MockerFixture) -> None:  # noqa: WPS213
+    def test_labs_success_response(self, mocker: MockerFixture) -> None:
         """Test the expected response for labs data sending."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)

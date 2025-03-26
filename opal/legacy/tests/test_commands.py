@@ -619,7 +619,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
-    def test_no_deviations_for_patients_without_user(self) -> None:  # noqa: WPS213
+    def test_no_deviations_for_patients_without_user(self) -> None:
         """Ensure the command does not return deviations error for "Patient" records without users."""
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
