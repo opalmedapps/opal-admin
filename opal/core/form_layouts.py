@@ -28,7 +28,8 @@ class CancelButton(HTML):
         Args:
             url: URL to the page that the button will be link to
         """
-        html = f'{{% form_cancel href="{url}" %}}'
+        # evaluate the URL first in case it is a variable like "{{ view.success_url }}"
+        html = f'{{% fragment as the_url %}}{url}{{% endfragment %}}{{% form_cancel href=the_url %}}'
 
         super().__init__(html)
 
