@@ -6,6 +6,7 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
@@ -358,7 +359,7 @@ class ExistingUserForm(forms.Form):
         super().clean()
         user_email_field = self.cleaned_data.get('user_email')
         user_phone_field = self.cleaned_data.get('user_phone')
-        error_message = _(
+        error_message = gettext(
             'Opal user was not found in your database. '
             + 'This may be an out-of-hospital account. '
             + 'Please proceed to generate a new QR code. '
