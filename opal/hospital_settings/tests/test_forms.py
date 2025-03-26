@@ -17,15 +17,14 @@ def test_institution_form_is_valid(institution_form: InstitutionForm) -> None:
 
 
 def test_institution_form_with_missing_code(incomplete_institution_form: InstitutionForm) -> None:
-    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
+    """Ensure that the institution form checks for a missing code field."""
     assert not incomplete_institution_form.is_valid()
 
 
 def test_institution_update(institution_form: InstitutionForm) -> None:
-    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
-    assert institution_form.is_valid()
+    """Ensure that a valid institution form can be saved."""
     institution_form.save()
-    assert Institution.objects.all()[0].name_en == institution_form.cleaned_data['name_en']
+    assert Institution.objects.all()[0].name_en == institution_form.data['name_en']
 
 
 def test_institution_update_with_missing_field(incomplete_institution_form: InstitutionForm) -> None:
