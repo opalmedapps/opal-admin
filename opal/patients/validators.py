@@ -2,16 +2,16 @@
 from collections import Counter
 
 from opal.patients.models import Patient
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.hospital.hospital_data import SourceSystemPatientData
 
 
 # Patients Validators
-def is_deceased(patient: Patient | OIEPatientData) -> bool:
+def is_deceased(patient: Patient | SourceSystemPatientData) -> bool:
     """
     Check if a patient is deceased.
 
     Args:
-        patient: either patient object or patient record from OIE
+        patient: either patient object or patient record from source system
 
     Returns:
         True if patient is deceased, False otherwise
@@ -22,7 +22,7 @@ def is_deceased(patient: Patient | OIEPatientData) -> bool:
     return patient.deceased
 
 
-def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> bool:
+def has_multiple_mrns_with_same_site_code(patient_record: SourceSystemPatientData) -> bool:
     """
     Check if the number of MRN records with the same site code is greater than 1.
 
