@@ -82,24 +82,28 @@ def qr_code(text: str) -> bytes:
     return stream.getvalue()
 
 
-def dict_to_csv(input_dict: list[dict[str, Any]]) -> bytes:
-    """Convert a list of dictionaries to CSV bytes.
+def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
+    """Convert a list of dictionaries to a CSV in byte format.
 
-    The CSV data is returned in `bytes` format.
+    Each dictionary is expected to have the same keys, as the CSV header is
+    determined by the keys of the first dictionary.
+
+    If a dictionary contains extra keys not present in the first dictionary,
+    those key-value pairs will be ignored.
 
     Args:
-        input_dict: list of dictionaries with string keys and values of any type
+        dicts: list of dictionaries with string keys and values of any type
 
     Returns:
         `bytes` object containing the CSV data
     """
     # Collect all possible headers from the list of dictionaries
-    headers = input_dict[0].keys() if input_dict else []
+    headers = dicts[0].keys() if dicts else []
 
     buffer = io.StringIO(newline='')
-    writer = csv.DictWriter(buffer, fieldnames=headers)
+    writer = csv.DictWriter(buffer, fieldnames=headers, extrasaction='ignore')
     writer.writeheader()
-    writer.writerows(input_dict)
+    writer.writerows(dicts)
 
     csv_string = buffer.getvalue()
     # Encode the string to bytes
