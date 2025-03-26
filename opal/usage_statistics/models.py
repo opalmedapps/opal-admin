@@ -8,8 +8,13 @@ from django.utils.translation import gettext_lazy as _
 from opal.patients.models import Patient, Relationship
 from opal.users.models import User
 
+
 class DailyUserPatientActivity(models.Model):
-    """An instance of daily app activity by a user on behalf of a patient. One record per user + patient per day (Maximum)"""
+    """
+    An instance of daily app activity by a user on behalf of a patient.
+
+    One record per user + patient per day (Maximum).
+    """
 
     action_by_user = models.ForeignKey(
         verbose_name=_('User who triggered this action'),
@@ -74,8 +79,13 @@ class DailyUserPatientActivity(models.Model):
             patient=self.patient,
         )
 
+
 class DailyUserAppActivity(models.Model):
-    """An instance of daily app (non-chart) activity per user. One record per user per day (Maximum)"""
+    """
+    An instance of daily app (non-chart) activity per user.
+
+    One record per user per day (Maximum).
+    """
 
     action_by_user = models.ForeignKey(
         verbose_name=_('User who triggered this action'),

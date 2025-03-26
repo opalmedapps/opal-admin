@@ -57,9 +57,20 @@ def test_daily_user_patient_activity_str() -> None:
         patient=patient,
     )
 
+def test_daily_user_app_activity_str() -> None:
+    """Ensure the `__str__` method is defined for the `DailyUserAppActivity` model."""
+    caregiver = Caregiver()
+    user_data = DailyUserAppActivity(
+        action_by_user=caregiver,
+    )
+
+    assert str(user_data) == 'Daily activity by {caregiver.first_name}, {caregiver.last_name}'.format(
+        caregiver=caregiver,
+    )
+
+
 def test_daily_user_app_activity_new_can_save() -> None:
     """Ensure a new `DailyUserAppActivity` instance can be saved."""
-
     patient_data = factories.DailyUserAppActivity.build(
         action_by_user=Caregiver(),
     )
@@ -93,7 +104,6 @@ def test_daily_patient_data_received_new_can_save() -> None:
 
 def test_daily_user_app_activity_multiple_per_patient() -> None:
     """Ensure a relationship can have multiple `DailyUserAppActivity` records."""
-
     factories.DailyUserAppActivity(
         action_by_user=Caregiver(),
     )

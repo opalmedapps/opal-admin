@@ -22,6 +22,7 @@ class DailyUserAppActivityAdmin(admin.ModelAdmin[DailyUserAppActivity]):
         'date_added',
     ]
 
+
 @admin.register(DailyUserPatientActivity)
 class DailyUserPatientActivityAdmin(admin.ModelAdmin[DailyUserPatientActivity]):
     """The admin class for `DailyUserPatientActivity` models."""
@@ -37,6 +38,7 @@ class DailyUserPatientActivityAdmin(admin.ModelAdmin[DailyUserPatientActivity]):
         'count_labs',
         'date_added',
     ]
+
 
 @admin.register(DailyPatientDataReceived)
 class DailyPatientDataReceivedAdmin(admin.ModelAdmin[DailyPatientDataReceived]):

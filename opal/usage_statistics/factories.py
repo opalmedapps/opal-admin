@@ -43,6 +43,7 @@ class DailyUserPatientActivity(DjangoModelFactory):
     class Meta:
         model = models.DailyUserPatientActivity
 
+
 class DailyPatientDataReceived(DjangoModelFactory):
     """Model factory to create [opal.usage_statistics.models.DailyPatientDataReceived][] models."""
 
