@@ -37,6 +37,13 @@ class Caregiver(User):
         model = models.Caregiver
 
 
+class ClinicalStaff(User):
+    """Model factory to create [opal.users.models.ClinicalStaff][] models."""
+
+    class Meta:
+        model = models.ClinicalStaff
+
+
 class GroupFactory(DjangoModelFactory):
     """Model factory to create Groups."""
 
