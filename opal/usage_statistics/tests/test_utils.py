@@ -2,13 +2,13 @@ import datetime as dt
 import os
 from typing import Any
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 import pytest
 from django_stubs_ext.aliases import ValuesQuerySet
 from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
 
 from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories as legacy_factories
@@ -965,7 +965,7 @@ def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationsh
     )
 
 
-def test_export_data_csv(settings: SettingsWrapper) -> None:
+def test_export_data_csv() -> None:
     """Ensure the export function generate csv file with model queryset."""
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
@@ -974,10 +974,10 @@ def test_export_data_csv(settings: SettingsWrapper) -> None:
     model_name = query.model
     model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
     data_set = query.values(*model_fields)
-    assert not os.path.isfile('test.csv')
+    assert not os.path.isfile('{0}test.csv'.format(settings.USAGE_STATS_PATH))
     stats_utils.export_data(list(data_set), 'test.csv')
-    assert os.path.isfile('test.csv')
-    os.remove('test.csv')
+    assert os.path.isfile('{0}test.csv'.format(settings.USAGE_STATS_PATH))
+    os.remove('{0}test.csv'.format(settings.USAGE_STATS_PATH))
 
 
 def test_export_data_xlsx() -> None:
@@ -989,10 +989,10 @@ def test_export_data_xlsx() -> None:
     model_name = query.model
     model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
     data_set = query.values(*model_fields)
-    assert not os.path.isfile('test.xlsx')
+    assert not os.path.isfile('{0}test.xlsx'.format(settings.USAGE_STATS_PATH))
     stats_utils.export_data(list(data_set), 'test.xlsx')
-    assert os.path.isfile('test.xlsx')
-    os.remove('test.xlsx')
+    assert os.path.isfile('{0}test.xlsx'.format(settings.USAGE_STATS_PATH))
+    os.remove('{0}test.xlsx'.format(settings.USAGE_STATS_PATH))
 
 
 def test_export_data_invalid_file_name() -> None:
@@ -1009,4 +1009,4 @@ def test_export_data_invalid_file_name() -> None:
         ValueError,
         expected_message,
     ):
-        stats_utils.export_data(list(data_set), 'test.random')
+        stats_utils.export_data(list(data_set), '{0}test.random'.format(settings.USAGE_STATS_PATH))
