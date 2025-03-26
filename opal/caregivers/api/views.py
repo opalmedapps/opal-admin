@@ -82,8 +82,16 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
         # or use Appuserid header
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
-
+# TODO: Switch to using GenericListView for GetCaregiverPatientsList
 @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
     responses={
         200: CaregiverPatientSerializer(many=True),
     },
@@ -118,7 +126,16 @@ class GetCaregiverPatientsList(APIView):
             CaregiverPatientSerializer(relationships, many=True).data,
         )
 
-
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
+)
 class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
     """Retrieve the profile of the current caregiver."""
 
@@ -183,7 +200,7 @@ class RetrieveRegistrationCodeMixin:
     },
     responses={
         200: {},
-        404: {'description': 'Email verification not found or already verified'},
+        400: {'description': 'Email verification not found or already verified'},
     },
 )
 # TODO: replace this with RetrieveAPIView in the future
@@ -295,7 +312,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
     },
     responses={
         200: {},
-        404: {'description': 'Email verification not found or already verified'},
+        400: {'description': 'Email verification not found or already verified'},
     },
 )
 # TODO: replace this with RetrieveAPIView in the future

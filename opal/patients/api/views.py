@@ -65,28 +65,26 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             raise PermissionDenied()
         return registration_code
 
-
+@extend_schema(
+    responses={
+        200: CaregiverRelationshipSerializer(many=True),
+        403: {'description': 'User not authorized'},
+        404: {'description': 'Patient not found'},
+    },
+)
 class CaregiverRelationshipView(ListAPIView[Relationship]):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = (IsListener, CaregiverSelfPermissions)
+    queryset = Relationship.objects.none()
 
-    @extend_schema(
-        responses={
-            200: CaregiverRelationshipSerializer(many=True),
-            403: {'description': 'User not authorized'},
-            404: {'description': 'Patient not found'},
-        },
-    )
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.
 
         Returns:
             List of caregiver profiles for a given patient
         """
-        if getattr(self, 'swagger_fake_view', False):
-            return Relationship.objects.none()
         return Relationship.objects.select_related(
             'caregiver__user',
         ).filter(
