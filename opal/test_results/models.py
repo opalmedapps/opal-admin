@@ -198,7 +198,7 @@ class PathologyObservation(AbstractObservation):
     )
 
     def __str__(self) -> str:
-        """Pathologyobservation string representation.
+        """Pathology observation string representation.
 
         Returns:
             string repr
@@ -250,7 +250,7 @@ class LabObservation(AbstractObservation):
     )
 
     def __str__(self) -> str:
-        """Labobservation string representation.
+        """Lab observation string representation.
 
         Returns:
             string repr
