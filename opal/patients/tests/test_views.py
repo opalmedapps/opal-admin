@@ -1360,6 +1360,75 @@ def test_form_readonly_pendingrelationship_cannot_update(relationship_user: Clie
     assert new_caregiver.first_name != 'test_firstname'
 
 
+def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> None:
+    """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    longname = ''.join('a' for letter in range(200))
+    error_message = 'Ensure this value has at most 150 characters (it has 200).'
+
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = longname
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    response_post = relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    form = response_post.context['form']
+    assert not form.is_valid()
+    assert form.errors['last_name'][0] == error_message
+
+
+def test_relationship_update_success(relationship_user: Client) -> None:
+    """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship(
+        pk=1,
+        type=relationshiptype,
+        caregiver=caregiver,
+        status=models.RelationshipStatus.PENDING,
+    )
+    response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
+
+    # assert getter
+    assert response_get.status_code == HTTPStatus.OK
+
+    # prepare data to post
+    data = model_to_dict(relationship)
+    data['status'] = models.RelationshipStatus.CONFIRMED
+    data['first_name'] = 'test_firstname'
+    data['last_name'] = 'test_lastname'
+    data['cancel_url'] = response_get.context['cancel_url']
+
+    # post
+    relationship_user.post(
+        reverse('patients:relationships-view-update', kwargs={'pk': 1}),
+        data=data,
+    )
+
+    # assertions
+    relationship_record = models.Relationship.objects.get(pk=1)
+    assert relationship_record.caregiver.user.last_name == data['last_name']
+
+
 # relationshiptype tests
 def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client) -> None:
     """Ensure the delete button does not appear, but update does, in the special rendering for restricted role types."""
