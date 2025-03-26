@@ -1,11 +1,10 @@
 """Command for Security Question migration."""
 from typing import Any
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import SecurityQuestion
-from opal.legacy.models import LegacySecurityquestion
+from opal.legacy.models import LegacySecurityQuestion
 
 
 class Command(BaseCommand):
@@ -21,11 +20,15 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
-        legacy_questions = LegacySecurityquestion.objects.all()
+        legacy_questions = LegacySecurityQuestion.objects.all()
         for legacy_question in legacy_questions:
+            # Import a security question if not found.
             try:
-                SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
-            except ObjectDoesNotExist:
+                SecurityQuestion.objects.get(
+                    title_en=legacy_question.questiontext_en,
+                    is_active=True,
+                )
+            except SecurityQuestion.DoesNotExist:
                 SecurityQuestion.objects.create(
                     title_en=legacy_question.questiontext_en,
                     title_fr=legacy_question.questiontext_fr,

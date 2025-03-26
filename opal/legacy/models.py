@@ -172,7 +172,7 @@ class LegacyQuestionnaire(models.Model):
         db_table = 'Questionnaire'
 
 
-class LegacySecurityquestion(models.Model):
+class LegacySecurityQuestion(models.Model):
     """Securityquestion model from the legacy database OpalDB."""
 
     securityquestionsernum = models.AutoField(db_column='SecurityQuestionSerNum', primary_key=True)
@@ -187,7 +187,7 @@ class LegacySecurityquestion(models.Model):
         db_table = 'SecurityQuestion'
 
 
-class LegacySecurityanswer(models.Model):
+class LegacySecurityAnswer(models.Model):
     """SecurityAnswer model from the legacy database OpalDB."""
 
     securityanswersernum = models.AutoField(db_column='SecurityAnswerSerNum', primary_key=True)

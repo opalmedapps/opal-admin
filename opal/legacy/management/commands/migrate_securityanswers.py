@@ -1,11 +1,10 @@
 """Command for Security Answer migration."""
-from typing import Any, Dict
+from typing import Any
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
-from opal.legacy.models import LegacySecurityanswer, LegacySecurityquestion, LegacyUsers
+from opal.legacy.models import LegacySecurityAnswer, LegacySecurityQuestion, LegacyUsers
 from opal.users.models import User
 
 
@@ -22,38 +21,40 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
-        legacy_answers = LegacySecurityanswer.objects.all()
+        legacy_answers = LegacySecurityAnswer.objects.all()
         for legacy_answer in legacy_answers:
 
             legacy_patient = legacy_answer.patientsernum
-            res = self._check_users(legacy_patient.patientsernum)
-            user = res['user']
+            user = self._check_users(legacy_patient.patientsernum)
             if user is None:
                 continue
 
             legacy_question = legacy_answer.securityquestionsernum
-            res = self._check_and_import_question(legacy_question.securityquestionsernum)
-            question = res['question']
+            question = self._check_and_import_question(legacy_question.securityquestionsernum)
             if question is None:
                 continue
 
-            # Import caregiver according to the user or create a new one if not found.
+            # Check caregiver according to the user, skip import if not found.
             try:
                 caregiver = CaregiverProfile.objects.get(user_id=user.id)
-            except ObjectDoesNotExist:
-                caregiver = CaregiverProfile.objects.create(user=user)
+            except CaregiverProfile.DoesNotExist:
+                continue
 
             # Import SecurityAnwser or create if it does not exist.
             try:
-                SecurityAnswer.objects.get(user_id=caregiver.id)
-            except ObjectDoesNotExist:
+                SecurityAnswer.objects.get(
+                    user_id=caregiver.id,
+                    question=question.title,
+                    answer=legacy_answer.answertext,
+                )
+            except SecurityAnswer.DoesNotExist:
                 SecurityAnswer.objects.create(
                     user=caregiver,
                     question=question.title,
                     answer=legacy_answer.answertext,
                 )
 
-    def _check_and_import_question(self, securityquestionsernum: int) -> Dict:
+    def _check_and_import_question(self, securityquestionsernum: int) -> Any:
         """
         Check legacy security question exists or not.
 
@@ -65,23 +66,20 @@ class Command(BaseCommand):
         """
         # Skip answer import if related legacy question not found
         try:
-            legacy_question = LegacySecurityquestion.objects.get(
+            legacy_question = LegacySecurityQuestion.objects.get(
                 securityquestionsernum=securityquestionsernum,
             )
-        except ObjectDoesNotExist:
-            return {'question': None}
+        except LegacySecurityQuestion.DoesNotExist:
+            return None
 
         # Import SecurityQuestion according to legacy security question or create if not exists.
         try:
             question = SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
-        except ObjectDoesNotExist:
-            question = SecurityQuestion.objects.create(
-                title_en=legacy_question.questiontext_en,
-                title_fr=legacy_question.questiontext_fr,
-            )
-        return {'question': question}
+        except SecurityQuestion.DoesNotExist:
+            return None
+        return question
 
-    def _check_users(self, patientsernum: int) -> Dict:
+    def _check_users(self, patientsernum: int) -> Any:
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 
@@ -94,15 +92,15 @@ class Command(BaseCommand):
         # Skip answer import if related legacy user not found
         try:
             legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum)
-        except ObjectDoesNotExist:
-            return {'user': None}
-        except MultipleObjectsReturned:
-            return {'user': None}
+        except LegacyUsers.DoesNotExist:
+            return None
+        except LegacyUsers.MultipleObjectsReturned:
+            return None
 
         # Skip anwer import if related user not found
         try:
             user = User.objects.get(username=legacy_user.username)
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             # TODO not sure how to import user
-            return {'user': None}
-        return {'user': user}
+            return None
+        return user
