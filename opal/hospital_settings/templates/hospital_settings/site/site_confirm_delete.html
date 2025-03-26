@@ -1,0 +1,24 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content-header-page-name %}Delete Site{% endblock %}
+
+{% block content %}
+  <section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                  <div class="callout callout-danger">
+                    <h5>Are you sure you want to delete the following site: {{ object }}?</h5>
+
+                    <form action="" method="POST">
+                      {% csrf_token %}
+                      <input class="btn btn-danger btn-sm" type="submit" value="Yes, delete.">
+                    </form>
+                  </div>
+            </div>
+        </div>
+    </div>
+  </section>
+
+{% endblock %}

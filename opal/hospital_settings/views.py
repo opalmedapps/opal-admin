@@ -9,14 +9,14 @@ from .models import Institution, Site
 
 
 class IndexTemplateView(TemplateView):
-    """This ``TemplateView`` provides an index page for the hospital settings app."""
+    """This `TemplateView` provides an index page for the hospital settings app."""
 
     template_name = 'hospital_settings/index.html'
 
 
 # INSTITUTIONS
 class InstitutionListView(ListView):
-    """This ``ListView`` provides a page that displays a list of institution objects."""
+    """This `ListView` provides a page that displays a list of institution objects."""
 
     model = Institution
     template_name = 'hospital_settings/institution/institution_list.html'
@@ -24,7 +24,7 @@ class InstitutionListView(ListView):
 
 class InstitutionCreateView(CreateView):
     """
-    This ``CreateView`` displays a form for creating an institution object.
+    This `CreateView` displays a form for creating an institution object.
 
     It redisplays the form with validation errors (if there are any) and saves the institution object.
     """
@@ -36,7 +36,7 @@ class InstitutionCreateView(CreateView):
 
 
 class InstitutionDetailView(DetailView):
-    """This ``DetailView`` provides a page that displays a single institution object."""
+    """This `DetailView` provides a page that displays a single institution object."""
 
     model = Institution
     template_name = 'hospital_settings/institution/institution_detail.html'
@@ -44,7 +44,7 @@ class InstitutionDetailView(DetailView):
 
 class InstitutionUpdateView(UpdateView):
     """
-    This ``UpdateView`` provides a page that displays a form for editing an existing institution object.
+    This `UpdateView` provides a page that displays a form for editing an existing institution object.
 
     It redisplays the form with validation errors (if there are any) and saves changes to the institution object.
 
@@ -67,12 +67,13 @@ class InstitutionDeleteView(DeleteView):
     """
 
     model = Institution
+    template_name = 'hospital_settings/institution/institution_confirm_delete.html'
     success_url = reverse_lazy('institution-list')
 
 
 # SITES
 class SiteListView(ListView):
-    """This ``ListView`` provides a page that displays a list of site objects."""
+    """This `ListView` provides a page that displays a list of site objects."""
 
     model = Site
     template_name = 'hospital_settings/site/site_list.html'
@@ -80,7 +81,7 @@ class SiteListView(ListView):
 
 class SiteCreateView(CreateView):
     """
-    This ``CreateView`` displays a form for creating a site object.
+    This `CreateView` displays a form for creating a site object.
 
     It redisplays the form with validation errors (if there are any) and saves the site object.
     """
@@ -92,7 +93,7 @@ class SiteCreateView(CreateView):
 
 
 class SiteDetailView(DetailView):
-    """This ``DetailView`` provides a page that displays a single site object."""
+    """This `DetailView` provides a page that displays a single site object."""
 
     model = Site
     template_name = 'hospital_settings/site/site_detail.html'
@@ -100,7 +101,7 @@ class SiteDetailView(DetailView):
 
 class SiteUpdateView(UpdateView):
     """
-    This ``UpdateView`` provides a page that displays a form for editing an existing site object.
+    This `UpdateView` provides a page that displays a form for editing an existing site object.
 
     It redisplays the form with validation errors (if there are any) and saves changes to the site object.
 
@@ -123,4 +124,5 @@ class SiteDeleteView(DeleteView):
     """
 
     model = Site
+    template_name = 'hospital_settings/site/site_confirm_delete.html'
     success_url = reverse_lazy('site-list')
