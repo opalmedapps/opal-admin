@@ -46,6 +46,11 @@ class LegacyAppointment(models.Model):
     """Class to get appintement informations from the legacy database."""
 
     appointmentsernum = models.AutoField(db_column='AppointmentSerNum', primary_key=True)
+    aliasexpressionsernum = models.ForeignKey(
+        'LegacyAliasexpression',
+        models.DO_NOTHING,
+        db_column='AliasExpressionSerNum',
+    )
     patientsernum = models.ForeignKey(
         'LegacyUsers',
         models.DO_NOTHING,
@@ -58,7 +63,40 @@ class LegacyAppointment(models.Model):
     roomlocation_en = models.CharField(db_column='RoomLocation_EN', max_length=100)
     roomlocation_fr = models.CharField(db_column='RoomLocation_FR', max_length=100)
     checkin = models.IntegerField(db_column='Checkin')
+    status = models.CharField(db_column='Status', max_length=100)
 
     class Meta:
         managed = False
         db_table = 'Appointment'
+
+
+class LegacyAliasexpression(models.Model):
+    aliasexpressionsernum = models.AutoField(db_column='AliasExpressionSerNum', primary_key=True)
+    aliassernum = models.ForeignKey('LegacyAlias', models.DO_NOTHING, db_column='AliasSerNum')
+
+    class Meta:
+        managed = False
+        db_table = 'AliasExpression'
+
+
+class LegacyAlias(models.Model):
+    aliassernum = models.AutoField(db_column='AliasSerNum', primary_key=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'Alias'
+
+
+class LegacyAppointmentcheckin(models.Model):
+    aliassernum = models.OneToOneField(
+        'LegacyAlias',
+        models.DO_NOTHING,
+        db_column='AliasSerNum',
+        primary_key=True,
+        related_name='target',
+    )
+    checkinpossible = models.IntegerField(db_column='CheckinPossible')
+
+    class Meta:
+        managed = False
+        db_table = 'AppointmentCheckin'
