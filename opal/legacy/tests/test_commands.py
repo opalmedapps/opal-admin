@@ -247,7 +247,7 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         assert 'Number of imported patients is: 0\n' in message
 
     def test_import_pass_multiple_patientidentifiers(self) -> None:
-        """Test import fail for patient and pass patient identifier."""
+        """Test import fail for patient and pass multiple patient identifier."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
         code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
