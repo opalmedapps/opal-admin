@@ -29,7 +29,7 @@ ENV PYTHONUNBUFFERED 1
 # Install pip requirements
 COPY ./requirements /tmp/
 RUN python -m pip install --upgrade pip \
-  python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
 
 EXPOSE 8000
 
