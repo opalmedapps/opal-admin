@@ -1,13 +1,9 @@
 from unittest.mock import patch
 
 import pytest
-from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
 from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceException
-
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 class TestTwilioService:
@@ -35,12 +31,12 @@ class TestTwilioService:
         }
 
     @patch.object(MessageList, 'create', create)
-    def test_send_sms_successfully(self, settings: SettingsWrapper) -> None:
+    def test_send_sms_successfully(self) -> None:
         """Ensure sending sms successfully."""
-        account_sid = settings.TWILIO_ACCOUNT_SID
-        auth_token = settings.TWILIO_AUTH_TOKEN
-        from_ = settings.TWILIO_FROM
-        to = '+15146661234'
+        account_sid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        auth_token = str('your_auth_token')
+        from_ = '+15146661234'
+        to = '+15145551234'
         message = 'Test sending SMS'
         service = TwilioService(
             account_sid,
@@ -55,16 +51,16 @@ class TestTwilioService:
 
         assert self.response == {
             'to': to,
-            'from_': settings.TWILIO_FROM,
+            'from_': from_,
             'body': message,
         }
 
     @patch.object(MessageList, 'create', create)
-    def test_send_sms_exception(self, settings: SettingsWrapper) -> None:
+    def test_send_sms_exception(self) -> None:
         """Ensure we catch and handle the TwilioException correctly."""
-        account_sid = settings.TWILIO_ACCOUNT_SID
-        auth_token = settings.TWILIO_AUTH_TOKEN
-        from_ = settings.TWILIO_FROM
+        account_sid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        auth_token = str('your_auth_token')
+        from_ = '+15146661234'
         to = ''
         message = 'Test sending SMS'
         service = TwilioService(
@@ -73,8 +69,9 @@ class TestTwilioService:
             from_,
         )
 
-        with assertRaisesMessage(TwilioServiceException, 'Sending SMS failed'):
+        with pytest.raises(TwilioServiceException) as ex:
             service.send_sms(
                 to,
                 message,
             )
+        assert str(ex.value) == 'Sending SMS failed'  # noqa: WPS441
