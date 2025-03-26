@@ -21,7 +21,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView, NewAccessRequestView
+from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -896,18 +896,18 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
 def test_access_request_permission(client: Client, registration_user: User) -> None:
     """Ensure that the access request view can be viewed with the `can_perform_registration` permission."""
     client.force_login(registration_user)
-    response = client.get(reverse('patients:access-request-new'))
+    response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
 
 
 def test_access_request_no_permission(django_user_model: User) -> None:
     """Ensure that the access request view can not be viewed without the `can_perform_registration` permission."""
-    request = RequestFactory().get(reverse('patients:access-request-new'))
+    request = RequestFactory().get(reverse('patients:access-request'))
     request.user = django_user_model.objects.create(username='testuser')
 
     with pytest.raises(PermissionDenied):
-        NewAccessRequestView.as_view()(request)
+        AccessRequestView.as_view()(request)
 
 
 def test_access_request_menu_shown(client: Client, registration_user: User) -> None:
@@ -927,7 +927,7 @@ def test_access_request_menu_hidden(user_client: Client) -> None:
 
 def test_access_request_cancel_button(client: Client, registration_user: User) -> None:
     """Ensure the cancel button links to the correct URL."""
-    url = reverse('patients:access-request-new')
+    url = reverse('patients:access-request')
     client.force_login(registration_user)
     response = client.get(url)
 
@@ -940,7 +940,7 @@ def test_access_request_initial_search(client: Client, registration_user: User) 
     client.force_login(registration_user)
 
     # initialize the session storage
-    response = client.get(reverse('patients:access-request-new'))
+    response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -950,7 +950,7 @@ def test_access_request_initial_search(client: Client, registration_user: User) 
         'search-medical_number': '',
     }
 
-    response_post = client.post(reverse('patients:access-request-new'), data=form_data)
+    response_post = client.post(reverse('patients:access-request'), data=form_data)
 
     # assert site field is being initialized with site when there is only one site
     context = response_post.context
