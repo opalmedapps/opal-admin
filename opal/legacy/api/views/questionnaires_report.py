@@ -15,7 +15,7 @@ from opal.core.drf_permissions import IsORMSUser
 from opal.hospital_settings.models import Institution
 from opal.patients.models import Patient
 from opal.services.hospital.hospital import OIEReportExportData, OIEService
-from opal.services.reports import QuestionnaireReportRequestData, ReportService
+from opal.services.reports.questionnaire import QuestionnaireReportRequestData, ReportService
 
 from ..serializers import QuestionnaireReportRequestSerializer
 

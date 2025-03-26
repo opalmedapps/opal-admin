@@ -1,4 +1,5 @@
 """App core util functions."""
+import csv
 import io
 import random
 import re
@@ -108,6 +109,34 @@ def create_zip(files: dict[str, bytes]) -> bytes:
         for filename, file_content in files.items():
             zip_file.writestr(filename, file_content)
     return zip_buffer.getvalue()
+
+
+def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
+    """Convert a list of dictionaries to a CSV in byte format.
+
+    Each dictionary is expected to have the same keys, as the CSV header is
+    determined by the keys of the first dictionary.
+
+    If a dictionary contains extra keys not present in the first dictionary,
+    those key-value pairs will be ignored.
+
+    Args:
+        dicts: list of dictionaries with string keys and values of any type
+
+    Returns:
+        `bytes` object containing the CSV data
+    """
+    # Collect all possible headers from the list of dictionaries
+    headers = dicts[0].keys() if dicts else []
+
+    buffer = io.StringIO(newline='')
+    writer = csv.DictWriter(buffer, fieldnames=headers, extrasaction='ignore')
+    writer.writeheader()
+    writer.writerows(dicts)
+
+    csv_string = buffer.getvalue()
+    # Encode the string to bytes
+    return csv_string.encode()
 
 
 def dict_to_xlsx(dicts: WorkbookData) -> bytes:

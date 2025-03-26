@@ -1,5 +1,6 @@
 import io
 import zipfile
+from typing import Any
 
 from openpyxl import load_workbook
 
@@ -116,6 +117,135 @@ def test_create_zip_contains_files_contents() -> None:
             with zip_file.open(filename) as zipped_file:
                 content = zipped_file.read()
                 assert content == file_contents[filename], f'Contents of {filename} do not match.'
+
+
+def test_dict_to_csv_single_dict_success() -> None:
+    """Ensure dict_to_csv successfully converts a single dictionary to a CSV file."""
+    input_dict = [{'name': 'Alice', 'age': '30', 'city': 'New York'}]
+    expected_csv = 'name,age,city\r\nAlice,30,New York\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_multiple_dicts_success() -> None:
+    """Ensure dict_to_csv successfully converts multiple dictionaries to a CSV file."""
+    input_list = [
+        {'name': 'Alice', 'age': 30, 'city': 'New York'},
+        {'name': 'Bob', 'age': 25, 'city': 'Los Angeles'},
+        {'name': 'Charlie', 'age': 35, 'city': 'Chicago'},
+    ]
+    expected_csv = (
+        'name,age,city\r\n'
+        + 'Alice,30,New York\r\n'
+        + 'Bob,25,Los Angeles\r\n'
+        + 'Charlie,35,Chicago\r\n'
+    )
+    csv_bytes = utils.dict_to_csv(input_list)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_empty() -> None:
+    """Ensure dict_to_csv successfully creates a CSV file for an empty list."""
+    input_list: list[dict[str, Any]] = []
+    expected_csv = '\r\n'
+    csv_bytes = utils.dict_to_csv(input_list)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_mixed_value_types() -> None:
+    """Ensure dict_to_csv successfully creates a CSV with various types of values."""
+    input_list: list[dict[str, Any]] = [
+        {'name': 'Alice', 'age': 30, 'is_active': True},
+        {'name': 'Bob', 'age': None, 'is_active': False},
+    ]
+    expected_csv = 'name,age,is_active\r\nAlice,30,True\r\nBob,,False\r\n'
+    csv_bytes = utils.dict_to_csv(input_list)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_special_chars() -> None:
+    """Ensure dict_to_csv successfully converts list of dicts with values containing special characters."""
+    input_dict = [{
+        'key1': 'value1, with comma',
+        'key2': 'value\nwith newline',
+        'key3': 'value "with quotes"',
+    }]
+    expected_csv = (
+        'key1,key2,key3\r\n'
+        + '"value1, with comma","value\nwith newline","value ""with quotes"""\r\n'
+    )
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_numbers() -> None:
+    """Ensure dict_to_csv successfully converts a list of dictionaries with numeric values."""
+    input_dict = [{'integer': 123, 'float': 0.5, 'none': None}]
+    expected_csv = 'integer,float,none\r\n123,0.5,\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_boolean_values() -> None:
+    """Ensure dict_to_csv successfully converts list of dictionaries with boolean values."""
+    input_dict = [{'is_active': True, 'is_admin': False}]
+    expected_csv = 'is_active,is_admin\r\nTrue,False\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_order_preservation() -> None:
+    """Ensure dict_to_csv preserves the order of the keys."""
+    input_dict = [{'first': 1, 'second': 2, 'third': 3}]
+    expected_csv = 'first,second,third\r\n1,2,3\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_unicode_characters() -> None:
+    """Ensure dict_to_csv successfully converts Unicode characters."""
+    input_dict = [{'montreal': 'Montréal', 'greeting': 'こんにちは', 'farewell': 'さようなら'}]
+    expected_csv = 'montreal,greeting,farewell\r\nMontréal,こんにちは,さようなら\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_large_numbers() -> None:
+    """Ensure dict_to_csv successfully converts very large numbers."""
+    input_dict = [
+        {'big_int': 12345678901234567890, 'big_float': 1.2345678901234567890},  # noqa: WPS339
+        {'big_int': 98765432109876543210, 'big_float': 9.8765432109876543210},  # noqa: WPS339
+    ]
+    expected_csv = (
+        'big_int,big_float\r\n'
+        + '12345678901234567890,1.2345678901234567\r\n'
+        + '98765432109876543210,9.876543210987654\r\n'
+    )
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    # Adjust expected output for floating-point precision
+    assert csv_content == expected_csv
+
+
+def test_dict_to_csv_none_values() -> None:
+    """Ensure dict_to_csv successfully converts None values."""
+    input_dict = [
+        {'key1': None, 'key2': 'value2'},
+        {'key1': 'value1', 'key2': None},
+    ]
+    expected_csv = 'key1,key2\r\n,value2\r\nvalue1,\r\n'
+    csv_bytes = utils.dict_to_csv(input_dict)
+    csv_content = csv_bytes.decode()
+    assert csv_content == expected_csv
 
 
 def test_dict_to_xlsx_empty_workbook() -> None:
