@@ -331,7 +331,7 @@ pages:
   # only:
     # - main
   extends:
-    - .uses_python_dependencies
+    - .uses_django
   script:
     - pip install uv
     - uv pip install -r requirements/docs.txt
