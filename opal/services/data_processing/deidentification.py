@@ -75,6 +75,7 @@ class OpenScienceIdentity():  # noqa: WPS230
         """
         if attr_name not in self._cache:
             attr_value = getattr(self, attr_name, '')
+            # Cache the result to avoid needing to re-clean data during algorithm execution
             self._cache[attr_name] = self._plain_alpha(attr_value)
         return self._cache[attr_name]
 
