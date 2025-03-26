@@ -102,11 +102,11 @@ class RelationshipType(models.Model):
         # Verify we cannot add an additional self or parent role type
         if (self.role_type == RoleType.SELF and RoleType.SELF in existing_restricted_roletypes):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
+                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
             )
         if (self.role_type == RoleType.PARENTGUARDIAN and RoleType.PARENTGUARDIAN in existing_restricted_roletypes):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
+                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
             )
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
