@@ -109,17 +109,17 @@ class TestApiRegistrationRegister:
                 'language': 'fr',
                 'phone_number': '+15141112222',
                 'email': 'aaa@aaa.com',
-                'security_answers': [
-                    {
-                        'question': 'correct?',
-                        'answer': 'yes',
-                    },
-                    {
-                        'question': 'correct?',
-                        'answer': 'maybe',
-                    },
-                ],
             },
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
         }
 
         response = api_client.post(
@@ -140,6 +140,100 @@ class TestApiRegistrationRegister:
             'detail': 'Saved the patient data successfully.',
         }
 
+    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test non-existent registration code."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        valid_input_data = {
+            'patient': {
+                'legacy_id': 1,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'email': 'aaa@aaa.com',
+            },
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
+        }
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': 'code11111111'},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert response.json() == {
+            'detail': 'Registration code is invalid.',
+        }
+
+    def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test non-existent registration code."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(
+            relationship=relationship,
+            status=RegistrationCodeStatus.REGISTERED,
+        )
+        valid_input_data = {
+            'patient': {
+                'legacy_id': 1,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'email': 'aaa@aaa.com',
+            },
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
+        }
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.json() == {
+            'detail': 'Registration code is invalid.',
+        }
+
     def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
@@ -157,17 +251,17 @@ class TestApiRegistrationRegister:
                 'language': 'fr',
                 'phone_number': '+15141112222',
                 'email': 'aaaaaaaaa',
-                'security_answers': [
-                    {
-                        'question': 'correct?',
-                        'answer': 'yes',
-                    },
-                    {
-                        'question': 'correct?',
-                        'answer': 'maybe',
-                    },
-                ],
             },
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
         }
 
         response = api_client.post(
@@ -205,17 +299,17 @@ class TestApiRegistrationRegister:
                 'language': 'fr',
                 'phone_number': '+15141112222',
                 'email': 'aaaaaaaaa',
-                'security_answers': [
-                    {
-                        'question': 'correct?',
-                        'answer': 'yes',
-                    },
-                    {
-                        'question': 'correct?',
-                        'answer': 'maybe',
-                    },
-                ],
             },
+            'security_answers': [
+                {
+                    'question': 'correct?',
+                    'answer': 'yes',
+                },
+                {
+                    'question': 'correct?',
+                    'answer': 'maybe',
+                },
+            ],
         }
 
         response = api_client.post(
@@ -229,7 +323,7 @@ class TestApiRegistrationRegister:
 
         registration_code.refresh_from_db()
         security_answers = SecurityAnswer.objects.all()
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert registration_code.status == RegistrationCodeStatus.NEW
         assert not security_answers
         assert response.json() == {

@@ -117,10 +117,6 @@ class SecurityAnswerSerializer(DynamicFieldsSerializer):
 class CaregiverSerializer(DynamicFieldsSerializer):
     """Serializer for security questions."""
 
-    security_answers = SecurityAnswerSerializer(
-        fields=('question', 'answer'),
-        many=True,
-    )
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
     email = serializers.CharField(source='user.email')
@@ -133,7 +129,6 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'language',
             'phone_number',
             'email',
-            'security_answers',
         ]
 
 
@@ -151,10 +146,14 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
     caregiver = CaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'email', 'phone_number', 'security_answers'),
+        fields=('language', 'email', 'phone_number'),
         many=False,
+    )
+    security_answers = SecurityAnswerSerializer(
+        fields=('question', 'answer'),
+        many=True,
     )
 
     class Meta:
         model = RegistrationCode
-        fields = ['patient', 'caregiver']
+        fields = ['patient', 'caregiver', 'security_answers']

@@ -4,8 +4,8 @@ from typing import Any, Type
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.utils import DataError
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
@@ -55,15 +55,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
 class RegistrationRegisterView(APIView):
     """Registration-register api class."""
 
-    queryset = (
-        caregiver_models.RegistrationCode.objects.select_related(
-            'relationship__patient',
-            'relationship__caregiver',
-        ).filter(status=caregiver_models.RegistrationCodeStatus.NEW)
-    )
     serializer_class = caregiver_serializers.RegistrationRegisterSerializer
-    lookup_url_kwarg = 'code'
-    lookup_field = 'code'
 
     permission_classes = [IsAuthenticated]
 
@@ -76,10 +68,13 @@ class RegistrationRegisterView(APIView):
             request (Request): request data of post api.
             code (str): registration code.
 
+        Raises:
+            ValidationError: db error.
+
         Returns:
             Http response with the error or success message.
         """
-        db_error = ''
+        db_error = None
         request_serializer = self.serializer_class(
             data=request.data,
             partial=True,
@@ -88,50 +83,120 @@ class RegistrationRegisterView(APIView):
         register_data = request_serializer.data
 
         # update registration code status
-        registration_code = self.queryset.get()
-        registration_code.status = caregiver_models.RegistrationCodeStatus.REGISTERED
-        registration_code.save()
+        registration_code = None
+        try:
+            registration_code = self._get_and_update_regiatration_code(code)
+        except caregiver_models.RegistrationCode.DoesNotExist:
+            db_error = 'Registration code is invalid.'
 
         # update patient legacy_id
-        patient = Patient.objects.get(relationships=registration_code.relationship)
-        patient.legacy_id = register_data['patient']['legacy_id']
-        try:  # noqa: WPS229
-            Patient.full_clean(patient)
-            patient.save()
-        except ValidationError as exception_patient:
-            db_error = str(exception_patient.args)
+        if not db_error:
+            db_error = self._update_patient_legacy_id(
+                registration_code.relationship.patient,
+                register_data['patient']['legacy_id'],
+            )
 
         # update caregiver
-        user = User.objects.get(caregiverprofile__relationships=registration_code.relationship)
-        user.language = register_data['caregiver']['language']
-        user.phone_number = register_data['caregiver']['phone_number']
-        user.email = register_data['caregiver']['email']
-        user.date_joined = timezone.now()
-        user.is_active = True
-        try:  # noqa: WPS229
-            User.full_clean(user)
-            user.save()
-        except ValidationError as exception_user:
-            db_error = str(exception_user.args)
-
-        caregiver_profile = caregiver_models.CaregiverProfile.objects.get(user=user)
+        if not db_error:
+            db_error = self._update_caregiver(
+                registration_code.relationship.caregiver.user,
+                register_data['caregiver'],
+            )
 
         # insert related security answers
-        if caregiver_profile and not db_error:
-            for data in register_data['caregiver']['security_answers']:
-                try:
-                    caregiver_models.SecurityAnswer.objects.create(
-                        user=caregiver_profile,
-                        question=data['question'],
-                        answer=data['answer'],
-                    )
-                except DataError as exception_answer:
-                    db_error = str(exception_answer.args)
-                    break
+        if not db_error:
+            caregiver_profile = registration_code.relationship.caregiver
+            self._insert_security_answers(
+                caregiver_profile,
+                register_data['security_answers'],
+            )
 
         if db_error:
             transaction.set_rollback(True)
-        else:
-            db_error = 'Saved the patient data successfully.'
+            raise serializers.ValidationError({'detail': _(db_error)})
 
-        return Response({'detail': db_error})
+        return Response({'detail': 'Saved the patient data successfully.'})
+
+    def _get_and_update_regiatration_code(self, code: str) -> caregiver_models.RegistrationCode:
+        """
+        Get and update RegistrationCode object.
+
+        Args:
+            code (str): registration code.
+
+        Returns:
+            the object of model RegistrationCode, None if not exists
+        """
+        registration_code = caregiver_models.RegistrationCode.objects.select_related(
+            'relationship__patient',
+            'relationship__caregiver',
+        ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW).get()
+        registration_code.status = caregiver_models.RegistrationCodeStatus.REGISTERED
+        registration_code.save()
+        return registration_code
+
+    def _update_patient_legacy_id(self, patient: Patient, legacy_id: Any) -> str:
+        """
+        Update Patient Legacy_id.
+
+        Args:
+            patient (Patient): Patient object
+            legacy_id (Any): number or None.
+
+        Returns:
+            The error message string if there is an exception, otherwise return None
+        """
+        patient.legacy_id = legacy_id
+        db_error = ''
+        try:
+            Patient.full_clean(patient)
+        except ValidationError as exception_patient:
+            db_error = str(exception_patient.args)
+        else:
+            patient.save()
+        return db_error
+
+    def _update_caregiver(self, user: User, info: dict) -> str:
+        """
+        Update Patient Legacy_id.
+
+        Args:
+            user (User): User object
+            info (dict): Caregiver info to be updated
+
+        Returns:
+            The error message string if there is an exception, otherwise return None
+        """
+        user.language = info['language']
+        user.phone_number = info['phone_number']
+        user.email = info['email']
+        user.date_joined = timezone.now()
+        user.is_active = True
+        db_error = ''
+        try:
+            User.full_clean(user)
+
+        except ValidationError as exception_user:
+            db_error = str(exception_user.args)
+        else:
+            user.save()
+        return db_error
+
+    def _insert_security_answers(
+        self,
+        caregiver_profile: caregiver_models.CaregiverProfile,
+        security_answers: list,
+    ) -> None:
+        """
+        Insert security answers.
+
+        Args:
+            caregiver_profile (CaregiverProfile): CaregiverProfile object
+            security_answers (list): list of security answer data
+        """
+        for answer in security_answers:
+            caregiver_models.SecurityAnswer.objects.create(
+                user=caregiver_profile,
+                question=answer['question'],
+                answer=answer['answer'],
+            )
