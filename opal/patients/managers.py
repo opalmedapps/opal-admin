@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models.functions import Coalesce
 
 from . import constants
+from . import models as patient_models
 
 if TYPE_CHECKING:
     from opal.patients.models import Patient, Relationship, RelationshipType
@@ -98,6 +99,42 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
         return self.annotate(
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
+
+    def self_type(self) -> 'RelationshipType':
+        """
+        Return the Self relationship type.
+
+        Returns:
+            the relationship type representing the self type
+        """
+        return self.get(role_type=patient_models.RoleType.SELF)
+
+    def parent_guardian(self) -> 'RelationshipType':
+        """
+        Return the Parent/Guardian relationship type.
+
+        Returns:
+            the relationship type representing the parent/guardian type
+        """
+        return self.get(role_type=patient_models.RoleType.PARENT_GUARDIAN)
+
+    def guardian_caregiver(self) -> 'RelationshipType':
+        """
+        Return the Guardian-Caregiver relationship type.
+
+        Returns:
+            the relationship type representing the guardian-caregiver type
+        """
+        return self.get(role_type=patient_models.RoleType.GUARDIAN_CAREGIVER)
+
+    def mandatary(self) -> 'RelationshipType':
+        """
+        Return the Mandatary relationship type.
+
+        Returns:
+            the relationship type representing the mandatary type
+        """
+        return self.get(role_type=patient_models.RoleType.MANDATARY)
 
 
 class PatientQueryset(models.QuerySet['Patient']):

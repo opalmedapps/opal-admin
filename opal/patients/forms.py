@@ -3,7 +3,7 @@ from datetime import date
 from typing import Any, Dict, Optional, Union
 
 from django import forms
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from django.utils.translation import gettext
@@ -529,7 +529,7 @@ class ConfirmPasswordForm(forms.Form):
         super().clean()
         confirm_password = self.cleaned_data.get('confirm_password')
 
-        if not check_password(confirm_password, self.authorized_user.password):
+        if not authenticate(username=self.authorized_user.username, password=confirm_password):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 

@@ -9,7 +9,7 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
-from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
+from ..models import Relationship, RelationshipStatus, RelationshipType
 
 pytestmark = pytest.mark.django_db
 
@@ -320,8 +320,8 @@ def test_requestor_form_not_check_if_required() -> None:
 
 def test_disabled_option_exists() -> None:
     """Ensure that a disabled option exists."""
-    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
-    mandatary_type = RelationshipType.objects.get(role_type=RoleType.MANDATARY)
+    self_type = RelationshipType.objects.self_type()
+    mandatary_type = RelationshipType.objects.mandatary()
 
     form_data = {
         'relationship_type': RelationshipType.objects.all(),
@@ -473,7 +473,7 @@ def test_new_user_form_not_valid() -> None:
     assert not form.is_valid()
 
 
-def test_confirm_password_form_valid() -> None:
+def test_confirm_password_form_valid(mocker: MockerFixture) -> None:
     """Ensure that the confirm user password form is valid."""
     form_data = {
         'confirm_password': 'test-password',
@@ -481,18 +481,26 @@ def test_confirm_password_form_valid() -> None:
     user = User.objects.create()
     user.set_password(form_data['confirm_password'])
 
+    # mock fed authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
+
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 
     assert form.is_valid()
 
 
-def test_confirm_password_form_password_invalid() -> None:
+def test_confirm_password_form_password_invalid(mocker: MockerFixture) -> None:
     """Ensure that user password is not valid."""
     form_data = {
         'confirm_password': 'test-password',
     }
     user = User.objects.create()
     user.set_password('password')
+
+    # mock fed authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = None
 
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 
