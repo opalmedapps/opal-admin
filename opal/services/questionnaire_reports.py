@@ -341,7 +341,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
     def _draw_table_of_content(self) -> None:
-        # Make an estimate to how many pages the TOC will take based on how many quesitonnaire are completed
+        # Make an estimate to how many pages the TOC will take based on how many questionnaire are completed
         questionnaire_per_page1 = 15
         questionnaire_per_page = 17
         guesstimate = 0
