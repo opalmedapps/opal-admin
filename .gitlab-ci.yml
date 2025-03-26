@@ -9,10 +9,6 @@ variables:
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
 
-default:
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  before_script:
-    - uname -a
 
 stages:
   - build
@@ -21,12 +17,12 @@ stages:
   - test
   - documentation
 
-.needs_build:
+.needs_image:
   needs:
     - job: build image
-
-.before_setup_env:
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   before_script:
+    - uname -a
     - python --version
     # set up env file for DB service
     # use sample env file
@@ -81,19 +77,18 @@ build image:
         docker push $IMAGE_COMMIT
       fi
 
-setup dependencies:
+setup dev dependencies:
   stage: build
   extends:
-    - .needs_build
+    - .needs_image
   script:
     - pip install uv
-    - uv pip install -r requirements/development.txt
+    - uv pip install --system -r requirements/development.txt
 
 flake8:
   stage: static analysis
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   script:
     - flake8 --version
     # install plugin to produce code climate report
@@ -110,8 +105,7 @@ flake8:
 mypy:
   stage: static analysis
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   script:
     # install plugin to produce code climate report
     - pip install mypy-gitlab-code-quality
@@ -146,8 +140,7 @@ markdownlint:
 pytest:
   stage: test
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   # set up DB service only for the test job since it is not used by others
   services:
     - mariadb:10.11.8-jammy
@@ -169,7 +162,7 @@ pytest:
 coverage:
   stage: test
   extends:
-    - .before_setup_env
+    - .needs_image
   script:
     # allow XML creation to fail to be able to parse coverage out of text report
     - coverage xml || true
@@ -190,8 +183,7 @@ coverage:
 django migrations:
   stage: checks
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   script:
     # Missing migrations
     - echo "Checking that there are no model changes for which there is no migration..."
@@ -200,7 +192,7 @@ django migrations:
 django translations:
   stage: checks
   extends:
-    - .needs_build
+    - .needs_image
   script:
     # install dependencies for git diff
     - apk add --no-cache git
@@ -212,8 +204,6 @@ django translations:
 
 django translations fuzzy:
   stage: checks
-  extends:
-    - .needs_build
   script:
     # Ensure there are no fuzzy translation strings
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
@@ -227,8 +217,6 @@ django translations fuzzy:
 
 django translations commented:
   stage: checks
-  extends:
-    - .needs_build
   script:
     # Ensure there are no commented out translation strings
     - echo "Checking for presence of commented out translation strings ..."
@@ -241,8 +229,6 @@ django translations commented:
 
 django auto-named migrations:
   stage: checks
-  extends:
-    - .needs_build
   script:
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
@@ -254,8 +240,7 @@ django auto-named migrations:
 django checks:
   stage: checks
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   script:
     # Run checks to be sure we follow all django's best practices:
     - echo "Checking that all Django checks pass ..."
@@ -264,8 +249,7 @@ django checks:
 django template validation:
   stage: checks
   extends:
-    - .needs_build
-    - .before_setup_env
+    - .needs_image
   script:
     # Check templates
     - echo "Validating templates ..."
@@ -273,9 +257,6 @@ django template validation:
 
 check crontab:
   stage: checks
-  extends:
-    - .needs_build
-    - .before_setup_env
   script:
     # Check that the crontab references the correct commands and that they execute
     - scripts/check_crontab.sh
@@ -284,7 +265,7 @@ check crontab:
 build docs:
   stage: documentation
   extends:
-    - .before_setup_env
+    - .needs_image
   needs:
     - job: markdownlint
   script:
@@ -299,7 +280,7 @@ build docs:
 pages:
   stage: documentation
   extends:
-    - .before_setup_env
+    - .needs_image
   only:
     - main
   script:
