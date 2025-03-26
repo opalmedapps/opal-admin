@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 import pytest
-
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import models as caregiver_models
