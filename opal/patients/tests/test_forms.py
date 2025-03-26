@@ -7,7 +7,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_site_selection_exist() -> None:
-    """Ensure that the site seletion is valid."""
+    """Ensure that the site selection is valid."""
     site = factories.Site(name='Montreal General Hospital', code='MGH')
     form_data = {
         'sites': site,
@@ -19,7 +19,7 @@ def test_site_selection_exist() -> None:
 
 
 def test_site_selection_not_exist() -> None:
-    """Ensure that the empty site seletion is not valid."""
+    """Ensure that the empty site selection is not valid."""
     form_data = {
         'sites': '',
     }
