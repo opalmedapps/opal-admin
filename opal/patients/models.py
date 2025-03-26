@@ -1,6 +1,7 @@
 """Module providing models for the patients app."""
 from datetime import date
 from typing import Any, Optional
+from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
@@ -164,6 +165,13 @@ class Patient(models.Model):
     # define them as class attributes for easier access
     # see: https://stackoverflow.com/q/71522816
     SexType = SexType
+
+    uuid = models.UUIDField(
+        verbose_name=_('UUID'),
+        unique=True,
+        default=uuid4,
+        editable=False,
+    )
 
     first_name = models.CharField(
         verbose_name=_('First Name'),

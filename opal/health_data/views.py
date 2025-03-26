@@ -18,7 +18,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
     """A page for visualizing a patient's health data samples.
 
     Note: This page is currently not accessible from the Django UI as it is meant to be directly linked to.
-          The `id` URL argument refers to the pk/id of the patient of interest.
+          The keyword argument in the URL refers to the uuid of the patient of interest.
 
     """
 
@@ -36,7 +36,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
             Dict[str, Any]
         """
         context = super().get_context_data(**kwargs)
-        patient = get_object_or_404(Patient, id=self.kwargs['id'])
+        patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
 
         graphs = {}
         for sample_type in QuantitySampleType:

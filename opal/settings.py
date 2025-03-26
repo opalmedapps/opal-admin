@@ -33,7 +33,7 @@ SECRET_KEY = env.str('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal'])
 
 
 # APPS
