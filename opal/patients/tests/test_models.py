@@ -315,7 +315,7 @@ def test_relationship_status_constraint() -> None:
 
 def test_relationship_no_patient_multiple_self() -> None:
     """Ensure that a patient can only have one self-relationship."""
-    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+    self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(type=self_type)
     # create a relationship with a new relationship type
@@ -330,7 +330,7 @@ def test_relationship_no_patient_multiple_self() -> None:
 
 def test_relationship_no_caregiver_multiple_self() -> None:
     """Ensure that a caregiver can only have one self-relationship."""
-    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+    self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(type=self_type)
     # create a relationship with a new relationship type

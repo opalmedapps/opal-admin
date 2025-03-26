@@ -9,7 +9,7 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
-from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
+from ..models import Relationship, RelationshipStatus, RelationshipType
 
 pytestmark = pytest.mark.django_db
 
@@ -320,8 +320,8 @@ def test_requestor_form_not_check_if_required() -> None:
 
 def test_disabled_option_exists() -> None:
     """Ensure that a disabled option exists."""
-    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
-    mandatary_type = RelationshipType.objects.get(role_type=RoleType.MANDATARY)
+    self_type = RelationshipType.objects.self_type()
+    mandatary_type = RelationshipType.objects.mandatary()
 
     form_data = {
         'relationship_type': RelationshipType.objects.all(),

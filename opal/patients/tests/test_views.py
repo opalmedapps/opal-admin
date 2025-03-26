@@ -23,8 +23,8 @@ from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
+from opal.users.models import User
 
-from ...users.models import User
 from .. import constants, factories, forms, models, tables
 from ..filters import ManageCaregiverAccessFilter
 # Add any future GET-requestable patients app pages here for faster test writing
@@ -1411,9 +1411,9 @@ def test_caregiver_access_empty_tables_displayed(user_client: Client, django_use
     user = django_user_model.objects.create(username='test_caregiver_access_user')
     user_client.force_login(user)
 
-    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.SELF))
-    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
-    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
+    factories.Relationship(type=models.RelationshipType.objects.self_type())
+    factories.Relationship(type=models.RelationshipType.objects.parent_guardian())
+    factories.Relationship(type=models.RelationshipType.objects.guardian_caregiver())
 
     request = RequestFactory().get(reverse('patients:relationships-search'))
     request.user = user
@@ -1437,19 +1437,19 @@ def test_caregiver_access_tables_displayed_by_mrn(user_client: Client, django_us
     hospital_patient = factories.HospitalPatient()
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(role_type=models.RoleType.SELF),
+        type=models.RelationshipType.objects.self_type(),
     )
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+        type=models.RelationshipType.objects.guardian_caregiver(),
     )
     factories.Relationship(
         patient=hospital_patient.patient,
-        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+        type=models.RelationshipType.objects.mandatary(),
     )
     factories.Relationship(
         patient=factories.Patient(ramq='TEST123'),
-        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+        type=models.RelationshipType.objects.parent_guardian(),
     )
 
     form_data = {
