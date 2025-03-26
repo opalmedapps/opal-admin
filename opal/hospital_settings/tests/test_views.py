@@ -191,7 +191,7 @@ def test_institution_created(user_client: Client) -> None:
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
 
-    with open(file='opal/media/logo_test.png', mode='rb') as f_logo:
+    with open(file='opal/hospital_settings/tests/fixtures/logo_test.png', mode='rb') as f_logo:
         form_data.update({
             'logo': SimpleUploadedFile(
                 name='logo_en.png',
@@ -222,7 +222,7 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
 
-    with open(file='opal/media/logo_test.png', mode='rb') as f_logo:
+    with open(file='opal/hospital_settings/tests/fixtures/logo_test.png', mode='rb') as f_logo:
         form_data.update({
             'logo': SimpleUploadedFile(
                 name='logo_en.png',
