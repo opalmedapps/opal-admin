@@ -376,7 +376,7 @@ If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt 
     openssl verify -CAfile ca.pem backend-db-cert.pem
     ```
 
-5. Copy the new certificates (`ca.pem`, `backend-db-key.pem`, and `backend-db-cert.pem`) to the `Django-backend` project and place them in the `certs/` folder. The remaining setup steps should be done within `Django-backend` project.
+5. Copy the new certificates (`ca.pem`, `backend-db-key.pem`, and `backend-db-cert.pem`) to the `Django-backend` project and place them in the `certs/` folder. The remaining setup steps should be done within this project.
 
 6. To enable SSL/TLS for Django's database connections, in the .env file, set `DATABASE_USE_SSL=True` and fill in the `SSL_CA` variable with the path to the public key of the certificate authority file (e.g., `/app/certs/ca.pem`).
 
