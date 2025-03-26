@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     """Rename field health insurance number to ramq."""
-    
+
     dependencies = [
         ('patients', '0006_relationship_reason'),
     ]
