@@ -81,6 +81,7 @@ class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
         """
         serializer.save(patient=self.patient)
 
+
 class UnviewedQuantitySampleView(APIView):
     """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
 

@@ -15,8 +15,8 @@ from ..serializers import UnreadCountSerializer
 
 @extend_schema(
     responses={
-        200: UnreadCountSerializer
-    }
+        200: UnreadCountSerializer,
+    },
 )
 class AppChartView(APIView):
     """Class to return chart page required data."""

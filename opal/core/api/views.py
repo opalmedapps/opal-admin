@@ -25,10 +25,11 @@ from .serializers import LanguageSerializer
 
 _Model = TypeVar('_Model', bound=Model)
 
+
 @extend_schema(
     responses={
-        200: LanguageSerializer(many=True)
-    }
+        200: LanguageSerializer(many=True),
+    },
 )
 class LanguagesView(APIView):
     """View that returns the list of supported languages."""

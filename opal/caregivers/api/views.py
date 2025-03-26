@@ -19,7 +19,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
-from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -82,10 +81,11 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
         # or use Appuserid header
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
+
 @extend_schema(
     responses={
-        200: CaregiverPatientSerializer(many=True)
-    }
+        200: CaregiverPatientSerializer(many=True),
+    },
 )
 class GetCaregiverPatientsList(APIView):
     """Class to return a list of patients for a given caregiver."""
@@ -175,14 +175,15 @@ class RetrieveRegistrationCodeMixin:
             'relationship__caregiver__email_verifications',
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
+
 @extend_schema(
     request={
-        'serializer': EmailVerificationSerializer
+        'serializer': EmailVerificationSerializer,
     },
     responses={
         200: {},
         404: {'description': 'Email verification not found or already verified'},
-    }
+    },
 )
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
@@ -286,14 +287,15 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             [email_verification.email],
         )
 
+
 @extend_schema(
     request={
-        'serializer': EmailVerificationSerializer
+        'serializer': EmailVerificationSerializer,
     },
     responses={
         200: {},
         404: {'description': 'Email verification not found or already verified'},
-    }
+    },
 )
 # TODO: replace this with RetrieveAPIView in the future
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
@@ -336,13 +338,14 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
 
         return Response()
 
+
 @extend_schema(
-        request={
-            'existingUser': caregiver_serializers.ExistingUserRegistrationRegisterSerializer,
-            'newUser': caregiver_serializers.NewUserRegistrationRegisterSerializer,
-        },
-        responses={200: None}
-    )
+    request={
+        'existingUser': caregiver_serializers.ExistingUserRegistrationRegisterSerializer,
+        'newUser': caregiver_serializers.NewUserRegistrationRegisterSerializer,
+    },
+    responses={200: None},
+)
 class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 

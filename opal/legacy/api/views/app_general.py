@@ -13,8 +13,8 @@ from ..serializers import AnnouncementUnreadCountSerializer
 
 @extend_schema(
     responses={
-        200: AnnouncementUnreadCountSerializer
-    }
+        200: AnnouncementUnreadCountSerializer,
+    },
 )
 class AppGeneralView(APIView):
     """Class to return general page required data."""

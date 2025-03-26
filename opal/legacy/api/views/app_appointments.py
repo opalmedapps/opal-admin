@@ -12,8 +12,8 @@ from ..serializers import LegacyAppointmentDetailedSerializer
 
 @extend_schema(
     responses={
-        200: LegacyAppointmentDetailedSerializer(many=True)
-    }
+        200: LegacyAppointmentDetailedSerializer(many=True),
+    },
 )
 class AppAppointmentsView(APIView):
     """Class to return appointments detail data."""

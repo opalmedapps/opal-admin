@@ -41,10 +41,11 @@ class ORMSLoginView(LoginView):
         else:
             raise PermissionDenied()
 
+
 @extend_schema(
     responses={
-        200: ClinicalStaffDetailSerializer
-    }
+        200: ClinicalStaffDetailSerializer,
+    },
 )
 class ORMSValidateView(APIView):
     """

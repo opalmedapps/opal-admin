@@ -189,10 +189,14 @@ class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPI
         self.serializer_class = PatientUpdateSerializer
         return self.update(request, *args, **kwargs)
 
+
 @extend_schema(
+    request={
+        'serializer': HospitalPatientSerializer(many=True),
+    },
     responses={
-        200: PatientSerializer
-    }
+        200: PatientSerializer,
+    },
 )
 class PatientExistsView(APIView):
     """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
