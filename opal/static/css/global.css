@@ -65,5 +65,5 @@ table thead a {
 
 /* Remove the bold font-weight to make the titles consistent with legend definition */
 h4{
-  font-weight: normal;
+  font-weight: var(--bs-body-font-weight);
 }
