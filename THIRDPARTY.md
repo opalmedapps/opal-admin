@@ -2032,7 +2032,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 * Homepage: https://python-pillow.org/
 * Repository: https://github.com/python-pillow/Pillow
-* License: `HPND`
+* License: `MIT-CMU`
 
 ```text
 The Python Imaging Library (PIL) is
@@ -2042,9 +2042,9 @@ The Python Imaging Library (PIL) is
 
 Pillow is the friendly PIL fork. It is
 
-    Copyright © 2010-2024 by Jeffrey A. Clark and contributors
+    Copyright © 2010 by Jeffrey A. Clark and contributors
 
-Like PIL, Pillow is licensed under the open source HPND License:
+Like PIL, Pillow is licensed under the open source MIT-CMU License:
 
 By obtaining, using, and/or copying this software and/or its associated
 documentation, you agree that you have read, understood, and will comply
