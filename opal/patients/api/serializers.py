@@ -6,7 +6,10 @@ from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
 class PatientSerializer(DynamicFieldsSerializer):
-    """Patient serializer used to get patient information."""
+    """
+    Patient serializer inherits from core.api.serializers.DynamicFieldsSerializer,
+    is used to get patient information according to the 'fields' arguments.
+    """
 
     class Meta:
         model = Patient
@@ -14,7 +17,10 @@ class PatientSerializer(DynamicFieldsSerializer):
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
-    """Hospital patient serializer which also provides the site code."""
+    """
+    Hospital patient serializer inherits from core.api.serializers.DynamicFieldsSerializer,
+    and also provides HospitalPatient info and the site code according to the 'fields' argumens.
+    """
 
     site_code = serializers.CharField(
         source='site.code',

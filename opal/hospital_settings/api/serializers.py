@@ -19,7 +19,11 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer):
-    """This class defines how an `Institution` model is serialized for the REST API."""
+    """
+    This class defines how an `Institution` model is serialized for the REST API,
+    it inherits from core.api.serializers.DynamicFieldsSerializer,
+    and also provides the site code according to the 'fields' arguments.
+    """
 
     url = serializers.HyperlinkedIdentityField(view_name='api:institutions-detail')
     sites = SiteSerializer(many=True, read_only=True)
