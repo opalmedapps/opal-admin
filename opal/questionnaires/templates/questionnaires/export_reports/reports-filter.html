@@ -7,7 +7,7 @@
 
   {% block content %}
     {% if perms.questionnaires.export_report %}
-    <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="filters-form" novalidate>
+    <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="filters-form">
       {% csrf_token %}
     <div class="row justify-content-md-center">
       <div class="col-sm-10">

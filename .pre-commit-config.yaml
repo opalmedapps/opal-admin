@@ -35,6 +35,10 @@ repos:
     description: 'Enforce that HTML forms have the novalidate attribute to disable browser validation and force Django form validation'
     language: pygrep
     types: [html]
+    exclude: |
+      (?x)(
+          opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+      )
     # derived from this answer: https://stackoverflow.com/a/17204198
     entry: |
       <form(?=\s|>)(?!(?:[^>=]|=(['"])(?:(?!\1).)*\1)*?\snovalidate)[^>]*>
