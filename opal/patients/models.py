@@ -403,7 +403,7 @@ class Relationship(models.Model):  # noqa: WPS214
         errors = []
 
         if self.start_date < self.patient.date_of_birth:
-            errors.append(gettext("Start date cannot be earlier than patient's date of birth"))
+            errors.append(gettext("Start date cannot be earlier than patient's date of birth."))
 
         if self.end_date is not None and self.start_date >= self.end_date:
             errors.append(gettext('Start date should be earlier than end date.'))
@@ -454,7 +454,7 @@ class Relationship(models.Model):  # noqa: WPS214
                 type__role_type=RoleType.SELF,
             ).exists()
         ):
-            errors.append(gettext('The patient already has a self-relationship'))
+            errors.append(gettext('The patient already has a self-relationship.'))
 
         if (
             hasattr(self, 'caregiver')
@@ -467,7 +467,7 @@ class Relationship(models.Model):  # noqa: WPS214
                 type__role_type=RoleType.SELF,
             ).exists()
         ):
-            errors.append(gettext('The caregiver already has a self-relationship'))
+            errors.append(gettext('The caregiver already has a self-relationship.'))
 
         return errors
 
@@ -505,7 +505,10 @@ class Relationship(models.Model):  # noqa: WPS214
                 errors[NON_FIELD_ERRORS].extend(type_errors)
 
         if hasattr(self, 'patient') and hasattr(self, 'caregiver'):
-            if Relationship.objects.filter(
+            # exclude the current instance to support updating it
+            if Relationship.objects.exclude(
+                pk=self.pk,
+            ).filter(
                 patient=self.patient,
                 caregiver=self.caregiver,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},

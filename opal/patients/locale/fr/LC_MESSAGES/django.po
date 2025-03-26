@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-05 22:44-0400\n"
+"POT-Creation-Date: 2023-06-06 16:59-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -128,10 +128,6 @@ msgid ""
 "A self-relationship was selected but the caregiver appears to be someone "
 "other than the patient."
 msgstr ""
-
-#: opal/patients/forms.py opal/patients/models.py
-msgid "The patient already has a self-relationship"
-msgstr "Le patient a déjà une relation de type « soi »"
 
 #: opal/patients/forms.py
 msgid "Please confirm access to patient data by entering your password."
@@ -449,9 +445,9 @@ msgid "Relationships"
 msgstr "Relations"
 
 #: opal/patients/models.py
-msgid "Start date cannot be earlier than patient's date of birth"
+msgid "Start date cannot be earlier than patient's date of birth."
 msgstr ""
-"La date de début d'accès ne peut pas précéder la date de naissance du patient"
+"La date de début d'accès ne peut pas précéder la date de naissance du patient."
 
 #: opal/patients/models.py
 msgid "Start date should be earlier than end date."
@@ -471,6 +467,14 @@ msgid "End date should be later than start date."
 msgstr "La date de fin doit être après la date de début."
 
 #: opal/patients/models.py
+msgid "The patient already has a self-relationship."
+msgstr "Le patient a déjà une relation de type « soi »."
+
+#: opal/patients/models.py
+msgid "The caregiver already has a self-relationship."
+msgstr "Le proche aidant a déjà une relation de type « soi »."
+
+#: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
 msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
 
@@ -480,8 +484,10 @@ msgstr ""
 "Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
 
 #: opal/patients/models.py
-msgid "The caregiver already has a self-relationship"
-msgstr "Le proche aidant a déjà une relation de type « soi »"
+msgid ""
+"There already exists an active relationship between the patient and "
+"caregiver."
+msgstr ""
 
 #: opal/patients/models.py
 msgid "Site"

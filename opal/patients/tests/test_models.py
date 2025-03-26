@@ -386,7 +386,23 @@ def test_relationship_no_patient_multiple_self() -> None:
 
     relationship2.type = self_type
 
-    with assertRaisesMessage(ValidationError, 'The patient already has a self-relationship'):
+    with assertRaisesMessage(ValidationError, 'The patient already has a self-relationship.'):
+        relationship2.full_clean()
+
+
+def test_relationship_no_caregiver_multiple_self() -> None:
+    """Ensure that a caregiver can only have one self-relationship."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+    # create a relationship with a new relationship type and patient
+    patient = factories.Patient(ramq='SIMM86100299')
+    relationship2 = factories.Relationship(patient=patient, caregiver=relationship.caregiver)
+    relationship2.full_clean()
+
+    relationship2.type = self_type
+
+    with assertRaisesMessage(ValidationError, 'The caregiver already has a self-relationship.'):
         relationship2.full_clean()
 
 
@@ -448,21 +464,6 @@ def test_relationship_clean_unsaved_instance() -> None:
     relationship.status = RelationshipStatus.CONFIRMED
 
     relationship.full_clean()
-
-
-def test_relationship_no_caregiver_multiple_self() -> None:
-    """Ensure that a caregiver can only have one self-relationship."""
-    self_type = RelationshipType.objects.self_type()
-
-    relationship = factories.Relationship(type=self_type)
-    # create a relationship with a new relationship type
-    relationship2 = factories.Relationship(caregiver=relationship.caregiver)
-    relationship2.full_clean()
-
-    relationship2.type = self_type
-
-    with assertRaisesMessage(ValidationError, 'The caregiver already has a self-relationship'):
-        relationship2.full_clean()
 
 
 def test_hospitalpatient_factory() -> None:
