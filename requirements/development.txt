@@ -6,6 +6,7 @@ mypy==0.942  # https://github.com/python/mypy
 django-stubs==1.10.1  # https://github.com/typeddjango/django-stubs
 pytest==7.1.2  # https://github.com/pytest-dev/pytest
 pytest-mock==3.7.0  # https://github.com/pytest-dev/pytest-mock/
+pytest-socket==0.5.1  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.4  # https://github.com/Frozenball/pytest-sugar
 django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-migrations
 djangorestframework-stubs==1.5.0  # https://github.com/typeddjango/djangorestframework-stubs
