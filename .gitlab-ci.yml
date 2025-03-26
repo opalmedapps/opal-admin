@@ -328,8 +328,8 @@ build docs:
 #
 pages:
   stage: deploy
-  # only:
-    # - main
+  only:
+    - main
   extends:
     - .uses_django
   script:
