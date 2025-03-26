@@ -184,23 +184,16 @@ def test_patient_ramq_default_value() -> None:
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
     factories.Patient(ramq=None, legacy_id=1)
-    patient = factories.Patient(ramq=None)
-
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        patient.id = 2
-        patient.legacy_id = 1
-        patient.save()
+        factories.Patient(ramq='somevalue', legacy_id=1)
 
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
     factories.Patient(ramq=None, legacy_id=None)
-
-    patient = factories.Patient(ramq=None, legacy_id=None)
-    patient.id = 2
-    patient.save()
+    factories.Patient(ramq='somevalue', legacy_id=None)
 
     assert Patient.objects.count() == 2
 
