@@ -1,6 +1,8 @@
 """App patients util functions."""
+import logging
 from datetime import date
 from typing import Any, Final, Optional
+from uuid import UUID
 
 from django.conf import settings
 from django.db import transaction
@@ -10,7 +12,11 @@ from django.utils import timezone
 from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.hospital_settings.models import Site
+from opal.legacy import utils as legacy_utils
+from opal.legacy.models import LegacyUserType
+from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
@@ -21,6 +27,12 @@ RAMQ_FEMALE_INDICATOR: Final = 50
 RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
+
+# Initialize services to communicate with external components
+oie_service: OIEService = OIEService()
+orms_service: ORMSService = ORMSService()
+
+logger = logging.getLogger(__name__)
 
 
 def build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
@@ -368,6 +380,35 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
+def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_uuid: UUID) -> None:
+    """
+    Execute all the steps necessary to set up a new patient in the system after registration.
+
+    This includes notifying ORMS and the OIE of the new patient.
+
+    Args:
+        mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
+        patient_uuid: The new patient's Patient UUID.
+    """
+    # Initialize the patient's data in the legacy database
+    # TODO
+
+    # Call ORMS to notify it of the existence of the new patient
+    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
+    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+
+    if orms_response['status'] == 'success':
+        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
+    else:
+        logger.error('Failed to initialize patient via ORMS')
+        logger.error(
+            'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),
+        )
+
+    # Call the OIE to notify it of the existence of the new patient
+    # TODO
+
+
 @transaction.atomic
 def create_access_request(  # noqa: WPS210 (too many local variables)
     patient: Patient | OIEPatientData,
@@ -386,11 +427,23 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
         relationship_type: the type of relationship between the caregiver and patient
 
+    Raises:
+        ValueError: if an existing user registering as self is missing their legacy_id value
+
     Returns:
         the newly created relationship (which provides access to patient and caregiver)
         and the registration code (in the case of a new caregiver, otherwise None)
     """
+    is_new_patient = False
+    registration_code = None
+    mrns = []
+    status = (
+        RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
+    )
+
+    # New patient
     if isinstance(patient, OIEPatientData):
+        is_new_patient = True
         mrns = [
             (Site.objects.get(code=mrn_data.site), mrn_data.mrn, mrn_data.active)
             for mrn_data in patient.mrns
@@ -405,22 +458,33 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             mrns=mrns,
         )
 
-    if isinstance(caregiver, tuple):
-        # create caregiver and caregiver profile
+    # TODO: check whether we want to default start_date to patient's date of birth when calling create_relationship
+
+    # Existing user
+    if isinstance(caregiver, caregiver_models.CaregiverProfile):
+        # Note: existing users are not issued a registration code
+
+        caregiver_profile = caregiver
+        relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
+
+        # For existing users registering as self, upgrade their legacy UserType to 'Patient'
+        if relationship_type.role_type == RoleType.SELF:
+            if not caregiver.legacy_id:
+                raise ValueError('Legacy ID is missing from Caregiver Profile')
+
+            legacy_utils.update_legacy_user_type(caregiver.legacy_id, LegacyUserType.PATIENT)
+
+        # For existing users (who won't be going through the registration site), init patient data if needed
+        if is_new_patient:
+            initialize_new_opal_patient(mrns, patient.uuid)
+    else:
+        # New user
+        # Create caregiver and caregiver profile
         caregiver_profile = create_caregiver_profile(
             first_name=caregiver[0],
             last_name=caregiver[1],
         )
-    else:
-        caregiver_profile = caregiver
-
-    status = (
-        RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
-    )
-
-    is_new_user = not isinstance(caregiver, caregiver_models.CaregiverProfile)
-    # TODO: check whether we want to default start_date to patient's date of birth here
-    relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
-    registration_code = create_registration_code(relationship) if is_new_user else None
+        relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
+        registration_code = create_registration_code(relationship)
 
     return relationship, registration_code

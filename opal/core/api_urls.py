@@ -13,8 +13,10 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api import views as caregivers_views
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
+from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
-from opal.hospital_settings.api import viewsets as settings_views
+from opal.hospital_settings.api import views as settings_views
+from opal.hospital_settings.api import viewsets as settings_viewsets
 from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
@@ -24,6 +26,7 @@ from opal.legacy.api.views.orms_auth import ORMSLoginView, ORMSValidateView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
+from opal.users.api import views as user_views
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -34,8 +37,8 @@ else:
     router = SimpleRouter()
 
 
-router.register('institutions', settings_views.InstitutionViewSet, basename='institutions')
-router.register('sites', settings_views.SiteViewSet, basename='sites')
+router.register('institutions', settings_viewsets.InstitutionViewSet, basename='institutions')
+router.register('sites', settings_viewsets.SiteViewSet, basename='sites')
 router.register('security-questions', SecurityQuestionViewSet, basename='security-questions')
 
 
@@ -96,8 +99,13 @@ urlpatterns = [
 
     # INSTITUTIONS ENDPOINTS
     path(
+        'institution/',
+        settings_views.RetrieveInstitutionView.as_view(),
+        name='institution-detail',
+    ),
+    path(
         'institutions/<int:pk>/terms-of-use/',
-        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        settings_viewsets.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
         name='institutions-terms-of-use',
     ),
 
@@ -116,9 +124,14 @@ urlpatterns = [
         name='caregivers-list',
     ),
     path(
+        'patients/legacy/<int:legacy_id>/caregiver-devices/',
+        patient_views.PatientCaregiverDevicesView.as_view(),
+        name='patient-caregiver-devices',
+    ),
+    path(
         'patients/legacy/<int:legacy_id>/',
-        patient_views.PatientCaregiversView.as_view(),
-        name='patient-caregivers',
+        patient_views.PatientUpdateView.as_view(),
+        name='patient-update',
     ),
     path(
         'patients/demographic/',
@@ -127,7 +140,7 @@ urlpatterns = [
     ),
     # patients (by new ID) for the health data quantity samples
     path(
-        'patients/<int:patient_id>/health-data/quantity-samples/',
+        'patients/<uuid:uuid>/health-data/quantity-samples/',
         data_views.CreateQuantitySampleView.as_view(),
         name='patients-data-quantity-create',
     ),
@@ -140,6 +153,12 @@ urlpatterns = [
         'patients/<uuid:uuid>/pathology-reports/',
         CreatePathologyView.as_view(),
         name='patient-pathology-create',
+    ),
+    # databank consent instances for patients
+    path(
+        'patients/<uuid:uuid>/databank/consent/',
+        CreateDatabankConsentView.as_view(),
+        name='databank-consent-create',
     ),
 
 
@@ -175,6 +194,17 @@ urlpatterns = [
         'registration/<str:code>/register/',
         patient_views.RegistrationCompletionView.as_view(),
         name='registration-register',
+    ),
+    # USERS ENDPOINTS
+    path(
+        'groups/',
+        user_views.ListGroupView.as_view(),
+        name='groups-list',
+    ),
+    path(
+        'users/caregivers/<str:username>/',
+        user_views.UserCaregiverUpdateView.as_view(),
+        name='users-caregivers-update',
     ),
 
     path('', include(router.urls)),
