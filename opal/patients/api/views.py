@@ -256,6 +256,7 @@ class PatientExistsView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def post(self, request: Request) -> Response:
         """
