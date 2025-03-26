@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import DataError, IntegrityError
 from django.utils import timezone
 
 import pytest
@@ -233,6 +233,46 @@ def test_patient_access_level_default() -> None:
     patient = factories.Patient()
 
     assert patient.data_access == Patient.DataAccessType.ALL
+
+
+def test_patient_non_interpretable_delay_field_required() -> None:
+    """Make sure that non interpretable lab result delay is required."""
+    with assertRaisesMessage(IntegrityError, "Column 'non_interpretable_lab_result_delay' cannot be null"):
+        factories.Patient(non_interpretable_lab_result_delay=None)
+
+
+def test_patient_non_interpretable_delay_field_min_value() -> None:
+    """Make sure that non interpretable lab result delay is greater than or equal to 0."""
+    with assertRaisesMessage(DataError, "Out of range value for column 'non_interpretable_lab_result_delay' at row 1"):
+        factories.Patient(non_interpretable_lab_result_delay=-1)
+
+
+def test_patient_non_interpretable_delay_field_max_value() -> None:
+    """Make sure that non interpretable lab result delay is less than or equal to 99."""
+    patient = factories.Patient(non_interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
+
+
+def test_patient_interpretable_delay_field_required() -> None:
+    """Make sure that interpretable lab result delay is required."""
+    with assertRaisesMessage(IntegrityError, "Column 'interpretable_lab_result_delay' cannot be null"):
+        factories.Patient(interpretable_lab_result_delay=None)
+
+
+def test_patient_interpretable_delay_field_min_value() -> None:
+    """Make sure that interpretable lab result delay is greater than or equal to 0."""
+    with assertRaisesMessage(DataError, "Out of range value for column 'interpretable_lab_result_delay' at row 1"):
+        factories.Patient(interpretable_lab_result_delay=-1)
+
+
+def test_patient_interpretable_delay_field_max_value() -> None:
+    """Make sure that interpretable lab result delay is less than or equal to 99."""
+    patient = factories.Patient(interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
 
 
 def test_relationship_str() -> None:

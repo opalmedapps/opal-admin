@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core.models import Delay
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
 from opal.patients.managers import PatientManager, PatientQueryset, RelationshipManager, RelationshipTypeManager
@@ -192,7 +193,7 @@ class DataAccessType(models.TextChoices):
     NEED_TO_KNOW = 'NTK', _('Need To Know')
 
 
-class Patient(models.Model):
+class Patient(Delay):
     """A patient whose data can be accessed."""
 
     # TextChoices need to be defined outside to use them in constraints
