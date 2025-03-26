@@ -38,9 +38,9 @@ def test_multiform_step_url() -> None:
 
 def test_relationships_pending_list() -> None:
     """Ensures a url for relationships exists."""
-    url = '/patients/relationships/pending/'
-    assert reverse('patients:relationships-pending-list') == url
-    assert resolve(url).view_name == 'patients:relationships-pending-list'
+    url = '/patients/relationships/'
+    assert reverse('patients:relationships-list') == url
+    assert resolve(url).view_name == 'patients:relationships-list'
 
 
 def test_relationships_pending_update() -> None:

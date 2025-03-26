@@ -12,9 +12,9 @@ app_name = 'patients'
 urlpatterns = [
     # Manage Caregiver Access Pages
     path(
-        'relationships/pending/',
-        views.PendingRelationshipListView.as_view(),
-        name='relationships-pending-list',
+        'relationships/',
+        views.ManageCaregiverAccessListView.as_view(),
+        name='relationships-list',
     ),
     path(
         'relationships/<int:pk>/',

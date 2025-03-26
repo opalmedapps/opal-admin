@@ -26,7 +26,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import AccessRequestView, ManageCaregiverAccessUpdateView, PendingRelationshipListView
+from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -60,7 +60,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-pending-list'), 'patients/relationships/pending_relationship_list.html'),
+    (reverse('patients:relationships-list'), 'patients/relationships/pending_relationship_list.html'),
 ]
 
 
@@ -1110,14 +1110,14 @@ def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
     factories.Relationship(status=models.RelationshipStatus.PENDING)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
 def test_relationships_list_empty(relationship_user: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -1133,7 +1133,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
         factories.Relationship(type=caregivertype3, request_date='2016-01-01'),
     ]
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(reversed(response.context['relationship_list'])), relationships)
@@ -1151,14 +1151,14 @@ def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert len(response.context['relationship_list']) == 2
 
 
 def test_relationships_pending_list_table(relationship_user: Client) -> None:
     """Ensures that pending relationships list uses the corresponding table."""
-    response = relationship_user.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
@@ -1170,8 +1170,8 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
     response = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assert response.context['cancel_url'] == reverse('patients:relationships-pending-list')
-    assert response.context['view'].get_success_url() == reverse('patients:relationships-pending-list')
+    assert response.context['cancel_url'] == reverse('patients:relationships-list')
+    assert response.context['view'].get_success_url() == reverse('patients:relationships-list')
 
 
 def test_form_pending_readonly_update_template(relationship_user: Client) -> None:
@@ -1284,10 +1284,10 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
     assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
     assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
+        'patients:relationships-list',
     )
 
 
@@ -1429,7 +1429,7 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-list'),
         reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
@@ -1442,12 +1442,12 @@ def test_relationship_permission_required_fail(user_client: Client, django_user_
     request = RequestFactory().get(response)  # type: ignore[arg-type]
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
     'url_name', [
-        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-list'),
         reverse('patients:relationships-view-update', args=(1,)),
     ],
 )
@@ -1508,7 +1508,7 @@ def test_relationshiptype_perm_required_fail(user_client: Client, django_user_mo
 
     request.user = user
     with pytest.raises(PermissionDenied):
-        PendingRelationshipListView.as_view()(request)
+        ManageCaregiverAccessListView.as_view()(request)
 
 
 @pytest.mark.parametrize(
@@ -1580,7 +1580,7 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
 
@@ -1638,7 +1638,7 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
     }
     query_string = urllib.parse.urlencode(form_data)
     response = relationship_user.get(
-        path=reverse('patients:relationships-pending-list'),
+        path=reverse('patients:relationships-list'),
         QUERY_STRING=query_string,
     )
     response.content.decode('utf-8')
