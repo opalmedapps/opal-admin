@@ -342,7 +342,7 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
     """
-    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='UTF-8') as handle:
         sql_content = handle.read()
 
     with django_db_blocker.unblock():
@@ -368,7 +368,7 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT0
     Args:
         django_db_blocker: pytest fixture to allow database access here only
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='UTF-8') as handle:
         sql_data = handle.read()
 
     with django_db_blocker.unblock():

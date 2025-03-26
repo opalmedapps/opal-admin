@@ -484,7 +484,9 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
     return _process_questionnaire_data(data_list)
 
 
-def _fetch_questionnaires_from_db(legacy_patient_id: int) -> list[dict[str, Any]]:
+def _fetch_questionnaires_from_db(
+    legacy_patient_id: int,
+) -> list[dict[str, Any] | list[dict[str, Any]]]:  # noqa: WPS221
     """Fetch completed questionnaires data from the database.
 
     Args:
@@ -496,7 +498,7 @@ def _fetch_questionnaires_from_db(legacy_patient_id: int) -> list[dict[str, Any]
     with connections['questionnaire'].cursor() as cursor:
         cursor.callproc(
             'getCompletedQuestionnairesList',
-            [legacy_patient_id, 1, 'EN'],
+            [legacy_patient_id, 1, 'FR'],
         )
         return [
             json.loads(row[0]) for row in cursor.fetchall()
@@ -504,7 +506,7 @@ def _fetch_questionnaires_from_db(legacy_patient_id: int) -> list[dict[str, Any]
 
 
 def _parse_query_result(
-    query_result: list[Any],
+    query_result: list[dict[str, Any] | list[dict[str, Any]]],  # noqa: WPS221
 ) -> list[dict[str, Any]]:
     """Parse the raw query result into a structured list of dictionaries.
 
@@ -555,7 +557,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
-                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S.%f'),
+                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S'),
                 questions=questions,
             ),
         )
@@ -595,7 +597,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
                 section_id=que['section_id'],
                 answers=[
                     (
-                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S.%f'),
+                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S'),
                         str(answer[1]),
                     ) for answer in answers
                 ],
