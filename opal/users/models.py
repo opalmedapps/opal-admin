@@ -163,7 +163,7 @@ class Caregiver(User):
 
 
 @receiver(signal=m2m_changed, sender=ClinicalStaff.groups.through)
-def post_save_user_signal_handler(  # noqa: WPS211, WPS231
+def post_save_user_signal_handler(  # noqa: WPS211
     instance: ClinicalStaff,
     action: str,
     model: type[models.Model],
