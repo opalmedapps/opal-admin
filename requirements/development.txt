@@ -9,7 +9,7 @@ pytest-socket==0.7.0  # https://github.com/miketheman/pytest-socket
 pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.15.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.4.0  # https://github.com/wemake-services/django-test-migrations
-coverage==7.6.1  # https://github.com/nedbat/coveragepy
+coverage==7.6.3  # https://github.com/nedbat/coveragepy
 factory-boy==3.3.1  # https://github.com/FactoryBoy/factory_boy
 isort==5.13.2  # https://github.com/PyCQA/isort
 
@@ -60,7 +60,7 @@ pytest-django==4.9.0  # https://github.com/pytest-dev/pytest-django
 
 # Pre-commit
 #
-pre-commit==3.8.0  # https://github.com/pre-commit/pre-commit
+pre-commit==4.0.1  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #
