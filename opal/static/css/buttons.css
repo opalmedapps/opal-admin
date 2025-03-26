@@ -29,7 +29,7 @@
 }
 
 /* This button is used when there is a `selector/filter button` to indicate active status */
-.btn-selected{
+.btn-selected {
   --bs-btn-color: #fff;
   --bs-btn-bg: var(--opal-purple);
   --bs-btn-border-color: var(--opal-purple);
@@ -44,7 +44,7 @@
 }
 
 /* This button is used when there is a `selector/filter button` to indicate inactive status */
-.btn-unselected{
+.btn-unselected {
     --bs-btn-color: #fff;
     --bs-btn-bg: #6c757d;
     --bs-btn-border-color: #6c757d;
