@@ -21,12 +21,12 @@ class DailyUserAppActivity(models.Model):
         on_delete=models.CASCADE,
         related_name='daily_app_activities',
     )
-    user_relationship_to_patient = models.OneToOneField(
+    user_relationship_to_patient = models.ForeignKey(
         verbose_name=_('Relationship between user and patient'),
         to=Relationship,
         on_delete=models.CASCADE,
         null=True,
-        related_name='daily_user_app_activity',
+        related_name='daily_app_activities',
     )
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
