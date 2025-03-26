@@ -1,40 +1,36 @@
-"""Daily command to update the Usage Statistics models.
+"""Command for updating the `DailyUserAppActivity` model on daily basis.
 
 TODO
 - Determine how to capture activity clicked via the Home tab Notifications menu.
 These are logged different in PAL than regular Chart activity.
 - Ticket to fix the PAL logging of Account language change, bug described in spike doc
 - Add last_received and total received fields to PatientDataReceived function for Diagnosis, Announcement?
-- Split this command into separate management commands for each usage_statistics report table?
-- Abstract the common subquery functionality in _update_patient_data_received to reduce code repetition
 """
 
 import datetime as dt
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
-from django.db.models import Count, Max, OuterRef, Q, Subquery  # noqa: WPS347
+from django.db import transaction
 from django.utils import timezone
 
+from django_stubs_ext.aliases import ValuesQuerySet
+
 from opal.caregivers.models import CaregiverProfile
-from opal.legacy.models import (
-    LegacyAppointment,
-    LegacyDocument,
-    LegacyEducationalMaterial,
-    LegacyPatient,
-    LegacyPatientActivityLog,
-    LegacyPatientTestResult,
-    LegacyQuestionnaire,
-)
+from opal.legacy.models import LegacyPatientActivityLog
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity
 from opal.users.models import User
 
 
 class Command(BaseCommand):
-    """Command to update the daily usage statistics and reporting tables."""
+    """
+    Command to update the daily app activity statistics per user and patient (e.g., `DailyUserAppActivity` model).
 
-    help = 'Populate Usage statistics and reporting from PatientActivityLog'  # noqa: A003
+    The command is added to the crontab (e.g., `docker/crontab`) and called daily at 5am EST.
+    """
+
+    help = 'Populate the daily app activity statistics from PatientActivityLog to DailyUserAppActivity'  # noqa: A003
 
     def add_arguments(self, parser: CommandParser) -> None:
         """
@@ -53,19 +49,19 @@ class Command(BaseCommand):
             '--today',
             action='store_true',
             default=False,
-            help='Calculate usage for today instead of the default yesterday',
+            help='Calculate the usage statistics for the current day between midnight and NOW() (default: false)',
         )
 
-
+    @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
         """
-        Handle daily calculation of statistics and append to reporting tables.
+        Process daily application activity statistics and populate the values to the `DailyUserAppActivity`.
 
-        Return 'None'.
+        By default, the command calculates the usage statistics for the previous complete day (e.g., 00:00:00-23:59:59).
 
         Args:
-            args: input arguments.
-            options:  additional keyword arguments.
+            args: input arguments
+            options:  additional keyword arguments
         """
         # TODO: Remove, convenience CL arg for testing
         force_delete: bool = options['force_delete']
@@ -74,106 +70,49 @@ class Command(BaseCommand):
             DailyUserAppActivity.objects.all().delete()
             DailyPatientDataReceived.objects.all().delete()
 
-        # Set default query time period for all of yesterday
-        current_datetime = timezone.now()
-        time_period_start = current_datetime.replace(
-            hour=0,
-            minute=0,
-            second=0,
-            microsecond=0,
-        ) - dt.timedelta(days=1)
-        time_period_end = time_period_start + dt.timedelta(days=1) - dt.timedelta(microseconds=1)  # noqa: WPS221
-
-        # TODO: Remove?
-        # Optionally use today as the query time period instead of yesterday for easier testing (00:00:00-23:59:59)
+        # Optional today parameter for calculating app statistics for the current day between 00:00:00 and 23:59:59
         today: bool = options['today']
+        # By default the command extract the statistics for the previous day
+        days_delta = 1
+
         if today:
             self.stdout.write(self.style.WARNING('Calculating statistics for today'))
-            time_period_start = current_datetime.replace(
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0,
-            )
-            time_period_end = current_datetime.replace(
-                hour=23,  # noqa: WPS432
-                minute=59,  # noqa: WPS432
-                second=59,  # noqa: WPS432
-                microsecond=0,
-            )
+            days_delta = 0
 
-        self._update_user_app_activity(time_period_start=time_period_start, time_period_end=time_period_end)
-        self._update_patient_data_received(time_period_start=time_period_start, time_period_end=time_period_end)
+        # Set the default query time period for the previous complete day (e.g., between 00:00:00 and 23:59:59)
+        start_datetime_period = dt.datetime.combine(
+            timezone.now() - dt.timedelta(days=days_delta),
+            dt.datetime.min.time(),
+            timezone.get_current_timezone(),
+        )
+        end_datetime_period = dt.datetime.combine(
+            start_datetime_period,
+            dt.datetime.max.time(),
+            timezone.get_current_timezone(),
+        )
 
-    def _update_user_app_activity(self, time_period_start, time_period_end) -> None:  # noqa: WPS210
+        activities = LegacyPatientActivityLog.objects.get_app_activities(
+            start_datetime_period=start_datetime_period,
+            end_datetime_period=end_datetime_period,
+        )
+        print('DEBUG SQL Query:', str(activities.query))
+        print(activities.count())
+        self._populate_user_app_activities(activities=activities)
+
+        self.stdout.write(self.style.SUCCESS('Successfully populated DailyUserAppActivity'))
+
+    def _populate_user_app_activities(  # noqa: WPS210
+        self,
+        activities: ValuesQuerySet['LegacyPatientActivityLog', dict[str, Any]],
+    ) -> None:
         """Query from PatientActivityLog to generate daily user/patient app activity.
 
         Args:
-            time_period_start: Datetime for the beginning of the query time period
-            time_period_end: Datetime for the end of the query time period
+            activities: `LegacyPatientActivityLog` records to be populated to `DailyUserAppActivity`
         """
-        # Aggregating data similar to the SQL query
-        activities = LegacyPatientActivityLog.objects.filter(
-            DateTime__gte=time_period_start,
-            DateTime__lt=time_period_end,
-        ).values('TargetPatientId', 'Username').annotate(
-            last_login=Max('DateTime', filter=Q(Request='Login')),
-            count_logins=Count('ActivitySerNum', filter=Q(Request='Login')),
-            # TODO:
-            # Verify if this is only counting successful checkins or if failed attempts get lumped together
-            count_checkins=Count('ActivitySerNum', filter=Q(Request='Checkin')),
-            count_documents=Count('ActivitySerNum', filter=Q(Request='DocumentContent')),
-            # educ is tricky... the different educ types get logged different in PAL table
-            # Package --> Request==Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"6"}
-            #  + for each content Request==Log,
-            #       and Parameters={"Activity":"EducationalMaterialControlSerNum","ActivityDetails":"649"}
-            #         + etc
-            # Factsheet --> Request=Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"11"}
-            # Booklet --> Log + {"Activity":"EducationalMaterialSerNum","ActivityDetails":"4"}
-            #         + for each chapter Request=Read, Parameters={"Field":"EducationalMaterial","Id":"4"}
-            # Might have to use PatientActionLog to properly determine educaitonal material count?
-            # Could consider counting each type separately here then aggregating below in the model creation?
-            count_educational_materials=Count(
-                'ActivitySerNum',
-                filter=Q(Request='Log', Parameters__contains='EducationalMaterialSerNum'),
-            ),
-            count_feedback=Count('ActivitySerNum', filter=Q(Request='Feedback')),
-            count_questionnaires_complete=Count(
-                'ActivitySerNum',
-                filter=Q(Request='QuestionnaireUpdateStatus', Parameters__contains='"new_status":"2"'),
-            ),
-            count_labs=Count(
-                'ActivitySerNum',
-                filter=Q(Request='PatientTestTypeResults') | Q(Request='PatientTestDateResults'),
-            ),
-            count_update_security_answers=Count(
-                'ActivitySerNum',
-                filter=Q(Request='UpdateSecurityQuestionAnswer'),
-            ),
-            count_update_passwords=Count(
-                'ActivitySerNum',
-                filter=Q(Request='AccountChange', Parameters='OMITTED'),
-            ),
-            count_update_language=Count(
-                'ActivitySerNum',
-                filter=Q(Request='AccountChange', Parameters__contains='"Language"'),
-            ),
-            count_device_ios=Count('DeviceId', filter=Q(Parameters__contains='iOS'), distinct=True),
-            count_device_android=Count('DeviceId', filter=Q(Parameters__contains='Android'), distinct=True),
-            count_device_browser=Count('DeviceId', filter=Q(Parameters__contains='browser'), distinct=True),
-        )
-        # NOTE: It seems like an activity triggered from the Notifications page is recorded differently from when
-        #       the activity is initialized in the chart.
-        #       If marge clicks on a TxTeamMessage notification from her Home page,
-        #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
-        #       Whereas if marge clicks a TxTeamMessage from her chart page,
-        #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
-        #       ... ugh
-
-        print('DEBUG SQL Query:', str(activities.query))
         for activity in activities:
-            user = User.objects.filter(username=activity['Username']).first()
-            patient_data_owner = Patient.objects.filter(legacy_id=activity['TargetPatientId']).first()
+            user = User.objects.filter(username=activity['username']).first()
+            patient_data_owner = Patient.objects.filter(legacy_id=activity['target_patient_id']).first()
             caregiver_profile = CaregiverProfile.objects.filter(user=user).first()
 
             # TODO: Decide if this final check is worth doing
@@ -238,144 +177,3 @@ class Command(BaseCommand):
                     date_added=timezone.now().date(),
                 )
                 user_app_activity.save()
-
-        self.stdout.write(self.style.SUCCESS('Successfully populated DailyUserAppActivityAdmin'))
-
-    def _update_patient_data_received(self, time_period_start, time_period_end) -> None:  # noqa: WPS210
-        """Query from legacy tables to generate daily user/patient app activity.
-
-        Args:
-            time_period_start: Datetime for the beginning of the query time period
-            time_period_end: Datetime for the end of the query time period
-        """
-        # Subqueries for Appointments
-        last_appointment_subquery = Subquery(
-            LegacyAppointment.objects.filter(
-                patientsernum=OuterRef('patientsernum'),  # noqa: WPS204
-                scheduledstarttime__lt=time_period_end,  # noqa: WPS204
-            ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
-        )
-
-        next_appointment_subquery = Subquery(
-            LegacyAppointment.objects.filter(
-                patientsernum=OuterRef('patientsernum'),  # noqa: WPS204
-                state='Active',
-                status='Open',
-                scheduledstarttime__gt=time_period_end,  # noqa: WPS204
-            ).order_by('scheduledstarttime').values('scheduledstarttime')[:1],
-        )
-
-        appointments_received_subquery = Subquery(
-            LegacyAppointment.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                date_added__range=(time_period_start, time_period_end),  # noqa: WPS204
-            ).values('patientsernum').annotate(cnt=Count('appointmentsernum')).values('cnt'),
-        )
-
-        # Subqueries for Documents
-        last_document_subquery = Subquery(
-            LegacyDocument.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                dateadded__lt=time_period_end,
-            ).order_by('-dateadded').values('dateadded')[:1],
-        )
-
-        documents_received_subquery = Subquery(
-            LegacyDocument.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                dateadded__range=(time_period_start, time_period_end),
-            ).values('patientsernum').annotate(cnt=Count('documentsernum')).values('cnt'),
-        )
-
-        # Subqueries for Educational Materials
-        last_educational_material_subquery = Subquery(
-            LegacyEducationalMaterial.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                date_added__lt=time_period_end,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
-
-        educational_materials_received_subquery = Subquery(
-            LegacyEducationalMaterial.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                date_added__range=(time_period_start, time_period_end),
-            ).values('patientsernum').annotate(cnt=Count('educationalmaterialsernum')).values('cnt'),
-        )
-
-        # Subqueries for Questionnaires
-        last_questionnaire_subquery = Subquery(
-            LegacyQuestionnaire.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                date_added__lt=time_period_end,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
-
-        questionnaires_received_subquery = Subquery(
-            LegacyQuestionnaire.objects.filter(
-                patientsernum=OuterRef('patientsernum'),
-                date_added__range=(time_period_start, time_period_end),
-            ).values('patientsernum').annotate(cnt=Count('questionnairesernum')).values('cnt'),
-        )
-
-        # Subquery for Last Lab Received
-        last_lab_subquery = Subquery(
-            LegacyPatientTestResult.objects.filter(
-                patient_ser_num=OuterRef('patientsernum'),
-                date_added__lt=time_period_end,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
-
-        # Subquery for Labs Received Count
-        labs_received_subquery = Subquery(
-            LegacyPatientTestResult.objects.filter(
-                patient_ser_num=OuterRef('patientsernum'),
-                date_added__range=(time_period_start, time_period_end),
-            ).values('patient_ser_num').annotate(cnt=Count('patient_test_result_ser_num')).values('cnt'),
-        )
-
-        # Main Query
-        patient_data_received_queryset = LegacyPatient.objects.annotate(
-            next_appointment=next_appointment_subquery,
-            last_appointment_received=last_appointment_subquery,
-            appointments_received=appointments_received_subquery,
-            last_document_received=last_document_subquery,
-            documents_received=documents_received_subquery,
-            last_educational_materials_received=last_educational_material_subquery,
-            educational_materials_received=educational_materials_received_subquery,
-            last_questionnaire_received=last_questionnaire_subquery,
-            questionnaires_received=questionnaires_received_subquery,
-            last_lab_received=last_lab_subquery,
-            labs_received=labs_received_subquery,
-            # Final filter is for determing which patients should appear in the final queryset
-            # For this we want any patient with any data added in the reference period
-        ).filter(
-            Q(legacyappointment__date_added__range=(time_period_start, time_period_end))
-            | Q(legacydocument__dateadded__range=(time_period_start, time_period_end))
-            | Q(legacyeducationalmaterial__date_added__range=(time_period_start, time_period_end))
-            | Q(legacyquestionnaire__date_added__range=(time_period_start, time_period_end))
-            | Q(legacypatienttestresult__date_added__range=(time_period_start, time_period_end)),
-        ).distinct()
-
-        # Update model
-        for patient in patient_data_received_queryset.values():
-            django_patient = Patient.objects.filter(legacy_id=patient['patientsernum']).first()
-            patient_data_received = DailyPatientDataReceived(
-                patient=django_patient,
-                next_appointment=patient['next_appointment'],
-                last_appointment_received=patient['last_appointment_received'],
-                # TODO: Find a better way to force 0 value for integer fields instead of `None` which causes Model error
-                # Using Coalesce did not work
-                # Might have something to do with the interaction of Coalesce with Subquery.values
-                appointments_received=patient['appointments_received'] if patient['appointments_received'] else 0,
-                last_document_received=patient['last_document_received'],
-                documents_received=patient['documents_received'] if patient['documents_received'] else 0,
-                last_educational_materials_received=patient['last_educational_materials_received'],
-                educational_materials_received=patient['educational_materials_received'] if patient['educational_materials_received'] else 0,  # noqa: E501
-                last_questionnaire_received=patient['last_questionnaire_received'],
-                questionnaires_received=patient['questionnaires_received'] if patient['questionnaires_received'] else 0,
-                last_lab_received=patient['last_lab_received'],
-                labs_received=patient['labs_received'] if patient['labs_received'] else 0,
-                date_added=time_period_start,
-            )
-            patient_data_received.save()
-        self.stdout.write(self.style.SUCCESS('Successfully populated PatientDataReceived'))
