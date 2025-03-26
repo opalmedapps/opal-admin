@@ -83,21 +83,21 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
-def get_caregiver(info: dict[str, Any]) -> Optional[User]:
+def get_caregiver(caregiver_info: dict[str, Any]) -> Optional[User]:
     """
-    Tell the caregiver exists or not.
+    Get the user if it exists.
 
     Args:
-        info: User info to be checked
+        caregiver_info: User info to be checked
 
     Returns:
         return User if the caregiver eixsts otherwise return None
     """
     try:
         user = User.objects.get(
-            username=info['username'],
-            language=info['language'],
-            phone_number=info['phone_number'],
+            username=caregiver_info['username'],
+            language=caregiver_info['language'],
+            phone_number=caregiver_info['phone_number'],
         )
     except User.DoesNotExist:
         return None
@@ -121,7 +121,7 @@ def update_caregiver(user: User, info: dict[str, Any]) -> None:
     user.save()
 
 
-def rebuild_relationship(user: User, relationship: Relationship) -> None:
+def rebuild_relationship(new_skeleton_user: User, relationship: Relationship) -> None:
     """
     Re-link the relationship to the existing caregiver and delete the skeleton one.
 
@@ -129,11 +129,11 @@ def rebuild_relationship(user: User, relationship: Relationship) -> None:
         user: User object
         relationship: Relationship object
     """
-    skeleton_user = relationship.caregiver.user
-    relationship.caregiver.user = user
+    old_skeleton_user = relationship.caregiver.user
+    relationship.caregiver.user = new_skeleton_user
     relationship.caregiver.full_clean()
     relationship.caregiver.save()
-    skeleton_user.delete()
+    old_skeleton_user.delete()
 
 
 def insert_security_answers(

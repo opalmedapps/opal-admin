@@ -98,7 +98,7 @@ def test_get_caregiver_success_or_not() -> None:
     language2 = 'fr'
     username1 = 'username-1'
     username2 = 'username-2'
-    user = User(phone_number=phone_number1, language=language1, username=username1)
+    User(phone_number=phone_number1, language=language1, username=username1)
     info: dict = {
         'user': {
             'language': language1,
@@ -106,7 +106,6 @@ def test_get_caregiver_success_or_not() -> None:
             'username': username1,
         },
     }
-    user.refresh_from_db()
     caregiver = utils.get_caregiver(info['user'])
     if caregiver:
         assert caregiver.language == language1
