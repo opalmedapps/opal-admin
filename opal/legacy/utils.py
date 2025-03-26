@@ -499,7 +499,7 @@ def _fetch_questionnaires_from_db(legacy_patient_id: int) -> list[dict[str, Any]
             [legacy_patient_id, 1, 'EN'],
         )
         return [
-            json.loads(row[0]) for row in cursor.fetchall() if row and row[0]  # noqa: WPS221
+            json.loads(row[0]) for row in cursor.fetchall()
         ]
 
 
@@ -549,7 +549,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
     for data in parsed_data_list:
         if 'questions' not in data:
-            raise ValueError(f'Unexpected data format: {data}')
+            raise ValueError(f'Unexpected data format: {data!r}')
         questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
             QuestionnaireData(
@@ -620,27 +620,12 @@ def generate_questionnaire_report(
     """
     combined_questionnaire_data = []
     for questionnaire_data in questionnaire_data_list:
-        questions_data = [
-            Question(
-                question_text=question.question_text,
-                question_label=question.question_label,
-                question_type_id=question.question_type_id,
-                position=question.position,
-                min_value=question.min_value,
-                max_value=question.max_value,
-                polarity=question.polarity,
-                section_id=question.section_id,
-                answers=question.answers,
-            )
-            for question in questionnaire_data.questions
-        ]
-
         combined_questionnaire_data.append(
             QuestionnaireData(
                 questionnaire_id=questionnaire_data.questionnaire_id,
                 questionnaire_title=questionnaire_data.questionnaire_title,
                 last_updated=questionnaire_data.last_updated,
-                questions=questions_data,
+                questions=questionnaire_data.questions,
             ),
         )
 

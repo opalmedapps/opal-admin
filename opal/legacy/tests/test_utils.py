@@ -1,6 +1,7 @@
 import datetime as dt
 from pathlib import Path
 from typing import Any, cast
+from unittest.mock import MagicMock
 
 from django.core.management.base import CommandError
 from django.utils import timezone
@@ -765,7 +766,7 @@ def mock_institution(mocker: MockerFixture) -> Any:
 
 
 @pytest.fixture
-def mock_generate_pdf(mocker: MockerFixture) -> Any:
+def mock_generate_pdf(mocker: MockerFixture) -> MagicMock:
     """Fixture to mock generating a PDF."""
     return mocker.patch('opal.legacy.utils.generate_pdf', autospec=True)
 
