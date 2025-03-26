@@ -175,7 +175,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
     caregiver = CaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number'),
+        fields=('language', 'phone_number', 'username'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(

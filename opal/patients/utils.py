@@ -91,6 +91,7 @@ def update_caregiver(user: User, info: dict) -> None:
         user: User object
         info: User info to be updated
     """
+    user.username = info['user']['username']
     user.language = info['user']['language']
     user.phone_number = info['user']['phone_number']
     user.date_joined = timezone.now()
