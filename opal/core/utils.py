@@ -29,10 +29,11 @@ def generate_random_uuid(length: int) -> str:
     return uuid.uuid4().hex[:length]
 
 
-def generate_random_registration_code(length: int) -> str:
+def generate_random_registration_code(institution_code: str, length: int) -> str:
     """Generate a random alphanumeric string with a given length.
 
     Args:
+        institution_code: intitution code for registration.
         length: length of a random alphanumeric string.
 
     Returns:
@@ -41,4 +42,6 @@ def generate_random_registration_code(length: int) -> str:
     # getting systemRandom instance out of random class to prevent flake8 S311 vioaltion
     # and generate cryptographically secure random.
     system_random = random.SystemRandom()
-    return ''.join(system_random.choices(string.ascii_letters + string.digits, k=length))
+    return institution_code + ''.join(
+        system_random.choices(string.ascii_letters + string.digits, k=length),
+    )

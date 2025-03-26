@@ -212,3 +212,110 @@ def test_migration_relationshiptype_existing_role_types_updated(migrator: Migrat
     assert self_type.form_required is False
     assert self_type.can_answer_questionnaire is True
     assert parent_type.can_answer_questionnaire is True
+
+
+def test_migration_relationshiptype_add_remaining_types(migrator: Migrator) -> None:
+    """Ensure the migration correctly prepopulates the relationshiptypes."""
+    old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))  # noqa: WPS204
+    RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
+
+    assert RelationshipType.objects.count() == 2
+
+    new_state = migrator.apply_tested_migration(('patients', '0019_add_remaining_default_relationshiptypes'))
+
+    RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
+
+    assert RelationshipType.objects.count() == 4
+    assert RelationshipType.objects.filter(role_type=models.RoleType.GUARDIAN_CAREGIVER).count() == 1
+    assert RelationshipType.objects.filter(role_type=models.RoleType.MANDATARY).count() == 1
+
+    # ensure that the migration can be reversed without any error
+    migrator.apply_tested_migration(('patients', '0018_update_existing_relationshiptypes'))
+
+    assert RelationshipType.objects.count() == 4
+
+
+def test_migration_relationshiptype_update_existing_types(migrator: Migrator) -> None:  # noqa: WPS218
+    """Ensure the migration correctly prepopulates the relationshiptypes for Guardian-Caregiver and Mandatary."""
+    old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))
+    RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
+
+    assert RelationshipType.objects.count() == 2
+
+    # add pre-existing types
+    guardian_caregiver = RelationshipType.objects.create(
+        name='Guardian-Caregiver',
+        name_en='Guardian-Caregiver',
+        name_fr='Gardien-Proche aidant',
+        description='Guardian-Caregiver Description EN',
+        description_en='Guardian-Caregiver Description EN',
+        description_fr='Guardian-Caregiver Description FR',
+        start_age=14,
+    )
+    mandatary = RelationshipType.objects.create(
+        name='Mandatary',
+        name_en='Mandatary',
+        name_fr='Mandataire',
+        description='Mandatary Description EN',
+        description_en='Mandatary Description EN',
+        description_fr='Mandatary Description FR',
+        start_age=0,
+    )
+
+    new_state = migrator.apply_tested_migration(('patients', '0019_add_remaining_default_relationshiptypes'))
+
+    RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
+
+    assert RelationshipType.objects.count() == 4
+    assert RelationshipType.objects.filter(role_type=models.RoleType.GUARDIAN_CAREGIVER).count() == 1
+    assert RelationshipType.objects.filter(role_type=models.RoleType.MANDATARY).count() == 1
+
+    guardian_caregiver.refresh_from_db()
+    mandatary.refresh_from_db()
+
+    assert guardian_caregiver.role_type == models.RoleType.GUARDIAN_CAREGIVER
+    assert mandatary.role_type == models.RoleType.MANDATARY
+
+    # ensure that the migration can be reversed without any error
+    migrator.apply_tested_migration(('patients', '0018_update_existing_relationshiptypes'))
+
+    assert RelationshipType.objects.count() == 4
+
+
+def test_migration_relationshiptype_existing_role_types_untouched(migrator: Migrator) -> None:
+    """Ensure the migration correctly prepopulates the relationshiptypes."""
+    old_state = migrator.apply_initial_migration(('patients', '0018_update_existing_relationshiptypes'))
+    RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
+
+    RelationshipType.objects.create(
+        name='Guardian-Caregiver',
+        name_en='Guardian-Caregiver',
+        name_fr='Gardien-Proche aidant',
+        description='Guardian-Caregiver Description EN',
+        description_en='Guardian-Caregiver Description EN',
+        description_fr='Guardian-Caregiver Description FR',
+        start_age=14,
+        role_type=models.RoleType.GUARDIAN_CAREGIVER,
+    )
+    RelationshipType.objects.create(
+        name='Mandatary',
+        name_en='Mandatary',
+        name_fr='Mandataire',
+        description='Mandatary Description EN',
+        description_en='Mandatary Description EN',
+        description_fr='Mandatary Description FR',
+        start_age=0,
+        role_type=models.RoleType.MANDATARY,
+    )
+
+    new_state = migrator.apply_tested_migration(('patients', '0019_add_remaining_default_relationshiptypes'))
+
+    RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
+
+    assert RelationshipType.objects.count() == 4
+    assert RelationshipType.objects.filter(role_type=models.RoleType.CAREGIVER).count() == 0
+
+    # ensure that the migration can be reversed without any error
+    migrator.apply_tested_migration(('patients', '0018_update_existing_relationshiptypes'))
+
+    assert RelationshipType.objects.count() == 4

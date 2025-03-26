@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 from collections import defaultdict
 from datetime import date
-from typing import Any, Optional, TypeAlias
+from typing import Any, Final, Optional, TypeAlias
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -23,8 +23,20 @@ class RoleType(models.TextChoices):
 
     # 'self' is a reserved keyword in Python requiring a noqa here.
     SELF = 'SELF', _('Self')  # noqa: WPS117
-    CAREGIVER = 'CAREGIVER', _('Caregiver')
     PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
+    GUARDIAN_CAREGIVER = 'GRDNCAREGIVER', _('Guardian-Caregiver')
+    MANDATARY = 'MANDATARY', _('Mandatary')
+    CAREGIVER = 'CAREGIVER', _('Caregiver')
+
+
+# defined here instead of constants to avoid circular import
+#: Set of role types for which a relationship type is predefined via a data migration
+PREDEFINED_ROLE_TYPES: Final[set] = {  # noqa: WPS407
+    RoleType.SELF,
+    RoleType.PARENT_GUARDIAN,
+    RoleType.GUARDIAN_CAREGIVER,
+    RoleType.MANDATARY,
+}
 
 
 class RelationshipType(models.Model):
@@ -100,56 +112,50 @@ class RelationshipType(models.Model):
         return self.name
 
     def clean(self) -> None:
-        """Validate the model being saved does not add an extra SELF or PARENT_GUARDIAN role type.
+        """Validate the model being saved does not add an extra pre-defined role type.
 
-        If additional restricted role types are added in the future, add them to the RoleType lists here.
+        If additional predefined role types are added in the future,
+        add them to the predefined RoleType lists here.
 
         Raises:
-            ValidationError: If the changes result in a missing or extra restricted roletype.
+            ValidationError: If the changes result in a missing or extra restricted role type.
         """
-        existing_restricted_relationshiptypes = RelationshipType.objects.filter(
-            role_type__in=[RoleType.SELF, RoleType.PARENT_GUARDIAN],
-        )
-        existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
-
-        # Verify we cannot add an additional self or parent role type
-        # AND that the current instance being checked isnt already in the existing restricted list
+        # Verify we cannot add an additional predefined type
+        # AND that the current instance being checked isn't already in the existing restricted list
         # (which would mean this is an 'update' operation, and should not raise an exception)
-        if (
-            self.role_type == RoleType.SELF
-            and RoleType.SELF in existing_restricted_roletypes
-            and self not in existing_restricted_relationshiptypes
-        ):
-            raise ValidationError(
-                _('There must always be exactly one Self and one Parent/Guardian role'),
+        role_type = self.role_type
+
+        if role_type in PREDEFINED_ROLE_TYPES:
+            existing_predefined_relationship_type = RelationshipType.objects.get(
+                role_type=self.role_type,
             )
 
-        if (
-            self.role_type == RoleType.PARENT_GUARDIAN
-            and RoleType.PARENT_GUARDIAN in existing_restricted_roletypes
-            and self not in existing_restricted_relationshiptypes
-        ):
-            raise ValidationError(
-                _('There must always be exactly one Self and one Parent/Guardian role'),
-            )
+            if self != existing_predefined_relationship_type:
+                raise ValidationError({
+                    'role_type': _('There already exists a relationship type with this role type'),
+                })
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
-        """Validate the model being deleted is not of type 'self'.
+        """
+        Delete the instance.
+
+        Prevents deletion of instances that have a `role_type` other than _Caregiver_.
 
         Args:
-            args: Any number of arguments.
-            kwargs: Any number of key word arguments.
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Raises:
-            ValidationError: If a new relationship is being created/edited with role_type self and one already exists.
+            ValidationError: if the instance does not have a `role_type` of _Caregiver_
 
         Returns:
             Number of models deleted and dict of models deleted.
         """
-        if self.role_type in {RoleType.SELF, RoleType.PARENT_GUARDIAN}:
+        if self.role_type != RoleType.CAREGIVER:
             raise ValidationError(
                 _('The relationship type with this role type cannot be deleted'),
             )
+
         return super().delete(*args, **kwargs)
 
 
@@ -449,8 +455,8 @@ class Relationship(models.Model):
         elif current == RelationshipStatus.CONFIRMED:
             statuses += [
                 RelationshipStatus.PENDING,
-                RelationshipStatus.DENIED,
                 RelationshipStatus.REVOKED,
+                RelationshipStatus.EXPIRED,
             ]
         elif current == RelationshipStatus.DENIED:
             statuses += [RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]

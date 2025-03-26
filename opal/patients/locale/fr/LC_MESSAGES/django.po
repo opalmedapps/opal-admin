@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-15 14:57-0400\n"
+"POT-Creation-Date: 2023-03-18 02:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,13 +149,21 @@ msgid "Self"
 msgstr "Soi"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Caregiver"
-msgstr "Proche aidant"
-
-#: opal/patients/models.py
 msgid "Parent/Guardian"
 msgstr "Parent/Tuteur"
+
+#: opal/patients/models.py
+msgid "Guardian-Caregiver"
+msgstr "Gardien-Proche aidant"
+
+#: opal/patients/models.py
+msgid "Mandatary"
+msgstr "Mandataire"
+
+#: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Caregiver"
+msgstr "Proche aidant"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -224,7 +232,7 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "There must always be exactly one Self and one Parent/Guardian role"
+msgid "There already exists a relationship type with this role type"
 msgstr ""
 
 #: opal/patients/models.py
@@ -252,7 +260,7 @@ msgid "UUID"
 msgstr ""
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/pending/form.html
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -277,7 +285,7 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -335,7 +343,7 @@ msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/pending/form.html
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Relationship"
 msgstr "Relation"
 
@@ -455,12 +463,11 @@ msgid "Cancel"
 msgstr "Annuler"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Update"
 msgstr "Mettre à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Create"
 msgstr "Créer"
 
@@ -472,34 +479,38 @@ msgstr ""
 msgid "New Relationship Type"
 msgstr ""
 
-#: opal/patients/templates/patients/relationships-search/relationship_filter.html
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Manage"
+msgstr ""
+
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Caregiver Access Requests"
+msgstr "Générer une demande d'accès"
+
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "RAMQ"
+msgstr "RAMQ"
+
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
+msgid "Pending Caregiver Access Requests"
+msgstr ""
+
+#: opal/patients/templates/patients/relationships/relationship_filter.html
 msgid "Search Patient Access"
 msgstr "Rechercher l'accès des patients"
 
-#: opal/patients/templates/patients/relationships-search/relationship_filter.html
+#: opal/patients/templates/patients/relationships/relationship_filter.html
 msgid "Search for a specific patient to see all their caregivers."
 msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
 
-#: opal/patients/templates/patients/relationships-search/relationship_filter.html
+#: opal/patients/templates/patients/relationships/relationship_filter.html
 #: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
 
-#: opal/patients/templates/patients/relationships-search/relationship_filter.html
+#: opal/patients/templates/patients/relationships/relationship_filter.html
 msgid "Caregiver Details"
 msgstr "Détails de l'aidant"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Pending Relationships Access Request"
-msgstr "Date de la demande de relation"
-
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "RAMQ"
-msgstr "RAMQ"
-
-#: opal/patients/templates/patients/relationships/pending/list.html
-msgid "Pending Caregiver Access Requests"
-msgstr ""
 
 #: opal/patients/views.py
 msgid "Hospital Information"
