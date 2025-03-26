@@ -35,7 +35,7 @@
       "matchPackagePatterns": ["pytest"],
       "groupName": "pytest packages"
     },
-    // Allow to receive patch updates for Pythin while waiting with upgrading to the next minor version
+    // Allow to receive patch updates for Python while waiting with upgrading to the next minor version
     {
       "matchPackagePatterns": ["python"],
       "separateMinorPatch": true
