@@ -126,7 +126,7 @@ def rebuild_relationship(new_skeleton_user: User, relationship: Relationship) ->
     Re-link the relationship to the existing caregiver and delete the skeleton one.
 
     Args:
-        user: User object
+        new_skeleton_user: User object
         relationship: Relationship object
     """
     old_skeleton_user = relationship.caregiver.user
