@@ -321,8 +321,8 @@ def test_caregiver_first_last_name_invalid() -> None:
     assert form.errors['last_name'][0] == error_message
 
 
-def test_caregiver_access_form_update() -> None:
-    """Ensure that `first_name` and `last_name` can be updated through the assigned form."""
+def test_caregiver_access_form_update_self() -> None:
+    """Ensure that `first_name` and `last_name` are readonly, `end_date` is not required and `type` is disabled."""
     self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
     patient = factories.Patient()
 
@@ -339,6 +339,11 @@ def test_caregiver_access_form_update() -> None:
     form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
 
     assert form.is_valid()
+    form_fields = form.fields
+
+    assert form_fields['first_name'].widget.attrs['readonly']
+    assert form.cleaned_data['type'].role_type == RoleType.SELF.name
+    assert not form_fields['end_date'].required
 
 
 # Opal Registration Tests
