@@ -158,7 +158,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         self.patient: Union[OIEPatientData, Patient, None] = None
 
         # initialize site with a site object when there is a single site and card type is mrn
-        site_field: forms.ModelChoiceField = self.fields['site']  # type: ignore[assignment]
+        site_field: forms.ModelChoiceField[Site] = self.fields['site']  # type: ignore[assignment]
         sites: QuerySet[Site] = site_field.queryset  # type: ignore[assignment]
 
         if sites.count() == 1:
@@ -362,7 +362,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
 class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
     """This form provides a radio button to choose the relationship to the patient."""
 
-    relationship_type = forms.ModelChoiceField(
+    relationship_type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all().reverse(),
         widget=AvailableRadioSelect(attrs={'up-validate': ''}),
         label=_('Relationship to the patient'),
@@ -802,7 +802,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     last_name = forms.CharField(
         label=_('Last Name'),
     )
-    type = forms.ModelChoiceField(  # noqa: A003
+    type: forms.ModelChoiceField[RelationshipType] = forms.ModelChoiceField(  # noqa: A003
         widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
@@ -988,8 +988,8 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['card_type'])
-        site: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['site'])
+        card_type = cast(forms.ChoiceField, self.fields['card_type'])
+        site = cast(forms.ModelChoiceField[Site], self.fields['site'])
 
         # add up-validate to `card_type` field to trigger post on change
         card_type.widget.attrs.update({'up-validate': ''})
