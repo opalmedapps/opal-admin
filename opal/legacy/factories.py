@@ -57,6 +57,9 @@ class LegacyAliasFactory(DjangoModelFactory):
         model = models.LegacyAlias
 
     aliassernum = 283
+    aliastype = 'Appointment'
+    aliasname_en = 'Calcul de la Dose'
+    aliasname_fr = 'Calcul de la Dose'
 
 
 class LegacyAliasexpressionFactory(DjangoModelFactory):

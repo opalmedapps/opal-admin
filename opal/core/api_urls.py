@@ -16,6 +16,7 @@ from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
+from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
@@ -39,6 +40,7 @@ app_name = 'core'
 urlpatterns = [
     path('app/chart/<int:legacy_id>/', AppChartView.as_view(), name='app-chart'),
     path('app/home/', AppHomeView.as_view(), name='app-home'),
+    path('app/appointments/', AppAppointmentsView.as_view(), name='app-appointments'),
     path('auth/', include('dj_rest_auth.urls')),
     path('caregivers/patients/', caregivers_views.GetCaregiverPatientsList.as_view(), name='caregivers-patient-list'),
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),

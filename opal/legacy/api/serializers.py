@@ -30,6 +30,18 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
         source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkinpossible',
     )
 
+    class Meta:
+        model = LegacyAppointment
+        fields = ['appointmentsernum', 'state', 'scheduledstarttime', 'checkin', 'checkinpossible', 'patientsernum']
+
+
+class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
+    """Serializer for the `LegacyAppointment` model to get more appointment details."""
+
+    checkinpossible = serializers.IntegerField(
+        source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkinpossible',
+    )
+
     patient = LegacyPatientSerializer(
         source='patientsernum',
         fields=('patientsernum', 'firstname', 'lastname'),
