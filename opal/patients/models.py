@@ -49,7 +49,8 @@ class RelationshipType(models.Model):
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE - 1),
-        ])
+        ],
+    )
     end_age = models.PositiveIntegerField(
         verbose_name=_('End age'),
         help_text=_('Age at which the relationship ends automatically.'),
@@ -58,7 +59,8 @@ class RelationshipType(models.Model):
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE + 1),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE),
-        ])
+        ],
+    )
     form_required = models.BooleanField(
         verbose_name=_('Form required'),
         default=True,
@@ -143,7 +145,7 @@ class RelationshipType(models.Model):
         Returns:
             Number of models deleted and dict of models deleted.
         """
-        if (self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+        if self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}:
             raise ValidationError(
                 _('The relationship type with this role type cannot be deleted'),
             )
@@ -274,9 +276,7 @@ class Patient(models.Model):
         if reference_date is None:
             reference_date = date.today()
         # A bool that represents if reference date's day/month precedes the birth day/month
-        one_or_zero = (
-            (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
-        )
+        one_or_zero = (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
         # Calculate the difference in years from the date object's components
         year_difference = reference_date.year - date_of_birth.year
         # The difference in years is not enough.
