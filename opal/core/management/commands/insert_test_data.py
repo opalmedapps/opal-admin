@@ -143,7 +143,10 @@ SITE_DATA = MappingProxyType({
 
 MRN_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'Marge Simpson': [('RVH', '9999996')],
+        'Marge Simpson': [
+            ('RVH', '9999996'),
+            ('LAC', '0389731'),
+        ],
         'Homer Simpson': [
             ('RVH', '9999997'),
             ('MGH', '9999998'),
@@ -324,6 +327,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             legacy_id=55,
             mrns=mrn_data['Mona Simpson'],
             date_of_death=_relative_date(today, -2),
+            data_access=Patient.DataAccessType.NEED_TO_KNOW,
         )
 
         fred = _create_patient(
@@ -339,7 +343,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
         pebbles = _create_patient(
             first_name='Pebbles',
             last_name='Flintstone',
-            date_of_birth=_create_date(9, 2, 1),
+            date_of_birth=_create_date(9, 2, 22),
             sex=Patient.SexType.FEMALE,
             ramq='FLIP15022299',
             legacy_id=57,
@@ -348,7 +352,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
         wednesday = _create_patient(
             first_name='Wednesday',
             last_name='Addams',
-            date_of_birth=date(2009, 2, 13),
+            date_of_birth=_create_date(15, 2, 13),
             sex=Patient.SexType.FEMALE,
             ramq='ADAW09021399',
             legacy_id=58,
@@ -362,6 +366,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             ramq='HENL58621319',
             legacy_id=92,
             mrns=mrn_data['Laurie Hendren'],
+            date_of_death=date(2019, 5, 27),
         )
 
     # Bart exists at both institutions
@@ -369,7 +374,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
         first_name='Bart',
         last_name='Simpson',
         date_of_birth=_create_date(14, 2, 23),
-        sex=Patient.SexType.MALE,
+        sex=Patient.SexType.OTHER,
         ramq='SIMB13022399',
         legacy_id=53,
         mrns=mrn_data['Bart Simpson'],
@@ -437,7 +442,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             username='a51fba18-3810-4808-9238-4d0e487785c8',
             email='laurie@opalmedapps.ca',
             language='en',
-            phone_number='+5144415642',
+            phone_number='+15144415642',
             legacy_id=6,
         )
 
@@ -845,6 +850,7 @@ def _create_patient(
     legacy_id: int,
     mrns: list[tuple[Site, str]],
     date_of_death: Optional[date] = None,
+    data_access: Patient.DataAccessType = Patient.DataAccessType.ALL,
 ) -> Patient:
     """
     Create, validate and save a patient instance with the given properties.
@@ -860,6 +866,7 @@ def _create_patient(
         legacy_id: the ID (aka. SerNum) of the patient in the legacy DB
         mrns: a list of Site, MRN tuples for the MRNs the patient has at different sites
         date_of_death: an optional date of death if the patient is deceased
+        data_access: the data access level the patient has
 
     Returns:
         the created patient instance
@@ -871,6 +878,7 @@ def _create_patient(
         sex=sex,
         ramq=ramq,
         legacy_id=legacy_id,
+        data_access=data_access,
     )
 
     if date_of_death:
