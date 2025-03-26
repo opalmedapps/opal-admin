@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
-from datetime import date
-from typing import Any, Dict, Optional, Union
+from datetime import date, timedelta
+from typing import Any
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -13,10 +13,12 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
 
-from ..core import validators
-from ..core.form_layouts import CancelButton
-from ..services.hospital.hospital import OIEService
-from ..users.models import Caregiver, User
+from opal.core import validators
+from opal.core.forms.layouts import CancelButton
+from opal.core.forms.widgets import AvailableRadioSelect
+from opal.services.hospital.hospital import OIEService
+from opal.users.models import Caregiver, User
+
 from . import constants
 from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .utils import search_valid_relationship_types
@@ -162,78 +164,6 @@ class ConfirmPatientForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-
-
-class AvailableRadioSelect(forms.RadioSelect):
-    """
-    Subclass of Django's select widget that allows disabling options.
-
-    Taken inspiration from:
-        * https://stackoverflow.com/questions/673199/disabled-option-for-choicefield-django/50109362#50109362
-    """
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the '_available_choices'.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        self._available_choices: list[int] = []
-        super().__init__(*args, **kwargs)
-
-    @property
-    def available_choices(self) -> list[int]:
-        """
-        Get _available_choices.
-
-        Returns:
-            the list for _available_choices.
-        """
-        return self._available_choices
-
-    @available_choices.setter
-    def available_choices(self, other: list[int]) -> None:
-        """
-        Set _available_choices.
-
-        Args:
-            other: the new value _available_choices
-        """
-        self._available_choices = other
-
-    def create_option(  # noqa: WPS211
-        self,
-        name: str,
-        value: Any,
-        label: Union[int, str],
-        selected: bool,
-        index: int,
-        subindex: Optional[int] = None,
-        attrs: Optional[dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """
-        Initialize the '_available_choices'.
-
-        Args:
-            name: option name
-            value: option value
-            label: option label
-            selected: selected option
-            index: option index
-            subindex: option subindex
-            attrs: option attributes
-
-        Returns:
-            the dict for _available_choices.
-        """
-        option_dict = super().create_option(
-            name, value, label, selected, index, subindex=subindex, attrs=attrs,
-        )
-        if value not in self.available_choices:
-            option_dict['attrs']['disabled'] = 'disabled'
-        return option_dict
 
 
 class RequestorDetailsForm(forms.Form):
@@ -599,23 +529,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             )
         ]
         self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
-            'min': Relationship.set_relationship_start_date(
-                request_date,
-                date_of_birth,
-                relationship_type,
-            ),
-            'max': Relationship.set_relationship_end_date(
+            'min': date_of_birth,
+            'max': Relationship.calculate_end_date(
                 date_of_birth,
                 relationship_type,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
-            'min': Relationship.set_relationship_start_date(
-                request_date,
-                date_of_birth,
-                relationship_type,
-            ),
-            'max': Relationship.set_relationship_end_date(
+            'min': date_of_birth + timedelta(days=1),
+            'max': Relationship.calculate_end_date(
                 date_of_birth,
                 relationship_type,
             ),
