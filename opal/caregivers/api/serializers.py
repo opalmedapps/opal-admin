@@ -15,6 +15,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
+from opal.patients.models import Patient
 
 
 class EmailVerificationSerializer(DynamicFieldsSerializer):
@@ -121,7 +122,7 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['answer']
 
 
-class UpdateDeviceSerializer(serializers.ModelSerializer):
+class DeviceSerializer(DynamicFieldsSerializer):
     """Serializer for devices."""
 
     class Meta:
@@ -142,6 +143,10 @@ class CaregiverSerializer(DynamicFieldsSerializer):
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
+    devices = DeviceSerializer(
+        fields=('type', 'push_token'),
+        many=True,
+    )
 
     class Meta:
         model = CaregiverProfile
@@ -149,6 +154,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'uuid',
             'language',
             'phone_number',
+            'devices',
         ]
 
 
@@ -177,3 +183,39 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
     class Meta:
         model = RegistrationCode
         fields = ['patient', 'caregiver', 'security_answers']
+
+
+class PatientCaregiversSerializer(DynamicFieldsSerializer):
+    """
+    Serializer for patient and caregiver information.
+
+    The serializer provides the name of the patient as well as the patient's caregivers and their devices.
+    """
+
+    caregivers = CaregiverSerializer(
+        fields=('language', 'devices'),
+        many=True,
+    )
+
+    institution_code = serializers.SerializerMethodField()
+
+    def get_institution_code(self, obj: Patient) -> str:  # noqa: WPS615
+        """
+        Get a single institution code.
+
+        Args:
+            obj: Object of Patient.
+
+        Returns:
+            code of the singleton institution
+        """
+        return Institution.objects.get().code
+
+    class Meta:
+        model = Patient
+        fields = [
+            'first_name',
+            'last_name',
+            'institution_code',
+            'caregivers',
+        ]
