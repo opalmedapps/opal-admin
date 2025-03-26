@@ -81,39 +81,30 @@ class RegistrationCompletionView(APIView):
         serializer = self.serializer_class(
             data=request.data,
         )
-        print(request.data),
         serializer.is_valid(raise_exception=True)
         register_data = serializer.validated_data
 
         # update registration code status
         registration_code = self._get_and_update_registration_code(code)
 
-        # update patient legacy_id
-        try:
+        try:  # noqa: WPS229
+            # update patient legacy_id
             self._update_patient_legacy_id(
                 registration_code.relationship.patient,
                 register_data['relationship']['patient']['legacy_id'],
             )
-        except ValidationError as exception_patient:
-            validation_error = str(exception_patient.args)
-
-        # update caregiver
-        if not validation_error:
-            try:
-                self._update_caregiver(
-                    registration_code.relationship.caregiver.user,
-                    register_data['relationship']['caregiver'],
-                )
-            except ValidationError as exception_user:
-                validation_error = str(exception_user.args)
-
-        # insert related security answers
-        if not validation_error:
+            # update caregiver
+            self._update_caregiver(
+                registration_code.relationship.caregiver.user,
+                register_data['relationship']['caregiver'],
+            )
             caregiver_profile = registration_code.relationship.caregiver
             self._insert_security_answers(
                 caregiver_profile,
                 register_data['security_answers'],
             )
+        except ValidationError as exception:
+            validation_error = str(exception.args)
 
         if validation_error:
             transaction.set_rollback(True)
