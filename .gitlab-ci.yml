@@ -403,3 +403,9 @@ container_scanning:
     - build image
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+# Secret Detection
+# https://docs.gitlab.com/ee/user/application_security/secret_detection/pipeline/index.html#overriding-the-analyzer-jobs
+secret_detection:
+  # don't get artifacts from setup job
+  needs: []
