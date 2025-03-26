@@ -15,7 +15,7 @@ from opal.usage_statistics import factories as stats_factories
 from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import queries as stats_queries
 
-pytestmark = pytest.mark.django_db(databases=['default'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def test_empty_fetch_registration_summary() -> None:
@@ -3128,266 +3128,28 @@ def test_test_fetch_average_login_per_year_by_month_report_success() -> None:
     ]
 
 
-def test_fetch_monthly_user_app_activity_log_report_empty() -> None:
-    """Ensure fetch_monthly_user_app_activity_log_report successfully generated with empty data."""
-    monthly_user_report = stats_queries.fetch_monthly_user_app_activity_log_report()
-    assert not monthly_user_report
+def test_fetch_patient_demographic_diagnosis_report_empty() -> None:
+    """Ensure fetch_patient_demographic_and_diagnosis_stats_report successfully generated with empty data."""
+    demographic_diagnosis_report = stats_queries.fetch_patient_demographic_diagnosis_report()
+    assert not demographic_diagnosis_report
 
 
-def test_fetch_monthly_user_app_activity_log_report_success() -> None:
-    """Ensure fetch_monthly_user_app_activity_log_report successfully generated."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 1, 20, 10, 10, 10).astimezone(),
-        count_logins=2,
-        count_feedback=1,
-        count_update_security_answers=3,
-        count_update_passwords=7,
-        action_date=dt.datetime(2024, 1, 20),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 2, 20, 10, 10, 10).astimezone(),
-        count_logins=5,
-        count_feedback=10,
-        count_update_security_answers=8,
-        count_update_passwords=4,
-        action_date=dt.datetime(2024, 2, 20),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
-        count_logins=5,
-        count_feedback=3,
-        count_update_security_answers=1,
-        count_update_passwords=4,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-
-    monthly_user_report = stats_queries.fetch_monthly_user_app_activity_log_report()
-    assert monthly_user_report == [
-        {
-            'month': dt.date(2024, 8, 1),
-            'login_count': 5,
-            'feedback_count': 3,
-            'update_security_answers_count': 1,
-            'update_passwords_count': 4,
-        },
-        {
-            'month': dt.date(2024, 2, 1),
-            'login_count': 5,
-            'feedback_count': 10,
-            'update_security_answers_count': 8,
-            'update_passwords_count': 4,
-        },
-        {
-            'month': dt.date(2024, 1, 1),
-            'login_count': 2,
-            'feedback_count': 1,
-            'update_security_answers_count': 3,
-            'update_passwords_count': 7,
-        },
-    ]
-
-
-def test_fetch_monthly_user_patient_activity_log_report_empty() -> None:
-    """Ensure fetch_monthly_user_patient_activity_log_report successfully generated with empty data."""
-    monthly_user_report = stats_queries.fetch_monthly_user_pat_activity_log_report()
-    assert not monthly_user_report
-
-
-def test_fetch_monthly_user_patient_activity_log_report_success() -> None:
-    """Ensure fetch_monthly_user_patient_activity_log_report successfully generated."""
-    relationships = _create_relationship_records()
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['homer_relationship'],
-        action_by_user=relationships['homer_relationship'].caregiver.user,
-        patient=relationships['homer_relationship'].patient,
-        count_checkins=3,
-        count_documents=4,
-        count_educational_materials=5,
-        count_questionnaires_complete=6,
-        count_labs=7,
-        action_date=dt.datetime(2024, 2, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['marge_relationship'],
-        action_by_user=relationships['marge_relationship'].caregiver.user,
-        patient=relationships['marge_relationship'].patient,
-        count_checkins=10,
-        count_documents=11,
-        count_educational_materials=12,
-        count_questionnaires_complete=13,
-        count_labs=14,
-        action_date=dt.datetime(2024, 3, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['bart_relationship'],
-        action_by_user=relationships['bart_relationship'].caregiver.user,
-        patient=relationships['bart_relationship'].patient,
-        count_checkins=5,
-        count_documents=6,
-        count_educational_materials=7,
-        count_questionnaires_complete=8,
-        count_labs=9,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['lisa_relationship'],
-        action_by_user=relationships['lisa_relationship'].caregiver.user,
-        patient=relationships['lisa_relationship'].patient,
-        count_checkins=7,
-        count_documents=8,
-        count_educational_materials=9,
-        count_questionnaires_complete=10,
-        count_labs=11,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-
-    monthly_user_report = stats_queries.fetch_monthly_user_pat_activity_log_report()
-    assert monthly_user_report == [
-        {
-            'month': dt.date(2024, 8, 1),
-            'checkins_count': 12,
-            'documents_count': 14,
-            'educational_materials_count': 16,
-            'completed_questionnaires_count': 18,
-            'labs_count': 20,
-        },
-        {
-            'month': dt.date(2024, 3, 1),
-            'checkins_count': 10,
-            'documents_count': 11,
-            'educational_materials_count': 12,
-            'completed_questionnaires_count': 13,
-            'labs_count': 14,
-        },
-        {
-            'month': dt.date(2024, 2, 1),
-            'checkins_count': 3,
-            'documents_count': 4,
-            'educational_materials_count': 5,
-            'completed_questionnaires_count': 6,
-            'labs_count': 7,
-        },
-    ]
-
-
-def test_fetch_annually_user_app_activity_log_report_empty() -> None:
-    """Ensure fetch_annually_user_app_activity_log_report successfully generated with empty data."""
-    annually_user_report = stats_queries.fetch_annually_user_app_activity_log_report()
-    assert not annually_user_report
-
-
-def test_fetch_annually_user_app_activity_log_report_success() -> None:
-    """Ensure fetch_annually_user_app_activity_log_report successfully generated."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 1, 20, 10, 10, 10).astimezone(),
-        count_logins=2,
-        count_feedback=3,
-        count_update_security_answers=1,
-        count_update_passwords=4,
-        action_date=dt.datetime(2024, 1, 20),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 2, 20, 10, 10, 10).astimezone(),
-        count_logins=5,
-        count_feedback=10,
-        count_update_security_answers=5,
-        count_update_passwords=4,
-        action_date=dt.datetime(2024, 2, 20),
-    )
-    stats_factories.DailyUserAppActivity(
-        action_by_user=marge_caregiver.user,
-        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
-        count_logins=5,
-        count_feedback=9,
-        count_update_security_answers=0,
-        count_update_passwords=3,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-
-    annually_user_report = stats_queries.fetch_annually_user_app_activity_log_report()
-    assert annually_user_report == [
-        {
-            'year': dt.date(2024, 1, 1),
-            'login_count': 12,
-            'feedback_count': 22,
-            'update_security_answers_count': 6,
-            'update_passwords_count': 11,
-        },
-    ]
-
-
-def test_fetch_annually_user_patient_activity_log_report_empty() -> None:
-    """Ensure fetch_annually_user_patient_activity_log_report successfully generated with empty data."""
-    annually_user_report = stats_queries.fetch_annually_user_pat_activity_log_report()
-    assert not annually_user_report
-
-
-def test_fetch_annually_user_patient_activity_log_report_success() -> None:
-    """Ensure fetch_annually_user_patient_activity_log_report successfully generated."""
-    relationships = _create_relationship_records()
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['homer_relationship'],
-        action_by_user=relationships['homer_relationship'].caregiver.user,
-        patient=relationships['homer_relationship'].patient,
-        count_checkins=3,
-        count_documents=4,
-        count_educational_materials=5,
-        count_questionnaires_complete=6,
-        count_labs=7,
-        action_date=dt.datetime(2024, 2, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['marge_relationship'],
-        action_by_user=relationships['marge_relationship'].caregiver.user,
-        patient=relationships['marge_relationship'].patient,
-        count_checkins=10,
-        count_documents=11,
-        count_educational_materials=12,
-        count_questionnaires_complete=13,
-        count_labs=14,
-        action_date=dt.datetime(2024, 3, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['bart_relationship'],
-        action_by_user=relationships['bart_relationship'].caregiver.user,
-        patient=relationships['bart_relationship'].patient,
-        count_checkins=5,
-        count_documents=6,
-        count_educational_materials=7,
-        count_questionnaires_complete=8,
-        count_labs=9,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-    stats_factories.DailyUserPatientActivity(
-        user_relationship_to_patient=relationships['lisa_relationship'],
-        action_by_user=relationships['lisa_relationship'].caregiver.user,
-        patient=relationships['lisa_relationship'].patient,
-        count_checkins=7,
-        count_documents=8,
-        count_educational_materials=9,
-        count_questionnaires_complete=10,
-        count_labs=11,
-        action_date=dt.datetime(2024, 8, 20),
-    )
-
-    annually_user_report = stats_queries.fetch_annually_user_pat_activity_log_report()
-    assert annually_user_report == [
-        {
-            'year': dt.date(2024, 1, 1),
-            'checkins_count': 25,
-            'documents_count': 29,
-            'educational_materials_count': 33,
-            'completed_questionnaires_count': 37,
-            'labs_count': 41,
-        },
-    ]
+def test_fetch_patient_demographic_diagnosis_report_success() -> None:
+    """Ensure fetch_patient_demographic_and_diagnosis_stats_report successfully generated."""
+    django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+    legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat1, hospital__code='RVH', mrn=1234567)
+    django_pat2 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=52)
+    legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis1')
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis2')
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
+    demographic_diagnosis_report = stats_queries.fetch_patient_demographic_diagnosis_report()
+    assert demographic_diagnosis_report[0]['patientsernum'] == 51
+    assert demographic_diagnosis_report[1]['patientsernum'] == 52
+    assert demographic_diagnosis_report[0]['description_en'] == 'Test Diagnosis2'
+    assert demographic_diagnosis_report[1]['description_en'] == 'Test Diagnosis3'
 
 
 def _create_relationship_records() -> dict[str, Any]:

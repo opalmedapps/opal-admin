@@ -768,7 +768,7 @@ def fetch_average_login_per_year_by_month_report() -> list[dict[str, Any]]:
 
 
 # JOHN'S REPORT
-def fetch_patient_demographic_and_diagnosis_stats() -> list[dict[str, Any]]:
+def fetch_patient_demographic_diagnosis_report() -> list[dict[str, Any]]:
     """Fetch the patient demographic report with diagnosis.
 
     Returns:
