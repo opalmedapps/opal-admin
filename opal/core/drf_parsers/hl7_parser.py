@@ -83,7 +83,7 @@ class HL7Parser(BaseParser):
         return {
             'first_name': segment.pid_5.pid_5_2.to_er7(),
             'last_name': segment.pid_5.pid_5_1.to_er7(),
-            'date_of_birth': timezone.make_aware(datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date()),
+            'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date(),
             'sex': segment.pid_8.to_er7(),
             'ramq': segment.pid_2.pid_2_1.to_er7(),
             # TODO: Kill the mrn_sites which aren't in the 'approved/existing site list'
@@ -133,10 +133,10 @@ class HL7Parser(BaseParser):
             'order_interval_pattern': segment.orc_7.orc_7_2_1.to_er7(),
             'order_interval_duration': segment.orc_7.orc_7_2_2.to_er7(),
             'order_duration': segment.orc_7.orc_7_3.to_er7(),
-            'order_start_datetime': segment.orc_7.orc_7_4.to_er7(),
-            'order_end_datetime': segment.orc_7.orc_7_5.to_er7(),
+            'order_start_datetime': timezone.make_aware(datetime.strptime(segment.orc_7.orc_7_4.to_er7(), '%Y%m%d%H%M')),
+            'order_end_datetime': timezone.make_aware(datetime.strptime(segment.orc_7.orc_7_5.to_er7(), '%Y%m%d%H%M')),
             'order_priority': segment.orc_7.orc_7_6.to_er7(),
-            'entered_at': segment.orc_9.orc_9_1.to_er7(),
+            'entered_at': timezone.make_aware(datetime.strptime(segment.orc_9.orc_9_1.to_er7(), '%Y%m%d%H%M%S')),
             'entered_by_id': segment.orc_10.orc_10_1.to_er7(),
             'entered_by_family_name': segment.orc_10.orc_10_2.to_er7(),
             'entered_by_given_name': segment.orc_10.orc_10_3.to_er7(),
@@ -146,7 +146,7 @@ class HL7Parser(BaseParser):
             'ordered_by_id': segment.orc_12.orc_12_1.to_er7(),
             'order_by_family_name': segment.orc_12.orc_12_2.to_er7(),
             'order_by_given_name': segment.orc_12.orc_12_3.to_er7(),
-            'effective_at': segment.orc_15.orc_15_1.to_er7(),
+            'effective_at': timezone.make_aware(datetime.strptime(segment.orc_15.orc_15_1.to_er7(), '%Y%m%d%H%M%S')),
         }
 
     def _parse_rxe_segment(self, segment: Segment) -> dict:
@@ -164,8 +164,8 @@ class HL7Parser(BaseParser):
             'pharmacy_interval_pattern': segment.rxe_1.rxe_1_2_1.to_er7(),
             'pharmacy_interval_duration': segment.rxe_1.rxe_1_2_2.to_er7(),
             'pharmacy_duration': segment.rxe_1.rxe_1_3.to_er7(),
-            'pharmacy_start_datetime': segment.rxe_1.rxe_1_4.to_er7(),
-            'pharmacy_end_datetime': segment.rxe_1.rxe_1_5.to_er7(),
+            'pharmacy_start_datetime': timezone.make_aware(datetime.strptime(segment.rxe_1.rxe_1_4.to_er7(), '%Y%m%d%H%M')),
+            'pharmacy_end_datetime': timezone.make_aware(datetime.strptime(segment.rxe_1.rxe_1_5.to_er7(), '%Y%m%d%H%M')),
             'pharmacy_priority': segment.rxe_1.rxe_1_6.to_er7(),
             'give_identifier': segment.rxe_2.rxe_2_1.to_er7(),
             'give_text': segment.rxe_2.rxe_2_2.to_er7(),
