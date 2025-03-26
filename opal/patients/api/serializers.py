@@ -43,6 +43,12 @@ class PatientSerializer(DynamicFieldsSerializer):
         }
 
 
+class PatientUUIDSerializer(serializers.Serializer):
+    """Serializer for patient's UUID."""
+
+    patient_uuid = serializers.UUIDField(required=True, allow_null=False)
+
+
 class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.

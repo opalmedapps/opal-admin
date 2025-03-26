@@ -1,13 +1,16 @@
 """Module providing API views for the `health_data` app."""
 from typing import Any
 
+from django.db import models
 from django.utils import timezone
 
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import IsListener, IsORMSUser
+from opal.patients.api.serializers import PatientUUIDSerializer
 from opal.patients.models import Patient
 
 from ..models import QuantitySample
@@ -22,7 +25,10 @@ class CreateQuantitySampleView(generics.CreateAPIView):
     """
 
     serializer_class = QuantitySampleSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # TODO: change to model permissions?
+    # TODO: change in the future to limit to user with access to the patient
+    # TODO: add CaregiverPermissions?
+    permission_classes = (IsListener,)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[QuantitySample]:
         """
@@ -76,11 +82,49 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         serializer.save(patient=self.patient)
 
 
-class ViewedQuantitySampleView(APIView):
+class UnviewedQuantitySampleView(APIView):
+    """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
+
+    permission_classes = (IsORMSUser,)
+
+    def post(self, request: Request) -> Response:
+        """Retrieve a list of patient's unviewed `QuantitySample` records.
+
+        The method returns the counts (a.k.a. badges) of unviewed quantities for each patient.
+
+        Args:
+            request: HTTP request
+
+        Returns:
+            Response: list of unviewed `QuantitySample` counts for each patient
+        """
+        serializer = PatientUUIDSerializer(
+            many=True,
+            allow_empty=False,
+            required=True,
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        # Unviewed counts of patients' QuantitySamples
+        unviewed_counts = Patient.objects.select_related(
+            'quantity_samples',
+        ).filter(
+            uuid__in=[quantity['patient_uuid'] for quantity in serializer.validated_data],
+            quantity_samples__viewed_at=None,
+            quantity_samples__viewed_by='',
+        ).annotate(
+            count=models.Count('quantity_samples'),
+            patient_uuid=models.F('uuid'),
+        ).values('patient_uuid', 'count')
+
+        return Response(data=unviewed_counts)
+
+
+class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
-    # TODO: change to permission_classes = (IsOrms,) once permission is implemented
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsORMSUser,)
 
     def patch(self, request: Request, uuid: str) -> Response:
         """Set patient's `QuantitySample` records as viewed.

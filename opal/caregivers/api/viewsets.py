@@ -1,6 +1,4 @@
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
-from typing import Type
-
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
@@ -8,9 +6,10 @@ from rest_framework import serializers as drf_serializers
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+
+from opal.core.drf_permissions import FullDjangoModelPermissions, IsListener
 
 from ..models import SecurityAnswer, SecurityQuestion
 from . import serializers
@@ -18,16 +17,16 @@ from . import serializers
 
 class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """
-    This viewset provides a list model view for `SecurityQuestion`, and inherits retrieve mixin to get a specific question.
+    This viewset provides a list and retrieve actions for the  `SecurityQuestion` model.
 
     It uses the `SecurityQuestionSerializer` to serialize a `SecurityQuestion`.
     It allows to filter by SecurityQuestion 'title'.
-    """  # noqa: E501
+    """
 
     queryset = SecurityQuestion.objects.filter(is_active=True).order_by('pk')
     serializer_class = serializers.SecurityQuestionSerializer
     filterset_fields = ['title']
-    permission_classes = [IsAuthenticated]
+    permission_classes = (FullDjangoModelPermissions,)
 
 
 class SecurityAnswerViewSet(  # noqa: WPS215
@@ -42,7 +41,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     It uses the `SecurityAnswerSerializer` to serialize a `SecurityAnswer`.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
 
     def get_queryset(self) -> QuerySet[SecurityAnswer]:
         """
@@ -54,7 +53,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
         username = self.kwargs['username']
         return SecurityAnswer.objects.filter(user__user__username=username).order_by('pk')
 
-    def get_serializer_class(self) -> Type[drf_serializers.BaseSerializer]:
+    def get_serializer_class(self) -> type[drf_serializers.BaseSerializer]:
         """
         Override get_serializer_class to switch the serializer by the action.
 
