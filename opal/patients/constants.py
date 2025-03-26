@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 class MedicalCard(Enum):
     """An enumeration of supported medical card types."""
 
-    mrn = _('Medical Record Number (MRN)')
     ramq = _('Medicare Card Number (RAMQ)')
+    mrn = _('Medical Record Number (MRN)')
 
 
 #: Maximum possible patient age for a relationship.

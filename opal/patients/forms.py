@@ -602,21 +602,23 @@ class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
 class ManageCaregiverAccessForm(forms.Form):
     """Custom form for the manage caregiver access filter to customize cleaning the form."""
 
-    required_error = forms.Field.default_error_messages['required']
-
-    def clean(self) -> dict[str, Any]:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
-        Make sure that all required data is there to pass it to the filter.
+        Initialize the form.
 
-        Returns:
-            cleaned_data
+        Handle dynamic form updates based on the current user selection.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
         """
-        super().clean()
+        super().__init__(*args, **kwargs)
 
-        card_type = self.cleaned_data.get('card_type')
-        site = self.cleaned_data.get('site')
+        card_type = self.fields['card_type']
+        card_type.widget.attrs.update({'up-validate': ''})
+        card_type_value = self['card_type'].value()
 
-        if card_type == constants.MedicalCard.mrn.name and not site:
-            self.add_error('site', forms.ValidationError(self.required_error, 'required'))
-
-        return self.cleaned_data
+        if card_type_value == 'mrn':
+            self.fields['site'].required = True
+        else:
+            self.fields['site'].disabled = True

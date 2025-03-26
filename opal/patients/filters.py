@@ -1,7 +1,6 @@
 """This module provides filters for `patients` app."""
 from typing import Any
 
-from django import forms
 from django.db.models import QuerySet
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -16,18 +15,6 @@ from ..core.forms.layouts import InlineReset, InlineSubmit
 from . import constants
 from .forms import ManageCaregiverAccessForm
 from .models import Relationship
-
-
-class ManageCaregiverAccessForm(forms.Form):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        card_type = self.fields['card_type']
-        card_type.widget.attrs.update({'up-validate': ''})
-        card_type_value = self['card_type'].value()
-
-        if card_type_value == 'mrn':
-            self.fields['site'].required = True
 
 
 class ManageCaregiverAccessFilter(django_filters.FilterSet):
@@ -52,6 +39,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         queryset=Site.objects.all(),
         label=_('Hospital'),
         empty_label=_('Choose...'),
+        required=False,
     )
 
     medical_number = django_filters.CharFilter(
@@ -76,11 +64,13 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         """
         request = kwargs.get('request')
 
+        # replace form's data with initial in case of up-validate
+        # such that missing fields don't cause the "required" validation error
+        # TODO: move this into a DynamicFilterSetMixin that can be reused where needed
         if request and 'X-Up-Validate' in request.headers:
             data = kwargs.pop('data')
 
             for name, the_filter in self.base_filters.items():
-                # print(the_filter.extra)
                 the_filter.extra['initial'] = data.get(name)
 
         super().__init__(*args, **kwargs)
