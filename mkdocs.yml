@@ -18,6 +18,7 @@ nav:
       - Caregivers: apps/caregivers.md
       - Patients: apps/patients.md
       - Users: apps/users.md
+      - Questionnaires: apps/questionnaires.md
   - Database:
       - Migrations: database/migrations.md
       - Legacy DB Setup: database/legacy_db.md
