@@ -21,17 +21,13 @@ def test_random_uuid_is_unique() -> None:
     assert uuid1 != uuid2
 
 
-def test_random_registration_code_length() -> None:
-    """Test the length of random registration code."""
+def test_random_registration_code_format() -> None:
+    """Ensure if random registration code is alpha-numeric string and equal to the given length."""
     length = 10
     code = generate_random_registration_code(length)
     assert len(code) == length
-
-
-def test_random_registration_code_is_string() -> None:
-    """Ensure the random registration code is string."""
-    code = generate_random_registration_code(10)
     assert isinstance(code, str)
+    assert code.isalnum()
 
 
 def test_random_registration_code_is_unique() -> None:
@@ -39,9 +35,3 @@ def test_random_registration_code_is_unique() -> None:
     code1 = generate_random_uuid(10)
     code2 = generate_random_uuid(10)
     assert code1 != code2
-
-
-def test_code_only_contains_letters_and_numbers() -> None:
-    """Ensure the random registration code only contains letters and numbers."""
-    code = generate_random_registration_code(10)
-    assert code.isalnum()
