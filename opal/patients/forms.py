@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
+from dateutil.relativedelta import relativedelta
 
 from opal.core import validators
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -528,7 +529,7 @@ class ExistingUserForm(forms.Form):
                 type=self.relationship_type,
                 reason=_('Create self relationship for patient'),
                 request_date=date.today(),
-                start_date=date.today(),
+                start_date=self._set_relationship_start_date(),
             )
         # If yes, show user details
         elif relationships:
@@ -538,6 +539,27 @@ class ExistingUserForm(forms.Form):
                 'email': user.email,
                 'phone_number': user.phone_number,
             }
+
+    def _set_relationship_start_date(self) -> date:
+        """
+        Calculate the start date for the relationship record.
+
+        Returns:
+            the start date
+        """
+        # Get the date 2 years ago from now
+        reference_date = date.today() - relativedelta(years=2)
+        # Calculate patient age based on reference date
+        age = Patient.calculate_age(
+            date_of_birth=self.patient_record.date_of_birth,
+            reference_date=reference_date,
+        )
+        # Get the user choice for the relationship type in the previous step
+        user_select_type = RelationshipType.objects.get(name=self.relationship_type)
+        # Return reference date if patient age is larger or otherwise return start date based on patient's age
+        if age < user_select_type.start_age:
+            reference_date = self.patient_record.date_of_birth + relativedelta(years=user_select_type.start_age)
+        return reference_date
 
 
 class ConfirmExistingUserForm(forms.Form):
