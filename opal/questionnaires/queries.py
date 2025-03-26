@@ -11,12 +11,25 @@ from django.utils.translation import gettext_lazy as _
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
-# When DEBUG==True, do not exclude any data
-if settings.DEBUG:
-    test_accounts = ('')
-# When DEBUG==False, exclude the patients specified in the env variable
-else:
-    test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
+
+
+def set_test_account(debug: bool) -> str:
+    """Set the test account string for report development using settings variable.
+
+    Args:
+        debug: Settings.debug (True=don't exclude any data)
+
+    Returns:
+        str The string of test patient accounts
+    """
+    # When debug==True, do not exclude any data
+    if debug:
+        return ('')
+    # When debug==False, exclude the patients specified in the env variable
+    return ', '.join(map(str, settings.TEST_PATIENTS))
+
+
+test_accounts = set_test_account(settings.DEBUG)
 
 
 def _get_description(qid: int, lang_id: int) -> str:
