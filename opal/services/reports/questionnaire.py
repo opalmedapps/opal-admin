@@ -416,9 +416,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         x_data = []
         y_data = []
         for values in question.values:
-            x_data.append(
-                values[0],
-            )
+            x_data.append(values[0])
             y_data.append(int(values[1]))
 
         return pd.DataFrame(
