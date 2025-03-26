@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: add test_results app to store pathology and lab results (!709)
 * feat: add blood pressure types for the QuantitySample (!690)
 * feat: show systolic and diastolic blood pressure measurements on the same chart (!708)
+* feat: add REST API endpoint for creating pathology reports
 
 ### Documentation
 
