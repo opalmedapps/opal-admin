@@ -838,6 +838,7 @@ class TestPatientCaregiversView:
             'first_name': patient.first_name,
             'last_name': patient.last_name,
             'institution_code': institution.code,
+            'data_access': 'ALL',
             'caregivers': [
                 {
                     'language': user1.language,
