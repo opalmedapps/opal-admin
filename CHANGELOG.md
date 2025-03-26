@@ -51,3 +51,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * chore: Add vscode extension recommendations (!40)
 * build: Fix broken documentation build (!52)
 * i18n: Add French translations for the hospital settings app (!46)
+* fix: Add permission class to caregiver list end point (!240)
