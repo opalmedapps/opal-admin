@@ -64,7 +64,7 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         Set the option descriptions.
 
         Args:
-            descriptions: a dict [relationship_type.pk, relationship_type.description]
+            descriptions: a dict list [{relationship_type.pk, relationship_type.description}]
         """
         self._option_descriptions = descriptions
 
