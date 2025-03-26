@@ -381,18 +381,27 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         LegacyEducationalMaterialModel = apps.get_model('legacy', 'LegacyEducationalMaterial')  # noqa: N806
         LegacyQuestionnaireModel = apps.get_model('legacy', 'LegacyQuestionnaire')    # noqa: N806
         LegacyPatientTestResultModel = apps.get_model('legacy', 'LegacyPatientTestResult')    # noqa: N806
+        patient_out_ref = models.OuterRef('patientsernum')
+        date_added_range = (start_datetime_period, end_datetime_period)
 
         # Subqueries for Appointments
+        # The appointment statistics are typically for answering questions like:
+        #   - How are active the patients in the appointments category?
+        #   - How many patients had appointments in the last day, week, month, etc.?"
         last_appointment_subquery = models.Subquery(
+            # Retrieve the most recent appointment for every patient relatively to the requesting date range,
+            # regardless of how old it might be (e.g., the appointment might be older than the start of the range).
             LegacyAppointmentModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
+                patientsernum=patient_out_ref,
                 scheduledstarttime__lt=end_datetime_period,
             ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
         )
 
         next_appointment_subquery = models.Subquery(
+            # Retrieve the closest open/active appointment for every patient relatively to the requesting date range,
+            # regardless of how far it might be (e.g., the appointment might later than the end of the range).
             LegacyAppointmentModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
+                patientsernum=patient_out_ref,
                 state='Active',
                 status='Open',
                 scheduledstarttime__gt=end_datetime_period,
@@ -400,71 +409,99 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         )
 
         appointments_received_subquery = models.Subquery(
+            # Aggregate how many appointments for every patient were received in the given date range.
             LegacyAppointmentModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
-                date_added__range=(start_datetime_period, end_datetime_period),
-            ).values('patientsernum').annotate(cnt=models.Count('appointmentsernum')).values('cnt'),
+                patientsernum=patient_out_ref,
+                date_added__range=date_added_range,
+            ).values(
+                'patientsernum',
+            ).annotate(
+                count=models.Count('appointmentsernum'),
+            ).values('count'),
         )
 
         # Subqueries for Documents
         last_document_subquery = models.Subquery(
+            # Retrieve the latest received document for every patient, regardless of how old it might be.
             LegacyDocumentModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
+                patientsernum=patient_out_ref,
                 dateadded__lt=end_datetime_period,
             ).order_by('-dateadded').values('dateadded')[:1],
         )
 
         documents_received_subquery = models.Subquery(
+            # Aggregate how many documents for every patient were received in the given date range.
             LegacyDocumentModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
-                dateadded__range=(start_datetime_period, end_datetime_period),
-            ).values('patientsernum').annotate(cnt=models.Count('documentsernum')).values('cnt'),
+                patientsernum=patient_out_ref,
+                dateadded__range=date_added_range,
+            ).values(
+                'patientsernum',
+            ).annotate(
+                count=models.Count('documentsernum'),
+            ).values('count'),
         )
 
         # Subqueries for Educational Materials
         last_educational_material_subquery = models.Subquery(
+            # Retrieve the latest received educational material for every patient, regardless of how old it might be.
             LegacyEducationalMaterialModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
+                patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
             ).order_by('-date_added').values('date_added')[:1],
         )
 
         educational_materials_received_subquery = models.Subquery(
+            # Aggregate how many educational materials for every patient were received in the given date range.
             LegacyEducationalMaterialModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
-                date_added__range=(start_datetime_period, end_datetime_period),
-            ).values('patientsernum').annotate(cnt=models.Count('educationalmaterialsernum')).values('cnt'),
+                patientsernum=patient_out_ref,
+                date_added__range=date_added_range,
+            ).values(
+                'patientsernum',
+            ).annotate(
+                count=models.Count('educationalmaterialsernum'),
+            ).values('count'),
         )
 
         # Subqueries for Questionnaires
         last_questionnaire_subquery = models.Subquery(
+            # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
             LegacyQuestionnaireModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
+                patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
             ).order_by('-date_added').values('date_added')[:1],
         )
 
         questionnaires_received_subquery = models.Subquery(
+            # Aggregate how many questionnaires for every patient were received in the given date range.
             LegacyQuestionnaireModel.objects.filter(
-                patientsernum=models.OuterRef('patientsernum'),
-                date_added__range=(start_datetime_period, end_datetime_period),
-            ).values('patientsernum').annotate(cnt=models.Count('questionnairesernum')).values('cnt'),
+                patientsernum=patient_out_ref,
+                date_added__range=date_added_range,
+            ).values(
+                'patientsernum',
+            ).annotate(
+                count=models.Count('questionnairesernum'),
+            ).values('count'),
         )
 
-        # Subquery for Last Lab Received
+        # Subqueries for Labs
         last_lab_subquery = models.Subquery(
+            # Retrieve the latest received lab result for every patient, regardless of how old it might be.
             LegacyPatientTestResultModel.objects.filter(
-                patient_ser_num=models.OuterRef('patientsernum'),
+                patient_ser_num=patient_out_ref,
                 date_added__lt=end_datetime_period,
             ).order_by('-date_added').values('date_added')[:1],
         )
 
-        # Subquery for Labs Received Count
         labs_received_subquery = models.Subquery(
+            # Aggregate how many lab results for every patient were received in the given date range.
             LegacyPatientTestResultModel.objects.filter(
-                patient_ser_num=models.OuterRef('patientsernum'),
-                date_added__range=(start_datetime_period, end_datetime_period),
-            ).values('patient_ser_num').annotate(cnt=models.Count('patient_test_result_ser_num')).values('cnt'),
+                patient_ser_num=patient_out_ref,
+                date_added__range=date_added_range,
+            ).values(
+                'patient_ser_num',
+            ).annotate(
+                count=models.Count('patient_test_result_ser_num'),
+            ).values('count'),
         )
 
         return self.annotate(
@@ -479,14 +516,6 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             questionnaires_received=questionnaires_received_subquery,
             last_lab_received=last_lab_subquery,
             labs_received=labs_received_subquery,
-            # Final filter is for determining which patients should appear in the final queryset
-            # For this we want any patient with any data added in the reference period
-        # ).filter(
-        #     models.Q(legacyappointment__date_added__range=(start_datetime_period, end_datetime_period))
-        #     | models.Q(legacydocument__dateadded__range=(start_datetime_period, end_datetime_period))
-        #     | models.Q(legacyeducationalmaterial__date_added__range=(start_datetime_period, end_datetime_period))
-        #     | models.Q(legacyquestionnaire__date_added__range=(start_datetime_period, end_datetime_period))
-        #     | models.Q(legacypatienttestresult__date_added__range=(start_datetime_period, end_datetime_period)),
         ).distinct().values(
             'patientsernum',
             'last_appointment_received',

@@ -226,7 +226,6 @@ class Command(BaseCommand):
             )
             patient_data_received.save()
 
-
     def _annotate_patient_activities(
         self,
         activities: ValuesQuerySet[LegacyPatientActivityLog, dict[str, Any]],
