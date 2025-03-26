@@ -290,8 +290,47 @@ class TestQuestionnairesReportView:
                 site=hospital_patient.site.acronym,
                 base64_content=base64.b64encode(b'pdf').decode('utf-8'),
                 document_number='MU-8624',  # TODO: clarify where to get the value
-                document_date=mocker.ANY,  # TODO: get the exact time of the report creation
+                document_date=document_date,
             ),
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data is None
+
+    # Marking this slow since the test uses chromium
+    @pytest.mark.slow
+    # Allow hosts to make the test work for Windows, Linux and Unix-based environements
+    @pytest.mark.allow_hosts(['127.0.0.1'])
+    @pytest.mark.django_db(databases=['default', 'questionnaire'])
+    def test_pdf_generation(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+        questionnaire_data: None,
+    ) -> None:
+        """Test that PDF report is created successfully."""
+        hospital_settings_factories.Institution(pk=1)
+        patient = patient_factories.Patient(legacy_id=51)
+        hospital_patient = patient_factories.HospitalPatient(
+            patient=patient,
+            site=patient_factories.Site(acronym='RVH'),
+        )
+
+        mock_export_pdf_report = mocker.patch(
+            'opal.services.hospital.hospital.SourceSystemService.export_pdf_report',
+            return_value={'status': 'success'},
+        )
+
+        response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data is None
+        calls = mock_export_pdf_report.call_args_list
+
+        assert len(calls) == 1
+        encoded_pdf = calls[0].args[0].base64_content
+
+        assert encoded_pdf
+        base64_pdf = base64.b64decode(encoded_pdf)
+
+        assert base64_pdf.startswith(b'%PDF-')
