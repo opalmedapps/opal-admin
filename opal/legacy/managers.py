@@ -531,3 +531,66 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
                 'device_id', filter=models.Q(parameters__contains='browser'), distinct=True,
             ),
         )
+
+    def get_aggregated_patient_app_activities(
+        self,
+        start_datetime_period: datetime,
+        end_datetime_period: datetime,
+    ) -> ValuesQuerySet['LegacyPatientActivityLog', dict[str, Any]]:
+        """
+        Retrieve aggregated application activity statistics per patient for a given time period.
+
+        The statistics are fetched from the legacy `PatientActivityLog` (a.k.a. PAL) table.
+
+        NOTE! `PatientActivityLog.DateTime` field stores the datetime in the EST time zone format
+        (e.g., zoneinfo.ZoneInfo(key=EST5EDT))), while new Django's models store datetimes in the
+        UTC format. Both are time zone aware.
+
+        Args:
+            start_datetime_period: the beginning of the time period of app activities being extracted
+            end_datetime_period: the end of the time period of app activities being extracted
+
+        Returns:
+            Annotated `LegacyPatientActivityLog` records
+        """
+        # NOTE: It seems like an activity triggered from the Notifications page is recorded differently from when
+        #       the activity is initialized in the chart.
+        #       If Marge clicks on a TxTeamMessage notification from her Home page,
+        #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
+        #       Whereas if Marge clicks a TxTeamMessage from her chart page,
+        #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
+        return self.filter(
+            date_time__gte=start_datetime_period,
+            date_time__lt=end_datetime_period,
+        ).exclude(
+            target_patient_id=None,
+        ).values(
+            'target_patient_id',
+            'username',
+        ).annotate(
+            # NOTE: the count includes both successful and failed check-ins
+            count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
+            count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
+            # educ is tricky... the different educ types get logged different in PAL table
+            # Package --> Request==Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"6"}
+            #  + for each content Request==Log,
+            #       and Parameters={"Activity":"EducationalMaterialControlSerNum","ActivityDetails":"649"}
+            #         + etc
+            # Factsheet --> Request=Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"11"}
+            # Booklet --> Log + {"Activity":"EducationalMaterialSerNum","ActivityDetails":"4"}
+            #         + for each chapter Request=Read, Parameters={"Field":"EducationalMaterial","Id":"4"}
+            # Might have to use PatientActionLog to properly determine educaitonal material count?
+            # Could consider counting each type separately here then aggregating below in the model creation?
+            count_educational_materials=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
+            ),
+            count_questionnaires_complete=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
+            ),
+            count_labs=models.Count(
+                'activity_ser_num',
+                filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
+            ),
+        )

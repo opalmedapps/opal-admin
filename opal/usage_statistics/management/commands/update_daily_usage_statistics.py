@@ -13,8 +13,10 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import models, transaction
 from django.utils import timezone
 
+from opal.caregivers.models import CaregiverProfile
 from opal.legacy.models import LegacyPatientActivityLog
-from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity
+from opal.patients.models import Patient, Relationship, RelationshipStatus
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
 
 
@@ -62,19 +64,7 @@ class Command(BaseCommand):
         """
         # Convenience CL arg for testing; DO NOT USE IN PROD!
         if options['force_delete']:
-            self.stdout.write(self.style.WARNING('Deleting existing usage statistics data'))
-            confirm = input(
-                'Are you sure you want to do this?\n'
-                + '\n'
-                + "Type 'yes' to continue, or 'no' to cancel: ",
-            )
-
-            if confirm != 'yes':
-                self.stdout.write('Usage statistics update is cancelled')
-                return
-
-            DailyUserAppActivity.objects.all().delete()
-            DailyPatientDataReceived.objects.all().delete()
+            self._delete_stored_statistics()
 
         # By default the command extract the statistics for the previous day
         days_delta = 1
@@ -101,6 +91,11 @@ class Command(BaseCommand):
             end_datetime_period=end_datetime_period,
         )
 
+        self._populate_patient_app_activities(
+            start_datetime_period=start_datetime_period,
+            end_datetime_period=end_datetime_period,
+        )
+
         self.stdout.write(self.style.SUCCESS(
             'Successfully populated daily statistics data',
         ))
@@ -110,12 +105,14 @@ class Command(BaseCommand):
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
     ) -> None:
-        """Query from PatientActivityLog to generate daily user/patient app activity.
+        """Create daily users' application activity statistics records in `DailyUserAppActivity` model.
 
         Args:
             start_datetime_period: the beginning of the time period of users' app activities being extracted
             end_datetime_period: the end of the time period of users' app activities being extracted
         """
+        # NOTE! The date_added indicates the date when the activity statistics were populated.
+        # It is not the date when the activities were made.
         date_added = timezone.now().date()
         activities = LegacyPatientActivityLog.objects.get_aggregated_user_app_activities(
             start_datetime_period=start_datetime_period,
@@ -131,3 +128,62 @@ class Command(BaseCommand):
         DailyUserAppActivity.objects.bulk_create(
             DailyUserAppActivity(**activity_data) for activity_data in activities
         )
+
+    def _populate_patient_app_activities(
+        self,
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
+    ) -> None:
+        """Create daily user-patient application activity statistics records in `DailyUserPatientActivity` model.
+
+        Args:
+            start_datetime_period: the beginning of the time period of patients' app activities being extracted
+            end_datetime_period: the end of the time period of patients' app activities being extracted
+        """
+        # NOTE! The date_added indicates the date when the activity statistics were populated.
+        # It is not the date when the activities were made.
+        date_added = timezone.now().date()
+        activities = LegacyPatientActivityLog.objects.get_aggregated_patient_app_activities(
+            start_datetime_period=start_datetime_period,
+            end_datetime_period=end_datetime_period,
+        ).annotate(
+            date_added=models.Value(date_added),
+        )
+
+        for activity in activities:
+            activity['action_by_user'] = User.objects.filter(username=activity['username']).first()
+            activity['patient'] = Patient.objects.filter(legacy_id=activity['target_patient_id']).first()
+            caregiver_profile = CaregiverProfile.objects.filter(user=activity['action_by_user']).first()
+            # Feedback: It makes sense to filter only confirmed relationships... I think?
+            activity['user_relationship_to_patient'] = Relationship.objects.filter(
+                patient=activity['patient'],
+                caregiver=caregiver_profile,
+                status=RelationshipStatus.CONFIRMED,
+            ).first()
+
+            activity.pop('target_patient_id')
+            activity.pop('username')
+
+        DailyUserPatientActivity.objects.bulk_create(
+            DailyUserPatientActivity(**activity_data) for activity_data in activities
+        )
+
+    def _delete_stored_statistics(self) -> None:
+        """Delete daily application activity statistics data.
+
+        The records deleted from `DailyUserAppActivity`, `DailyUserPatientActivity`, `DailyPatientDataReceived` models.
+        """
+        self.stdout.write(self.style.WARNING('Deleting existing usage statistics data'))
+        confirm = input(
+            'Are you sure you want to do this?\n'
+            + '\n'
+            + "Type 'yes' to continue, or 'no' to cancel: ",
+        )
+
+        if confirm != 'yes':
+            self.stdout.write('Usage statistics update is cancelled')
+            return
+
+        DailyUserAppActivity.objects.all().delete()
+        DailyUserPatientActivity.objects.all().delete()
+        DailyPatientDataReceived.objects.all().delete()
