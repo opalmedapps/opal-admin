@@ -200,11 +200,11 @@ def _annotate_queryset_with_grouping_field(
     """
     if group_by == GroupByComponent.YEAR:
         annotated_queryset: models.QuerySet[_ModelT] = queryset.annotate(
-            year=TruncYear(field_name),  # type: ignore[arg-type]
+            year=TruncYear(field_name),
         )
     elif group_by == GroupByComponent.MONTH:
-        annotated_queryset = queryset.annotate(month=TruncMonth(field_name))  # type: ignore[arg-type]
+        annotated_queryset = queryset.annotate(month=TruncMonth(field_name))
     else:
-        annotated_queryset = queryset.annotate(date=TruncDay(field_name))  # type: ignore[arg-type]
+        annotated_queryset = queryset.annotate(date=TruncDay(field_name))
 
     return annotated_queryset
