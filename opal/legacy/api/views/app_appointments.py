@@ -1,38 +1,34 @@
 """Collection of api views used to get appointment details."""
-from django.db.models.query import QuerySet
-
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 from opal.legacy import models
 
 from ..serializers import LegacyAppointmentDetailedSerializer
 
 
-class AppAppointmentsView(ListAPIView):
+class AppAppointmentsView(APIView):
     """Class to return appointments detail data."""
-
-    queryset = models.LegacyAppointment.objects.select_related(
-        'aliasexpressionsernum',
-        'aliasexpressionsernum__aliassernum',
-        'aliasexpressionsernum__aliassernum__appointmentcheckin',
-    ).exclude(
-        status='Deleted',
-    ).order_by('appointmentsernum')
 
     permission_classes = [IsAuthenticated]
 
-    serializer_class = LegacyAppointmentDetailedSerializer
-
-    def get_queryset(self) -> QuerySet[models.LegacyAppointment]:  # noqa: WPS615
+    def get(self, request: Request) -> Response:
         """
-        Override get_queryset to filter appointments by appointmentsernums.
+        Handle GET requests from `api/app/home`.
+
+        Args:
+            request: Http request made by the listener.
 
         Returns:
-            The list of legacy appointments
+            Http response with the data needed to display the home view.
         """
-        if 'ids' in self.request.data:
-            return super().get_queryset().filter(
-                appointmentsernum__in=self.request.data.get('ids', None),
-            )
-        return super().get_queryset()
+        user_name = request.headers['Appuserid']
+        return Response({
+            'daily_appointments': LegacyAppointmentDetailedSerializer(
+                models.LegacyAppointment.objects.get_daily_appointments(user_name),
+                many=True,
+            ).data,
+        })
