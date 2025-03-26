@@ -70,12 +70,12 @@ class CaregiverAccessTable(tables.Table):
 
     first_name = tables.Column(
         verbose_name=_('First Name'),
-        accessor='caregiver.user.first_name',
+        accessor='caregiver__user__first_name',
     )
 
     last_name = tables.Column(
         verbose_name=_('Last Name'),
-        accessor='caregiver.user.last_name',
+        accessor='caregiver__user__last_name',
     )
 
     type = tables.Column(  # noqa: A003
