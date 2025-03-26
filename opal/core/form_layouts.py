@@ -59,8 +59,8 @@ class InlineSubmit(Layout):
             label: the label of the submit button
         """
         fields = (
-            HTML(f'<label class="form-label invisible d-xs-none">{label}</label>'),
-            Submit('submit', label, css_class='d-block'),
+            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{label}</label>'),
+            Submit('submit', label, css_class='d-table'),
         )
         super().__init__(*fields)
 
@@ -87,7 +87,7 @@ class InlineReset(Layout):
         # link to the same page without query parameters to erase existing form values
         url = '{{request.path}}'
         fields = (
-            HTML(f'<label class="form-label invisible d-xs-none">{self.label}</label>'),
+            HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{self.label}</label>'),
             HTML(f'<a class="btn btn-secondary me-2 d-table" href="{url}">{self.label}</a>'),
         )
         super().__init__(*fields)
