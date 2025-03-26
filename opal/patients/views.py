@@ -2,7 +2,7 @@
 import io
 from collections import Counter
 from datetime import date
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -213,7 +213,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             a dictionary or an empty dictionary for a step
         """
-        initial: dict[str, str] = self.initial_dict.get(step, {})
+        initial: dict[str, Any] = self.initial_dict.get(step, {})
         if step == 'site' and 'site_selection' in self.request.session:
             site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
             if site_user_selection:
@@ -330,7 +330,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             caregiver user and caregiver profile instance dictionary
         """
-        caregiver_dict = {}
+        caregiver_dict: dict[str, Any] = {}
         if form_data['user_type'] == str(constants.EXISTING_USER):
             # Get the Caregiver user if it exists
             caregiver_user = Caregiver.objects.filter(
@@ -404,7 +404,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         relationship_type = form_data['relationship_type']
         # Check if there is no relationship between requestor and patient
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
-        relationships = Relationship.objects.get_relationship_by_patient_caregiver(
+        relationship: Optional[Relationship] = Relationship.objects.get_relationship_by_patient_caregiver(
             str(relationship_type),
             caregiver_user.id,
             patient_record.ramq,
@@ -412,8 +412,8 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # For `Self` relationship, the status is CONFIRMED
         status = RelationshipStatus.CONFIRMED if str(relationship_type) == 'Self' else RelationshipStatus.PENDING
-        if not relationships:
-            relationships = Relationship.objects.create(
+        if not relationship:
+            relationship = Relationship(
                 patient=patient,
                 caregiver=caregiver,
                 type=relationship_type,
@@ -425,9 +425,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                     relationship_type,
                 ),
             )
-            print(relationships)
+            relationship.full_clean()
+            relationship.save()
 
-        return relationships
+        return relationship
 
     def _generate_access_request(self, new_form_data: dict) -> Relationship:
         """

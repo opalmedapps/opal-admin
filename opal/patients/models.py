@@ -16,7 +16,7 @@ from opal.patients.managers import HospitalPatientManager, RelationshipManager, 
 from . import constants
 
 
-class RelationshipType(models.Model):  # type: ignore[django-manager-missing]
+class RelationshipType(models.Model):
     """A type of relationship between a user (aka caregiver) and patient."""
 
     name = models.CharField(
@@ -54,7 +54,7 @@ class RelationshipType(models.Model):  # type: ignore[django-manager-missing]
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
-    objects = RelationshipTypeManager()
+    objects = RelationshipTypeManager()  # type: ignore[django-manager-missing]
 
     class Meta:
         ordering = ['name']

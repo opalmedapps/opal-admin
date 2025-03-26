@@ -1,6 +1,6 @@
 """This module provides forms for Patients."""
 from datetime import date
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Dict, Optional, Union
 
 from django import forms
 from django.contrib.auth.hashers import check_password
@@ -126,7 +126,7 @@ class SearchForm(forms.Form):
             self.add_error('medical_number', response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
-            self.cleaned_data['patient_record'] = response['data']  # type: ignore[index]
+            self.cleaned_data['patient_record'] = response['data']
 
 
 class ConfirmPatientForm(forms.Form):
@@ -199,10 +199,10 @@ class AvailableRadioSelect(forms.RadioSelect):
         name: str,
         value: Any,
         label: Union[int, str],
-        selected: Union[Set[str], bool],
+        selected: bool,
         index: int,
         subindex: Optional[int] = None,
-        attrs: Optional[Dict[str, Any]] = None,
+        attrs: Optional[dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Initialize the '_available_choices'.
@@ -411,7 +411,7 @@ class ExistingUserForm(forms.Form):
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
 
-        self.cleaned_data['user_record'] = {  # type: ignore[index]
+        self.cleaned_data['user_record'] = {
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
