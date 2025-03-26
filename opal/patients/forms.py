@@ -654,7 +654,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             if existing_relationship:
                 self.add_error(
                     NON_FIELD_ERRORS,
-                    _('This Opal user already exists.'),
+                    _('This access request already exists.'),
                 )
 
 
