@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from pathlib import Path
 from typing import Tuple
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -8,7 +9,6 @@ from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
-from factory.django import ImageField
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
 
 from .. import factories
@@ -190,25 +190,24 @@ def test_institution_created(user_client: Client) -> None:
     url = reverse('hospital-settings:institution-create')
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
+    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+        logo_content = image_logo.read()
 
-    with open(file='opal/hospital_settings/tests/fixtures/test_logo_en.png', mode='rb') as f_logo:
-        form_data.update({
-            'logo': SimpleUploadedFile(
-                name='logo_en.png',
-                content=f_logo.read(),
-                content_type='image/png',
-            ),
-        })
+    form_data.update({
+        'logo': SimpleUploadedFile(
+            name='logo_en.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
 
-        f_logo.seek(0)
-
-        form_data.update({
-            'logo_fr': SimpleUploadedFile(
-                name='logo_fr.png',
-                content=f_logo.read(),
-                content_type='image/png',
-            ),
-        })
+    form_data.update({
+        'logo_fr': SimpleUploadedFile(
+            name='logo_fr.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
 
     user_client.post(url, data=form_data)
 
@@ -222,25 +221,24 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
 
-    with open(file='opal/hospital_settings/tests/fixtures/test_logo_en.png', mode='rb') as f_logo:
-        form_data.update({
-            'logo': SimpleUploadedFile(
-                name='logo_en.png',
-                content=f_logo.read(),
-                content_type='image/png',
-            ),
-        })
+    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+        logo_content = image_logo.read()
 
-        f_logo.seek(0)
+    form_data.update({
+        'logo': SimpleUploadedFile(
+            name='logo_en.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
 
-        form_data.update({
-            'logo_fr': SimpleUploadedFile(
-                name='logo_fr.png',
-                content=f_logo.read(),
-                content_type='image/png',
-            ),
-        })
-
+    form_data.update({
+        'logo_fr': SimpleUploadedFile(
+            name='logo_fr.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
     response = user_client.post(url, data=form_data)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
@@ -249,14 +247,27 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
 def test_institution_updated(user_client: Client) -> None:
     """Ensure that an institution can be successfully updated."""
     institution = factories.Institution()
-
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     institution.name = 'updated'
     form_data = model_to_dict(institution)
 
+    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+        logo_content = image_logo.read()
+
     form_data.update({
-        'logo': ImageField(filename='logo_en', format='PNG', palette='RGBA'),
-        'logo_fr': ImageField(filename='logo_fr', format='PNG', palette='RGBA'),
+        'logo': SimpleUploadedFile(
+            name='logo_en.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
+
+    form_data.update({
+        'logo_fr': SimpleUploadedFile(
+            name='logo_fr.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
     })
 
     user_client.post(
@@ -272,9 +283,23 @@ def test_institution_successful_update_redirects(user_client: Client, institutio
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     form_data = model_to_dict(institution)
 
+    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+        logo_content = image_logo.read()
+
     form_data.update({
-        'logo': ImageField(filename='logo_en', format='PNG', palette='RGBA'),
-        'logo_fr': ImageField(filename='logo_fr', format='PNG', palette='RGBA'),
+        'logo': SimpleUploadedFile(
+            name='logo_en.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
+    })
+
+    form_data.update({
+        'logo_fr': SimpleUploadedFile(
+            name='logo_fr.png',
+            content=logo_content,
+            content_type='image/png',
+        ),
     })
 
     response = user_client.post(url, data=form_data)
