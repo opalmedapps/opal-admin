@@ -649,7 +649,7 @@ class Relationship(models.Model):  # noqa: WPS214
         return reference_date
 
     @classmethod
-    def get_max_end_date(cls, date_of_birth: date) -> date:
+    def max_end_date(cls, date_of_birth: date) -> date:
         """
         Get the max end date for the relationship between a patient and a caregiver.
 

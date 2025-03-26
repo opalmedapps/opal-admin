@@ -972,7 +972,7 @@ def test_relationship_get_max_end_date() -> None:
     """Test get max end date based on date_of_birth."""
     date_of_birth = date(2013, 4, 3)
 
-    assert Relationship.get_max_end_date(
+    assert Relationship.max_end_date(
         date_of_birth=date_of_birth,
     ) == date(2163, 4, 3)
 
