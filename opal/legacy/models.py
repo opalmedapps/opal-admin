@@ -646,7 +646,7 @@ class LegacyOAUser(models.Model):
     oauser_sernum = models.AutoField(db_column='OAUserSerNum', primary_key=True)
     username = models.CharField(db_column='Username', max_length=1000)
     password = models.CharField(db_column='Password', max_length=1000)
-    onroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
+    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
     # value 1 for human user, 2 for system user
     usertype = models.IntegerField(db_column='type', default=1)
     language = models.CharField(db_column='Language', max_length=2, default='EN')
@@ -675,3 +675,42 @@ class LegacyOARole(models.Model):
     class Meta:
         managed = False
         db_table = 'oaRole'
+
+
+class LegacyOAUserRole(models.Model):
+    """oaUserRole from the legacy database OpalDB."""
+
+    oausersernum = models.IntegerField(db_column='OAUserSerNum')
+    rolesernum = models.IntegerField(db_column='RoleSerNum')
+    last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'OAUserRole'
+
+
+class LegacyModule(models.Model):
+    """Module from the legacy database OpalDB."""
+
+    moduleid = models.BigAutoField(db_column='ID', primary_key=True)
+    operation = models.IntegerField(db_column='operation', default=7)
+    name_en = models.CharField(db_column='name_EN', max_length=512)
+    name_fr = models.CharField(db_column='name_FR', max_length=512)
+
+    class Meta:
+        managed = False
+        db_table = 'module'
+
+
+class LegacyOARoleModule(models.Model):
+    """oaRole from the legacy database OpalDB."""
+
+    rolemoduleid = models.BigAutoField(db_column='ID', primary_key=True)
+    moduleid = models.ForeignKey('LegacyModule', models.DO_NOTHING, db_column='moduleId')
+    oaroleid = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId')
+    # Access level level (0-7) for this role on this module.
+    access = models.IntegerField(db_column='access', default=0)
+
+    class Meta:
+        managed = False
+        db_table = 'oaRoleModule'
