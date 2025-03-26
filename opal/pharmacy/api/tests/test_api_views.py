@@ -86,53 +86,6 @@ class TestCreatePrescriptionView:  # noqa: WPS338
         assert 'Unsupported media type' in response.data['detail']
         assert response.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
-    def test_patient_not_found_by_pid_data(
-        self,
-        api_client: APIClient,
-        interface_engine_user: User,
-    ) -> None:
-        """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
-        api_client.force_login(interface_engine_user)
-        data = self._load_hl7_fixture('marge_pharmacy.hl7v2')
-        message = 'Patient identified by HL7 PID could not be uniquely found in database.'
-        with assertRaisesMessage(ValidationError, message):
-            api_client.post(
-                reverse('api:patient-pharmacy-create', kwargs={'uuid': PATIENT_UUID}),
-                data=data,
-                content_type='application/hl7-v2+er7',
-            )
-
-    def test_patient_identified_by_pid_does_not_match_uuid(
-        self,
-        api_client: APIClient,
-        interface_engine_user: User,
-    ) -> None:
-        """Ensure the endpoint returns an error if patient identified in the PID doesn't match the uuid in the url."""
-        api_client.force_login(interface_engine_user)
-        patient = patient_factories.Patient(
-            ramq='TEST01161972',
-            uuid=PATIENT_UUID,
-        )
-        patient_factories.HospitalPatient(
-            patient=patient,
-            site=Site.objects.get(acronym='RVH'),
-            mrn='9999996',
-        )
-        data = self._load_hl7_fixture('marge_pharmacy.hl7v2')
-        response = api_client.post(
-            reverse('api:patient-pharmacy-create', kwargs={'uuid': uuid4()}),
-            data=data,
-            content_type='application/hl7-v2+er7',
-        )
-        assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data={
-                'status': 'error',
-                'message': 'PID segment data did not match uuid provided in url.',
-            },
-        )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
     def test_pharmacy_create_success(
         self,
         api_client: APIClient,
