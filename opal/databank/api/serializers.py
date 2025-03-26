@@ -28,7 +28,7 @@ class DatabankConsentSerializer(DynamicFieldsSerializer[DatabankConsent]):
             'has_health_data_consent',
         ]
 
-    def validate_has_health_data_consent(self, value: str) -> str:
+    def validate_has_health_data_consent(self, value: bool) -> bool:
         """
         Validate the has_health_data_consent field to ensure it is 'Consent'.
 
