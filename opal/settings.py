@@ -66,7 +66,6 @@ THIRD_PARTY_APPS = [
     'formtools',
     'slippers',
     'fontawesomefree',
-    'django_twilio',
 ]
 
 LOCAL_APPS = [
