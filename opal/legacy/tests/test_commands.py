@@ -793,7 +793,11 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
     def test_caregiver_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "User/Caregiver" records."""
-        legacy_factories.LegacyUserFactory(usertypesernum=51, usertype=legacy_models.LegacyUserType.CAREGIVER)
+        legacy_factories.LegacyUserFactory(
+            usersernum=42,
+            usertypesernum=51,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
         legacy_factories.LegacyPatientFactory(patientsernum=51, first_name='Homer', last_name='Simpson')
         user = user_factories.Caregiver(
             first_name='Homer',
@@ -801,17 +805,18 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             email='test@test.com',
             username='test_username',
         )
-        patient_factories.CaregiverProfile(legacy_id=51, user=user)
+        patient_factories.CaregiverProfile(legacy_id=42, user=user)
         message, error = self._call_command('find_deviations')
+        print(error)
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.caregivers_caregiverprofile',
             'OpalDB.Patient(UserType="Caregiver")',
         ) in error
 
         assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
-        assert "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'test_username')" in error
+        assert "(42, 'Homer', 'Simpson', 'test@test.com', 'en', 'test_username')" in error
         assert (
-            "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'username')"
+            "(42, 'Homer', 'Simpson', 'test@test.com', 'en', 'username')"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
@@ -820,6 +825,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         self._create_two_fully_registered_caregivers()
 
         message, error = self._call_command('find_deviations')
+
         assert legacy_models.LegacyUsers.objects.count() == 2
         assert patient_models.CaregiverProfile.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
@@ -962,13 +968,13 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         """Create two fully registered caregivers in both legacy and Django databases."""
         # create legacy user
         legacy_factories.LegacyUserFactory(
-            usersernum=99, usertypesernum=99,
+            usersernum=99, usertypesernum=100,
             usertype=legacy_models.LegacyUserType.CAREGIVER,
             username='first_username',
         )
         # create legacy caregiver
         legacy_factories.LegacyPatientFactory(
-            patientsernum=99,
+            patientsernum=100,
             ramq='',
             first_name='Homer',
             last_name='Simpson',
@@ -997,14 +1003,14 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create a second legacy user
         legacy_factories.LegacyUserFactory(
             usersernum=98,
-            usertypesernum=98,
+            usertypesernum=97,
             usertype=legacy_models.LegacyUserType.CAREGIVER,
             username='second_username',
         )
 
         # create a second legacy caregiver
         legacy_factories.LegacyPatientFactory(
-            patientsernum=98,
+            patientsernum=97,
             ramq='RAMQ87654321',
             first_name='Bart',
             last_name='Simpson',
