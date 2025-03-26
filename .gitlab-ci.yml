@@ -94,6 +94,7 @@ markdownlint:
   stage: Static Analysis
   image:
     name: davidanson/markdownlint-cli2:v0.5.1
+    # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
@@ -103,7 +104,7 @@ markdownlint:
     # to convert output to code quality artefact
     - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
   script:
-    - markdownlint-cli2 "**/*.md" "#.venv"
+    - markdownlint-cli2 "**/*.md" "#.venv" "#node_modules"
   artifacts:
     when: always
     reports:
