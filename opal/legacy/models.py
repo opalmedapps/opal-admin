@@ -17,7 +17,7 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 """
 from django.db import models
 
-from opal.legacy import managers
+from . import managers
 
 
 class LegacyUsers(models.Model):
@@ -120,7 +120,7 @@ class LegacyAppointmentcheckin(models.Model):
         db_table = 'AppointmentCheckin'
 
 
-class LegacyDoc(models.Model):
+class LegacyDocument(models.Model):
     """Document model from the legacy database OpalDB."""
 
     documentsernum = models.AutoField(db_column='DocumentSerNum', primary_key=True)
@@ -133,7 +133,7 @@ class LegacyDoc(models.Model):
         db_table = 'Document'
 
 
-class LegacyTxteammsg(models.Model):
+class LegacyTxTeamMessage(models.Model):
     """Txteammessage model from the legacy database OpalDB."""
 
     txteammessagesernum = models.AutoField(db_column='TxTeamMessageSerNum', primary_key=True)
@@ -146,7 +146,7 @@ class LegacyTxteammsg(models.Model):
         db_table = 'TxTeamMessage'
 
 
-class LegacyEdumaterial(models.Model):
+class LegacyEducationMaterial(models.Model):
     """Educationalmaterial model from the legacy database OpalDB."""
 
     educationalmaterialsernum = models.AutoField(db_column='EducationalMaterialSerNum', primary_key=True)
@@ -159,7 +159,7 @@ class LegacyEdumaterial(models.Model):
         db_table = 'EducationalMaterial'
 
 
-class LegacyQuest(models.Model):
+class LegacyQuestionnaire(models.Model):
     """Questionnaire model from the legacy database OpalDB."""
 
     questionnairesernum = models.BigAutoField(db_column='QuestionnaireSerNum', primary_key=True)

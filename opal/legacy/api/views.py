@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from opal.legacy.utils import get_patient_sernum
 
-from ..models import LegacyAppointment, LegacyDoc, LegacyEdumaterial, LegacyNotification, LegacyQuest, LegacyTxteammsg
+from .. import models
 from .serializers import LegacyAppointmentSerializer
 
 
@@ -29,9 +29,9 @@ class AppHomeView(APIView):
         """
         patient_sernum = get_patient_sernum(request.headers['Appuserid'])
         return Response({
-            'unread_notification_count': LegacyNotification.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_notification_count': models.LegacyNotification.objects.get_unread_queryset(patient_sernum).count(),
             'daily_appointments': LegacyAppointmentSerializer(
-                LegacyAppointment.objects.get_daily_appointments(patient_sernum),
+                models.LegacyAppointment.objects.get_daily_appointments(patient_sernum),
                 many=True,
             ).data,
         })
@@ -54,9 +54,14 @@ class AppChartView(APIView):
         """
         patient_sernum = get_patient_sernum(request.headers['Appuserid'])
         return Response({
-            'unread_appointment_count': LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_document_count': LegacyDoc.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_txteammessage_count': LegacyTxteammsg.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_educationalmaterial_count': LegacyEdumaterial.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_questionnaire_count': LegacyQuest.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_appointment_count':
+                models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_document_count':
+                models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_txteammessage_count':
+                models.LegacyTxTeamMessage.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_educationalmaterial_count':
+                models.LegacyEducationMaterial.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_questionnaire_count':
+                models.LegacyQuestionnaire.objects.get_unread_queryset(patient_sernum).count(),
         })

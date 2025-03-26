@@ -7,7 +7,7 @@ Module also provide mixin classes to make the code reusable.
 
 'A mixin is a class that provides method implementations for reuse by multiple related child classes.'
 
-See tutoiral: https://www.pythontutorial.net/python-oop/python-mixin/
+See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 from typing import TYPE_CHECKING
@@ -39,8 +39,25 @@ class LegacyNotificationManager(UnreadQuerySetMixin, models.Manager):
     """legacy notification manager."""
 
 
-class LegacyAppointmentManager(UnreadQuerySetMixin, models.Manager):
+class LegacyAppointmentManager(models.Manager):
     """legacy appointment manager."""
+
+    def get_unread_queryset(self, patient_sernum: int) -> models.QuerySet:
+        """
+        Get the queryset of uncompleted appointments for a given user.
+
+        Args:
+            patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
+
+        Returns:
+            Queryset of uncompleted appointments.
+        """
+        return self.filter(
+            scheduledstarttime__gt=timezone.localtime(timezone.now()).date(),
+            patientsernum=patient_sernum,
+            readstatus=0,
+            state='Active',
+        )
 
     def get_daily_appointments(self, patient_sernum: int) -> models.QuerySet['LegacyAppointment']:
         """

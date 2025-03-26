@@ -24,6 +24,7 @@ class LegacyPatientFactory(DjangoModelFactory):
 
     class Meta:
         model = models.LegacyPatient
+        django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
 
@@ -76,17 +77,17 @@ class LegacyDocumentFactory(DjangoModelFactory):
     """Document factory from the legacy database."""
 
     class Meta:
-        model = models.LegacyDoc
+        model = models.LegacyDocument
 
     patientsernum = SubFactory(LegacyPatientFactory)
-    readstatus = 1
+    readstatus = 0
 
 
 class LegacyTxteammsgFactory(DjangoModelFactory):
     """Txteammessage factory from the legacy database."""
 
     class Meta:
-        model = models.LegacyTxteammsg
+        model = models.LegacyTxTeamMessage
 
     patientsernum = SubFactory(LegacyPatientFactory)
     readstatus = 0
@@ -96,7 +97,7 @@ class LegacyEdumaterialFactory(DjangoModelFactory):
     """Educational material factory from the legacy database."""
 
     class Meta:
-        model = models.LegacyEdumaterial
+        model = models.LegacyEducationMaterial
 
     patientsernum = SubFactory(LegacyPatientFactory)
     readstatus = 0
@@ -106,7 +107,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     """Questionnaire factory from the legacy database."""
 
     class Meta:
-        model = models.LegacyQuest
+        model = models.LegacyQuestionnaire
 
     patientsernum = SubFactory(LegacyPatientFactory)
     completedflag = 0

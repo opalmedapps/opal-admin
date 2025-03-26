@@ -125,7 +125,7 @@ class TestChartAppView:
         factories.LegacyTxteammsgFactory(patientsernum=patient)
         factories.LegacyTxteammsgFactory(patientsernum=patient)
         factories.LegacyTxteammsgFactory(patientsernum=patient, readstatus=1)
-        txteammessages = models.LegacyTxteammsg.objects.get_unread_queryset(patient.patientsernum).count()
+        txteammessages = models.LegacyTxTeamMessage.objects.get_unread_queryset(patient.patientsernum).count()
         assert txteammessages == 2
 
     def test_get_unread_edumaterial_count(self) -> None:
@@ -134,7 +134,7 @@ class TestChartAppView:
         factories.LegacyEdumaterialFactory(patientsernum=patient)
         factories.LegacyEdumaterialFactory(patientsernum=patient)
         factories.LegacyEdumaterialFactory(patientsernum=patient, readstatus=1)
-        edumaterials = models.LegacyEdumaterial.objects.get_unread_queryset(patient.patientsernum).count()
+        edumaterials = models.LegacyEducationMaterial.objects.get_unread_queryset(patient.patientsernum).count()
         assert edumaterials == 2
 
     def test_get_unread_questionnaire_count(self) -> None:
@@ -143,5 +143,5 @@ class TestChartAppView:
         factories.LegacyQuestionnaireFactory(patientsernum=patient)
         factories.LegacyQuestionnaireFactory(patientsernum=patient)
         factories.LegacyQuestionnaireFactory(patientsernum=patient, completedflag=1)
-        questionnaires = models.LegacyQuest.objects.get_unread_queryset(patient.patientsernum).count()
+        questionnaires = models.LegacyQuestionnaire.objects.get_unread_queryset(patient.patientsernum).count()
         assert questionnaires == 2
