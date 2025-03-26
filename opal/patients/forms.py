@@ -633,10 +633,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Validate the existing relationship selection by looking up the caregiver.
 
         Look up the relationship by first **and** last name.
-        Add an error to the form if no user was found.
+        Add an error to the form if there is already an active relationship to a caregiver
+        with the same name.
 
         Args:
-            cleaned_data: the form's cleaned data, None if not available
+            cleaned_data: the form's cleaned data
         """
         # at the beginning (empty form) they are not in the cleaned data
         if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
