@@ -60,9 +60,8 @@ class Command(BaseCommand):
             options:  additional keyword arguments
         """
         # Convenient CL argument for testing; it does not work in production environment
-        if options['force_delete']:
-            if self._delete_stored_statistics() is not True:
-                return
+        if options['force_delete'] and self._delete_stored_statistics() is not True:
+            return
 
         # By default the command extract the statistics for the previous day
         days_delta = 1
@@ -197,14 +196,9 @@ class Command(BaseCommand):
             start_datetime_period: the beginning of the time period of received data statistics being extracted
             end_datetime_period: the end of the time period of received data statistics being extracted
         """
-        # NOTE! The action_date indicates the date when the patients' data were received.
-        # It is not the date when the activity statistics were populated.
-        action_date = start_datetime_period.date()
         received_data = LegacyPatient.objects.get_aggregated_patient_received_data(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
-        ).annotate(
-            action_date=models.Value(action_date),
         )
         patients = Patient.objects.values('id', 'legacy_id')
         patients_dict = {patient['legacy_id']: patient['id'] for patient in patients}

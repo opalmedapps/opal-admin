@@ -11,6 +11,7 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 import logging
+from collections import namedtuple
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
@@ -43,6 +44,11 @@ if TYPE_CHECKING:
 _Model = TypeVar('_Model', bound=models.Model)
 
 logger = logging.getLogger(__name__)
+
+ReceivedDataLegacyModels = namedtuple(
+    'ReceivedDataLegacyModels',
+    'LegacyAppointment LegacyDocument LegacyEducationalMaterial LegacyQuestionnaire LegacyPatientTestResult',
+)
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
@@ -376,174 +382,170 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             Annotated `LegacyPatient` records
         """
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
-        LegacyAppointmentModel = apps.get_model('legacy', 'LegacyAppointment')  # noqa: N806
-        LegacyDocumentModel = apps.get_model('legacy', 'LegacyDocument')  # noqa: N806
-        LegacyEducationalMaterialModel = apps.get_model('legacy', 'LegacyEducationalMaterial')  # noqa: N806
-        LegacyQuestionnaireModel = apps.get_model('legacy', 'LegacyQuestionnaire')    # noqa: N806
-        LegacyPatientTestResultModel = apps.get_model('legacy', 'LegacyPatientTestResult')    # noqa: N806
+        legacy_models = ReceivedDataLegacyModels(
+            apps.get_model('legacy', 'LegacyAppointment'),
+            apps.get_model('legacy', 'LegacyDocument'),
+            apps.get_model('legacy', 'LegacyEducationalMaterial'),
+            apps.get_model('legacy', 'LegacyQuestionnaire'),
+            apps.get_model('legacy', 'LegacyPatientTestResult'),
+        )
         patient_out_ref = models.OuterRef('patientsernum')
         date_added_range = (start_datetime_period, end_datetime_period)
+        zero_count = models.Value(0)
 
-        # Subqueries for Appointments
-        # The appointment statistics are typically for answering questions like:
-        #   - How are active the patients in the appointments category?
-        #   - How many patients had appointments in the last day, week, month, etc.?"
-        last_appointment_subquery = models.Subquery(
-            # Retrieve the most recent appointment for every patient relatively to the requesting date range,
-            # regardless of how old it might be (e.g., the appointment might be older than the start of the range).
-            LegacyAppointmentModel.objects.filter(
-                patientsernum=patient_out_ref,
-                scheduledstarttime__lt=end_datetime_period,
-            ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
-        )
+        annotation_subqueries = {
+            # Subqueries for Appointments
+            # The appointment statistics are typically for answering questions like:
+            #   - How are active the patients in the appointments category?
+            #   - How many patients had appointments in the last day, week, month, etc.?"
+            'last_appointment_received': models.Subquery(
+                # Retrieve the most recent appointment for every patient relatively to the requesting date range,
+                # regardless of how old it might be (e.g., the appointment might be older than the start of the range).
+                legacy_models.LegacyAppointment.objects.filter(
+                    patientsernum=patient_out_ref,
+                    scheduledstarttime__lt=end_datetime_period,
+                ).order_by('-scheduledstarttime').values('scheduledstarttime')[:1],
+            ),
 
-        next_appointment_subquery = models.Subquery(
-            # Retrieve the closest open/active appointment for every patient relatively to the requesting date range,
-            # regardless of how far it might be (e.g., the appointment might later than the end of the range).
-            LegacyAppointmentModel.objects.filter(
-                patientsernum=patient_out_ref,
-                state='Active',
-                status='Open',
-                scheduledstarttime__gt=end_datetime_period,
-            ).order_by('scheduledstarttime').values('scheduledstarttime')[:1],
-        )
+            'next_appointment': models.Subquery(
+                # Retrieve the closest open/active appointment for every patient relatively to the requesting
+                # date range, regardless of how far it might be.
+                # E.g., the appointment might be later than the end of the range.
+                legacy_models.LegacyAppointment.objects.filter(
+                    patientsernum=patient_out_ref,
+                    state='Active',
+                    status='Open',
+                    scheduledstarttime__gt=end_datetime_period,
+                ).order_by('scheduledstarttime').values('scheduledstarttime')[:1],
+            ),
 
-        appointments_received_subquery = models.Subquery(
-            # Aggregate how many appointments for every patient were received in the given date range.
-            LegacyAppointmentModel.objects.filter(
-                patientsernum=patient_out_ref,
-                date_added__range=date_added_range,
-            ).values(
-                'patientsernum',
-            ).annotate(
-                count=models.Count('appointmentsernum'),
-            ).values('count'),
-        )
+            'appointments_received': models.functions.Coalesce(
+                # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
+                models.Subquery(
+                    # Aggregate how many appointments for every patient were received in the given date range.
+                    legacy_models.LegacyAppointment.objects.filter(
+                        patientsernum=patient_out_ref,
+                        date_added__range=date_added_range,
+                    ).values(
+                        'patientsernum',
+                    ).annotate(
+                        count=models.Count('appointmentsernum'),
+                    ).values('count'),
+                ),
+                zero_count,
+            ),
 
-        # Subqueries for Documents
-        last_document_subquery = models.Subquery(
-            # Retrieve the latest received document for every patient, regardless of how old it might be.
-            LegacyDocumentModel.objects.filter(
-                patientsernum=patient_out_ref,
-                dateadded__lt=end_datetime_period,
-            ).order_by('-dateadded').values('dateadded')[:1],
-        )
+            # Subqueries for Documents
+            'last_document_received': models.Subquery(
+                # Retrieve the latest received document for every patient, regardless of how old it might be.
+                legacy_models.LegacyDocument.objects.filter(
+                    patientsernum=patient_out_ref,
+                    dateadded__lt=end_datetime_period,
+                ).order_by('-dateadded').values('dateadded')[:1],
+            ),
 
-        documents_received_subquery = models.Subquery(
-            # Aggregate how many documents for every patient were received in the given date range.
-            LegacyDocumentModel.objects.filter(
-                patientsernum=patient_out_ref,
-                dateadded__range=date_added_range,
-            ).values(
-                'patientsernum',
-            ).annotate(
-                count=models.Count('documentsernum'),
-            ).values('count'),
-        )
+            'documents_received': models.functions.Coalesce(
+                # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
+                models.Subquery(
+                    # Aggregate how many documents for every patient were received in the given date range.
+                    legacy_models.LegacyDocument.objects.filter(
+                        patientsernum=patient_out_ref,
+                        dateadded__range=date_added_range,
+                    ).values(
+                        'patientsernum',
+                    ).annotate(
+                        count=models.Count('documentsernum'),
+                    ).values('count'),
+                ),
+                zero_count,
+            ),
 
-        # Subqueries for Educational Materials
-        last_educational_material_subquery = models.Subquery(
-            # Retrieve the latest received educational material for every patient, regardless of how old it might be.
-            LegacyEducationalMaterialModel.objects.filter(
-                patientsernum=patient_out_ref,
-                date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
+            # Subqueries for Educational Materials
+            'last_educational_material_received': models.Subquery(
+                # Retrieve the latest received educational material for every patient,
+                # regardless of how old it might be.
+                legacy_models.LegacyEducationalMaterial.objects.filter(
+                    patientsernum=patient_out_ref,
+                    date_added__lt=end_datetime_period,
+                ).order_by('-date_added').values('date_added')[:1],
+            ),
 
-        educational_materials_received_subquery = models.Subquery(
-            # Aggregate how many educational materials for every patient were received in the given date range.
-            LegacyEducationalMaterialModel.objects.filter(
-                patientsernum=patient_out_ref,
-                date_added__range=date_added_range,
-            ).values(
-                'patientsernum',
-            ).annotate(
-                count=models.Count('educationalmaterialsernum'),
-            ).values('count'),
-        )
+            'educational_materials_received': models.functions.Coalesce(
+                # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
+                models.Subquery(
+                    # Aggregate how many educational materials for every patient were received in the given date range.
+                    legacy_models.LegacyEducationalMaterial.objects.filter(
+                        patientsernum=patient_out_ref,
+                        date_added__range=date_added_range,
+                    ).values(
+                        'patientsernum',
+                    ).annotate(
+                        count=models.Count('educationalmaterialsernum'),
+                    ).values('count'),
+                ),
+                zero_count,
+            ),
 
-        # Subqueries for Questionnaires
-        last_questionnaire_subquery = models.Subquery(
-            # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
-            LegacyQuestionnaireModel.objects.filter(
-                patientsernum=patient_out_ref,
-                date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
+            # Subqueries for Questionnaires
+            'last_questionnaire_received': models.Subquery(
+                # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
+                legacy_models.LegacyQuestionnaire.objects.filter(
+                    patientsernum=patient_out_ref,
+                    date_added__lt=end_datetime_period,
+                ).order_by('-date_added').values('date_added')[:1],
+            ),
 
-        questionnaires_received_subquery = models.Subquery(
-            # Aggregate how many questionnaires for every patient were received in the given date range.
-            LegacyQuestionnaireModel.objects.filter(
-                patientsernum=patient_out_ref,
-                date_added__range=date_added_range,
-            ).values(
-                'patientsernum',
-            ).annotate(
-                count=models.Count('questionnairesernum'),
-            ).values('count'),
-        )
+            'questionnaires_received': models.functions.Coalesce(
+                # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
+                models.Subquery(
+                    # Aggregate how many questionnaires for every patient were received in the given date range.
+                    legacy_models.LegacyQuestionnaire.objects.filter(
+                        patientsernum=patient_out_ref,
+                        date_added__range=date_added_range,
+                    ).values(
+                        'patientsernum',
+                    ).annotate(
+                        count=models.Count('questionnairesernum'),
+                    ).values('count'),
+                ),
+                zero_count,
+            ),
 
-        # Subqueries for Labs
-        last_lab_subquery = models.Subquery(
-            # Retrieve the latest received lab result for every patient, regardless of how old it might be.
-            LegacyPatientTestResultModel.objects.filter(
-                patient_ser_num=patient_out_ref,
-                date_added__lt=end_datetime_period,
-            ).order_by('-date_added').values('date_added')[:1],
-        )
+            # Subqueries for Labs
+            'last_lab_received': models.Subquery(
+                # Retrieve the latest received lab result for every patient, regardless of how old it might be.
+                legacy_models.LegacyPatientTestResult.objects.filter(
+                    patient_ser_num=patient_out_ref,
+                    date_added__lt=end_datetime_period,
+                ).order_by('-date_added').values('date_added')[:1],
+            ),
 
-        labs_received_subquery = models.Subquery(
-            # Aggregate how many lab results for every patient were received in the given date range.
-            LegacyPatientTestResultModel.objects.filter(
-                patient_ser_num=patient_out_ref,
-                date_added__range=date_added_range,
-            ).values(
-                'patient_ser_num',
-            ).annotate(
-                count=models.Count('patient_test_result_ser_num'),
-            ).values('count'),
-        )
+            'labs_received': models.functions.Coalesce(
+                # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
+                models.Subquery(
+                    # Aggregate how many lab results for every patient were received in the given date range.
+                    legacy_models.LegacyPatientTestResult.objects.filter(
+                        patient_ser_num=patient_out_ref,
+                        date_added__range=date_added_range,
+                    ).values(
+                        'patient_ser_num',
+                    ).annotate(
+                        count=models.Count('patient_test_result_ser_num'),
+                    ).values('count'),
+                ),
+                zero_count,
+            ),
+
+            # NOTE! The action_date indicates the date when the patients' data were received.
+            # It is not the date when the activity statistics were populated.
+            'action_date': models.Value(start_datetime_period.date()),
+        }
 
         return self.annotate(
-            last_appointment_received=last_appointment_subquery,
-            next_appointment=next_appointment_subquery,
-            appointments_received=models.functions.Coalesce(
-                appointments_received_subquery,
-                models.Value(0),
-            ),
-            last_document_received=last_document_subquery,
-            documents_received=models.functions.Coalesce(
-                documents_received_subquery,
-                models.Value(0),
-            ),
-            last_educational_material_received=last_educational_material_subquery,
-            educational_materials_received=models.functions.Coalesce(
-                educational_materials_received_subquery,
-                models.Value(0),
-            ),
-            last_questionnaire_received=last_questionnaire_subquery,
-            questionnaires_received=models.functions.Coalesce(
-                questionnaires_received_subquery,
-                models.Value(0),
-            ),
-            last_lab_received=last_lab_subquery,
-            labs_received=models.functions.Coalesce(
-                labs_received_subquery,
-                models.Value(0),
-            ),
-        ).distinct().values(
+            **annotation_subqueries,
+        ).values(
             'patientsernum',
-            'last_appointment_received',
-            'next_appointment',
-            'appointments_received',
-            'last_document_received',
-            'documents_received',
-            'last_educational_material_received',
-            'educational_materials_received',
-            'last_questionnaire_received',
-            'questionnaires_received',
-            'last_lab_received',
-            'labs_received',
+            *annotation_subqueries,
         )
 
 
