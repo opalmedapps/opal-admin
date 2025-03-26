@@ -96,7 +96,6 @@ def test_init_not_none() -> None:
 
 
 # export_pdf_report
-
 def test_export_pdf_report(mocker: MockerFixture) -> None:
     """Ensure successful report export request returns json response with successful HTTP status."""
     # mock actual OIE API call
