@@ -56,7 +56,6 @@ class PathologyObservation(AbstractObservation):
         verbose_name=_('Value'),
     )
 
-    # Update the ForeignKey in this derived model
     general_test = models.ForeignKey(
         verbose_name=_('General Test'),
         to='GeneralTest',
@@ -117,7 +116,6 @@ class LabObservation(AbstractObservation):
         default=AbnormalFlag.NORMAL,
     )
 
-    # Update the ForeignKey in this derived model
     general_test = models.ForeignKey(
         verbose_name=_('General Test'),
         to='GeneralTest',
