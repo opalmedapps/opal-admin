@@ -96,6 +96,7 @@ def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:  # n
     return api_client
 
 
+# TODO: add additional fixture providing a caregiver?
 @pytest.fixture(name='user')
 def user_instance(django_user_model: User) -> User:
     """
@@ -114,6 +115,7 @@ def user_instance(django_user_model: User) -> User:
     return user
 
 
+# TODO: add additional fixture providing a caregiver?
 @pytest.fixture()
 def user_client(client: Client, user: User) -> Client:
     """

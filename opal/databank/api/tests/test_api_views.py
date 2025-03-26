@@ -1,10 +1,8 @@
 """Test module for the REST API endpoints of the `databank` app."""
-
 import json
-from typing import Any
+from typing import Any, Callable
 from uuid import uuid4
 
-from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
@@ -13,7 +11,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.patients.factories import Patient
-from opal.users import factories as user_factories
+from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -23,12 +21,11 @@ PATIENT_UUID = uuid4()
 class TestCreateDatabankConsentView:
     """Class wrapper for databank endpoint tests."""
 
-    def test_databank_consent_create_unauthorized(
+    def test_databank_consent_create_unauthenticated(
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
-        # Make a `POST` request without proper permissions.
+        """Ensure the endpoint returns a 403 error if the user is unauthenticated."""
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
@@ -41,15 +38,33 @@ class TestCreateDatabankConsentView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
+    def test_databank_consent_create_unauthorized(
+        self,
+        user_api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        response = user_api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
+            data=self._get_valid_input_data(),
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
     def test_databank_consent_create_patient_uuid_does_not_exist(
         self,
         api_client: APIClient,
+        user_with_permission: Callable[[str | list[str]], User],
     ) -> None:
         """Ensure the endpoint returns an error if the patient with given UUID does not exist."""
-        client = self._get_client_with_permissions(api_client)
+        api_client.force_login(user_with_permission('databank.add_databankconsent'))
         data = self._get_valid_input_data()
 
-        response = client.post(
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
             format='json',
@@ -67,16 +82,16 @@ class TestCreateDatabankConsentView:
     def test_databank_consent_create_success(
         self,
         api_client: APIClient,
+        user_with_permission: Callable[[str | list[str]], User],
     ) -> None:
         """Ensure the endpoint can create databank consent with no errors."""
         patient = Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient.save()
+        api_client.force_login(user_with_permission('databank.add_databankconsent'))
 
-        client = self._get_client_with_permissions(api_client)
-        response = client.post(
+        response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data=self._get_valid_input_data(),
             format='json',
@@ -97,22 +112,3 @@ class TestCreateDatabankConsentView:
             'has_labs': False,
             'has_questionnaires': False,
         }
-
-    def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:
-        """
-        Add permissions to a user and authorize it.
-
-        Returns:
-            Authorized API client.
-        """
-        user = user_factories.User(
-            username='nonhumanuser',
-            first_name='nonhumanuser',
-            last_name='nonhumanuser',
-        )
-        user.user_permissions.add(
-            Permission.objects.get(codename='add_databankconsent'),
-            Permission.objects.get(codename='change_patient'),
-        )
-        api_client.force_login(user=user)
-        return api_client

@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers
 from rest_framework.exceptions import ValidationError
 
-from opal.core.drf_permissions import CreateModelPermissions
+from opal.core.drf_permissions import FullDjangoModelPermissions
 from opal.legacy.models import LegacyDocument
 from opal.patients.models import Patient
 
@@ -22,10 +22,12 @@ class CreatePathologyView(generics.CreateAPIView):
     Supports the creation of one or more instances of the nested `observations` and `notes` records.
     """
 
-    # DjangoModelPermission requires a queryset to determine the model
+    # DjangoModelPermissions requires a queryset to determine the model
     queryset = GeneralTest.objects.none()
     serializer_class = PathologySerializer
-    permission_classes = [CreateModelPermissions]
+    # TODO: enforce user having access to this patient only
+    # TODO: determine who calls this API
+    permission_classes = (FullDjangoModelPermissions,)
 
     @transaction.atomic
     def perform_create(self, serializer: serializers.BaseSerializer[GeneralTest]) -> None:
