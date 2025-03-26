@@ -11,20 +11,37 @@ from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
 
 
-def test_get_caregiver_patient_list(api_client: APIClient, admin_user: User) -> None:
-    """Test that the REST api endpoint to get the list of patient does not return a value if only self is found."""
+def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user: User) -> None:
+    """Test patient list endpoint to return a list of patients with the correct patient_id and relationship type."""
+    api_client.force_login(user=admin_user)
+    relationship_type = patient_factory.RelationshipType(name='Mother')
+    relationship = patient_factory.Relationship(type=relationship_type)
+    caregiver = Caregiver.objects.get()
+    api_client.credentials(HTTP_APPUSERID=caregiver.username)
+    response = api_client.get(reverse('api:caregivers-patient-list'))
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert relationship_type.id == relationship.type_id
+    assert relationship.patient_id == response.data[0]['patient_id']
+
+
+def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: User) -> None:
+    """Test patient list endpoint to return a list of patients with the correct response fields."""
     api_client.force_login(user=admin_user)
     relationship_type = patient_factory.RelationshipType(name='Mother')
     patient_factory.Relationship(type=relationship_type)
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
-    assert len(response.data) == 1
-    assert response.status_code == 200
+    assert response.data[0]['patient_id']
+    assert response.data[0]['patient_legacy_id']
+    assert response.data[0]['first_name']
+    assert response.data[0]['last_name']
+    assert response.data[0]['status']
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
-    """Test that the REST api endpoint to get the list of patient does not return a value if only self is found."""
+    """Test patient list endpoint to return an empty list should only found relationship 'Self'."""
     api_client.force_login(user=admin_user)
     patient_factory.Relationship()
     caregiver = Caregiver.objects.get()

@@ -2,6 +2,7 @@
 from django.db.models.functions import SHA512
 from django.http import HttpRequest, HttpResponse
 
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -44,14 +45,13 @@ class GetCaregiverPatientsList(APIView):
         Returns:
             Http response with the list of patient for a given caregiver.
         """
-        relationships = Relationship.objects.prefetch_related(
-            'patient',
-            'caregiver',
-        ).filter(
-            caregiver__user__username=request.headers['Appuserid'],
-        ).exclude(
-            type__name='Self',
-        )
-        return Response(
-            CaregiverPatientSerializer(relationships, many=True).data,
-        )
+        user_id = request.headers.get('Appuserid')
+        if user_id:
+            relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
+            response = Response(
+                CaregiverPatientSerializer(relationships, many=True).data,
+            )
+        else:
+            response = Response([], status=status.HTTP_400_BAD_REQUEST)
+
+        return response
