@@ -60,6 +60,7 @@ class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
         Returns:
             Device object or 404.
         """
+        # TODO: filter also by current user (once QSCCD-250 is done)
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 

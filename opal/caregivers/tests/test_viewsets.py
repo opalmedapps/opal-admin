@@ -5,17 +5,18 @@ from http import HTTPStatus
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
+import pytest
 from rest_framework.test import APIClient
 
-from opal.caregivers.factories import CaregiverProfile, Device, SecurityAnswer, SecurityQuestion
-from opal.caregivers.models import DeviceType
+from opal.caregivers import factories
+from opal.caregivers.models import Device, DeviceType
 
 
 def test_get_all_active_security_questions(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get only active security questions."""
     api_client.force_login(user=admin_user)
-    security_question = SecurityQuestion()
-    security_question2 = SecurityQuestion(is_active=False)
+    security_question = factories.SecurityQuestion()
+    security_question2 = factories.SecurityQuestion(is_active=False)
     response = api_client.get(reverse('api:security-questions-list'))
     assert response.status_code == HTTPStatus.OK
     assert security_question2.is_active is False
@@ -26,11 +27,11 @@ def test_get_all_active_security_questions(api_client: APIClient, admin_user: Ab
 def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get answer list could return all answer records."""
     api_client.force_login(user=admin_user)
-    caregiver1 = CaregiverProfile()
-    caregiver2 = CaregiverProfile()
-    security_answer1 = SecurityAnswer(user=caregiver1)
-    security_answer2 = SecurityAnswer(user=caregiver1, answer='test')
-    SecurityAnswer(user=caregiver2)
+    caregiver1 = factories.CaregiverProfile()
+    caregiver2 = factories.CaregiverProfile()
+    security_answer1 = factories.SecurityAnswer(user=caregiver1)
+    security_answer2 = factories.SecurityAnswer(user=caregiver1, answer='test')
+    factories.SecurityAnswer(user=caregiver2)
     response = api_client.get(reverse('api:caregivers-securityquestions-list', kwargs={'uuid': caregiver1.uuid}))
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 2
@@ -41,10 +42,10 @@ def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> Non
 def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get random answer can return a correct record."""
     api_client.force_login(user=admin_user)
-    caregiver = CaregiverProfile()
+    caregiver = factories.CaregiverProfile()
     # create only one question to test the correct data
     # cannot test random because the random result might be equal
-    security_answer = SecurityAnswer(user=caregiver)
+    security_answer = factories.SecurityAnswer(user=caregiver)
     response = api_client.get(reverse('api:caregivers-securityquestions-random', kwargs={'uuid': caregiver.uuid}))
     assert response.status_code == HTTPStatus.OK
     assert security_answer.question == 'Apple'
@@ -54,9 +55,9 @@ def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> N
 def test_get_specific_security_answer_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get a specific security answer."""
     api_client.force_login(user=admin_user)
-    caregiver = CaregiverProfile()
-    security_answer1 = SecurityAnswer(user=caregiver)
-    security_answer2 = SecurityAnswer(user=caregiver, question='Ananas')
+    caregiver = factories.CaregiverProfile()
+    security_answer1 = factories.SecurityAnswer(user=caregiver)
+    security_answer2 = factories.SecurityAnswer(user=caregiver, question='Ananas')
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
@@ -71,9 +72,9 @@ def test_get_specific_security_answer_success(api_client: APIClient, admin_user:
 def test_get_specific_security_answer_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test get a specific security answer with wrong caregiver."""
     api_client.force_login(user=admin_user)
-    caregiver1 = CaregiverProfile()
-    caregiver2 = CaregiverProfile()
-    security_answer = SecurityAnswer(user=caregiver1)
+    caregiver1 = factories.CaregiverProfile()
+    caregiver2 = factories.CaregiverProfile()
+    security_answer = factories.SecurityAnswer(user=caregiver1)
     response = api_client.get(
         reverse(
             'api:caregivers-securityquestions-detail',
@@ -86,8 +87,8 @@ def test_get_specific_security_answer_failure(api_client: APIClient, admin_user:
 def test_update_specific_security_answer(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test update a specific security answer."""
     api_client.force_login(user=admin_user)
-    caregiver = CaregiverProfile()
-    security_answer = SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile()
+    security_answer = factories.SecurityAnswer(user=caregiver)
     old_answer = security_answer.answer
     new_question = {
         'question': security_answer.question,
@@ -107,8 +108,8 @@ def test_update_specific_security_answer(api_client: APIClient, admin_user: Abst
 def test_verify_answer_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=admin_user)
-    caregiver = CaregiverProfile()
-    security_answer = SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile()
+    security_answer = factories.SecurityAnswer(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': security_answer.answer}
     response = api_client.post(
@@ -125,8 +126,8 @@ def test_verify_answer_success(api_client: APIClient, admin_user: AbstractUser) 
 def test_verify_answer_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test verify the user answer."""
     api_client.force_login(user=admin_user)
-    caregiver = CaregiverProfile()
-    security_answer = SecurityAnswer(user=caregiver)
+    caregiver = factories.CaregiverProfile()
+    security_answer = factories.SecurityAnswer(user=caregiver)
     answer_id = security_answer.id
     answer = {'answer': 'wrong_answer'}
 
@@ -141,11 +142,42 @@ def test_verify_answer_failure(api_client: APIClient, admin_user: AbstractUser) 
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_create_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
+def test_device_put_create(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test creating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver)
+    caregiver = factories.CaregiverProfile(id=1)
+
+    device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
+
+    data = {
+        'device_id': device_id,
+        'type': DeviceType.IOS,
+        'caregiver': caregiver.id,
+        'is_trusted': False,
+        'push_token': '2803df883164a7c8f12126f802a7d5fd08c361bca1e7b7a0acf88d361be54c4cc547b5a6c13141ecc5d7e',
+    }
+
+    response = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device_id},
+        ),
+        data=json.dumps(data),
+        content_type='application/json',
+    )
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    assert Device.objects.count() == 1
+    assert Device.objects.get().device_id == device_id
+
+
+def test_device_put_update(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver)
+    last_modified = device.modified
 
     data = {
         'device_id': device.device_id,
@@ -154,6 +186,7 @@ def test_create_device_success(api_client: APIClient, admin_user: AbstractUser) 
         'is_trusted': device.is_trusted,
         'push_token': device.push_token,
     }
+
     response = api_client.put(
         reverse(
             'api:devices-update-or-create',
@@ -162,15 +195,59 @@ def test_create_device_success(api_client: APIClient, admin_user: AbstractUser) 
         data=json.dumps(data),
         content_type='application/json',
     )
-    device.full_clean()
+
     assert response.status_code == HTTPStatus.OK
+
+    device.refresh_from_db()
+
+    assert device.modified > last_modified
+
+
+@pytest.mark.skip()
+def test_device_put_two_caregivers(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test updating a device model."""
+    api_client.force_login(admin_user)
+    device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
+
+    caregiver = factories.CaregiverProfile()
+    caregiver2 = factories.CaregiverProfile()
+    device = factories.Device(caregiver=caregiver, device_id=device_id)
+    device2 = factories.Device(caregiver=caregiver2, device_id=device_id)
+
+    last_modified = device.modified
+    last_modified2 = device2.modified
+
+    data = {
+        'device_id': device.device_id,
+        'type': device.type,
+        'caregiver': caregiver.id,
+        'is_trusted': device.is_trusted,
+        'push_token': device.push_token,
+    }
+
+    response = api_client.put(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device.device_id},
+        ),
+        data=json.dumps(data),
+        content_type='application/json',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    device.refresh_from_db()
+    device2.refresh_from_db()
+
+    assert device.modified > last_modified
+    assert device2.modified == last_modified2
 
 
 def test_create_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test failure for creating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver)
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver)
 
     data = {
         'device_id': device.device_id,
@@ -193,8 +270,13 @@ def test_create_device_failure(api_client: APIClient, admin_user: AbstractUser) 
 def test_update_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test updating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(  # noqa: S106
+        caregiver=caregiver,
+        type=DeviceType.IOS,
+        push_token='aaaa1111',
+        is_trusted=False,
+    )
     data_one = {
         'device_id': device.device_id,
         'type': device.type,
@@ -233,8 +315,13 @@ def test_update_device_success(api_client: APIClient, admin_user: AbstractUser) 
 def test_update_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test failure for updating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(  # noqa: S106
+        caregiver=caregiver,
+        type=DeviceType.IOS,
+        push_token='aaaa1111',
+        is_trusted=False,
+    )
     data_one = {
         'device_id': device.device_id,
         'type': device.type,
@@ -270,11 +357,37 @@ def test_update_device_failure(api_client: APIClient, admin_user: AbstractUser) 
     assert response_two.status_code == HTTPStatus.BAD_REQUEST
 
 
+def test_partial_update_device_not_found(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test partial updating a device model."""
+    api_client.force_login(admin_user)
+    caregiver = factories.CaregiverProfile(id=1)
+
+    device_id = '3840166df22af52b5ac8fe757371c314d281ad3a83f1dd5f2e4df865'
+
+    data = {
+        'device_id': device_id,
+        'type': DeviceType.IOS,
+        'caregiver': caregiver.id,
+        'is_trusted': False,
+        'push_token': '2803df883164a7c8f12126f802a7d5fd08c361bca1e7b7a0acf88d361be54c4cc547b5a6c13141ecc5d7e',
+    }
+
+    response_one = api_client.patch(
+        reverse(
+            'api:devices-update-or-create',
+            kwargs={'device_id': device_id},
+        ),
+        data=json.dumps(data),
+        content_type='application/json',
+    )
+    assert response_one.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_partial_update_device_success(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test partial updating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver)
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver)
     data_one = {
         'device_id': device.device_id,
         'type': device.type,
@@ -296,8 +409,13 @@ def test_partial_update_device_success(api_client: APIClient, admin_user: Abstra
 def test_partial_update_device_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test failure for partial updating a device model."""
     api_client.force_login(admin_user)
-    caregiver = CaregiverProfile(id=1)
-    device = Device(caregiver=caregiver, type=DeviceType.IOS, push_token='aaaa1111', is_trusted=False)  # noqa: S106
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(  # noqa: S106
+        caregiver=caregiver,
+        type=DeviceType.IOS,
+        push_token='aaaa1111',
+        is_trusted=False,
+    )
     data_one = {
         'device_id': device.device_id,
         'type': device.type,
