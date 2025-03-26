@@ -2,6 +2,7 @@
 # to support merge trains
 # see: https://gitlab.com/gitlab-org/gitlab/-/issues/13159#note_373865588
 include:
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Workflows/MergeRequest-Pipelines.gitlab-ci.yml
   - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
 
 # set up
