@@ -6,7 +6,6 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from django.utils import timezone
 
-from pytest_django.fixtures import SettingsWrapper
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 
@@ -91,7 +90,7 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
-        assert len(caregiver_model.EmailVerification.objects.all()) == 1
+        assert caregiver_model.EmailVerification.objects.all().count() == 1
         response = api_client.post(
             reverse(
                 'api:verify-email-code',
@@ -106,7 +105,7 @@ class TestApiEmailVerification:
         caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert caregiver_profile.user.email != user_email
-        assert len(caregiver_model.EmailVerification.objects.all()) == 0
+        assert caregiver_model.EmailVerification.objects.all().count() == 0
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test save verify email success."""
