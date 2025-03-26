@@ -14,10 +14,10 @@ from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestion
 from opal.core.api import views as core_views
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
+from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
-from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView

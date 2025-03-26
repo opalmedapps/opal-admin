@@ -64,7 +64,7 @@ class TestAppAppointmentsView:
         api_client.credentials(HTTP_APPUSERID=user.username)
         # To send json data to request body, need to use api_client.generic
         response = api_client.generic(
-            method="GET",
+            method='GET',
             path=reverse('api:app-appointments'),
             data=json.dumps({'ids': [appointment1.appointmentsernum]}),
             content_type='application/json',

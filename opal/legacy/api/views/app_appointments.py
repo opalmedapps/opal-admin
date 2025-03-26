@@ -24,7 +24,7 @@ class AppAppointmentsView(ListAPIView):
 
     serializer_class = LegacyAppointmentDetailedSerializer
 
-    def get_queryset(self) -> QuerySet[models.LegacyAppointment]:
+    def get_queryset(self) -> QuerySet[models.LegacyAppointment]:  # noqa: WPS615
         """
         Override get_queryset to filter appointments by appointmentsernums.
 
@@ -33,6 +33,6 @@ class AppAppointmentsView(ListAPIView):
         """
         if 'ids' in self.request.data:
             return super().get_queryset().filter(
-                appointmentsernum__in=self.request.data['ids'],
+                appointmentsernum__in=self.request.data.get('ids', None),
             )
         return super().get_queryset()
