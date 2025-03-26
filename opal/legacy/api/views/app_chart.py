@@ -1,12 +1,11 @@
 """Collection of api views used to display the Opal's Chart view."""
-
 from typing import Any
 
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import IsListener
 from opal.legacy import models
 from opal.legacy_questionnaires.models import LegacyQuestionnaire
 
@@ -16,7 +15,7 @@ from ..serializers import UnreadCountSerializer
 class AppChartView(APIView):
     """Class to return chart page required data."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsListener,)
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """

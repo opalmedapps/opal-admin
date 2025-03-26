@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from opal.core.drf_permissions import FullDjangoModelPermissions
+
 from ..models import Institution, Site
 from .serializers import InstitutionSerializer, SiteSerializer, TermsOfUseSerializer
 
@@ -14,6 +16,7 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     It uses the `InstitutionSerializer` and allows to filter by institution `acronym`.
     """
 
+    permission_classes = (FullDjangoModelPermissions,)
     queryset = Institution.objects.all()
     serializer_class = InstitutionSerializer
     filterset_fields = ['acronym']
@@ -42,6 +45,7 @@ class SiteViewSet(viewsets.ReadOnlyModelViewSet):
     can be provided for the `acronym__in` query parameter.
     """
 
+    permission_classes = (FullDjangoModelPermissions,)
     queryset = Site.objects.all()
     serializer_class = SiteSerializer
     # see: https://github.com/carltongibson/django-filter/issues/1076#issuecomment-489252242
