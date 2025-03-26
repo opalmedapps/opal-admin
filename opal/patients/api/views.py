@@ -81,6 +81,7 @@ class RegistrationCompletionView(APIView):
         serializer = self.serializer_class(
             data=request.data,
         )
+        print(request.data),
         serializer.is_valid(raise_exception=True)
         register_data = serializer.validated_data
 
