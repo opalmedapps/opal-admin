@@ -78,7 +78,7 @@ class ApiEmailVerificationView(APIView):
         Returns:
             The queryset of RegistrationCode
         """
-        code = self.kwargs['code']
+        code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
         return RegistrationCode.objects.select_related(
             'relationship__caregiver',
         ).prefetch_related(
@@ -87,7 +87,7 @@ class ApiEmailVerificationView(APIView):
 
     def put(self, request: Request, code: str) -> Response:
         """
-        Handle GET requests from `registration/<str:code>/verify-email-code/`.
+        Handle PUT requests from `registration/<str:code>/verify-email-code/`.
 
         Args:
             request: Http request made by the listener.

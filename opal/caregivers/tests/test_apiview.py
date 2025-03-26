@@ -187,8 +187,8 @@ class TestApiEmailVerification:
             ],
         }
 
-    def test_verify_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verification code not exists."""
+    def test_verify_code_invalid(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test verification code invalid."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
