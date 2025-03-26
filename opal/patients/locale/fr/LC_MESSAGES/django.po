@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 03:00+0000\n"
+"POT-Creation-Date: 2023-05-19 15:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -631,14 +631,6 @@ msgstr "MRN(s)"
 msgid "RAMQ"
 msgstr "RAMQ"
 
-#: opal/patients/templates/patients/relationships/edit_relationship.html
-msgid "No explanation provided."
-msgstr "Aucune explication fournie."
-
-#: opal/patients/templates/patients/relationships/edit_relationship.html
-msgid "Back"
-msgstr "Retour"
-
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
 msgstr "Générer une demande d'accès"
@@ -691,3 +683,9 @@ msgid "Please note multiple MRNs need to be merged by medical records."
 msgstr ""
 "Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
 "médicaux."
+
+#~ msgid "No explanation provided."
+#~ msgstr "Aucune explication fournie."
+
+#~ msgid "Back"
+#~ msgstr "Retour"
