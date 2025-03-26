@@ -381,15 +381,22 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'data': None,
+            'data': {
+                'message': 'Caused by ConnectTimeoutError.',
+            },
         },
     )
 
     response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'error'
     assert response['data'] == {
-        'message': ['reponse data is invalid'],
-        'responseData': {'data': None, 'status': 'error'},
+        'message': ['Could not establish a connection to the hospital interface.', 'Caused by ConnectTimeoutError.'],
+        'responseData': {
+            'status': 'error',
+            'data': {
+                'message': 'Caused by ConnectTimeoutError.',
+            },
+        },
     }
 
 
@@ -456,15 +463,22 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'error',
-            'data': None,
+            'data': {
+                'message': 'Caused by ConnectTimeoutError.',
+            },
         },
     )
 
     response = oie_service.find_patient_by_ramq(RAMQ_VALID)
     assert response['status'] == 'error'
     assert response['data'] == {
-        'message': ['reponse data is invalid'],
-        'responseData': {'data': None, 'status': 'error'},
+        'message': ['Could not establish a connection to the hospital interface.', 'Caused by ConnectTimeoutError.'],
+        'responseData': {
+            'status': 'error',
+            'data': {
+                'message': 'Caused by ConnectTimeoutError.',
+            },
+        },
     }
 
 

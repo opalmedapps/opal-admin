@@ -110,8 +110,8 @@ class OIEValidator:
         if not errors and status == 'success':
             errors += self.check_patient_data(patient_data)
         elif status == 'error':
-            # TODO handle status errors
-            errors.append('reponse data is invalid')
+            errors.append('Could not establish a connection to the hospital interface.')
+            errors.append(response_data['data']['message'])
 
         return errors
 
