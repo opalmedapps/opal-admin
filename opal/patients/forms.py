@@ -1008,7 +1008,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.type,
             ),
         })
-        available_choices = utils.valid_relationship_types(self.instance.patient)
+        # exclude the instance of roletype self from this validation
+        relationship_type = self.instance.type.role_type
+        available_choices = utils.valid_relationship_types(self.instance.patient, instance_type=relationship_type)
+
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         # setting the value of caregiver first and last names
