@@ -12,7 +12,7 @@ from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTem
 
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.factories import User
+from opal.users.factories import Caregiver
 
 from .. import factories, forms, models, tables, views
 
@@ -277,7 +277,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
     url = reverse('patients:access-request')
     site = factories.Site()
     relationship = factories.RelationshipType()
-    user = User(email='marge.simpson@gmail.com', phone_number='+15141111111')
+    user = Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
     factories.Patient(ramq='MARG99991313')
     factories.CaregiverProfile(user_id=user.id)
     form_data = [

@@ -11,7 +11,7 @@ from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.models import User
+from opal.users.models import Caregiver
 
 from . import constants
 from .models import CaregiverProfile, Patient, Relationship, RelationshipType, Site
@@ -462,24 +462,24 @@ class ExistingUserForm(forms.Form):
             + 'Inform the user they must register at the Registration website.',
         )
         # phone and email validation
-        is_email_error = False
-        is_phone_error = False
+        is_email_valid = True
+        is_phone_valid = True
         try:
             forms.EmailField().clean(user_email_field)
         except ValidationError as email_error_msg:
             self.add_error('user_email', email_error_msg)
-            is_email_error = True
+            is_email_valid = False
         try:
             validators.validate_phone_number(user_phone_field)
         except ValidationError as phone_error_msg:
             self.add_error('user_phone', phone_error_msg)
-            is_phone_error = True
+            is_phone_valid = False
 
         # Search user info by both email and phone number in our django User model
-        if not is_email_error and not is_phone_error:
+        if is_email_valid and is_phone_valid:
             try:
-                user = User.objects.get(email=user_email_field, phone_number=user_phone_field)
-            except User.DoesNotExist:
+                user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
+            except Caregiver.DoesNotExist:
                 raise ValidationError(error_message)
             else:
                 # Check if there is no 'Self' relationship related to this requestor himself/herself
