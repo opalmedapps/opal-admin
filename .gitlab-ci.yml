@@ -64,7 +64,7 @@ coverage:
   needs:
     - job: test
     - job: setup
-  coverage: '/Coverage /'
+  coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
     reports:
       cobertura: coverage.xml
