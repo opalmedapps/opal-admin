@@ -95,8 +95,8 @@ msgid "Sex"
 msgstr "Sexe"
 
 #: opal/patients/models.py
-msgid "Health Insurance Number"
-msgstr "Numéro d'assurance maladie"
+msgid "RAMQ"
+msgstr "RAMQ"
 
 #: opal/patients/models.py
 msgid "Caregivers"
