@@ -75,6 +75,22 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
         assert relationship_type_field in response.data[0]['relationship_type']
 
 
+def test_caregiver_detail(api_client: APIClient, admin_user: User) -> None:
+    """The caregiver's profile is returned."""
+    api_client.force_login(user=admin_user)
+    caregiver_profile = caregiver_factory.CaregiverProfile(user__username='johnwaynedabest')
+
+    response = api_client.get(reverse('api:caregivers-detail', kwargs={'username': caregiver_profile.user.username}))
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+
+    expected_data = ['uuid', 'first_name', 'last_name', 'language', 'phone_number', 'username', 'devices']
+    assert list(data.keys()) == expected_data
+    assert data['username'] == 'johnwaynedabest'
+    assert not data['devices']
+
+
 def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
     """Test status code and registration code value."""
     api_client.force_login(user=admin_user)

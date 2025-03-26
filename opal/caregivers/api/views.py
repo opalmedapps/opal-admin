@@ -98,6 +98,8 @@ class GetCaregiverPatientsList(APIView):
 
 
 class CaregiverProfileView(RetrieveAPIView):
+    """Retrieve a caregiver's profile via a given username."""
+
     permission_classes = [IsAuthenticated]
     serializer_class = CaregiverSerializer
     queryset = CaregiverProfile.objects.all().select_related('user')
