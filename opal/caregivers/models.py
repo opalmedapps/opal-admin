@@ -250,6 +250,10 @@ class EmailVerification(models.Model):
         validators=[MinLengthValidator(6)],
     )
 
+    email = models.EmailField(
+        verbose_name=_('Email'),
+    )
+
     is_verified = models.BooleanField(
         verbose_name=_('Verified'),
         default=False,
@@ -265,12 +269,12 @@ class EmailVerification(models.Model):
 
     def __str__(self) -> str:
         """
-        Return the string email verification code and its status.
+        Return the string email and its status.
 
         Returns:
-            the string email verification code and its status
+            the string email and its status
         """
-        return 'Code: {code} (Verified: {verified})'.format(
-            code=self.code,
+        return 'Email: {email} (Verified: {verified})'.format(
+            email=self.email,
             verified=str(self.is_verified),
         )

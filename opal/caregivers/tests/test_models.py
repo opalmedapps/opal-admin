@@ -10,7 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.users import factories as user_factories
 
 from .. import factories
-from ..models import CaregiverProfile, Device, DeviceType
+from ..models import CaregiverProfile, Device, DeviceType, EmailVerification
 
 pytestmark = pytest.mark.django_db
 
@@ -252,8 +252,8 @@ class TestEmailVerification:
 
     def test_model_str(self) -> None:
         """The `str` method returns the email verification code and status."""
-        email_verification = factories.EmailVerification(is_verified=True)
-        assert str(email_verification) == 'Code: 123456 (Verified: True)'
+        email_verification = EmailVerification(email='opal@muhc.mcgill.ca', is_verified=True)
+        assert str(email_verification) == 'Email: opal@muhc.mcgill.ca (Verified: True)'
 
     def test_factory(self) -> None:
         """Ensure the EmailVerification factory is building properly."""
@@ -262,7 +262,7 @@ class TestEmailVerification:
 
     def test_default_email_not_verified(self) -> None:
         """Ensure the email is not verified as default."""
-        email_verification = factories.EmailVerification()
+        email_verification = EmailVerification()
         assert email_verification.is_verified is False
 
     def test_email_code_too_long(self) -> None:
@@ -278,5 +278,13 @@ class TestEmailVerification:
         email_verification = factories.EmailVerification()
         email_verification.code = '1234'
         expected_message = "'code': ['Ensure this value has at least 6 characters (it has 4).'"
+        with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+            email_verification.clean_fields()
+
+    def test_email_not_empty(self) -> None:
+        """Ensure the field email is not empty."""
+        email_verification = factories.EmailVerification()
+        email_verification.email = None
+        expected_message = "'email': ['This field cannot be null.']"
         with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
             email_verification.clean_fields()
