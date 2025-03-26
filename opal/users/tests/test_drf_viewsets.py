@@ -7,6 +7,7 @@ from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
 
+from config.settings.base import USER_MANAGER_GROUP_NAME
 from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff, User
 
@@ -457,3 +458,117 @@ def test_api_create_user_in_group_existing_user(api_client: APIClient, django_us
     # assertions
     assert response_post.status_code == HTTPStatus.BAD_REQUEST
     assert response_post.data['username'][0] == 'A user with that username already exists.'
+
+
+def test_api_set_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
+    """Test the pass of setting a user group using the action `set_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    manager_group = user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+
+    # add one user
+    clinical_user = user_factories.ClinicalStaff()
+
+    # assert user does not have any group yet
+    assert not clinical_user.groups.all()
+
+    response = api_client.put(reverse(
+        'api:users-set-manager-user',
+        kwargs={'username': clinical_user.username},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['detail'] == 'user was added to the managers group successfully.'
+    assert clinical_user.groups.get(pk=manager_group.pk)
+
+
+def test_api_unset_manager_user_action_pass(api_client: APIClient, admin_user: User) -> None:
+    """Test the pass of unsetting a user group using the action `unset_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    manager_group = user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+
+    # add one user
+    clinical_user = user_factories.ClinicalStaff()
+    clinical_user.groups.add(manager_group)
+
+    response = api_client.put(reverse(
+        'api:users-unset-manager-user',
+        kwargs={'username': clinical_user.username},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.OK
+    assert response.data['detail'] == 'user was removed from the managers group successfully.'
+    assert not clinical_user.groups.all()
+
+
+def test_api_set_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
+    """Test the fail of setting manager group of a wrong user using the action `set_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+
+    response = api_client.put(reverse(
+        'api:users-set-manager-user',
+        kwargs={'username': 'not_exist_user'},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert str(response.data['detail']) == 'Not found.'
+
+
+def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
+    """Test the fail of unsetting manager group of a wrong user using the action `unset_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
+
+    response = api_client.put(reverse(
+        'api:users-unset-manager-user',
+        kwargs={'username': 'not_exist_user'},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert str(response.data['detail']) == 'Not found.'
+
+
+def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
+    """Test the fail of setting a user group when manager group does not exist using the action `set_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    clinical_user = user_factories.ClinicalStaff()
+
+    response = api_client.put(reverse(
+        'api:users-set-manager-user',
+        kwargs={'username': clinical_user.username},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert str(response.data['detail']) == 'manager group not found.'
+
+
+def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
+    """Test the fail of unsetting a user group when manager group does not exist using the action `set_manager_user`."""
+    api_client.force_login(user=admin_user)
+
+    user_factories.GroupFactory()
+    clinical_user = user_factories.ClinicalStaff()
+
+    response = api_client.put(reverse(
+        'api:users-unset-manager-user',
+        kwargs={'username': clinical_user.username},
+    ))
+
+    # assert retrieved info
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert str(response.data['detail']) == 'manager group not found.'
