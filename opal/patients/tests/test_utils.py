@@ -182,18 +182,33 @@ def test_valid_relationship_types_contain_self_role_type() -> None:
 
     valid_types = list(utils.valid_relationship_types(patient).values_list('role_type', flat=True))
 
-    assert RoleType.SELF not in valid_types
+    assert RoleType.SELF in valid_types
     assert RoleType.MANDATARY in valid_types
 
 
-def test_valid_relationship_not_contain_self_role_type() -> None:
+def test_valid_relationship_of_self_contain_self_role_type() -> None:
     """Get the queryset of valid relationship types when instance being updated is of self type."""
     patient = patient_factories.Patient()
+
     valid_types = list(
         utils.valid_relationship_types(
             patient,
         ).values_list('role_type', flat=True),
     )
+
+    assert RoleType.SELF in valid_types
+    assert RoleType.MANDATARY in valid_types
+
+
+def test_valid_relationship_types_not_contain_self_role_type() -> None:
+    """Get the queryset of valid relationship types doesn't contain self role type."""
+    patient = patient_factories.Patient()
+    patient_factories.Relationship.create(
+        patient=patient,
+        type=RelationshipType.objects.self_type(),
+    )
+
+    valid_types = list(utils.valid_relationship_types(patient).values_list('role_type', flat=True))
 
     assert RoleType.SELF not in valid_types
     assert RoleType.MANDATARY in valid_types
