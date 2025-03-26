@@ -6,12 +6,12 @@ from django.db import models
 class RelationshipManager(models.Manager):
     """Manager class for the `Relationship` model."""
 
-    def get_patient_list_for_caregiver(self, user_id: str) -> models.QuerySet:
+    def get_patient_list_for_caregiver(self, user_name: str) -> models.QuerySet:
         """
         Query manager to get a list of patients for a given caregiver.
 
         Args:
-            user_id: User id making the request
+            user_name: User id making the request
 
         Returns:
             Queryset to get the list of patients
@@ -22,20 +22,20 @@ class RelationshipManager(models.Manager):
             'caregiver',
             'caregiver__user',
         ).filter(
-            caregiver__user__username=user_id,
+            caregiver__user__username=user_name,
         )
 
-    def get_patient_id_list_for_caregiver(self, user_id: str) -> list[int]:
+    def get_patient_id_list_for_caregiver(self, user_name: str) -> list[int]:
         """
         Get a array of patients legacy IDs for a given caregiver.
 
         Args:
-            user_id: User id making the request
+            user_name: User id making the request
 
         Returns:
             Return list of patient legacy IDs
         """
-        relationships = self.get_patient_list_for_caregiver(user_id=user_id)
+        relationships = self.get_patient_list_for_caregiver(user_name=user_name)
         return list(relationships.values_list('patient__legacy_id', flat=True))
 
 
