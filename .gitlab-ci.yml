@@ -261,14 +261,6 @@ django template validation:
     - echo "Validating templates ..."
     - python manage.py validate_templates
 
-check crontab:
-  stage: checks
-  extends:
-    - .uses_django
-  script:
-    # Check that the crontab references the correct commands and that they execute
-    - scripts/check_crontab.sh
-
 build image:
   stage: build
   image: docker:26.1.4

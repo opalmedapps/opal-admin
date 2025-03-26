@@ -3108,6 +3108,19 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         app_version: str = '100.100.100',
         days_delta: int = 1,
     ) -> legacy_factories.LegacyPatientActivityLogFactory:
+        """Create `LegacyPatientActivityLog` object.
+
+        Args:
+            request: request type; defaults to 'Login'
+            parameters: request parameters; defaults to ''
+            target_patient_id: request's target patient; defaults to None.
+            username: _description_. Defaults to 'username'.
+            app_version: version of the application that sent the request; defaults to '100.100.100'.
+            days_delta: delta in days for the request's date time; defaults to 1.
+
+        Returns:
+            new activity log object with the fields values based on the parameters
+        """
         data = {
             'request': request,
             'parameters': parameters,

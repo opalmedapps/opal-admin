@@ -371,6 +371,16 @@ services:
       - $PWD/.env:.env
 ```
 
+### Running management commands periodically
+
+The following management commands need to be run periodically (e.g., as a cronjob):
+
+* `find_deviations` (once per day): to detect deviations with data stored in the legacy database for patients and caregivers
+* `find_questionnaire_respondent_deviations` (once per day): to detect deviations for questionnaire respondents in the legacy questionnaire database
+* `expire_relationships` (once per day after midnight): to expire relationships where the patient reached the end age of the relationship type
+* `expire_outdated_registration_codes` (every hour or more often): to expire unused registration codes
+* `update_daily_usage_statistics` (once per day at 5am): to update daily usage statistics for patients and caregivers
+
 ## Running the databases with encrypted connections
 
 If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt all database connections and traffic. This requires installing [db-docker](https://gitlab.com/opalmedapps/db-docker) with the SSL/TLS setup and modifying the setup for Django:

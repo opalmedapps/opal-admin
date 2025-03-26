@@ -33,13 +33,17 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 EXPOSE 8000
+WORKDIR /app
+
+RUN addgroup --system appuser \
+  && adduser --system --ingroup appuser appuser \
+  && chown -R appuser:appuser /app
+
 
 # get Python packages lib and bin
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /usr/local/lib /usr/local/lib
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
-
-WORKDIR /app
 
 # copy only the required files
 COPY ./config/ ./config
@@ -49,14 +53,12 @@ COPY manage.py .
 COPY .env.sample .
 COPY docker/start.sh ./start.sh
 
-# Set up the cron jobs
-COPY ./docker/crontab /tmp/crontab
-
-# Add new cron jobs to the cron tab and compile messages
-RUN crontab /tmp/crontab \
-  && cp .env.sample .env \
+# Compile messages so translations are baked into the image
+RUN cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
   && rm .env
+
+USER appuser
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "./start.sh" ]

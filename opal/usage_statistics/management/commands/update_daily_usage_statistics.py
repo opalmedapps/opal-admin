@@ -91,7 +91,7 @@ class Command(BaseCommand):
             end_datetime_period=end_datetime_period,
         )
 
-        self._populate_patient_app_activities(
+        self._populate_user_patient_app_activities(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
         )
@@ -131,7 +131,7 @@ class Command(BaseCommand):
             ) for activity in activities
         )
 
-    def _populate_patient_app_activities(
+    def _populate_user_patient_app_activities(
         self,
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
