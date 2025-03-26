@@ -72,24 +72,6 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
         ),
     )
     assert response.status_code == HTTPStatus.OK
-    print(response.json())
-    print(
-        {
-            'patient': {
-                'first_name': patient.first_name,
-                'last_name': patient.last_name,
-                'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
-                'sex': patient.sex,
-                'ramq': patient.ramq,
-            },
-            'hospital_patients': [
-                {
-                    'mrn': hospital_patient.mrn,
-                    'site_code': site.code,
-                },
-            ],
-        }
-    )
     assert response.json() == {
         'patient': {
             'first_name': patient.first_name,
@@ -110,7 +92,7 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
 class TestApiRegistrationRegister:
     """Test class tests the api registration/<str: code>/register."""
 
-    def test_register_success(sefl, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_register_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
