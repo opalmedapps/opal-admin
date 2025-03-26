@@ -136,3 +136,9 @@ LOGGING = {
         },
     },
 }
+
+# OPAL SPECIFIC
+# ------------------------------------------------------------------------------
+# Redirect after logout to legacy OpalAdmin's logout page
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = f'{OPAL_ADMIN_URL}/user/logout'  # noqa: F405
