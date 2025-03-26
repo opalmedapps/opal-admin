@@ -71,7 +71,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             template rendered with updated context or HttpError
         """
         context = self.get_context_data()
-        requestor = User.objects.get(username=request.user)
+        requestor: User = request.user  # type: ignore[assignment]
 
         if 'questionnaireid' in request.POST.keys():
             try:
@@ -81,12 +81,15 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
             questionnaire_detail = get_questionnaire_detail(int(qid), language_map[requestor.language])
             context.update(questionnaire_detail)
+
             # Also update auditing service with request details
-            request_event = RequestEvent.objects.filter(
-                url=request.path,
-            ).order_by('-datetime').first()
-            request_event.query_string = f'questionnaireid: {qid}'
-            request_event.save()
+            update_request_event_query_string(
+                request,
+                requestor,
+                parameters=[
+                    'questionnaireid',
+                ],
+            )
             return self.render_to_response(context)
         self.logger.error('Missing post key: questionnaireid')
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
@@ -115,7 +118,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         context.update({'title': 'export questionnaire'})
 
-        requestor = User.objects.get(username=request.user)
+        requestor: User = request.user  # type: ignore[assignment]
 
         #  make_temp_tables() creates a temporary table in the QuestionnaireDB containing the desired data report
         #  the function returns a boolean indicating if the table could be succesfully created given the query params
@@ -139,31 +142,19 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         )
 
         # Update audit query string with request parameters
-        self._update_request_event_query_string(request)
+        update_request_event_query_string(
+            request,
+            requestor,
+            parameters=[
+                'questionnaireid',
+                'start',
+                'end',
+                'patientIDs',
+                'questionIDs',
+            ],
+        )
 
         return self.render_to_response(context)
-
-    def _update_request_event_query_string(self, request: HttpRequest) -> None:
-        """Get the request event attached to this request path and update query string with POST arguments.
-
-        Args:
-            request: The post request data
-
-        """
-        request_event = RequestEvent.objects.filter(
-            url=request.path,
-            user=request.user,
-            method='POST',
-        ).order_by('-datetime').first()
-        request_event.query_string = {
-            'username: {0}'.format(request.user),
-            'questionnaireid: {0}'.format(request.POST.get('questionnaireid')),
-            'startdate: {0}'.format(request.POST.get('start')),
-            'enddate: {0}'.format(request.POST.get('end')),
-            'patientIdFilter: {0}'.format(request.POST.getlist('patientIDs')),
-            'questionIdFilter: {0}'.format(request.POST.getlist('questionIDs')),
-        }
-        request_event.save()
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)
@@ -270,3 +261,27 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             headers={'Content-Disposition': f'attachment; filename = {filename}'},
         )
+
+
+def update_request_event_query_string(request: HttpRequest, requestor: User, parameters: list) -> None:
+    """Get the request event attached to this request path and update query string with POST arguments.
+
+    Args:
+        request: The post request data
+        requestor: Report user
+        parameters: Filter request parameters to be appended to the request event query string
+
+    """
+    request_event = RequestEvent.objects.filter(
+        url=request.path,
+        user=request.user,
+        method='POST',
+    ).order_by('-datetime').first()
+    query_string = {
+        'username': requestor.get_username(),
+    }
+    for param in parameters:
+        query_string[param] = request.POST.get(param)  # type: ignore[assignment]
+
+    request_event.query_string = query_string
+    request_event.save()
