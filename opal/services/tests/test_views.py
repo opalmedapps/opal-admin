@@ -1,6 +1,7 @@
 
-from pytest_mock.plugin import MockerFixture
 from typing import Dict, cast
+
+from pytest_mock.plugin import MockerFixture
 
 from .. import hospital
 
