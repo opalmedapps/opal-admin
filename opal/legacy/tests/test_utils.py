@@ -461,7 +461,7 @@ def test_get_questionnaire_data_success(mocker: MockerFixture, questionnaire_dat
     questionnaire_result = legacy_utils.get_questionnaire_data(patient)
 
     assert len(questionnaire_result) == 1
-    assert questionnaire_result[0].questionnaire_title == "Échelle d'évaluation des symptômes d'Edmonton"
+    assert questionnaire_result[0].questionnaire_title == 'Edmonton Symptom Assessment System'
 
 
 @pytest.mark.django_db(databases=['questionnaire', 'default'])
@@ -513,7 +513,7 @@ def test_fetch_questionnaire_from_db(mocker: MockerFixture, questionnaire_data: 
     assert len(result) == 1
     assert isinstance(result[0], dict)
     assert result[0]['questionnaire_id'] == 12
-    assert result[0]['questionnaire_nickname'] == "Échelle d'évaluation des symptômes d'Edmonton"
+    assert result[0]['questionnaire_nickname'] == 'Edmonton Symptom Assessment System'
 
 
 def test_parse_query_result_success() -> None:

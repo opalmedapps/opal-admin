@@ -506,7 +506,7 @@ def _fetch_questionnaires_from_db(
     with connections['questionnaire'].cursor() as cursor:
         cursor.callproc(
             'getCompletedQuestionnairesList',
-            [legacy_patient_id, 1, 'FR'],
+            [legacy_patient_id, 1, 'EN'],
         )
         return [
             json.loads(row[0]) for row in cursor.fetchall()

@@ -180,6 +180,7 @@ class TestQuestionnairesReportView:
         assert response.data == error_response
         assertRaisesMessage(MultipleObjectsReturned, message)
 
+    @pytest.mark.django_db(databases=['questionnaire', 'default'])
     def test_unset_language(
         self,
         api_client: APIClient,
@@ -220,6 +221,7 @@ class TestQuestionnairesReportView:
             ),
         )
 
+    @pytest.mark.django_db(databases=['questionnaire', 'default'])
     def test_report_generation_error(
         self,
         api_client: APIClient,
@@ -261,6 +263,7 @@ class TestQuestionnairesReportView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == error_response
 
+    @pytest.mark.django_db(databases=['questionnaire', 'default'])
     def test_report_export_error(
         self,
         api_client: APIClient,
@@ -309,6 +312,7 @@ class TestQuestionnairesReportView:
         assert response.status_code == status.HTTP_200_OK
         assert response.data is None
 
+    @pytest.mark.django_db(databases=['questionnaire', 'default'])
     def test_post_report_export(
         self,
         api_client: APIClient,
