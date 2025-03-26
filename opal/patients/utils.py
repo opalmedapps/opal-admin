@@ -83,9 +83,9 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
-def get_caregiver(username: str) -> Optional[User]:
+def find_caregiver(username: str) -> Optional[User]:
     """
-    Get the user if it exists.
+    Find the user if it exists.
 
     Args:
         username: caregiver username
