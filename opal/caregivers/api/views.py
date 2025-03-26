@@ -373,10 +373,6 @@ class RegistrationCompletionView(APIView):
         Raises:
             ValidationError: if the caregiver is already registered or there is no verified email
         """
-        # verify that security answers and phone number are in the request data
-        if 'security_answers' not in caregiver_data or 'phone_number' not in caregiver_data:
-            raise drf_serializers.ValidationError('New caregiver data missing')
-
         # a user can potentially verify multiple email address during the same process
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
