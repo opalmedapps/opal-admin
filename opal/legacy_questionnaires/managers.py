@@ -40,15 +40,15 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
             Queryset of new questionnaires.
         """
         respondent_contents = []
-        relationship_type = RelationshipType.objects.filter(
+        relationship_types = RelationshipType.objects.filter(
             relationship__caregiver__user__username=user_name,
             relationship__patient__legacy_id=patient_sernum,
-        ).first()
+        )
 
-        if relationship_type:
-            if relationship_type.can_answer_questionnaire:
+        if relationship_types:
+            if relationship_types.filter(can_answer_questionnaire=True):
                 respondent_contents.append('Caregiver')
-            if relationship_type.role_type != 'SELF':
+            if not relationship_types.filter(role_type='SELF'):
                 respondent_contents.append('Patient')
 
         return self.filter(
