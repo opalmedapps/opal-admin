@@ -30,7 +30,7 @@ mysqlclient==2.2.0 # https://github.com/PyMySQL/mysqlclient
 # Other
 #
 # secure password hashes using argon2
-argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
+argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.31.0  # https://github.com/psf/requests
 # required for ImageFields
 Pillow==10.0.0  # https://pypi.org/project/Pillow
