@@ -138,6 +138,10 @@ django:
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
+    # Ensure there are no fuzzy translation strings
+    - echo "Checking for presence of fuzzy translation strings (need updates) ..."
+    - grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep '#| msgid' -B02 -A01
+    # - (! grep --include=\*.po -rnw './opal' -e "#| msgid")
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
     # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
