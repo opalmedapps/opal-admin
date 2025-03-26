@@ -8,6 +8,7 @@ variables:
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
+  SECURE_LOG_LEVEL: "debug"
 
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -348,12 +349,13 @@ include:
 # Dependency Scanning
 # https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-analyzer-behavior
 gemnasium-python-dependency_scanning:
-  dependencies:
-    - "setup"
   variables:
     # enforce running this without the "exists: **/requirements.txt" rule
     PIP_REQUIREMENTS_FILE: "development.txt"
     DS_PIP_DEPENDENCY_PATH: ".venv"
   # the scanner actually installs the dependencies via pip and therefore requires the mysql client to be installed
   before_script:
+    - which python
+    - python --version
+    - python3 --version
     - apt update && apt install -y libmariadb-dev pkg-config
