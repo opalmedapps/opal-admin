@@ -160,7 +160,7 @@ class ApiEmailVerificationView(APIView):
                 email=email,
             )
         except EmailVerification.DoesNotExist:
-            EmailVerification.objects.create(
+            email_verification = EmailVerification.objects.create(
                 caregiver=caregiver,
                 code=verification_code,
                 email=email,

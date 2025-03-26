@@ -1,6 +1,4 @@
 """Module providing model factories for Legacy database models."""
-from datetime import datetime
-
 from django.utils import timezone
 
 from factory import SubFactory
@@ -133,14 +131,8 @@ class LegacySecurityQuestionFactory(DjangoModelFactory):
     securityquestionsernum = 1
     questiontext_en = 'What is the name of your first pet?'
     questiontext_fr = 'Quel est le nom de votre premier animal de compagnie?'
-    creationdate = datetime.strptime(
-        '2022-09-27 11:11:11',
-        '%Y-%m-%d %H:%M:%S',
-    )
-    lastupdated = datetime.strptime(
-        '2022-09-27 11:11:11',
-        '%Y-%m-%d %H:%M:%S',
-    )
+    creationdate = timezone.now()
+    lastupdated = timezone.now()
     active = 1
 
 
@@ -154,11 +146,5 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
     securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
     answertext = 'bird'
-    creationdate = datetime.strptime(
-        '2022-09-27 11:11:11',
-        '%Y-%m-%d %H:%M:%S',
-    )
-    lastupdated = datetime.strptime(
-        '2022-09-27 11:11:11',
-        '%Y-%m-%d %H:%M:%S',
-    )
+    creationdate = timezone.now()
+    lastupdated = timezone.now()
