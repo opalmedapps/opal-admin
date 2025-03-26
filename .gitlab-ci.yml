@@ -148,7 +148,8 @@ test:
 coverage:
   stage: Test
   script:
-    - coverage xml
+    # allow XML creation to fail to be able to parse coverage out of text report
+    - coverage xml || true
     - coverage report
   needs:
     - job: test
