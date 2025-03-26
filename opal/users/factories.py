@@ -7,25 +7,11 @@ Inspired by:
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 from django.contrib.auth.hashers import make_password
-from django.template.defaultfilters import slugify
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from . import models
-
-
-def _slugify_user(user: models.User) -> str:
-    """
-    Slugify the user based on a fake username.
-
-    Args:
-        user: the user instance
-
-    Returns:
-        the slugified username
-    """
-    return slugify(Faker('username'))
 
 
 class User(DjangoModelFactory):
@@ -37,7 +23,7 @@ class User(DjangoModelFactory):
 
     first_name = 'Marge'
     last_name = 'Simpson'
-    username = lazy_attribute(_slugify_user)
+    username = Faker('user_name')
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
