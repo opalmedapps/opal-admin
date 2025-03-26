@@ -129,3 +129,21 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         message = 'INVA not a valid databank data type.'
         with assertRaisesMessage(ValueError, message):
             command._retrieve_databank_data_for_patient(databank_patient, 'INVA')  # type: ignore[arg-type]
+
+    def test_legacy_id_missing_from_databank_patient(self) -> None:
+        """Ensure a value error is raised if a patient doesn't have their legacy id created."""
+        django_pat1 = patient_factories.Patient(legacy_id=None)
+        yesterday = datetime.now() - timedelta(days=1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(yesterday),
+        )
+
+        message = 'Legacy ID missing from Databank Patient.'
+        with assertRaisesMessage(ValueError, message):
+            self._call_command('send_databank_data')

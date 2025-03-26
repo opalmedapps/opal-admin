@@ -17,7 +17,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
-        Handle sending Patients deidentified to the databank.
+        Handle sending patients de-identified data to the databank.
 
         Return 'None'.
 
@@ -37,7 +37,7 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f'Number of {DataModuleType(module).label}-consenting patients is: {queryset.count()}',
                 )
-                # Iterate over each databank patient and fetch their data, send to OIE
+                # Retrieve patient data for each module type and send all at once
                 for databank_patient in queryset:
                     self._retrieve_databank_data_for_patient(databank_patient, module)
             else:
@@ -53,36 +53,35 @@ class Command(BaseCommand):
             module: databank data module enum type
 
         Raises:
-            ValueError: If an invalid DateModuleType value is provided
+            ValueError: If an invalid DateModuleType value is provided or if a patient is missing the legacy id
         """
+        if not databank_patient.patient.legacy_id:
+            raise ValueError('Legacy ID missing from Databank Patient.')
         match module:
-            case 'APPT':
+            case DataModuleType.APPOINTMENTS:
                 databank_data = LegacyAppointment.objects.get_databank_data_for_patient(
-                    patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
-                    last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
+                    patient_ser_num=databank_patient.patient.legacy_id,
+                    last_synchronized=databank_patient.last_synchronized,
                 )
-            case 'DIAG':
+            case DataModuleType.DIAGNOSES:
                 databank_data = LegacyDiagnosis.objects.get_databank_data_for_patient(
-                    patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
-                    last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
+                    patient_ser_num=databank_patient.patient.legacy_id,
+                    last_synchronized=databank_patient.last_synchronized,
                 )
-            case 'DEMO':
+            case DataModuleType.DEMOGRAPHICS:
                 databank_data = LegacyPatient.objects.get_databank_data_for_patient(
-                    patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
-                    last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
+                    patient_ser_num=databank_patient.patient.legacy_id,
+                    last_synchronized=databank_patient.last_synchronized,
                 )
-            case 'LABS':
+            case DataModuleType.LABS:
                 databank_data = LegacyPatientTestResult.objects.get_databank_data_for_patient(
-                    patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
-                    last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
+                    patient_ser_num=databank_patient.patient.legacy_id,
+                    last_synchronized=databank_patient.last_synchronized,
                 )
-            case 'QSTN':
-                # TODO: Because the questionnaires are retrieved using raw sql, the return type
-                #       here is a list of dicts instead of a QuerySet. Should a model be made
-                #       specifically to store the results of this query?
+            case DataModuleType.QUESTIONNAIRES:
                 databank_data = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
-                    patient_ser_num=databank_patient.patient.legacy_id,  # type: ignore[arg-type]
-                    last_synchronized=databank_patient.last_synchronized,  # type: ignore[arg-type]
+                    patient_ser_num=databank_patient.patient.legacy_id,
+                    last_synchronized=databank_patient.last_synchronized,
                 )
             case _:
                 raise ValueError(f'{module} not a valid databank data type.')
