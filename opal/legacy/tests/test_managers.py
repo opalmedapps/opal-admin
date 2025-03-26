@@ -25,8 +25,22 @@ def test_get_appointment_databank_data() -> None:
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
+    expected_returned_fields = {
+        'appointment_ser_num',
+        'date_created',
+        'source_db_name',
+        'source_db_alias_code',
+        'source_db_alias_description',
+        'source_db_appointment_id',
+        'alias_name',
+        'scheduled_start_time',
+        'scheduled_end_time',
+        'last_updated',
+    }
+
     for appointment in databank_data:
         assert appointment['last_updated'] > last_cron_sync_time
+        assert not (set(expected_returned_fields) - set(appointment.keys()))
 
     assert databank_data.count() == 2
 
@@ -42,6 +56,16 @@ def test_get_demographics_databank_data() -> None:
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
+    expected_returned_fields = {
+        'patient_ser_num',
+        'opal_registration_date',
+        'patient_sex',
+        'patient_dob',
+        'patient_primary_language',
+        'patient_death_date',
+        'last_updated',
+    }
     assert databank_data[0]['last_updated'] > last_cron_sync_time
     assert databank_data[0]['patient_ser_num'] == consenting_patient.patientsernum
     assert databank_data.count() == 1
+    assert not (set(expected_returned_fields) - set(databank_data[0].keys()))
