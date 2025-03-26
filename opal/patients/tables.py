@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 import django_tables2 as tables
 from django_tables2.columns import BoundColumn
 
+from opal.services.hospital.hospital_data import OIEMRNData
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
@@ -223,3 +224,37 @@ class RelationshipCaregiverTable(tables.Table):
             'actions',
         ]
         empty_text = _('No caregiver could be found.')
+
+
+class ConfirmPatientDetailsTable(tables.Table):
+    """Custom table for confirmation of patient data given an OIE data object.
+
+    The goal of this table is to render data in the same way as the existing `PatientTable`
+    A new table is required because the existing table is rendered using a patient queryset in
+    a situation where we know the patient already exists, however this is not the case for the registration
+    workflow where sometimes a patient may not exist already. As such, the rendering below is defined.
+    """
+
+    first_name = tables.Column(verbose_name=_('First Name'))
+    last_name = tables.Column(verbose_name=_('Last Name'))
+    date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
+    mrns = tables.Column(verbose_name=_('MRN'))
+    ramq = tables.Column(verbose_name=_('RAMQ Number'))
+
+    class Meta:
+        empty_text = _('No patient could be found.')
+        orderable = False
+
+    def render_mrns(self, value: list[OIEMRNData]) -> str:
+        """Render MRN column by pulling from the custom OIE data object.
+
+        Args:
+            value: OIEMRNData list
+
+        Returns:
+            Concatenated MRN/site pairs for a given patient
+        """
+        mrn_site_list = [
+            f'{hospital_patient.site}: {hospital_patient.mrn}' for hospital_patient in value
+        ]
+        return ', '.join(str(mrn_value) for mrn_value in mrn_site_list)

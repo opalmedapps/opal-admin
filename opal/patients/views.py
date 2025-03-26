@@ -35,6 +35,7 @@ from .filters import ManageCaregiverAccessFilter
 from .forms import RelationshipPendingAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .tables import (
+    ConfirmPatientDetailsTable,
     ExistingUserTable,
     PatientTable,
     PendingRelationshipTable,
@@ -519,7 +520,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             })
 
         context.update({
-            'table': PatientTable([patient_record]),
+            'table': ConfirmPatientDetailsTable([patient_record]),
         })
         return context
 
