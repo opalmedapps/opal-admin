@@ -22,6 +22,7 @@ from opal.caregivers.api.serializers import EmailVerificationSerializer, Registr
 from opal.caregivers.models import EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
+from opal.users.models import User
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView):
@@ -73,7 +74,6 @@ class ApiEmailVerificationView(APIView):
     permission_classes = [IsAuthenticated]
     min_number = 100000
     max_number = 999999
-    email_subject = 'Opal Verification Code '
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -85,6 +85,7 @@ class ApiEmailVerificationView(APIView):
         code = self.kwargs['code']
         return RegistrationCode.objects.select_related(
             'relationship__caregiver',
+            'relationship__caregiver__user',
         ).prefetch_related(
             'relationship__caregiver__email_verifications',
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
@@ -122,10 +123,13 @@ class ApiEmailVerificationView(APIView):
         else:
             email_verification.is_verified = True
             email_verification.save()
+            user = registration_code.relationship.caregiver.user
+            user.email = email_verification.email
+            user.save()
 
         return Response()
 
-    def post(self, request: Request, code: str) -> Response:
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
         Handle POST requests from `registration/<str:code>/verify-email/`.
 
@@ -163,31 +167,49 @@ class ApiEmailVerificationView(APIView):
                 sent_at=timezone.now(),
             )
         else:
-            input_serializer.update(email_verification, {'code': verification_code})
+            input_serializer.update(
+                email_verification,
+                {
+                    'code': verification_code,
+                    'is_verified': False,
+                    'sent_at': timezone.now(),
+                },
+            )
+        self._send_email(email_verification, caregiver.user)
+        return Response()
 
+    def _send_email(self, email_verification: EmailVerification, user: User) -> None:
+        """
+        Send verification email to the user with an template according to the user language.
+
+        Args:
+            email_verification: object EmailVerification.
+            user: object User.
+        """
+        email_subject = _('Opal Verification Code')
+
+        template_plain = 'email/verification_code_{0}.txt'.format(user.language)
         msg_plain = render_to_string(
-            'email/verification_code.txt',
+            template_plain,
             {
-                'code': verification_code,
-                'first_name': caregiver.user.first_name,
-                'last_name': caregiver.user.last_name,
+                'code': email_verification.code,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
             },
         )
+        template_html = 'email/verification_code_{0}.html'.format(user.language)
         msg_html = render_to_string(
-            'email/verification_code.html',
+            template_html,
             {
-                'code': verification_code,
-                'first_name': caregiver.user.first_name,
-                'last_name': caregiver.user.last_name,
+                'code': email_verification.code,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
             },
         )
-
         send_mail(
-            self.email_subject,
+            email_subject,
             msg_plain,
             settings.EMAIL_HOST_USER,
-            ['Limin.Liu@muhc.mcgill.ca'],
+            [email_verification.email],
             html_message=msg_html,
         )
-
-        return Response()

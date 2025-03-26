@@ -1,12 +1,13 @@
 
-
 Dear {{first_name}} {{last_name}}:
 
 Welcome to Opal.
 
+Thank you for deciding to register with Opal.
+
 To verify your email address, enter the code below on the verification page:
 
-Verification Code:   {{code}}
+{{code}}
 
 This code will expire 10 minutes after the email is sent. Once the code expires you will need to request a new verification code.
 

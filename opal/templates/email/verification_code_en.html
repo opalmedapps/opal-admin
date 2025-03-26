@@ -1,13 +1,9 @@
 <body>
   <p>Dear {{first_name}} {{last_name}}:</p>
   <p>Welcome to Opal.</p>
+  <p>Thank you for deciding to register with Opal.</p>
   <p>To verify your email address, enter the code below on the verification page:</p>
-  <table>
-    <tr style="text-align:left;font-weight: bold;">
-      <td style="width:30%">Verification Code: </td>
-      <td style="width:70%">{{code}}</td>
-    </tr>
-  </table>
+  <div style="width:70%; font-weight: bold;">{{code}}</div>
   <p>This code will expire 10 minutes after the email is sent. Once the code expires you will need to request a new verification code.</p>
   <p>Yours,</p>
   <h3><a href='https://opalmedapps.com/fr-selected' target='_blank' alt='Opal'>The Opal team</a></h3>
