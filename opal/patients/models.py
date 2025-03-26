@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -109,6 +109,14 @@ class Patient(models.Model):
         unique=True,
         blank=True,
         null=True,
+    )
+    phone_number = models.CharField(
+        verbose_name=_('Phone Number'),
+        max_length=22,
+        blank=True,
+        # Based on a suggestion from here: https://www.twilio.com/docs/glossary/what-e164
+        validators=[RegexValidator(r'^\+[1-9]\d{6,14}(x\d{1,5})?$')],
+        help_text=_('Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"'),
     )
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),

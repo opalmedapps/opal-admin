@@ -28,6 +28,15 @@ class LegacyPatientFactory(DjangoModelFactory):
         django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
+    firstname = 'TEST'
+    lastname = 'LEGACY'
+    telnum = '5149995555'
+    dateofbirth = datetime.strptime(
+        '2018-01-01 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )
+    sex = 'Male'
+    ssn = '123456'
 
 
 class LegacyNotificationFactory(DjangoModelFactory):
@@ -162,3 +171,26 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
         '2022-09-27 11:11:11',
         '%Y-%m-%d %H:%M:%S',
     )
+
+
+class LagacyHospitalIdentifierTypeFactory(DjangoModelFactory):
+    """Hospital_Identifier_Type factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyHospitalIdentifierType
+
+    hospitalidentifiertypeid = 1
+    code = 'TEST'
+
+
+class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
+    """Patient_Hospital_Identifier factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyPatientHospitalIdentifier
+
+    patienthospitalidentifierid = 1
+    patientsernum = SubFactory(LegacyPatientFactory)
+    hospitalidentifiertypecode = SubFactory(LagacyHospitalIdentifierTypeFactory)
+    mrn = '9999996'
+    isactive = True
