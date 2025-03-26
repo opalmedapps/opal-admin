@@ -1,9 +1,9 @@
-from typing import Any
-
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from opal.caregivers import factories as caregiver_factories
@@ -24,7 +24,7 @@ class TestCaregiverPermissionsView:
         if appuserid:
             api_client.credentials(HTTP_APPUSERID=appuserid)
 
-    def make_request(self, api_client: APIClient, legacy_id: int) -> Any:
+    def make_request(self, api_client: APIClient, legacy_id: int) -> Response:
         """
         Make a request to the API view being tested (CaregiverPermissionsView).
 
@@ -83,6 +83,19 @@ class TestCaregiverPermissionsView:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert 'status is not CONFIRMED' in str(response.data['detail'])
+
+    def test_deceased_patient(self, api_client: APIClient, admin_user: User) -> None:
+        """Test that the permission check fails if the patient is deceased."""
+        relationship = patient_factories.Relationship(
+            status=RelationshipStatus.CONFIRMED,
+            patient__date_of_death=timezone.now(),
+        )
+
+        self.authenticate(api_client, admin_user, relationship.caregiver.user.username)
+        response = self.make_request(api_client, relationship.patient.legacy_id)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert 'Patient has a date of death recorded' in str(response.data['detail'])
 
     def test_success_confirmed_relationship(self, api_client: APIClient, admin_user: User) -> None:
         """Test a permissions check where the caregiver has a confirmed relationship with the patient."""

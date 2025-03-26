@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 15:59+0000\n"
+"POT-Creation-Date: 2023-07-19 14:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,14 @@ msgstr ""
 #: opal/hospital_settings/templates/hospital_settings/index.html
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
+
+#: opal/hospital_settings/forms.py
+msgid "years"
+msgstr "ans"
+
+#: opal/hospital_settings/forms.py
+msgid "days"
+msgstr "jours"
 
 #: opal/hospital_settings/forms.py
 msgid "Save"
@@ -46,6 +54,42 @@ msgstr "Logo"
 #: opal/hospital_settings/models.py
 msgid "Support email"
 msgstr "Adresse courriel d'assistance"
+
+#: opal/hospital_settings/models.py
+msgid "Adulthood Age"
+msgstr "Âge adulte"
+
+#: opal/hospital_settings/models.py
+msgid ""
+"Age setting used to control pediatric functionality which delays sharing of "
+"lab results."
+msgstr ""
+"Définition de l'âge utilisé pour contrôler la fonctionnalité pédiatrique qui "
+"retarde le partage des résultats de laboratoire."
+
+#: opal/hospital_settings/models.py
+msgid "Non-Interpretable Lab Result Delay"
+msgstr "Le délai de résultat de laboratoire non interprétable"
+
+#: opal/hospital_settings/models.py
+msgid ""
+"Lab result delay for pediatric patients when clinician interpretation is "
+"recommended in lab setting."
+msgstr ""
+"Le délai des résultats de laboratoire pour les patients pédiatriques lorsque "
+"l'interprétation du clinicien est recommandée en laboratoire."
+
+#: opal/hospital_settings/models.py
+msgid "Interpretable Lab Result Delay"
+msgstr "Le délai de résultat de laboratoire interprétable"
+
+#: opal/hospital_settings/models.py
+msgid ""
+"Lab result delay for pediatric patients when clinician interpretation is not "
+"specified in lab setting."
+msgstr ""
+"Le délai des résultats de laboratoire pour les patients pédiatriques lorsque "
+"l'interprétation du clinicien n'est pas spécifiée dans le laboratoire."
 
 #: opal/hospital_settings/models.py
 msgid "Can manage institutions"

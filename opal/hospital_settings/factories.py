@@ -21,6 +21,9 @@ class Institution(DjangoModelFactory):
     terms_of_use = factory.django.FileField(data=b'test PDF', filename='test_terms.pdf')
     terms_of_use_fr = factory.django.FileField(data=b'PDF pour tester', filename='test_terms.pdf')
     support_email = 'muhc@muhc.mcgill.ca'
+    adulthood_age = 18
+    non_interpretable_lab_result_delay = 0
+    interpretable_lab_result_delay = 0
 
 
 class Site(DjangoModelFactory):

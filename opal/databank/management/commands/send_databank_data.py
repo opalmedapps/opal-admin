@@ -1,8 +1,15 @@
 """Command for sending data to the Databank."""
+import json
+from collections import defaultdict
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models.query import QuerySet
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 from opal.databank.models import DatabankConsent, DataModuleType
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
@@ -32,20 +39,35 @@ class Command(BaseCommand):
             DataModuleType.LABS: DatabankConsent.objects.filter(has_labs=True),
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
+
         for module, queryset in consenting_patients_querysets.items():
-            if queryset:
+            patients_list = list(queryset.iterator())
+            patients_count = len(patients_list)
+
+            if patients_count > 0:
                 self.stdout.write(
                     f'Number of {DataModuleType(module).label}-consenting patients is: {queryset.count()}',
                 )
+
                 # Retrieve patient data for each module type and send all at once
-                for databank_patient in queryset:
-                    self._retrieve_databank_data_for_patient(databank_patient, module)
+                combined_module_data: dict = {}
+                for idx, databank_patient in enumerate(patients_list):
+                    databank_data = self._retrieve_databank_data_for_patient(databank_patient, module)
+                    if databank_data:
+                        nested_databank_data = self._nest_and_serialize_queryset(
+                            databank_patient.guid,
+                            databank_data,
+                            module,
+                        )
+                        combined_module_data[idx] = nested_databank_data
+                if combined_module_data:
+                    self._send_to_oie_and_handle_response(combined_module_data)
             else:
                 self.stderr.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
                 )
 
-    def _retrieve_databank_data_for_patient(self, databank_patient: DatabankConsent, module: DataModuleType) -> None:
+    def _retrieve_databank_data_for_patient(self, databank_patient: DatabankConsent, module: DataModuleType) -> Any:
         """Use model managers to retrieve databank data for a consenting patient.
 
         Args:
@@ -54,6 +76,9 @@ class Command(BaseCommand):
 
         Raises:
             ValueError: If an invalid DateModuleType value is provided or if a patient is missing the legacy id
+
+        Returns:
+            JSON string of the patient's databank information for this module
         """
         if not databank_patient.patient.legacy_id:
             raise ValueError('Legacy ID missing from Databank Patient.')
@@ -87,12 +112,63 @@ class Command(BaseCommand):
                 raise ValueError(f'{module} not a valid databank data type.')
 
         if databank_data:
-            # TODO: QSCCD-1095: Serialize data to JSON and send to OIE
+            # Return the data for this patient
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} data found,'
-                + ' [Temporary print out for test coverage in pipeline]',
+                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
             )
+            return databank_data
         else:
             self.stdout.write(
                 f'No {DataModuleType(module).label} data found for {databank_patient.patient}',
+            )
+
+    def _nest_and_serialize_queryset(self, guid: str, queryset: QuerySet, nesting_key: str) -> dict:
+        """Pull the GUID to the top element and nest the rest of the qs records into a single dict.
+
+        Args:
+            queryset: Databank queryset with one or many rows
+            guid: GUID for this databank patient, used as the 'parent' element of the dict
+            nesting_key: name of key for the nested data
+
+        Returns:
+            Nested dictionary list
+        """
+        data = list(queryset)
+
+        # Extra nesting requirements for lab data to reduce data repetition among components of a single lab group
+        if nesting_key == 'LABS':
+            groups = defaultdict(list)
+            for item in data:
+                # Group by test_group_name and test_group_indicator
+                key = (item.pop('test_group_name', None), item.pop('test_group_indicator', None))
+                groups[key].append(item)
+            # Convert the defaultdict to the final format
+            data = [
+                {
+                    'test_group_name': key[0],
+                    'test_group_indicator': key[1],
+                    'components': value,
+                }
+                for key, value in groups.items()
+            ]
+        return {'GUID': guid, nesting_key: data}
+
+    def _send_to_oie_and_handle_response(self, data: dict) -> Any:
+        """Send databank dataset to the OIE and handle response.
+
+        Args:
+            data: Databank dictionary of one of the five module types.
+        """
+        try:
+            requests.post(
+                url=f'{settings.OIE_HOST}/databank/post',
+                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                json=json.dumps(data, default=str),
+                timeout=5,
+            ).json()
+            # TODO: QSCCD-1096 Handle response_data / partial sender errors
+        except requests.exceptions.RequestException as exc:
+            # log OIE errors
+            self.stderr.write(
+                f'OIE Error: {exc}',
             )

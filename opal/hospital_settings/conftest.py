@@ -123,6 +123,31 @@ def incomplete_institution_form(institution_form_files: dict) -> InstitutionForm
 
 
 @pytest.fixture()
+def institution_form_no_delay_fields(institution_form_files: dict) -> InstitutionForm:
+    """Fixture providing data for the `InstitutionForm` without delay fields.
+
+    Args:
+        institution_form_files (dict): dictionary with logo images
+
+    Returns:
+        InstitutionForm object without delay fields
+    """
+    instit = factories.Institution.build()
+    form_data = model_to_dict(instit, exclude=[
+        'id',
+        'adulthood_age',
+        'non_interpretable_lab_result_delay',
+        'interpretable_lab_result_delay',
+    ])
+
+    return InstitutionForm(
+        data=form_data,
+        files=institution_form_files,
+        instance=instit,
+    )
+
+
+@pytest.fixture()
 def site_user(client: Client, django_user_model: User) -> Client:
     """
     Fixture provides an instance of [Client][django.test.Client] with a logged in user with site permission.
