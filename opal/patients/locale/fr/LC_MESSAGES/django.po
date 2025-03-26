@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-13 15:54+0300\n"
+"POT-Creation-Date: 2023-04-14 20:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -130,10 +130,12 @@ msgid "Generate Access Request"
 msgstr "Générer une demande d'accès"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "First Name"
 msgstr "Prénom"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Last Name"
 msgstr "Nom de famille"
 
@@ -154,6 +156,31 @@ msgstr "Confirmer"
 #: opal/patients/forms.py
 msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
+
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Relationship"
+msgstr "Relation"
+
+#: opal/patients/forms.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Status"
+msgstr "Statut"
+
+#: opal/patients/forms.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Access Start"
+msgstr ""
+
+#: opal/patients/forms.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Access End"
+msgstr ""
+
+#: opal/patients/forms.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "Explanation for Change(s)"
+msgstr ""
 
 #: opal/patients/forms.py
 #: opal/patients/templates/patients/relationship_type/form.html
@@ -177,11 +204,11 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Name"
 msgstr "Nom"
 
@@ -301,7 +328,6 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -357,11 +383,6 @@ msgstr "Date de fin de relation"
 #: opal/patients/models.py
 msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
-
-#: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Relationship"
-msgstr "Relation"
 
 #: opal/patients/models.py
 msgid "Relationships"
@@ -443,10 +464,6 @@ msgstr "Date de Début"
 #: opal/patients/tables.py
 msgid "End Date"
 msgstr "Date de Fin"
-
-#: opal/patients/tables.py
-msgid "Status"
-msgstr "Statut"
 
 #: opal/patients/tables.py
 msgid "No caregiver could be found."
@@ -573,8 +590,12 @@ msgid "New Relationship Type"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Edit Caregiver Access Request"
+msgid "Edit/View Caregiver Access"
 msgstr "Générer une demande d'accès"
+
+#: opal/patients/templates/patients/relationships/edit_relationships.html
+msgid "MRN(s)"
+msgstr ""
 
 #: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "RAMQ"
