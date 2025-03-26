@@ -165,7 +165,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             self._search_patient(card_type, medical_number, site)
 
         if not self.patient:
-            self.add_error(NON_FIELD_ERRORS, _('The patient could not be found'))
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
         return self.cleaned_data
 
