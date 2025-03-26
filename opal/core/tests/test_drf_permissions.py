@@ -109,7 +109,7 @@ class TestCaregiverPatientPermissions:
         assert 'status is not CONFIRMED' in str(exception_info.value)
 
     def test_deceased_patient(self) -> None:
-        """Test a permissions check where the caregiver has a relationship with the patient, but it isn't confirmed."""
+        """Test that the permission check fails if the patient is deceased."""
         relationship = patient_factories.Relationship(
             status=RelationshipStatus.CONFIRMED,
             patient__date_of_death=timezone.now(),
