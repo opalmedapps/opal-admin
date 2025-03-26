@@ -21,6 +21,7 @@ class GeneralTestFactory(DjangoModelFactory):
     type = factory.Iterator(models.TestType.values)  # noqa: A003
     collected_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     received_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+    reported_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     message_type = 'ORU'
     message_event = 'R01'
     # Adjust the code and description based on test type
