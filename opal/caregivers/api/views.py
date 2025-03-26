@@ -356,16 +356,7 @@ class RegistrationCompletionView(APIView):
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, relationship)
             else:
-                # a user can potentially verify multiple email address during the same process
-                # use the last one
-                email_verification = relationship.caregiver.email_verifications.filter(
-                    is_verified=True,
-                ).order_by('-sent_at').first()
-
-                if not email_verification:
-                    raise drf_serializers.ValidationError('Caregiver email is not verified.')
-
-                self._update_caregiver(relationship.caregiver, email_verification.email, caregiver_data)
+                self._handle_new_caregiver(relationship, caregiver_data)
 
             utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
         except ValidationError as exception:
@@ -373,6 +364,32 @@ class RegistrationCompletionView(APIView):
             raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
+
+    def _handle_new_caregiver(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> None:
+        """
+        Handle registration completion for a new caregiver.
+
+        Args:
+            relationship: the relationship
+            caregiver_data: the validated registration data for the caregiver
+
+        Raises:
+            ValidationError: if the caregiver is already registered or there is no verified email
+        """
+        # ensure that the user is a skeleton user
+        if relationship.caregiver.user.is_active:
+            raise drf_serializers.ValidationError('Caregiver already registered.')
+
+        # a user can potentially verify multiple email address during the same process
+        # use the last one
+        email_verification = relationship.caregiver.email_verifications.filter(
+            is_verified=True,
+        ).order_by('-sent_at').first()
+
+        if not email_verification:
+            raise drf_serializers.ValidationError('Caregiver email is not verified.')
+
+        self._update_caregiver(relationship.caregiver, email_verification.email, caregiver_data)
 
     def _update_caregiver(
         self,

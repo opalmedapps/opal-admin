@@ -894,6 +894,22 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
     email = 'foo@bar.ca'
     code = 'abcdef123456'
 
+    @pytest.fixture(autouse=True)
+    def _prepare(self, api_client: APIClient, admin_user: User) -> None:
+        """Prepare by requesting to verify an email address."""
+        api_client.force_login(user=admin_user)
+        skeleton = user_factories.Caregiver(
+            first_name='Foo',
+            last_name='Bar',
+            is_active=False,
+        )
+        self.registration_code = caregiver_factories.RegistrationCode(
+            relationship__caregiver__user=skeleton,
+            code=self.code,
+        )
+
+        self._request_code(api_client)
+
     def _request_code(self, api_client: APIClient, email: str | None = None) -> None:
         """Request a verification code."""
         email = email or self.email
@@ -921,14 +937,6 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         )
 
         assert response.status_code == HTTPStatus.OK
-
-    @pytest.fixture(autouse=True)
-    def _prepare(self, api_client: APIClient, admin_user: User) -> None:
-        """Prepare by requesting to verify an email address."""
-        api_client.force_login(user=admin_user)
-        self.registration_code = caregiver_factories.RegistrationCode(code=self.code)
-
-        self._request_code(api_client)
 
     def test_email_verification_process(self, api_client: APIClient) -> None:
         """Test the email verification process."""
@@ -1048,7 +1056,13 @@ class TestRegistrationCompletionView:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
-        registration_code = caregiver_factories.RegistrationCode()
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+            is_active=False,
+        )
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
@@ -1079,6 +1093,25 @@ class TestRegistrationCompletionView:
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_caregiver_already_registered(self, api_client: APIClient, admin_user: User) -> None:
+        """Ensure that an existing caregiver can not be handled as a new caregiver."""
+        api_client.force_login(user=admin_user)
+        registration_code = caregiver_factories.RegistrationCode()
+        assert registration_code.relationship.caregiver.user.is_active
+
+        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.data[0] == 'Caregiver already registered.'
 
     def test_non_existent_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test non-existent registration code."""
@@ -1135,7 +1168,13 @@ class TestRegistrationCompletionView:
         """Test validation of the phone number."""
         api_client.force_login(user=admin_user)
 
-        registration_code = caregiver_factories.RegistrationCode()
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+            is_active=False,
+        )
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
@@ -1200,7 +1239,7 @@ class TestRegistrationCompletionView:
     def test_email_not_verified_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration fails if the email address wasn't verified when it is a new caregiver."""
         api_client.force_login(user=admin_user)
-        caregiver = caregiver_factories.CaregiverProfile(user__email='')
+        caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
         caregiver_factories.EmailVerification(
             caregiver=registration_code.relationship.caregiver,
@@ -1250,7 +1289,7 @@ class TestRegistrationCompletionView:
     def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
         """The verified email is copied to the caregiver."""
         api_client.force_login(user=admin_user)
-        caregiver_user = user_factories.Caregiver(email='')
+        caregiver_user = user_factories.Caregiver(email='', is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=caregiver_user)
         caregiver_factories.EmailVerification(
             caregiver=registration_code.relationship.caregiver,
