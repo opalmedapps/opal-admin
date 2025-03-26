@@ -83,7 +83,7 @@ def test_api_add_group_update_user_pass(api_client: APIClient, admin_user: User)
 
 
 def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user: User) -> None:
-    """Test the pass of the adding a user to multiple groups."""
+    """Test the pass of editing a user and add to multiple groups."""
     api_client.force_login(user=admin_user)
     # add two groups
     group_1 = user_factories.GroupFactory(name='group1')
@@ -111,7 +111,7 @@ def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user:
 
     data = {
         'groups': response.data['groups'],
-        'username': user.username,
+        'username': 'new_clinical_user',
     }
     response_put = api_client.put(
         reverse(
@@ -126,8 +126,12 @@ def test_api_add_multiple_groups_to_user_pass(api_client: APIClient, admin_user:
     assert len(response_put.data['groups']) == 3
     assert response_put.data == {
         'groups': [group_1.pk, group_2.pk, group_3.pk],
-        'username': user.username,
+        'username': 'new_clinical_user',
     }
+    # assert the user and groups are updated in the database
+    clinical_user = ClinicalStaff.objects.get(pk=user.pk)
+    assert clinical_user.username == 'new_clinical_user'
+    assert clinical_user.groups.count() == 3
 
 
 def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User) -> None:
