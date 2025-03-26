@@ -262,7 +262,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
         buffer = BytesIO()
-        print(df)
+
         if tabs == 'none':
             # return everything as one xlsx sheet, no dellineation by sheet
             df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
@@ -271,13 +271,10 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
             column_name = 'patient_id' if tabs == 'patients' else 'question_id'
             sheet_prefix = 'patient' if tabs == 'patients' else 'question_id'
             sort_rows_column = 'question_id' if tabs == 'patients' else 'patient_id'
-            print(column_name)
             ids = df[column_name].unique()
             ids.sort()
-            print(ids)
             with pd.ExcelWriter(buffer) as writer:
                 for current_id in ids:
-                    print(current_id)
                     patient_rows = df.loc[df[column_name] == current_id]
                     patient_rows = patient_rows.sort_values(
                         by=['last_updated', sort_rows_column],
