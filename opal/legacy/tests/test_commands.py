@@ -195,9 +195,9 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         assert patient.date_of_birth == date(2018, 1, 1)
         assert patient.sex == Patient.SexType.MALE
-        assert patient.first_name == legacy_patient.firstname
-        assert patient.last_name == legacy_patient.lastname
-        assert patient.ramq == legacy_patient.ssn
+        assert patient.first_name == legacy_patient.first_name
+        assert patient.last_name == legacy_patient.last_name
+        assert patient.ramq == legacy_patient.ramq
 
     @pytest.mark.parametrize(('data_access', 'legacy_data_access'), [
         (Patient.DataAccessType.ALL, '3'),
@@ -205,7 +205,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     ])
     def test_import_patient_data_access(self, data_access: Patient.DataAccessType, legacy_data_access: str) -> None:
         """The patient is imported with the data access level."""
-        legacy_factories.LegacyPatientFactory(accesslevel=legacy_data_access)
+        legacy_factories.LegacyPatientFactory(access_level=legacy_data_access)
 
         message, error = self._call_command('migrate_patients')
 
@@ -251,7 +251,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import fail for patient and pass patient identifier."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
-        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
         hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
@@ -263,10 +263,10 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import pass for patient and fail patient identifier already exists."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
+        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999996',
         )
         site = hospital_settings_factories.Site(code='TEST')
@@ -285,15 +285,15 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import fail for patient with multiple MRNs at the same site."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
-        code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
+        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999996',
         )
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            hospitalidentifiertypecode=code,
-            patientsernum=legacy_patient,
+            hospital=hospital,
+            patient=legacy_patient,
             mrn='9999997',
         )
         hospital_settings_factories.Site(code='TEST')
@@ -384,8 +384,8 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(
             legacy_id=99,
-            first_name=legacy_patient.firstname,
-            last_name=legacy_patient.lastname,
+            first_name=legacy_patient.first_name,
+            last_name=legacy_patient.last_name,
         )
         message, error = self._call_command('migrate_caregivers')
 
@@ -401,14 +401,14 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, username='test2')
         patient_factories.Patient(
             legacy_id=99,
-            first_name=legacy_patient1.firstname,
-            last_name=legacy_patient1.lastname,
+            first_name=legacy_patient1.first_name,
+            last_name=legacy_patient1.last_name,
             ramq='RAMQ12345678',
         )
         patient_factories.Patient(
             legacy_id=100,
-            first_name=legacy_patient2.firstname,
-            last_name=legacy_patient2.lastname,
+            first_name=legacy_patient2.first_name,
+            last_name=legacy_patient2.last_name,
         )
         message, error = self._call_command('migrate_caregivers')
 
@@ -420,7 +420,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_phone_number_converted(self) -> None:
         """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
-        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=514123456789)
+        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=514123456789)
         legacy_user = legacy_factories.LegacyUserFactory()
 
         command = migrate_caregivers.Command()
@@ -430,7 +430,7 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_phone_number_missing(self) -> None:
         """Ensure that a legacy patient without a phone number is correctly migrated."""
-        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=None)
+        legacy_patient = legacy_factories.LegacyPatientFactory(tel_num=None)
         legacy_user = legacy_factories.LegacyUserFactory()
 
         command = migrate_caregivers.Command()
@@ -519,17 +519,17 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
         )
         # create legacy HospitalPatient identifier
-        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
         caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(
                 email='opal@example.com',
@@ -557,20 +557,20 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create a second legacy patient
         second_legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=98,
-            ssn='RAMQ87654321',
-            firstname='Second First Name',
-            lastname='Second Last Name',
-            dateofbirth=timezone.make_aware(datetime(1950, 2, 3)),
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
             sex='Female',
-            telnum='5149991111',
+            tel_num='5149991111',
             email='second.opal@example.com',
             language='fr',
         )
         # create second legacy HospitalPatient identifier
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
-            patientsernum=second_legacy_patient,
+            patient=second_legacy_patient,
             mrn='9999997',
-            hospitalidentifiertypecode=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
+            hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
         )
 
         # create second CaregiverProfile record
@@ -608,15 +608,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
-            accesslevel='1',
+            access_level='1',
         )
         caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(
@@ -636,7 +636,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         assert patient.data_access == Patient.DataAccessType.ALL
-        assert legacy_patient.accesslevel == '1'
+        assert legacy_patient.access_level == '1'
 
         message, error = self._call_command('find_patients_deviations')
 

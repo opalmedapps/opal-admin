@@ -259,9 +259,9 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             last_updated__gt=last_synchronized,
         ).annotate(
             patient_id=models.F('patientsernum'),
-            opal_registration_date=models.F('registrationdate'),
+            opal_registration_date=models.F('registration_date'),
             patient_sex=models.F('sex'),
-            patient_dob=models.F('dateofbirth'),
+            patient_dob=models.F('date_of_birth'),
             patient_primary_language=models.F('language'),
             patient_death_date=models.F('death_date'),
         ).values(
