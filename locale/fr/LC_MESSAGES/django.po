@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-19 11:45-0400\n"
+"POT-Creation-Date: 2023-07-26 15:18-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: config/settings/base.py
+msgid "English"
+msgstr "Anglais"
+
+#: config/settings/base.py
+msgid "French"
+msgstr "Français"
+
+#: config/urls.py
+msgid "Opal Management"
+msgstr "Administration d'Opal"
+
+#: config/urls.py
+msgid "Opal Backend Admin"
+msgstr "Administrateur principal d'Opal"
 
 #: opal/core/forms/layouts.py
 msgid "Submit"
@@ -43,14 +59,6 @@ msgstr ""
 #: opal/core/views.py
 msgid "OpalAdmin v2"
 msgstr "OpalAdmin v2"
-
-#: opal/settings.py
-msgid "English"
-msgstr "Anglais"
-
-#: opal/settings.py
-msgid "French"
-msgstr "Français"
 
 #: opal/templates/base.html
 msgid "Opal Health Informatics Group"
@@ -198,11 +206,3 @@ msgstr "Modifier"
 #: opal/templates/tables/action_column.html
 msgid "Delete"
 msgstr "Supprimer"
-
-#: opal/urls.py
-msgid "Opal Management"
-msgstr "Administration d'Opal"
-
-#: opal/urls.py
-msgid "Opal Backend Admin"
-msgstr "Administrateur principal d'Opal"
