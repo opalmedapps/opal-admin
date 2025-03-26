@@ -17,10 +17,10 @@ from rest_framework.test import APIClient
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
+from opal.patients.api.views import CaregiverRelationshipView
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
-from opal.patients.api.views import CaregiverRelationshipView
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -115,7 +115,7 @@ def test_caregiver_list_swagger_fake_view(api_client: APIClient, admin_user: Use
     view.kwargs = {'legacy_id': 1}
     queryset = view.get_queryset()
 
-    assert queryset.count() == 0, "The queryset should be empty when swagger_fake_view is True."
+    assert queryset.count() == 0, 'The queryset should be empty when swagger_fake_view is True.'
 
 
 class TestRetrieveRegistrationDetailsView:
