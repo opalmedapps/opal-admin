@@ -1336,7 +1336,7 @@ class TestRegistrationCompletionView:
         caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
 
-        data: dict[str, Any] = self.input_data.copy()
+        data: dict[str, Any] = copy.deepcopy(self.input_data)
         data['caregiver'].update({'email': 'hans@wurst.com'})
 
         response = api_client.post(
