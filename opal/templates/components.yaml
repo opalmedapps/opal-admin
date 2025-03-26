@@ -4,6 +4,7 @@ components:
   confirm_delete: "components/confirm_delete.html"
   form_actions: "components/form_actions.html"
   form_cancel: "components/form_cancel.html"
+  form_back: "components/form_back.html"
   form_submit: "components/form_submit.html"
   icon: "components/icon.html"
   menu_group: "components/menu_group.html"

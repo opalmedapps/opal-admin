@@ -19,6 +19,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: opal/core/forms/layouts.py
+msgid "Submit"
+msgstr ""
+
+#: opal/core/forms/layouts.py
 msgid "Reset"
 msgstr "Réinitialiser"
 
@@ -56,6 +60,10 @@ msgstr "Le Groupe Informatique Opal Santé"
 #, python-format
 msgid "Are you sure you want to delete \"%(object)s\"?"
 msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
+
+#: opal/templates/components/form_back.html
+msgid "Back"
+msgstr ""
 
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"
@@ -160,6 +168,10 @@ msgstr "Types de Relations"
 #: opal/templates/sidebar.html
 msgid "Opal Registration"
 msgstr "Inscription à Opal"
+
+#: opal/templates/sidebar.html
+msgid "Opal Registration (old)"
+msgstr ""
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"

@@ -1,0 +1,22 @@
+{% extends "patients/access_request/new_access_request.html" %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+
+{% block content_form %}
+  <h5>Patient</h5>
+  {% render_table patient_table %}
+  <h5>Requestor</h5>
+  <p><strong>Relationship:</strong> {{ relationship_type }}</p>
+  <p><strong>Requestor Type:</strong> {{ user_type }}</p>
+  {% if is_existing_user %}
+    {% render_table user_table %}
+  {% else %}
+    <p><strong>First Name:</strong> {{ first_name }}</p>
+    <p><strong>Last Name:</strong> {{ last_name }}</p>
+  {% endif %}
+
+  {% crispy confirm_form %}
+{% endblock %}

@@ -1,10 +1,12 @@
 """Table definitions for models of the patient app."""
+from datetime import date
 from typing import Any
 
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 import django_tables2 as tables
 
@@ -76,19 +78,35 @@ class PatientTable(tables.Table):
     """A table for displaying patients' personal information."""
 
     date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
-
-    mrn = tables.Column(
+    mrns = tables.Column(
         verbose_name=_('MRN'),
         accessor='hospital_patients',
     )
 
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'mrn', 'ramq']
+        fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'ramq']
         empty_text = _('No patient could be found.')
         orderable = False
 
-    def render_mrn(self, value: QuerySet[HospitalPatient]) -> str:
+    def render_date_of_birth(self, value: date | str) -> date:
+        """
+        Render the date of birth column.
+
+        Support date as string by parsing it into a date.
+
+        Args:
+            value: the date as a date object or string (ISO format)
+
+        Returns:
+            the date object
+        """
+        if isinstance(value, str):
+            return date.fromisoformat(value)
+
+        return value
+
+    def render_mrns(self, value: QuerySet[HospitalPatient] | list[OIEMRNData]) -> str:
         """Render MRN column.
 
         Concat list of MRN/site pairs into one string.
@@ -103,9 +121,14 @@ class PatientTable(tables.Table):
         """
         # For more details:
         # https://django-tables2.readthedocs.io/en/latest/pages/custom-data.html#table-render-foo-methods
-        mrn_site_list = [
-            f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
-        ]
+        if isinstance(value, list):
+            mrn_site_list = [
+                f'{hospital_patient.site}: {hospital_patient.mrn}' for hospital_patient in value
+            ]
+        else:
+            mrn_site_list = [
+                f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
+            ]
 
         return ', '.join(str(mrn_value) for mrn_value in mrn_site_list)
 
@@ -158,8 +181,15 @@ class PendingRelationshipTable(tables.Table):
 
         if value == RelationshipStatus.PENDING.label:
             today = timezone.now().date()
-            status_since = today - record.request_date
-            pending_since_text = _('{days} days'.format(days=status_since.days))
+            number_of_days = (today - record.request_date).days
+            pending_since_text = ngettext(
+                '%(number_of_days)d day',  # noqa: WPS323
+                '%(number_of_days)d days',  # noqa: WPS323
+                number_of_days,
+            ) % {
+                'number_of_days': number_of_days,
+            }
+
             status_value = f'{value} ({pending_since_text})'
 
         return status_value
@@ -187,13 +217,13 @@ class PendingRelationshipTable(tables.Table):
         """
         if record.status == RelationshipStatus.EXPIRED:
             column.extra_context.update({
-                'urlname_view': 'patients:relationships-pending-readonly',
+                'urlname_view': 'patients:relationships-view-update',
                 'urlname_update': '',
             })
         else:
             column.extra_context.update({
                 'urlname_view': '',
-                'urlname_update': 'patients:relationships-pending-update',
+                'urlname_update': 'patients:relationships-view-update',
             })
 
         return column.render(record, *args, **kwargs)  # type: ignore[no-any-return]
@@ -265,7 +295,7 @@ class RelationshipCaregiverTable(tables.Table):
         empty_text = _('No caregiver could be found.')
 
 
-class ConfirmPatientDetailsTable(tables.Table):
+class ConfirmPatientDetailsTable(PatientTable):
     """Custom table for confirmation of patient data given an OIE data object.
 
     The goal of this table is to render data in the same way as the existing `PatientTable`
@@ -274,26 +304,4 @@ class ConfirmPatientDetailsTable(tables.Table):
     workflow where sometimes a patient may not exist already. As such, the rendering below is defined.
     """
 
-    first_name = tables.Column(verbose_name=_('First Name'))
-    last_name = tables.Column(verbose_name=_('Last Name'))
-    date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
     mrns = tables.Column(verbose_name=_('MRN'))
-    ramq = tables.Column(verbose_name=_('RAMQ Number'))
-
-    class Meta:
-        empty_text = _('No patient could be found.')
-        orderable = False
-
-    def render_mrns(self, value: list[OIEMRNData]) -> str:
-        """Render MRN column by pulling from the custom OIE data object.
-
-        Args:
-            value: OIEMRNData list
-
-        Returns:
-            Concatenated MRN/site pairs for a given patient
-        """
-        mrn_site_list = [
-            f'{hospital_patient.site}: {hospital_patient.mrn}' for hospital_patient in value
-        ]
-        return ', '.join(str(mrn_value) for mrn_value in mrn_site_list)

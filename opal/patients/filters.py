@@ -29,6 +29,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
+        initial=constants.MedicalCard.ramq.name,
         required=True,
         empty_label=_('Choose...'),
     )
@@ -38,6 +39,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         queryset=Site.objects.all(),
         label=_('Hospital'),
         empty_label=_('Choose...'),
+        required=False,
     )
 
     medical_number = django_filters.CharFilter(
@@ -60,20 +62,36 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)
+        request = kwargs.get('request')
 
+        # replace form's data with initial in case of up-validate
+        # such that missing fields don't cause the "required" validation error
+        # TODO: move this into a DynamicFilterSetMixin that can be reused where needed
+        if request and 'X-Up-Validate' in request.headers:
+            data = kwargs.pop('data')
+
+            for name, the_filter in self.base_filters.items():
+                the_filter.extra['initial'] = data.get(name)
+
+        super().__init__(*args, **kwargs)
         self.form.helper = FormHelper()
         self.form.helper.form_class = 'form-inline row row-cols-lg-auto g-3 align-items-baseline'
         self.form.helper.attrs = {'novalidate': ''}
         self.form.helper.form_method = 'GET'
         self.form.helper.disable_csrf = True
-
         self.form.helper.layout = Layout(
             Column('card_type'),
             Column('site'),
             Column('medical_number'),
-            Column(InlineSubmit('', gettext('Search Specific Patient'))),
-            Column(InlineReset()),
+            Column(InlineSubmit(
+                label=gettext('Search Specific Patient'),
+                active=self.is_bound,
+                extra_css='btn-secondary',
+            )),
+            Column(InlineReset(
+                label=gettext('Show Pending Requests'),
+                active=not self.is_bound,
+            )),
         )
 
         medical_number_field = self.form.fields['medical_number']
@@ -93,19 +111,17 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         """
         # Remove 'medical_card_type' field from the form since this field does not perform queryset filtering
         card_type = self.form.cleaned_data.pop('card_type')
+        medical_number = self.form.cleaned_data.pop('medical_number')
 
-        # Set medical_number's 'field_name' by which the filtering will be performed
-        # TODO: filtering separately by site and MRN can produce duplicates
-        #  (e.g., RVH: 1234 and MGH: 1234) because the filters are applied one after the other
-        # need to find a way to combine site code and MRN into one filter
-        # see also: https://github.com/carltongibson/django-filter/pull/1167#issuecomment-1001984446
         if card_type == constants.MedicalCard.mrn.name:
-            self.filters['medical_number'].field_name = 'patient__hospital_patients__mrn'
+            site_obj = self.form.cleaned_data.pop('site')
+            queryset = queryset.filter(
+                patient__hospital_patients__site__name=site_obj.name,
+                patient__hospital_patients__mrn=medical_number,
+            )
         else:
-            self.filters['medical_number'].field_name = 'patient__ramq'
+            queryset = queryset.filter(
+                patient__ramq=medical_number,
+            )
 
-        for name, value in self.form.cleaned_data.items():
-            queryset = self.filters[name].filter(queryset, value)
-
-        return_queryset: QuerySet[Relationship] = super().filter_queryset(queryset)
-        return return_queryset  # noqa: WPS331
+        return queryset
