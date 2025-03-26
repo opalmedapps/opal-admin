@@ -117,18 +117,6 @@ class LegacyEducationalMaterialManager(UnreadQuerySetMixin, models.Manager):
 class LegacyQuestionnaireManager(models.Manager):
     """legacy questionnaire manager."""
 
-    def get_unread_queryset(self, patient_sernum: int) -> models.QuerySet:
-        """
-        Get the queryset of uncompleted questionnaires for a given user.
-
-        Args:
-            patient_sernum: User sernum used to retrieve uncompleted questionnaires queryset.
-
-        Returns:
-            Queryset of uncompleted questionnaires.
-        """
-        return self.filter(patientsernum=patient_sernum, completedflag=0)
-
 
 class LegacyAnnouncementManager(models.Manager):
     """legacy announcement manager."""

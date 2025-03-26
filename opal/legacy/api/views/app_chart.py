@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.legacy import models
+from opal.legacy_questionnaires.models import LegacyQuestionnaire
 
 from ..serializers import UnreadCountSerializer
 
@@ -51,7 +52,7 @@ class AppChartView(APIView):
                 legacy_id,
                 user_name,
             ).count(),
-            'unread_questionnaire_count': models.LegacyQuestionnaire.objects.get_unread_queryset(
+            'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
             ).count(),
         }
