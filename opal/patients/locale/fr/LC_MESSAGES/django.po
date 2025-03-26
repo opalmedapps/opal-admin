@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:58-0500\n"
+"POT-Creation-Date: 2024-03-19 14:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -167,14 +167,6 @@ msgstr "Rechercher un utilisateur"
 msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
-#: opal/patients/forms.py opal/patients/models.py
-msgid ""
-"A self-relationship was selected but the caregiver appears to be someone "
-"other than the patient."
-msgstr ""
-"Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
-"être quelqu'un d'autre que le patient."
-
 #: opal/patients/forms.py
 msgid "Age"
 msgstr "Âge"
@@ -246,6 +238,14 @@ msgstr "Explication des changements"
 #: opal/patients/forms.py
 msgid "Save"
 msgstr "Enregistrer"
+
+#: opal/patients/forms.py
+msgid ""
+"A self-relationship was selected but the caregiver appears to be someone "
+"other than the patient."
+msgstr ""
+"Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
+"être quelqu'un d'autre que le patient."
 
 #: opal/patients/models.py
 msgid "Self"
