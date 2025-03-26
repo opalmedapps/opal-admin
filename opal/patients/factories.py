@@ -9,7 +9,7 @@ reference from:
 
 import datetime
 
-from factory import RelatedFactory, Sequence, SubFactory
+from factory import RelatedFactory, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile
@@ -25,9 +25,9 @@ class RelationshipType(DjangoModelFactory):
         model = models.RelationshipType
 
     name = 'Self'
-    name_fr = 'Soi'
+    name_fr = lazy_attribute(lambda type: f'{type.name} FR')
     description = 'The patient'
-    description_fr = 'Le patient'
+    description_fr = lazy_attribute(lambda type: f'{type.description} FR')
     start_age = 14
     form_required = False
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-14 11:09-0400\n"
+"POT-Creation-Date: 2022-06-15 16:22-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,6 +113,7 @@ msgid "Caregiver"
 msgstr "Proche aidant"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationship_type/form.html
 msgid "Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
@@ -163,3 +164,59 @@ msgstr "Patient de l'hôpital"
 #: opal/patients/models.py
 msgid "Hospital Patients"
 msgstr "Patients de l'hôpital"
+
+#: opal/patients/tables.py
+msgid "Actions"
+msgstr ""
+
+#: opal/patients/tables.py
+msgid "No relationship types defined."
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/action_column.html
+msgid "Edit"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/action_column.html
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+msgid "Delete"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+msgid "Delete Relationship Type"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#, python-format
+msgid ""
+"Are you sure you want to delete the following relationship type: %(object)s?"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+msgid "Yes"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Cancel"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Update"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Create"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Save"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/list.html
+msgid "Relationship Types"
+msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/list.html
+msgid "New Relationship Type"
+msgstr ""
