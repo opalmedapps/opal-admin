@@ -351,7 +351,7 @@ def _init_session() -> HttpRequest:
     """
     request = RequestFactory().get('/')
     # adding session
-    middleware = SessionMiddleware()
+    middleware = SessionMiddleware(lambda request: None)  # type: ignore[arg-type]
     middleware.process_request(request)
     request.session.save()
     return request
