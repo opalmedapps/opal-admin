@@ -1972,6 +1972,145 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         assert DailyUserAppActivity.objects.count() == 0
         assert DailyUserPatientActivity.objects.count() == 1
 
+    def test_populate_current_day_received_data(self) -> None:
+        """Ensure that the command successfully populates the current day received data statistics per patient."""
+        marge = legacy_factories.LegacyPatientFactory(patientsernum=51, ramq='SIMM18510191')
+        homer = legacy_factories.LegacyPatientFactory(patientsernum=52, ramq='SIMM18510192')
+        legacy_factories.LegacyPatientControlFactory(patient=marge)
+        legacy_factories.LegacyPatientControlFactory(patient=homer)
+
+        django_marge_patient = patients_factories.Patient(legacy_id=marge.patientsernum, ramq='SIMM18510191')
+        django_homer_patient = patients_factories.Patient(legacy_id=homer.patientsernum, ramq='SIMM18510192')
+
+        previous_day = timezone.make_aware(
+            dt.datetime.now() - dt.timedelta(days=1),
+        )
+        current_day = timezone.make_aware(dt.datetime.now())
+
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=current_day,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=timezone.make_aware(dt.datetime.now() - dt.timedelta(days=7)),
+            scheduledstarttime=current_day,
+        )
+
+        next_appointment = timezone.make_aware(
+            dt.datetime.now() + dt.timedelta(days=3),
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=marge,
+            date_added=current_day,
+            scheduledstarttime=next_appointment,
+        )
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=current_day,
+            scheduledstarttime=next_appointment,
+        )
+
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=1,
+            patientsernum=marge,
+            dateadded=current_day,
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=2,
+            patientsernum=homer,
+            dateadded=current_day,
+        )
+
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=current_day,
+        )
+
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=homer,
+            date_added=current_day,
+        )
+
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=marge,
+            date_added=current_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=current_day,
+        )
+
+        # previous day records should not be included to the final queryset
+        legacy_factories.LegacyAppointmentFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+            scheduledstarttime=timezone.make_aware(
+                dt.datetime.now() + dt.timedelta(days=7),
+            ),
+        )
+        legacy_factories.LegacyDocumentFactory(
+            documentsernum=3,
+            patientsernum=marge,
+            dateadded=previous_day,
+        )
+        legacy_factories.LegacyEducationalMaterialFactory(
+            patientsernum=homer,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyQuestionnaireFactory(
+            patientsernum=marge,
+            date_added=previous_day,
+        )
+        legacy_factories.LegacyPatientTestResultFactory(
+            patient_ser_num=homer,
+            date_added=previous_day,
+        )
+
+        stdout, _stderr = self._call_command('update_daily_usage_statistics', '--today')
+        assert stdout == 'Calculating usage statistics for today\nSuccessfully populated daily statistics data\n'
+        assert DailyPatientDataReceived.objects.count() == 2
+        marge_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_marge_patient,
+        ).first()
+        assert marge_received_data
+        assert marge_received_data.next_appointment == next_appointment
+        assert marge_received_data.last_appointment_received == current_day
+        assert marge_received_data.appointments_received == 1
+        assert marge_received_data.last_document_received == current_day
+        assert marge_received_data.documents_received == 1
+        assert marge_received_data.last_educational_material_received == current_day
+        assert marge_received_data.educational_materials_received == 1
+        assert marge_received_data.last_questionnaire_received == current_day
+        assert marge_received_data.questionnaires_received == 1
+        assert marge_received_data.last_lab_received == current_day
+        assert marge_received_data.labs_received == 1
+
+        homer_received_data = DailyPatientDataReceived.objects.filter(
+            patient_id=django_homer_patient,
+        ).first()
+        assert homer_received_data
+        assert homer_received_data.next_appointment == next_appointment
+        assert homer_received_data.last_appointment_received == current_day
+        assert homer_received_data.appointments_received == 1
+        assert homer_received_data.last_document_received == current_day
+        assert homer_received_data.documents_received == 1
+        assert homer_received_data.last_educational_material_received == current_day
+        assert homer_received_data.educational_materials_received == 1
+        assert homer_received_data.last_questionnaire_received == current_day
+        assert homer_received_data.questionnaires_received == 1
+        assert homer_received_data.last_lab_received == current_day
+        assert homer_received_data.labs_received == 1
+
     def _create_log_record(
         self,
         request: str = 'Login',
