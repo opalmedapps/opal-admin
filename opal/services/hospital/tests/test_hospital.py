@@ -625,7 +625,7 @@ def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
 
 def test_new_opal_patient_success(mocker: MockerFixture) -> None:
     """Ensure that set_opal_patient can succeed."""
-    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
 
     response = oie_service.new_opal_patient(
         [
