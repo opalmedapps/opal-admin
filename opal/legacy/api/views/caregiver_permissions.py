@@ -1,4 +1,6 @@
 """Collection of api views used for caregiver-patient permission checks."""
+from drf_spectacular.utils import extend_schema, inline_serializer
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +19,12 @@ class CaregiverPermissionsView(APIView):
     # The essential work for this request is done by CaregiverPatientPermissions
     permission_classes = (IsListener, CaregiverPatientPermissions)
 
+    @extend_schema(
+        responses=inline_serializer(
+            'EmptyResponseSerializer',
+            fields={},
+        ),
+    )
     def get(self, request: Request, legacy_id: int) -> Response:
         """
         Handle GET requests on `patients/legacy/<legacy_id>/check-permissions`.

@@ -1,5 +1,5 @@
 """Collection of api views used to get appointment details."""
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +11,14 @@ from ..serializers import LegacyAppointmentDetailedSerializer
 
 
 @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
     responses=inline_serializer(
         name='AppAppointmentsSerializer',
         fields={

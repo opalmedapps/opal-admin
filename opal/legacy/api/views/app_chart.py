@@ -1,7 +1,7 @@
 """Collection of api views used to display the Opal's Chart view."""
 from typing import Any
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,6 +14,14 @@ from ..serializers import UnreadCountSerializer
 
 
 @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='Appuserid',
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description='The username of the logged in user',
+        ),
+    ],
     responses={
         200: UnreadCountSerializer,
     },

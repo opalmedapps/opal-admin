@@ -1,10 +1,10 @@
 """Module providing API views for the `health_data` app."""
 from typing import Any
-
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from django.db import models
 from django.utils import timezone
 
-from rest_framework import generics, serializers
+from rest_framework import generics, serializers, fields
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -81,7 +81,17 @@ class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
         """
         serializer.save(patient=self.patient)
 
-
+@extend_schema(
+    request=PatientUUIDSerializer(many=True),
+    responses=inline_serializer(
+        name='UnviewedQuantitySampleSerializer',
+        fields={
+            'patient_uuid': serializers.UUIDField(),
+            'count': serializers.IntegerField(min_value=0),
+        },
+        many=True
+    )
+)
 class UnviewedQuantitySampleView(APIView):
     """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
 
@@ -120,7 +130,12 @@ class UnviewedQuantitySampleView(APIView):
 
         return Response(data=unviewed_counts)
 
-
+@extend_schema(
+    responses=inline_serializer(
+        'EmptyResponseSerializer',
+        fields={},
+    ),
+)
 class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
