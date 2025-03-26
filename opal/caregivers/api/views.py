@@ -384,16 +384,11 @@ class RegistrationCompletionView(APIView):
             is_verified=True,
         ).order_by('-sent_at').first()
 
-        data_email: str | None = caregiver_data.get('email', None)
+        data_email: str = caregiver_data.get('email', '')
 
         if email_verification is None and not data_email:
             raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
-        if data_email is None:
-            raise drf_serializers.ValidationError('Caregiver email is missing')
-
-        reveal_type(email_verification)
-        reveal_type(data_email)
         email: str = email_verification.email if email_verification is not None else data_email
         self._update_caregiver(relationship.caregiver, email, caregiver_data)
 

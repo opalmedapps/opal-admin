@@ -1346,11 +1346,11 @@ class TestRegistrationCompletionView:
             data=data,
         )
 
-        print(response.content.decode())
         assert response.status_code == HTTPStatus.OK
         registration_code.refresh_from_db()
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
-        assert 'Caregiver email is not verified' not in response.content.decode()
+        caregiver.refresh_from_db()
+        assert caregiver.user.email == 'hans@wurst.com'
 
     def test_email_not_verified_existing_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration succeeds with no email verification when it is an existing caregiver."""
