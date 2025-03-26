@@ -15,6 +15,8 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     RelationshipType = apps.get_model('patients', 'RelationshipType')
 
     self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+    self_type.description = 'The patient is the requestor and is caring for themselves.'
+    self_type.description_fr = 'Le patient est le demandeur et prend soin de lui'
     self_type.can_answer_questionnaire = True
     self_type.form_required = False
     self_type.full_clean()
@@ -23,6 +25,8 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     guardian_type = RelationshipType.objects.get(role_type=RoleType.PARENT_GUARDIAN)
     guardian_type.name = 'Parent/Guardian'
     guardian_type.name_fr = 'Parent/Tuteur'
+    guardian_type.description = 'Parent or guardian of a minor, less than 14 years old, legally under their care.'
+    guardian_type.description_fr = "Parent ou tuteur d'un mineur de moins de 14 ans, légalement sous sa garde."
     guardian_type.can_answer_questionnaire = True
     guardian_type.full_clean()
     guardian_type.save()
