@@ -25,7 +25,7 @@ types-python-dateutil==2.9.0.20241206
 
 # Code quality
 #
-flake8==6.1.0  # https://github.com/PyCQA/flake8
+# flake8==6.1.0  # https://github.com/PyCQA/flake8
 
 # wemake Python Styleguide
 # see: https://wemake-python-stylegui.de/en/latest/index.html
