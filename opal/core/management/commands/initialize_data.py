@@ -43,8 +43,6 @@ def password(value: str) -> str:
     """
     Validate that the password has a minimum required length.
 
-    The minimum length is determined by `MinimumLengthValidator` in the `AUTH_PASSWORD_VALIDATORS` setting.
-
     Args:
         value: the password string to validate
 
@@ -54,8 +52,7 @@ def password(value: str) -> str:
     Returns:
         the password string
     """
-    password_validators: list[dict[str, Any]] = settings.AUTH_PASSWORD_VALIDATORS
-    minimum_length = password_validators[1]['OPTIONS']['min_length']
+    minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
 
     if len(value) < minimum_length:
         raise ValueError(f'Password must be at least {minimum_length} characters long')
@@ -88,11 +85,15 @@ class Command(BaseCommand):
             default=False,
             help='Force deleting existing data first before initializing (default: false)',
         )
+        password_help = (
+            'password for the admin user to be used'
+            + f' instead of generating a random one (minimum length: {constants.ADMIN_PASSWORD_MIN_LENGTH}'
+        )
         parser.add_argument(
             '--admin-password',
             type=password,
             default=None,
-            help='password for the admin user to be used instead of generating a random one (minimum length: 20)',
+            help=password_help,
         )
         parser.add_argument(
             '--listener-token',
@@ -302,13 +303,17 @@ class Command(BaseCommand):
             # the password does not matter since legacy OpalAdmin
             # does not support logging in with AD or regular login at the same time
             # i.e., if AD login is enabled a regular log in is not possible
-            password=secrets.token_urlsafe(10),
+            password=secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES),
             oa_role=admin_role,
             user_type=legacy_models.LegacyOAUserType.HUMAN,
         )
 
-        password_option = options['admin_password']
-        raw_password = password_option if password_option else secrets.token_urlsafe(10)
+        password_option: str = options['admin_password']
+        raw_password = (
+            password_option
+            if password_option
+            else secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+        )
         ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
 
         message = 'Created superuser with username "admin"'

@@ -10,6 +10,7 @@ from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
+from opal.core import constants
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import models as legacy_models
@@ -355,8 +356,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
 
     def test_insert_superuser_predefined_password(self) -> None:
         """A predefined password can be provided for the admin user."""
-        # 9 bytes --> 12 characters
-        random_password = secrets.token_urlsafe(9)
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
 
         stdout, _stderr = self._call_command('initialize_data', f'--admin-password={random_password}')
 
@@ -374,10 +374,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
 
     def test_insert_superuser_predefined_password_invalid(self) -> None:
         """The password for the admin user needs to have a minimum length."""
-        # 8 bytes --> 11 characters
-        random_password = secrets.token_urlsafe(8)
-
-        assert len(random_password) == 11
+        random_password = secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES - 1)
 
         with pytest.raises(
             CommandError,
