@@ -185,10 +185,6 @@ class PathologyObservation(AbstractObservation):
         verbose_name=_('Value'),
     )
 
-    class Meta:
-        verbose_name = _('Pathology Observation')
-        verbose_name_plural = _('Pathology Observations')
-
     # Update the ForeignKey in this derived model
     general_test = models.ForeignKey(
         verbose_name=_('General Test'),
@@ -196,6 +192,10 @@ class PathologyObservation(AbstractObservation):
         on_delete=models.CASCADE,
         related_name='pathology_observations',
     )
+
+    class Meta:
+        verbose_name = _('Pathology Observation')
+        verbose_name_plural = _('Pathology Observations')
 
     def __str__(self) -> str:
         """Pathology observation string representation.
@@ -237,10 +237,6 @@ class LabObservation(AbstractObservation):
         default=AbnormalFlag.NORMAL,
     )
 
-    class Meta:
-        verbose_name = _('Lab Observation')
-        verbose_name_plural = _('Lab Observations')
-
     # Update the ForeignKey in this derived model
     general_test = models.ForeignKey(
         verbose_name=_('General Test'),
@@ -248,6 +244,10 @@ class LabObservation(AbstractObservation):
         on_delete=models.CASCADE,
         related_name='lab_observations',
     )
+
+    class Meta:
+        verbose_name = _('Lab Observation')
+        verbose_name_plural = _('Lab Observations')
 
     def __str__(self) -> str:
         """Lab observation string representation.
