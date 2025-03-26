@@ -13,6 +13,14 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
         fields = ['mrn', 'is_active']
 
 
+class PatientRegistrationSerializer(serializers.ModelSerializer):
+    """Patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = Patient
+        fields = ['ramq']
+
+
 class PatientDetailedSerializer(serializers.ModelSerializer):
     """Patient serializer used to get detailed patient information."""
 
@@ -21,7 +29,7 @@ class PatientDetailedSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
 
 
-class PatientRegistrationSerializer(serializers.ModelSerializer):
+class PatientSummarySerializer(serializers.ModelSerializer):
     """Patient serializer used to get summary patient information."""
 
     class Meta:
