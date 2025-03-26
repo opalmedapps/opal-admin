@@ -203,9 +203,9 @@ class PathologyObservation(AbstractObservation):
         Returns:
             string repr
         """
-        return '{code} : {text}'.format(
+        return '{code} : {observed}'.format(
             code=str(self.identifier_code),
-            text=str(self.identifier_text),
+            observed=str(self.observed_at),
         )
 
 
