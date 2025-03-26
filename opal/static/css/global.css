@@ -32,10 +32,6 @@ body {
   min-height: -webkit-fill-available;
 }
 
-body h5 {
-  font-weight: 600;
-}
-
 /* if there is not enough space for the sidebar, scroll it individually */
 body > div > nav {
   overflow-y: auto;
