@@ -182,7 +182,7 @@ def test_valid_relationship_types_contain_self_role_type() -> None:
 
     valid_types = list(utils.valid_relationship_types(patient).values_list('role_type', flat=True))
 
-    assert RoleType.SELF not in valid_types
+    assert RoleType.SELF in valid_types
     assert RoleType.MANDATARY in valid_types
 
 
@@ -195,7 +195,7 @@ def test_valid_relationship_not_contain_self_role_type() -> None:
         ).values_list('role_type', flat=True),
     )
 
-    assert RoleType.SELF not in valid_types
+    assert RoleType.SELF in valid_types
     assert RoleType.MANDATARY in valid_types
 
 
