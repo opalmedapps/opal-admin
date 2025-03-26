@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 20:53+0300\n"
+"POT-Creation-Date: 2023-04-19 08:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -613,26 +613,13 @@ msgstr "Patient de l'hôpital"
 msgid "Pending Requests"
 msgstr "En attendant"
 
-#: opal/patients/templates/patients/relationships/relationship_filter.html
-msgid "Search Patient Access"
-msgstr "Rechercher l'accès des patients"
-
-#: opal/patients/templates/patients/relationships/relationship_filter.html
-msgid "Search for a specific patient to see all their caregivers."
-msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
-
-#: opal/patients/templates/patients/relationships/relationship_filter.html
-#: opal/patients/views.py
-msgid "Patient Details"
-msgstr "Détails du patient"
-
-#: opal/patients/templates/patients/relationships/relationship_filter.html
-msgid "Caregiver Details"
-msgstr "Détails de l'aidant"
-
 #: opal/patients/views.py
 msgid "Hospital Information"
 msgstr "Patient de l'hôpital"
+
+#: opal/patients/views.py
+msgid "Patient Details"
+msgstr "Détails du patient"
 
 #: opal/patients/views.py
 msgid "Requestor Details"
