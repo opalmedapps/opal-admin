@@ -417,7 +417,7 @@ def test_new_patient_response_no_status() -> None:
 def test_new_patient_response_success() -> None:
     """The response is considered valid if the status is 'Success'."""
     response = {
-        'status': 'Success',
+        'status': 'success',
     }
 
     valid, errors = oie_validator.is_new_patient_response_valid(response)

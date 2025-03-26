@@ -137,7 +137,7 @@ class OIEValidator:  # noqa: WPS214
         """
         errors = []
         status = response_data.get('status')
-        success = status == 'Success'
+        success = status == 'success'
 
         if status is None:
             errors.append('Patient response data does not have the attribute "status"')
