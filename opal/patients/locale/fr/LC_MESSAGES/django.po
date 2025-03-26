@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 15:55+0000\n"
+"POT-Creation-Date: 2023-05-30 17:05-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -332,6 +332,14 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #: opal/patients/models.py
+msgid "All"
+msgstr ""
+
+#: opal/patients/models.py
+msgid "Need To Know"
+msgstr ""
+
+#: opal/patients/models.py
 msgid "UUID"
 msgstr "UUID"
 
@@ -352,6 +360,10 @@ msgstr "Sexe"
 #: opal/patients/models.py
 msgid "RAMQ Number"
 msgstr "Numéro de RAMQ"
+
+#: opal/patients/models.py
+msgid "Data Access Level"
+msgstr "s"
 
 #: opal/patients/models.py
 msgid "Caregivers"
