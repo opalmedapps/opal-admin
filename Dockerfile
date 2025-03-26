@@ -10,7 +10,7 @@ RUN apt-get update \
   # install git
   && apt-get install git -y \
   # mysqlclient dependencies
-  && apt-get install -y default-libmysqlclient-dev pkg-config \
+  && apt-get install -y default-libmysqlclient-dev \
   # argon2-cffi dependencies
   && apt-get install -y libffi-dev libssl-dev \
   # Translations dependencies
