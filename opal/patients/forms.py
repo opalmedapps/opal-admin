@@ -22,7 +22,14 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
+from opal.core.forms.layouts import (
+    CancelButton,
+    EnterSuppressedLayout,
+    FormActions,
+    InlineSubmit,
+    RadioSelect,
+    TabRadioSelect,
+)
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.hospital_settings.models import Institution
 from opal.services.hospital.hospital import OIEService
@@ -668,20 +675,6 @@ class AccessRequestConfirmForm(forms.Form):
             self.add_error('password', _('The password you entered is incorrect. Please try again.'))
 
         return self.cleaned_data
-
-
-# TODO: move to core form layouts?
-# potential improvement: inherit from Container or LayoutObject to include the content
-# and provide a method to add content at the right place
-class TabRadioSelect(CrispyField):
-    """
-    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
-
-    Triggers validation via `up-validate` on selection to let the form react to the selection.
-    For example, the form can change the layout according to the selection.
-    """
-
-    template = 'patients/radioselect_tabs.html'
 
 
 class AccessRequestSendSMSForm(forms.Form):
