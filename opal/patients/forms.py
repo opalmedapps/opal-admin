@@ -528,8 +528,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         super().clean()
         cleaned_data = self.cleaned_data
-        print('check\n')
-        print('hello\n')
+
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
 
