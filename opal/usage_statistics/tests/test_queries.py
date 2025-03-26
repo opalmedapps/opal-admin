@@ -2853,15 +2853,15 @@ def test_fetch_labs_summary_per_patient_success() -> None:
         {
             'patient_ser_num': 55,
             'patient__legacy_id': 55,
-            'first_lab_received': None,
-            'last_lab_received': None,
+            'first_lab_received_utc': None,
+            'last_lab_received_utc': None,
             'total_labs_received': 0,
         },
         {
             'patient_ser_num': 56,
             'patient__legacy_id': 56,
-            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
-            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'first_lab_received_utc': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'last_lab_received_utc': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
             'total_labs_received': 18,
         },
     ]

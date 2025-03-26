@@ -536,7 +536,7 @@ def fetch_users_latest_login_year_summary(
     ).values(
         'action_by_user',
     ).annotate(
-        year=ExtractYear(models.Max('last_login')),
+        year=ExtractYear(models.Max('last_login', tzinfo=dt.UTC)),
     )
 
     latest_logins_by_year = Counter(str(item['year']) for item in latest_logins)
@@ -568,8 +568,8 @@ def fetch_labs_summary_per_patient(
             action_date__lte=end_date,
         ).values('patient__legacy_id').annotate(
             patient_ser_num=models.F('patient__legacy_id'),
-            first_lab_received=models.Min('last_lab_received'),
-            last_lab_received=models.Max('last_lab_received'),
+            first_lab_received_utc=models.Min('last_lab_received'),
+            last_lab_received_utc=models.Max('last_lab_received'),
             # total_lab_groups_received=models.Sum('lab_groups_received'),   noqa: E800
             total_labs_received=models.Sum('labs_received'),
             # average_labs_per_test_group=models.F('total_labs_received')    noqa: E800
@@ -735,15 +735,15 @@ def _annotate_queryset_with_grouping_field(
 
     if group_by == GroupByComponent.YEAR:
         annotated_queryset: models.QuerySet[_ModelT] = queryset.annotate(
-            year=TruncYear(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
+            year=TruncYear(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     elif group_by == GroupByComponent.MONTH:
         annotated_queryset = queryset.annotate(
-            month=TruncMonth(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
+            month=TruncMonth(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     else:
         annotated_queryset = queryset.annotate(
-            day=TruncDay(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
+            day=TruncDay(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
 
     return annotated_queryset
