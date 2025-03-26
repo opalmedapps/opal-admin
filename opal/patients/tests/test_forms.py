@@ -931,7 +931,7 @@ def test_accessrequestsearchform_invalid_ramq(mocker: MockerFixture) -> None:
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'error',
-            'data': {'message': ['Patient data does not have the attribute ramq.']},
+            'data': {'message': ['Patient ramq is missing.']},
         },
     )
 
