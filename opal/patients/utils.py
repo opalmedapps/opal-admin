@@ -70,7 +70,7 @@ def insert_security_answers(
 
 def search_valid_relationship_types(date_of_birth: date) -> List[Dict[str, Any]]:
     """
-    Search for valid relationship types according to patient age.
+    Search for valid relationship types according to the patient's age.
 
     Args:
         date_of_birth: date of birth of the patient
