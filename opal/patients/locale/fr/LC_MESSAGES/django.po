@@ -146,24 +146,20 @@ msgstr "Date de début doit être antérieure à la date de fin."
 
 #: opal/patients/models.py
 msgid "Site"
-msgstr "Placer"
+msgstr "Site"
 
 #: opal/patients/models.py
-msgid "MRN"
-msgstr "MRN"
+msgid "Medical Record Number"
+msgstr "Numéro de dossier médical"
 
 #: opal/patients/models.py
 msgid "Is Active"
-msgstr "C'est actif"
+msgstr "C'est Actif"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Hospital Patient"
-msgstr "Patient hospitalisé"
+msgstr "Patient de l'hôpital"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Hospital Patients"
-msgstr "Patients hospitalisés"
+msgstr "Patients de l'hôpital"

@@ -204,7 +204,7 @@ class HospitalPatient(models.Model):
         on_delete=models.CASCADE,
     )
     mrn = models.CharField(
-        verbose_name=_('MRN'),
+        verbose_name=_('Medical Record Number'),
         max_length=10,
     )
     is_active = models.BooleanField(
