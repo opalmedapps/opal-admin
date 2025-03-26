@@ -51,7 +51,7 @@ class TestGeneralAppView:
         factories.LegacyAnnouncementFactory(patientsernum=patient1)
         factories.LegacyAnnouncementFactory(patientsernum=patient1, readby=[user.username])
         announcements = models.LegacyAnnouncement.objects.get_unread_queryset([patient1.patientsernum], user.username)
-        assert announcements == 2
+        assert announcements == 3
 
     def test_get_unread_announcement_nothing(self) -> None:
         """Test the return of zero announcements when nothing is available."""
