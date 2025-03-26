@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
-from opal.caregivers.models import CaregiverProfile
+from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
 from opal.users.models import Caregiver
@@ -46,6 +46,7 @@ class Command(BaseCommand):
             Patient.objects.all().exists(),
             Caregiver.objects.all().exists(),
             Institution.objects.all().exists(),
+            SecurityAnswer.objects.all().exists(),
         ]):
             confirm = input(
                 'Database already contains data.\n'
@@ -70,6 +71,7 @@ def _delete_existing_data() -> None:
     """Delete all the existing test data."""
     Relationship.objects.all().delete()
     Patient.objects.all().delete()
+    # also deletes security answers
     CaregiverProfile.objects.all().delete()
     Caregiver.objects.all().delete()
     # also deletes Sites
@@ -309,6 +311,11 @@ def _create_test_data() -> None:
         start_date=date_bart_fourteen,
     )
 
+    # create the same security question and answers for the caregivers
+    _create_security_answers(user_marge)
+    _create_security_answers(user_homer)
+    _create_security_answers(user_bart)
+
 
 def _create_institution() -> Institution:
     """
@@ -534,6 +541,30 @@ def _create_relationship(
 
     relationship.full_clean()
     relationship.save()
+
+
+def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: str) -> None:
+    security_answer = SecurityAnswer.objects.create(user=caregiver, question=question, answer=answer)
+    security_answer.full_clean()
+    security_answer.save()
+
+
+def _create_security_answers(caregiver: CaregiverProfile) -> None:
+    _create_security_answer(
+        caregiver,
+        'What is the name of your first pet?',
+        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',  # noqa: E501
+    )
+    _create_security_answer(
+        caregiver,
+        'What was the name of your favorite superhero as a child?',
+        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',  # noqa: E501
+    )
+    _create_security_answer(
+        caregiver,
+        'What was the color of your first car',
+        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',  # noqa: E501
+    )
 
 
 def _create_date(relative_years: int, month: int, day: int) -> date:
