@@ -136,8 +136,19 @@ To view the documentation during development, run the following commands in your
 
 ```sh
 pip install -r requirements/docs.txt
+```
+
+Mac:
+```sh
 mkdocs serve -a localhost:8001
 ```
+
+Windows:
+```sh
+python -m mkdocs serve -a localhost:8001
+```
+
+For more details on why the Windows command is prefixed with `python -m`, see the [mkdocs installation notes](https://www.mkdocs.org/user-guide/installation/).
 
 Then open http://localhost:8001 to view the generated documentation site.
 
