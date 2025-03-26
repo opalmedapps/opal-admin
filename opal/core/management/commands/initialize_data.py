@@ -123,9 +123,9 @@ class Command(BaseCommand):
         listener, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
         listener.set_unusable_password()
         listener.save()
-        listener_registration, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
+        listener_registration, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER_REGISTRATION)
         listener_registration.set_unusable_password()
-        listener.save()
+        listener_registration.save()
         interface_engine, _ = User.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
@@ -194,10 +194,12 @@ class Command(BaseCommand):
 
         # get existing or create new tokens for the API users
         token_listener, _ = Token.objects.get_or_create(user=listener)
+        token_listener_registration, _ = Token.objects.get_or_create(user=listener_registration)
         token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
         token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
+        self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
 
