@@ -34,6 +34,7 @@ class TestChartAppView:
         assert 'unread_txteammessage_count' in response.data
         assert 'unread_educationalmaterial_count' in response.data
         assert 'unread_questionnaire_count' in response.data
+        assert 'unread_research_reference_count' in response.data
         assert 'unread_research_questionnaire_count' in response.data
         assert 'unread_consent_questionnaire_count' in response.data
 
