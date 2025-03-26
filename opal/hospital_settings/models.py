@@ -41,6 +41,7 @@ class Institution(Location):
     )
 
     class Meta:
+        permissions = (('can_manage_institutions', _('Can manage institutions')),)
         ordering = ['name']
         verbose_name = _('Institution')
         verbose_name_plural = _('Institutions')

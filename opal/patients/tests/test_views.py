@@ -1,17 +1,20 @@
 from http import HTTPStatus
 from typing import Tuple
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
+from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 
+from ...users.models import User
 from .. import factories, forms, models, tables
-
 # Add any future GET-requestable patients app pages here for faster test writing
+from ..views import PendingRelationshipListView
+
 test_url_template_data: list[Tuple] = [
     (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
 ]
@@ -220,3 +223,62 @@ def test_relationships_pending_form_response(user_client: Client) -> None:
     assertContains(response, patient)
     assertContains(response, caregiver)
     assertContains(response, relationship.patient.ramq)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-pending-update', args=(1,)),
+    ],
+)
+def test_relationship_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `Relationship` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    factories.Relationship(pk=1)
+    user_client.force_login(user)
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        PendingRelationshipListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationships-pending-list'),
+        reverse('patients:relationships-pending-update', args=(1,)),
+    ],
+)
+def test_relationship_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `Relationship` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_relationships')
+    user.user_permissions.add(permission)
+    factories.Relationship(pk=1)
+
+    response = user_client.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_relationships_response_contains_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationships is displayed for users with permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_relationships')
+    user.user_permissions.add(permission)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertContains(response, 'Pending Requests')
+
+
+def test_relationships_pending_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationships is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Pending Requests')

@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+
+  {% block content %}
+  {% if perms.questionnaires.export_report %}
+      <div class="row justify-content-md-center">
+        <div class="col col-md-10">
+            <h4>{% translate "Report:" %} {{ questionnaireName }} {% translate "between" %} {{ start }} {% translate "and" %} {{ end }}</h4>
+            <div class="table-responsive">
+              {% render_table reporttable %}
+          </div>
+
+            <form action="{% url 'questionnaires:reports-download-csv' %}" method="post" id="form">
+                {% csrf_token %}
+                <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
+                <div class="btn-toolbar mb-4">
+                  <button class="btn btn-warning mr-2" type="button" onclick="history.back()">{% translate "Back" %}</button>
+                  <input  class="btn btn-primary mr-2" type="submit" value="Download CSV" />
+                  <button class="btn btn-primary" type="button" id="btnXLSX" onclick="openXlsx()">{% translate "Download Excel" %}</button>
+                </div>
+            </form>
+
+            <div id="xlsx_options_div" style="display: none;">
+                <br>
+                <form action="{% url 'questionnaires:reports-download-xlsx' %}" method="post" id="form">
+                    {% csrf_token %}
+                    <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
+                    <h4>{% translate "Please select how to organize the tabs:" %}</h4>
+                    <input type="radio" id="patients" name="tabs" value="patients">
+                    <label for="patients">{% translate "By patients" %}</label><br>
+                    <input type="radio" id="questions" name="tabs" value="questions">
+                    <label for="questions">{% translate "By questions" %}</label><br>
+                    <input type="radio" id="none" name="tabs" value="none">
+                    <label for="none">{% translate "None (single tab)" %}</label>
+                    <br>
+                    <div class="btn-toolbar mb-4">
+                      <button class="btn btn-warning mr-2" type="button" id="cancel-button"  onclick="cancel()" >{% translate "Cancel" %}</button>
+                      <input class="btn btn-primary mr-2" type="submit" value="GO" />
+                    </div>
+                </form>
+            </div>
+        </div>
+      </div>
+    <script src="{% static 'js/reports.js' %}"></script>
+    {% endif %}
+  {% endblock content %}

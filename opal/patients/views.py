@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
@@ -62,17 +63,18 @@ class RelationshipTypeDeleteView(DeleteView):
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class PendingRelationshipListView(SingleTableView):
+class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = Relationship
+    permission_required = ('patients.can_manage_relationships',)
     table_class = PendingRelationshipTable
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PendingRelationshipUpdateView(UpdateView):
+class PendingRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
     """
     This `UpdatesView` displays a form for updating a `Relationship` object.
 
@@ -80,6 +82,7 @@ class PendingRelationshipUpdateView(UpdateView):
     """
 
     model = Relationship
+    permission_required = ('patients.can_manage_relationships',)
     template_name = 'patients/relationships/pending/form.html'
     form_class = RelationshipPendingAccessForm
     success_url = reverse_lazy('patients:relationships-pending-list')

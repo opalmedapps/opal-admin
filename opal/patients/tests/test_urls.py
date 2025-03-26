@@ -45,3 +45,10 @@ def test_caregiver_access_list() -> None:
     url = '/patients/relationships/search'
     assert reverse('patients:relationships-search') == url
     assert resolve(url).view_name == 'patients:relationships-search'
+
+
+def test_relationships_pending_update() -> None:
+    """Ensures a url for relationships pending access update view exists."""
+    url = '/patients/relationships/pending/12/update/'
+    assert reverse('patients:relationships-pending-update', kwargs={'pk': 12}) == url
+    assert resolve(url).view_name == 'patients:relationships-pending-update'

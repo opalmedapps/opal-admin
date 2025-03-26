@@ -4,7 +4,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Initial migration that creates the Questionnaire models."""
+    """Report permission class which enables per-user access control for the questionnaire reporting tool."""
 
     initial = True
 
