@@ -278,7 +278,7 @@ class Relationship(models.Model):
     @classmethod
     def valid_statuses(cls, initial: RelationshipStatus) -> list[RelationshipStatus]:  # noqa: WPS602
         """
-        Select the proper status for the selected relationship status.
+        Return the list of statuses the provided status can be transitioned to.
 
         Args:
             initial: the selected value of the status
