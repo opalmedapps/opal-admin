@@ -311,8 +311,20 @@ def fetch_users_clicks_summary(
         action_date__lte=end_date,
     )
 
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
+
     # TODO: QSCCD-2173 - add count of the announcement clicks
-    return _fetch_user_app_activity_log_report(queryset, group_by)
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            login_count=models.Sum('count_logins'),
+            feedback_count=models.Sum('count_feedback'),
+            update_security_answers_count=models.Sum('count_update_security_answers'),
+            update_passwords_count=models.Sum('count_update_passwords'),
+        ).order_by(f'-{group_field}'),
+    )
 
 
 def fetch_user_patient_clicks_summary(
@@ -335,7 +347,21 @@ def fetch_user_patient_clicks_summary(
         action_date__lte=end_date,
     )
 
-    return _fetch_user_patient_activity_log_report(queryset, group_by)
+    # generate the user patient activity report
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
+    group_field = group_by.value
+
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            checkins_count=models.Sum('count_checkins'),
+            documents_count=models.Sum('count_documents'),
+            educational_materials_count=models.Sum('count_educational_materials'),
+            completed_questionnaires_count=models.Sum('count_questionnaires_complete'),
+            labs_count=models.Sum('count_labs'),
+        ).order_by(f'-{group_field}'),
+    )
 
 
 def fetch_received_labs_summary(
@@ -741,111 +767,49 @@ def fetch_average_login_per_year_by_month_report() -> list[dict[str, Any]]:
     return list(login_per_year_by_month_report.all())
 
 
-# SILVANA'S REPORTS
-def fetch_monthly_user_app_activity_log_report() -> list[dict[str, Any]]:
-    """Fetch the Silvana's user app activity log report by months.
-
-    Returns:
-        the silvana monthly statistics report for user app activity log.
-    """
-    return _fetch_user_app_activity_log_report(DailyUserAppActivity.objects.all(), GroupByComponent.MONTH)
-
-
-def fetch_monthly_user_pat_activity_log_report() -> list[dict[str, Any]]:
-    """Fetch the Silvana's user patient activity log report by months.
-
-    Returns:
-        the Silvana's monthly statistics report for user patient activity log.
-    """
-    return _fetch_user_patient_activity_log_report(
-        DailyUserPatientActivity.objects.all(),
-        GroupByComponent.MONTH,
-    )
-
-
-def fetch_annually_user_app_activity_log_report() -> list[dict[str, Any]]:
-    """Fetch the Silvana's user app activity log report by year.
-
-    Returns:
-        the silvana annually statistics report for user app activity log.
-    """
-    return _fetch_user_app_activity_log_report(DailyUserAppActivity.objects.all(), GroupByComponent.YEAR)
-
-
-def fetch_annually_user_pat_activity_log_report() -> list[dict[str, Any]]:
-    """Fetch the Silvana's user patient activity log report by year.
-
-    Returns:
-        the Silvana's annually statistics report for user patient activity log.
-    """
-    return _fetch_user_patient_activity_log_report(
-        DailyUserPatientActivity.objects.all(),
-        GroupByComponent.YEAR,
-    )
-
-
 # JOHN'S REPORT
-# TODO: John's Ptient diagnosis report and educational material report is not available due to
-# missing module. This need to be implemented once the module is available.
-
-def _fetch_user_app_activity_log_report(
-    queryset: models.QuerySet[DailyUserAppActivity],
-    group_by: GroupByComponent = GroupByComponent.DATE,
-) -> list[dict[str, Any]]:
-    """Fetch user app activity log report based on the grouping component.
-
-    Args:
-        queryset: the queryset to annotate with a new grouping field.
-        group_by: the group by component for the report.
+def fetch_patient_demographic_and_diagnosis_stats() -> list[dict[str, Any]]:
+    """Fetch the patient demographic report with diagnosis.
 
     Returns:
-        the statistics report for user app activity log.
+        the patient demographic report with diagnosis.
     """
-    # generate the user app activity report
-    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
+    test_patient_list = ['9999991', '9999992', '9999993', '9999994', '9999995', '9999996', '9999997', '9999998']
+    test_patient_id = [
+        patient['patient'] for patient in legacy_models.LegacyPatientHospitalIdentifier.objects.filter(
+            mrn__in=test_patient_list,
+        ).values('patient').all()
+    ]
+    diagnoses = legacy_models.LegacyDiagnosis.objects.exclude(
+        patient_ser_num__in=test_patient_id,
+    ).values('patient_ser_num').annotate(
+        diagnosis_id=models.Max('diagnosis_ser_num'),
+    ).all()
 
-    # TODO: QSCCD-2173 - add count of the announcement clicks
-    return list(
-        queryset.values(
-            group_field,
-        ).annotate(
-            login_count=models.Sum('count_logins'),
-            feedback_count=models.Sum('count_feedback'),
-            update_security_answers_count=models.Sum('count_update_security_answers'),
-            update_passwords_count=models.Sum('count_update_passwords'),
-        ).order_by(f'-{group_field}'),
+    diagnosis_id_list = [
+        diagnosis['diagnosis_id'] for diagnosis in diagnoses
+    ]
+
+    demographics_diagnosis_report = legacy_models.LegacyPatient.objects.exclude(
+        patientsernum__in=test_patient_id,
+    ).filter(
+        models.Q(legacydiagnosis__diagnosis_ser_num__in=diagnosis_id_list)
+        | models.Q(legacydiagnosis__diagnosis_ser_num=None),
+    ).annotate(
+        description_en=models.F('legacydiagnosis__description_en'),
+        creation_date=models.F('legacydiagnosis__creation_date'),
+    ).values(
+        'patientsernum',
+        'age',
+        'date_of_birth',
+        'sex',
+        'email',
+        'language',
+        'registration_date',
+        'description_en',
+        'creation_date',
     )
-
-
-def _fetch_user_patient_activity_log_report(
-    queryset: models.QuerySet[DailyUserPatientActivity],
-    group_by: GroupByComponent = GroupByComponent.DATE,
-) -> list[dict[str, Any]]:
-    """Fetch user app activity log report based on the grouping component.
-
-    Args:
-        queryset: the queryset to annotate with a new grouping field.
-        group_by: the group by component for the report.
-
-    Returns:
-        the statistics report for user patient activity log.
-    """
-    # generate the user patient activity report
-    queryset = _annotate_queryset_with_grouping_field(queryset, 'action_date', group_by)
-    group_field = group_by.value
-
-    return list(
-        queryset.values(
-            group_field,
-        ).annotate(
-            checkins_count=models.Sum('count_checkins'),
-            documents_count=models.Sum('count_documents'),
-            educational_materials_count=models.Sum('count_educational_materials'),
-            completed_questionnaires_count=models.Sum('count_questionnaires_complete'),
-            labs_count=models.Sum('count_labs'),
-        ).order_by(f'-{group_field}'),
-    )
+    return list(demographics_diagnosis_report.all())
 
 
 def _fetch_received_medical_records_summary(
