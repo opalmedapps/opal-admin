@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Users app with custom user model (!39)
 * Enforce authenticated requests to the API endpoints (!41)
 * Enforce authenticated user for all URLs (!72)
+* Add user types (!91)
 
 ### Documentation
 
