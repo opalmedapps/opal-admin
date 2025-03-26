@@ -55,7 +55,7 @@ class RelationshipManager(models.Manager['Relationship']):
             if legacy_id is not None
         ]
 
-    def get_relationship_by_patient_caregiver(  # noqa: WPS211
+    def get_relationship_by_patient_caregiver(
         self,
         relationship_type: str,
         user_id: int,

@@ -752,6 +752,10 @@ class TestPatientDemographicView:
         relationships = patient_models.Relationship.objects.all()
         assert relationships[0].status == patient_models.RelationshipStatus.EXPIRED
         assert relationships[1].status == patient_models.RelationshipStatus.EXPIRED
+        assert relationships[0].end_date
+        assert relationships[1].end_date
+        assert relationships[0].reason == 'Date of death submitted from ADT'
+        assert relationships[1].reason == 'Opal Account Inactivated'
 
 
 class TestPatientCaregiversView:

@@ -1,7 +1,10 @@
 """This module provides Django REST framework serializers related to the `patients` app's models."""
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from django.db import transaction
+from django.db.models import Q as Q_OBJECT
+from django.utils.translation import gettext
 
 from rest_framework import serializers
 
@@ -192,6 +195,37 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
 
         # Prevent caregiver and self access to the deceased patient's data by setting relationship status to expired
         if instance.date_of_death:
-            instance.relationships.update(status=RelationshipStatus.EXPIRED)
+            self._inactivate_patient_relationships(
+                patient_id=instance.id,
+                date_of_death=instance.date_of_death,
+            )
 
         return instance
+
+    def _inactivate_patient_relationships(
+        self,
+        patient_id: int,
+        date_of_death: datetime,
+    ) -> None:
+        """Inactivate all the relationships for a deceased patient.
+
+        Args:
+            patient_id (int): the deceased patient
+            date_of_death (datetime): date of the patient's death
+        """
+        # Set end_date, reason, and status for the deceased patient's relationships
+        Relationship.objects.filter(
+            Q_OBJECT(patient__id=patient_id) | Q_OBJECT(caregiver__id=patient_id),
+        ).update(
+            end_date=date_of_death,
+            reason=gettext('Opal Account Inactivated'),
+            status=RelationshipStatus.EXPIRED,
+        )
+
+        # Add the 'Date of death submitted from ADT' relationship termination reason only for the `SELF` role
+        Relationship.objects.filter(
+            Q_OBJECT(patient__id=patient_id) | Q_OBJECT(caregiver__id=patient_id),
+            type__role_type=RoleType.SELF,
+        ).update(
+            reason=gettext('Date of death submitted from ADT'),
+        )
