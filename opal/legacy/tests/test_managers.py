@@ -15,22 +15,18 @@ def test_get_appointment_databank_data() -> None:
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
-    # Prepare appointment data and previously sent id list for exclusions
+    # Prepare appointment data
     factories.LegacyAppointmentFactory(appointmentsernum=1, checkin=0)
     factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=0)
     factories.LegacyAppointmentFactory(appointmentsernum=3)
     factories.LegacyAppointmentFactory(appointmentsernum=4)
-    factories.LegacyAppointmentFactory(appointmentsernum=5)
-    previously_sent_ids = [1, 5]
     # Fetch the data
     databank_data = LegacyAppointment.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
-        sent_data_ids=previously_sent_ids,
     )
     for appointment in databank_data:
         assert appointment['last_updated'] > last_cron_sync_time
-        assert appointment['appointment_ser_num'] not in previously_sent_ids
 
     assert databank_data.count() == 2
 
