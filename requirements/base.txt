@@ -51,4 +51,4 @@ twilio==8.9.1  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
-fpdf2==2.7.5
+fpdf2==2.7.6
