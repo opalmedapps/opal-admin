@@ -31,7 +31,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         label=_('Card Type'),
         initial=constants.MedicalCard.RAMQ.name,
         required=True,
-        empty_label=_('Choose...'),
+        empty_label=None,
     )
 
     site = django_filters.ModelChoiceFilter(
