@@ -285,3 +285,48 @@ class TestUpdateAppointmentCheckinView:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert appointment1.checkin == 0
         assert 'Invalid checkin value' in response.data['checkin']
+
+    def test_update_checkin_missing_args(self, api_client: APIClient, listener_user: User) -> None:
+        """Test response of sending incomplete data to endpoint."""
+        user = factories.LegacyUserFactory()
+        api_client.force_login(user=listener_user)
+        api_client.credentials(HTTP_APPUSERID=user.username)
+        medivisit = factories.LegacySourceDatabaseFactory()
+        factories.LegacyAppointmentFactory(
+            source_system_id='2024A21342134',
+            source_database=medivisit,
+            checkin=0,
+        )
+
+        response = api_client.patch(
+            reverse('api:patients-legacy-appointment-checkin'),
+            data={
+                'source_system_id': '2024A21342134',
+                'checkin': 1,
+            },
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert "Both 'source_system_id' and 'source_database' are required." in response.data
+
+    def test_update_checkin_missing_checkin(self, api_client: APIClient, listener_user: User) -> None:
+        """Test response of sending missing checkin field data to endpoint."""
+        user = factories.LegacyUserFactory()
+        api_client.force_login(user=listener_user)
+        api_client.credentials(HTTP_APPUSERID=user.username)
+        medivisit = factories.LegacySourceDatabaseFactory()
+        appointment1 = factories.LegacyAppointmentFactory(
+            source_system_id='2024A21342134',
+            source_database=medivisit,
+            checkin=0,
+        )
+
+        response = api_client.patch(
+            reverse('api:patients-legacy-appointment-checkin'),
+            data={
+                'source_system_id': '2024A21342134',
+                'source_database': medivisit.source_database,
+            },
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert appointment1.checkin == 0
+        assert 'This field is required.' in response.data['checkin']
