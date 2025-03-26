@@ -1,6 +1,4 @@
 """Table definitions for models of the patient app."""
-from datetime import date, datetime
-
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
@@ -53,15 +51,3 @@ class PatientTable(tables.Table):
                 'class': 'thead-light',
             },
         }
-
-    def render_date_of_birth(self, value: str) -> date:
-        """
-        Return a datetime format of the date of birth.
-
-        Args:
-            value: a string of date of birth
-
-        Returns:
-            a datetime format of the date of birth
-        """
-        return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').date()

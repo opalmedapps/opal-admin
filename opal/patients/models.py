@@ -1,5 +1,7 @@
 """Module providing models for the patients app."""
 
+from datetime import date
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
@@ -142,6 +144,29 @@ class Patient(models.Model):
             the name of the associated patient
         """
         return '{first} {last}'.format(first=self.first_name, last=self.last_name)
+
+    @classmethod
+    def calculate_age(cls, date_of_birth: date) -> int:
+        """
+        Return the age based on the given date of birth.
+
+        Args:
+            date_of_birth: patient's date of birth
+
+        Returns:
+            the age based on the given date of birth.
+        """
+        # Get today's date object
+        today = date.today()
+        # A bool that represents if today's day/month precedes the birth day/month
+        one_or_zero = (
+            (today.month, today.day) < (date_of_birth.month, date_of_birth.day)
+        )
+        # Calculate the difference in years from the date object's components
+        year_difference = today.year - date_of_birth.year
+        # The difference in years is not enough.
+        # To get it right, subtract 1 or 0 based on if today precedes the birthdate's month/day.
+        return year_difference - one_or_zero
 
 
 class RelationshipStatus(models.TextChoices):

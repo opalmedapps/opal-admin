@@ -1,10 +1,10 @@
+import datetime
 from typing import Tuple
 
 import pytest
 
-from opal.hospital_settings import factories
-
-from ..forms import ConfirmPatientForm, SearchForm, SelectSiteForm
+from .. import factories
+from ..forms import ConfirmPatientForm, RequestorDetailsForm, SearchForm, SelectSiteForm
 
 pytestmark = pytest.mark.django_db
 
@@ -96,3 +96,31 @@ def test_is_correct_not_checked() -> None:
     form = ConfirmPatientForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['is_correct'] == ['This field is required.']
+
+
+def test_disabled_option_exists() -> None:
+    """Ensure that a disabled option exists."""
+    types = [
+        factories.RelationshipType(name='Self', start_age=1),
+        factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18),
+        factories.RelationshipType(name='Parent or Guardian', start_age=1, end_age=14),
+        factories.RelationshipType(name='Mandatary', start_age=1, end_age=18),
+    ]
+    form_data = {
+        'relationship_type': types,
+    }
+    form = RequestorDetailsForm(
+        data=form_data,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
+
+    options = form.fields['relationship_type'].widget.options('relationship-type', '')
+    for index, option in enumerate(options):
+        if index == 3:
+            assert 'disabled' not in option['attrs']
+        else:
+            assert option['attrs']['disabled'] == 'disabled'
+
+    assert list(form.fields['relationship_type'].widget.available_choices) == [
+        types[0].pk,
+    ]
