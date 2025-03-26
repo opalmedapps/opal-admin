@@ -12,14 +12,8 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
+from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
-from opal.services.reports.questionnaire import (
-    Question,
-    QuestionnaireData,
-    QuestionnaireReportRequestData,
-    ReportService,
-    generate_pdf,
-)
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -30,9 +24,9 @@ LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
-report_service = ReportService()
+report_service = questionnaire.ReportService()
 
-QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
+QUESTIONNAIRE_REPORT_REQUEST_DATA = questionnaire.QuestionnaireReportRequestData(
     patient_id=51,
     patient_name='Bart Simpson',
     patient_site='RVH',
@@ -43,7 +37,7 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
 
 
 QUESTION_REPORT_DATA = (
-    Question(
+    questionnaire.Question(
         question_text='Question demo for patient',
         question_label='demo for patient',
         question_type_id=1,
@@ -60,13 +54,13 @@ QUESTION_REPORT_DATA = (
         ],
     ),
 )
-QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = QuestionnaireData(
+QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='BREAST-Q Reconstruction Module',
     last_updated=datetime(2024, 10, 21, 14, 0),
     questions=QUESTION_REPORT_DATA,
 )
-QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = QuestionnaireData(
+QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
     last_updated=datetime(2024, 10, 21, 14, 0),
@@ -392,7 +386,7 @@ def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptur
 
 def test_generate_pdf_one_page() -> None:
     """Ensure that the pdf is correctly generated."""
-    pdf_bytes = generate_pdf(
+    pdf_bytes = questionnaire.generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
         [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME],
@@ -409,7 +403,7 @@ def test_generate_pdf_multiple_pages() -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages."""
     questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
 
-    pdf_bytes = generate_pdf(
+    pdf_bytes = questionnaire.generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
         questionnaire_data,
@@ -422,50 +416,43 @@ def test_generate_pdf_multiple_pages() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
-def test_generate_pdf_multiple_pages_with_long_name() -> None:
-    """Ensure that the pdf is correctly generated with the toc being multiple pages."""
-    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME for _ in range(17)]
-
-    pdf_bytes = generate_pdf(
-        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        questionnaire_data,
-    )
-
-    content = pdf_bytes.decode('latin1')
-    page_count = content.count('/Type /Page\n')
-
-    assert page_count == 20, 'PDF should have the expected amount of pages'
-    assert isinstance(pdf_bytes, bytearray), 'Output'
-    assert pdf_bytes, 'PDF should not be empty'
-
-
-def test_generate_pdf_with_long_name() -> None:
+def test_generate_pdf_multiple_pages_with_long_name(mocker: MockerFixture) -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages.
 
     Make sure the calculation fails and _generate_pdf gets called a second time to retrieves
     the right number of pages for the TOC.
     """
-    questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME for _ in range(8)]
+    mock_generate = mocker.spy(questionnaire, '_generate_pdf')
+    # 14 with short name fit on one ToC page
+    # create 13 with short names and one with long name to cause the ToC to span 2 pages
+    data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(13)] + [QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME]
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK
 
-    pdf_bytes = generate_pdf(
-        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        questionnaire_data,
+    pdf_bytes = questionnaire.generate_pdf(
+        institution_data,
+        patient_data,
+        data,
     )
+
     content = pdf_bytes.decode('latin1')
     page_count = content.count('/Type /Page\n')
 
-    assert page_count == 10, 'PDF should have the expected amount of pages'
+    assert page_count == 16, 'PDF should have the expected amount of pages'
     assert isinstance(pdf_bytes, bytearray), 'Output'
     assert pdf_bytes, 'PDF should not be empty'
+
+    mock_generate.assert_has_calls([
+        mocker.call(institution_data, patient_data, data),
+        mocker.call(institution_data, patient_data, data, 2),
+    ])
 
 
 def test_generate_pdf_empty_list() -> None:
     """Ensure that the pdf is correctly generated with an empty list."""
-    questionnaire_data: list[QuestionnaireData] = []
+    questionnaire_data: list[questionnaire.QuestionnaireData] = []
 
-    pdf_bytes = generate_pdf(
+    pdf_bytes = questionnaire.generate_pdf(
         INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
         PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
         questionnaire_data,
@@ -485,7 +472,7 @@ def test_generate_pdf_no_toc_error(mocker: MockerFixture) -> None:
         side_effect=FPDFException('Some other error'),
     )
     with pytest.raises(FPDFException) as excinfo:
-        generate_pdf(institution_data, patient_data, questionnaire_data)
+        questionnaire.generate_pdf(institution_data, patient_data, questionnaire_data)
 
     assert 'Some other error' in str(excinfo.value)
 
@@ -503,7 +490,7 @@ def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
         ),
     )
     with pytest.raises(FPDFException) as excinfo:
-        generate_pdf(institution_data, patient_data, questionnaire_data)
+        questionnaire.generate_pdf(institution_data, patient_data, questionnaire_data)
 
     error_message = str(excinfo.value)
     assert 'ToC ended on page' in error_message
