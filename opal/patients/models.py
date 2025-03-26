@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -98,10 +98,13 @@ class Patient(models.Model):
         max_length=1,
         choices=SexType.choices,
     )
-    health_insurance_number = models.CharField(
-        verbose_name=_('Health Insurance Number'),
+    ramq = models.CharField(
+        verbose_name=_('RAMQ'),
         max_length=12,
+        validators=[MinLengthValidator(12)],
         unique=True,
+        blank=True,
+        null=True,
     )
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),

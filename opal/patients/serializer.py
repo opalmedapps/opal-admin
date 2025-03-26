@@ -10,7 +10,7 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Patient
-        fields = ['health_insurance_number']
+        fields = ['ramq']
 
 
 class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):

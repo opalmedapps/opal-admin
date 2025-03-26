@@ -127,15 +127,15 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_health_insurance_number_unique() -> None:
+def test_patient_ramq_unique() -> None:
     """Ensure that the health insurance number is unique."""
-    factories.Patient(health_insurance_number='TEST')
-    patient = factories.Patient(health_insurance_number='TEST2')
+    factories.Patient(ramq='TEST')
+    patient = factories.Patient(ramq='TEST2')
 
-    message = "Duplicate entry 'TEST' for key 'health_insurance_number'"
+    message = "Duplicate entry 'TEST' for key 'ramq'"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        patient.health_insurance_number = 'TEST'
+        patient.ramq = 'TEST'
         patient.save()
 
 
@@ -265,7 +265,7 @@ def test_hospitalpatient_many_patients_one_site() -> None:
     patient2 = factories.Patient(
         first_name='bbb',
         last_name='222',
-        health_insurance_number='TEST',
+        ramq='TEST',
     )
     site = factories.Site(name="Montreal Children's Hospital")
 
