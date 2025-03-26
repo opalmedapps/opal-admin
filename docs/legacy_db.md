@@ -25,7 +25,7 @@ Use the following command to generate a model definition for a legacy table: `py
 
 ## Testing
 
-Django does not create tables for unmanaged models in the test database. To overcome this and facilitate easier testing, a [pytest fixture](https://docs.pytest.org/en/stable/explanation/fixtures.html) (see module [opal.legacy.tests.conftest][]) changes `managed` to `True` for all unmanaged models. Django will then also create tables in the test database when running the tests.
+Django does not create tables for unmanaged models in the test database. To overcome this and facilitate easier testing, a [pytest fixture](https://docs.pytest.org/en/stable/explanation/fixtures.html) (see module [opal.conftest][]) changes `managed` to `True` for all unmanaged models. Django will then also create tables in the test database when running the tests.
 
 ## Resources
 
