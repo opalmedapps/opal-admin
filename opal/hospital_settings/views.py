@@ -103,6 +103,8 @@ class SiteDeleteView(PermissionRequiredMixin, DeleteView):
     If the view is fetched via **GET**, it will display a confirmation page with a form that POSTs to the same URL.
     """
 
+    # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
+    object: Site  # noqa: A003
     model = Site
     permission_required = ('hospital_settings.can_manage_sites',)
     template_name = 'hospital_settings/site/site_confirm_delete.html'
