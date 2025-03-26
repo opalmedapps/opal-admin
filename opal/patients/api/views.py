@@ -88,9 +88,7 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
         Returns:
             List of caregiver profiles for a given patient
         """
-        return Relationship.objects.select_related(
-            'caregiver__user',
-        ).filter(
+        return self.queryset.filter(
             patient__legacy_id=self.kwargs['legacy_id'],
         )
 
