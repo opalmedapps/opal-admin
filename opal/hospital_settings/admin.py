@@ -12,6 +12,8 @@ from .models import Institution, Site
 class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
     """This class provides admin options for `Institution`."""
 
+    list_display = ['__str__', 'code']
+
     def has_add_permission(self, request: HttpRequest) -> bool:
         """
         Return whether the given request has permission to add a new institution.
@@ -33,7 +35,7 @@ class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
 class SiteAdmin(TranslationAdmin):
     """This class provides admin options for `Site`."""
 
-    pass  # noqa: WPS420, WPS604
+    list_display = ['__str__', 'code', 'institution']
 
 
 admin.site.register(Institution, InstitutionAdmin)

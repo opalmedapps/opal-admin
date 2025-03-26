@@ -570,32 +570,3 @@ def _relative_date(base_date: date, years: int) -> date:
         the relative date calculated via `base_date + years`
     """
     return base_date + relativedelta(years=years)
-
-
-def _build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
-    """
-    Build a RAMQ number based on the official format and with 99 as the last two digits (administrative code).
-
-    See: https://www.ramq.gouv.qc.ca/en/citizens/health-insurance/using-card
-
-    Args:
-        first_name: the person's first name
-        last_name: the person's last name
-        date_of_birth: the person's date of birth
-        sex: the person's sex
-
-    Returns:
-        the RAMQ number derived from the given arguments
-    """
-    month = date_of_birth.month if sex == Patient.SexType.MALE else date_of_birth.month + 50
-
-    data = [
-        last_name[:3].upper(),
-        first_name[0].upper(),
-        str(date_of_birth.year),
-        str(month),
-        str(date_of_birth.day),
-        '99',
-    ]
-
-    return ''.join(data)

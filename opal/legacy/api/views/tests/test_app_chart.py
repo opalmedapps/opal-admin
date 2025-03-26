@@ -37,7 +37,7 @@ class TestChartAppView:
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         user = relationship.caregiver.user
         alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
 
         factories.LegacyAppointmentFactory(
             patientsernum=patient,
