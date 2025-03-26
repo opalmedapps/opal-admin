@@ -1,10 +1,12 @@
 from http import HTTPStatus
+from typing import Tuple
 
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls import reverse
 
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+import pytest
+from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from .. import factories, models, tables
 
@@ -107,3 +109,38 @@ def test_relationshiptype_delete(user_client: Client) -> None:
     )
 
     assert models.RelationshipType.objects.count() == 0
+
+
+# tuple with patients wizard form templates and corresponding url names
+test_patient_multiform_url_template_data: list[Tuple] = [
+    ('patients:access-request', 'patients/access_request/access_request.html'),
+]
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_patient_wizard_current_step(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that each step pages exist at desired URL address."""
+    url = reverse(url_name)
+    response = user_client.get(url)
+    management_form = response.context['wizard']['management_form']
+
+    assertQuerysetEqual(management_form['current_step'].value(), 'site')
+
+
+def test_access_request_done_redirects(user_client: Client) -> None:
+    """Ensure that when the page is submitted it redirects to the final page."""
+    url = reverse('patients:access-request')
+    site = factories.Site()
+    form_data = {
+        'site-sites': site.pk,
+        'access_request_view-current_step': 'site',
+    }
+
+    response = user_client.post(url, data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
