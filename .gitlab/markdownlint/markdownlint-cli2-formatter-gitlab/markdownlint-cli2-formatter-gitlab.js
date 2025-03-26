@@ -70,7 +70,6 @@ const outputFormatter = (options, params) => {
     const ruleName = ruleNames.join("/");
     const errorDetailText = errorDetail ? ` [${errorDetail}]` : "";
     const text = `${ruleName}: ${ruleDescription}${errorDetailText}`;
-    const lineNumberEnd = (errorRange) ? errorRange[1] : lineNumber;
 
     /** @type {CodeClimateIssue} */
     const issue = {
