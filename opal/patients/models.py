@@ -276,7 +276,7 @@ class Relationship(models.Model):
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
     @classmethod
-    def valid_statuses(cls, initial: RelationshipStatus) -> list[RelationshipStatus]:  # noqa: WPS602
+    def valid_statuses(cls, initial: RelationshipStatus) -> list[RelationshipStatus]:
         """
         Return the list of statuses the provided status can be transitioned to.
 
