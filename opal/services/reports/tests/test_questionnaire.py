@@ -97,19 +97,19 @@ QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='BREAST-Q Reconstruction Module',
     last_updated=datetime(2024, 10, 21, 14, 0),
-    questions=QUESTION_REPORT_DATA,
+    questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_LONG_NICKNAME = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Revised Version Edmonton Symptom Assessment System (ESAS-r)',
     last_updated=datetime(2024, 10, 21, 14, 0),
-    questions=QUESTION_REPORT_DATA,
+    questions=list(QUESTION_REPORT_DATA),
 )
 QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS = questionnaire.QuestionnaireData(
     questionnaire_id=1,
     questionnaire_title='Questionnaire demo with charts for questions',
     last_updated=datetime(2024, 10, 21, 14, 0),
-    questions=QUESTION_REPORT_DATA_CHARTS,
+    questions=list(QUESTION_REPORT_DATA_CHARTS),
 )
 
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(

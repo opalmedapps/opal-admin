@@ -76,7 +76,7 @@ AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
-TEXT_QUESTIONS_HEADER = ('Date', 'Response')
+TEXT_QUESTIONS_TABLE_HEADER = ('Date', 'Response')
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -431,7 +431,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             col_widths=(30, 60),
             headings_style=headings_style,
         ) as table:
-            table.row(TEXT_QUESTIONS_HEADER)
+            table.row(TEXT_QUESTIONS_TABLE_HEADER)
             for values in reversed(question.values):
                 row = table.row()
                 row.cell(
