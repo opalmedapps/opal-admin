@@ -44,6 +44,8 @@ COPY ./scripts/cron/* /etc/cron.d/
 
 # Add new cron jobs to the cron tab and compile languages
 RUN crontab /etc/cron.d/crontab \
-  && DATABASE_NAME= DATABASE_HOST= DATABASE_PORT= DATABASE_USER= DATABASE_PASSWORD= DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages
+  && cp .env.sample .env \
+  && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
+  && rm .env
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
