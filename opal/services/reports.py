@@ -78,6 +78,7 @@ class QuestionnaireReportRequestData(NamedTuple):
 
 
 class PathologyData(NamedTuple):
+
     """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:
@@ -104,6 +105,7 @@ class PathologyData(NamedTuple):
 
 
 class SiteData(NamedTuple):
+
     """`Typed NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:
@@ -126,6 +128,7 @@ class SiteData(NamedTuple):
 
 
 class PatientData(NamedTuple):
+
     """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:

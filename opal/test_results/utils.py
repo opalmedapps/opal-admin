@@ -18,13 +18,15 @@ def generate_pathology_report(
     patient: Patient,
     pathology_data: dict[str, Any],
     patient_data: dict[str, Any],
-    site_data: dict[str, Any]
+    site_data: dict[str, Any],
 ) -> Path:
     """Generate the pathology PDF report by calling the ReportService.
 
     Args:
         patient: patient instance for whom a new PDF pathology report being generated
         pathology_data: pathology data required to generate the PDF report
+        patient_data: patient data required to generate a PDF report
+        site_data: site data required to generate a PDF report
 
     Returns:
         Path: path to the generated pathology report
