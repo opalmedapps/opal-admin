@@ -76,6 +76,8 @@ class FedAuthBackend(BaseBackend):
 
                     user.save()
                 else:
+                    # augment user data if it is not present with data from ADFS
+                    # required for users added via the legacy OpalAdmin which doesn't capture email, first and last name
                     self._update_user(user, user_data)
 
                 return user
