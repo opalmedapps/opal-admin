@@ -1,7 +1,7 @@
 """Module providing models for the patients app."""
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -101,7 +101,13 @@ class Patient(models.Model):
     ramq = models.CharField(
         verbose_name=_('RAMQ'),
         max_length=12,
-        validators=[MinLengthValidator(12)],
+        validators=[
+            MinLengthValidator(12),
+            RegexValidator(
+                r'^[a-zA-Z]{4}\d{8}',
+                'First 4 characters should be alphabetic, last 8 characters should be numeric.',
+            ),
+        ],
         unique=True,
         blank=True,
         null=True,

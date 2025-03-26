@@ -142,7 +142,7 @@ def test_patient_ramq_unique() -> None:
 def test_patient_ramq_max() -> None:
     """Ensure the length of patient ramq is not greater than 12."""
     patient = factories.Patient()
-    patient.ramq = '12345678901234'
+    patient.ramq = 'ABCD5678901234'
     expected_message = '{0}'.format(
         "'ramq': ['Ensure this value has at most 12 characters (it has 14).'",
     )
@@ -152,9 +152,19 @@ def test_patient_ramq_max() -> None:
 
 def test_patient_ramq_min() -> None:
     """Ensure the length of patient ramq is not less than 12."""
-    patient = factories.Patient(ramq='123456')
+    patient = factories.Patient(ramq='ABCD56')
     expected_message = '{0}'.format(
         "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_format() -> None:
+    """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
+    patient = factories.Patient(ramq='ABC123456789')
+    expected_message = '{0}'.format(
+        "'ramq': ['First 4 characters should be alphabetic, last 8 characters should be numeric.']",
     )
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         patient.clean_fields()
