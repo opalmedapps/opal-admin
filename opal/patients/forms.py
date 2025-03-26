@@ -127,7 +127,7 @@ class SearchForm(forms.Form):
         """Handle the response from OIE service.
 
         Args:
-            response: OIE service respoonse
+            response: OIE service response
 
         Raises:
             ValidationError: if the status in response is error
