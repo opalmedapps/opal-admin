@@ -13,7 +13,7 @@ django-crispy-forms==1.14.0  # https://github.com/django-crispy-forms/django-cri
 
 # MySQL/MariaDB
 #
-mysqlclient==2.1.0 # https://github.com/PyMySQL/mysqlclient
+mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #
