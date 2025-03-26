@@ -1,5 +1,3 @@
-# Provide an email address to which the errors will be send out.
-
 # Run the Patient recrods deviations check daily at 2am.
 0 2 * * * /usr/local/bin/python /app/manage.py find_patients_deviations > /dev/null
 
