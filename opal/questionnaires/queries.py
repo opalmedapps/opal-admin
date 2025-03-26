@@ -30,11 +30,13 @@ def _get_description(qid: int, lang_id: int) -> str:
     """
     with connections['questionnaire'].cursor() as conn:
         conn.execute(
-            'SELECT description FROM questionnaire WHERE ID = %s', [qid],
-        )
-        description_id = conn.fetchone()[0]
-        conn.execute(
-            'SELECT content FROM dictionary WHERE contentId = %s and languageId = %s', [description_id, lang_id],
+            """SELECT content FROM dictionary
+               WHERE contentId IN (
+                   SELECT description
+                   FROM questionnaire WHERE ID = %s
+               )
+               AND languageId = %s
+            """, [qid, lang_id],
         )
         description = str(conn.fetchone()[0])
     return description
@@ -103,29 +105,50 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
             'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID = %s', [lang_id, qid],
         )
         questionnaire = _fetch_all_as_dict(conn)
-
-        conn.execute('DROP TABLE IF EXISTS`tempB`')
         conn.execute(
-            """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-            date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-            getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
-            from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-            where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.`status` = 2
-            and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
-            and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid, test_accounts],
+            """
+            DROP TABLE IF EXISTS `tempDetails`;
+
+            CREATE TABLE tempDetails(
+                SELECT
+                    AQ.questionnaireId,
+                    date(AQ.creationDate) creationDate,
+                    date(AQ.lastUpdated) lastUpdated,
+                    AQ.patientId,
+                    A.questionId,
+                    getDisplayName(Q.question, %s) `question`,
+                    A.typeId,
+                    A.ID AnswerID
+                FROM
+                    answerQuestionnaire AQ,
+                    answerSection aSection,
+                    answer A,
+                    question Q
+                WHERE
+                    AQ.questionnaireId = %s
+                    AND AQ.patientId not in (%s)
+                    AND AQ.`status` = 2
+                    AND AQ.ID = aSection.answerQuestionnaireId
+                    AND aSection.ID = A.answerSectionId
+                    AND A.deleted = 0
+                    AND A.answered = 1
+                    AND A.questionId = Q.ID
+                    );
+
+                """, [lang_id, qid, test_accounts],
         )
 
-        conn.execute('SELECT DISTINCT patientId FROM tempB')
+        conn.execute('SELECT DISTINCT patientId FROM tempDetails')
         patient_ids = [row[0] for row in conn.fetchall()]
         patient_ids.sort()
 
-        conn.execute('SELECT MIN(lastUpdated) FROM tempB')
+        conn.execute('SELECT MIN(lastUpdated) FROM tempDetails')
         mindate = conn.fetchone()
 
-        conn.execute('SELECT MAX(lastUpdated) FROM tempB')
+        conn.execute('SELECT MAX(lastUpdated) FROM tempDetails')
         maxdate = conn.fetchone()
 
-        conn.execute('SELECT DISTINCT questionId, question, typeId FROM tempB')
+        conn.execute('SELECT DISTINCT questionId, question, typeId FROM tempDetails')
         questions = _fetch_all_as_dict(conn)
 
     description = _get_description(qid, lang_id)
@@ -165,15 +188,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
         with connections['questionnaire'].cursor() as conn:
             conn.execute(
                 """
-                DROP TABLE IF EXISTS`temp`;
-                DROP TABLE IF EXISTS`tempA`;
-                DROP TABLE IF EXISTS`tempB`;
-                DROP TABLE IF EXISTS`tempC`;
-                """,
-            )
-
-            conn.execute(
-                """
+                DROP TABLE IF EXISTS `tempA`;
                 CREATE TABLE tempA(
                     SELECT
                         Q.ID Questionnaire_ID,
@@ -198,6 +213,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
             )
             conn.execute(
                 """
+                DROP TABLE IF EXISTS `tempB`;
                 CREATE TABLE tempB(
                     SELECT
                         AQ.questionnaireId,
@@ -229,6 +245,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
             )
             conn.execute(
                 """
+                DROP TABLE IF EXISTS `temp`;
                 CREATE TABLE temp(
                     SELECT
                         A.Questionnaire_ID,
@@ -241,13 +258,14 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                         tempB B
                     WHERE
                         A.questionId = B.questionId
-                )
+                );
+                create index idx_A on temp (AnswerID);
+                create index idx_B on temp (typeId);
                 """,
             )
-            conn.execute('create index idx_A on temp (AnswerID)')
-            conn.execute('create index idx_B on temp (typeId)')
             conn.execute(
                 """
+                DROP TABLE IF EXISTS `tempC`;
                 CREATE TABLE tempC(
                     SELECT
                         A.*,
