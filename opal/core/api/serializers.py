@@ -36,7 +36,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
 
 
 class LanguageSerializer(serializers.Serializer):
-    """Serializer for the settings languages."""
+    """Serializer for a supported language."""
 
     code = serializers.CharField(min_length=2, max_length=2)
     name = serializers.CharField()
