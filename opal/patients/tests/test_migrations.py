@@ -190,3 +190,25 @@ def test_migration_patient_uuid_reverse(migrator: Migrator) -> None:
 
     # ensure that the migration can be reversed without problems
     migrator.apply_tested_migration(('patients', '0016_add_manage_relationshiptype_permission'))
+
+
+def test_migration_relationshiptype_existing_role_types_updated(migrator: Migrator) -> None:  # noqa: WPS218
+    """Ensure the migration correctly updates the existing relationshiptypes."""
+    old_state = migrator.apply_initial_migration(('patients', '0017_add_patient_uuid'))
+    RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
+
+    self_type = RelationshipType.objects.get(role_type=models.RoleType.SELF)
+    parent_type = RelationshipType.objects.get(role_type=models.RoleType.PARENT_GUARDIAN)
+
+    assert self_type.form_required is True
+    assert self_type.can_answer_questionnaire is False
+    assert parent_type.can_answer_questionnaire is False
+
+    migrator.apply_tested_migration(('patients', '0018_update_existing_relationshiptypes'))
+
+    self_type.refresh_from_db()
+    parent_type.refresh_from_db()
+
+    assert self_type.form_required is False
+    assert self_type.can_answer_questionnaire is True
+    assert parent_type.can_answer_questionnaire is True
