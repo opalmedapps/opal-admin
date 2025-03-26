@@ -144,7 +144,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.institution_data = institution_data
         self.patient_data = patient_data
         self.questionnaire_data = questionnaire_data
-        self.patient_name = f'{patient_data.patient_last_name}, {patient_data.patient_first_name}'.upper()
+        self.patient_name = f'{patient_data.patient_first_name} {patient_data.patient_last_name}'
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
             f'{site_mrn["site_code"]}: {site_mrn["mrn"]}'
