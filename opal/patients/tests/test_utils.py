@@ -172,7 +172,7 @@ def test_replace_caregiver() -> None:
     )
     utils.replace_caregiver(caregiver, relationship)
     assert relationship.caregiver.user.username == username1
-    assert not user_models.User.objects.filter(username=username2).exists()
+    assert not user_models.Caregiver.objects.filter(username=username2).exists()
 
 
 def test_update_caregiver_profile_success() -> None:
