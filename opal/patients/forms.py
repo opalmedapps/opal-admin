@@ -113,6 +113,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
         )
+        self.oie_service = OIEService()
 
     def clean_medical_number(self) -> str:
         """
@@ -135,7 +136,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         return medical_number
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]:  # noqa: WPS231
         """
         Clean the form.
 
@@ -149,18 +150,43 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         card_type = self.cleaned_data.get('card_type')
         medical_number = self.cleaned_data.get('medical_number')
         site = self.cleaned_data.get('site')
+        response: dict = {}
 
         if card_type and medical_number:
+            # RAMQ
             if card_type == constants.MedicalCard.ramq.name:
                 self.patient = Patient.objects.filter(ramq=medical_number).first()
                 if not self.patient:
-                    # TODO: handle connection errors here, i.e., raise helpful validation error
-                    # TODO: display regular error log system related error.
                     self.patient = self._fake_oie_response()
-            elif card_type == constants.MedicalCard.mrn.name:
-                patient_queryset = Patient.objects.filter(hospital_patients__mrn= medical_number, hospital_patients__site__code=site.code )
+                    # TODO: on deployment comment out the above line and uncomment the following line
+                    # response = self.oie_service.find_patient_by_ramq(str(medical_number))  # noqa: E800
+            # MRN
+            elif card_type == constants.MedicalCard.mrn.name and site:
+                patient_queryset = Patient.objects.filter(
+                    hospital_patients__mrn=medical_number,
+                    hospital_patients__site__code=site.code,
+                )
                 self.patient = patient_queryset.first()
+                if not self.patient:
+                    self.patient = self._fake_oie_response()
+                    # TODO: on deployment comment out the above line and uncomment the following line
+                    # response = self.oie_service.find_patient_by_mrn(str(medical_number), str(site))  # noqa: E800
+
+        self._handle_response(response)
         return self.cleaned_data
+
+    def _handle_response(self, response: Any) -> None:
+        """Handle the response from OIE service.
+
+        Args:
+            response: OIE service response
+        """
+        # add error message to the template
+        if response and response['status'] == 'error':
+            self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+        # save patient data to the JSONfield
+        elif response and response['status'] == 'success':
+            self.cleaned_data['patient_record'] = response['data']
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
@@ -171,11 +197,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             alias='',
             ramq='SIML86531906',
             ramq_expiration=None,
-            deceased=False,
+            deceased=True,
             death_date_time=None,
             mrns=[
                 OIEMRNData(site='MGH', mrn='9999993', active=True),
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
+                OIEMRNData(site='MGH', mrn='9999994', active=True),
             ],
         )
 
@@ -188,6 +214,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     This form can be validated after initialization to give early user feedback.
     Submitting the form (assuming it is valid) confirms that the correct patient was found.
     """
+
     def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
@@ -224,15 +251,39 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         """
         super().clean()
         cleaned_data = self.cleaned_data
-
+        errors = {
+            'deceased': False,
+            'multiple_mrns': False,
+        }
         if not self.patient:
-            self.add_error(None, 'There is no patient to confirm')
+            self.add_error(NON_FIELD_ERRORS, 'There is no patient to confirm')
 
-        # TODO: validate that the patient is not deceased
-        # TODO: validate the patient record (if coming from the OIE)
-        #  - multiple MRNs at same site
-        #  - ...
-        # self.add_error(NON_FIELD_ERRORS, 'test')  # noqa: E800
+        # check if it is coming from OIE or from django model `Patient`
+        if isinstance(self.patient, Patient):
+            if self.patient.date_of_death:
+                errors['deceased'] = True
+
+        else:
+            data_dict = self.patient
+            if data_dict.get('deceased') == True:
+                errors['deceased'] = True
+
+            mrns_list = data_dict.get('mrns')
+            site_dict: dict = {}
+            # loop over dicts and break and report an error whenever a site is repeated for different mrn
+            for dict_mrn in mrns_list:
+                if site_dict.get('site'):
+                    if dict_mrn.get('active') == True:
+                        errors['multiple_mrns'] = True
+                        break
+
+                if dict_mrn.get('active'):
+                    site_dict['site'] = dict_mrn.get('site')
+
+        if errors.get('deceased') == True:
+            self.add_error(NON_FIELD_ERRORS, 'Cannot proceed, please visit medical records')
+        if errors.get('multiple_mrns') == True:
+            self.add_error(NON_FIELD_ERRORS, 'Patient has more than one active MRN, please visit medical records')
 
         return cleaned_data
 
