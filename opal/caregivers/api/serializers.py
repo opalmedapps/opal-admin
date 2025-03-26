@@ -230,8 +230,8 @@ class _NestedPatientSerializer(PatientSerializer):
         }
 
 
-class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
-    """RegistrationCode serializer used to get patient and caregiver information.
+class NewUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
+    """RegistrationCode serializer used to get patient and caregiver information for new users.
 
     The information include Patient and Caregiver data.
     """
@@ -250,12 +250,34 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
     security_answers = SecurityAnswerSerializer(
         fields=('question', 'answer'),
         many=True,
-        required=False,
     )
 
     class Meta:
         model = RegistrationCode
         fields = ['patient', 'caregiver', 'security_answers']
+
+
+class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
+    """RegistrationCode serializer used to get patient and caregiver information for existing users.
+
+    The information include Patient and Caregiver data.
+    """
+
+    patient = _NestedPatientSerializer(
+        source='relationship.patient',
+        fields=('legacy_id',),
+        many=False,
+    )
+
+    caregiver = _NestedCaregiverSerializer(
+        source='relationship.caregiver',
+        fields=('language', 'username', 'email', 'legacy_id'),
+        many=False,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['patient', 'caregiver']
 
 
 class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):

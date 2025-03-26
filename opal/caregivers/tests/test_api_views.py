@@ -1162,7 +1162,7 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_registration_without_security_answers(self, api_client: APIClient, admin_user: User) -> None:
+    def test_registration_with_existing_user(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration without security answers don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
 
@@ -1172,7 +1172,6 @@ class TestRegistrationCompletionView:
             },
             'caregiver': {
                 'language': 'fr',
-                'phone_number': '+15141112222',
                 'username': 'test-username',
                 'legacy_id': 1,
             },
@@ -1197,9 +1196,12 @@ class TestRegistrationCompletionView:
         caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
+            '{0}{1}'.format(
+                reverse(
+                    'api:registration-register',
+                    kwargs={'code': registration_code.code},
+                ),
+                '?existingUser',
             ),
             data=input_data_without_security_answers,
         )

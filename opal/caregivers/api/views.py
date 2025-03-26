@@ -314,7 +314,6 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
 class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
-    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
@@ -332,7 +331,8 @@ class RegistrationCompletionView(APIView):
         Returns:
             HTTP response with the error or success status.
         """
-        serializer = self.serializer_class(
+        serializer_class = self._get_serializer_class()
+        serializer = serializer_class(
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
@@ -361,6 +361,21 @@ class RegistrationCompletionView(APIView):
             raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
+
+    def _get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
+        """
+        Switch the serializer based on the parameter `existingUser`.
+
+        Args:
+            args: request parameters
+            kwargs: request parameters
+
+        Returns:
+            The expected serializer according to the request parameter.
+        """
+        if 'existingUser' in self.request.query_params:
+            return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
+        return caregiver_serializers.NewUserRegistrationRegisterSerializer
 
     def _handle_new_caregiver(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> None:
         """
