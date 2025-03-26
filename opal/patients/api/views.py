@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import CaregiverSelfPermissions, CustomDjangoModelPermissions, UpdateModelPermissions
 
 from .. import utils
 from ..api.serializers import (
@@ -218,7 +218,7 @@ class PatientDemographicView(UpdateAPIView):
         return patient
 
 
-class PatientCaregiversView(RetrieveAPIView):
+class PatientCaregiverDevicesView(RetrieveAPIView):
     """Class handling GET requests for patient caregivers."""
 
     queryset = (
@@ -227,7 +227,7 @@ class PatientCaregiversView(RetrieveAPIView):
             'relationships__caregiver__devices',
         )
     )
-    serializer_class = caregiver_serializers.PatientCaregiversSerializer
+    serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
@@ -236,7 +236,8 @@ class PatientCaregiversView(RetrieveAPIView):
 class PatientUpdateView(UpdateAPIView):
     """Class handling PUT requests for patient access level update."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomDjangoModelPermissions]
+    queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
@@ -255,7 +256,8 @@ class PatientUpdateView(UpdateAPIView):
         serializer = self.serializer_class(fields=('data_access',), data=request.data)
         serializer.is_valid(raise_exception=True)
         patient_data = serializer.validated_data
-        patient = get_object_or_404(Patient.objects.filter(legacy_id=kwargs['legacy_id']))
+        legacy_id = self.kwargs['legacy_id']
+        patient = get_object_or_404(self.get_queryset().filter(legacy_id=legacy_id))
         patient.data_access = patient_data['data_access']
         patient.save()
 

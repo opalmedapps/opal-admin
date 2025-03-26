@@ -813,7 +813,7 @@ class TestPatientDemographicView:
         return api_client
 
 
-class TestPatientCaregiversView:
+class TestPatientCaregiverDevicesView:
     """Class wrapper for patient caregiver devices endpoint tests."""
 
     def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: User) -> None:
@@ -866,6 +866,68 @@ class TestPatientCaregiversView:
                 },
             ],
         }
+
+
+class TestPatientUpdateView:
+    """Class wrapper for patient update endpoint tests."""
+
+    def test_get_patient_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
+        """Test patient updates data access success with superuser."""
+        api_client.force_login(user=admin_user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        res = api_client.put(
+            reverse(
+                'api:patient-update',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': 'ALL'},
+            format='json',
+        )
+
+        patient.refresh_from_db()
+        assert res.status_code == HTTPStatus.OK
+        assert patient.data_access == 'ALL'
+
+    def test_get_patient_update_with_permission(self, api_client: APIClient) -> None:
+        """Test patient updates data access success with permission."""
+        permission = Permission.objects.get(codename='change_patient')
+        user = caregiver_factories.User()
+        user.user_permissions.add(permission)
+        api_client.force_login(user=user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        res = api_client.put(
+            reverse(
+                'api:patient-update',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': 'ALL'},
+            format='json',
+        )
+
+        patient.refresh_from_db()
+        assert res.status_code == HTTPStatus.OK
+        assert patient.data_access == 'ALL'
+
+    def test_get_patient_update_no_permission(self, api_client: APIClient) -> None:
+        """Test patient updates data access failure without permission."""
+        user = caregiver_factories.User()
+        api_client.force_login(user=user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        res = api_client.put(
+            reverse(
+                'api:patient-update',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': 'ALL'},
+            format='json',
+        )
+
+        patient.refresh_from_db()
+        assert res.status_code == HTTPStatus.FORBIDDEN
+        assert patient.data_access != 'ALL'
 
 
 class TestApiPatientExists:
