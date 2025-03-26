@@ -464,16 +464,15 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         mrns_and_sites_multiline = '\n'.join(
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
-        site_city = ''
-        if self.pathology_data.site_city:
-            site_city = (
-                f'{self.pathology_data.site_city} '
-                + f'({self.pathology_data.site_province}) '
-                + f'{self.pathology_data.site_postal_code}'
-            )
-        site_phone = ''
-        if self.pathology_data.site_phone:
-            site_phone = f'Tél. : {self.pathology_data.site_phone}'
+        site_city = (
+            f'{self.pathology_data.site_city} '
+            + f'({self.pathology_data.site_province}) '
+            + f'{self.pathology_data.site_postal_code}'
+        ) if str(self.pathology_data.site_city) else ''
+        site_phone = (
+            f'Tél. : {self.pathology_data.site_phone}'
+        ) if str(self.pathology_data.site_phone) else ''
+
         return [
             {
                 'name': 'site_logo',
