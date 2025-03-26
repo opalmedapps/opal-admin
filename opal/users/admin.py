@@ -8,7 +8,7 @@ from .models import Caregiver, ClinicalStaff, User
 
 
 @admin.register(User)
-class UserAdmin(DjangoUserAdmin):
+class UserAdmin(DjangoUserAdmin[DjangoUser]):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
     def __init__(self, model: type[DjangoUser], admin_site: admin.AdminSite) -> None:
