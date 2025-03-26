@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models.query import QuerySet
 
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -33,12 +34,26 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             'relationship__patient__hospital_patients',
         ).filter(
             status=caregiver_models.RegistrationCodeStatus.NEW,
-            relationship__patient__date_of_death=None,
         )
     )
 
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
+
+    def get_object(self) -> Any:
+        """
+        Override get_object to filter RegistrationCode by patient date_of_death.
+
+        Raises:
+            PermissionDenied: return forbidden error for deceased patients.
+
+        Returns:
+            The object of RegistrationCode
+        """
+        registration_code = super().get_object()
+        if registration_code.relationship.patient.date_of_death:
+            raise PermissionDenied()
+        return registration_code
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.

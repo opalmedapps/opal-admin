@@ -47,4 +47,10 @@ urlpatterns = [
         views.CaregiverAccessView.as_view(),
         name='relationships-search',
     ),
+    # Patients pages
+    path(
+        'access-request/',
+        views.AccessRequestView.as_view(views.AccessRequestView.form_list),
+        name='access-request',
+    ),
 ]

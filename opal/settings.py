@@ -57,6 +57,7 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
+    'formtools',
 ]
 
 LOCAL_APPS = [
@@ -361,6 +362,9 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 # OIE Credentials
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
+
+# Opal User Registration URL
+OPAL_USER_REGISTRATION_URL = env.url('OPAL_USER_REGISTRATION_URL').geturl()
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
