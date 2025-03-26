@@ -81,7 +81,7 @@ def test_generate_line_chart_success() -> None:
     assert 'Test label legend' in chart
 
 
-def generate_error_bar_chart() -> None:
+def test_generate_error_bar_chart_empty() -> None:
     """Ensure generate_error_bar_chart handles empty chart_data.data gracefully."""
     chart = chart_service.generate_error_bar_chart(CHART_DATA)
     assert not chart
