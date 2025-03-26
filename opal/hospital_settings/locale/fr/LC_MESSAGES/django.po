@@ -48,7 +48,7 @@ msgid "Support email"
 msgstr "Adresse courriel d'assistance"
 
 #: opal/hospital_settings/models.py
-msgid "Can manage institutions"
+msgid "Can manage sites"
 msgstr "Peut gérer des sites"
 
 #: opal/hospital_settings/models.py
@@ -78,7 +78,7 @@ msgid "Latitude"
 msgstr ""
 
 #: opal/hospital_settings/models.py
-msgid "Can manage sites"
+msgid "Can manage institutions"
 msgstr "Peut gérer des institutions"
 
 #: opal/hospital_settings/models.py
