@@ -510,10 +510,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         if self._is_searched_patient_deceased(patient_record):
             context.update({
-                'error_message': _(
-                    'Unable to complete action with this patient. '
-                    + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.',
-                ),
+                'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
         elif self._has_multiple_mrns_with_same_site_code(patient_record):
