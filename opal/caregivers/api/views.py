@@ -384,11 +384,13 @@ class RegistrationCompletionView(APIView):
             is_verified=True,
         ).order_by('-sent_at').first()
 
-        data_email: str = caregiver_data.get('email', '')
+        data_email: str = caregiver_data.get('email', None)
 
         if email_verification is None and not data_email:
             raise drf_serializers.ValidationError('Caregiver email is not verified.')
 
+        # also support an existing caregiver who has a Firebase account already
+        # this can happen if the caregiver has an account at another institution
         email: str = email_verification.email if email_verification is not None else data_email
         self._update_caregiver(relationship.caregiver, email, caregiver_data)
 
