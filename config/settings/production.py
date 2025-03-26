@@ -3,7 +3,7 @@ Settings for production.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
-from .base import *  # noqa: F401, F403, WPS347
+from .base import *
 from .base import env
 
 # GENERAL
