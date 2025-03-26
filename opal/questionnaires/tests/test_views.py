@@ -87,7 +87,7 @@ def test_filter_report_form_exists(admin_client: Client) -> None:
     assertContains(response, reverse('questionnaires:reports-filter'))
 
 
-def test_detail_report_form_exists(user_client: Client) -> None:
+def test_detail_report_form_exists(user_client: Client, questionnaire_data: None) -> None:
     """Ensure that a form exists in the reports filter page pointing to the detail page."""
     test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
