@@ -9,9 +9,9 @@ from . import views
 
 app_name = 'patients'
 
-form_wizard = views.UrlWizardViews.as_view(
-    views.UrlWizardViews.form_list,
-    url_name='patients:form_step',
+form_wizard = views.AccessRequestView.as_view(
+    views.AccessRequestView.form_list,
+    url_name='patients:access-request-step',
     done_step_name='finished',
 )
 
@@ -39,13 +39,13 @@ urlpatterns = [
     ),
     # Patients pages
     re_path(
-        '^form/(?P<step>.+)/$',
+        '^access-request/(?P<step>.+)/$',
         form_wizard,
-        name='form_step',
+        name='access-request-step',
     ),
     path(
-        'form/',
+        'access-request/',
         form_wizard,
-        name='form',
+        name='access-request',
     ),
 ]

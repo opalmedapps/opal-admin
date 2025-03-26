@@ -31,6 +31,6 @@ def test_relationshiptype_delete() -> None:
 
 def test_multiform_step_url() -> None:
     """A URL for each step in multiform wizard."""
-    url = '/patients/form/site/'
-    assert reverse('patients:form_step', kwargs={'step': 'site'}) == url
-    assert resolve(url).view_name == 'patients:form_step'
+    url = '/patients/access-request/site/'
+    assert reverse('patients:access-request-step', kwargs={'step': 'site'}) == url
+    assert resolve(url).view_name == 'patients:access-request-step'

@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic.edit import DeleteView
 
@@ -56,21 +57,22 @@ class RelationshipTypeDeleteView(DeleteView):
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class UrlWizardViews(NamedUrlSessionWizardView):
+class AccessRequestView(NamedUrlSessionWizardView):
     """
-    This class inherits named url session wizard, which each step has a url link to it.
+    This class inherits 'NamedUrlSessionWizardView', which each step has a url link to it.
 
-    Using named url is good for api-framework to link it to a specific step
+    Using class 'NamedUrlSessionWizardView' preselects the backend used for storing information.
     """
 
     model = Site
+    template_name = 'patients/access_request/access_request.html'
     form_list = [('site', SelectSiteForm)]
 
-    def get_template_names(self) -> str:
+    def done(self) -> HttpResponse:
         """
-        Return a template url.
+        Redirect to a test qr code page.
 
         Returns:
-            the url of the template
+            the object of HttpResponseRedirect
         """
-        return 'patients/wizard_forms/wizard_forms.html'
+        return HttpResponseRedirect('patients/access_request//test_qr_code.html')

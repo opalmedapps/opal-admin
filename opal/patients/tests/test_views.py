@@ -113,7 +113,7 @@ def test_relationshiptype_delete(user_client: Client) -> None:
 
 # tuple with patients wizard form templates and corresponding url names
 test_patient_multiform_url_template_data: list[Tuple] = [
-    ('patients:form_step', 'patients/wizard_forms/wizard_forms.html'),
+    ('patients:access-request-step', 'patients/access_request/access_request.html'),
 ]
 
 
