@@ -143,11 +143,17 @@ class RelationshipCaregiverTable(tables.Table):
 
     actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
+        # TODO: use action_column.html template once the update/delete pages are implemented
         template_name='tables/edit_pencil_icon.html',
         attrs={
             'td': {'align': 'center'},
         },
         orderable=False,
+        extra_context={
+            # TODO: update urlname_delete and urlname_update values once the corresponding pages are implemented
+            'urlname_delete': '',
+            'urlname_update': '',
+        },
     )
 
     class Meta:
