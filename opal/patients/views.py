@@ -432,15 +432,13 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             relationship_type=relationship_form.cleaned_data['relationship_type'],
         )
 
+        code = registration_code.code if registration_code else None
+
         data: dict[str, Any] = {
             'patient': str(relationship.patient),
             'requestor': str(relationship.caregiver),
+            'registration_code': code,
         }
-
-        if registration_code:
-            data.update({
-                'registration_code': registration_code.code,
-            })
 
         # store required data for consumption by confirmation view
         self.request.session[self.session_key_name] = data
