@@ -1,6 +1,6 @@
 import datetime as dt
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from django.core.management.base import CommandError
 from django.utils import timezone
@@ -453,40 +453,15 @@ def test_legacy_patient_not_found(
 
 
 #  Unit test for questionnaires data processing
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['questionnaire', 'default'])
 def test_get_questionnaire_data_success(mocker: MockerFixture) -> None:
     """Test that get_questionnaire_data returns the expected data."""
-    # Arrange
-    patient = patient_factories.Patient.create(legacy_id=123)
-    mock_query_result = [('{"questionnaire_id": 1, "questions": []}',)]
-    mock_parsed_data = [{'questionnaire_id': 1, 'questions': []}]
-    mock_processed_data = [
-        QuestionnaireData(
-            questionnaire_id=1,
-            questionnaire_title='Mock Title',
-            last_updated=dt.datetime(2023, 1, 1, 12, 0),
-            questions=[],
-        ),
-    ]
+    patient = patient_factories.Patient.create(legacy_id=51)
+    questionnaire_result = legacy_utils.get_questionnaire_data(patient)
 
-    mock_fetch = mocker.patch(
-        'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
-    )
-    mock_parse = mocker.patch(
-        'opal.legacy.utils._parse_query_result', return_value=mock_parsed_data,
-    )
-    mock_process = mocker.patch(
-        'opal.legacy.utils._process_questionnaire_data', return_value=mock_processed_data,
-    )
-
-    # Act
-    result = legacy_utils.get_questionnaire_data(patient)
-
-    # Assert
-    mock_fetch.assert_called_once_with(123)
-    mock_parse.assert_called_once_with(mock_query_result)
-    mock_process.assert_called_once_with(mock_parsed_data)
-    assert result == mock_processed_data
+    print(questionnaire_result)
+    assert len(questionnaire_result) == 1
+    assert questionnaire_result[0].questionnaire_title == 'Edmonton Symptom Assessment System'
 
 
 @pytest.mark.django_db
@@ -579,37 +554,46 @@ def test_parse_query_result_non_dict_items() -> None:
 
 def test_process_questionnaire_data(mocker: MockerFixture) -> None:
     """Test processing parsed questionnaire data into QuestionnaireData Objects."""
-    mock_question = mocker.Mock(spec=Question)
     parsed_data_list = [
         {
             'questionnaire_id': 1,
             'questionnaire_nickname': 'Test Questionnaire',
-            'last_updated': '2024-11-25 10:00:00',
-            'questions': [{'question_text': 'Sample question', 'values': []}],
+            'last_updated': '2024-11-25 10:00:00.000000',
+            'questions': [
+                {
+                    'question_text': 'Sample question',
+                    'question_label': 'Sample label',
+                    'question_type_id': 1,
+                    'position': 1,
+                    'min_value': 0,
+                    'max_value': 0,
+                    'polarity': 0,
+                    'section_id': 1,
+                    'values': [
+                        [
+                            '2024-02-23 12:00:00.000000', '3',
+                        ],
+                    ],
+                },
+            ],
         },
     ]
-
-    mock_process_questions = mocker.patch(
-        'opal.legacy.utils._process_questions', return_value=[mock_question],
-    )
 
     result = legacy_utils._process_questionnaire_data(parsed_data_list)
     assert len(result) == 1
     assert result[0].questionnaire_id == 1
     assert result[0].questionnaire_title == 'Test Questionnaire'
     assert result[0].last_updated == dt.datetime(
-        2024,
-        11,
-        25,
-        10,
-        0,
-        0,
+        2024, 11, 25, 10, 0, 0,
     )
-    assert result[0].questions == [mock_question]
-
-    mock_process_questions.assert_called_once_with(
-        [{'question_text': 'Sample question', 'values': []}],
-    )
+    assert cast(
+        list[Question], result[0].questions,
+    )[0].question_text == 'Sample question'
+    assert cast(
+        list[Question], result[0].questions,
+    )[0].answers == [
+        (dt.datetime(2024, 2, 23, 12, 0), '3'),
+    ]
 
 
 def test_process_questionnaire_data_missing_questions(mocker: MockerFixture) -> None:
@@ -666,7 +650,7 @@ def test_process_questions_valid() -> None:
             'section_id': 1,
             'values': [
                 [
-                    '2024-02-23 12:00:00', '3',
+                    '2024-02-23 12:00:00.000000', '3',
                 ],
             ],
         },

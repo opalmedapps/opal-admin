@@ -555,7 +555,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
-                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S'),
+                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S.%f'),
                 questions=questions,
             ),
         )
@@ -578,8 +578,6 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
     questions = []
 
     for que in questions_data:
-        if not isinstance(que, dict):
-            raise CommandError(f'Invalid question format: {que}')
 
         answers = que.get('values') or []
         if not isinstance(answers, list):
@@ -597,7 +595,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
                 section_id=que['section_id'],
                 answers=[
                     (
-                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S'),
+                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S.%f'),
                         str(answer[1]),
                     ) for answer in answers
                 ],
