@@ -397,7 +397,7 @@ class TestPatientsDeviationsCommand(TestBasicClass):
     def test_patient_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "Patient" model and tables."""
         legacy_factories.LegacyPatientFactory()
-        patient_factories.Patient()
+        patient_factories.Patient(legacy_id=1)
         message, error = self._call_command('find_patients_deviations')
         assert 'found deviations in the "Patient" tables/models!!!' in error
         assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
@@ -407,8 +407,10 @@ class TestPatientsDeviationsCommand(TestBasicClass):
         """Ensure the command detects the deviations in the "HospitalPatient" model and tables."""
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
         patient_factories.HospitalPatient(
+            patient=patient_factories.Patient(legacy_id=1),
             site=hospital_settings_factories.Site(code='TST'),
         )
+
         message, error = self._call_command('find_patients_deviations')
         assert 'found deviations in the "Patient" tables/models!!!' in error
         assert "(51, 'RVH', '9999996', 1)" in error
