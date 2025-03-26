@@ -8,6 +8,7 @@ Inspired by:
 """
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
+from django.utils import timezone
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
@@ -28,7 +29,9 @@ class User(DjangoModelFactory):
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
     email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
+    language = 'en'
     phone_number = ''
+    date_joined = timezone.now()
 
 
 class Caregiver(User):

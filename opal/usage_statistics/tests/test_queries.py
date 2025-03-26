@@ -17,8 +17,8 @@ pytestmark = pytest.mark.django_db(databases=['default'])
 def test_empty_fetch_registration_summary() -> None:
     """Ensure fetch_registration_summary() query can return an empty result without errors."""
     registration_summary = stats_queries.fetch_registration_summary(
-        timezone.now().today(),
-        timezone.now().today(),
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
     )
     assert registration_summary == {
         'uncompleted_registration': 0,
@@ -27,7 +27,7 @@ def test_empty_fetch_registration_summary() -> None:
 
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
-    """Ensure fetch_registration_summary() query successfully returns population statistics."""
+    """Ensure fetch_registration_summary() query successfully returns registration statistics."""
     marge_caregiver = caregiver_factories.CaregiverProfile(
         user=caregiver_factories.Caregiver(username='marge'),
         legacy_id=1,
@@ -154,16 +154,54 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = previous_day
     caregiver_factories.RegistrationCode(
-        id=9,
         code='lisa_self1',
         relationship=lisa_first_self_relationship,
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
 
     population_summary = stats_queries.fetch_registration_summary(
-        start_date=today, end_date=today,
+        start_date=today,
+        end_date=today,
     )
     assert population_summary == {
         'uncompleted_registration': 2,
         'completed_registration': 6,
+    }
+
+
+def test_empty_fetch_caregivers_summary() -> None:
+    """Ensure fetch_caregivers_summary() query can return an empty result without errors."""
+    caregivers_summary = stats_queries.fetch_caregivers_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert caregivers_summary == {
+        'total': 0,
+        'en': 0,
+        'fr': 0,
+    }
+
+
+def test_fetch_caregivers_summary() -> None:
+    """Ensure fetch_caregivers_summary() query successfully returns caregivers statistics."""
+    caregiver_factories.Caregiver(username='marge', language='fr')
+    caregiver_factories.Caregiver(username='homer', language='fr')
+    caregiver_factories.Caregiver(username='bart')
+    caregiver_factories.Caregiver(username='lisa')
+    caregiver_factories.Caregiver(username='mona', language='fr')
+    caregiver_factories.Caregiver(username='fred')
+    caregiver_factories.Caregiver(
+        username='pebbles', language='fr', date_joined=timezone.now() - dt.timedelta(days=1),
+    )
+    caregiver_factories.Caregiver(
+        username='flinstone', language='fr', date_joined=timezone.now() - dt.timedelta(days=1),
+    )
+    caregivers_summary = stats_queries.fetch_caregivers_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert caregivers_summary == {
+        'total': 6,
+        'en': 3,
+        'fr': 3,
     }
