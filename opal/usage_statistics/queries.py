@@ -6,17 +6,16 @@ from django.utils import timezone
 
 from opal.caregivers import models as caregivers_models
 from opal.patients import models as patients_models
-from opal.users import models as users_models
 
 # GROUP REPORTING - POPULATION-LEVEL AGGREGATE STATISTICS
 
 
 # Population Summary
 def fetch_population_summary() -> dict[str, Any]:
-    """_summary_
+    """Fetch grouped user/patient population summary.
 
     Returns:
-        dict[str, Any]: _description_
+        dictionary with aggregated summaries
     """
     incomplete_registration_statuses = [
         caregivers_models.RegistrationCodeStatus.NEW,
@@ -88,20 +87,3 @@ def fetch_population_summary() -> dict[str, Any]:
             models.Q(relationship__caregiver__devices__type=caregivers_models.DeviceType.BROWSER),
         ),
     )
-
-    # user_population_summary = users_models.Caregiver.objects.aggregate(
-    #     english=models.Count('id', filter=models.Q(language='en')),
-    #     french=models.Count('id', filter=models.Q(language='fr')),
-    # )
-
-    # patient_population_summary = patients_models.Patient.objects.aggregate(
-    #     deceased=models.Count('id', filter=models.Q(date_of_death__isnull=False)),
-    #     male=models.Count('id', filter=models.Q(sex=patients_models.SexType.MALE)),
-    #     female=models.Count('id', filter=models.Q(sex=patients_models.SexType.FEMALE)),
-    #     other_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.OTHER)),
-    #     unknown_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.UNKNOWN)),
-    #     full_access=models.Count('id', filter=models.Q(data_access=patients_models.DataAccessType.ALL)),
-    #     limit_access=models.Count('id', filter=models.Q(data_access=patients_models.DataAccessType.NEED_TO_KNOW)),
-    # )
-
-    # return user_population_summary | patient_population_summary
