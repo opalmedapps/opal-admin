@@ -1,9 +1,9 @@
 """Sending SMS service, working with twilio."""
-from twilio.base.exceptions import TwilioException, TwilioRestException
+from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
 
-class TwilioServiceError(TwilioException):
+class TwilioServiceError(Exception):
     """An error occurred while sending an SMS via Twilio."""
 
 
