@@ -53,6 +53,7 @@ class Command(BaseCommand):  # noqa: WPS214
             '--oie-timeout',
             type=int,
             required=False,
+            default=120,  # noqa: WPS432
             help='Specify maximum wait time per-api call to the OIE [seconds]. Default 120.',
         )
 
@@ -76,7 +77,9 @@ class Command(BaseCommand):  # noqa: WPS214
         }
 
         oie_timeout: int = options.get('oie_timeout', 120)  # noqa: WPS432
-
+        self.stdout.write(
+            f'Sending databank data with {oie_timeout} seconds timeout for OIE response.',
+        )
         for module, queryset in consenting_patients_querysets.items():
             patients_list = list(queryset.iterator())
             patients_count = len(patients_list)

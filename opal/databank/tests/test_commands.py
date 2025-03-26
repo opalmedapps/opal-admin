@@ -31,10 +31,17 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(command.patient_data_success_tracker, dict)
         assert command.called_at is not None
 
+    def test_pass_non_default_timeout(self) -> None:
+        """Verify the oie timeout argument is properly parsed."""
+        message, error = self._call_command('send_databank_data', '--oie-timeout', '90')
+        assert 'Sending databank data with 90 seconds timeout for OIE response.' in message
+        assert not error
+
     def test_no_consenting_patients_found_message(self) -> None:
         """Verify correct notifications show in stdout for no patients found."""
         message, error = self._call_command('send_databank_data')
         assert not error
+        assert 'Sending databank data with 120 seconds timeout for OIE response.' in message
         assert 'No patients found consenting to Appointments data donation.' in message
         assert 'No patients found consenting to Demographics data donation.' in message
         assert 'No patients found consenting to Diagnoses data donation.' in message
