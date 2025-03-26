@@ -108,8 +108,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             except ValueError:
                 self.logger.error('Invalid request format for questionnaireid')
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-            questionnaire_detail = get_questionnaire_detail(qid, language_map[requestor.language])
-            context.update(questionnaire_detail)
+            context.update(get_questionnaire_detail(qid, language_map[requestor.language]))
 
             # Also update auditing service with request details
             update_request_event_query_string(
@@ -121,10 +120,8 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
 
             # Finally check if this questionnaire is currently being followed
             questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)
-            if str(qid) in questionnaires_following.questionnaire_list:
-                context.update({'following': True})
-            else:
-                context.update({'following': False})
+            is_following = str(qid) in questionnaires_following.questionnaire_list
+            context.update({'following': is_following})
 
             return self.render_to_response(context)
         self.logger.error('Missing post key: questionnaireid')

@@ -59,13 +59,11 @@ class QuestionnaireProfile(models.Model):
         questionnaires_following, _ = cls.objects.get_or_create(
             user=user,
         )
-
         if (toggle):
             questionnaires_following.questionnaire_list[qid] = {
                 'title': qname,
                 'lastviewed': datetime.now().strftime('%Y-%m-%d'),
             }
-            questionnaires_following.save()
         elif qid in questionnaires_following.questionnaire_list:
             questionnaires_following.questionnaire_list.pop(qid)
-            questionnaires_following.save()
+        questionnaires_following.save()
