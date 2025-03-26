@@ -677,7 +677,7 @@ def test_invalid_question_values_format() -> None:
         },
     ]
 
-    with pytest.raises(legacy_utils.DataFetchError, match="Invalid 'values' format for question"):
+    with pytest.raises(legacy_utils.DataFetchError, match="Invalid type for 'answers'"):
         legacy_utils._process_questions(parsed_question_list)
 
 
