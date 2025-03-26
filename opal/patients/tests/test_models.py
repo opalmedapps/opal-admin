@@ -196,18 +196,12 @@ def test_patient_legacy_id_unique() -> None:
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
-    is_exception_raised = False
-
     factories.Patient(ramq=None, legacy_id=None)
 
     patient = factories.Patient(ramq=None, legacy_id=None)
     patient.id = 2
-    try:
-        patient.save()
-    except ValidationError:
-        is_exception_raised = True
+    patient.save()
 
-    assert is_exception_raised is False
     assert Patient.objects.count() == 2
 
 
