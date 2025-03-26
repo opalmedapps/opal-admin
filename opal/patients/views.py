@@ -192,12 +192,12 @@ class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorag
 
         if registration_code:
             code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code}'
-            valid_period = Institution.objects.get().registration_code_valid_period
+            registration_code_valid_period = Institution.objects.get().registration_code_valid_period
             context.update({
                 'registration_code': registration_code,
                 'registration_url': settings.OPAL_USER_REGISTRATION_URL,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
-                'valid_period': valid_period,
+                'registration_code_valid_period': registration_code_valid_period,
             })
 
         return context

@@ -173,10 +173,10 @@ msgstr "Envoyer"
 #, python-brace-format
 msgid ""
 "Your Opal registration code is: {code}.Please go to: {url}. Your code will "
-"be valid in {period} hours."
+"be expired in {period} hours."
 msgstr ""
 "Votre code d'inscription Opal est: {code}. Veuillez vous rendre à: {url}. "
-"Votre code sera être valable dans {period} heures."
+"Votre code sera être expiré dans {period} heures."
 
 #: opal/patients/forms.py
 msgid "An error occurred while sending the SMS"

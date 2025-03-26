@@ -710,7 +710,7 @@ class AccessRequestSendSMSForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.registration_code = registration_code
-        self.valid_period = Institution.objects.get().registration_code_valid_period
+        self.registration_code_valid_period = Institution.objects.get().registration_code_valid_period
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': '', 'up-submit': '', 'up-target': '#sendSMS'}
@@ -739,18 +739,18 @@ class AccessRequestSendSMSForm(forms.Form):
         phone_number = cleaned_data.get('phone_number')
 
         registration_code = self.registration_code
-        valid_period = self.valid_period
+        registration_code_valid_period = self.registration_code_valid_period
 
         if language and phone_number:
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
                 message = gettext(
                     'Your Opal registration code is: {code}.'
-                    + 'Please go to: {url}. Your code will be valid in {period} hours.',
+                    + 'Please go to: {url}. Your code will be expire in {period} hours.',
                 ).format(
                     code=registration_code,
                     url=url,
-                    period=valid_period,
+                    period=registration_code_valid_period,
                 )
 
             twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
