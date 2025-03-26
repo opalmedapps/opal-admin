@@ -177,14 +177,14 @@ DATABASES = {
     },
 }
 
-# Use SSL for all the database connections if USE_SSL_FOR_DATABASES is set to True
-if env.bool('USE_SSL_FOR_DATABASES'):
+# Use SSL for all the database connections if DATABASE_USE_SSL is set to True
+if env.bool('DATABASE_USE_SSL'):
     # Use OPTIONS setting to set extra parameters when connecting to the database.
     # The parameters vary depending on the database backend.
     # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
     #    - https://docs.djangoproject.com/en/4.2/ref/databases/#connecting-to-the-database
     #    - https://mysqlclient.readthedocs.io/user_guide.html#functions-and-attributes
-    options_settings = {
+    ssl_settings = {
         # For the "ssl_mode" parameters see MySQL's documentation:
         # https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode
         # The following links might be helpful in case we need to modify the sources of the mysqlclient dependency:
@@ -201,9 +201,9 @@ if env.bool('USE_SSL_FOR_DATABASES'):
         },
     }
 
-    DATABASES['default']['OPTIONS'] = options_settings
-    DATABASES['legacy']['OPTIONS'] = options_settings
-    DATABASES['questionnaire']['OPTIONS'] = options_settings
+    DATABASES['default']['OPTIONS'] = ssl_settings
+    DATABASES['legacy']['OPTIONS'] = ssl_settings
+    DATABASES['questionnaire']['OPTIONS'] = ssl_settings
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
 DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']

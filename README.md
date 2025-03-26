@@ -379,7 +379,7 @@ If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt 
     openssl verify -CAfile ca.pem ca.pem
     ```
 
-6. To enable SSL/TLS for Django's database connections, in the .env file, set `USE_SSL_FOR_DATABASES=True` and fill in the `SSL_CA` variable with the path to the public key of the certificate authority file (e.g., `/app/certs/ca.pem`).
+6. To enable SSL/TLS for Django's database connections, in the .env file, set `DATABASE_USE_SSL=True` and fill in the `SSL_CA` variable with the path to the public key of the certificate authority file (e.g., `/app/certs/ca.pem`).
 
 7. Finally, copy the docker compose SSL override file so that it automatically applies when running compose commands:
 
