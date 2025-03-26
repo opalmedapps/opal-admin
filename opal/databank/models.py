@@ -32,9 +32,6 @@ class DatabankConsent(models.Model):
         on_delete=models.CASCADE,
         related_name='databank_consent',
     )
-    # TODO: QSCCD-1550 Override model save() method to populate guid at creation time
-    #       using patient identifiers and custom GUID hash.
-    #       See hash algorithm here: https://github.com/aces/open_science_identity/tree/master
     guid = models.CharField(
         verbose_name=_('Globally Unique Identifier'),
         max_length=64,

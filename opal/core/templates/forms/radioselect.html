@@ -25,10 +25,7 @@
               data-bs-toggle="tooltip" data-bs-title="{{ option.attrs.title|unlocalize }}">
                   {{ option.label|unlocalize }}
               </label>
-              {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
-                  {% include 'bootstrap5/layout/field_errors_block.html' %}
-              {% endif %}
-          </div>
+            </div>
           {% endfor %}
           {% endfor %}
 
