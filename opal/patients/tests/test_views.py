@@ -1350,7 +1350,7 @@ def test_valid_relationship_contain_role_type_being_updated(
     role_type: models.RoleType,
 ) -> None:
     """Ensure to include type being updated in the valid types list."""
-    relationshiptype = factories.RelationshipType(role_type=role_type, name='relationshiptype')
+    relationship_type = RelationshipType.objects.get(role_type=role_type)
     caregiver = factories.CaregiverProfile()
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
     response_get = relationship_user.get(
