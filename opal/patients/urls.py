@@ -53,9 +53,4 @@ urlpatterns = [
         views.AccessRequestView.as_view(views.AccessRequestView.form_list),
         name='access-request',
     ),
-    path(
-        '<int:id>/health-data/quantity-samples/',
-        views.HealthDataView.as_view(),
-        name='health-data',
-    ),
 ]

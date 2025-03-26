@@ -28,7 +28,6 @@ from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
-from ..health_data.models import QuantitySample
 from . import constants
 from .filters import ManageCaregiverAccessFilter
 from .forms import RelationshipPendingAccessForm, RelationshipTypeUpdateForm
@@ -566,46 +565,3 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
             Patient.objects.none(),
             Relationship.objects.none(),
         ]
-
-
-class HealthDataView(generic.ListView):
-    """A page for visualizing a patient's health data samples.
-
-    Note: This page is not accesible from the Django UI as it is meant to be linked to from ORMS.
-          Go to https://127.0.0.1:8000/patients/<int:id>/health-data/quantity-samples/
-          where id refers to the pk/id of the patient of interest.
-    """
-
-    model = QuantitySample
-    template_name = 'patients/health-data/health_data_display.html'
-    permission_required = ('health_data.view_quantitysample')
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """Temp docstring.
-
-        Args:
-            kwargs: additional keyword arguments
-
-        Returns:
-            Dict[str, Any]
-        """
-        context = super().get_context_data(**kwargs)
-        patient = Patient.objects.get(id=self.kwargs['id'])
-        context.update(
-            {
-                'ramq': patient.ramq,
-                'first_name': patient.first_name,
-                'last_name': patient.last_name,
-            },
-        )
-        return context
-
-    def get_queryset(self) -> QuerySet[QuantitySample]:
-        """Filter QuantitySample data according to kwarg patient id.
-
-        Returns:
-            QuerySet[QuantitySample]
-        """
-        return QuantitySample.objects.filter(
-            patient=Patient.objects.get(id=self.kwargs['id']),
-        )

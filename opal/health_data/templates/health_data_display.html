@@ -5,18 +5,16 @@
   {% block content-header-page-name %}{% translate "Health Data" %}{% endblock %}
 
   {% block content %}
-    {% if perms.health_data.view_quantitysample %}
+
         <div class="container-fluid">
           <div class="row justify-content-md-center">
             <div class="col col-sm-10">
 
-                <h4> {% translate "Patient:" %} {{ first_name }} {{ last_name }} {{ ramq }}</h4>
+                <h4> {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ:{{ patient.ramq }})</h4>
                 <hr>
-                <div class="table-responsive">
 
-                </div>
             </div>
           </div>
         </div>
-    {% endif %}
+
   {% endblock %}
