@@ -90,21 +90,21 @@ def test_update_patient_legacy_id_invalid() -> None:
         utils.update_patient_legacy_id(patient, legacy_id)
 
 
-def test_get_caregiver_success() -> None:
-    """Test get caregiver information success or not."""
+def test_find_caregiver_success() -> None:
+    """Test get caregiver information success."""
     username1 = 'username-1'
     Caregiver(username=username1)
-    caregiver = utils.get_caregiver(username1)
+    caregiver = utils.find_caregiver(username1)
     assert caregiver is not None
     assert caregiver.username == username1
 
 
-def test_get_caregiver_failure() -> None:
-    """Test get caregiver information success or not."""
+def test_find_caregiver_failure() -> None:
+    """Test find caregiver information failure."""
     username1 = 'username-1'
     username2 = 'username-2'
     Caregiver(username=username1)
-    caregiver = utils.get_caregiver(username2)
+    caregiver = utils.find_caregiver(username2)
     assert not caregiver
 
 
