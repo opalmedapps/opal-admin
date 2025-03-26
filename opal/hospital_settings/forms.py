@@ -59,7 +59,7 @@ class InstitutionForm(forms.ModelForm[Institution]):
             AppendedText('non_interpretable_lab_result_delay', _('days'), wrapper_class='col-3'),
             AppendedText('interpretable_lab_result_delay', _('days'), wrapper_class='col-3'),
             FormActions(
-                CancelButton(reverse('hospital-settings:institution-list')),
                 Submit('submit', _('Save')),
+                CancelButton(reverse('hospital-settings:institution-list')),
             ),
         )
