@@ -188,7 +188,7 @@ class TestApiEmailVerification:
         }
 
     def test_verify_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+        """Test verification code not exists."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
