@@ -59,8 +59,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
 # https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
-# allow definition of PAGE_SIZE globally while having pagination opt-in
-SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
+# W001: allow definition of PAGE_SIZE globally while having pagination opt-in
+# E311: legacy questionnaire content_id cannot be unique
+# see also: https://code.djangoproject.com/ticket/26472
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001', 'fields.E311']
 
 
 # DATABASES
