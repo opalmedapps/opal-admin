@@ -16,6 +16,7 @@ from django.utils.html import strip_tags
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -1375,8 +1376,11 @@ def test_access_request_confirmation_post_success(
     client: Client,
     registration_user: User,
     mocker: MockerFixture,
+    settings: SettingsWrapper,
 ) -> None:
     """Ensure that the confirmation view handles posts for the form and re-shows the template on success."""
+    settings.TWILIO_ACCOUNT_SID = 'TEST'
+    settings.TWILIO_AUTH_TOKEN = 'TEST'  # noqa: S105
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     data = {

@@ -19,6 +19,7 @@ from crispy_forms.layout import Field as CrispyField
 from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 from requests.exceptions import RequestException
+from twilio.base.exceptions import TwilioException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
@@ -711,9 +712,16 @@ class AccessRequestSendSMSForm(forms.Form):
             the cleaned form data
         """
         cleaned_data = self.cleaned_data
-
         language = cleaned_data.get('language')
         phone_number = cleaned_data.get('phone_number')
+
+        try:
+            twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
+        except TwilioException:
+            self.add_error(NON_FIELD_ERRORS, gettext('An error occurred while sending the SMS'))
+            LOGGER.exception('Could not initialize the Twilio service.')
+            return cleaned_data
+
         registration_code = self.registration_code
 
         if language and phone_number:
@@ -723,8 +731,6 @@ class AccessRequestSendSMSForm(forms.Form):
                     code=registration_code,
                     url=url,
                 ))
-
-            twilio = TwilioService(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.SMS_FROM)
 
             try:
                 twilio.send_sms(phone_number, message)

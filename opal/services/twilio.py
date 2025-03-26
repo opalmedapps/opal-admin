@@ -1,5 +1,5 @@
 """Sending SMS service, working with twilio."""
-from twilio.base.exceptions import TwilioRestException
+from twilio.base.exceptions import TwilioException, TwilioRestException
 from twilio.rest import Client
 
 
@@ -18,11 +18,19 @@ class TwilioService:
             account_sid: twilio account sid
             auth_token: twilio auth token
             sender: sender phone number
+
+        Raises:
+            TwilioException: if the twilio service could not be initialized.
         """
         self.account_sid = account_sid
         self.auth_token = auth_token
         self.from_ = sender
-        self.client = Client(account_sid, auth_token)
+        try:
+            self.client = Client(account_sid, auth_token)
+        except TwilioException as exp:
+            raise TwilioException(
+                'The Twilio Service could not be initialized:/n{0}'.format(str(exp)),
+            )
 
     def send_sms(self, phone_number: str, message: str) -> None:
         """
