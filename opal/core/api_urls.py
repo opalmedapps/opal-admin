@@ -164,7 +164,7 @@ urlpatterns = [
     ),
     path(
         'patients/<uuid:uuid>/health-data/viewed/',
-        data_views.ViewedQuantitySampleView.as_view(),
+        data_views.MarkQuantitySampleAsViewedView.as_view(),
         name='patient-viewed-health-data-update',
     ),
 

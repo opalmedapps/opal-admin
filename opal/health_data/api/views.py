@@ -79,10 +79,9 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         serializer.save(patient=self.patient)
 
 
-class ViewedQuantitySampleView(APIView):
+class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
-    # TODO: change to model permissions?
     permission_classes = (IsORMSUser,)
 
     def patch(self, request: Request, uuid: str) -> Response:

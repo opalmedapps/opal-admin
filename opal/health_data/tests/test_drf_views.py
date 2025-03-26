@@ -163,29 +163,37 @@ def test_quantitysample_list_no_patient(admin_api_client: APIClient) -> None:
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_viewed_health_data_update_unauthorized(api_client: APIClient) -> None:
+def test_viewed_health_data_update_unauthenticated_unauthorized(api_client: APIClient, user: User) -> None:
     """Ensure `patient-viewed-health-data-update` endpoint returns 403 error for unauthorized user."""
-    response = api_client.patch(
-        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': uuid4()}),
-    )
+    url = reverse('api:patient-viewed-health-data-update', kwargs={'uuid': uuid4()})
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.patch(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
 
 
-def test_viewed_health_data_update_not_found_error(user_api_client: APIClient) -> None:
+def test_viewed_health_data_update_not_found_error(api_client: APIClient, orms_user: User) -> None:
     """Ensure `patient-viewed-health-data-update` endpoint returns 404 not found error for non-existing patient."""
-    response = user_api_client.patch(
+    api_client.force_login(orms_user)
+
+    response = api_client.patch(
         reverse('api:patient-viewed-health-data-update', kwargs={'uuid': uuid4()}),
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_viewed_health_data_update_with_no_quantities(user_api_client: APIClient) -> None:
+def test_viewed_health_data_update_with_no_quantities(api_client: APIClient, orms_user: User) -> None:
     """Ensure that the `patient-viewed-health-data-update` endpoint does not fail if patient has no quantities."""
     patient = patient_factories.Patient()
+    api_client.force_login(orms_user)
 
-    response = user_api_client.patch(
+    response = api_client.patch(
         reverse('api:patient-viewed-health-data-update', kwargs={'uuid': patient.uuid}),
     )
 
@@ -193,8 +201,9 @@ def test_viewed_health_data_update_with_no_quantities(user_api_client: APIClient
     assert QuantitySample.objects.count() == 0
 
 
-def test_viewed_health_data_update_for_specific_patient(user_api_client: APIClient) -> None:
+def test_viewed_health_data_update_for_specific_patient(api_client: APIClient, orms_user: User) -> None:
     """Ensure that the `/health-data/viewed/` endpoint updates quantities that belong to a specific patient."""
+    api_client.force_login(orms_user)
     marge_patient = patient_factories.Patient(legacy_id=51, ramq='9999996')
     homer_patient = patient_factories.Patient(legacy_id=52, ramq='9999997')
 
@@ -202,7 +211,7 @@ def test_viewed_health_data_update_for_specific_patient(user_api_client: APIClie
     health_data_factories.QuantitySample(patient=marge_patient)
     health_data_factories.QuantitySample(patient=homer_patient)
 
-    response = user_api_client.patch(
+    response = api_client.patch(
         reverse('api:patient-viewed-health-data-update', kwargs={'uuid': marge_patient.uuid}),
     )
 
@@ -213,13 +222,13 @@ def test_viewed_health_data_update_for_specific_patient(user_api_client: APIClie
         viewed_by__exact='',
     ).count() == 2
 
-    client_user_id = user_api_client.session.get('_auth_user_id', '')
+    client_user_id = api_client.session.get('_auth_user_id', '')
     user = User.objects.get(id=client_user_id)
-    assert QuantitySample.objects.exclude(  # type: ignore [union-attr]
+    assert QuantitySample.objects.exclude(
         viewed_at__isnull=True,
         viewed_by__exact='',
-    ).first().viewed_by == user.username
-    assert QuantitySample.objects.exclude(  # type: ignore [union-attr]
+    )[0].viewed_by == user.username
+    assert QuantitySample.objects.exclude(
         viewed_at__isnull=True,
         viewed_by__exact='',
-    ).first().viewed_at
+    )[0].viewed_at
