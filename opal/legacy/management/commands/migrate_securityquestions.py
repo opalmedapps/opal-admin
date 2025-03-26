@@ -27,12 +27,6 @@ class Command(BaseCommand):
             # Import a security question if not found.
             try:
                 SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
-                self.stdout.write(
-                    'Security question sernum: {questionsernum}, title: {title} exists already, skipping'.format(
-                        questionsernum=legacy_question.securityquestionsernum,
-                        title=legacy_question.questiontext_en,
-                    ),
-                )
             except SecurityQuestion.DoesNotExist:
                 SecurityQuestion.objects.create(
                     title_en=legacy_question.questiontext_en,
@@ -45,3 +39,9 @@ class Command(BaseCommand):
                         title=legacy_question.questiontext_en,
                     ),
                 )
+            self.stdout.write(
+                'Security question sernum: {questionsernum}, title: {title} exists already, skipping'.format(
+                    questionsernum=legacy_question.securityquestionsernum,
+                    title=legacy_question.questiontext_en,
+                ),
+            )
