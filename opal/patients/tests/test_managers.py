@@ -14,8 +14,8 @@ def test_get_hospital_patient_by_site_mrn() -> None:
         mrn=hospital_patient.mrn,
     )
 
-    assert query_result.patient.legacy_id == hospital_patient.patient.legacy_id
-    assert query_result.mrn == hospital_patient.mrn
-    assert query_result.site.code == hospital_patient.site.code
-    assert query_result.site.name == hospital_patient.site.name
-    assert query_result.is_active is True
+    assert query_result[0].patient.legacy_id == hospital_patient.patient.legacy_id
+    assert query_result[0].mrn == hospital_patient.mrn
+    assert query_result[0].site.code == hospital_patient.site.code
+    assert query_result[0].site.name == hospital_patient.site.name
+    assert query_result[0].is_active is True

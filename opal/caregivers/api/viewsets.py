@@ -63,8 +63,8 @@ class SecurityAnswerViewSet(  # noqa: WPS215
             The expected serializer
         """
         if self.action == 'update':
-            return serializers.UpdateSecurityAnswerSerializer
-        return serializers.SecurityAnswerSerializer
+            return serializers.SecurityAnswerSerializer
+        return serializers.SecurityAnswerQuestionSerializer
 
     @action(detail=False, methods=['get'])
     def random(self, request: Request, uuid: UUID) -> Response:  # noqa: WPS210

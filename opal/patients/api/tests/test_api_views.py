@@ -1,5 +1,6 @@
 """Test module for the `patients` app REST API endpoints."""
 
+import copy
 from datetime import datetime
 from http import HTTPStatus
 
@@ -11,8 +12,10 @@ import pytest
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.users.factories import User
 
 pytestmark = pytest.mark.django_db
 
@@ -148,4 +151,155 @@ class TestApiRetrieveRegistrationDetails:
                     'site_code': site.code,
                 },
             ],
+        }
+
+
+class TestApiRegistrationCompletion:
+    """Test class tests the api registration/<str: code>/register."""
+
+    valid_input_data = dict({
+        'patient': {
+            'legacy_id': 1,
+        },
+        'caregiver': {
+            'language': 'fr',
+            'phone_number': '+15141112222',
+        },
+        'security_answers': [
+            {
+                'question': 'correct?',
+                'answer': 'yes',
+            },
+            {
+                'question': 'correct?',
+                'answer': 'maybe',
+            },
+        ],
+    })
+
+    def test_register_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        valid_input_data = copy.deepcopy(self.valid_input_data)
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == RegistrationCodeStatus.REGISTERED
+        assert len(security_answers) == 2
+
+    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test non-existent registration code."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        RegistrationCode(relationship=relationship)
+        valid_input_data = copy.deepcopy(self.valid_input_data)
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': 'code11111111'},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test registered registration code."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(
+            relationship=relationship,
+            status=RegistrationCodeStatus.REGISTERED,
+        )
+        valid_input_data = copy.deepcopy(self.valid_input_data)
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        invalid_data: dict = copy.deepcopy(self.valid_input_data)
+        invalid_data['patient']['legacy_id'] = 0
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=invalid_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert not security_answers
+        assert response.json() == {
+            'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
+        }
+
+    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        invalid_data: dict = copy.deepcopy(self.valid_input_data)
+        invalid_data['caregiver']['phone_number'] = '1234567890'
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=invalid_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert not security_answers
+        assert response.json() == {
+            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
         }

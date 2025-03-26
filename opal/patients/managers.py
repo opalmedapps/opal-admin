@@ -1,8 +1,5 @@
 """Collection of managers for the caregiver app."""
 
-from collections import OrderedDict
-from typing import List, Optional
-
 from django.db import models
 
 
@@ -49,7 +46,7 @@ class HospitalPatientManager(models.Manager):
         self,
         site: str,
         mrn: str,
-    ) -> Optional[models.QuerySet]:
+    ) -> models.QuerySet:
         """
         Query manager to get a `HospitalPatient` record filtered by given site code and MRN.
 
@@ -66,12 +63,12 @@ class HospitalPatientManager(models.Manager):
         ).filter(
             site__code=site,
             mrn=mrn,
-        ).first()
+        )
 
     def get_hospital_patient_by_site_mrn_list(
         self,
-        site_mrn_list: List[OrderedDict],
-    ) -> Optional[models.QuerySet]:
+        site_mrn_list: list[dict],
+    ) -> models.QuerySet:
         """
         Query manager to get a `HospitalPatient` record filtered by given list of dictionaries with site codes and MRNs.
 
@@ -100,4 +97,4 @@ class HospitalPatientManager(models.Manager):
         ):
             return self.none()
 
-        return hospital_patients.first()
+        return hospital_patients

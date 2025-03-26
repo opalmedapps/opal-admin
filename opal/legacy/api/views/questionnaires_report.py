@@ -54,7 +54,7 @@ class QuestionnairesReportView(views.APIView):
         hospital_patient = HospitalPatient.objects.get_hospital_patient_by_site_mrn(
             site=serializer.validated_data.get('site'),
             mrn=serializer.validated_data.get('mrn'),
-        )
+        ).first()
 
         if (
             not hospital_patient

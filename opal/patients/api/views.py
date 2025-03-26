@@ -2,32 +2,38 @@
 
 from typing import Any, Type
 
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models.query import QuerySet
-from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from opal.caregivers.api.serializers import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
-from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
+from opal.caregivers import models as caregiver_models
+from opal.caregivers.api import serializers as caregiver_serializers
 from opal.core.drf_permissions import CaregiverPatientPermissions, CustomPatientDemographicPermissions
-from opal.patients.api.serializers import CaregiverRelationshipSerializer, PatientDemographicSerializer
-from opal.patients.models import HospitalPatient, Patient, Relationship
+
+from ..api.serializers import CaregiverRelationshipSerializer, PatientDemographicSerializer
+from ..models import HospitalPatient, Patient, Relationship
+from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
     """Class handling GET requests for registration code values."""
 
     queryset = (
-        RegistrationCode.objects.select_related(
+        caregiver_models.RegistrationCode.objects.select_related(
             'relationship',
             'relationship__patient',
         ).prefetch_related(
             'relationship__patient__hospital_patients',
         ).filter(
-            status=RegistrationCodeStatus.NEW,
+            status=caregiver_models.RegistrationCodeStatus.NEW,
             relationship__patient__date_of_death=None,
         )
     )
@@ -46,9 +52,69 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             The expected serializer according to the request parameter.
         """
         if 'detailed' in self.request.query_params:
-            return RegistrationCodePatientDetailedSerializer
+            return caregiver_serializers.RegistrationCodePatientDetailedSerializer
+        return caregiver_serializers.RegistrationCodePatientSerializer
 
-        return RegistrationCodePatientSerializer
+
+class RegistrationCompletionView(APIView):
+    """Registration-register `APIView` class for handling "registration-completed" requests."""
+
+    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
+
+    # TODO Remove or keep permission here
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request: Request, code: str) -> Response:
+        """
+        Handle POST requests from `registration/<str:code>/register/`.
+
+        Args:
+            request: REST framework's request object.
+            code: registration code.
+
+        Raises:
+            ValidationError: validation error.
+
+        Returns:
+            HTTP response with the error or success status.
+        """
+        serializer = self.serializer_class(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        register_data = serializer.validated_data
+
+        registration_code = get_object_or_404(
+            caregiver_models.RegistrationCode.objects.select_related(
+                'relationship__patient',
+                'relationship__caregiver__user',
+            ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
+        )
+
+        try:  # noqa: WPS229
+
+            update_registration_code_status(registration_code)
+
+            update_patient_legacy_id(
+                registration_code.relationship.patient,
+                register_data['relationship']['patient']['legacy_id'],
+            )
+
+            update_caregiver(
+                registration_code.relationship.caregiver.user,
+                register_data['relationship']['caregiver'],
+            )
+            caregiver_profile = registration_code.relationship.caregiver
+            insert_security_answers(
+                caregiver_profile,
+                register_data['security_answers'],
+            )
+        except ValidationError as exception:
+            transaction.set_rollback(True)
+            raise serializers.ValidationError({'detail': str(exception.args)})
+
+        return Response()
 
 
 class CaregiverRelationshipView(ListAPIView):
@@ -97,7 +163,7 @@ class PatientDemographicView(UpdateAPIView):
 
         hospital_patient = HospitalPatient.objects.get_hospital_patient_by_site_mrn_list(
             serializer.validated_data.get('mrns'),
-        )
+        ).first()
 
         # Raise `NotFound` if `HospitalPatient` queryset is empty
         if not hospital_patient:
