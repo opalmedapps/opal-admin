@@ -357,12 +357,13 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT0
 
     Data inserted includes the creation of questionnaires with related questions and dictionary entires.
     Additionally, instances of questionnaire answers:
-      * Completed ESAS questionnaires for patientId 1, 2; in progress for patientId 3
-      * Completed Patient Satisfaction Questionnaire for patientId 3
-      * New Bowel Function Questionnaire for patientId 3
-      * New Quality of Life - Head and Neck Cancer for patientId 2
-      * New BREAST-Q Reconstruction Module Preoperative Scales 
-        and BREAST-Q Reconstruction Module Postoperative Scales for patientId 1
+
+    * Completed ESAS questionnaires for patientId 1, 2; in progress for patientId 3
+    * Completed Patient Satisfaction Questionnaire for patientId 3
+    * New Bowel Function Questionnaire for patientId 3
+    * New Quality of Life - Head and Neck Cancer for patientId 2
+    * New BREAST-Q Reconstruction Module Preoperative Scales
+      and BREAST-Q Reconstruction Module Postoperative Scales for patientId 1
 
     Args:
         django_db_blocker: pytest fixture to allow database access here only
