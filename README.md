@@ -76,6 +76,25 @@ This project contains a configuration for [`pre-commit`](https://pre-commit.com/
 
 Install the `pre-commit` hooks via `pre-commit install`.
 
+### Recommended vscode extensions
+
+This project contains recommendations for vscode extensions (see `.vscode/extensions.json`). You should get a popup about this when you open the project. These extensions are also highlighted in the extensions list.
+
+The following extensions are required or strongly recommended:
+
+* [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [PyLance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
+* [Django](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django)
+* [EditorConfig for VSCode](https://marketplace.visualstudio.com/items?itemName=editorconfig.editorconfig)
+* [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
+* [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+* [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
+* [ShellCheck](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck)
+* [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+
+??? note "shellcheck on Apple Silicon"
+
+Currently the *shellcheck* extension does not come with a binary for `arm64`. Install `shellcheck` via `brew install shellcheck`.
+
 ## Documentation
 
 The documentation is deployed to [https://opalmedapps.gitlab.io/backend-pilot](https://opalmedapps.gitlab.io/backend-pilot). It is deployed automatically when commits are pushed to `main`.

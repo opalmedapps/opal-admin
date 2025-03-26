@@ -3,9 +3,11 @@
     "ms-python.python",
     "ms-python.vscode-pylance",
     "batisteo.vscode-django",
-    "timonwong.shellcheck",
-    "davidanson.vscode-markdownlint",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
     "ms-azuretools.vscode-docker",
-    "eamodio.gitlens"
+    "eamodio.gitlens",
+    "timonwong.shellcheck",
+    "davidanson.vscode-markdownlint"
   ]
 }
