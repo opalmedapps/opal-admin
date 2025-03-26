@@ -1,0 +1,4 @@
+/* This is to use for display-only tables otherwise the standard table configuration will be used. */
+.custom-table {
+    --bs-table-color-type: var(--opal-purple);
+}

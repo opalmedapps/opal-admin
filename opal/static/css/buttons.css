@@ -34,6 +34,7 @@
   --bs-btn-bg: var(--opal-purple);
   --bs-btn-border-color: var(--opal-purple);
   --bs-btn-hover-bg: #604887;
+  --bs-btn-hover-color: #fff;
   --bs-btn-hover-border-color: #553f77;
   --bs-btn-active-bg: #553f77;
   --bs-btn-active-border-color: #4a3667;
