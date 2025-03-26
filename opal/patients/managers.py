@@ -46,6 +46,8 @@ class RelationshipManager(models.Manager['Relationship']):
             Return list of patient legacy IDs
         """
         relationships = self.get_patient_list_for_caregiver(user_name=user_name)
+        # filter out legacy_id=None to avoid typing problems when doing at the DB-level
+        # the result type is otherwise ValuesQuerySet[Relationship, Optional[int]]
         return [
             legacy_id
             for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
@@ -64,7 +66,7 @@ class RelationshipManager(models.Manager['Relationship']):
         Args:
             relationship_type (str): caregiver relationship type
             user_id (int): user id
-            ramq (str): patient's RAMQ numebr
+            ramq (str): patient's RAMQ number
 
         Returns:
             Queryset to get the filtered `Relationship` record
