@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 from http import HTTPStatus
 from typing import Any, Union
@@ -8,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_django.asserts import assertNumQueries
+from pytest_django.asserts import assertContains, assertNumQueries
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
@@ -218,17 +219,263 @@ def test_viewed_health_data_update_for_specific_patient(api_client: APIClient, o
     assert response.status_code == status.HTTP_200_OK
     assert QuantitySample.objects.count() == 3
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     ).count() == 2
 
     client_user_id = api_client.session.get('_auth_user_id', '')
     user = User.objects.get(id=client_user_id)
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     )[0].viewed_by == user.username
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     )[0].viewed_at
+
+
+def test_viewed_health_data_mark_only_new_records(api_client: APIClient, orms_user: User) -> None:
+    """Ensure that the `/health-data/viewed/` endpoint marks as viewed only new quantity records (not old ones)."""
+    api_client.force_login(orms_user)
+    marge_patient = patient_factories.Patient(legacy_id=51, ramq='9999996')
+
+    current_time = timezone.now()
+    previous_day_time = current_time - timedelta(days=1)
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(
+        patient=marge_patient,
+        viewed_at=previous_day_time,
+        viewed_by='previous_day_user',
+    )
+
+    response = api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': marge_patient.uuid}),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    client_user_id = api_client.session.get('_auth_user_id', '')
+    user = User.objects.get(id=client_user_id)
+
+    # Ensure the existing viewed record was not changed
+    assert QuantitySample.objects.filter(
+        viewed_at=previous_day_time,
+        viewed_by='previous_day_user',
+    ).count() == 1
+
+    assert QuantitySample.objects.filter(
+        viewed_by=user.username,
+    ).count() == 2
+
+
+def test_unviewed_health_data_unauthorized(api_client: APIClient) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns 403 error for unauthorized user."""
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_unviewed_health_data_dict_error(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns an error when dictionary is passed."""
+    api_client.force_login(orms_user)
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data={'patient_uuid': 'test'},
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text=r'Expected a list of items but got type \"dict\".',
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def test_unviewed_health_data_empty_list(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns an error when empty list is passed."""
+    api_client.force_login(orms_user)
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[],
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text='This list may not be empty.',
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def test_unviewed_health_data_missing_field(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns an error when the field is missing."""
+    api_client.force_login(orms_user)
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[{'test': 'test'}],
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text='This field is required.',
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def test_unviewed_health_data_invalid_uuid(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns an error for invalid UUID value."""
+    api_client.force_login(orms_user)
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[{'patient_uuid': 'test'}],
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text='Must be a valid UUID.',
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def test_unviewed_health_data_non_existing_uuid(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns an error if patient's UUID does not exist."""
+    api_client.force_login(orms_user)
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[{'patient_uuid': '52f51e13-927d-4362-8258-8cc48233d226'}],
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text='[]',
+        status_code=status.HTTP_200_OK,
+    )
+
+
+def test_unviewed_health_data_success(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns unviewed health data counts."""
+    api_client.force_login(orms_user)
+    marge_patient = patient_factories.Patient(legacy_id=1, ramq='TEST1234567')
+    homer_patient = patient_factories.Patient(first_name='Homer', legacy_id=2, ramq='TEST7654321')
+    health_data_factories.QuantitySample(patient=marge_patient, **(_create_sample_data()))
+    health_data_factories.QuantitySample(
+        patient=marge_patient,
+        **(_create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN)),
+    )
+    health_data_factories.QuantitySample(
+        patient=marge_patient,
+        **(_create_sample_data(source=SampleSourceType.CLINICIAN)),
+    )
+    health_data_factories.QuantitySample(
+        patient=homer_patient,
+        **(_create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN)),
+    )
+
+    # Viewed quantity sample
+    health_data_factories.QuantitySample(
+        patient=homer_patient,
+        **(_create_sample_data(70, QuantitySampleType.HEART_RATE, SampleSourceType.PATIENT)),
+        viewed_at=timezone.now(),
+        viewed_by='test_user',
+    )
+
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[
+            {'patient_uuid': str(marge_patient.uuid)},
+            {'patient_uuid': str(homer_patient.uuid)},
+        ],
+        format='json',
+    )
+
+    assert QuantitySample.objects.count() == 5
+
+    assertContains(
+        response=response,
+        text=f'{{"count":3,"patient_uuid":"{str(marge_patient.uuid)}"}}',
+    )
+    assertContains(
+        response=response,
+        text=f'{{"count":1,"patient_uuid":"{str(homer_patient.uuid)}"}}',
+    )
+
+
+def test_unviewed_health_data_success_no_unviewed(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint returns empty list when there's no unviewed health data."""
+    api_client.force_login(orms_user)
+    patient = patient_factories.Patient()
+    client_user_id = api_client.session.get('_auth_user_id', '')
+    user = User.objects.get(id=client_user_id)
+
+    health_data_factories.QuantitySample(
+        patient=patient,
+        viewed_at=timezone.now(),
+        viewed_by=user.username,
+        **(_create_sample_data()),
+    )
+    health_data_factories.QuantitySample(
+        patient=patient,
+        viewed_at=timezone.now(),
+        viewed_by=user.username,
+        **(_create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN)),
+    )
+    health_data_factories.QuantitySample(
+        patient=patient,
+        viewed_at=timezone.now(),
+        viewed_by=user.username,
+        **(_create_sample_data(source=SampleSourceType.CLINICIAN)),
+    )
+    health_data_factories.QuantitySample(
+        patient=patient,
+        viewed_at=timezone.now(),
+        viewed_by=user.username,
+        **(_create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN)),
+    )
+
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[{'patient_uuid': str(patient.uuid)}],
+        format='json',
+    )
+
+    assertContains(
+        response=response,
+        text='[]',
+    )
+
+
+def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: User) -> None:
+    """Ensure `unviewed-health-data-patient-list` endpoint does not return duplicated UUIDs."""
+    api_client.force_login(orms_user)
+    patient = patient_factories.Patient()
+    health_data_factories.QuantitySample(patient=patient, **(_create_sample_data()))
+    health_data_factories.QuantitySample(
+        patient=patient,
+        **(_create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN)),
+    )
+    health_data_factories.QuantitySample(
+        patient=patient,
+        **(_create_sample_data(source=SampleSourceType.CLINICIAN)),
+    )
+
+    response = api_client.post(
+        reverse('api:unviewed-health-data-patient-list'),
+        data=[
+            {'patient_uuid': str(patient.uuid)},
+            {'patient_uuid': str(patient.uuid)},
+        ],
+        format='json',
+    )
+
+    assert QuantitySample.objects.count() == 3
+    assertContains(
+        response=response,
+        text=f'[{{"count":3,"patient_uuid":"{str(patient.uuid)}"}}]',
+    )

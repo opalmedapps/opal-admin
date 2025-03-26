@@ -13,8 +13,9 @@ from django.utils.translation import gettext_lazy as _
 from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core.models import AbstractLabDelayModel
 from opal.core.validators import validate_ramq
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.managers import PatientManager, PatientQueryset, RelationshipManager, RelationshipTypeManager
 
 from . import constants
@@ -192,7 +193,7 @@ class DataAccessType(models.TextChoices):
     NEED_TO_KNOW = 'NTK', _('Need To Know')
 
 
-class Patient(models.Model):
+class Patient(AbstractLabDelayModel):
     """A patient whose data can be accessed."""
 
     # TextChoices need to be defined outside to use them in constraints
@@ -294,6 +295,26 @@ class Patient(models.Model):
         """
         if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
             raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
+
+    @property
+    def age(self) -> int:
+        """
+        Return the age of the patient.
+
+        Returns:
+            the age of the patient
+        """
+        return Patient.calculate_age(self.date_of_birth)
+
+    @property
+    def is_adult(self) -> bool:
+        """
+        Return whether the patient is an adult.
+
+        Returns:
+            True, if the patient's age is greater equal than the institution's adulthood age, False otherwise
+        """
+        return self.age >= Institution.objects.get().adulthood_age
 
     @classmethod
     def calculate_age(cls, date_of_birth: date, reference_date: Optional[date] = None) -> int:

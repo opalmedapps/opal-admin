@@ -215,7 +215,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Returns:
             The patient's legacy id.
         """
-        patient_legacy_id = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
+        patient_legacy_id: Optional[int] = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
                 'Requests to APIs using CaregiverPatientPermissions must provide an integer'

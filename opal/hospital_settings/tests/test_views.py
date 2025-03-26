@@ -89,9 +89,9 @@ def test_institution_urls_use_correct_template(
 
 def test_institution_list_displays_all(client: Client, institution_user: User) -> None:
     """Ensure that the institution list page template displays all the institutions."""
-    factories.Institution(name='INS1', acronym_fr='INSFR1')
-    factories.Institution(name='INS2', acronym_fr='INSFR2')
-    factories.Institution(name='INS3', acronym_fr='INSFR3')
+    factories.Institution(name='INS1')
+    factories.Institution(name='INS2')
+    factories.Institution(name='INS3')
 
     url = reverse('hospital-settings:institution-list')
     response = client.get(url)

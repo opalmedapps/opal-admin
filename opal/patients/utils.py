@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import LegacyUserType
 from opal.services.hospital.hospital import OIEService
@@ -476,6 +476,13 @@ def create_access_request(  # noqa: WPS210, WPS231
             ramq=patient.ramq,
             mrns=mrns,
         )
+
+        # set the two fields according to the institution’s field values if the patient is a pediatric patient
+        institution = Institution.objects.get()
+        if patient.age < institution.adulthood_age:
+            patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay
+            patient.interpretable_lab_result_delay = institution.interpretable_lab_result_delay
+            patient.save()
 
     # TODO: check whether we want to default start_date to patient's date of birth when calling create_relationship
 

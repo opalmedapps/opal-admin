@@ -33,7 +33,7 @@ def test_caregiverprofile_factory_multiple() -> None:
 
 
 def test_caregiverprofile_uuid_unique() -> None:
-    """Ensure that the field uuid of carigaver is unique."""
+    """Ensure that the field uuid of caregiver is unique."""
     profile = factories.CaregiverProfile()
     profile2 = factories.CaregiverProfile()
     profile.uuid = profile2.uuid

@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     """Rename the field `code`  to `acronym` for the `location` model."""
 
     dependencies = [
-        ('hospital_settings', '0014_add_reg_code_valid_period'),
+        ('hospital_settings', '0015_alter_institution_registration_code_validity'),
     ]
 
     operations = [

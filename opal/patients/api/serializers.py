@@ -43,6 +43,12 @@ class PatientSerializer(DynamicFieldsSerializer):
         }
 
 
+class PatientUUIDSerializer(serializers.Serializer):
+    """Serializer for patient's UUID."""
+
+    patient_uuid = serializers.UUIDField(required=True, allow_null=False)
+
+
 class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.
@@ -108,6 +114,8 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         many=False,
     )
     data_access = serializers.CharField(source='patient.data_access')
+    non_interpretable_lab_result_delay = serializers.IntegerField(source='patient.non_interpretable_lab_result_delay')
+    interpretable_lab_result_delay = serializers.IntegerField(source='patient.interpretable_lab_result_delay')
 
     class Meta:
         model = Relationship
@@ -119,6 +127,8 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
             'status',
             'relationship_type',
             'data_access',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
 
 
