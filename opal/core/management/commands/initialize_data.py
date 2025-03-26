@@ -148,12 +148,6 @@ class Command(BaseCommand):
             view_patient,
         ])
 
-        orms.user_permissions.set([
-            view_institution,
-            view_site,
-            view_securityquestion,
-        ])
-
         # Medical Records
         medical_records.permissions.add(_find_permission('patients', 'can_manage_relationships'))
 
