@@ -432,6 +432,10 @@ TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
 SMS_FROM = env.str('SMS_FROM')
 
+# PATHOLOGY REPORTS SETTINGS
+# Path to the pathology reports folder
+PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
+
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
