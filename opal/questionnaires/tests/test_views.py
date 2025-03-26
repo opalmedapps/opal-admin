@@ -14,11 +14,9 @@ from opal.users.models import User
 pytestmark = pytest.mark.django_db
 
 
-# All questionnaires templates and their associated url
+# Add any future GET-requestable questionnaire pages here for faster test writing
 test_url_template_data: list[Tuple] = [
     (reverse('questionnaires:index'), 'questionnaires/index.html'),
-    (reverse('questionnaires:exportreports-list'), 'questionnaires/export_reports/exportreports-list.html'),
-    (reverse('questionnaires:exportreports-query'), 'questionnaires/export_reports/exportreports-query.html'),
 ]
 
 
@@ -54,7 +52,7 @@ def test_list_select_form_exists(user_client: Client, admin_user: AbstractUser) 
 def test_query_viewreport_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports page and it contains the correct URL."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-query'))
+    response = user_client.post(reverse('questionnaires:exportreports-query'), data={'questionnaireid': 11})
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
 
@@ -83,3 +81,35 @@ def test_export_report_visible_authenticated(user_client: Client, admin_user: Ab
 
     assert response.status_code == HTTPStatus.OK
     assert 'Export Reports' in {pagename.text for pagename in pages_available}
+
+
+def test_get_exportreports_query_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure no GET requests can be made to the page."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports-query'))
+
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+
+
+def test_get_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure no GET requests can be made to the page."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports-viewreport'))
+
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+
+
+def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure no GET requests can be made to the page."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports-downloadcsv'))
+
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+
+
+def test_get_downloadxlsx_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure no GET requests can be made to the page."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports-downloadxlsx'))
+
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
