@@ -97,11 +97,15 @@ def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings: Set
     user_data = auth_backend._authenticate_fedauth('user', 'pass')
     assert user_data is None
 
-    mock_post.assert_called_once_with('http://localhost/api/login', {
-        'institution': '99-fake-institution',
-        'uid': 'user',
-        'pwd': 'pass',
-    })
+    mock_post.assert_called_once_with(
+        'http://localhost/api/login',
+        {
+            'institution': '99-fake-institution',
+            'uid': 'user',
+            'pwd': 'pass',
+        },
+        timeout=10,
+    )
 
 
 def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:

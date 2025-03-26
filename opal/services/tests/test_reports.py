@@ -257,6 +257,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
         url=TEST_LEGACY_QUESTIONNAIRES_REPORT_URL,
         headers=headers,
         data=payload,
+        timeout=60,
     )
 
 
