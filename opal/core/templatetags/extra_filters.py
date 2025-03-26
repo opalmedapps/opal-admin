@@ -24,9 +24,11 @@ def rsubstring(text: str, separator: str) -> str:
         separator: the separator at which to split the text
 
     Returns:
-        the substring cut off at the right-most separator, empty string if the separator is not present
+        the substring cut off at the right-most separator, the same text if the separator is not present
     """
-    return text.rpartition(separator)[0]
+    first, _separator, last = text.rpartition(separator)
+
+    return first if first else last
 
 
 @register.filter('startswith')

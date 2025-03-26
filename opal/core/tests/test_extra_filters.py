@@ -15,7 +15,7 @@ def test_startswith(text: str, prefix: str, expected: bool) -> None:
 
 @pytest.mark.parametrize(('text', 'separator', 'expected'), [
     ('foobar', 'b', 'foo'),
-    ('foobar', 'x', ''),
+    ('foobar', 'x', 'foobar'),
     ('hospital-settings:institution-list', '-', 'hospital-settings:institution'),
 ])
 def test_rsubstring(text: str, separator: str, expected: str) -> None:
