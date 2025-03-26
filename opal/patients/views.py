@@ -541,7 +541,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
     filterset_class = ManageCaregiverAccessFilter
     ordering = ['request_date']
 
-    def get_filterset_kwargs(self, filterset_class: Any) -> Any:
+    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:
         """
         Apply the filter arguments on the set of data.
 
