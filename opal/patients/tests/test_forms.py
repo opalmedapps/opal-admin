@@ -54,7 +54,7 @@ def test_relationshippending_form_is_valid() -> None:
 def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -96,7 +96,7 @@ def test_relationshippending_update() -> None:
 def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
+    relationship_info = factories.Relationship(
         patient=factories.Patient(
             date_of_birth=date.today() - relativedelta(
                 years=14,
@@ -1269,7 +1269,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_patient_exists()
 
     assert not form.is_valid()
     assert form.non_field_errors()[0] == (
-        'The patient already has a self-relationship'
+        'The patient already has a self-relationship.'
     )
 
 
@@ -1301,7 +1301,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
 
     assert not form.is_valid()
     assert form.non_field_errors()[0] == (
-        'The caregiver already has a self-relationship'
+        'The caregiver already has a self-relationship.'
     )
 
 
