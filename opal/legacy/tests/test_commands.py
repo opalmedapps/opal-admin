@@ -309,20 +309,20 @@ class TestUsersCaregiversMigration(TestBasicClass):
 
     def test_import_user_caregiver_already_exist(self) -> None:
         """Test import fails, caregiver profile has already been migrated."""
-        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(name='self')
-        patient_factories.CaregiverProfile(legacy_id=99)
+        patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
         message, error = self._call_command('migrate_users')
-        assert 'Nothing to be done for sernum: 99, skipping.\n' in message
+        assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
 
     def test_import_user_caregiver_exists_relation(self) -> None:
         """Test import relation fails, relation already exists."""
-        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
         relationshiptype = patient_factories.RelationshipType(name='self')
-        caregiver = patient_factories.CaregiverProfile(legacy_id=99)
+        caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
             caregiver=caregiver,
@@ -330,29 +330,29 @@ class TestUsersCaregiversMigration(TestBasicClass):
             status=RelationshipStatus.CONFIRMED,
         )
         message, error = self._call_command('migrate_users')
-        assert 'Nothing to be done for sernum: 99, skipping.\n' in message
+        assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
 
     def test_import_user_caregiver_no_relation(self) -> None:
         """Test import pass for relationship for already migrated caregiver."""
-        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(name='self')
-        patient_factories.CaregiverProfile(legacy_id=99)
+        patient_factories.CaregiverProfile(legacy_id=55)
         message, error = self._call_command('migrate_users')
-        assert 'Nothing to be done for sernum: 99, skipping.\n' in message
+        assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
 
     def test_import_new_user_caregiver_no_relation(self) -> None:
         """Test import pass for caregiver profile and relationship."""
         legacy_factories.LegacyPatientFactory(patientsernum=99)
-        legacy_factories.LegacyUserFactory(usertypesernum=99)
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(name='self')
         message, error = self._call_command('migrate_users')
-        assert 'Legacy user with usertypesernum: 99 has been migrated\n' in message
+        assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Number of imported users is: 1\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
 
@@ -360,14 +360,14 @@ class TestUsersCaregiversMigration(TestBasicClass):
         """Test import pass for multiple caregiver profiles and their relations."""
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyPatientFactory(patientsernum=100)
-        legacy_factories.LegacyUserFactory(usertypesernum=99, usertype='Patient', username='test1')
-        legacy_factories.LegacyUserFactory(usertypesernum=100, usertype='Patient', username='test2')
+        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, usertype='Patient', username='test1')
+        legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
         patient_factories.RelationshipType(name='self')
         message, error = self._call_command('migrate_users')
-        assert 'Legacy user with usertypesernum: 99 has been migrated\n' in message
-        assert 'Legacy user with usertypesernum: 100 has been migrated\n' in message
+        assert 'Legacy user with sernum: 55 has been migrated\n' in message
+        assert 'Legacy user with sernum: 56 has been migrated\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
         assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
         assert 'Number of imported users is: 2\n' in message
