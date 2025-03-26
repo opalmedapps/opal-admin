@@ -101,15 +101,16 @@ xray:
     - uname -a
     - x-ray-scan -version
   script:
-    - x-ray-scan --help
-    - echo "$CI_PROJECT_DIR"
-    - echo "$OUTPUT_DIR"
-    - x-ray-scan
+    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
     - ls -la .
-    - ls -la /reports
+    - ls -la $CI_PROJECT_DIR
+    - ls -la $OUTPUT_DIR
+    - ls -la $OUTPUT_DIR/*/
   artifacts:
     reports:
       repository_xray: "$OUTPUT_DIR/*/*.json"
+    paths:
+      - "$OUTPUT_DIR/*/*.json"
 
 flake8:
   stage: Static Analysis
