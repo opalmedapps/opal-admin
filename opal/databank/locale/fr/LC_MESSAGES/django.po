@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-20 15:01-0400\n"
+"POT-Creation-Date: 2023-04-25 09:00-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
 #: opal/databank/apps.py
 msgid "Databank"
 msgstr ""
@@ -26,23 +27,23 @@ msgid "Patient"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Checked-In Appointments"
+msgid "Checked-In Appointments Consent"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Diagnosis"
+msgid "Diagnosis Consent"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Demographics"
+msgid "Demographics Consent"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Labs"
+msgid "Labs Consent"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Questionnaires"
+msgid "Questionnaires Consent"
 msgstr ""
 
 #: opal/databank/models.py
@@ -54,7 +55,7 @@ msgid "Consent Updated"
 msgstr ""
 
 #: opal/databank/models.py
-msgid "Last Synchronized Crontime"
+msgid "Last Synchronized At"
 msgstr ""
 
 #: opal/databank/models.py

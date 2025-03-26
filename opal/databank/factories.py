@@ -13,11 +13,11 @@ class DatabankConsent(DjangoModelFactory):
     """Model factory to create [opal.databank.models.DatabankConsent][] models."""
 
     patient = factory.SubFactory(Patient)
-    appointments = factory.Faker('boolean')
-    diagnosis = factory.Faker('boolean')
-    demographics = factory.Faker('boolean')
-    labs = factory.Faker('boolean')
-    questionnaires = factory.Faker('boolean')
+    has_appointments = factory.Faker('boolean')
+    has_diagnosis = factory.Faker('boolean')
+    has_demographics = factory.Faker('boolean')
+    has_labs = factory.Faker('boolean')
+    has_questionnaires = factory.Faker('boolean')
     last_synchronized = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
 
     class Meta:
