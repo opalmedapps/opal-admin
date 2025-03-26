@@ -11,7 +11,7 @@ from .base import env
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = env(
+SECRET_KEY = env.str(
     'DJANGO_SECRET_KEY',
     default='OsHmhT0jxfCjlh6MXlsOuDDWiaTe4WLzH2B0NS4Uhq3HDoM6LuMwbEC9Ig1KchNu',
 )
@@ -32,7 +32,7 @@ CACHES = {
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = env.str('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 
 # WhiteNoise
 # ------------------------------------------------------------------------------

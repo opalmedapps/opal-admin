@@ -10,10 +10,11 @@ from .base import env
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = env(
+SECRET_KEY = env.str(
     'SECRET_KEY',
     default='I1hs8ZDzJIaBFPLviE7SzlPZU8rtMwJyvoKG7EopQD45A39xcF9WwwmZtFaQHkmL',
 )
+print(SECRET_KEY)
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
