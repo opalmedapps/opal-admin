@@ -101,7 +101,7 @@ xray:
     - uname -a
     - x-ray-scan -version
   script:
-    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR" -d "$CI_PROJECT_DIR/requirements"
+    - x-ray-scan -p "$CI_PROJECT_DIR/requirements" -o "$OUTPUT_DIR"
     - ls -la .
     - ls -la $CI_PROJECT_DIR
     - ls -la $OUTPUT_DIR
