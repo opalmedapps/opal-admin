@@ -148,8 +148,8 @@ msgstr "Résultats de laboratoire reçu"
 
 #: opal/usage_statistics/models.py
 msgid "Patient Data Received"
-msgstr "Données patient reçues"
+msgstr "Données des patient reçues"
 
 #: opal/usage_statistics/models.py
 msgid "Patient Data Received Records"
-msgstr "Dossiers de données reçues sur le patient"
+msgstr "Dossiers de données des patients reçues"

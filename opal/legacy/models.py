@@ -848,4 +848,4 @@ class LegacyPatientActivityLog(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'PatientActivityLog'  # Set the actual table name here
+        db_table = 'PatientActivityLog'
