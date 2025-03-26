@@ -20,11 +20,6 @@ urlpatterns = [
         name='institution-list',
     ),
     path(
-        'institution/<int:pk>/',
-        views.InstitutionDetailView.as_view(),
-        name='institution-detail',
-    ),
-    path(
         'institution/create/',
         views.InstitutionCreateUpdateView.as_view(),
         name='institution-create',
@@ -44,11 +39,6 @@ urlpatterns = [
         'sites/',
         views.SiteListView.as_view(),
         name='site-list',
-    ),
-    path(
-        'site/<int:pk>/',
-        views.SiteDetailView.as_view(),
-        name='site-detail',
     ),
     path(
         'site/create/',

@@ -16,6 +16,7 @@ class RelationshipTypeTable(tables.Table):
     actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
         template_name='tables/action_column.html',
+        orderable=False,
         extra_context={
             'urlname_update': 'patients:relationshiptype-update',
             'urlname_delete': 'patients:relationshiptype-delete',
