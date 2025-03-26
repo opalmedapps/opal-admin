@@ -636,7 +636,16 @@ def fetch_patient_demographic_diagnosis_summary(
         demographic information and latest diagnosis per patient.
     """
     # TODO: QSCCD-2254 - update the query when Diagnosis model is implemented in django-backend
-    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.annotate(
+    diagnosis_id_list = legacy_models.LegacyDiagnosis.objects.values('patient_ser_num').annotate(
+        diagnosis_id=models.Max('diagnosis_ser_num'),
+    ).values_list(
+        'diagnosis_id',
+        flat=True,
+    )
+    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
+        models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=diagnosis_id_list)
+        | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
+    ).annotate(
         patient_ser_num=models.F('patient__patientsernum'),
         age=models.F('patient__age'),
         date_of_birth=models.F('patient__date_of_birth'),
@@ -644,6 +653,7 @@ def fetch_patient_demographic_diagnosis_summary(
         email=models.F('patient__email'),
         language=models.F('patient__language'),
         registration_date=models.F('patient__registration_date'),
+        latest_diagnosis=models.Max('patient__legacydiagnosis__diagnosis_ser_num'),
         latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
         latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
     ).values(
@@ -654,6 +664,7 @@ def fetch_patient_demographic_diagnosis_summary(
         'email',
         'language',
         'registration_date',
+        'latest_diagnosis',
         'latest_diagnosis_description',
         'latest_diagnosis_date',
     )
