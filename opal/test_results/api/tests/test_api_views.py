@@ -8,10 +8,11 @@ from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_django.asserts import assertContains, assertJSONEqual
+from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from opal.hospital_settings.factories import Institution
@@ -172,11 +173,13 @@ class TestCreatePathologyView:
             data=valid_data,
             format='json',
         )
-        assertContains(
-            response=response,
-            text='Site matching query does not exist.',
-            status_code=status.HTTP_400_BAD_REQUEST,
+
+        assertRaisesMessage(
+            expected_exception=NotFound,
+            expected_message='Site matching query does not exist.',
         )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
         assert test_results_models.GeneralTest.objects.count() == 0
         assert legacy_models.LegacyDocument.objects.count() == 0
 
