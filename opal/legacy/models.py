@@ -170,3 +170,38 @@ class LegacyQuestionnaire(models.Model):
     class Meta:
         managed = False
         db_table = 'Questionnaire'
+
+
+class LegacySecurityquestion(models.Model):
+    """Securityquestion model from the legacy database OpalDB."""
+
+    securityquestionsernum = models.AutoField(db_column='SecurityQuestionSerNum', primary_key=True)
+    questiontext_en = models.CharField(db_column='QuestionText_EN', max_length=2056)
+    questiontext_fr = models.CharField(db_column='QuestionText_FR', max_length=2056)
+    creationdate = models.DateTimeField(db_column='CreationDate')
+    lastupdated = models.DateTimeField(db_column='LastUpdated')
+    active = models.IntegerField(db_column='Active')
+
+    class Meta:
+        managed = False
+        db_table = 'SecurityQuestion'
+
+
+class LegacySecurityanswer(models.Model):
+    """SecurityAnswer model from the legacy database OpalDB."""
+
+    securityanswersernum = models.AutoField(db_column='SecurityAnswerSerNum', primary_key=True)
+    securityquestionsernum = models.ForeignKey(
+        'LegacySecurityquestion',
+        models.DO_NOTHING,
+        db_column='SecurityQuestionSerNum',
+    )
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    answertext = models.CharField(db_column='AnswerText', max_length=2056)
+    creationdate = models.DateTimeField(db_column='CreationDate')
+    lastupdated = models.DateTimeField(db_column='LastUpdated')
+
+    class Meta:
+        managed = False
+        db_table = 'SecurityAnswer'
+        unique_together = (('securityquestionsernum', 'patientsernum'),)
