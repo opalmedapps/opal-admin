@@ -73,7 +73,7 @@ class QuestionnairesReportView(views.APIView):
         # Generate questionnaire report
         encoded_report = self.report_service.generate_questionnaire_report(
             QuestionnaireReportRequestData(
-                patient_id=patient.legacy_id if patient.legacy_id else patient.id,
+                patient_id=patient.legacy_id if patient.legacy_id else -1,
                 patient_name=f'{patient.first_name} {patient.last_name}',
                 patient_site=serializer.validated_data.get('site'),
                 patient_mrn=serializer.validated_data.get('mrn'),
