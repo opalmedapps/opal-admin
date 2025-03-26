@@ -108,8 +108,5 @@ class TestInitializeData(CommandTestMixin):
 
         stdout, stderr = self._call_command('initialize_data')
 
-        print(stdout)
-        print(stderr)
-
         assert stdout == ''
         assert stderr == 'There already exists data\n'
