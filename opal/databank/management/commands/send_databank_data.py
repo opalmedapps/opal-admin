@@ -214,6 +214,29 @@ class Command(BaseCommand):  # noqa: WPS214
                 }
                 for key, value in groups.items()
             ]
+        # Extra nesting requirements for questionnaires to create question answer list under questionnaire identifiers
+        elif nesting_key == 'QSTN':
+            groups2 = defaultdict(list)
+            for item2 in data:
+                # Group by answer questionnaire id, date answered, questionnaire id and title
+                key2 = (
+                    item2.pop('answer_questionnaire_id', None),
+                    item2.pop('creation_date', None),
+                    item2.pop('questionnaire_id', None),
+                    item2.pop('questionnaire_title', None),
+                )
+                groups2[key2].append(item2)
+            # Convert the defaultdict to the final format
+            data = [
+                {
+                    'answer_questionnaire_id': key2[0],
+                    'creation_date': key2[1],
+                    'questionnaire_id': key2[2],
+                    'questionnaire_title': key2[3],
+                    'question_answers': value2,
+                }
+                for key2, value2 in groups2.items()
+            ]
         return {'GUID': guid, nesting_key: data}
 
     def _send_to_oie_and_handle_response(
