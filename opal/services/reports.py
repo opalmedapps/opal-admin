@@ -5,13 +5,10 @@ import json
 from pathlib import Path
 
 from django.conf import settings
-from django.utils.translation import activate, get_language
 
 import requests
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
-
-from opal.hospital_settings.models import Institution
 
 
 class QuestionnaireReportService():
@@ -19,26 +16,22 @@ class QuestionnaireReportService():
 
     content_type = 'application/json'
 
-    def generate(self, patient_id: int, language: str) -> str:
-        """Create PDF report in encoded base64 string format by using legacy PHP endpoints.
+    def generate(
+        self,
+        patient_id: int,
+        logo_path: str,
+        language: str,
+    ) -> str:
+        """Create PDF report in encoded base64 string format.
 
         Args:
             patient_id (int): the ID of an Opal patient
+            logo_path (str): file path of the logo image
             language (str): report's language (English or French)
 
         Returns:
-            str: encoded base64 string
+            str: encoded base64 string of the generated PDF report
         """
-        base64_report: str = ''
-
-        current_language = get_language()
-        activate(language)
-        try:
-            logo_path = Institution.objects.all()[0].logo.path
-        except KeyError:
-            return ''
-        activate(current_language)  # type: ignore
-
         base64_report = self._request_base64_report(patient_id, logo_path, language)
 
         return base64_report if self._is_base64(base64_report) is True else ''
@@ -49,7 +42,7 @@ class QuestionnaireReportService():
         logo_path: str,
         language: str,
     ) -> str:
-        """Generate a PDF report by sending a request to the legacy PHP endpoint.
+        """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
             patient_id (int): the ID of an Opal patient
