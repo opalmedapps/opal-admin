@@ -25,7 +25,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_field = 'code'
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
-        """Override 'get_serializer_class' to switch the serializer based on the `detailed`.
+        """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
             args (list): request parameters
