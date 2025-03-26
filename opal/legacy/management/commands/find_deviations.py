@@ -36,7 +36,7 @@ LEGACY_PATIENT_QUERY = """
     FROM PatientControl PC
     LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum
     LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
-    WHERE U.UserType = "Patient";
+    WHERE U.UserType <> "Caregiver";
 """  # noqa: WPS323
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
