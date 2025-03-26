@@ -168,7 +168,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             patientsernum__patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
-            appointment_ser_num=models.F('appointmentsernum'),
+            appointment_id=models.F('appointmentsernum'),
             date_created=models.F('date_added'),
             source_db_name=models.F('source_database__source_database_name'),
             source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
@@ -177,7 +177,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
             scheduled_start_time=models.F('scheduledstarttime'),
         ).values(
-            'appointment_ser_num',
+            'appointment_id',
             'date_created',
             'source_db_name',
             'source_db_alias_code',
@@ -255,14 +255,14 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
-            patient_ser_num=models.F('patientsernum'),
+            patient_id=models.F('patientsernum'),
             opal_registration_date=models.F('registrationdate'),
             patient_sex=models.F('sex'),
             patient_dob=models.F('dateofbirth'),
             patient_primary_language=models.F('language'),
             patient_death_date=models.F('death_date'),
         ).values(
-            'patient_ser_num',
+            'patient_id',
             'opal_registration_date',
             'patient_sex',
             'patient_dob',
