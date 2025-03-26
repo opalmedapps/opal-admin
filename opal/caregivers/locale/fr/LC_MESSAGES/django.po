@@ -36,7 +36,7 @@ msgstr "Profil de proche aidant"
 
 #: opal/caregivers/models.py
 msgid "Caregiver Profiles"
-msgstr "Profil de proche aidants"
+msgstr "Profils de proche aidants"
 
 #: opal/caregivers/models.py
 msgid "Title"

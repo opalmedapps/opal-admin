@@ -26,7 +26,6 @@ class SecurityQuestion(DjangoModelFactory):
 
     title = 'Apple'
     title_fr = 'Pomme'
-    is_active = True
 
 
 class SecurityAnswer(DjangoModelFactory):
@@ -36,7 +35,5 @@ class SecurityAnswer(DjangoModelFactory):
         model = models.SecurityAnswer
 
     question = 'Apple'
-    question_fr = 'Pomme'
     user = SubFactory(CaregiverProfile)
     answer = 'answer'
-    answer_fr = 'réponse'

@@ -92,8 +92,4 @@ class SecurityAnswer(models.Model):
         Returns:
             the caregiver and the question.
         """
-        return '{user} - {question} - {answer}'.format(
-            user=self.user,
-            question=self.question,
-            answer=self.answer,
-        )
+        return '{question}'.format(question=self.question)
