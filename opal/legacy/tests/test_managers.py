@@ -553,43 +553,43 @@ def test_get_aggregated_user_app_activities_language_update_statistics() -> None
 def test_get_aggregated_user_app_activities_android_device_statistics() -> None:
     """Ensure that get_aggregated_user_app_activities correctly aggregates android devices per patient per day."""
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='marge',
         days_delta=0,
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
         username='homer',
         days_delta=0,
@@ -618,43 +618,43 @@ def test_get_aggregated_user_app_activities_android_device_statistics() -> None:
 def test_get_aggregated_user_app_activities_ios_device_statistics() -> None:
     """Ensure that get_aggregated_user_app_activities correctly aggregates iOS devices per patient per day."""
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='marge',
         days_delta=0,
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
         username='homer',
         days_delta=0,
@@ -683,43 +683,43 @@ def test_get_aggregated_user_app_activities_ios_device_statistics() -> None:
 def test_get_aggregated_user_app_activities_browser_device_statistics() -> None:
     """Ensure that get_aggregated_user_app_activities correctly aggregates browser devices per patient per day."""
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='marge',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='marge',
         days_delta=0,
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='homer',
     )
     _create_log_record(
-        request='DeviceIdentifier',
+        request='Log',
         parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
         username='homer',
         days_delta=0,

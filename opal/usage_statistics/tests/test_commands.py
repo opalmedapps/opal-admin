@@ -801,49 +801,49 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=0,
@@ -895,49 +895,49 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=0,
@@ -990,49 +990,49 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
+            request='Log',
             parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
             username=homer_caregiver.user.username,
             days_delta=0,

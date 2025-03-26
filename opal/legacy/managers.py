@@ -523,13 +523,28 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
                 filter=models.Q(request='AccountChange', parameters__contains='Language'),
             ),
             count_device_ios=models.Count(
-                'device_id', filter=models.Q(parameters__contains='iOS'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='iOS',
+                ),
+                distinct=True,
             ),
             count_device_android=models.Count(
-                'device_id', filter=models.Q(parameters__contains='Android'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='Android',
+                ),
+                distinct=True,
             ),
             count_device_browser=models.Count(
-                'device_id', filter=models.Q(parameters__contains='browser'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='browser',
+                ),
+                distinct=True,
             ),
             # NOTE! The action_date indicates the date when the application activities were made.
             # It is not the date when the activity statistics were populated.
