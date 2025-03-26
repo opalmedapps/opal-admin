@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
-from opal.caregivers.api import serializers as registration_serializers
+from opal.caregivers.api import serializers as caregiver_serializers
 from opal.users.models import User
 
 from ..models import Patient, Relationship
@@ -49,9 +49,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             The expected serializer according to the request parameter.
         """
         if 'detailed' in self.request.query_params:
-            return registration_serializers.RegistrationCodePatientDetailedSerializer
+            return caregiver_serializers.RegistrationCodePatientDetailedSerializer
 
-        return registration_serializers.RegistrationCodePatientSerializer
+        return caregiver_serializers.RegistrationCodePatientSerializer
 
 
 class RegistrationRegisterView(APIView):
