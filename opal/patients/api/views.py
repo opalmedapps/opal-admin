@@ -65,6 +65,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             raise PermissionDenied()
         return registration_code
 
+
 @extend_schema(
     responses={
         200: CaregiverRelationshipSerializer(many=True),
@@ -77,7 +78,7 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
 
     serializer_class = CaregiverRelationshipSerializer
     permission_classes = (IsListener, CaregiverSelfPermissions)
-    queryset = Relationship.objects.none()
+    queryset = Relationship.objects.none()  # noqa: WPS615
 
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.

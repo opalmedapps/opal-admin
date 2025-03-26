@@ -82,6 +82,7 @@ class UpdateDeviceView(AllowPUTAsCreateMixin[Device], UpdateAPIView[Device]):
         # or use Appuserid header
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
+
 # TODO: Switch to using GenericListView for GetCaregiverPatientsList
 @extend_schema(
     parameters=[
@@ -125,6 +126,7 @@ class GetCaregiverPatientsList(APIView):
         return Response(
             CaregiverPatientSerializer(relationships, many=True).data,
         )
+
 
 @extend_schema(
     parameters=[
