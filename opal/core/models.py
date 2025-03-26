@@ -20,7 +20,7 @@ class Address(models.Model):
         abstract = True
 
 
-class Delay(models.Model):
+class AbstractLabDelayModel(models.Model):
     """Abstract class representing 2 lab result delay fields."""
 
     non_interpretable_lab_result_delay = models.PositiveIntegerField(

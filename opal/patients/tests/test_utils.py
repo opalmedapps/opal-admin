@@ -810,7 +810,7 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
     Site(code='MGH')
     LegacyHospitalIdentifierType(code='RVH')
     LegacyHospitalIdentifierType(code='MGH')
-    institution = Institution()
+    institution = Institution(non_interpretable_lab_result_delay=3, interpretable_lab_result_delay=5)
 
     patient_data = PATIENT_DATA._asdict()
     patient_data['mrns'] = [MRN_DATA_RVH, MRN_DATA_MGH]
@@ -827,8 +827,8 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
 
     assert relationship.patient == patient
     assert Patient.calculate_age(patient.date_of_birth) < institution.adulthood_age
-    assert patient.non_interpretable_lab_result_delay == institution.non_interpretable_lab_result_delay
-    assert patient.interpretable_lab_result_delay == institution.interpretable_lab_result_delay
+    assert patient.non_interpretable_lab_result_delay == 3
+    assert patient.interpretable_lab_result_delay == 5
 
 
 @pytest.mark.parametrize('role_type', PREDEFINED_ROLE_TYPES)

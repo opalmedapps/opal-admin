@@ -48,8 +48,6 @@ class Patient(DjangoModelFactory):
     sex = models.Patient.SexType.MALE
     ramq = ''
     legacy_id = Sequence(lambda number: number + 1)
-    non_interpretable_lab_result_delay = 0
-    interpretable_lab_result_delay = 0
 
 
 class Relationship(DjangoModelFactory):

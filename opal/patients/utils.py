@@ -478,9 +478,10 @@ def create_access_request(  # noqa: WPS210, WPS231
         )
 
         # set the two fields according to the institution’s field values if the patient is a pediatric patient
-        if Patient.calculate_age(patient.date_of_birth) < Institution.objects.get().adulthood_age:
-            patient.non_interpretable_lab_result_delay = Institution.objects.get().non_interpretable_lab_result_delay
-            patient.interpretable_lab_result_delay = Institution.objects.get().interpretable_lab_result_delay
+        institution = Institution.objects.get()
+        if Patient.calculate_age(patient.date_of_birth) < institution.adulthood_age:
+            patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay
+            patient.interpretable_lab_result_delay = institution.interpretable_lab_result_delay
             patient.save()
 
     # TODO: check whether we want to default start_date to patient's date of birth when calling create_relationship

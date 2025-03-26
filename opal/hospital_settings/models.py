@@ -4,7 +4,7 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..core.models import Address, Delay
+from ..core.models import AbstractLabDelayModel, Address
 
 
 class Location(models.Model):
@@ -26,7 +26,7 @@ class Location(models.Model):
         return self.name
 
 
-class Institution(Location, Delay):  # type: ignore[django-manager-missing]
+class Institution(Location, AbstractLabDelayModel):  # type: ignore[django-manager-missing]
     """A hospital institution."""
 
     terms_of_use = models.FileField(
