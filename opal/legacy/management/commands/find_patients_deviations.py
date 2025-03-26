@@ -7,6 +7,64 @@ from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
+LEGACY_PATIENT_QUERY = """
+    SELECT
+        PatientSerNum AS LegacyID,
+        SSN AS RAMQ,
+        FirstName AS FirstName,
+        LastName AS LastName,
+        DATE_FORMAT(DateOfBirth, "%Y-%m-%d") AS BirthDate,
+        (
+        CASE
+            WHEN UPPER(Sex) = "M" THEN "M"
+            WHEN UPPER(Sex) = "MALE" THEN "M"
+            WHEN UPPER(Sex) = "F" THEN "F"
+            WHEN UPPER(Sex) = "FEMALE" THEN "F"
+            ELSE "UNDEFINED"
+        END
+        ) AS Sex,
+        CONVERT(TelNum, CHAR) AS Phone,
+        LOWER(Email) AS Email,
+        LOWER(Language) AS Language
+    FROM Patient;
+"""  # noqa: WPS323, WPS462
+
+LEGACY_HOSPITAL_PATIENT_QUERY = """
+    SELECT
+        PatientSerNum AS LegacyID,
+        UPPER(Hospital_Identifier_Type_Code) AS SiteCode,
+        MRN AS MRN,
+        Is_Active AS IsActive
+    FROM Patient_Hospital_Identifier;
+"""  # noqa: WPS462
+
+DJANGO_PATIENT_QUERY = """
+    SELECT
+        PP.legacy_id AS LegacyID,
+        PP.ramq AS RAMQ,
+        PP.first_name AS FirstName,
+        PP.last_name AS LastName,
+        DATE_FORMAT(PP.date_of_birth, "%Y-%m-%d") AS BirthDate,
+        UPPER(PP.sex) AS Sex,
+        UU.phone_number AS Phone,
+        LOWER(UU.email) AS Email,
+        LOWER(UU.language) AS Language
+    FROM patients_patient PP
+    LEFT JOIN caregivers_caregiverprofile CC ON PP.legacy_id = CC.legacy_id
+    LEFT JOIN users_user UU ON CC.user_id = UU.id;
+"""  # noqa: WPS323, WPS462
+
+DJANGO_HOSPITAL_PATIENT_QUERY = """
+    SELECT
+        PP.legacy_id AS LegacyID,
+        UPPER(HSS.code) AS SiteCode,
+        PHP.mrn AS MRN,
+        PHP.is_active AS IsActive
+    FROM patients_hospitalpatient PHP
+    LEFT JOIN patients_patient PP ON PHP.patient_id = PP.id
+    LEFT JOIN hospital_settings_site HSS ON PHP.site_id = HSS.id;
+"""  # noqa: WPS462
+
 
 class Command(BaseCommand):
     """Command to find differences in data between legacy database and new back end database for the `Patient` model.
@@ -40,21 +98,15 @@ class Command(BaseCommand):
             kwargs: input arguments.
         """
         with connections['default'].cursor() as django_db:
-            patient_query = self._get_django_patient_table_query()
-            hospital_patient_query = self._get_django_hospital_patient_table_query()
-
-            django_db.execute(patient_query)
+            django_db.execute(DJANGO_PATIENT_QUERY)
             django_patients = django_db.fetchall()
-            django_db.execute(hospital_patient_query)
+            django_db.execute(DJANGO_HOSPITAL_PATIENT_QUERY)
             django_hospital_patients = django_db.fetchall()
 
         with connections['legacy'].cursor() as legacy_db:
-            patient_query = self._get_legacy_patient_table_query()
-            hospital_patient_query = self._get_legacy_hospital_patient_table_query()
-
-            legacy_db.execute(patient_query)
+            legacy_db.execute(LEGACY_PATIENT_QUERY)
             legacy_patients = legacy_db.fetchall()
-            legacy_db.execute(hospital_patient_query)
+            legacy_db.execute(LEGACY_HOSPITAL_PATIENT_QUERY)
             legacy_hospital_patients = legacy_db.fetchall()
 
         patinets_err_str = self._get_patient_deviations_err(
@@ -154,85 +206,3 @@ class Command(BaseCommand):
         err_str += '\n\n{0}\n{0}'.format(SPLIT_LENGTH * '=')
 
         return err_str
-
-    def _get_legacy_patient_table_query(self) -> str:
-        """Provide SQL query that returns `Patient` info records from the legacy database.
-
-        Returns:
-            SQL query string
-        """
-        return """
-            SELECT
-                PatientSerNum AS LegacyID,
-                SSN AS RAMQ,
-                FirstName AS FirstName,
-                LastName AS LastName,
-                DATE_FORMAT(DateOfBirth, "%Y-%m-%d") AS BirthDate,
-                (
-                CASE
-                    WHEN UPPER(Sex) = "M" THEN "M"
-                    WHEN UPPER(Sex) = "MALE" THEN "M"
-                    WHEN UPPER(Sex) = "F" THEN "F"
-                    WHEN UPPER(Sex) = "FEMALE" THEN "F"
-                    ELSE "UNDEFINED"
-                END
-                ) AS Sex,
-                CONVERT(TelNum, CHAR) AS Phone,
-                LOWER(Email) AS Email,
-                LOWER(Language) AS Language
-            FROM Patient;
-        """  # noqa: WPS323, WPS462
-
-    def _get_legacy_hospital_patient_table_query(self) -> str:
-        """Provide SQL query that returns `Patient_Hospital_Identifier` info records from the legacy database.
-
-        Returns:
-            SQL query string
-        """
-        return """
-            SELECT
-                PatientSerNum AS LegacyID,
-                UPPER(Hospital_Identifier_Type_Code) AS SiteCode,
-                MRN AS MRN,
-                Is_Active AS IsActive
-            FROM Patient_Hospital_Identifier;
-        """  # noqa: WPS462
-
-    def _get_django_patient_table_query(self) -> str:
-        """Provide SQL query that returns `Patient` info records from the Django database.
-
-        Returns:
-            SQL query string
-        """
-        return """
-            SELECT
-                PP.legacy_id AS LegacyID,
-                PP.ramq AS RAMQ,
-                PP.first_name AS FirstName,
-                PP.last_name AS LastName,
-                DATE_FORMAT(PP.date_of_birth, "%Y-%m-%d") AS BirthDate,
-                UPPER(PP.sex) AS Sex,
-                UU.phone_number AS Phone,
-                LOWER(UU.email) AS Email,
-                LOWER(UU.language) AS Language
-            FROM patients_patient PP
-            LEFT JOIN caregivers_caregiverprofile CC ON PP.legacy_id = CC.legacy_id
-            LEFT JOIN users_user UU ON CC.user_id = UU.id;
-        """  # noqa: WPS323, WPS462
-
-    def _get_django_hospital_patient_table_query(self) -> str:
-        """Provide SQL query that returns `HospitalPatient` info records from the Django database.
-
-        Returns:
-            SQL query string
-        """
-        return """
-            SELECT
-                PP.legacy_id AS LegacyID,
-                UPPER(HSS.code) AS SiteCode,
-                PHP.mrn AS MRN,
-                PHP.is_active AS IsActive
-            FROM patients_hospitalpatient PHP
-            LEFT JOIN patients_patient PP ON PHP.patient_id = PP.id
-            LEFT JOIN hospital_settings_site HSS ON PHP.site_id = HSS.id;
-        """  # noqa: WPS462
