@@ -32,7 +32,7 @@ def fetch_registration_summary(
     start_date: dt.date,
     end_date: dt.date,
 ) -> dict[str, Any]:
-    """Fetch grouped registration summary from `RegistrationCode` model.
+    """Fetch registration summary from `RegistrationCode` model.
 
     Args:
         start_date: the beginning of the time period of the registration summary (inclusive)
@@ -51,6 +51,61 @@ def fetch_registration_summary(
         completed_registration=models.Count(
             'id', filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
         ),
+        total_signups=models.F('uncompleted_registration') + models.F('completed_registration'),
+        never_logged_in_after_registration=models.Count(
+            'relationship__caregiver',
+            filter=models.Q(
+                status=caregivers_models.RegistrationCodeStatus.REGISTERED,
+                relationship__caregiver__user__last_login=None,
+            ),
+            distinct=True,
+        ),
+    )
+
+
+def fetch_grouped_registration_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+    group_by: GroupByComponent = GroupByComponent.DATE,
+) -> list[dict[str, Any]]:
+    """Fetch grouped registration summary from `RegistrationCode` model.
+
+    Args:
+        start_date: the beginning of the time period of the registration summary (inclusive)
+        end_date: the end of the time period of the registration summary (inclusive)
+        group_by: the date component to group by
+
+    Returns:
+        grouped registration summary for given time period and grouping component
+    """
+    queryset = caregivers_models.RegistrationCode.objects.filter(
+        created_at__date__gte=start_date,
+        created_at__date__lte=end_date,
+    )
+
+    queryset = _annotate_queryset_with_grouping_field(queryset, 'created_at', group_by)
+    group_field = group_by.value
+
+    return list(
+        queryset.values(
+            group_field,
+        ).annotate(
+            uncompleted_registration=models.Count(
+                'id', filter=~models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+            ),
+            completed_registration=models.Count(
+                'id', filter=models.Q(status=caregivers_models.RegistrationCodeStatus.REGISTERED),
+            ),
+            total_signups=models.F('uncompleted_registration') + models.F('completed_registration'),
+            never_logged_in_after_registration=models.Count(
+                'relationship__caregiver',
+                filter=models.Q(
+                    status=caregivers_models.RegistrationCodeStatus.REGISTERED,
+                    relationship__caregiver__user__last_login=None,
+                ),
+                distinct=True,
+            ),
+        ).order_by(f'-{group_field}'),
     )
 
 

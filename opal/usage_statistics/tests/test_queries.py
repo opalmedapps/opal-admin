@@ -26,13 +26,19 @@ def test_empty_fetch_registration_summary() -> None:
     assert registration_summary == {
         'uncompleted_registration': 0,
         'completed_registration': 0,
+        'total_signups': 0,
+        'never_logged_in_after_registration': 0,
     }
 
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
-    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user__username='marge', legacy_id=1, user__last_login=timezone.now(),
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user__username='homer', legacy_id=2, user__last_login=timezone.now(),
+    )
     bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
     lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
     homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
@@ -157,6 +163,8 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     assert population_summary == {
         'uncompleted_registration': 2,
         'completed_registration': 6,
+        'total_signups': 8,
+        'never_logged_in_after_registration': 1,
     }
 
 
