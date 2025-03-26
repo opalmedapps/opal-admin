@@ -100,6 +100,29 @@ def test_institution_list_displays_all(user_client: Client) -> None:
     assert len(returned_institutions) == Institution.objects.count()
 
 
+def test_institution_list_create_shown(user_client: Client) -> None:
+    """Ensure that the institution list page displays the create button when there are no institutions."""
+    url = reverse('hospital-settings:institution-list')
+
+    response = user_client.get(url)
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    create_link = soup.find('a', attrs={'href': reverse('hospital-settings:institution-create')})
+    assert create_link is not None
+
+
+def test_institution_list_create_not_shown(user_client: Client) -> None:
+    """Ensure that the institution list page does not display the create button when there is an institution."""
+    factories.Institution()
+    url = reverse('hospital-settings:institution-list')
+
+    response = user_client.get(url)
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    create_link = soup.find('a', attrs={'href': reverse('hospital-settings:institution-create')})
+    assert create_link is None
+
+
 def test_institution_update_object_displayed(user_client: Client) -> None:
     """Ensure that the institution detail page displays all fields."""
     institution = factories.Institution(name='TEST1_EN', name_fr='TEST1_FR')
