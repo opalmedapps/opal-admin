@@ -420,15 +420,13 @@ class ExistingUserForm(forms.Form):
             user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
-        # Search an existing Opal user that is also a patient
-        patient = Patient.objects.filter(
-            first_name=user.first_name,
-            last_name=user.last_name,
-        ).first()
         # Verify we cannot add an additional self role for an existing user who already has a self-relationship
         if (
             self.relationship_type.role_type == RoleType.SELF
-            and Relationship.objects.filter(patient=patient, type__role_type=RoleType.SELF).exists()
+            and Relationship.objects.filter(
+                caregiver__user=user,
+                type__role_type=RoleType.SELF,
+            ).exists()
         ):
             raise ValidationError(gettext('This opal user already has a self-relationship with the patient.'))
 
