@@ -39,7 +39,7 @@ class TestBase64PDFFileField:
 
     def test_to_representation_invalid_file(self) -> None:
         """Test with an invalid file path."""
-        self.set_args('')
+        self.set_args('test/invalid/path')
 
         try:
             base64_str = self.to_represent()
