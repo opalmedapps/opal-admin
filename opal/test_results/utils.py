@@ -6,7 +6,7 @@ from typing import Any
 
 from django.db import models
 
-from opal.hospital_settings.models import Institution
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
 from opal.services.reports import PathologyData, ReportService
 
@@ -33,15 +33,18 @@ def generate_pathology_report(
     # Report service for generating pathology reports
     report_service = ReportService()
 
+    # Got Site object by filtering with receiving_facility from pathology data
+    site = Site.objects.get(code=pathology_data['receiving_facility'])
+
     return report_service.generate_pathology_report(
         pathology_data=PathologyData(
             site_logo_path=Path(Institution.objects.get().logo.path),
-            site_name='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_building_address='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_city='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_province='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_postal_code='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_phone='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_name=site.name,
+            site_building_address=site.street_name,
+            site_city=site.city,
+            site_province=site.province_code,
+            site_postal_code=site.postal_code,
+            site_phone=site.contact_telephone,
             patient_first_name=patient.first_name,
             patient_last_name=patient.last_name,
             patient_date_of_birth=patient.date_of_birth,
