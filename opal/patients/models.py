@@ -99,12 +99,12 @@ class Patient(models.Model):
         choices=SexType.choices,
     )
     ramq = models.CharField(
-        verbose_name=_('RAMQ'),
+        verbose_name=_('RAMQ Number'),
         max_length=12,
         validators=[
             MinLengthValidator(12),
             RegexValidator(
-                r'^[a-zA-Z]{4}\d{8}',
+                r'^[A-Z]{4}\d{8}$',
                 'First 4 characters should be alphabetic, last 8 characters should be numeric.',
             ),
         ],

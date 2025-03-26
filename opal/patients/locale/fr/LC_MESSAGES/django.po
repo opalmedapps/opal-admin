@@ -96,7 +96,7 @@ msgstr "Sexe"
 
 #: opal/patients/models.py
 msgid "RAMQ"
-msgstr "RAMQ"
+msgstr "Numéro de RAMQ"
 
 #: opal/patients/models.py
 msgid "Caregivers"
