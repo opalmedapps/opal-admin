@@ -14,7 +14,7 @@ def test_mrn_type_for_questionnaire_report() -> None:
     """Ensure `mrn` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site_name': hospital_patient.site.name},
+        data={'mrn': '9999996', 'site': hospital_patient.site.code},
     )
 
     assert isinstance(serializer.fields['mrn'], serializers.CharField)
@@ -25,10 +25,10 @@ def test_site_type_for_questionnaire_report() -> None:
     """Ensure `site_name` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site_name': hospital_patient.site.name},
+        data={'mrn': '9999996', 'site': hospital_patient.site.code},
     )
 
-    assert isinstance(serializer.fields['site_name'], serializers.CharField)
+    assert isinstance(serializer.fields['site'], serializers.CharField)
     assert serializer.is_valid()
 
 
@@ -36,7 +36,7 @@ def test_patient_mrn_type_invalid() -> None:
     """Ensure `mrn` for the questionnaire report request does not accept invalid types."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': 0, 'site_name': hospital_patient.site.name},
+        data={'mrn': 0, 'site': hospital_patient.site.code},
     )
     assert not serializer.is_valid()
 
@@ -44,7 +44,7 @@ def test_patient_mrn_type_invalid() -> None:
 def test_patient_site_type_invalid() -> None:
     """Ensure `site_name` for the questionnaire report request does not accept invalid types."""
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site_name': 0},
+        data={'mrn': '9999996', 'site': 0},
     )
     assert not serializer.is_valid()
 
