@@ -1,19 +1,61 @@
 /* Opal Purple for the primary button */
 .btn-primary {
-  /*--bs-btn-bg: var(--opal-purple);
-  --bs-btn-border-color: var(--opal-purple);*/
+  --bs-btn-color: #fff;
   --bs-btn-bg: #337ab7;
   --bs-btn-border-color: #2e6da4;
-  --bs-btn-hover-bg: #604887;
-  --bs-btn-hover-border-color: #553f77;
-  --bs-btn-active-bg: #553f77;
-  --bs-btn-active-border-color: #4a3667;
+  --bs-btn-hover-bg: #235c6d;
+  --bs-btn-hover-border-color: #235c6d;
+  --bs-btn-active-bg: #265260;
+  --bs-btn-active-border-color: #265260;
   --bs-btn-disabled-bg: var(--opal-purple);
   --bs-btn-disabled-border-color: var(--opal-purple);
 }
 
+/* This button is used for cancel/back buttons */
 .btn-secondary {
     --bs-btn-color: #fff;
     --bs-btn-bg: #d9534f;
     --bs-btn-border-color: #d43f3a;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #a92d29;
+    --bs-btn-hover-border-color: #a92d29;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #911b17;
+    --bs-btn-active-border-color: #911b17;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #6c757d;
+    --bs-btn-disabled-border-color: #6c757d;
+}
+
+/* This button is used when there is a selector/filter button is used to indicate active status */
+.btn-selected{
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--opal-purple);
+  --bs-btn-border-color: var(--opal-purple);
+  --bs-btn-hover-bg: #604887;
+  --bs-btn-hover-border-color: #553f77;
+  --bs-btn-active-bg: #553f77;
+  --bs-btn-active-border-color: #4a3667;
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--opal-purple);
+  --bs-btn-disabled-border-color: var(--opal-purple);
+}
+
+/* This button is used when there is a selector/filter button is used to indicate inactive status */
+.btn-unselected{
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #6c757d;
+    --bs-btn-border-color: #6c757d;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #5c636a;
+    --bs-btn-hover-border-color: #565e64;
+    --bs-btn-focus-shadow-rgb: 130,138,145;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #565e64;
+    --bs-btn-active-border-color: #51585e;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #6c757d;
+    --bs-btn-disabled-border-color: #6c757d;
 }
