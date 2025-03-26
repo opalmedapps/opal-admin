@@ -96,7 +96,7 @@ class Command(BaseCommand):    # noqa: WPS214
         legacy_activity_log_count = 0
         with file_path.open() as data_received_file:
             legacy_activity_logs = csv.DictReader(data_received_file, delimiter=';')
-            for row in list(legacy_activity_logs):
+            for row in legacy_activity_logs:
                 if (
                     last_record and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
@@ -170,7 +170,7 @@ class Command(BaseCommand):    # noqa: WPS214
         legacy_data_received_log_count = 0
         with file_path.open() as data_received_file:
             legacy_data_received_logs = csv.DictReader(data_received_file, delimiter=';')
-            for row in list(legacy_data_received_logs):
+            for row in legacy_data_received_logs:
                 if (
                     last_record and last_record.patient.legacy_id
                     and last_record.patient.legacy_id >= int(row['PatientSerNum'])
