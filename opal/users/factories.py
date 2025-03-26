@@ -38,7 +38,7 @@ class Caregiver(User):
 
 
 class GroupFactory(DjangoModelFactory):
-    """Model factory to Groups."""
+    """Model factory to create Groups."""
 
     class Meta:
         model = Group
