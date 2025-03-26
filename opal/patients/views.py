@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+import base64
 import io
 from collections import Counter
 from datetime import date
@@ -271,7 +272,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         stream = self._generate_qr_code(registration_code)
 
         return render(self.request, 'patients/access_request/qr_code.html', {
-            'svg': stream.getvalue().decode(),
+            'qrcode': base64.b64encode(stream.getvalue()).decode(),
             'header_title': _('QR Code Generation'),
         })
 
@@ -509,10 +510,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         if self._is_searched_patient_deceased(patient_record):
             context.update({
-                'error_message': _(
-                    'Unable to complete action with this patient. '
-                    + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.',
-                ),
+                'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
         elif self._has_multiple_mrns_with_same_site_code(patient_record):

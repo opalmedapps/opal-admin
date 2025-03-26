@@ -1131,10 +1131,7 @@ def test_error_message_searched_patient_deceased() -> None:
     """Test error message shows up once searched patient is deceased."""
     patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(deceased=True)
 
-    error_message = (
-        'Unable to complete action with this patient. '
-        + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.'
-    )
+    error_message = ('Unable to complete action with this patient. Please contact Medical Records.')
     assert AccessRequestView()._update_patient_confirmation_context(
         {},
         patient_data,
