@@ -441,7 +441,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
     def test_no_deviations(self) -> None:
         """Ensure the command does not fail if there are no patient and caregiver records."""
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_deviations_uneven_patient_records(self) -> None:
@@ -452,7 +452,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=100, usertypesernum=100)
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyPatientFactory(patientsernum=100)
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
             'OpalDB.Patient(UserType="Patient")',
@@ -474,7 +474,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             email='test@opal.com',
         )
         patient_factories.Patient(legacy_id=51)
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
             'OpalDB.Patient(UserType="Patient")',
@@ -496,7 +496,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         patient_factories.HospitalPatient(patient=first_patient)
         patient_factories.HospitalPatient(patient=second_patient)
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_hospitalpatient',
             'OpalDB.Patient_Hospital_Identifier',
@@ -516,7 +516,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(code='TST'),
         )
 
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_hospitalpatient',
             'OpalDB.Patient_Hospital_Identifier',
@@ -617,7 +617,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(code='MGH'),
         )
 
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_patient_records_deviations_access_level(self) -> None:
@@ -654,7 +654,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert patient.data_access == Patient.DataAccessType.ALL
         assert legacy_patient.access_level == '1'
 
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
 
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
@@ -678,7 +678,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyPatientFactory(patientsernum=100)
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.caregivers_caregiverprofile',
             'OpalDB.Patient(UserType="Caregiver")',
@@ -700,7 +700,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             email='test@test.com',
         )
         patient_factories.CaregiverProfile(legacy_id=51, user=user)
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.caregivers_caregiverprofile',
             'OpalDB.Patient(UserType="Caregiver")',
@@ -782,7 +782,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             user=user,
         )
 
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
         print(error)
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
