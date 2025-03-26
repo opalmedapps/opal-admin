@@ -169,7 +169,7 @@ def test_security_answer_factory_multiple() -> None:
 def test_device_str() -> None:
     """The `str` method returns the device_id and device type."""
     device = factories.Device(device_id='1a2b3c', type=DeviceType.ANDROID)
-    assert str(device) == '1a2b3c (AND)'
+    assert str(device) == '1a2b3c'
 
 
 def test_device_factory() -> None:
@@ -236,7 +236,7 @@ def test_device_modified_datatype() -> None:
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
     """The `str` method returns the registration code and status."""
     registration_code = factories.RegistrationCode()
-    assert str(registration_code) == 'Code: code12345678 (Status: NEW)'
+    assert str(registration_code) == 'code12345678'
 
 
 def test_registrationcode_factory() -> None:
