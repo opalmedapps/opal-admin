@@ -122,7 +122,7 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "There must always be exactly one SELF and one PARENTGUARDIAN roles"
+msgid "There must always be exactly one SELF and one PARENTGUARDIAN role"
 msgstr ""
 
 #: opal/patients/models.py
