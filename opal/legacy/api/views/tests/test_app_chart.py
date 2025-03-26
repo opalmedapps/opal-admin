@@ -33,62 +33,47 @@ class TestAppChartView:
         """Test if function returns number of unread appointments."""
         # Insert appointment with different state, status and read status.
         alias_expression = factories.LegacyAliasExpressionFactory()
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='Deleted',
-            state='Active',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='Cancelled',
-            state='Deleted',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='Deleted',
-            state='Deleted',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='In Progress',
-            state='Active',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='Completed',
-            state='Active',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            status='Cancelled',
-            state='Active',
-        )
-        factories.LegacyAppointmentFactory(
-            patientsernum=self.patient,
-            aliasexpressionsernum=alias_expression,
-            readby=self.user.username,
-        )
+        # List of all possible appointment status
+        possible_appt_status = [
+            'Open',
+            'Deleted',
+            'In Progress',
+            'Cancelled',
+            'Completed',
+            'Manually Completed',
+            'Cancelled - Patient No-Show',
+        ]
+        for status in possible_appt_status:
+            factories.LegacyAppointmentFactory(
+                patientsernum=self.patient,
+                aliasexpressionsernum=alias_expression,
+                status=status,
+                state='Active',
+            )
+            factories.LegacyAppointmentFactory(
+                patientsernum=self.patient,
+                aliasexpressionsernum=alias_expression,
+                status=status,
+                state='Deleted',
+            )
+            factories.LegacyAppointmentFactory(
+                patientsernum=self.patient,
+                aliasexpressionsernum=alias_expression,
+                status=status,
+                state='Active',
+                readby=self.user.username,
+            )
 
         # Direct function call
         appointments = models.LegacyAppointment.objects.get_unread_queryset(
             self.patient.patientsernum,
             self.user.username,
         ).count()
-        assert appointments == 7
+        assert appointments == 14
 
         # API results
         response = self._call_chart_data_request(admin_api_client, self.patient.patientsernum, self.user.username)
-        assert response.data['unread_appointment_count'] == 7
+        assert response.data['unread_appointment_count'] == 14
 
     def test_get_unread_labs_count(self, admin_api_client: APIClient) -> None:
         """Test whether the right number of unread lab results is returned."""
