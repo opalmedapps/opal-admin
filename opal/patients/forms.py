@@ -22,7 +22,7 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
@@ -339,9 +339,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
     relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all().reverse(),
-        # TODO: provide a custom template that can show a tooltip
-        # when hovering over the relationship type with the details of the relationship type
-        # can be done as a completely separate MR at the end
         widget=AvailableRadioSelect(attrs={'up-validate': ''}),
         label=_('Relationship to the patient'),
     )
@@ -436,7 +433,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         self.helper.layout = Layout(
             Row(
                 Column(
-                    'relationship_type',
+                    RadioSelect('relationship_type'),
                 ),
                 Column(
                     # make it appear like a label
@@ -475,6 +472,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         available_choices = relationship_types.values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = list(available_choices)
+        self.fields['relationship_type'].widget.option_descriptions = self._build_tooltips()
 
     def is_patient_requestor(self) -> bool:
         """
@@ -602,6 +600,25 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             return relationship_type.form_required
 
         return True
+
+    def _build_tooltips(self) -> dict[int, str]:
+        """
+        Build a dict with option id and tooltip content.
+
+        Returns:
+            a dict of tooltips with relationship type description and patient age
+        """
+        option_descriptions = {}
+        age_tile = _('Age')
+        older_age = _(' and older')
+        for value in RelationshipType.objects.all().values():
+            option_descriptions[value['id']] = '{description}, {age_title}: {start_age}{end_age}'.format(
+                description=value['description'],
+                age_title=age_tile,
+                start_age=value['start_age'],
+                end_age='-{age}'.format(age=value['end_age']) if value['end_age'] else older_age,
+            )
+        return option_descriptions
 
 
 # TODO: move this to the core app

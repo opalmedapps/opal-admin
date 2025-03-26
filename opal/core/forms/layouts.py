@@ -182,3 +182,14 @@ class EnterSuppressedLayout(Layout):
             HTML('<button type="submit" disabled style="display: none" aria-hidden="true"></button>'),
             *fields,
         )
+
+
+class RadioSelect(Field):
+    """
+    Custom radio select widget to be used for radio buttion tooltip, help_text, errors.
+
+    Triggers validation via `up-validate` on selection to let the form react to the selection.
+    Supports option tooltip on the radio select label.
+    """
+
+    template = 'forms/radioselect.html'
