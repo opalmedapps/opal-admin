@@ -2,10 +2,11 @@ import json
 from datetime import date, datetime
 from http import HTTPStatus
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
-from fpdf import FPDFException
+from fpdf import FPDF, FPDFException
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
@@ -75,6 +76,68 @@ QUESTION_REPORT_DATA_CHARTS = (
         question_text='Question charts demo for patient',
         question_label='charts demo',
         question_type_id=2,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                datetime(2024, 10, 20, 14, 0),
+                '5',
+            ),
+            (
+                datetime(2024, 10, 21, 14, 0),
+                '7',
+            ),
+        ],
+    ),
+)
+QUESTION_REPORT_DATA_MULTIPLE_CHARTS = (
+    questionnaire.Question(
+        question_text='Question charts demo for patient',
+        question_label='charts demo',
+        question_type_id=questionnaire.QuestionType.numeric,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                datetime(2024, 10, 20, 14, 0),
+                '5',
+            ),
+            (
+                datetime(2024, 10, 21, 14, 0),
+                '7',
+            ),
+        ],
+    ),
+    questionnaire.Question(
+        question_text='Question charts demo for patient2',
+        question_label='charts demo2',
+        question_type_id=questionnaire.QuestionType.numeric,
+        position=1,
+        min_value=None,
+        max_value=None,
+        polarity=0,
+        section_id=1,
+        values=[
+            (
+                datetime(2024, 10, 20, 14, 0),
+                '5',
+            ),
+            (
+                datetime(2024, 10, 21, 14, 0),
+                '7',
+            ),
+        ],
+    ),
+    questionnaire.Question(
+        question_text='Question charts demo for patient3',
+        question_label='charts demo3',
+        question_type_id=questionnaire.QuestionType.numeric,
         position=1,
         min_value=None,
         max_value=None,
@@ -558,3 +621,58 @@ def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
 
     error_message = str(excinfo.value)
     assert 'ToC ended on page' in error_message
+
+
+def test_draw_text_answer_question_page_break(mocker: MockerFixture) -> None:
+    """Test that draw_text_answer_question correctly handles page breaks."""
+    mock_fpdf = MagicMock(spec=FPDF)
+
+    mock_fpdf.will_page_break.return_value = True
+
+    question = MagicMock()
+    question.question_text = 'What is your name?'
+    question.values = [
+        (
+            datetime(2024, 10, 20, 13, 0),
+            'Answer 1',
+        ),
+        (
+            datetime(2024, 10, 20, 14, 0),
+            'Answer 2',
+        ),
+    ]
+
+    # Mock the add_page method
+    mocker.patch.object(mock_fpdf, 'add_page')
+
+    questionnaire.draw_text_answer_question(mock_fpdf, question)
+
+    mock_fpdf.add_page.assert_called_once()
+
+
+def test_draw_chart_question_page_break(mocker: MockerFixture) -> None:
+    """Test that draw_text_answer_question correctly handles page breaks."""
+    mock_fpdf = MagicMock(spec=FPDF)
+
+    mock_fpdf.will_page_break.return_value = True
+
+    question = MagicMock()
+    question.question_text = 'Test case for numeric question'
+    question.question_label = 'Test label'
+    question.values = [
+        (
+            datetime(2024, 10, 20, 13, 0),
+            '1',
+        ),
+        (
+            datetime(2024, 10, 20, 14, 0),
+            '2',
+        ),
+    ]
+
+    # Mock the add_page method
+    mocker.patch.object(mock_fpdf, 'add_page')
+
+    questionnaire.prepare_question_chart(mock_fpdf, question)
+
+    mock_fpdf.add_page.assert_called_once()
