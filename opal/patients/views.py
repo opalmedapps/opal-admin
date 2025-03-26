@@ -32,7 +32,6 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
-from .tables import PatientTable
 from .utils import create_access_request
 
 # TODO: consider changing this to a TypedDict
@@ -733,7 +732,7 @@ class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, F
         return context_data
 
 
-class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin, UpdateView[Relationship, ModelForm[Relationship]]):
+class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]]):
     """
     This view is to handle relationship updates and view only requests.
 
@@ -743,7 +742,6 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
     """
 
     model = Relationship
-    table_class= PatientTable
     permission_required = ('patients.can_manage_relationships',)
     template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
@@ -753,8 +751,6 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
     ).prefetch_related(
         'patient__hospital_patients__site',
     )
-
-    permission_required = ('patients.can_manage_relationships',)
     success_url = reverse_lazy('patients:relationships-pending-list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -769,7 +765,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
         """
         context_data = super().get_context_data(**kwargs)
         default_success_url = reverse('patients:relationships-list')
-        context_data['table'] = tables.PatientTable(Patient.objects.filter(id=self.get_object().patient.pk))
+        context_data['table'] = tables.PatientTable([self.get_object().patient])
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
         elif self.request.META.get('HTTP_REFERER'):
@@ -812,7 +808,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
                 request,
                 'patients/relationships/view_relationship.html',
                 {
-                    'table': tables.PatientTable(Patient.objects.filter(id=relationship_record.patient.pk)),
+                    'table': tables.PatientTable([self.get_object().patient]),
                     'relationship': relationship_record,
                     'cancel_url': cancel_url,
                 },
@@ -841,6 +837,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
                 request,
                 'patients/relationships/view_relationship.html',
                 {
+                    'table': tables.PatientTable([self.get_object().patient]),
                     'relationship': relationship_record,
                     'cancel_url': self.get_success_url(),
                 },
@@ -848,6 +845,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
             )
 
         data = self.request.POST
+
         # convert data from queryset to dict
         initial = data.dict()
 
@@ -857,21 +855,17 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, SingleTableMixin,
             initial=initial,
             instance=relationship_record,
         )
+
         # when the post is triggered by up validate
-        if 'X-Up-Validate' in self.request.headers:
-            context_data = form.get_context()
-        # when the post is triggered by submit/save button
-        else:
+        if 'X-Up-Validate' not in self.request.headers:
             if form.is_valid():
                 return super().post(request, **kwargs)
-            else:
-                context_data = form.get_context()
 
-        context_data['relationship'] = relationship_record
-        # keep original cancel_url
-        context_data['cancel_url'] = request.POST.get('cancel_url')
-        # update the form with context data when post does not succeed
-        return self.render_to_response(context_data)
+        return self.render_to_response({
+            'table': tables.PatientTable([self.get_object().patient]),
+            'form': form,
+            'cancel_url': request.POST.get('cancel_url'),
+        })
 
     def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
         """
