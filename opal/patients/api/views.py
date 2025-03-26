@@ -2,7 +2,6 @@
 
 from typing import Any
 
-from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
 
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
