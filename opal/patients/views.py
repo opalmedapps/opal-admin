@@ -442,11 +442,12 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 status=status,
                 reason='',
                 request_date=date.today(),
-                start_date=self._set_relationship_start_date(
+                start_date=Relationship.set_relationship_start_date(
+                    date.today(),
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
-                end_date=self._set_relationship_end_date(
+                end_date=Relationship.set_relationship_end_date(
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
@@ -569,6 +570,23 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     model = Relationship
     template_name = 'patients/relationships/edit_relationships.html'
     form_class = RelationshipAccessForm
+
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        """
+        Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
+
+        Returns:
+            keyword arguments for instantiating the `RelationshipAccessForm`
+        """
+        kwargs = super().get_form_kwargs()
+
+        relationship = self.object
+        patient = relationship.patient
+        kwargs['date_of_birth'] = patient.date_of_birth
+        kwargs['relationship_type'] = relationship.type
+        kwargs['request_date'] = relationship.request_date
+
+        return kwargs
 
 
 class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):

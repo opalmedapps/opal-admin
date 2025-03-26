@@ -10,6 +10,8 @@ from django.db import models
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
+
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
@@ -399,13 +401,62 @@ class Relationship(models.Model):
 
         if self.start_date < self.patient.date_of_birth:
             errors.append(gettext("Start date cannot be earlier than patient's date of birth"))
+        # calculate the start date based on request date, patient's birthday and relationship type
+        calculated_start_date = self.set_relationship_start_date(
+            self.request_date,
+            self.patient.date_of_birth,
+            self.type,
+        )
+        # start date cannot be earlier than the date we calculated
+        if self.start_date < calculated_start_date:
+            # the case when the relationship start age closer to the request date
+            if calculated_start_date > self.request_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE):
+                errors.append(gettext(
+                    'Start date cannot be earlier than {calculated_start_date}.',
+                ).format(
+                    calculated_start_date=calculated_start_date,
+                ))
+            # the case when start date start from 2 years before the request date.
+            else:
+                errors.append(gettext(
+                    'Start date cannot be earlier than {relative_year} years '
+                    + 'before the request date of {request_date}.',
+                ).format(
+                    relative_year=constants.RELATIVE_YEAR_VALUE,
+                    request_date=self.request_date,
+                ))
 
         if self.end_date is not None and self.start_date >= self.end_date:
             errors.append(gettext('Start date should be earlier than end date.'))
 
         return errors
 
-    def clean(self) -> None:
+    def validate_end_date(self) -> list[str]:
+        """Validate the `end_date` field.
+
+        The end date has to be earlier than the date when the patient turns to older age period.
+
+        Returns:
+            a list of error messages
+        """
+        errors = []
+
+        # calculate the end date based on patient's birthday and relationship type
+        end_date = self.set_relationship_end_date(self.patient.date_of_birth, self.type)
+        if self.end_date is not None and end_date is not None and self.end_date > end_date:
+            errors.append(gettext(
+                'End date for {relationship_type} relationship cannot be later than {end_date}.',
+            ).format(
+                relationship_type=self.type,
+                end_date=end_date,
+            ))
+
+        if self.end_date is not None and self.end_date <= self.start_date:
+            errors.append(gettext('End date should be later than start date.'))
+
+        return errors
+
+    def clean(self) -> None:  # noqa: C901
         """Validate date and reason fields.
 
         Raises:
@@ -415,9 +466,13 @@ class Relationship(models.Model):
         errors: dict[str, list[str]] = defaultdict(list)
 
         start_date_errors = self.validate_start_date()
+        end_date_errors = self.validate_end_date()
 
         if start_date_errors:
             errors['start_date'].extend(start_date_errors)
+
+        if end_date_errors:
+            errors['end_date'].extend(end_date_errors)
 
         # validate status is not empty if status is revoked or denied.
         if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
@@ -464,6 +519,55 @@ class Relationship(models.Model):
             statuses += [RelationshipStatus.CONFIRMED]
 
         return statuses
+
+    @classmethod
+    def set_relationship_start_date(
+        cls,
+        request_date: date,
+        date_of_birth: date,
+        relationship_type: RelationshipType,
+    ) -> date:
+        """
+        Calculate the start date for the relationship record.
+
+        Args:
+            request_date: the date when the requestor submit the access request
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
+
+        Returns:
+            the start date
+        """
+        # Get the date RELATIVE_YEAR_VALUE years ago from the request date
+        reference_date = request_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+        # Calculate patient age based on reference date
+        age = Patient.calculate_age(
+            date_of_birth=date_of_birth,
+            reference_date=reference_date,
+        )
+        # Return reference date if patient age is larger or otherwise return start date based on patient's age
+        if age < relationship_type.start_age:
+            reference_date = date_of_birth + relativedelta(years=relationship_type.start_age)
+        return reference_date
+
+    @classmethod
+    def set_relationship_end_date(cls, date_of_birth: date, relationship_type: RelationshipType) -> date | None:
+        """
+        Calculate the end date for the relationship record.
+
+        Args:
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
+
+        Returns:
+            the end date
+        """
+        reference_date = None
+        # Check if the relationship type has an end_age set or not
+        if relationship_type.end_age:
+            # Calculate the date at which the patient turns to the end age of relationship type
+            reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
+        return reference_date
 
 
 class HospitalPatient(models.Model):
