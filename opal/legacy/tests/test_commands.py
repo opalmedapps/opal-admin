@@ -190,6 +190,22 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         patient = Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
+        assert patient.sex == Patient.SexType.MALE
+        assert patient.first_name == legacy_patient.first_name
+        assert patient.last_name == legacy_patient.last_name
+        assert patient.ramq == legacy_patient.ramq
+
+    def test_import_deceased_patient(self) -> None:
+        """The patient is imported with the correct data."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            death_date=timezone.make_aware(datetime(2118, 1, 1)),
+        )
+
+        message, error = self._call_command('migrate_patients')
+
+        patient = Patient.objects.get(legacy_id=51)
+
+        assert patient.date_of_birth == date(2018, 1, 1)
         assert patient.date_of_death == timezone.make_aware(datetime(2118, 1, 1))
         assert patient.sex == Patient.SexType.MALE
         assert patient.first_name == legacy_patient.first_name

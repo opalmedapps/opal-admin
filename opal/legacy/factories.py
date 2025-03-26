@@ -33,7 +33,6 @@ class LegacyPatientFactory(DjangoModelFactory):
     last_name = 'Simpson'
     tel_num = '5149995555'
     date_of_birth = timezone.make_aware(datetime(2018, 1, 1))
-    death_date = timezone.make_aware(datetime(2118, 1, 1))
     sex = 'Male'
     ramq = 'SIMM18510198'
     registration_date = timezone.make_aware(datetime(2018, 1, 1))
