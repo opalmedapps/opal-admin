@@ -47,7 +47,7 @@ class UserViewSet(
 
     default_serializer_class = UserClinicalStaffSerializer
 
-    @action(detail=True, methods=['post'], url_path='set-manager-user')
+    @action(detail=True, methods=['put'], url_path='set-manager-user')
     def set_manager_user(self, request: Request, username: str = '') -> Response:
         """
         Handle requests for setting a user group.
@@ -75,7 +75,7 @@ class UserViewSet(
         clinicalstaff_user.save()
         return Response({'detail': _('user was added to the managers group successfully.')}, status=HTTPStatus.OK)
 
-    @action(detail=True, methods=['post'], url_path='unset-manager-user')
+    @action(detail=True, methods=['put'], url_path='unset-manager-user')
     def unset_manager_user(self, request: Request, username: str = '') -> Response:
         """
         Handle requests for unsetting a user group.
