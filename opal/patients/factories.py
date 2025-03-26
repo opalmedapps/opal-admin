@@ -76,4 +76,4 @@ class HospitalPatient(DjangoModelFactory):
     patient = SubFactory(Patient)
     site = SubFactory(Site)
     mrn = '9999996'
-    is_active = 1
+    is_active = True
