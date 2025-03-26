@@ -76,7 +76,8 @@ def _mock_datetime(mocker: MockerFixture) -> None:
     current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
     current_date = date(2022, 6, 2)
     mocker.patch.object(timezone, 'now', return_value=current_time)
-    mocker.patch.object(date, 'today', return_value=current_date)
+    mock_date = mocker.patch('datetime.date.today')
+    mock_date.return_value = current_date
 
 
 def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture) -> None:
