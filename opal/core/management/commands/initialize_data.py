@@ -8,6 +8,7 @@ from django.db import transaction
 
 from rest_framework.authtoken.models import Token
 
+from opal.caregivers.models import SecurityQuestion
 from opal.users.models import User
 
 
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     """
     Command for initializing the minimum required data.
 
-    Creates the required groups, users etc.
+    Creates the required groups, users, security questions, tokens etc.
     """
 
     help = (  # noqa: A003
@@ -35,7 +36,10 @@ class Command(BaseCommand):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        if Group.objects.all().exists():
+        if any([
+            Group.objects.all().exists(),
+            SecurityQuestion.objects.all().exists(),
+        ]):
             self.stderr.write(self.style.ERROR('There already exists data'))
         else:
             self._create_data()
@@ -46,10 +50,13 @@ class Command(BaseCommand):
         Create all test data.
 
         Takes care of:
+            * default security questions
             * groups and their permissions
             * users
             * tokens for system users
         """
+        _create_security_questions()
+
         # groups
         # TODO: if we need French names for groups as well we will create our own Group model
         # maybe this can be done later
@@ -104,6 +111,36 @@ class Command(BaseCommand):
 
         self.stdout.write(f'Listener token: {token_listener}')
         self.stdout.write(f'Interface Engine token: {token_interface_engine}')
+
+
+def _create_security_questions() -> None:
+    questions = [
+        ('What is the name of your first pet?', 'Quel est le nom de votre premier animal de compagnie?'),
+        (
+            'What is the first name of your childhood best friend?',
+            "Quel est le prénom de votre meilleur ami d'enfance?",
+        ),
+        ('What is the name of your eldest niece?', "Quel est le prénom de l'aînée de vos nièces?"),
+        ('What is the name of your eldest nephew?', "Quel est le prénom de l'aîné de vos neveux?"),
+        (
+            'What is the maiden name of your maternal grandmother?',
+            'Quel est le nom de jeune fille de votre grand-mère maternelle?',
+        ),
+        (
+            'Where did you go to on your first vacation?',
+            'Où êtes-vous allé lors de vos premières vacances?',
+        ),
+    ]
+
+    security_questions = [
+        SecurityQuestion(title=question_en, title_en=question_en, title_fr=question_fr)
+        for question_en, question_fr in questions
+    ]
+
+    for security_question in security_questions:
+        security_question.full_clean()
+
+    SecurityQuestion.objects.bulk_create(security_questions)
 
 
 def _find_permission(app_label: str, codename: str) -> Permission:

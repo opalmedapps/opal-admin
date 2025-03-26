@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 import pytest
 from rest_framework.authtoken.models import Token
 
-from opal.caregivers.models import CaregiverProfile
+from opal.caregivers.models import CaregiverProfile, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
@@ -83,6 +83,7 @@ class TestInitializeData(CommandTestMixin):
         assert Group.objects.count() == 4
         assert User.objects.count() == 2
         assert Token.objects.count() == 2
+        assert SecurityQuestion.objects.count() == 6
 
         listener_token = Token.objects.all()[0]
         interface_engine_token = Token.objects.all()[1]
@@ -91,12 +92,24 @@ class TestInitializeData(CommandTestMixin):
         assert f'Listener token: {listener_token.key}' in stdout
         assert f'Interface Engine token: {interface_engine_token.key}' in stdout
 
-    def test_insert_existing_data_error(self) -> None:
-        """An error is shown if data already exists."""
+    def test_insert_existing_data_group(self) -> None:
+        """An error is shown if a group already exists."""
         Group.objects.create(name='Clinicians')
         User.objects.create(username='Listener')
 
         stdout, stderr = self._call_command('initialize_data')
+
+        assert stdout == ''
+        assert stderr == 'There already exists data\n'
+
+    def test_insert_existing_data_security_questions(self) -> None:
+        """An error is shown if a security questions already exists."""
+        SecurityQuestion.objects.create(title='test')
+
+        stdout, stderr = self._call_command('initialize_data')
+
+        print(stdout)
+        print(stderr)
 
         assert stdout == ''
         assert stderr == 'There already exists data\n'
