@@ -3,7 +3,18 @@ This module provides custom permissions for the Django REST framework.
 
 These permissions are provided for the project and intended to be reused.
 """
-from rest_framework import permissions
+from typing import TYPE_CHECKING, Optional
+
+from django.db.models import QuerySet
+from django.http import HttpRequest
+
+from rest_framework import exceptions, permissions
+
+from opal.caregivers.models import CaregiverProfile
+from opal.patients.models import Relationship, RelationshipStatus
+
+if TYPE_CHECKING:
+    from rest_framework.views import APIView
 
 
 class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
@@ -25,3 +36,135 @@ class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
         'PATCH': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
         'DELETE': ['%(app_label)s.delete_%(model_name)s'],  # noqa: WPS323
     }
+
+
+class CaregiverPatientPermissions(permissions.BasePermission):
+    """
+    Global permission check that validates the permission of a caregiver trying to access a patient's data.
+
+    Requirements:
+        request.headers['Appuserid']: The caregiver's username.
+        legacy_id (from the view's kwargs): The patient's legacy ID.
+    """
+
+    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:  # noqa: WPS210
+        """
+        Permission check that looks for a confirmed relationship between a caregiver and a patient.
+
+        If found, the permission is granted, otherwise, it's rejected with a detailed message.
+        Requirements (input parameters) expected by this function are described in the class-level docstring above.
+
+        Args:
+            request: The http request to allow or deny.
+            view: The view through which the request was made.
+
+        Returns:
+            True if the caregiver has a confirmed relationship with the patient.
+        """
+        # Read and validate the input parameters
+        caregiver_username = self._get_caregiver_username(request)
+        patient_legacy_id = self._get_patient_legacy_id(view)
+
+        # Perform the permission checks
+        caregiver_profile = self._check_caregiver_exists(caregiver_username)
+        relationships_with_target = self._check_has_relationship_with_target(caregiver_profile, patient_legacy_id)
+        self._check_has_valid_relationship(relationships_with_target)
+
+        return True
+
+    def _get_caregiver_username(self, request: HttpRequest) -> str:
+        """
+        Validate the existence of a caregiver username provided as input, and return it if provided.
+
+        Args:
+            request: The http request.
+
+        Raises:
+            ParseError: If the caregiver username was not provided.
+
+        Returns:
+            The caregiver username.
+        """
+        caregiver_username = request.headers.get('Appuserid')
+        if not caregiver_username or not isinstance(caregiver_username, str):
+            raise exceptions.ParseError(
+                "Requests to APIs using CaregiverPatientPermissions must provide a string 'Appuserid' header representing the current user.",  # noqa: E501
+            )
+        return caregiver_username
+
+    def _get_patient_legacy_id(self, view: 'APIView') -> int:
+        """
+        Validate the existence of a patient's legacy id provided as input, and return it if provided.
+
+        Args:
+            view: The view through which the request was made.
+
+        Raises:
+            ParseError: If the patient's legacy id was not provided.
+
+        Returns:
+            The patient's legacy id.
+        """
+        patient_legacy_id = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
+        if not patient_legacy_id or not isinstance(patient_legacy_id, int):
+            raise exceptions.ParseError(
+                "Requests to APIs using CaregiverPatientPermissions must provide an integer 'legacy_id' URL argument representing the target patient.",  # noqa: E501
+            )
+        return patient_legacy_id
+
+    def _check_caregiver_exists(self, caregiver_username: Optional[str]) -> CaregiverProfile:
+        """
+        Validate the existence of a CaregiverProfile matching the input caregiver username, and return it if found.
+
+        Args:
+            caregiver_username: The caregiver username used to search for a matching CaregiverProfile.
+
+        Raises:
+            PermissionDenied: If the caregiver is not found.
+
+        Returns:
+            The CaregiverProfile.
+        """
+        caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
+        if not caregiver_profile:
+            raise exceptions.PermissionDenied('Caregiver not found.')
+        return caregiver_profile
+
+    def _check_has_relationship_with_target(self, caregiver_profile: CaregiverProfile, patient_legacy_id: int) -> QuerySet[Relationship]:  # noqa: E501
+        """
+        Validate the existence of one or more Relationships between a caregiver and a patient, and return them if found.
+
+        Args:
+            caregiver_profile: The caregiver profile used to search for Relationships.
+            patient_legacy_id: The patient legacy id representing the patient who should be part of the Relationship(s).
+
+        Raises:
+            PermissionDenied: If the caregiver has no relationships with the patient.
+
+        Returns:
+            The set of relationships between the caregiver and patient.
+        """
+        relationships_with_target = caregiver_profile.relationships.filter(
+            patient__legacy_id=patient_legacy_id,
+        ) if caregiver_profile else Relationship.objects.none()
+        if not relationships_with_target:
+            raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
+        return relationships_with_target
+
+    def _check_has_valid_relationship(self, relationships_with_target: QuerySet[Relationship]) -> None:
+        """
+        Validate whether at least one of the relationships between a patient and caregiver has a CONFIRMED status.
+
+        Return all such relationships from the list if found.
+
+        Args:
+            relationships_with_target: The list of relationships between the caregiver and patient to check.
+
+        Raises:
+            PermissionDenied: If none of the provided relationships have a confirmed status.
+        """
+        valid_relationships = [rel for rel in relationships_with_target if rel.status == RelationshipStatus.CONFIRMED]
+        if not valid_relationships:
+            raise exceptions.PermissionDenied(
+                "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
+            )

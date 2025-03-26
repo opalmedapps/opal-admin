@@ -14,5 +14,14 @@ classDiagram
 
     }
 
+    class Device {
+
+    }
+
+    class DeviceType {
+        <<TextChoices>>
+    }
+
     CaregiverProfile --> "user" User
+    Device --> "caregiver" CaregiverProfile
 ```
