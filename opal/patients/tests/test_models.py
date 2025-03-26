@@ -144,7 +144,7 @@ def test_patient_ramq_max() -> None:
     patient = factories.Patient()
     patient.ramq = 'ABCD5678901234'
     expected_message = '{0}, {1}'.format(
-        "'ramq': ['First 4 characters should be alphabetic, last 8 characters should be numeric.'",
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
         "'Ensure this value has at most 12 characters (it has 14).']",
     )
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
@@ -165,10 +165,20 @@ def test_patient_ramq_format() -> None:
     """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
     patient = factories.Patient(ramq='ABC123456789')
     expected_message = '{0}'.format(
-        "'ramq': ['First 4 characters should be alphabetic, last 8 characters should be numeric.']",
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
     )
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         patient.clean_fields()
+
+
+def test_patient_ramq_default_value() -> None:
+    """Ensure patient ramq default value is NULL."""
+    patient = Patient(
+        date_of_birth='2022-09-02',
+        sex='m',
+    )
+    patient.save()
+    assert patient.ramq is None
 
 
 def test_relationship_str() -> None:

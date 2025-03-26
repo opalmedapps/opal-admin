@@ -1,11 +1,12 @@
 """Module providing models for the patients app."""
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
 from opal.patients.managers import RelationshipManager
 
@@ -103,10 +104,7 @@ class Patient(models.Model):
         max_length=12,
         validators=[
             MinLengthValidator(12),
-            RegexValidator(
-                r'^[A-Z]{4}\d{8}$',
-                'First 4 characters should be alphabetic, last 8 characters should be numeric.',
-            ),
+            validate_ramq,
         ],
         unique=True,
         blank=True,
