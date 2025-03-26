@@ -187,9 +187,7 @@ if env.bool('USE_SSL_FOR_DATABASES'):
     options_settings = {
         # For the "ssl_mode" parameters see MySQL's documentation:
         # https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode
-        # NOTE!!! ssl_mode setting is used by mysqlclient dependency that has a bug related to the MariaDB connector.
-        # As a temporary fix, we build the dependency from this PR: https://github.com/PyMySQL/mysqlclient/pull/609
-        # The following links might be helpful in case we need to modify the sources of the dependency again:
+        # The following links might be helpful in case we need to modify the sources of the mysqlclient dependency:
         #    - https://dev.mysql.com/doc/c-api/8.0/en/mysql-options.html
         #    - https://mariadb.com/kb/en/mysql_optionsv/
         'ssl_mode': 'VERIFY_IDENTITY',
