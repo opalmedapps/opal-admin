@@ -76,6 +76,7 @@ class LegacyPatientFactory(DjangoModelFactory):
 
     class Meta:
         model = models.LegacyPatient
+        django_get_or_create = ('external_id',)
 
     external_id = 51
     hospital_id = -1

@@ -496,7 +496,6 @@ def fetch_questionnaires_from_db(external_patient_id: int) -> list[Any]:
         the result of the query
     """
     with connections['questionnaire'].cursor() as cursor:
-        print(cursor.cursor)
         cursor.callproc(
             'getCompletedQuestionnairesList',
             [external_patient_id, 1, 'EN'],
