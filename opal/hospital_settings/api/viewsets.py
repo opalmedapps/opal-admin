@@ -29,8 +29,7 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
             Response: encoded base64 string of the file content
             if the 'terms_of_use' field is a valid pdf file, `None` otherwise
         """
-        institution_id = pk
-        queryset = Institution.objects.get(pk=institution_id)
+        queryset = self.get_object()
         serializer_class = TermsOfUseSerialiser(queryset, many=False, context={'request': request})
         return Response(serializer_class.data)
 

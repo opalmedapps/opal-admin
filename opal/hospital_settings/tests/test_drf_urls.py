@@ -26,9 +26,9 @@ def test_retrieve_terms_of_use() -> None:
     """Ensure retrieve terms of use is defined."""
     institution = factories.Institution()
 
-    path = f'/api/institutions/{institution.pk}/retrieve_terms_of_use/'
-    assert reverse('api:institutions-retrieve-terms-of-use', kwargs={'pk': institution.pk}) == path
-    assert resolve(path).view_name == 'api:institutions-retrieve-terms-of-use'
+    path = f'/api/institutions/{institution.pk}/terms-of-use/'
+    assert reverse('api:institutions-terms-of-use', kwargs={'pk': institution.pk}) == path
+    assert resolve(path).view_name == 'api:institutions-terms-of-use'
 
 
 def test_sites_list() -> None:

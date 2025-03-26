@@ -57,22 +57,22 @@ def test_api_institution_retrieve(api_client: APIClient, admin_user: User) -> No
     assert response.data['id'] == institution.pk
 
 
-def test_api_retrieve_terms_of_use_allowed_methods(api_client: APIClient, admin_user: User) -> None:  # noqa: WPS118
+def test_api_terms_of_use_allowed_methods(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the terms of use of an institution can only be retrieved."""
     api_client.force_login(user=admin_user)
     institution = factories.Institution()
 
-    response = api_client.get(reverse('api:institutions-retrieve-terms-of-use', kwargs={'pk': institution.pk}))
+    response = api_client.get(reverse('api:institutions-terms-of-use', kwargs={'pk': institution.pk}))
 
     assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
 
 
-def test_api_retrieve_terms_of_use(api_client: APIClient, admin_user: User) -> None:
+def test_api_terms_of_use(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the terms of use an institution can be retrieved."""
     api_client.force_login(user=admin_user)
     institution = factories.Institution()
 
-    response = api_client.get(reverse('api:institutions-retrieve-terms-of-use', kwargs={'pk': institution.pk}))
+    response = api_client.get(reverse('api:institutions-terms-of-use', kwargs={'pk': institution.pk}))
 
     assert response.status_code == HTTPStatus.OK
     assert response.data['id'] == institution.pk

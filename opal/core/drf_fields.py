@@ -16,14 +16,14 @@ from ..utils.base64 import Base64Util
 class Base64FileField(serializers.Field):
     """This class is a reuseable field for encoding the to read the file and return the base64 encoded file contents."""
 
-    def to_representation(self, path: FieldFile) -> Optional[Any]:
+    def to_representation(self, file: FieldFile) -> Optional[Any]:
         """Represent a file content in base64 encoded form.
 
         Args:
-            path: The file path
+            file: The file path
 
         Returns:
             str: encoded base64 string of the file if the `path` is a valid, `None` otherwise
         """
         base64_util = Base64Util()
-        return base64_util.encode_to_base64(Path(path.path))
+        return base64_util.encode_to_base64(Path(file.path))
