@@ -92,7 +92,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -132,13 +132,16 @@ class RegistrationCompletionView(APIView):
             if existing_caregiver:
                 utils.replace_caregiver(existing_caregiver, registration_code.relationship)
             else:
+                caregiver_data = register_data['relationship']['caregiver']['user']
                 utils.update_caregiver(
                     registration_code.relationship.caregiver.user,
-                    register_data['relationship']['caregiver'],
+                    caregiver_data['username'],
+                    caregiver_data['language'],
+                    caregiver_data['phone_number'],
                 )
                 utils.update_caregiver_profile(
                     registration_code.relationship.caregiver,
-                    register_data['relationship']['caregiver'],
+                    register_data['relationship']['caregiver']['legacy_id'],
                 )
 
             caregiver_profile = registration_code.relationship.caregiver
