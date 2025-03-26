@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     help = 'migrate Users from legacy DB to New backend DB'  # noqa: A003
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: C901 WPS231 WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
         Handle migrate Users from legacy DB to New backend DB.
 
@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usertypesernum).first()
                 if caregiver_profile:
                     self.stdout.write(
-                        'Nothing to be done for , sernum: {legacy_id},skipping.'.format(
+                        'Nothing to be done for sernum: {legacy_id}, skipping.'.format(
                             legacy_id=legacy_user.usertypesernum,
                         ),
                     )
@@ -52,13 +52,13 @@ class Command(BaseCommand):
                         legacy_id=legacy_user.usertypesernum,
                     )
                     self.stdout.write(
-                        'legacy user with usertypesernum: {legacy_id} has been migrated'.format(
+                        'Legacy user with usertypesernum: {legacy_id} has been migrated'.format(
                             legacy_id=legacy_user.usertypesernum,
                         ),
                     )
                     # count number of migrated users
                     migrated_users_count += 1
-                self._check_relationship(patient, caregiver_profile)
+                self._create_relationship(patient, caregiver_profile)
             else:
                 self.stderr.write(
                     'Patient with sernum: {legacy_id}, does not exist,skipping.'.format(
@@ -66,12 +66,12 @@ class Command(BaseCommand):
                     ),
                 )
         self.stdout.write(
-            f'Number of imported patients is: {migrated_users_count}',
+            f'Number of imported users is: {migrated_users_count}',
         )
 
-    def _check_relationship(self, patient: Patient, caregiver_profile: CaregiverProfile) -> None:
+    def _create_relationship(self, patient: Patient, caregiver_profile: CaregiverProfile) -> None:
         """
-            Check the self relationship between caregiver and patient and migrated if not exist.
+            Check the self relationship between caregiver and patient and migrated if it does not exist.
 
         Args:
             patient: instance of Patinet model.
