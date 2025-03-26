@@ -257,7 +257,8 @@ class PatientUpdateView(UpdateAPIView):
         """
         serializer_class = self.get_serializer_class()
         kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(fields=('data_access',), *args, **kwargs)
+        kwargs['fields'] = ['data_access']
+        return serializer_class(*args, **kwargs)
 
 
 class PatientExistsView(APIView):
