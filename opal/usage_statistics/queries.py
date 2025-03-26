@@ -176,7 +176,7 @@ def fetch_logins_summary(
             total_logins=models.Sum('count_logins'),
             unique_user_logins=models.Count('id'),
             avg_logins_per_user=models.Avg('count_logins'),
-        ).order_by(group_field),
+        ).order_by(f'-{group_field}'),
     )
 
 
