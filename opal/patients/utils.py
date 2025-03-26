@@ -1,6 +1,6 @@
 """App patients util functions."""
 from datetime import date
-from typing import Final, Optional
+from typing import Any, Final, Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -83,7 +83,7 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
-def update_caregiver(user: User, info: dict) -> None:
+def update_caregiver(user: User, info: dict[str, Any]) -> None:
     """
     Update User information.
 
