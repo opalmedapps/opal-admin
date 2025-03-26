@@ -25,7 +25,7 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
-        relationship_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+        relationship_type = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
 
         # force failure if the relationship type does not exist
         if relationship_type is None:

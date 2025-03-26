@@ -8,7 +8,6 @@ from django.db import connections
 from django.utils import timezone
 
 import pytest
-from django_test_migrations.migrator import Migrator
 from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
@@ -16,7 +15,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import Patient, RelationshipStatus, RoleType
+from opal.patients.models import Patient, RelationshipStatus, RelationshipType, RoleType
 from opal.users import factories as user_factories
 
 from ..management.commands import migrate_users
@@ -305,25 +304,21 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 class TestUsersCaregiversMigration(CommandTestMixin):
     """Test class for users and caregivers migrations from legacy DB."""
 
-    def test_import_user_no_self_relationshiptype(self, migrator: Migrator) -> None:
+    def test_import_user_no_self_relationshiptype(self) -> None:
         """Test import fails if no self relationship type exists."""
-        # Must revert to state before prepopulation to test command error
-        migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
+        RelationshipType.objects.filter(role_type=RoleType.SELF).delete()
 
         with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
             self._call_command('migrate_users')
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
-
         message, error = self._call_command('migrate_users')
 
         assert 'Number of imported users is: 0' in message
 
     def test_import_user_caregiver_no_patient_exist(self) -> None:
         """Test import fails, a corresponding patient in new backend does not exist."""
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         legacy_factories.LegacyUserFactory(usertypesernum=99)
 
         message, error = self._call_command('migrate_users')
@@ -334,7 +329,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import fails, caregiver profile has already been migrated."""
         legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
 
         message, error = self._call_command('migrate_users')
@@ -346,12 +340,12 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationshiptype = patient_factories.RelationshipType(role_type=RoleType.SELF)
+        relationship_type = RelationshipType.objects.get(role_type=RoleType.SELF)
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
             caregiver=caregiver,
-            type=relationshiptype,
+            type=relationship_type,
             status=RelationshipStatus.CONFIRMED,
         )
 
@@ -365,7 +359,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import pass for relationship for already migrated caregiver."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=55)
 
         message, error = self._call_command('migrate_users')
@@ -379,7 +372,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
@@ -394,7 +386,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
