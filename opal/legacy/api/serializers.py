@@ -3,7 +3,7 @@
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyPatient, LegacyHospitalMap
+from opal.legacy.models import LegacyAlias, LegacyAppointment, LegacyHospitalMap, LegacyPatient
 
 
 class LegacyAliasSerializer(DynamicFieldsSerializer):

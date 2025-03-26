@@ -294,12 +294,10 @@ class LegacyHospitalMap(models.Model):
     """Hospital_Map model from the legacy database OpalDB."""
 
     hospitalmapsernum = models.AutoField(db_column='HospitalMapSerNum', primary_key=True)
-    mapname_en = models.CharField(db_column='MapName_EN', max_length=255, blank=True, null=True)
-    mapdescription_en = models.CharField(db_column='MapDescription_EN', max_length=255, blank=True, null=True)
-    mapname_fr = models.CharField(db_column='MapName_FR', max_length=255, blank=True, null=True)
-    mapdescription_fr = models.CharField(db_column='MapDescription_FR', max_length=255, blank=True, null=True)
+    mapname_en = models.CharField(db_column='MapName_EN', max_length=255)
+    mapname_fr = models.CharField(db_column='MapName_FR', max_length=255)
     dateadded = models.DateTimeField(db_column='DateAdded')
-    sessionid = models.CharField(db_column='SessionId', max_length=255, blank=True, null=True)
+    sessionid = models.CharField(db_column='SessionId', max_length=255)
 
     class Meta:
         managed = False
