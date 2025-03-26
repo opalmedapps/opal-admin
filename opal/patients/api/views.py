@@ -186,12 +186,10 @@ class PatientDemographicView(UpdateAPIView):
         # Raise `NotFound` if `HospitalPatient` queryset is empty
         if not patient:
             raise NotFound(
-                {
-                    'detail': '{0} {1}'.format(
-                        'Cannot find patient record with the provided MRNs and site codes.',
-                        'Make sure that MRN/site code pairs refer to the same patient.',
-                    ),
-                },
+                '{0} {1}'.format(
+                    'Cannot find patient record with the provided MRNs and site codes.',
+                    'Make sure that MRN/site code pairs refer to the same patient.',
+                ),
             )
 
         # May raise a permission denied
