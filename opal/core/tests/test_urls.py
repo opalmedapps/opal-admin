@@ -39,6 +39,7 @@ def test_admin_urls_enabled() -> None:
     assert reverse('admin:index') == '/admin/'
 
 
+@pytest.mark.django_db()
 def test_favicon_url_defined(client: Client) -> None:
     """Ensure that a favicon.ico can be found by browsers."""
     assert reverse('favicon.ico') is not None
