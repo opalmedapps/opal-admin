@@ -84,6 +84,10 @@ def test_questionnaires_reviewed(settings: SettingsWrapper) -> None:
 
 def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
     """Ensure `registration/<str:code>/` endpoint is defined."""
-    url_path = '/{api_root}/registration/ABCD12345678/'.format(api_root=settings.API_ROOT)
-    assert reverse('api:registration-code', kwargs={'code': 'ABCD12345678'}) == url_path
+    registration_code = 'ABCD12345678'
+    url_path = '/{api_root}/registration/{code}/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:registration-code', kwargs={'code': registration_code}) == url_path
     assert resolve(url_path).view_name == 'api:registration-code'
