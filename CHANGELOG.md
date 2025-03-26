@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add authentication backend to authenticate against fed auth web service (!15)
 * REST API endpoints for authentication (!8)
 * CORS headers required for cross-site requests (#26 via !8)
+* New Frontend and views for hospital-settings app (!31)
+* Users app with custom user model (!39)
 
 ### Documentation
 
@@ -28,3 +30,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add pre-commit (!26)
 * Add wemake-python-styleguide for improved code quality (!19)
 * deps: Add Renovate Bot configuration (!6)
+* fix: Better migration names for hospital-settings (!38)
