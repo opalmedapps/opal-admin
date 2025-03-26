@@ -420,7 +420,7 @@ class LegacySecurityAnswer(models.Model):
         models.DO_NOTHING,
         db_column='SecurityQuestionSerNum',
     )
-    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    patient = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     answertext = models.CharField(db_column='AnswerText', max_length=2056)
     creationdate = models.DateTimeField(db_column='CreationDate')
     lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
@@ -428,7 +428,7 @@ class LegacySecurityAnswer(models.Model):
     class Meta:
         managed = False
         db_table = 'SecurityAnswer'
-        unique_together = (('securityquestionsernum', 'patientsernum'),)
+        unique_together = (('securityquestionsernum', 'patient'),)
 
 
 class LegacyHospitalIdentifierType(models.Model):

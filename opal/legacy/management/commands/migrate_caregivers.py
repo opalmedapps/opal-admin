@@ -25,8 +25,9 @@ class Command(BaseCommand):
         relationship_type = RelationshipType.objects.self_type()
 
         migrated_users_count = 0
+        legacy_users = LegacyUsers.objects.filter(usertype=LegacyUserType.PATIENT)
 
-        for legacy_user in LegacyUsers.objects.filter(usertype=LegacyUserType.PATIENT):
+        for legacy_user in legacy_users:
             patient = Patient.objects.filter(legacy_id=legacy_user.usertypesernum).first()
             if patient:
                 caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usersernum).first()
@@ -44,13 +45,13 @@ class Command(BaseCommand):
 
                 self._create_relationship(patient, caregiver_profile, relationship_type)
             else:
-                self.stderr.write(
+                self.stderr.write(self.style.WARNING(
                     'Patient with sernum: {legacy_id}, does not exist, skipping.'.format(
                         legacy_id=legacy_user.usertypesernum,
                     ),
-                )
+                ))
         self.stdout.write(
-            f'Number of imported caregivers is: {migrated_users_count}',
+            f'Number of imported caregivers is: {migrated_users_count} (out of {legacy_users.count()})',
         )
 
     def _create_caregiver_and_profile(
@@ -93,12 +94,6 @@ class Command(BaseCommand):
         caregiver_profile.full_clean()
         caregiver_profile.save()
 
-        self.stdout.write(
-            'Legacy caregiver with sernum: {legacy_id} has been migrated'.format(
-                legacy_id=legacy_user.usersernum,
-            ),
-        )
-
         return caregiver_profile
 
     def _create_relationship(
@@ -122,11 +117,11 @@ class Command(BaseCommand):
             type=relationship_type,
         ).first()
         if relationship:
-            self.stdout.write(
+            self.stdout.write(self.style.WARNING(
                 'Self relationship for patient with legacy_id: {legacy_id} already exists.'.format(
                     legacy_id=patient.legacy_id,
                 ),
-            )
+            ))
         else:
             relationship = Relationship(
                 patient=patient,
@@ -139,9 +134,3 @@ class Command(BaseCommand):
             )
             relationship.full_clean()
             relationship.save()
-
-            self.stdout.write(
-                'Self relationship for patient with legacy_id: {legacy_id} has been created.'.format(
-                    legacy_id=patient.legacy_id,
-                ),
-            )
