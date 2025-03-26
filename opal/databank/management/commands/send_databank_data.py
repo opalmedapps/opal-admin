@@ -271,14 +271,13 @@ class Command(BaseCommand):  # noqa: WPS214
                     message.strip('[]"'),
                 )
             else:
-                error_message = message.strip('[]"')
                 self.patient_data_success_tracker[patient_guid][data_module] = False
                 self.stderr.write(
                     '{0}{1}{2} : {3}'.format(
                         status_code,
                         ' error for patient ',
                         patient_guid,
-                        error_message,
+                        message.strip('[]"'),
                     ),
                 )
 
