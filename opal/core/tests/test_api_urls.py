@@ -242,8 +242,8 @@ def test_patient_caregivers(settings: SettingsWrapper) -> None:
         api_root=settings.API_ROOT,
         legacy_id=patient_id,
     )
-    assert reverse('api:patient-update', kwargs={'legacy_id': patient_id}) == url_path
-    assert resolve(url_path).view_name == 'api:patient-update'
+    assert reverse('api:patients-legacy', kwargs={'legacy_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patients-legacy'
 
 
 def test_verify_email(settings: SettingsWrapper) -> None:
