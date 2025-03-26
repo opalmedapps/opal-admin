@@ -156,6 +156,7 @@ MRN_DATA = MappingProxyType({
         ],
         'Fred Flintstone': [('RVH', '9999998')],
         'Pebbles Flintstone': [('MCH', '9999999')],
+        'Wednesday Addams': [('RVH', '9999991')],
     },
     InstitutionOption.chusj: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -330,6 +331,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             ramq='FLIP15022299',
             legacy_id=57,
             mrns=mrn_data['Pebbles Flintstone'],
+        )
+        wednesday = _create_patient(
+            first_name='Wednesday',
+            last_name='Addams',
+            date_of_birth=date(2009, 2, 13),
+            sex=Patient.SexType.FEMALE,
+            ramq='ADAW09021399',
+            legacy_id=58,
+            mrns=mrn_data['Wednesday Addams'],
         )
 
     bart = _create_patient(
@@ -545,7 +555,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
 
-    # Pathology reports for Marge, Bart, Homer, Fred, and Pebbles
+    # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
     if not is_pediatric:
         _create_pathology_result(
             patient=marge,
@@ -586,6 +596,14 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             received_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
             reported_at=timezone.make_aware(datetime(2023, 10, 29, 12, 35, 0)),
             legacy_document_id=13,
+        )
+        _create_pathology_result(
+            patient=wednesday,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            received_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            reported_at=timezone.make_aware(datetime(2024, 1, 29, 12, 35, 0)),
+            legacy_document_id=16,
         )
 
 
