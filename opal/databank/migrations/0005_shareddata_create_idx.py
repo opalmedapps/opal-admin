@@ -17,6 +17,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='shareddata',
-            index=models.Index(fields=['databank_consent', 'sent_at'], name='databank_consent_sent_at_idx'),
+            index=models.Index(fields=['databank_consent', 'sent_at'], name='shareddata_databank_consent_sent_at_idx'),
         ),
     ]
