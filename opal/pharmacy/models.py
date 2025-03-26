@@ -77,7 +77,11 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     Pharmacy Encoded Order specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
     """
 
-    physician_prescription_order = models.ForeignKey('PhysicianPrescriptionOrder', on_delete=models.CASCADE)
+    physician_prescription_order = models.OneToOneField(
+        'PhysicianPrescriptionOrder',
+        on_delete=models.CASCADE,
+        related_name='pharmacy_encoded_order_physician_prescription_order',
+    )
     give_code = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_encoded_order_give_codes',
