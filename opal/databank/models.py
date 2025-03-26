@@ -31,24 +31,24 @@ class DatabankConsent(models.Model):
         related_name='databank_consent',
     )
     # TODO: Add `databank_id` field after determining hash algo with LORIS team
-    appointments = models.BooleanField(
-        verbose_name=_('Checked-In Appointments'),
+    has_appointments = models.BooleanField(
+        verbose_name=_('Checked-In Appointments Consent'),
         default=True,
     )
-    diagnosis = models.BooleanField(
-        verbose_name=_('Diagnosis'),
+    has_diagnosis = models.BooleanField(
+        verbose_name=_('Diagnosis Consent'),
         default=True,
     )
-    demographics = models.BooleanField(
-        verbose_name=_('Demographics'),
+    has_demographics = models.BooleanField(
+        verbose_name=_('Demographics Consent'),
         default=True,
     )
-    labs = models.BooleanField(
-        verbose_name=_('Labs'),
+    has_labs = models.BooleanField(
+        verbose_name=_('Labs Consent'),
         default=True,
     )
-    questionnaires = models.BooleanField(
-        verbose_name=_('Questionnaires'),
+    has_questionnaires = models.BooleanField(
+        verbose_name=_('Questionnaires Consent'),
         default=True,
     )
     consent_granted = models.DateTimeField(
@@ -60,7 +60,7 @@ class DatabankConsent(models.Model):
         default=timezone.now,
     )
     last_synchronized = models.DateTimeField(
-        verbose_name=_('Last Synchronized Crontime'),
+        verbose_name=_('Last Synchronized At'),
     )
 
     class Meta:
@@ -78,9 +78,9 @@ class DatabankConsent(models.Model):
         """
         return '{patient} : {appointments}{diagnosis}{demographics}{labs}{questionnaires}'.format(
             patient=str(self.patient),
-            appointments='appointments, ' if self.appointments else '',
-            diagnosis='diagnosis, ' if self.diagnosis else '',
-            demographics='demographics, ' if self.demographics else '',
-            labs='labs, ' if self.labs else '',
-            questionnaires='questionnaires' if self.questionnaires else '',
+            appointments='appointments, ' if self.has_appointments else '',
+            diagnosis='diagnosis, ' if self.has_diagnosis else '',
+            demographics='demographics, ' if self.has_demographics else '',
+            labs='labs, ' if self.has_labs else '',
+            questionnaires='questionnaires' if self.has_questionnaires else '',
         )
