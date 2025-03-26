@@ -168,7 +168,10 @@ python manage.py createsuperuser
 * tip: error message when trying python manage.py migrate (seems MacOS M1&M2 related problem)
 ```django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module.Did you install mysqlclient?```, fixed by do the following pip install pymysql Then, edit the __init__.py file in your project origin dir(the same as settings.py) add: import `pymysql pymysql`and `install_as_MySQLdb()`.
 
-* note: the superuser is an account you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in the real environments, for security, but on your local machine it's fine to have easy access to everything. You can create your own username and password. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
+
+!! note
+
+The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
 
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
 
