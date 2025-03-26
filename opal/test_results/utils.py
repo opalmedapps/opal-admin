@@ -149,7 +149,7 @@ def _get_site_instance(receiving_facility: str) -> Site:
         A Site instance
     """
     try:
-        return Site.objects.get(code=receiving_facility)
+        return Site.objects.get(acronym=receiving_facility)
     except Site.DoesNotExist:
         LOGGER.error(
             (

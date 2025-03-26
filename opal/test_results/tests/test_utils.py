@@ -199,7 +199,7 @@ def test_parse_observations_success() -> None:
 
 def test_get_site_instance_success() -> None:
     """Ensure that _get_site_instance() successfully return Site instance."""
-    hospital_settings_factories.Site(code='RVH')
+    hospital_settings_factories.Site(acronym='RVH')
     site = _get_site_instance(receiving_facility='RVH')
 
     assert Site.objects.filter(pk=site.pk).exists()
@@ -207,7 +207,7 @@ def test_get_site_instance_success() -> None:
 
 def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
     """Ensure that _get_site_instance() returns an empty Site for non-existent receiving facility."""
-    hospital_settings_factories.Site(code='RVH')
+    hospital_settings_factories.Site(acronym='RVH')
     receiving_facility = ''
     error = (
         'An error occurred during pathology report generation.'
