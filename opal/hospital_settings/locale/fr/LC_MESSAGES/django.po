@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-10 08:44-0400\n"
+"POT-Creation-Date: 2022-06-07 12:27-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,124 +23,88 @@ msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
 msgid "Name"
 msgstr "Nom"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
 msgid "Code"
 msgstr "Code"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
 msgid "Institution"
 msgstr "Établissement"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
 msgid "Institutions"
 msgstr "Établissements"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
 msgid "Parking Info (URL)"
 msgstr "Informations sur le stationnement (URL)"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
 msgid "Getting to the Hospital (URL)"
 msgstr "Itinéraire vers l’hôpital (URL)"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
+msgid "Longitude"
+msgstr ""
+
+#: opal/hospital_settings/models.py
+msgid "Latitude"
+msgstr ""
+
+#: opal/hospital_settings/models.py
 msgid "Site"
 msgstr "Site"
 
 #: opal/hospital_settings/models.py
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
 msgid "Sites"
 msgstr "Sites"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-msgid "Delete Institution"
-msgstr "Supprimer l'établissement"
+#~ msgid "Delete Institution"
+#~ msgstr "Supprimer l'établissement"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#, python-format
-msgid "Are you sure you want to delete the following institution: %(object)s?"
-msgstr "Voulez-vous vraiment supprimer l'établissement suivant: %(object)s ?"
+#~ msgid ""
+#~ "Are you sure you want to delete the following institution: %(object)s?"
+#~ msgstr ""
+#~ "Voulez-vous vraiment supprimer l'établissement suivant: %(object)s ?"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-msgid "Yes"
-msgstr "Oui"
+#~ msgid "Yes"
+#~ msgstr "Oui"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
-msgid "Delete"
-msgstr "Supprimer"
+#~ msgid "Delete"
+#~ msgstr "Supprimer"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html
-msgid "Institution Detail"
-msgstr "Détail de l'établissement"
+#~ msgid "Institution Detail"
+#~ msgstr "Détail de l'établissement"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
-msgid "English"
-msgstr "Anglais"
+#~ msgid "English"
+#~ msgstr "Anglais"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_detail.html
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
-msgid "French"
-msgstr "Français"
+#~ msgid "French"
+#~ msgstr "Français"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Update"
-msgstr "Mettre à jour"
+#~ msgid "Update"
+#~ msgstr "Mettre à jour"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Create"
-msgstr "Créer"
+#~ msgid "Create"
+#~ msgstr "Créer"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Save"
-msgstr "Enregistrer"
+#~ msgid "Save"
+#~ msgstr "Enregistrer"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
-msgid "View"
-msgstr "Voir"
+#~ msgid "View"
+#~ msgstr "Voir"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_list.html
-msgid "Edit"
-msgstr "Modifier"
+#~ msgid "Edit"
+#~ msgstr "Modifier"
 
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-msgid "Delete Site"
-msgstr "Supprimer le site"
+#~ msgid "Delete Site"
+#~ msgstr "Supprimer le site"
 
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-#, python-format
-msgid "Are you sure you want to delete the following site: %(object)s?"
-msgstr "Voulez-vous vraiment supprimer le site suivant: %(object)s ?"
+#~ msgid "Are you sure you want to delete the following site: %(object)s?"
+#~ msgstr "Voulez-vous vraiment supprimer le site suivant: %(object)s ?"
 
-#: opal/hospital_settings/templates/hospital_settings/site/site_detail.html
-msgid "Site Detail"
-msgstr "Détails du site"
+#~ msgid "Site Detail"
+#~ msgstr "Détails du site"
