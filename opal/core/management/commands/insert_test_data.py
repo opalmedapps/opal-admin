@@ -32,6 +32,7 @@ class InstitutionOption(Enum):
 
     omi = 'OMI'
     ohigph = 'OHIGPH'
+    muhc = 'MUHC'
 
     def __str__(self) -> str:
         """
@@ -55,6 +56,12 @@ INSTITUTION_DATA = MappingProxyType({
         'name_fr': 'Hôpital Pédiatrique OHIG',
         'acronym_fr': 'HPOHIG',
         'support_email': 'opal+chusj@muhc.mcgill.ca',
+    },
+    InstitutionOption.muhc: {
+        'name': 'McGill University Health Centre',
+        'name_fr': 'Centre universitaire de santé McGill',
+        'acronym_fr': 'CUSM',
+        'support_email': 'opal@muhc.mcgill.ca',
     },
 })
 
