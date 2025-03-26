@@ -142,28 +142,22 @@ msgid "Yes, delete"
 msgstr "Oui, supprimer"
 
 #: opal/templates/email/verification_code.txt
-#, fuzzy, python-format
-#| msgid " Dear %(first_name)s %(last_name)s, "
+#, python-format
 msgid "Dear %(first_name)s %(last_name)s,"
-msgstr " Bonjour %(first_name)s %(last_name)s, "
+msgstr "Bonjour %(first_name)s %(last_name)s,"
 
 #: opal/templates/email/verification_code.txt
-#, fuzzy
-#| msgid ""
-#| "To verify your email address, please enter the code below on the "
-#| "verification page: "
 msgid ""
 "To verify your email address, please enter the code below on the "
 "verification page:"
 msgstr ""
 "Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
-"code ci-dessous sur la page de vérification : "
+"code ci-dessous sur la page de vérification :"
 
 #: opal/templates/email/verification_code.txt
-#, fuzzy, python-format
-#| msgid " This code will expire in %(timeout)s minutes. "
+#, python-format
 msgid "This code will expire in %(timeout)s minutes."
-msgstr " Ce code expirera dans %(timeout)s minutes. "
+msgstr "Ce code expirera dans %(timeout)s minutes."
 
 #: opal/templates/email/verification_code.txt
 msgid ""
@@ -171,7 +165,7 @@ msgid ""
 "to continue the registration process."
 msgstr ""
 "Une fois le code expiré, vous devrez demander un nouveau code pour procéder "
-"avec votre inscription. "
+"avec votre inscription."
 
 #: opal/templates/email/verification_code.txt
 msgid ""
