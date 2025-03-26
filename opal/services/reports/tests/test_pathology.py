@@ -51,6 +51,8 @@ PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
 )
 INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
     institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    document_number='FMU-8624',
+    source_system='ARIA',
 )
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
@@ -94,6 +96,8 @@ def test_generate_pathology_report_success_with_no_page_break(
 
 INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK = InstitutionData(
     institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    document_number='FMU-8624',
+    source_system='ARIA',
 )
 SITE_REPORT_DATA_WITH_PAGE_BREAK = SiteData(
     site_name='Decarie Boulevard',

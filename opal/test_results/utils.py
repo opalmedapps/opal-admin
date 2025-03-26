@@ -40,6 +40,8 @@ def generate_pathology_report(
     return generate_pdf(
         institution_data=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
+            document_number='FMU-8624',
+            source_system='ARIA',
         ),
         patient_data=PatientData(
             patient_first_name=patient.first_name,
