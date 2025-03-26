@@ -412,7 +412,6 @@ def test_process_step_select_site_form() -> None:
     assert request.session['site_selection'] == site.pk
 
 
-@pytest.mark.django_db()
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
     patient_data = forms._patient_data()
@@ -445,7 +444,6 @@ def test_some_mrns_have_same_site_code() -> None:
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
-@pytest.mark.django_db()
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
     patient_data = forms._patient_data()
@@ -478,7 +476,6 @@ def test_all_mrns_have_same_site_code() -> None:
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
-@pytest.mark.django_db()
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
     patient_data = forms._patient_data()
