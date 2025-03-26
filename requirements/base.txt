@@ -3,7 +3,7 @@
 django==4.2.16
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
-django-modeltranslation==0.19.10  # https://django-modeltranslation.readthedocs.io/en/latest/
+django-modeltranslation==0.19.11  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.15.2 # https://www.django-rest-framework.org/
 dj-rest-auth==7.0.0  # https://github.com/iMerica/dj-rest-auth
 django-filter==24.3  # https://github.com/carltongibson/django-filter
@@ -26,9 +26,7 @@ drf-spectacular==0.27.2  # https://pypi.org/project/drf-spectacular/
 
 # MySQL/MariaDB
 #
-# NOTE! we use release candidate version since it fixes the SSL issue/bug
-# TODO: Use mysqlclient=2.2.0 once released
-mysqlclient==2.2.5 # https://github.com/PyMySQL/mysqlclient
+mysqlclient==2.2.4 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #
