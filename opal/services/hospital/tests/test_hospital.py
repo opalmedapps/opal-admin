@@ -621,3 +621,49 @@ def test_find_patient_by_ramq_invalid_ramq(mocker: MockerFixture) -> None:
     response = oie_service.find_patient_by_ramq(RAMQ_INVALID)
     assert response['status'] == 'error'
     assert response['data']['message'] == 'Provided RAMQ is invalid.'
+
+
+def test_new_opal_patient_success(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient can succeed."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+    response = oie_service.new_opal_patient(
+        [
+            ('RVH', '0000001'),
+            ('MCH', '0000002'),
+        ],
+    )
+
+    assert response['status'] == 'success'
+    assert not hasattr(response, 'data')
+
+
+def test_new_opal_patient_empty_input(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient fails gracefully when given an empty MRN list."""
+    RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+    response = oie_service.new_opal_patient([])
+
+    assert response['status'] == 'error'
+    assert 'A list of active (site, mrn) tuples should be provided' in response['data']['message']
+
+
+def test_new_opal_patient_error(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient returns an error for invalid input."""
+    RequestMockerTest.mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'error': 'Some error message',
+        },
+    )
+
+    response = oie_service.new_opal_patient(
+        [
+            ('RVH', '0000001'),
+            ('MCH', '0000002'),
+        ],
+    )
+
+    assert response['status'] == 'error'
+    assert response['data']['responseData']['error'] == 'Some error message'

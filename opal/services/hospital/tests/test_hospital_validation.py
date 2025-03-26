@@ -151,7 +151,15 @@ def test_patient_response_status_non_exists() -> None:
     errors = oie_validator.is_patient_response_valid({
         'data': patient_data,
     })
-    assert errors == ['Patient response data does not have the attribute status']
+    assert errors == ['Patient response data does not have the attribute "status"']
+
+
+def test_patient_response_status_unexpected() -> None:
+    """Ensure a patient response with unexpected status returns an error message."""
+    errors = oie_validator.is_patient_response_valid({
+        'status': 'other',
+    })
+    assert errors == ['New patient response data has an unexpected "status" value: other']
 
 
 # check_patient_data
@@ -615,3 +623,47 @@ def test_check_patient_mrn_active_invalid() -> None:
     }
     errors = oie_validator.check_patient_data(patient_data)
     assert errors == ['Patient MRN data active is not bool']
+
+
+def test_new_patient_response_no_status() -> None:
+    """An error message is returned when the patient response has no status."""
+    response = {
+        'error': 'Message',
+    }
+
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    assert not valid
+    assert errors == ['Patient response data does not have the attribute "status"']
+
+
+def test_new_patient_response_success() -> None:
+    """The response is considered valid if the status is 'Success'."""
+    response = {
+        'status': 'success',
+    }
+
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    assert valid
+    assert not errors
+
+
+def test_new_patient_response_error() -> None:
+    """The response is considered invalid if the status is 'Error'."""
+    response = {
+        'status': 'error',
+    }
+
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    assert not valid
+    assert errors == ['Error response from the OIE']
+
+
+def test_new_patient_response_unexpected_status() -> None:
+    """An error message is returned when the patient response contains an unexpected status value."""
+    response = {
+        'status': 'other',
+    }
+
+    valid, errors = oie_validator.is_new_patient_response_valid(response)
+    assert not valid
+    assert errors == ['New patient response data has an unexpected "status" value: other']
