@@ -459,7 +459,6 @@ def test_get_questionnaire_data_success(mocker: MockerFixture) -> None:
     patient = patient_factories.Patient.create(legacy_id=51)
     questionnaire_result = legacy_utils.get_questionnaire_data(patient)
 
-    print(questionnaire_result)
     assert len(questionnaire_result) == 1
     assert questionnaire_result[0].questionnaire_title == 'Edmonton Symptom Assessment System'
 
