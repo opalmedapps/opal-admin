@@ -259,12 +259,13 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if not self.patient and not self._errors:
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
-    def _handle_response(self, response: dict[str, Any]) -> None:  # noqa: C901,WPS213,WPS231
+    def _handle_response(self, response: dict[str, Any]) -> None:
         """Handle the response from OIE service.
 
         Args:
             response: OIE service response
         """
+        messages = []
         if response['status'] == 'success':
             self.patient = response['data']
         else:
@@ -275,23 +276,21 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             elif 'no_test_patient' in messages:
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
-            for message in messages:
-                if 'dateOfBirth' in message:  # noqa: WPS223
-                    self.add_error(NON_FIELD_ERRORS, _('Patient Date of Birth is invalid.'))
-                elif 'firstName' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient firstName is invalid.'))
-                elif 'lastName' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient lastName is invalid.'))
-                elif 'sex' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient sex is invalid.'))
-                elif 'alias' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient alias is invalid.'))
-                elif 'ramq' in message and 'ramqExpiration' not in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient ramq is invalid.'))
-                elif 'ramqExpiration' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient ramq expiration is invalid.'))
-                elif 'Patient MRN' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient MRN is invalid.'))
+        errors = {
+            ' dateOfBirth ': _('Patient Date of Birth is invalid.'),
+            ' firstName ': _('Patient firstName is invalid.'),
+            ' lastName ': _('Patient lastName is invalid.'),
+            ' sex ': _('Patient sex is invalid.'),
+            ' alias ': _('Patient alias is invalid.'),
+            ' ramq ': _('Patient ramq is invalid.'),
+            ' ramqExpiration ': _('Patient ramq expiration is invalid.'),
+            ' Patient MRN ': _('Patient MRN is invalid.'),
+        }
+
+        for message in messages:
+            for error in errors:
+                if error in message:
+                    self.add_error(NON_FIELD_ERRORS, error)
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
