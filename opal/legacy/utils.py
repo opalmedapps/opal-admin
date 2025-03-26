@@ -46,7 +46,7 @@ def update_legacy_user_type(caregiver_legacy_id: int, new_type: str) -> None:
     LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
 
 
-def create_patient(
+def create_patient(  # noqa: WPS211 (too many arguments)
     first_name: str,
     last_name: str,
     sex: LegacySexType,
@@ -56,6 +56,22 @@ def create_patient(
     ramq: str,
     access_level: LegacyAccessLevel,
 ) -> LegacyPatient:
+    """
+    Create a patient with the given properties.
+
+    Args:
+        first_name: the first name of the patient
+        last_name: the last name of the patient
+        sex: the sex of the patient
+        date_of_birth: the date of birth of the patient
+        email: the email of the patient
+        language: the language of the patient
+        ramq: the RAMQ of the patient
+        access_level: the access level of the patient
+
+    Returns:
+        the legacy patient instance
+    """
     age = Patient.calculate_age(date_of_birth)
 
     patient = LegacyPatient(
