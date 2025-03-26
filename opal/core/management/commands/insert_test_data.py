@@ -61,8 +61,8 @@ INSTITUTION_DATA = MappingProxyType({
 SITE_DATA = MappingProxyType({
     InstitutionOption.omi: [
         (
-            'Opal General Hospital (RVH)',
-            'Hôpital général Opal (HRV)',
+            'Opal General Hospital 1 (RVH)',
+            'Hôpital général Opal 1 (HRV)',
             'RVH',
             'HRV',
             PARKING_URLS_MUHC,
@@ -72,8 +72,8 @@ SITE_DATA = MappingProxyType({
             ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
-            'Opal General Hospital (MGH)',
-            'Hôpital général Opal (HGM)',
+            'Opal General Hospital 2 (MGH)',
+            'Hôpital général Opal 2 (HGM)',
             'MGH',
             'HGM',
             PARKING_URLS_MUHC,
@@ -97,8 +97,8 @@ SITE_DATA = MappingProxyType({
             ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
         ),
         (
-            'Opal General Hospital (LAC)',
-            'Hôpital général Opal (LAC)',
+            'Opal General Hospital 3 (LAC)',
+            'Hôpital général Opal 3 (LAC)',
             'LAC',
             'LAC',
             PARKING_URLS_MUHC,
@@ -108,8 +108,8 @@ SITE_DATA = MappingProxyType({
             ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
         ),
         (
-            'Opal General Hospital (CRE)',
-            'Hôpital général Opal (CRE)',
+            'Opal General Hospital 4 (CRE)',
+            'Hôpital général Opal 4 (CRE)',
             'CRE',
             'CRE',
             TRAVEL_URLS_CRE,
