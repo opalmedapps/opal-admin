@@ -31,22 +31,10 @@ def test_empty_fetch_registration_summary() -> None:
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     """Ensure fetch_registration_summary() query successfully returns registration statistics."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='marge',
-        legacy_id=1,
-    )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='homer',
-        legacy_id=2,
-    )
-    bart_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='bart',
-        legacy_id=3,
-    )
-    lisa_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='lisa',
-        legacy_id=4,
-    )
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    lisa_caregiver = caregiver_factories.CaregiverProfile(user__username='lisa', legacy_id=4)
     homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
     bart_patient = patient_factories.Patient(legacy_id=53, ramq='TEST01161974')
     lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
@@ -327,18 +315,9 @@ def test_empty_logins_summary() -> None:
 
 def test_fetch_logins_summary_by_date() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by date."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='marge',
-        legacy_id=1,
-    )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='homer',
-        legacy_id=2,
-    )
-    bart_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='bart',
-        legacy_id=3,
-    )
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
     current_date = dt.datetime.now().date()
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
@@ -388,18 +367,9 @@ def test_fetch_logins_summary_by_date() -> None:
 
 def test_fetch_logins_summary_by_month() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by month."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='marge',
-        legacy_id=1,
-    )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='homer',
-        legacy_id=2,
-    )
-    bart_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='bart',
-        legacy_id=3,
-    )
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=3,
@@ -472,18 +442,9 @@ def test_fetch_logins_summary_by_month() -> None:
 
 def test_fetch_logins_summary_by_year() -> None:
     """Ensure fetch_logins_summary() query successfully aggregates login statistics grouped by year."""
-    marge_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='marge',
-        legacy_id=1,
-    )
-    homer_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='homer',
-        legacy_id=2,
-    )
-    bart_caregiver = caregiver_factories.CaregiverProfile(
-        user__username='bart',
-        legacy_id=3,
-    )
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
     stats_factories.DailyUserAppActivity(
         action_by_user=marge_caregiver.user,
         count_logins=3,
