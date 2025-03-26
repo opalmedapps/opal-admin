@@ -116,10 +116,10 @@ class RegistrationCompletionView(APIView):
                 register_data['relationship']['patient']['legacy_id'],
             )
 
-            existent_caregiver = utils.get_caregiver(register_data['relationship']['caregiver']['user']['username'])
+            existing_caregiver = utils.get_caregiver(register_data['relationship']['caregiver']['user']['username'])
 
-            if existent_caregiver:
-                utils.replace_caregiver(existent_caregiver, registration_code.relationship)
+            if existing_caregiver:
+                utils.replace_caregiver(existing_caregiver, registration_code.relationship)
             else:
                 utils.update_caregiver(
                     registration_code.relationship.caregiver.user,

@@ -345,8 +345,7 @@ class TestApiRegistrationCompletion:
         )
         skeleton_profile = CaregiverProfile(user=skeleton)
         # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        relationship = Relationship(patient=patient, caregiver=skeleton_profile)
+        relationship = Relationship(caregiver=skeleton_profile)
         registration_code = RegistrationCode(relationship=relationship)
         invalid_data: dict = copy.deepcopy(self.valid_input_data)
 
@@ -365,20 +364,8 @@ class TestApiRegistrationCompletion:
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert relationship.caregiver.id == caregiver_profile.id
         assert relationship.caregiver.user.id == caregiver.id
-
-        expected_message = 'User matching query does not exist.'
-        with assertRaisesMessage(
-            User.DoesNotExist,
-            expected_message,
-        ):
-            User.objects.get(username=skeleton.username)
-
-        expected_message = 'CaregiverProfile matching query does not exist.'
-        with assertRaisesMessage(
-            caregiver_models.CaregiverProfile.DoesNotExist,
-            expected_message,
-        ):
-            caregiver_models.CaregiverProfile.objects.get(user=skeleton)
+        assert not User.objects.filter(username=skeleton.username).exists()
+        assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
 
 
 class TestPatientDemographicView:

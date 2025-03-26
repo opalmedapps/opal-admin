@@ -172,12 +172,7 @@ def test_replace_caregiver() -> None:
     )
     utils.replace_caregiver(caregiver, relationship)
     assert relationship.caregiver.user.username == username1
-    expected_message = 'User matching query does not exist.'
-    with assertRaisesMessage(
-        user_models.User.DoesNotExist,
-        expected_message,
-    ):
-        user_models.User.objects.get(username=username2)
+    assert not user_models.User.objects.filter(username=username2).exists()
 
 
 def test_update_caregiver_profile_success() -> None:
