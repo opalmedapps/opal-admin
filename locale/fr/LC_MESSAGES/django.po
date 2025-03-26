@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-19 11:45-0400\n"
+"POT-Creation-Date: 2023-08-16 19:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,6 +70,7 @@ msgid "Done"
 msgstr ""
 
 #: opal/templates/components/form_cancel.html
+#: vvenv/lib/python3.10/site-packages/easyaudit/templates/admin/easyaudit/purge_confirmation.html
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -136,7 +137,7 @@ msgstr "L’Équipe Opal"
 #: opal/templates/sidebar.html
 #, fuzzy
 #| msgid "Go back to OpalAdmin menu"
-msgid "Go back to OpalAdmin menu"
+msgid "Go back to opalADMIN menu"
 msgstr "Retourner au menu d'OpalAdmin"
 
 #: opal/templates/sidebar.html
@@ -144,6 +145,7 @@ msgid "Log Out"
 msgstr "Se déconnecter"
 
 #: opal/templates/sidebar_menu.html
+#: vvenv/lib/python3.10/site-packages/easyaudit/templates/admin/easyaudit/purge_confirmation.html
 msgid "Home"
 msgstr "Accueil"
 
@@ -196,6 +198,8 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: opal/templates/tables/action_column.html
+#: vvenv/lib/python3.10/site-packages/django/forms/formsets.py
+#: vvenv/lib/python3.10/site-packages/easyaudit/models.py
 msgid "Delete"
 msgstr "Supprimer"
 
