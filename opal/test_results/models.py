@@ -91,7 +91,7 @@ class GeneralTest(models.Model):
         """
         return '{patient} {type} Test instance [{date}]'.format(
             patient=str(self.patient),
-            type=str(self.type),
+            type=str(self.get_type_display()),
             date=str(self.collected_at),
         )
 
