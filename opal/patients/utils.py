@@ -466,7 +466,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
 
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
-        if relationship.type.role_type == RoleType.SELF:
+        if relationship_type.role_type == RoleType.SELF:
             if not caregiver.legacy_id:
                 raise ValueError('Legacy ID is missing from Caregiver Profile')
 
