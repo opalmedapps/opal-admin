@@ -1,6 +1,5 @@
 """Module providing models for the caregivers app."""
 
-from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -110,19 +109,3 @@ class RegistrationCode(models.Model):
             code=self.code,
             status=self.status,
         )
-
-    def clean(self) -> None:
-        """Validate the length of registration code and the length of email verification code.
-
-        Raises:
-            ValidationError: the error shows when the code is less than the limit length
-        """
-        # Test function won't throw exception if we do not add this validation
-        length_regis_code = len(self.code)
-        length_verif_code = len(self.email_verification_code)
-        errors = {}
-        if self.code is not None and (length_regis_code < 12):
-            errors['Code'] = _('Code length should be equal to 12.')
-        if self.email_verification_code is not None and (length_verif_code < 6):
-            errors['Email Verification Code'] = _('Code length should be equal to 6.')
-        raise ValidationError(errors)

@@ -1,7 +1,7 @@
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.db import DataError, IntegrityError
+from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 
 import pytest
@@ -125,17 +125,20 @@ def test_registrationcode_code_unique() -> None:
 
 def test_registrationcode_code_length_gt() -> None:
     """Ensure the length of registration code is not greater than 12."""
-    expected_message = "Data too long for column 'code' at row 1"
-    with assertRaisesMessage(DataError, expected_message):  # type: ignore[arg-type]
-        factories.RegistrationCode(code='1234567890111')
+    registration_code = factories.RegistrationCode()
+    registration_code.code = 'code1234567890'
+    expected_message = "'code': ['Ensure this value has at most 12 characters (it has 14).']"
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        registration_code.clean_fields()
 
 
 def test_registrationcode_email_code_length_gt() -> None:
     """Ensure the length of email verification code is not greater than 6."""
-    expected_message = "Data too long for column 'email_verification_code' at row 1"
-    with assertRaisesMessage(DataError, expected_message):  # type: ignore[arg-type]
-        registration_code = factories.RegistrationCode(email_verification_code='1234567')
-        registration_code.clean()
+    registration_code = factories.RegistrationCode()
+    registration_code.email_verification_code = '1234567'
+    expected_message = "'email_verification_code': ['Ensure this value has at most 6 characters (it has 7).']"
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        registration_code.clean_fields()
 
 
 def test_registrationcode_codes_length_lt() -> None:
@@ -145,11 +148,11 @@ def test_registrationcode_codes_length_lt() -> None:
         email_verification_code='1234',
     )
     expected_message = '{0}{1}'.format(
-        "'Code': ['Code length should be equal to 12.'], ",
-        "'Email Verification Code': ['Code length should be equal to 6.']",
+        "'code': ['Ensure this value has at least 12 characters (it has 6).'], ",
+        "'email_verification_code': ['Ensure this value has at least 6 characters (it has 4).'",
     )
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        registration_code.clean()
+        registration_code.clean_fields()
 
 
 def test_registrationcode_creation_date() -> None:
