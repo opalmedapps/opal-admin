@@ -38,7 +38,7 @@ def fixture_institution_form_files() -> dict:
     Returns:
         dictionary with two logo image files
     """
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
+    with Path('opal/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
         file_content = image_logo.read()
 
     return {

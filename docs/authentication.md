@@ -1,4 +1,4 @@
-# Authentication
+# Authentication & Permissions
 
 The default permissions policy is defined in [CustomDjangoModelPermissions][opal.core.drf_permissions.CustomDjangoModelPermissions]. It restricts accesses to at least require the `view` model permissions (for `GET` requests).
 
@@ -33,3 +33,15 @@ For example, using `curl` a request could be made as follows:
 ```shell
 curl -H 'Authorization: Token <insert_token_key>' http://localhost:8000/api/sites
 ```
+
+## Caregiver Users
+
+Caregivers are users who have access to patient data via the Opal app.
+In order for a caregiver to have permission to access to the data of a patient (either themselves or another person),
+a [Relationship][opal.patients.models.Relationship] must exist between them,
+with a `CONFIRMED` [RelationshipStatus][opal.patients.models.RelationshipStatus].
+
+These conditions are enforced by the [CaregiverPatientPermissions][opal.core.drf_permissions.CaregiverPatientPermissions] class,
+and any API view that provides patient data to a caregiver should override its `permission_classes`
+attribute to include this class. To perform the permissions check, the view must receive an `Appuserid` header representing
+the caregiver's username, and a `legacy_id` value in its URL representing the target patient.

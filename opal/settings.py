@@ -265,7 +265,7 @@ STATICFILES_FINDERS = [
 # Serving files uploaded by a user during development
 # https://docs.djangoproject.com/en/4.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development
 #
-# For the prod deployemnt, follow the guides:
+# For the prod deployment, follow the guides:
 # https://docs.djangoproject.com/en/4.0/howto/static-files/deployment/#how-to-deploy-static-files
 # https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Deployment
 MEDIA_URL = '/media/'
@@ -324,6 +324,14 @@ OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
 LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)
 
+# Legacy URL for generating questionnaires report
+LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
+
+# Opal Integration Engine (OIE)
+OIE_HOST = env.url('OIE_HOST').geturl()
+# OIE Credentials
+OIE_USER = env('OIE_USER')
+OIE_PASSWORD = env('OIE_PASSWORD')
 
 # Third party apps settings
 # ------------------------------------------------------------------------------
