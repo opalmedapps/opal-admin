@@ -59,10 +59,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         patient_legacy_id = view.kwargs.get('legacy_id')
 
         # Find the caregiver
-        self_caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
+        self_caregiver_profile = CaregiverProfile.objects.filter(
+            user__username=caregiver_username,
+        ).prefetch_related('relationships__patient').first()
 
         # Get the list of relationships between the caregiver and the target patient
-        # (mypy) relationships exists as a 'related_name' in the Relationship model
         relationships_with_target = self_caregiver_profile.relationships.filter(
             patient__legacy_id=patient_legacy_id,
         ) if self_caregiver_profile else Relationship.objects.none()
