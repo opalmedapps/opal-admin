@@ -272,6 +272,8 @@ check crontab:
     - .default_before
   services:
     - mariadb:10.6.17-focal
+  variables:
+    MARIADB_DATABASE: $DB_NAME
   script:
     # Check that the crontab references the correct commands and that they execute
     - scripts/check_crontab.sh
