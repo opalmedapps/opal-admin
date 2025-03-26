@@ -2,12 +2,13 @@
 from typing import Optional
 
 from django.contrib import admin
+from django.contrib.admin.options import BaseModelAdmin
 from django.http import HttpRequest
 
 from .models import AbstractSample, HealthDataStore, QuantitySample
 
 
-class AbstractSampleAdminMixin(admin.ModelAdmin):
+class AbstractSampleAdminMixin(BaseModelAdmin):
     """
     Mixin for sample models to prevent changing an existing instance.
 
@@ -18,19 +19,16 @@ class AbstractSampleAdminMixin(admin.ModelAdmin):
         """
         Return whether the given request has permission to change the given sample instance.
 
-        Changing an existing instance is not permitted.
+        Always returns `False` (changes not permitted).
 
         Args:
             request: the current HTTP request
             obj: the current instance. Defaults to None.
 
         Returns:
-            `True`, if the instance can be changed, `False` otherwise
+            `False`
         """
-        if obj is not None:
-            return False
-
-        return super().has_change_permission(request, obj=obj)
+        return False
 
     def has_delete_permission(self, request: HttpRequest, obj: Optional[AbstractSample] = None) -> bool:
         """
