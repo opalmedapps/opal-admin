@@ -48,6 +48,7 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'crispy_bootstrap4',
 ]
 THIRD_PARTY_APPS = [
     'django_extensions',

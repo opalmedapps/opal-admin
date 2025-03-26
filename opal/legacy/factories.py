@@ -57,6 +57,9 @@ class LegacyAliasFactory(DjangoModelFactory):
         model = models.LegacyAlias
 
     aliassernum = 283
+    aliastype = 'Appointment'
+    aliasname_en = 'Calcul de la Dose'
+    aliasname_fr = 'Calcul de la Dose'
 
 
 class LegacyAliasexpressionFactory(DjangoModelFactory):
@@ -81,6 +84,8 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     state = 'active'
     readstatus = 0
     readby = '[]'
+    roomlocation_en = 'CVIS Clinic Room 1'
+    roomlocation_fr = 'SMVC Salle 1'
     aliasexpressionsernum = SubFactory(LegacyAliasexpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
 
