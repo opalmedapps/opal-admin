@@ -17,7 +17,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.caregivers.api.mixins.put_as_create import AllowPUTAsCreateMixin
 from opal.caregivers.api.serializers import (
     CaregiverSerializer,
     DeviceSerializer,
@@ -25,6 +24,7 @@ from opal.caregivers.api.serializers import (
     RegistrationEncryptionInfoSerializer,
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship

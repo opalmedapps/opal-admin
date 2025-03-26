@@ -12,10 +12,15 @@ import pytest
 from _pytest.config import Config
 from _pytest.main import Session
 from _pytest.python import Function, Module
+from factory.django import DjangoModelFactory
 from pytest_django.plugin import _DatabaseBlocker
 from rest_framework.test import APIClient
 
+from opal.legacy_questionnaires import factories
 from opal.users.models import User
+
+LEGACY_TEST_PATIENT_ID = 51
+LEGACY_DICTIONARY_CONTENT_ID = 9000000
 
 
 def pytest_collection_modifyitems(session: Session, config: Config, items: list[Function]) -> None:
@@ -194,3 +199,68 @@ def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) 
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
             conn.close()
+
+
+@pytest.fixture()
+def databank_consent_questionnaire_and_response(  # noqa: WPS210
+) -> dict[str, DjangoModelFactory]:
+    """Add a full databank consent questionnaire and simple response to test setup.
+
+    Returns:
+        The corresponding legacy patient record who is linked to this answer, and the questionnaire
+    """
+    # Legacy patient record
+    consenting_patient = factories.LegacyPatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
+    middle_name_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID,
+        content='Middle name',
+        language_id=2,
+    )
+    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
+    cob_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
+        content='City of birth',
+        language_id=2,
+    )
+    cob_question = factories.LegacyQuestionFactory(display=cob_content)
+    consent_purpose_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
+        content='Consent',
+        language_id=2,
+    )
+    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    questionnaire_title = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
+        content='Databank Consent Questionnaire',
+        language_id=2,
+    )
+    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
+    # Answer data
+    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory(
+        questionnaire=consent_questionnaire,
+        patient=consenting_patient,
+    )
+    answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
+    cob_answer = factories.LegacyAnswerFactory(
+        question=cob_question,
+        answer_section=answer_section,
+        patient=consenting_patient,
+        questionnaire=consent_questionnaire,
+    )
+    middle_name_answer = factories.LegacyAnswerFactory(
+        question=middle_name_question,
+        answer_section=answer_section,
+        patient=consenting_patient,
+        questionnaire=consent_questionnaire,
+    )
+    factories.LegacyAnswerTextBoxFactory(answer=cob_answer, value='Springfield')
+    factories.LegacyAnswerTextBoxFactory(answer=middle_name_answer, value='Juliet')
+
+    return {
+        'patient': consenting_patient,
+        'questionnaire': consent_questionnaire,
+    }

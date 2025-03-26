@@ -53,3 +53,15 @@ def test_users_action_unset_manager_user() -> None:
     ) == f'/api/users/{user.username}/unset-manager-user/'
 
     assert resolve(f'/api/users/{user.username}/unset-manager-user/').view_name == 'api:users-unset-manager-user'
+
+
+def test_users_action_deactivate_user() -> None:
+    """Ensure users action for `deactivate-user` is defined."""
+    user = factories.User()
+
+    assert reverse(
+        'api:users-deactivate-user',
+        kwargs={'username': user.username},
+    ) == f'/api/users/{user.username}/deactivate-user/'
+
+    assert resolve(f'/api/users/{user.username}/deactivate-user/').view_name == 'api:users-deactivate-user'

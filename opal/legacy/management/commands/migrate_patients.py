@@ -58,6 +58,7 @@ class Command(BaseCommand):
                 migrated_patient = Patient(
                     legacy_id=legacy_patient.patientsernum,
                     date_of_birth=legacy_patient.date_of_birth,
+                    date_of_death=legacy_patient.death_date,
                     sex=SexType[legacy_patient.sex.upper()],
                     first_name=legacy_patient.first_name,
                     last_name=legacy_patient.last_name,
