@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-07 13:05-0500\n"
+"POT-Creation-Date: 2024-02-09 15:07-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,6 +29,26 @@ msgstr "Prescription du médecin"
 #: opal/pharmacy/models.py
 msgid "Physician Prescriptions"
 msgstr "Prescriptions médicales"
+
+#: opal/pharmacy/models.py
+msgid "Standard"
+msgstr "Standard"
+
+#: opal/pharmacy/models.py
+msgid "Ambulatory"
+msgstr "Ambulatoire"
+
+#: opal/pharmacy/models.py
+msgid "Leave Of Absence"
+msgstr "Congé de maladie"
+
+#: opal/pharmacy/models.py
+msgid "Take Home"
+msgstr "Rentrer à la maison"
+
+#: opal/pharmacy/models.py
+msgid "Self Administration"
+msgstr "Auto-administration"
 
 #: opal/pharmacy/models.py
 msgid "Pharmacy Encoding"
