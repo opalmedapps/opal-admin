@@ -4,7 +4,7 @@ from typing import Any
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
@@ -77,7 +77,7 @@ class CaregiverRelationshipView(ListAPIView[Relationship]):
             200: CaregiverRelationshipSerializer(many=True),
             403: {'description': 'User not authorized'},
             404: {'description': 'Patient not found'},
-        }
+        },
     )
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.

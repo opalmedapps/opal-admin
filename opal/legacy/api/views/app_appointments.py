@@ -1,5 +1,5 @@
 """Collection of api views used to get appointment details."""
-from drf_spectacular.utils import extend_schema, OpenApiParameter, inline_serializer
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
