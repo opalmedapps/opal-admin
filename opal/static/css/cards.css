@@ -1,4 +1,5 @@
 /* This is customize the card class, otherwise the default bootstrap configuration of card class will be used. */
 .card {
-  color: var(--opal-purple);
+  --bs-card-title-color: var(--opal-purple);
+  --bs-card-color: var(--opal-purple);
 }
