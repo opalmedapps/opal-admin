@@ -390,7 +390,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
     form.fields['site'].initial = site
 
     assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
+    assert form.non_field_errors()[0] == 'connection_error'
 
 
 def test_accessrequestsearchform_mrn_success_oie(mocker: MockerFixture) -> None:
