@@ -62,7 +62,7 @@ class Command(BaseCommand):
         # or an extra Group model (with a OneToOneField) with translated names
         # maybe this can be done later
         medical_records = Group.objects.create(name='Medical Records')
-        registrants = Group.objects.create(name='Registrants')
+        registrants = Group.objects.create(name=settings.REGISTRANTS_GROUP_NAME)
         hospital_managers = Group.objects.create(name='Hospital Settings Managers')
         data_exporters = Group.objects.create(name='Questionnaire Data Exporters')
         user_managers = Group.objects.create(name=settings.USER_MANAGER_GROUP_NAME)
