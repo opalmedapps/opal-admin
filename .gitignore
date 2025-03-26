@@ -133,6 +133,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
+public/
 
 # mypy
 .mypy_cache/
@@ -178,3 +179,6 @@ Temporary Items
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+# ---> PyCharm
+.idea/

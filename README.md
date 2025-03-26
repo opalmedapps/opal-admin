@@ -56,7 +56,53 @@ In order for linting, type checking, unit testing etc. to be available in your I
     .\.venv\Scripts\activate
     ```
 
-    **Note:**  If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion]   (https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+    **Note:**  If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion](https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+
+??? note "IDE: auto-activate the virtual environment"
+
+    Your IDE can be configured to automatically activate the virtual environment when launching a new terminal.
+
+    === "VSCode"
+
+        VSCode has already been configured with this feature in its project settings.
+        This was done by adding the following line to `.vscode/settings.json`:
+
+        ```json
+        "python.terminal.activateEnvironment": true,
+        ```
+
+    === "PyCharm"
+
+        Navigate to `File > Settings/Preferences > Tools > Terminal` and replace `Shell path` with the following:
+
+        === "Windows"
+            ```sh
+            powershell -NoExit -File ".\.venv\Scripts\Activate.ps1"
+            ```
+
+        If you later encounter any issues with your virtual environment that are causing the terminal to crash on launch,
+        simply reset the above field to its default value, fix your virtual environment, and then reset the field back to the value above.
+
+#### Configure your IDE's Python Interpreter
+
+Your IDE should be set up to use the Python interpreter in your virtual environment. This will ensure that your code
+is interpreted correctly while developing. The following instructions will help you to check whether your interpreter is
+correctly set, and if not, to set it to the correct path.
+
+=== "VSCode"
+
+    1. Make sure that your project folder is open, and open any `.py` file.
+    2. In the bottom-right corner of the screen, next to `Python`, you should see your Python version,
+       followed by .venv, for example: `3.9.10 ('.venv':venv)`.
+    3. If you don't see this, click on the version number or empty field next to `Python`.
+    4. Enter the interpreter path by browsing to `.venv/Scripts/python.exe` in your current project.
+
+=== "PyCharm"
+
+    1. Go to `File > Settings/Preferences > Project: name > Project Interpreter`.
+    2. Check whether the value for `Python interpreter` is set to `python.exe` from your virtual environment folder (`.venv`).
+    3. If it isn't, click on the gear icon, click "Add", select the option for adding an existing Virtualenv environment,
+       and in the interpreter box, browse to `.venv/Scripts/python.exe` in your current project.
 
 #### Install dependencies
 
@@ -106,27 +152,39 @@ Install the `pre-commit` hooks via `pre-commit install`.
 
     The current known workaround is to specify the required `PATH` for the `pre-commit` hook. Add the following line at the top of `.git/hooks/pre-commit` (after the first line with the bash interpreter):
 
-```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
+    ```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
 
-### Recommended vscode extensions
+### Recommended IDE Extensions
 
-This project contains recommendations for vscode extensions (see `.vscode/extensions.json`). You should get a popup about this when you open the project. These extensions are also highlighted in the extensions list.
+=== "VSCode"
 
-The following extensions are required or strongly recommended:
+    This project contains recommendations for vscode extensions (see `.vscode/extensions.json`). You should get a popup about this when you open the project. These extensions are also highlighted in the extensions list.
 
-* [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [PyLance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
-* [Django](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django)
-* [EditorConfig for VSCode](https://marketplace.visualstudio.com/items?itemName=editorconfig.editorconfig)
-* [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-* [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
-* [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
-* [ShellCheck](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck)
-* [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+    The following extensions are required or strongly recommended:
 
-??? note "shellcheck on Apple Silicon"
+    * [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [PyLance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
+    * [Django](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django)
+    * [EditorConfig for VSCode](https://marketplace.visualstudio.com/items?itemName=editorconfig.editorconfig)
+    * [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
+    * [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+    * [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
+    * [ShellCheck](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck)
+    * [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
 
-    Currently the *shellcheck* extension does not come with a binary for `arm64`.
-    Install `shellcheck` via `brew install shellcheck`.
+    ??? note "shellcheck on Apple Silicon"
+
+        Currently the *shellcheck* extension does not come with a binary for `arm64`.
+        Install `shellcheck` via `brew install shellcheck`.
+
+=== "PyCharm"
+
+    This project recommends the installation of some PyCharm extensions. These can be installed under `File > Settings/Preferences > Plugins`.
+
+    The following extensions are required or strongly recommended:
+
+    * [EditorConfig by JetBrains s.r.o.](https://plugins.jetbrains.com/plugin/7294-editorconfig) (should come pre-bundled with PyCharm)
+    * [Docker by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7724-docker)
+    * [Markdown by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7793-markdown)
 
 ## Documentation
 
