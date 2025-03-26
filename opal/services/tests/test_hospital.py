@@ -1,5 +1,3 @@
-import pytest
-
 from typing import Dict, cast
 
 from pytest_mock.plugin import MockerFixture
@@ -42,7 +40,6 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     assert data is not None
 
 
-@pytest.mark.enable_socket
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None."""
     # mock find_patient_by_mrn and pretend it was failed
