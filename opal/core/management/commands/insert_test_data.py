@@ -919,6 +919,11 @@ def _create_date(relative_years: int, month: int, day: int) -> date:
     """
     current_year = date.today().year
 
+    # is the current date before the birth date
+    # if so, to have the correct age, we need to add an extra year
+    before_birth_date = date.today() < date(current_year, month, day)
+    relative_years += before_birth_date
+
     return date(current_year, month, day) - relativedelta(years=relative_years)
 
 
@@ -936,6 +941,22 @@ def _relative_date(base_date: date, years: int) -> date:
         the relative date calculated via `base_date + years`
     """
     return base_date + relativedelta(years=years)
+
+
+def _calculate_birth_date(base_date: date, years: int) -> date:
+    """
+    Calculate a birth date based on the given date and the number of years.
+
+    The number of years can be negative, i.e., the date will be before the reference data.
+
+    Args:
+        base_date: the date from which to calculate
+        years: the number of years to add to the base date, use a negative number to subtract
+
+    Returns:
+        the birth date calculated via `base_date - years`
+    """
+    return _relative_date(base_date, years)
 
 
 def _create_pathology_result(
