@@ -16,7 +16,7 @@
             <input type="checkbox" id="following" name="following" {% if following %}checked{% endif %}>
             <label for="following"> {% translate "Follow in my dashboard" %}</label>
           <h4>{% translate "Description" %}</h4>
-          {{ description|safe }}
+          {{ description }}
           <hr>
           <h4>{% translate "Select options for the report" %}</h4>
           <br>
@@ -74,7 +74,7 @@
                     {% for q in questions %}
                         <li>
                             <div class="checkbox" >
-                                <label><input type="checkbox"  class="checkboxesQ" name="questionIDs" value="{{ q.questionId }}" checked > {{ q.question|safe }}</label>
+                                <label><input type="checkbox"  class="checkboxesQ" name="questionIDs" value="{{ q.questionId }}" checked > {{ q.question }}</label>
                             </div>
                         </li>
                     {% endfor %}
