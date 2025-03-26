@@ -325,9 +325,15 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
         command = send_databank_data.Command()
         command.handle()
-
         assert databank_models.SharedData.objects.all().count() == 2
         for databank_patient in databank_models.DatabankConsent.objects.all():
+            assert command.patient_data_success_tracker[databank_patient.guid] == {
+                databank_models.DataModuleType.APPOINTMENTS: True,
+                databank_models.DataModuleType.DIAGNOSES: True,
+                databank_models.DataModuleType.DEMOGRAPHICS: True,
+                databank_models.DataModuleType.LABS: True,
+                databank_models.DataModuleType.QUESTIONNAIRES: True,
+            }
             assert databank_patient.last_synchronized == command.command_called
 
     def test_last_synchronized_not_updated_failure(self, mocker: MockerFixture) -> None:
@@ -380,7 +386,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert databank_patient2.last_synchronized == command.command_called
 
     def test_update_databank_patient_metadata_call(self, mocker: MockerFixture) -> None:
-        """Test specific behaviour of the metadata updates."""
+        """Test correct calling of the metatdata update."""
         response_data = self._create_custom_oie_response(databank_models.DataModuleType.DEMOGRAPHICS)
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -435,12 +441,53 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert isinstance(synced_data, dict)
         assert isinstance(message, str)
 
+    def test_empty_synced_patient_data(self, mocker: MockerFixture) -> None:
+        """Test structure of synced_patient_data if guid not found in original data."""
+        response_data = {
+            'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+        }
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        original_data_sent = [
+            {
+                'GUID': 'UNKNOWN_GUID',
+                databank_models.DataModuleType.DEMOGRAPHICS: [
+                    {'patient_id': 51},
+                ],
+            },
+        ]
+        command = send_databank_data.Command()
+        mock_update_method = mocker.patch.object(
+            command,
+            '_update_databank_patient_metadata',
+        )
+        command._parse_aggregate_databank_response(response_data, original_data_sent=original_data_sent)
+        mock_update_method.assert_called()
+        assert mock_update_method.call_count == len(response_data)
+        call_args = mock_update_method.call_args_list[0]
+        _, synced_data, _ = call_args.args
+        assert not synced_data
+
     def test_update_metadata_with_labs_data(self) -> None:
         """Test just the metadata update part of the labs data type."""
         sent_lab_data = [
             {
                 'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
-                databank_models.DataModuleType.LABS: [{'components': [{'test_result_id': 123}]}],
+                databank_models.DataModuleType.LABS: [
+                    {'components': [{'test_result_id': 123}]},
+                    {'components': [{'test_result_id': 124}]},
+                ],
             },
         ]
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
@@ -457,14 +504,14 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             last_synchronized=timezone.make_aware(last_sync),
         )
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
         command = send_databank_data.Command()
         mock_databank_patient = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
         command._parse_aggregate_databank_response(
             aggregate_response={
-                'labs_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '["1 labs inserted"]'],
+                'labs_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '["2 labs inserted"]'],
             },
             original_data_sent=sent_lab_data,
         )
@@ -473,14 +520,21 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             databank_consent=mock_databank_patient,
             data_type=databank_models.DataModuleType.LABS,
         ).count()
-        assert shared_data_count == 1
+        assert shared_data_count == 2
 
         # Additionally, check if the SharedData instance has the correct test_result_id
         shared_data = databank_models.SharedData.objects.get(
             databank_consent=mock_databank_patient,
             data_type=databank_models.DataModuleType.LABS,
+            data_id=123,
         )
         assert shared_data.data_id == 123
+        shared_data = databank_models.SharedData.objects.get(
+            databank_consent=mock_databank_patient,
+            data_type=databank_models.DataModuleType.LABS,
+            data_id=124,
+        )
+        assert shared_data.data_id == 124
 
     def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list]:
         """Prepare a response message according to module and success/failure.
