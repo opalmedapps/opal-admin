@@ -103,10 +103,17 @@ class PathologyPDF(FPDF):
         Args:
             pathology_data: pathology data required to generate the PDF report
         """
+        super().__init__()
         self.pathology_data = pathology_data
         self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
+        # Concatenated patient's site codes and MRNs for the header.
+        sites_and_mrns_list = [
+            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
+        ]
+        self.patient_sites_and_mrns_str = ', '.join(
+            sites_and_mrns_list,
+        )
 
-        super().__init__()
         self.set_report_metadata()
         self.generate()
 
@@ -116,36 +123,20 @@ class PathologyPDF(FPDF):
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
-        sites_and_mrns_list = [
-            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
-        ]
-        sites_and_mrns_str = ', '.join(
-            sites_and_mrns_list,
-        )
-
-        self.set_font(family='helvetica', size=12)
         if self.page != 1:
             self.set_font(family='helvetica', style='B', size=6)
-            self.cell(
-                w=0,
-                align='L',
-                txt='Pathologie Chirurgicale Raport (suite)',
-            )
-
+            self.cell(w=0, align='L', txt='Pathologie Chirurgicale Raport (suite)')
             self.ln(3)
-            self.set_font(family='helvetica', size=6)
-            self.cell(
-                w=0,
-                align='L',
-                txt='Surgical Pathology Final Report (continuation)',
-            )
 
+            self.set_font(family='helvetica', size=6)
+            self.cell(w=0, align='L', txt='Surgical Pathology Final Report (continuation)')
             self.ln(7)
+
             self.set_font(family='helvetica', style='B', size=8)
             self.cell(
                 w=0,
                 align='L',
-                txt=f'Patient : {self.patient_name} [{sites_and_mrns_str}]',
+                txt=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns_str}]',
             )
 
 
@@ -157,10 +148,9 @@ class PathologyPDF(FPDF):
         It should not be called directly by the user application.
         """
         # Position cursor at 4 cm from bottom:
-        self.set_y(y=-40)  # noqa: WPS432
-        # Setting font: arial 8
-        self.set_font(family='helvetica', size=8)  # noqa: WPS432
+        self.set_y(y=-40)
 
+        self.set_font(family='helvetica', size=8)
         footer_text = '{0}{1}{2}{3}{4}{5}'.format(
             "Ce raport a été généré par Opal à partir des données du système RIS de l'hôpital.",
             "Les données ne sont pas traduites et vous sont communiquées telles qu'elles sont stockées dans ",
@@ -169,16 +159,11 @@ class PathologyPDF(FPDF):
             "is being shared with you as it is stored in the hospital's system. For patient information, not for ",
             'clinical use.',
         )
-        self.multi_cell(
-            w=0,
-            align='L',
-            txt=footer_text,
-        )
+        self.multi_cell(w=0, align='L', txt=footer_text)
+        self.ln(h=5)
 
-        # Performing a line break:
-        self.ln(h=5)  # noqa: WPS432
-        self.set_font(family='helvetica', style='B', size=10)
         # Printing page number:
+        self.set_font(family='helvetica', style='B', size=10)
         self.cell(
             w=0,
             h=10,
@@ -188,8 +173,9 @@ class PathologyPDF(FPDF):
         )
 
     def add_page(self, *args: Any, **kwargs: Any) -> None:
-        """Add new page to the pathology report."""
+        """Add new page to the pathology report and draw the frame if not the first page."""
         super().add_page(*args, **kwargs)
+
         if self.page != 1:
             self.rect(15, 30, 180, 220, 'D')
             self.set_y(40)
@@ -197,8 +183,8 @@ class PathologyPDF(FPDF):
     def generate(self) -> None:
         """Generate a PDF pathology report."""
         self.set_auto_page_break(auto=True, margin=50)
-
         self.add_page()
+
         site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
         site_patient_box.render()
         # Draw the the frame that is shown at the top of the first page.
