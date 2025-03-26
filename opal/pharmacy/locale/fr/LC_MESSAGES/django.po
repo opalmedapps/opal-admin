@@ -56,15 +56,15 @@ msgstr "Itinéraires en pharmacie"
 
 #: opal/pharmacy/models.py
 msgid "Additive"
-msgstr "additif"
+msgstr "Additif"
 
 #: opal/pharmacy/models.py
 msgid "Base"
-msgstr "base"
+msgstr "Base"
 
 #: opal/pharmacy/models.py
 msgid "Text"
-msgstr "texte"
+msgstr "Texte"
 
 #: opal/pharmacy/models.py
 msgid "Pharmacy Component"
