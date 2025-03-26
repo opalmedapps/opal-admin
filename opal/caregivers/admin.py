@@ -35,7 +35,7 @@ class SecurityAnswerAdmin(admin.ModelAdmin):
     """Admin options for the `SecurityAnswer` model."""
 
     list_display = ['question', 'user']
-    search_fields = ['user__user__first_name', 'user__user__last_name']
+    search_fields = ['question', 'user__user__first_name', 'user__user__last_name']
     # select_related for the actual user with first and last name
     list_select_related = ['user__user']
 
