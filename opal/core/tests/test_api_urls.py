@@ -39,3 +39,13 @@ def test_api_auth_defined(settings: SettingsWrapper) -> None:
     auth_login_path = '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
     assert reverse('api:rest_login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:rest_login'
+
+
+def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API check_permissions endpoint is defined."""
+    check_permissions_path = '/{api_root}/patients/legacy/{legacy_id}/check_permissions/'.format(
+        api_root=settings.API_ROOT,
+        legacy_id=1,
+    )
+    assert reverse('api:caregiver-permissions', kwargs={'legacy_id': 1}) == check_permissions_path
+    assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'

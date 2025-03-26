@@ -29,7 +29,7 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
     path(
-        'patients/legacy/<int:legacy_id>/check_permissions',
+        'patients/legacy/<int:legacy_id>/check_permissions/',
         legacy_views.CaregiverPermissionsView.as_view(),
         name='caregiver-permissions',
     ),
