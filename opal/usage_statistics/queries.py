@@ -66,7 +66,7 @@ def fetch_caregivers_summary(
     )
 
 
-# TODO: QSCCD-2168 - add (start_date, end_date) parameters to the fetch_patients_summary() function.
+# TODO: add (start_date, end_date) parameters to the fetch_patients_summary() function.
 def fetch_patients_summary() -> dict[str, Any]:
     """Fetch grouped patients summary from `Patient` model.
 
@@ -90,7 +90,8 @@ def fetch_patients_summary() -> dict[str, Any]:
     )
 
 
-# TODO: use Django's `Device` model instead of `LegacyPatientDeviceIdentifier` once QSCCD-628 and QSCCD-630 are finished
+# TODO: QSCCD-2168
+# Use Django's `Device` model instead of `LegacyPatientDeviceIdentifier` once QSCCD-628 and QSCCD-630 are finished.
 def fetch_devices_summary(
     start_date: dt.date,
     end_date: dt.date,
