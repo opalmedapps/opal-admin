@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 01:08+0000\n"
+"POT-Creation-Date: 2023-05-05 10:43-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -257,7 +257,7 @@ msgid "The caregiver can answer questionnaires on behalf of the patient."
 msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
 
 #: opal/patients/models.py
-msgid "Relationship Role Type"
+msgid "Role Type"
 msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
@@ -275,11 +275,13 @@ msgid "Can manage relationship types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "Caregiver Relationship Type"
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "Caregiver Relationship Types"
+#: opal/patients/templates/patients/relationship_type/list.html
+msgid "Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
@@ -363,11 +365,6 @@ msgstr "Expiré"
 #: opal/patients/models.py
 msgid "Revoked"
 msgstr "Révoqué"
-
-#: opal/patients/models.py
-#: opal/patients/templates/patients/relationship_type/form.html
-msgid "Relationship Type"
-msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
 msgid "Relationship Status"
@@ -579,10 +576,6 @@ msgstr "Mettre à jour"
 #: opal/patients/templates/patients/relationship_type/form.html
 msgid "Create"
 msgstr "Créer"
-
-#: opal/patients/templates/patients/relationship_type/list.html
-msgid "Relationship Types"
-msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
