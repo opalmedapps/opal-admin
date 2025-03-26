@@ -34,7 +34,7 @@ msgstr "Clinicien"
 msgid "Start Date"
 msgstr "Date de début"
 
-#: opal/health_data/models.py opal/health_data/views.py
+#: opal/health_data/models.py opal/health_data/utils.py
 msgid "Device"
 msgstr "Appareil"
 
@@ -108,6 +108,10 @@ msgstr "Données des appareils intelligents"
 msgid "No data found for"
 msgstr "Aucune donnée(s) trouvée concernant masse la corporelle."
 
-#: opal/health_data/views.py
+#: opal/health_data/utils.py
 msgid "Date"
 msgstr "Date"
+
+#: opal/health_data/utils.py
+msgid "Blood Pressure"
+msgstr "Pression artérielle"
