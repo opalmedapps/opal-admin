@@ -91,37 +91,37 @@ def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
 
 def test_api_caregiver_security_questions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions are defined."""
-    question_path = '/{api_root}/caregivers/{uuid}/security-questions/123/'.format(
+    question_path = '/{api_root}/caregivers/{username}/security-questions/123/'.format(
         api_root=settings.API_ROOT,
-        uuid='217c7adb-a13c-438f-8ea6-454edff6d8db',
+        username='username',
     )
     assert reverse(
         'api:caregivers-securityquestions-detail',
-        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db', 'pk': 123},
+        kwargs={'username': 'username', 'pk': 123},
     ) == question_path
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-detail'
 
 
 def test_api_security_question_random_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions random endpoints are defined."""
-    question_path = '/{api_root}/caregivers/{uuid}/security-questions/random/'.format(
+    question_path = '/{api_root}/caregivers/{username}/security-questions/random/'.format(
         api_root=settings.API_ROOT,
-        uuid='217c7adb-a13c-438f-8ea6-454edff6d8db',
+        username='username',
     )
     assert reverse(
         'api:caregivers-securityquestions-random',
-        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db'},
+        kwargs={'username': 'username'},
     ) == question_path
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-random'
 
 
 def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions verify endpoints are defined."""
-    question_path = 'caregivers/217c7adb-a13c-438f-8ea6-454edff6d8db/security-questions/123/verify/'
+    question_path = 'caregivers/username/security-questions/123/verify/'
     question_path = '/{api_root}/{question_path}'.format(api_root=settings.API_ROOT, question_path=question_path)
     assert reverse(
         'api:caregivers-securityquestions-verify',
-        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db', 'pk': 123},
+        kwargs={'username': 'username', 'pk': 123},
     ) == question_path
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-verify'
 
