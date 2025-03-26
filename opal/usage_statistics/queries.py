@@ -663,7 +663,6 @@ def fetch_patient_demographic_diagnosis_summary(
         'email',
         'language',
         'registration_date',
-        'latest_diagnosis',
         'latest_diagnosis_description',
         'latest_diagnosis_date',
     )
