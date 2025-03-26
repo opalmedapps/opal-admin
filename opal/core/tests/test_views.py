@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from django.contrib.auth.models import AbstractUser
 from django.test.client import Client
 from django.urls.base import reverse
 
@@ -9,6 +8,8 @@ from pytest_django.asserts import assertContains, assertRedirects
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework.test import APIClient
+
+from opal.users.models import User
 
 from .. import views
 
@@ -49,7 +50,7 @@ def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -
     assertRedirects(response, '{url}?next=/'.format(url=reverse(settings.LOGIN_URL)))
 
 
-def test_loginview_success(client: Client, django_user_model: AbstractUser, settings: SettingsWrapper) -> None:
+def test_loginview_success(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
     """Ensure that submitting the login form with correct credentials authenticates the user."""
     credentials = {
         'username': 'testuser',
@@ -113,22 +114,22 @@ def test_logout_redirects(user_client: Client, settings: SettingsWrapper) -> Non
     assert not response.wsgi_request.user.is_authenticated
 
 
-def test_createupdateview_create(django_user_model: AbstractUser) -> None:
+def test_createupdateview_create(django_user_model: User) -> None:
     """The `CreateUpdateView` can handle creation of a new object."""
     # simulate a create
-    view: views.CreateUpdateView[AbstractUser] = views.CreateUpdateView(
+    view: views.CreateUpdateView[User] = views.CreateUpdateView(
         queryset=django_user_model.objects.all(),
     )
 
     assert view.get_object() is None
 
 
-def test_createupdateview_update(django_user_model: AbstractUser) -> None:
+def test_createupdateview_update(django_user_model: User) -> None:
     """The `CreateUpdateView` can handle updating an existing object."""
     user = django_user_model.objects.create(username='testuser')
 
     # simulate an update for a specific object
-    view: views.CreateUpdateView[AbstractUser] = views.CreateUpdateView(
+    view: views.CreateUpdateView[User] = views.CreateUpdateView(
         queryset=django_user_model.objects.all(),
         kwargs={'pk': user.pk},
     )
@@ -136,9 +137,31 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
     assert view.get_object() == user
 
 
+def test_languagesview_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    registration_listener_user: User,
+) -> None:
+    """Test that unauthenticated and unauthorized users cannot access the API."""
+    url = reverse('api:languages')
+
+    response = api_client.get(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.get(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(registration_listener_user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
 def test_languagesview_get(
-    client: APIClient,
-    admin_user: AbstractUser,
+    admin_api_client: APIClient,
     settings: SettingsWrapper,
 ) -> None:
     """Ensure that the `LanguagesView` can return the languages in the settings."""
@@ -146,8 +169,7 @@ def test_languagesview_get(
         ('lan1', 'language1'),
         ('lan2', 'language2'),
     ]
-    client.force_login(user=admin_user)
-    response = client.get(reverse('api:languages'))
+    response = admin_api_client.get(reverse('api:languages'))
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == [

@@ -58,7 +58,6 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicField
             'non_interpretable_lab_result_delay',
             'interpretable_lab_result_delay',
             'sites',
-            'registration_code_valid_period',
         ]
 
 

@@ -1,6 +1,5 @@
 """This module provides `ViewSets` for the users app."""
 from http import HTTPStatus
-from typing import Type
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
@@ -21,7 +20,7 @@ from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
 
 
-class UserViewSet(
+class UserViewSet(  # noqa: WPS215 (too many base classes)
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -43,12 +42,12 @@ class UserViewSet(
         'set_manager_user': UpdateClinicalStaffUserSerializer,
         'unset_manager_user': UpdateClinicalStaffUserSerializer,
     }
-    permission_classes = [FullDjangoModelPermissions]
+    permission_classes = (FullDjangoModelPermissions,)
 
     default_serializer_class = UserClinicalStaffSerializer
 
     @action(detail=True, methods=['put'], url_path='set-manager-user')
-    def set_manager_user(self, request: Request, username: str = '') -> Response:
+    def set_manager_user(self, request: Request, username: str) -> Response:
         """
         Handle requests for setting a user group.
 
@@ -76,7 +75,7 @@ class UserViewSet(
         return Response({'detail': _('User was added to the managers group successfully.')}, status=HTTPStatus.OK)
 
     @action(detail=True, methods=['put'], url_path='unset-manager-user')
-    def unset_manager_user(self, request: Request, username: str = '') -> Response:
+    def unset_manager_user(self, request: Request, username: str) -> Response:
         """
         Handle requests for unsetting a user group.
 
@@ -123,7 +122,7 @@ class UserViewSet(
         clinicalstaff_user.save()
         return Response({'detail': _('User was deactivated successfully.')}, status=HTTPStatus.OK)
 
-    def get_serializer_class(self) -> Type[BaseSerializer]:
+    def get_serializer_class(self) -> type[BaseSerializer]:
         """
         Override get_serializer_class to return the corresponding serializer for each action.
 

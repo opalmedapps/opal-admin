@@ -3,11 +3,12 @@ from typing import Any
 
 from django.utils import timezone
 
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.models import Patient
 
 from ..models import QuantitySample
@@ -22,7 +23,10 @@ class CreateQuantitySampleView(generics.CreateAPIView):
     """
 
     serializer_class = QuantitySampleSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # TODO: change to model permissions?
+    # TODO: change in the future to limit to user with access to the patient
+    # TODO: add CaregiverPermissions?
+    permission_classes = (IsListener,)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[QuantitySample]:
         """
@@ -76,11 +80,10 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         serializer.save(patient=self.patient)
 
 
-class ViewedQuantitySampleView(APIView):
+class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
-    # TODO: change to permission_classes = (IsOrms,) once permission is implemented
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsORMSUser,)
 
     def patch(self, request: Request, uuid: str) -> Response:
         """Set patient's `QuantitySample` records as viewed.
