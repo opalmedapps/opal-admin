@@ -6,9 +6,10 @@ from typing import Any
 
 from django.utils import timezone, translation
 
-from rest_framework import generics, permissions
+from rest_framework import permissions
 from rest_framework import request as rest_request
 from rest_framework import response, status
+from rest_framework.views import APIView
 
 from opal.hospital_settings.models import Institution
 from opal.patients.models import HospitalPatient
@@ -17,7 +18,7 @@ from opal.services import hospital, reports
 from ..serializers import QuestionnaireReportRequestSerializer
 
 
-class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
+class QuestionnairesReportCreateAPIView(APIView):
     """View to generate a questionnaires PDF report."""
 
     permission_classes = [permissions.IsAuthenticated]
