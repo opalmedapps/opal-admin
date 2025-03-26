@@ -181,7 +181,7 @@ def test_valid_relationship_types_contain_self_role_type() -> None:
 
 def test_valid_relationship_of_self_contain_self_role_type() -> None:
     """Get the queryset of valid relationship types when instance being updated is of self type."""
-    patient = Patient()
+    patient = patient_factories.Patient()
 
     valid_types = list(
         utils.valid_relationship_types(
