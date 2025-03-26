@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% translate "Dear" %} {{first_name}} {{last_name}}:
+{% translate "Dear" %} {{first_name}} {{last_name}},
 
 {% translate "Welcome to Opal" %}!
 
@@ -17,3 +17,4 @@
 {% translate "Yours" %},
 
 {% translate "The Opal team" %}
+https://opalmedapps.com
