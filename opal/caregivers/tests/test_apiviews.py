@@ -49,7 +49,7 @@ def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 1
     assert relationship.type_id == response.data[0]['relationship_type']['id']
-    assert relationship.patient.uuid == response.data[0]['patient_uuid']
+    assert str(relationship.patient.uuid) == response.data[0]['patient_uuid']
 
 
 def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: User) -> None:
