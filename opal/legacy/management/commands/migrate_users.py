@@ -62,6 +62,7 @@ class Command(BaseCommand):
     ) -> CaregiverProfile:
         """
         Create `Caregiver` and corresponding `CaregiverProfile` instances for the given legacy patient and user.
+
         Returns the created `CaregiverProfile` instance.
 
         Args:
@@ -72,8 +73,8 @@ class Command(BaseCommand):
             CaregiverProfile: the created `CaregiverProfile` instance
         """
         # convert phone number in int to str
-        phone_number = str(legacy_patient.telnum) if legacy_patient.telnum else ''
-        caregiver_user = Caregiver.objects.create(
+        phone_number = '+1{0}'.format(legacy_patient.telnum) if legacy_patient.telnum else ''
+        caregiver_user = Caregiver(
             username=legacy_user.username,
             first_name=legacy_patient.firstname,
             last_name=legacy_patient.lastname,
@@ -82,10 +83,16 @@ class Command(BaseCommand):
             language=legacy_patient.language.lower(),
             phone_number=phone_number,
         )
-        caregiver_profile = CaregiverProfile.objects.create(
+        caregiver_user.full_clean(exclude=['password'])
+        caregiver_user.save()
+
+        caregiver_profile = CaregiverProfile(
             user=caregiver_user,
             legacy_id=legacy_user.usersernum,
         )
+        caregiver_profile.full_clean()
+        caregiver_profile.save()
+
         self.stdout.write(
             'Legacy user with sernum: {legacy_id} has been migrated'.format(
                 legacy_id=legacy_user.usersernum,
@@ -98,21 +105,21 @@ class Command(BaseCommand):
         self,
         patient: Patient,
         caregiver_profile: CaregiverProfile,
-        relationshiptype: RelationshipType,
+        relationship_type: RelationshipType,
     ) -> None:
         """
             Check the self relationship between caregiver and patient and migrated if it does not exist.
 
         Args:
-            patient: instance of Patinet model.
+            patient: instance of Patient model.
             caregiver_profile: instance of CaregiverProfile model.
-            relationshiptype: instance of RelationshipType model.
+            relationship_type: the `RelationshipType` instance for Self.
 
         """
         relationship = Relationship.objects.filter(
             patient=patient,
             caregiver=caregiver_profile,
-            type=relationshiptype,
+            type=relationship_type,
         ).first()
         if relationship:
             self.stdout.write(
@@ -121,15 +128,18 @@ class Command(BaseCommand):
                 ),
             )
         else:
-            Relationship.objects.create(
+            relationship = Relationship(
                 patient=patient,
                 caregiver=caregiver_profile,
-                type=relationshiptype,
+                type=relationship_type,
                 status=RelationshipStatus.CONFIRMED,
                 request_date=caregiver_profile.user.date_joined,
                 start_date=caregiver_profile.user.date_joined,
                 reason='',
             )
+            relationship.full_clean()
+            relationship.save()
+
             self.stdout.write(
                 'Self relationship for patient with legacy_id: {legacy_id} has been created.'.format(
                     legacy_id=patient.legacy_id,

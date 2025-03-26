@@ -13,6 +13,8 @@ from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipStatus
 from opal.users import factories as user_factories
 
+from ..management.commands import migrate_users
+
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
@@ -374,11 +376,21 @@ class TestUsersCaregiversMigration(TestBasicClass):
         assert 'Number of imported users is: 2\n' in message
 
     def test_import_new_user_phone_number_converted(self) -> None:
-        pytest.fail('not implemented')
+        """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=514123456789)
+        legacy_user = legacy_factories.LegacyUserFactory()
 
-        assert phone_number == '514123456789'
+        command = migrate_users.Command()
+        profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
+
+        assert profile.user.phone_number == '+1514123456789'
 
     def test_import_new_user_phone_number_missing(self) -> None:
-        pytest.fail('not implemented')
+        """Ensure that a legacy patient without a phone number is correctly migrated."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=None)
+        legacy_user = legacy_factories.LegacyUserFactory()
 
-        assert phone_number == ''
+        command = migrate_users.Command()
+        profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
+
+        assert profile.user.phone_number == ''
