@@ -281,6 +281,8 @@ def export_data(data_set: list[dict[str, Any]], file_name: str = 'data.csv') -> 
         case 'csv':
             dataframe.to_csv(settings.USAGE_STATS_PATH + file_name, index=False)
         case 'xlsx':
+            for column in dataframe.select_dtypes(include=['datetime64[ns, UTC]']).columns:
+                dataframe[column] = dataframe[column].dt.date
             dataframe.to_excel(settings.USAGE_STATS_PATH + file_name, index=False)
         case _:
             raise ValueError('Invalid file format, please use either csv or xlsx')
