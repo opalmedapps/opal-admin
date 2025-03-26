@@ -8,79 +8,36 @@
   </a>
   <p>
     <a href="{{ OPAL_ADMIN_URL }}/#!/home" class="text-secondary">
-      {% translate "Go back to Legacy OpalAdmin" %}
+      {% translate "Go back to OpalAdmin menu" %}
     </a>
   </p>
 
-  <ul class="list-unstyled ps-0 mb-auto">
-    {% #menu_group group_id="home" title=_("Home") request=request %}
-      {% #menu_item url_name="start" request=request %}
-        {% translate "Home Page" %}
-      {% /menu_item %}
-    {% /menu_group %}
-
-    {# Hospital Settings #}
-    {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
-      {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
-        {% if perms.hospital_settings.can_manage_institutions %}
-          {% #menu_item url_name="hospital-settings:institution-list" request=request %}
-            {% translate "Institutions" %}
-          {% /menu_item %}
-        {% endif %}
-        {% if perms.hospital_settings.can_manage_sites %}
-          {% #menu_item url_name="hospital-settings:site-list" request=request %}
-            {% translate "Sites" %}
-          {% /menu_item %}
-        {% endif %}
-      {% /menu_group %}
-    {% endif %}
-
-    {# Patients #}
-    {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
-      {% if perms.patients.can_manage_relationshiptypes %}
-        {% #menu_item url_name="patients:relationshiptype-list" request=request %}
-          {% translate "Relationship Types" %}
-        {% /menu_item %}
-      {% endif %}
-      {% if perms.patients.can_perform_registration %}
-        {% #menu_item url_name="patients:access-request" request=request %}
-          {% translate "Opal Registration" %}
-        {% /menu_item %}
-      {% endif %}
-      {% if perms.patients.can_manage_relationships %}
-        {% #menu_item url_name="patients:relationships-list" request=request %}
-          {% translate "Manage Caregiver Access" %}
-        {% /menu_item %}
-      {% endif %}
-    {% /menu_group %}
-
-    {# Questionnaires #}
-    {% if perms.questionnaires.export_report %}
-      {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
-        {% #menu_item url_name="questionnaires:reports" request=request %}
-          {% translate "Export Reports" %}
-        {% /menu_item %}
-      {% /menu_group %}
-    {% endif %}
-  </ul>
+  {% comment %}
+    Currently, the sidebar menu should not contain any items/menus, except "Go back" button.
+    This is done so as not to confuse OpalAdmin operators with the old/new UI design.
+    The new Django pages (e.g., registration) are accessible through the legacy OpalAdmin.
+    Uncomment the line below if you need the menus during the development.
+  {% endcomment %}
+  {% comment %} {% include "sidebar_menu.html" %} {% endcomment %}
 
   <div class="dropdown pt-3 border-top">
     <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       {% icon icon="user-circle" size="lg" %}
-    <strong>{{ request.user.username }}</strong>
-  </a>
-  <ul class="dropdown-menu text-small shadow">
-    {% comment %} <li>
-      <a class="dropdown-item" href="#">{% translate "Profile" %}</a>
-    </li>
-    <li>
-      <hr class="dropdown-divider" />
-    </li> {% endcomment %}
-    <li>
-      <form id="logout-form" method="post" action="{% url 'logout' %}" novalidate>
-        {% csrf_token %}
-        <button class="dropdown-item" type="submit">{% translate "Log Out" %}</button>
-      </form>
-    </li>
-  </ul>
+      <strong>{{ request.user.username }}</strong>
+    </a>
+    <ul class="dropdown-menu text-small shadow">
+      {% comment %} <li>
+        <a class="dropdown-item" href="#">{% translate "Profile" %}</a>
+      </li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li> {% endcomment %}
+      <li>
+        <form id="logout-form" method="post" action="{% url 'logout' %}" novalidate>
+          {% csrf_token %}
+          <button class="dropdown-item" type="submit">{% translate "Log Out" %}</button>
+        </form>
+      </li>
+    </ul>
+  </div>
 </nav>
