@@ -28,5 +28,6 @@ app_name = 'core'
 urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('app/home/', legacy_views.AppHomeView.as_view(), name='app-home'),
+    path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
     path('', include(router.urls)),
 ]

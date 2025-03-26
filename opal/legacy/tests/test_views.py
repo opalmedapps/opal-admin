@@ -52,7 +52,7 @@ class TestHomeAppView:
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient, readstatus=1)
-        notifications = self.class_instance.get_unread_notification_count(patient.patientsernum)
+        notifications = models.LegacyNotification.objects.get_unread_queryset(patient.patientsernum).count()
         assert notifications == 2
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
@@ -75,7 +75,73 @@ class TestHomeAppView:
         # mock the current timezone to simulate the UTC time already on the next day
         current_time = datetime(2022, 6, 2, 2, 0, tzinfo=timezone.utc)
         mocker.patch.object(timezone, 'now', return_value=current_time)
-        daily_appointments = self.class_instance.get_daily_appointments(patient.patientsernum)
+        daily_appointments = models.LegacyAppointment.objects.get_daily_appointments(patient.patientsernum)
 
         assert daily_appointments.count() == 1
         assert daily_appointments[0] == appointment
+
+
+class TestChartAppView:
+    """Class wrapper for chart page request tests."""
+
+    def test_get_chart_data_request(self, api_client: APIClient, admin_user: User) -> None:
+        """Test if the response as the required keys."""
+        user = factories.LegacyUserFactory()
+        api_client.force_login(user=admin_user)
+        api_client.credentials(HTTP_APPUSERID=user.username)
+        response = api_client.get(reverse('api:app-chart'))
+        assert 'unread_appointment_count' in response.data
+        assert 'unread_document_count' in response.data
+        assert 'unread_txteammessage_count' in response.data
+        assert 'unread_educationalmaterial_count' in response.data
+        assert 'unread_questionnaire_count' in response.data
+
+    def test_get_unread_appointment_count(self) -> None:
+        """Test if function returns number of unread appointments."""
+        patient = factories.LegacyPatientFactory()
+        alias = factories.LegacyAliasFactory()
+        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+
+        factories.LegacyAppointmentFactory(
+            patientsernum=patient,
+            aliasexpressionsernum=alias_expression,
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=patient,
+            aliasexpressionsernum=alias_expression,
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=patient,
+            aliasexpressionsernum=alias_expression,
+            readstatus=1,
+        )
+
+        appointments = models.LegacyAppointment.objects.get_unread_queryset(patient.patientsernum).count()
+        assert appointments == 2
+
+    def test_get_unread_txteammessage_count(self) -> None:
+        """Test if function returns number of unread txteammessages."""
+        patient = factories.LegacyPatientFactory()
+        factories.LegacyTxteammsgFactory(patientsernum=patient)
+        factories.LegacyTxteammsgFactory(patientsernum=patient)
+        factories.LegacyTxteammsgFactory(patientsernum=patient, readstatus=1)
+        txteammessages = models.LegacyTxteammsg.objects.get_unread_queryset(patient.patientsernum).count()
+        assert txteammessages == 2
+
+    def test_get_unread_edumaterial_count(self) -> None:
+        """Test if function returns number of unread educational materials."""
+        patient = factories.LegacyPatientFactory()
+        factories.LegacyEdumaterialFactory(patientsernum=patient)
+        factories.LegacyEdumaterialFactory(patientsernum=patient)
+        factories.LegacyEdumaterialFactory(patientsernum=patient, readstatus=1)
+        edumaterials = models.LegacyEdumaterial.objects.get_unread_queryset(patient.patientsernum).count()
+        assert edumaterials == 2
+
+    def test_get_unread_questionnaire_count(self) -> None:
+        """Test if function returns number of unread questionnaires."""
+        patient = factories.LegacyPatientFactory()
+        factories.LegacyQuestionnaireFactory(patientsernum=patient)
+        factories.LegacyQuestionnaireFactory(patientsernum=patient)
+        factories.LegacyQuestionnaireFactory(patientsernum=patient, completedflag=1)
+        questionnaires = models.LegacyQuest.objects.get_unread_queryset(patient.patientsernum).count()
+        assert questionnaires == 2

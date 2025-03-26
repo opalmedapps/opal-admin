@@ -67,5 +67,46 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     checkin = 1
     status = 'Open'
     state = 'active'
+    readstatus = 0
     aliasexpressionsernum = SubFactory(LegacyAliasexpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
+
+
+class LegacyDocumentFactory(DjangoModelFactory):
+    """Document factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyDoc
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    readstatus = 1
+
+
+class LegacyTxteammsgFactory(DjangoModelFactory):
+    """Txteammessage factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyTxteammsg
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    readstatus = 0
+
+
+class LegacyEdumaterialFactory(DjangoModelFactory):
+    """Educational material factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyEdumaterial
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    readstatus = 0
+
+
+class LegacyQuestionnaireFactory(DjangoModelFactory):
+    """Questionnaire factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyQuest
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    completedflag = 0

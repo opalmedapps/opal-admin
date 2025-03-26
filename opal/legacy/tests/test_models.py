@@ -27,3 +27,27 @@ def test_legacy_appointment_model() -> None:
     """Test legacy appointment model."""
     test_appointment = factories.LegacyAppointmentFactory()
     test_appointment.full_clean()
+
+
+def test_legacy_document_model() -> None:
+    """Test legacy document model."""
+    test_document = factories.LegacyDocumentFactory()
+    test_document.full_clean()
+
+
+def test_legacy_txteammessage_model() -> None:
+    """Test legacy txteammessage model."""
+    test_txteammessage = factories.LegacyTxteammsgFactory()
+    test_txteammessage.full_clean()
+
+
+def test_legacy_edumaterial_model() -> None:
+    """Test legacy educational material model."""
+    test_edumaterial = factories.LegacyEdumaterialFactory()
+    test_edumaterial.full_clean()
+
+
+def test_legacy_questionnaire_model() -> None:
+    """Test legacy questionnaire model."""
+    test_questionnaire = factories.LegacyQuestionnaireFactory()
+    test_questionnaire.full_clean()
