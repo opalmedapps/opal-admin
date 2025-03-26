@@ -9,7 +9,7 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import factories, forms
-from ..models import Relationship, RelationshipStatus
+from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
 
@@ -36,7 +36,7 @@ def test_relationshippending_form_is_valid() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
 
     assert relationshippending_form.is_valid()
 
@@ -49,7 +49,7 @@ def test_relationshippending_missing_startdate() -> None:
         'end_date',
     ])
 
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
     assert not relationshippending_form.is_valid()
 
 
@@ -58,7 +58,7 @@ def test_relationshippending_update() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
     relationshippending_form.save()
 
     assert Relationship.objects.all()[0].start_date == relationshippending_form.data['start_date']
@@ -73,7 +73,7 @@ def test_relationshippending_update_fail() -> None:
     ])
 
     message = 'This field is required.'
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -91,7 +91,7 @@ def test_relationshippending_form_date_validated() -> None:
     form_data = model_to_dict(relationship_info)
 
     message = 'Start date should be earlier than end date.'
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -112,7 +112,7 @@ def test_relationship_pending_status_reason() -> None:
     print(form_data)
 
     message = 'Reason is mandatory when status is denied or revoked.'
-    pending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    pending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
 
     assert not pending_form.is_valid()
     print(pending_form.errors)
@@ -306,7 +306,7 @@ def test_is_correct_not_checked() -> None:
 def test_requestor_form_not_check_if_required() -> None:
     """Ensure that the 'requestor_form' checkbox is not checked."""
     form_data = {
-        'relationship_type': factories.RelationshipType(name='Self', start_age=1, form_required=True),
+        'relationship_type': factories.RelationshipType(start_age=1, form_required=True),
         'requestor_form': False,
     }
 
@@ -320,14 +320,11 @@ def test_requestor_form_not_check_if_required() -> None:
 
 def test_disabled_option_exists() -> None:
     """Ensure that a disabled option exists."""
-    types = [
-        factories.RelationshipType(name='Self', start_age=1),
-        factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18),
-        factories.RelationshipType(name='Parent or Guardian', start_age=1, end_age=14),
-        factories.RelationshipType(name='Mandatary', start_age=1, end_age=18),
-    ]
+    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+    mandatary_type = RelationshipType.objects.get(role_type=RoleType.MANDATARY)
+
     form_data = {
-        'relationship_type': types,
+        'relationship_type': RelationshipType.objects.all(),
     }
     form = forms.RequestorDetailsForm(
         data=form_data,
@@ -335,14 +332,15 @@ def test_disabled_option_exists() -> None:
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    for index, option in enumerate(options):
-        if index == 4:
+    for option in options:
+        if option['label'] in {'Self', 'Mandatary'}:
             assert 'disabled' not in option['attrs']
         else:
             assert option['attrs']['disabled'] == 'disabled'
 
     assert list(form.fields['relationship_type'].widget.available_choices) == [
-        types[0].pk,
+        mandatary_type.pk,
+        self_type.pk,
     ]
 
 
