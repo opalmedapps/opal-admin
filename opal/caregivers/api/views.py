@@ -15,7 +15,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import override
 
-from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
@@ -34,6 +34,7 @@ from opal.caregivers.api.serializers import (
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.api.mixins import AllowPUTAsCreateMixin
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsRegistrationListener
 from opal.core.utils import generate_random_number
 from opal.hospital_settings.models import Institution
@@ -532,7 +533,6 @@ class RegistrationCompletionView(APIView):
         utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
-@extend_schema(responses=inline_serializer('EmptyResponseSerializer', fields={}))
 class RetrieveCaregiverView(RetrieveAPIView[User]):
     """
     View that looks up a caregiver by its username.
@@ -542,6 +542,6 @@ class RetrieveCaregiverView(RetrieveAPIView[User]):
 
     permission_classes = (IsRegistrationListener,)
     queryset = Caregiver.objects.all()
-    serializer_class = drf_serializers.Serializer
+    serializer_class = EmptyResponseSerializer
     lookup_field = 'username'
     lookup_url_kwarg = 'username'

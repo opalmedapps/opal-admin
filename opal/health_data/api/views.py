@@ -10,6 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.api.serializers import PatientUUIDSerializer
 from opal.patients.models import Patient
@@ -137,13 +138,8 @@ class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
     permission_classes = (IsORMSUser,)
+    serializer_class = EmptyResponseSerializer
 
-    @extend_schema(
-        responses=inline_serializer(
-            'EmptyResponseSerializer',
-            fields={},
-        ),
-    )
     def patch(self, request: Request, uuid: str) -> Response:
         """Set patient's `QuantitySample` records as viewed.
 

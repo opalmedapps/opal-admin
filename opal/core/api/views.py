@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -128,3 +128,19 @@ class HL7CreateView(CreateAPIView[_Model]):
         except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
             raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.')
         return url_uuid == patient.uuid
+
+
+class EmptyResponseSerializer(serializers.Serializer[Any]):
+    """
+    Serializer used for responses with no content.
+
+    This serializer is intended to be used for endpoints that return an empty response body
+    while still adhering to a consistent API schema. It ensures that the API documentation
+    accurately reflects that the response will contain no data.
+
+    Example usage:
+        - Success responses for actions like deletion or marking items as viewed
+        - Endpoints that only need to indicate success without returning data
+    """
+
+    pass  # noqa: WPS420, WPS604
