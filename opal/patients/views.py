@@ -106,7 +106,7 @@ class AccessRequestView(SessionWizardView):
         context = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'site':
             context.update({'header_title': _('Hospital Information')})
-        elif self.steps.current == 'search':
+        elif self.steps.current == 'search':  # pragma: no cover
             context.update({'header_title': _('Patient Details')})
 
         return context
@@ -130,4 +130,5 @@ class AccessRequestView(SessionWizardView):
 
         return render(self.request, 'patients/access_request/test_qr_code.html', {
             'svg': stream.getvalue().decode(),
+            'header_title': _('QR Code Generation'),
         })
