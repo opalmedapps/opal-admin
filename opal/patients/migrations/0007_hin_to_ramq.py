@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     """Rename field health insurance number to ramq."""
 
     dependencies = [
-        ('patients', '0005_patient_add_insurance_sex_fields'),
+        ('patients', '0006_relationship_reason'),
     ]
 
     operations = [
