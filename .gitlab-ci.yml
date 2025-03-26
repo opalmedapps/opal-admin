@@ -87,8 +87,18 @@ flake8:
 mypy:
   stage: Static Analysis
   script:
+    # install plugin to produce code climate report
+    - pip install mypy-gitlab-code-quality
     - mypy --version
-    - mypy opal/
+    # export output and don't fail if there are errors
+    - mypy . --no-error-summary > mypy-out.txt || true
+    - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
+    # re-run mypy and let it fail if there are errors
+    - mypy .
+  artifacts:
+    when: always
+    reports:
+      codequality: codequality.json
 
 test:
   stage: Test
