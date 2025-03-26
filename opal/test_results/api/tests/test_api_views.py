@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 
@@ -167,7 +168,8 @@ class TestCreatePathologyView:
         api_client.force_login(interface_engine_user)
 
         valid_data.update({'receiving_facility': ''})
-        with assertRaisesMessage(Site.DoesNotExist, 'Site matching query does not exist.'):
+        message = 'Site matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
             response = api_client.post(
                 reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
                 data=valid_data,
