@@ -50,11 +50,11 @@ plotly==5.18.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
-twilio==8.12.0  # https://github.com/twilio/twilio-python
+twilio==8.13.0  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
-fpdf2==2.7.7
+fpdf2==2.7.8
 
 # Unidecode for transliterating special characters during de-identification
 #

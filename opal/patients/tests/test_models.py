@@ -968,6 +968,15 @@ def test_relationship_calculate_end_date_without_end_age_set() -> None:
     )
 
 
+def test_relationship_get_max_end_date() -> None:
+    """Test get max end date based on date_of_birth."""
+    date_of_birth = date(2013, 4, 3)
+
+    assert Relationship.max_end_date(
+        date_of_birth=date_of_birth,
+    ) == date(2163, 4, 3)
+
+
 def test_relationshiptype_default() -> None:
     """Ensure there are two relationship types by default."""
     assert RelationshipType.objects.count() == 4

@@ -146,7 +146,7 @@ test:
     - .default_needs
   # set up DB service only for the test job since it is not used by others
   services:
-    - mariadb:10.6.16-focal
+    - mariadb:10.6.17-focal
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apt update && apt-get install -y default-mysql-client
