@@ -33,7 +33,7 @@ class OIECommunicationService:
             result = {data: None}
         return result
 
-    def find_patient_by_ramq(self, ramq: str) -> requests.Response:
+    def find_patient_by_ramq(self, ramq: str) -> Dict:
         """Search patient info by ramq code.
 
         Args:
