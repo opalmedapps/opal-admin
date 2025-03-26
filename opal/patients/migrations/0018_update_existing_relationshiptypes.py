@@ -17,7 +17,7 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
     self_type.description = 'The patient is the requestor and is caring for themselves.'
     self_type.description_en = self_type.description
-    self_type.description_fr = 'Le patient est le demandeur et prend soin de lui'
+    self_type.description_fr = 'Le patient est le demandeur et prend soin de lui-même'
     self_type.can_answer_questionnaire = True
     self_type.form_required = False
     self_type.full_clean()
