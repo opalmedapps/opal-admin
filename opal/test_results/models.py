@@ -1,4 +1,7 @@
 """Module providing models for any type of test result."""
+from typing import Any
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -104,6 +107,20 @@ class GeneralTest(models.Model):
             date=str(self.collected_at),
         )
 
+    @property
+    def observations(self) -> Any:
+        """Ensure the correct Observation queryset are returned.
+
+        Get all related observations by calling test_instance.observations.
+
+        Returns:
+            Inherited Observation model instances
+        """
+        if self.type == TestType.PATHOLOGY:
+            return self.pathology_observations.all()
+
+        return self.lab_observations.all()
+
 
 class AbnormalFlag(models.TextChoices):
     """An enumeration of supported flags for observations."""
@@ -113,14 +130,13 @@ class AbnormalFlag(models.TextChoices):
     HIGH = 'H', _('High')
 
 
-class Observation(models.Model):
-    """An instance of an observation segment within a general test report."""
+class AbstractObservation(models.Model):
+    """An abstract representation of an observation segment within a general test report."""
 
     general_test = models.ForeignKey(
         verbose_name=_('General Test'),
         to=GeneralTest,
         on_delete=models.CASCADE,
-        related_name='observations',
     )
     identifier_code = models.CharField(
         verbose_name=_('Observation Identifier'),
@@ -132,7 +148,71 @@ class Observation(models.Model):
         max_length=199,
         help_text=_('Test component text.'),
     )
+    observed_at = models.DateTimeField(
+        verbose_name=_('Observed At'),
+        help_text=_('When this specific observation segment was entered into the source system.'),
+    )
+    updated_at = models.DateTimeField(
+        verbose_name=_('Updated At'),
+        auto_now=True,
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('general_test', '-updated_at')
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Prevent save if the base type doesn't match the general test type.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Raises:
+            ValidationError: if attempting to save mismatching Observation & GeneralTest types
+        """
+        if isinstance(self, PathologyObservation) and self.general_test.type != TestType.PATHOLOGY:
+            raise ValidationError('PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.')
+        elif isinstance(self, LabObservation) and self.general_test.type != TestType.LAB:
+            raise ValidationError('LabObservations can only be linked to GeneralTest of type LAB.')
+        super().save(*args, **kwargs)
+
+
+class PathologyObservation(AbstractObservation):
+    """Specific observations for Pathology tests."""
+
     value = models.TextField(
+        verbose_name=_('Value'),
+    )
+
+    class Meta:
+        verbose_name = _('Pathology Observation')
+        verbose_name_plural = _('Pathology Observations')
+
+    # Update the ForeignKey in this derived model
+    general_test = models.ForeignKey(
+        verbose_name=_('General Test'),
+        to=GeneralTest,
+        on_delete=models.CASCADE,
+        related_name='pathology_observations',
+    )
+
+    def __str__(self) -> str:
+        """Pathologyobservation string representation.
+
+        Returns:
+            string repr
+        """
+        return '{code} : {text}'.format(
+            code=str(self.identifier_code),
+            text=str(self.identifier_text),
+        )
+
+
+class LabObservation(AbstractObservation):
+    """Specific observations for Lab tests."""
+
+    value = models.FloatField(
         verbose_name=_('Value'),
     )
     value_units = models.CharField(
@@ -156,22 +236,21 @@ class Observation(models.Model):
         choices=AbnormalFlag.choices,
         default=AbnormalFlag.NORMAL,
     )
-    observed_at = models.DateTimeField(
-        verbose_name=_('Observed At'),
-        help_text=_('When this specific observation segment was entered into the source system.'),
-    )
-    updated_at = models.DateTimeField(
-        verbose_name=_('Updated At'),
-        auto_now=True,
-    )
 
     class Meta:
-        ordering = ('general_test', '-updated_at')
-        verbose_name = _('Observation')
-        verbose_name_plural = _('Observations')
+        verbose_name = _('Lab Observation')
+        verbose_name_plural = _('Lab Observations')
+
+    # Update the ForeignKey in this derived model
+    general_test = models.ForeignKey(
+        verbose_name=_('General Test'),
+        to=GeneralTest,
+        on_delete=models.CASCADE,
+        related_name='lab_observations',
+    )
 
     def __str__(self) -> str:
-        """Short obx summary for this component.
+        """Labobservation string representation.
 
         Returns:
             string repr

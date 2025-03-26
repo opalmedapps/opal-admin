@@ -15,10 +15,16 @@ def test_general_test_factory() -> None:
     test.full_clean()
 
 
-def test_observation_factory() -> None:
-    """Ensure the `Observation` factory creates a valid model."""
-    observation = factories.Observation()
-    observation.full_clean()
+def test_pathology_observation_factory() -> None:
+    """Ensure the `PathologyObservation` factory creates a valid model."""
+    pathology_observation = factories.PathologyObservationFactory()
+    pathology_observation.full_clean()
+
+
+def test_lab_observation_factory() -> None:
+    """Ensure the `LabObservation` factory creates a valid model."""
+    lab_observation = factories.LabObservationFactory()
+    lab_observation.full_clean()
 
 
 def test_note_factory() -> None:
@@ -29,11 +35,11 @@ def test_note_factory() -> None:
 
 def test_multi_observations_test() -> None:
     """Ensure multiple observation and note instances can be assigned to one GeneralTest."""
-    test = factories.GeneralTest()
-    observation1 = factories.Observation(general_test=test)
-    observation2 = factories.Observation(general_test=test)
-    observation3 = factories.Observation(general_test=test)
-    observation4 = factories.Observation(general_test=test)
+    test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
+    observation1 = factories.PathologyObservationFactory(general_test=test)
+    observation2 = factories.PathologyObservationFactory(general_test=test)
+    observation3 = factories.PathologyObservationFactory(general_test=test)
+    observation4 = factories.PathologyObservationFactory(general_test=test)
     note1 = factories.Note(general_test=test)
     note2 = factories.Note(general_test=test)
 
@@ -57,7 +63,7 @@ def test_observation_str() -> None:
     general_test = factories.GeneralTest(
         type=models.TestType.PATHOLOGY,
     )
-    observation = factories.Observation(
+    observation = factories.PathologyObservationFactory(
         general_test=general_test,
         value='Left breast mass',
         value_abnormal=models.AbnormalFlag.NORMAL,

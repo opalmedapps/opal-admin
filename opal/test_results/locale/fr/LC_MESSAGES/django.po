@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-16 14:11-0400\n"
+"POT-Creation-Date: 2023-09-13 15:02-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,8 +148,31 @@ msgid "Test component text."
 msgstr "Texte de l'élément de test."
 
 #: opal/test_results/models.py
+msgid "Observed At"
+msgstr "Observé à"
+
+#: opal/test_results/models.py
+msgid ""
+"When this specific observation segment was entered into the source system."
+msgstr ""
+"Date à laquelle ce segment d'observation spécifique a été saisi dans le "
+"système source."
+
+#: opal/test_results/models.py
+msgid "Updated At"
+msgstr "Mis à jour le"
+
+#: opal/test_results/models.py
 msgid "Value"
 msgstr "Le valeur"
+
+#: opal/test_results/models.py
+msgid "Pathology Observation"
+msgstr "Observation de la pathologie"
+
+#: opal/test_results/models.py
+msgid "Pathology Observations"
+msgstr "Observations pathologiques"
 
 #: opal/test_results/models.py
 msgid "Value Units"
@@ -168,27 +191,12 @@ msgid "Abnormal Flag"
 msgstr "Indicateur d'anomalie"
 
 #: opal/test_results/models.py
-msgid "Observed At"
-msgstr "Observé à"
+msgid "Lab Observation"
+msgstr "Observation en laboratoire"
 
 #: opal/test_results/models.py
-msgid ""
-"When this specific observation segment was entered into the source system."
-msgstr ""
-"Date à laquelle ce segment d'observation spécifique a été saisi dans le "
-"système source."
-
-#: opal/test_results/models.py
-msgid "Updated At"
-msgstr "Mis à jour le"
-
-#: opal/test_results/models.py
-msgid "Observation"
-msgstr "Observation"
-
-#: opal/test_results/models.py
-msgid "Observations"
-msgstr "Observations"
+msgid "Lab Observations"
+msgstr "Observations en laboratoire"
 
 #: opal/test_results/models.py
 msgid "Note Source"
