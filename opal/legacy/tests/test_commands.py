@@ -1,8 +1,5 @@
 from datetime import datetime
-from io import StringIO
-from typing import Any
 
-from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import connections
 from django.utils import timezone
@@ -16,38 +13,12 @@ from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType, RoleType
+from opal.tests.utils.test_commands import CommandTestMixin
 from opal.users import factories as user_factories
 
 from ..management.commands import migrate_users
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
-
-
-class CommandTestMixin:
-    """Mixin to facilitate testing of management commands."""
-
-    def _call_command(self, command_name: str, *args: Any, **kwargs: Any) -> tuple[str, str]:
-        """
-        Test command.
-
-        Args:
-            command_name: specify the command name to run
-            args: non-keyword input parameter
-            kwargs: keywords input parameter
-
-        Returns:
-            tuple of stdout and stderr values
-        """
-        out = StringIO()
-        err = StringIO()
-        call_command(
-            command_name,
-            *args,
-            stdout=out,
-            stderr=err,
-            **kwargs,
-        )
-        return out.getvalue(), err.getvalue()
 
 
 class TestSecurityQuestionsMigration(CommandTestMixin):
@@ -71,7 +42,7 @@ class TestSecurityQuestionsMigration(CommandTestMixin):
         message, error = self._call_command('migrate_securityquestions')
         question = SecurityQuestion.objects.all()
         assert len(question) == 1
-        assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]  # noqa: E501
+        assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]
         assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]  # noqa: E501
         assert message == (
             'Imported security question, sernum: 1, title: What is the name of your first pet?\n'

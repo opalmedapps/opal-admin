@@ -69,6 +69,7 @@ LOCAL_APPS = [
     'opal.caregivers',
     'opal.patients',
     'opal.legacy',
+    'opal.legacy_questionnaires',
     'opal.questionnaires',
     'opal.health_data',
 ]

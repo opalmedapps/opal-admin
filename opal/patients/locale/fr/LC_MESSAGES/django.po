@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-08 16:45-0500\n"
+"POT-Creation-Date: 2023-02-23 15:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -224,7 +224,7 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "There must always be exactly one SELF and one PARENTGUARDIAN role"
+msgid "There must always be exactly one Self and one Parent/Guardian role"
 msgstr ""
 
 #: opal/patients/models.py
@@ -350,6 +350,14 @@ msgstr "Date de début doit être antérieure à la date de fin."
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
 msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
+
+#: opal/patients/models.py
+msgid "The patient already has a self-relationship"
+msgstr ""
+
+#: opal/patients/models.py
+msgid "The caregiver already has a self-relationship"
+msgstr ""
 
 #: opal/patients/models.py
 msgid "Site"

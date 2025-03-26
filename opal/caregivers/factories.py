@@ -1,4 +1,5 @@
 """Module providing model factories for caregiver app models."""
+import datetime as dt
 
 from django.utils import timezone
 
@@ -54,7 +55,8 @@ class DeviceProvider(BaseProvider):
             A random device_id value between 16 and 100 characters in length.
         """
         length = random.randint(16, 100)
-        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']  # 0-9 digits and letters up to 'f' # noqa: WPS221, E501
+        # 0-9 digits and letters up to 'f'
+        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']  # noqa: WPS221
         chars = [random.choice(char_choices) for _ in range(length)]
         return ''.join(chars)
 
@@ -65,7 +67,8 @@ class DeviceProvider(BaseProvider):
             A random push_token value between 0 and 256 characters in length.
         """
         length = random.randint(16, 100)
-        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']  # 0-9 digits and letters up to 'f' # noqa: WPS221, E501
+        # 0-9 digits and letters up to 'f'
+        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']   # noqa: WPS221
         chars = [random.choice(char_choices) for _ in range(length)]
         return ''.join(chars)
 
@@ -105,4 +108,4 @@ class EmailVerification(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
     email = 'opal@muhc.mcgill.ca'
-    sent_at = timezone.now() - timezone.timedelta(seconds=10)
+    sent_at = timezone.now() - dt.timedelta(seconds=10)

@@ -48,7 +48,7 @@ class RelationshipTypeTemplateColumn(tables.TemplateColumn):
         }
 
         # Remove the deletion button for restricted types
-        if record.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}:
+        if record.role_type in {RoleType.SELF, RoleType.PARENT_GUARDIAN}:
             self.extra_context = {'urlname_update': 'patients:relationshiptype-update'}
         else:
             self.extra_context = {
@@ -80,7 +80,6 @@ class RelationshipTypeTable(tables.Table):
             'description',
             'start_age',
             'end_age',
-            'role_type',
             'form_required',
             'can_answer_questionnaire',
             'actions',

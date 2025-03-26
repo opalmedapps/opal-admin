@@ -17,6 +17,12 @@ class LegacyModel(models.Model):  # noqa: D101,DJ08,DJ10,DJ11
         managed = False
 
 
+class LegacyQuestionnaireModel(models.Model):  # noqa: D101,DJ08,DJ10,DJ11
+    class Meta:
+        app_label = 'legacy_questionnaires'
+        managed = False
+
+
 def test_legacydbrouter_managed_read() -> None:
     """Ensure that regular (managed) models use the default DB connection."""
     router = LegacyDbRouter()
@@ -31,6 +37,13 @@ def test_legacydbrouter_unmanaged_read() -> None:
     assert router.db_for_read(LegacyModel) == 'legacy'
 
 
+def test_legacyquestionnaire_dbrouter_unmanaged_read() -> None:
+    """Ensure that legacy questionnaire (unmanaged) models use the legacy QuestionnaireDB connection."""
+    router = LegacyDbRouter()
+
+    assert router.db_for_read(LegacyQuestionnaireModel) == 'questionnaire'
+
+
 def test_legacydbrouter_managed_write() -> None:
     """Ensure that regular (managed) models use the default DB connection."""
     router = LegacyDbRouter()
@@ -43,3 +56,10 @@ def test_legacydbrouter_unmanaged_write() -> None:
     router = LegacyDbRouter()
 
     assert router.db_for_write(LegacyModel) == 'legacy'
+
+
+def test_legacyquestionnaire_dbrouter_unmanaged_write() -> None:
+    """Ensure that legacy questionnaire (unmanaged) models use the legacy QuestionnaireDB connection."""
+    router = LegacyDbRouter()
+
+    assert router.db_for_write(LegacyQuestionnaireModel) == 'questionnaire'

@@ -14,6 +14,7 @@ from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestion
 from opal.core.api import views as core_views
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
+from opal.legacy.api.views.app_appointments import AppAppointmentsView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
@@ -42,6 +43,7 @@ urlpatterns = [
     # APP ENDPOINTS
     path('app/chart/<int:legacy_id>/', AppChartView.as_view(), name='app-chart'),
     path('app/home/', AppHomeView.as_view(), name='app-home'),
+    path('app/appointments/', AppAppointmentsView.as_view(), name='app-appointments'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
 
     # AUTH ENDPOINTS

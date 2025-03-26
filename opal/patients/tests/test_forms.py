@@ -1,7 +1,5 @@
 import datetime
-from typing import Type
 
-from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 
 import pytest
@@ -14,6 +12,23 @@ from .. import factories, forms
 from ..models import Relationship, RelationshipStatus
 
 pytestmark = pytest.mark.django_db
+
+OIE_PATIENT_DATA = dict({
+    'dateOfBirth': '1953-01-01 00:00:00',
+    'firstName': 'SANDRA',
+    'lastName': 'TESTMUSEMGHPROD',
+    'sex': 'F',
+    'alias': '',
+    'ramq': 'TESS53510111',
+    'ramqExpiration': '2018-01-31 23:59:59',
+    'mrns': [
+        {
+            'site': 'MGH',
+            'mrn': '9999993',
+            'active': True,
+        },
+    ],
+})
 
 
 def test_relationshippending_form_is_valid() -> None:
@@ -82,7 +97,7 @@ def test_relationshippending_form_date_validated() -> None:
     assert relationshippending_form.errors['start_date'][0] == message
 
 
-def test_relationshippending_status_reason() -> None:
+def test_relationship_pending_status_reason() -> None:
     """Ensure that the `RelationshipPendingAccess` form is validated for reason is not empty when status is denied."""
     relationship_info = factories.Relationship.build(
         patient=factories.Patient(),
@@ -94,32 +109,14 @@ def test_relationshippending_status_reason() -> None:
         reason='',
     )
     form_data = model_to_dict(relationship_info)
+    print(form_data)
 
     message = 'Reason is mandatory when status is denied or revoked.'
-    relationshippending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
+    pending_form = forms.RelationshipPendingAccessForm(data=form_data, instance=relationship_info)
 
-    assert not relationshippending_form.is_valid()
-    assert relationshippending_form.errors['reason'][0] == message
-
-
-UserModel: Type[User] = get_user_model()
-pytestmark = pytest.mark.django_db
-OIE_PATIENT_DATA = dict({
-    'dateOfBirth': '1953-01-01 00:00:00',
-    'firstName': 'SANDRA',
-    'lastName': 'TESTMUSEMGHPROD',
-    'sex': 'F',
-    'alias': '',
-    'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
-    'mrns': [
-        {
-            'site': 'MGH',
-            'mrn': '9999993',
-            'active': True,
-        },
-    ],
-})
+    assert not pending_form.is_valid()
+    print(pending_form.errors)
+    assert pending_form.errors['reason'][0] == message
 
 
 def test_site_selection_exist() -> None:
@@ -483,7 +480,7 @@ def test_confirm_password_form_valid() -> None:
     form_data = {
         'confirm_password': 'test-password',
     }
-    user = UserModel.objects.create()
+    user = User.objects.create()
     user.set_password(form_data['confirm_password'])
 
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
@@ -496,7 +493,7 @@ def test_confirm_password_form_password_invalid() -> None:
     form_data = {
         'confirm_password': 'test-password',
     }
-    user = UserModel.objects.create()
+    user = User.objects.create()
     user.set_password('password')
 
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)

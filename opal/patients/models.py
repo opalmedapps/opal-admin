@@ -1,11 +1,13 @@
 """Module providing models for the patients app."""
+from collections import defaultdict
 from datetime import date
 from typing import Any, Optional
 from uuid import uuid4
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
@@ -28,7 +30,7 @@ class RoleType(models.TextChoices):
     # 'self' is a reserved keyword in Python requiring a noqa here.
     SELF = 'SELF', _('Self')  # noqa: WPS117
     CAREGIVER = 'CAREGIVER', _('Caregiver')
-    PARENTGUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
+    PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
 
 
 class RelationshipType(models.Model):
@@ -49,7 +51,8 @@ class RelationshipType(models.Model):
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE - 1),
-        ])
+        ],
+    )
     end_age = models.PositiveIntegerField(
         verbose_name=_('End age'),
         help_text=_('Age at which the relationship ends automatically.'),
@@ -58,7 +61,8 @@ class RelationshipType(models.Model):
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE + 1),
             MaxValueValidator(constants.RELATIONSHIP_MAX_AGE),
-        ])
+        ],
+    )
     form_required = models.BooleanField(
         verbose_name=_('Form required'),
         default=True,
@@ -97,7 +101,7 @@ class RelationshipType(models.Model):
         return self.name
 
     def clean(self) -> None:
-        """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
+        """Validate the model being saved does not add an extra SELF or PARENT_GUARDIAN role type.
 
         If additional restricted role types are added in the future, add them to the RoleType lists here.
 
@@ -105,7 +109,7 @@ class RelationshipType(models.Model):
             ValidationError: If the changes result in a missing or extra restricted roletype.
         """
         existing_restricted_relationshiptypes = RelationshipType.objects.filter(
-            role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
+            role_type__in=[RoleType.SELF, RoleType.PARENT_GUARDIAN],
         )
         existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
 
@@ -118,16 +122,16 @@ class RelationshipType(models.Model):
             and self not in existing_restricted_relationshiptypes
         ):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
+                _('There must always be exactly one Self and one Parent/Guardian role'),
             )
 
         if (
-            self.role_type == RoleType.PARENTGUARDIAN
-            and RoleType.PARENTGUARDIAN in existing_restricted_roletypes
+            self.role_type == RoleType.PARENT_GUARDIAN
+            and RoleType.PARENT_GUARDIAN in existing_restricted_roletypes
             and self not in existing_restricted_relationshiptypes
         ):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
+                _('There must always be exactly one Self and one Parent/Guardian role'),
             )
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
@@ -143,7 +147,7 @@ class RelationshipType(models.Model):
         Returns:
             Number of models deleted and dict of models deleted.
         """
-        if (self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+        if self.role_type in {RoleType.SELF, RoleType.PARENT_GUARDIAN}:
             raise ValidationError(
                 _('The relationship type with this role type cannot be deleted'),
             )
@@ -274,9 +278,7 @@ class Patient(models.Model):
         if reference_date is None:
             reference_date = date.today()
         # A bool that represents if reference date's day/month precedes the birth day/month
-        one_or_zero = (
-            (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
-        )
+        one_or_zero = (reference_date.month, reference_date.day) < (date_of_birth.month, date_of_birth.day)
         # Calculate the difference in years from the date object's components
         year_difference = reference_date.year - date_of_birth.year
         # The difference in years is not enough.
@@ -385,12 +387,29 @@ class Relationship(models.Model):
         Raises:
             ValidationError: the error shows when entries do not comply with the validation rules.
         """
+        # support adding multiple errors for the same field/non-fields
+        errors: dict[str, list[str]] = defaultdict(list)
+
         if self.end_date is not None and self.start_date >= self.end_date:
-            raise ValidationError({'start_date': _('Start date should be earlier than end date.')})
+            errors['start_date'].append(gettext('Start date should be earlier than end date.'))
         # validate status is not empty if status is revoked or denied.
-        if not self.reason:
-            if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
-                raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
+        if not self.reason and self.status in {RelationshipStatus.REVOKED, RelationshipStatus.DENIED}:
+            errors['reason'].append(gettext('Reason is mandatory when status is denied or revoked.'))
+
+        if (
+            self.type.role_type == RoleType.SELF
+            and Relationship.objects.filter(patient=self.patient, type__role_type=RoleType.SELF).exists()
+        ):
+            errors[NON_FIELD_ERRORS].append(gettext('The patient already has a self-relationship'))
+
+        if (
+            self.type.role_type == RoleType.SELF
+            and Relationship.objects.filter(caregiver=self.caregiver, type__role_type=RoleType.SELF).exists()
+        ):
+            errors[NON_FIELD_ERRORS].append(gettext('The caregiver already has a self-relationship'))
+
+        if errors:
+            raise ValidationError(errors)
 
     @classmethod
     def valid_statuses(cls, current: RelationshipStatus) -> list[RelationshipStatus]:
