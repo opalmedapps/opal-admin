@@ -87,7 +87,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
         """
-        Get the queryset of unreaded appointments with all status/states for a given user.
+        Get the queryset of unread appointments for a given user. The appointments might contain any statuses and states (e.g., deleted, cancelled, completed, etc.).
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
