@@ -92,6 +92,22 @@ class AccessRequestView(SessionWizardView):
         """
         return [self.template_list[self.steps.current]]
 
+    def process_step(self, form: Any) -> Any:
+        """
+        Postprocess the form data.
+
+        Args:
+            form: a list of different forms
+
+        Returns:
+            the raw `form.data` dictionary
+        """
+        if self.steps.current == 'site':
+            site_selection = self.get_form_step_data(form=form)['site-sites']
+            self.request.session['site_selection'] = site_selection
+
+        return self.get_form_step_data(form)
+
     def get_context_data(self, form: Any, **kwargs: Any) -> Object:
         """
         Return the template context for a step.
@@ -108,8 +124,6 @@ class AccessRequestView(SessionWizardView):
             context.update({'header_title': _('Hospital Information')})
         elif self.steps.current == 'search':
             context.update({'header_title': _('Patient Details')})
-            site_selection = self.get_cleaned_data_for_step(self.steps.prev)
-            self.request.session['site_selection'] = site_selection['sites'].pk
 
         return context
 

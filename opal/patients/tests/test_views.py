@@ -11,9 +11,8 @@ import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from opal.hospital_settings.models import Site
-from opal.patients import views
 
-from .. import factories, models, tables
+from .. import factories, forms, models, tables, views
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
@@ -359,3 +358,24 @@ def test_expected_step_with_session_storage() -> None:
 
     assert response.status_code == HTTPStatus.OK
     assert instance.get_form_initial('site') == {'sites': Site.objects.get(pk=2)}
+
+
+@pytest.mark.django_db()
+def test_process_step_select_site_form() -> None:
+    """Test expected form 'SelectSiteForm'."""
+    request = SessionInit().init()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    site = factories.Site()
+    form_data = (
+        {
+            'site-sites': site.pk,
+        }
+    )
+    form = forms.SelectSiteForm(data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.process_step(form) == form_data
+    assert request.session['site_selection'] == site.pk
