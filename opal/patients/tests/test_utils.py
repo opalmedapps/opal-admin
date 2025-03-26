@@ -825,7 +825,7 @@ def test_create_access_request_pediatric_patient_delay_value(mocker: MockerFixtu
     assert registration_code is None
     patient = relationship.patient
 
-    assert Patient.calculate_age(patient.date_of_birth) < institution.adulthood_age
+    assert patient.age < institution.adulthood_age
     assert patient.non_interpretable_lab_result_delay == institution.non_interpretable_lab_result_delay
     assert patient.interpretable_lab_result_delay == institution.interpretable_lab_result_delay
 
