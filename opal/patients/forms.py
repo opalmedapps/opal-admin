@@ -765,7 +765,7 @@ class AccessRequestSendSMSForm(forms.Form):
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
                 message = gettext(
-                    'Your Opal registration code is: {code}.'
+                    'Your Opal registration code is: {code}. '
                     + 'Please go to: {url}. Your code will expire in {period} hours.',
                 ).format(
                     code=registration_code,
