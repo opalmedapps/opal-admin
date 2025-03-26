@@ -4,7 +4,6 @@ import json
 import logging
 import math
 import re
-from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
@@ -68,7 +67,7 @@ class QuestionnaireData(NamedTuple):
     questionnaire_id: int
     questionnaire_title: str
     last_updated: datetime
-    questions: Iterable[Question]
+    questions: list[Question]
 
 
 FIRST_PAGE_NUMBER: int = 1
@@ -77,7 +76,7 @@ AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
-TABLE_HEADER_QUESTIONS = ('Date', 'Response')
+TEXT_QUESTIONS_HEADER = ('Date', 'Response')
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -308,9 +307,10 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             if index > 0:  # Skip empty first page
                 self.add_page()
             self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
-            self.start_section(data.questionnaire_title)  # For the TOC
+            self.start_section(data.questionnaire_title)  # create new section for table of contents
             self.set_y(35)
-            self._insert_paragraph(data.questionnaire_title, align=Align.C)  # To print the title in the center
+            # Display the questionnaire title and the most recent questionnaire date, centered at the top of the page.
+            self._insert_paragraph(data.questionnaire_title, align=Align.C)
             self.ln(1)
             self._insert_paragraph(
                 f'Dernière mise à jour: {data.last_updated.strftime("%b %d, %Y %H:%M")}',
@@ -320,25 +320,25 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
             self._draw_questions_results(data.questions)
 
-    def _draw_questions_results(self, questions: Any) -> None:
-        """Logic regarding how to show the data for the different types of questions.
+    def _draw_questions_results(self, questions: list[Question]) -> None:
+        """Display question based on its type.
 
         Args:
             questions: list of questions associated with the questionnaire
         """
         for question in questions:
             if question.question_type_id == 2:
-                self._draw_charts_for_questions(question)
+                self._draw_chart_for_numeric_question(question)
             else:
-                self._draw_questions_tables(question)
+                self._draw_text_answer_question(question)
 
-    def _draw_charts_for_questions(self, question: Any) -> None:
-        """Chart generation for the specific question inside the questionnaire.
+    def _draw_chart_for_numeric_question(self, question: Question) -> None:
+        """Generate a chart for a numeric question (e.g., `SLIDER`) type.
 
         Args:
-            question: question that needs a chart created
+            question: numeric question to be visualized in a chart
         """
-        data_frame = self._prepare_questions_charts(question)
+        data_frame = self._prepare_question_chart(question)
 
         chart_trace = express.line(
             data_frame,
@@ -376,16 +376,16 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.image(image, w=self.epw, x=Align.R)
         self.ln(4)
 
-    def _prepare_questions_charts(self, question: Any) -> pd.DataFrame:
-        """Logic regarding the preparation for the charts.
+    def _prepare_question_chart(self, question: Question) -> pd.DataFrame:
+        """Prepare the question for the chart.
 
         Args:
             question: question that needs to be prepared
 
         Returns:
-            DataFrame of the questions answer value
+            DataFrame of the question's answer values
         """
-        if self.will_page_break(50):  # So the title and chart are on the same page
+        if self.will_page_break(50):  # Ensure the title and chart are on the same page
             self.add_page()
         self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
         self._insert_paragraph(
@@ -408,17 +408,17 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             },
         )
 
-    def _draw_questions_tables(self, questions: Any) -> None:  # noqa: WPS213
-        """Drawing the tables of the patients answers for questions.
+    def _draw_text_answer_question(self, question: Question) -> None:  # noqa: WPS213
+        """Draw the table for text answer question.
 
         Args:
-            questions: question needing a table to be rendered
+            question: text answer question to be displayed in a table
         """
-        if self.will_page_break(30):  # So the title and chart are on the same page
+        if self.will_page_break(30):  # Ensure the title and chart are on the same page
             self.add_page()
         self.set_font(QUESTIONNAIRE_REPORT_FONT, style='B', size=14)
         self._insert_paragraph(
-            f'{questions.question_text}',
+            f'{question.question_text}',
             align=Align.L,
         )
         self.ln(4)
@@ -431,8 +431,8 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             col_widths=(30, 60),
             headings_style=headings_style,
         ) as table:
-            table.row(TABLE_HEADER_QUESTIONS)
-            for values in reversed(questions.values):
+            table.row(TEXT_QUESTIONS_HEADER)
+            for values in reversed(question.values):
                 row = table.row()
                 row.cell(
                     f'{values[0].strftime("%b %d, %Y %H:%M")}',
