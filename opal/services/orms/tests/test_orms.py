@@ -79,7 +79,5 @@ def test_set_opal_patient(mocker: MockerFixture) -> None:
         uuid.uuid4(),
     )
 
-    print(response)
-
     assert response['status'] == 'error'
     assert response['data']['responseData']['error'] == 'Some error message'
