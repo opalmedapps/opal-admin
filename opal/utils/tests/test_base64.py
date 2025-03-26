@@ -69,7 +69,7 @@ def test_is_base64_non_base64_error() -> None:
         assert is_base64 is False
 
 
-# encode_image_to_base64 function tests
+# encode_file_to_base64 function tests
 
 def test_encode_image_to_base64() -> None:
     """Ensure function returns encoded base64 string of the logo image."""
