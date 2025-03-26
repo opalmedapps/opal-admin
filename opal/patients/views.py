@@ -275,7 +275,7 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         if registration_code:
             code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code.code}'
             context.update({
-                'registration_url': settings.OPAL_USER_REGISTRATION_URL,
+                'registration_url': code_url,
                 'registration_code': registration_code.code,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
             })
