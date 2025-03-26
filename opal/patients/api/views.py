@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverPatientPermissions, CustomPatientDemographicPermissions
+from opal.core.drf_permissions import CaregiverPatientPermissions, UpdateModelPermissions
 
 from ..api.serializers import CaregiverRelationshipSerializer, PatientDemographicSerializer
 from ..models import HospitalPatient, Patient, Relationship
@@ -140,7 +140,7 @@ class CaregiverRelationshipView(ListAPIView):
 class PatientDemographicView(UpdateAPIView):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
-    permission_classes = [IsAuthenticated, CustomPatientDemographicPermissions]
+    permission_classes = [IsAuthenticated, UpdateModelPermissions]
     queryset = Patient.objects.all()
     serializer_class = PatientDemographicSerializer
     pagination_class = None
@@ -152,7 +152,7 @@ class PatientDemographicView(UpdateAPIView):
             `Patient` object
 
         Raises:
-            NotFound: exception
+            NotFound: if `HospitalPatient` record has not be found through the provided `mrns` list of dictionaries
         """
         # Validate the `MRNs` from input
         serializer = PatientDemographicSerializer(

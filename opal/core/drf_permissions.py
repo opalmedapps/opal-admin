@@ -169,11 +169,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
 
 
-class CustomPatientDemographicPermissions(permissions.DjangoModelPermissions):
+class UpdateModelPermissions(permissions.DjangoModelPermissions):
     """
-    Custom DRF `DjangoModelPermissions` permission for changing/updating `Patient`.
+    Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
 
-    Restricts PUT and PATCH operations to require the `view` permission on the `Patient` model.
+    Restricts PUT and PATCH operations to require the `view` permission on the model.
 
     See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
     """
