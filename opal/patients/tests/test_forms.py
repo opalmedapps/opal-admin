@@ -306,7 +306,7 @@ def test_is_correct_not_checked() -> None:
 def test_requestor_form_not_check_if_required() -> None:
     """Ensure that the 'requestor_form' checkbox is not checked."""
     form_data = {
-        'relationship_type': factories.RelationshipType(name='Self', start_age=1, form_required=True),
+        'relationship_type': factories.RelationshipType(start_age=1, form_required=True),
         'requestor_form': False,
     }
 
