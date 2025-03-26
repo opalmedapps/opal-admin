@@ -57,6 +57,7 @@ def test_daily_user_patient_activity_str() -> None:
         patient=patient,
     )
 
+
 def test_daily_user_app_activity_str() -> None:
     """Ensure the `__str__` method is defined for the `DailyUserAppActivity` model."""
     caregiver = Caregiver()
