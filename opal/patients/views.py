@@ -88,7 +88,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         ('relationship', forms.RequestorDetailsForm),
         ('account', forms.RequestorAccountForm),
         ('requestor', forms.ExistingUserForm),
-        ('finished', forms.ConfirmExistingUserForm),
+        ('existing', forms.ConfirmExistingUserForm),
         ('password', forms.ConfirmPasswordForm),
     ]
     form_title_list = {
@@ -98,7 +98,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'relationship': _('Requestor Details'),
         'account': _('Requestor Details'),
         'requestor': _('Requestor Details'),
-        'finished': _('Requestor Details'),
+        'existing': _('Requestor Details'),
         'password': _('Confirm access to patient data'),
     }
     template_list = {
@@ -108,7 +108,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'relationship': 'patients/access_request/access_request.html',
         'account': 'patients/access_request/access_request.html',
         'requestor': 'patients/access_request/access_request.html',
-        'finished': 'patients/access_request/access_request.html',
+        'existing': 'patients/access_request/access_request.html',
         'password': 'patients/access_request/access_request.html',
     }
 
@@ -151,7 +151,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'confirm':
             context = self._update_patient_confirmation_context(context)
-        if self.steps.current == 'finished':
+        if self.steps.current == 'existing':
             user_record = self.get_cleaned_data_for_step(self.steps.prev)['user_record']
             context.update({'table': ExistingUserTable([user_record])})
         context.update({'header_title': self.form_title_list[self.steps.current]})
@@ -172,19 +172,20 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         form = super().get_form(step, data, files)
         if step is None:
             step = self.steps.current
-
         if step == 'requestor':
             user_type = self.get_cleaned_data_for_step('account')['user_type']
             # If new user is selected, the current form will be replaced by `NewUserForm`.
-            # The last step `finished` will be ignored.
+            # The step `existing` will be ignored.
             if user_type == str(constants.NEW_USER):
                 form_class = forms.NewUserForm
                 form = form_class(data)
-                self.condition_dict = {'finished': False}
+                self.condition_dict = {'existing': False}
+        # Since `form_list` will be initalized for each step,
+        # the step `existing` will be ignored one more time in step `password` if the new user is selected
         elif step == 'password':
             user_type = self.get_cleaned_data_for_step('account')['user_type']
             if user_type == str(constants.NEW_USER):
-                self.condition_dict = {'finished': False}
+                self.condition_dict = {'existing': False}
         return form
 
     def get_form_initial(self, step: str) -> dict[str, str]:

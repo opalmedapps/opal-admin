@@ -286,7 +286,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': '1'}),
         ('requestor', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
-        ('finished', {'is_correct': True, 'is_id_checked': True}),
+        ('existing', {'is_correct': True, 'is_id_checked': True}),
         ('password', {'confirm_password': '123456789'}),
     ]
     response = user_client.get(url)
@@ -313,8 +313,8 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         elif 'account' in step:
             assert response.context['wizard']['steps'].current == 'requestor'
         elif 'requestor' in step:
-            assert response.context['wizard']['steps'].current == 'finished'
-        elif 'finished' in step:
+            assert response.context['wizard']['steps'].current == 'existing'
+        elif 'existing' in step:
             assert response.context['wizard']['steps'].current == 'password'
 
 
