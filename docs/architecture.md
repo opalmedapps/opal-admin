@@ -4,6 +4,9 @@ The overall project setup is influenced by [Cookiecutter Django](https://cookiec
 
 The user interface is based on Django templates and views. This allows us to use Django's features, such as form and model validation, authentication, server-side-rendered templates etc., without much extra work. Functionality that is needed to be called from the outside (such as the OIE and requests from the mobile app) are exposed via API endpoints.
 
+!!! note
+    If you are unfamiliar with Django please have a look at the [official Django tutorial](https://docs.djangoproject.com/en/stable/intro/tutorial01/) as well as the [Django REST framework tutorial](https://www.django-rest-framework.org/tutorial/1-serialization/).
+
 ## Important packages
 
 The following (non-exhaustive) list gives an overview of packages used on top of Django:
