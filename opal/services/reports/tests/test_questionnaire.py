@@ -447,6 +447,7 @@ def test_generate_pdf_one_page() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
+@pytest.mark.slow
 def test_generate_pdf_charts() -> None:
     """Ensure that the pdf is correctly generated."""
     pdf_bytes = questionnaire.generate_pdf(
