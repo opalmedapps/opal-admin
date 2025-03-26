@@ -7,7 +7,7 @@
 
 {% if urlname_delete %}
   {% url urlname_delete record.id as delete_url %}
-  {% #icon_button icon="trash" href=update_url type="danger" %}
+  {% #icon_button icon="trash" href=delete_url type="danger" %}
     {% translate "Delete" %}
   {% /icon_button %}
 {% endif %}
