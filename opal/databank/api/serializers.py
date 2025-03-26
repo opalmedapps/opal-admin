@@ -24,4 +24,3 @@ class DatabankConsentSerializer(DynamicFieldsSerializer):
             'middle_name',
             'city_of_birth',
         ]
-        read_only_fields = ['patient']
