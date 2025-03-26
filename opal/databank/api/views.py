@@ -6,6 +6,7 @@ from rest_framework import generics, serializers
 
 from opal.core.drf_permissions import CreateModelPermissions
 from opal.patients.models import Patient
+from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 from ..models import DatabankConsent
 from .serializers import DatabankConsentSerializer
@@ -27,6 +28,18 @@ class CreateDatabankConsentView(generics.CreateAPIView):
         Args:
             serializer: the serializer instance to use
         """
+        django_patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
+        osi_identifiers = PatientData(
+            first_name=django_patient.first_name,
+            middle_name=serializer.validated_data['middle_name'],
+            last_name=django_patient.last_name,
+            gender=django_patient.get_sex_display(),
+            date_of_birth=str(django_patient.date_of_birth),
+            city_of_birth=serializer.validated_data['city_of_birth'],
+        )
+        guid = OpenScienceIdentity(osi_identifiers).to_signature()
+
         serializer.save(
-            patient=get_object_or_404(Patient, uuid=self.kwargs['uuid']),
+            patient=django_patient,
+            guid=guid,
         )

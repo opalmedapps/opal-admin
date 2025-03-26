@@ -8,14 +8,11 @@ The actual patient data is sent to the databank via a set of API logic, after be
 """
 import datetime
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from opal.legacy_questionnaires.models import LegacyAnswer
 from opal.patients.models import Patient
-from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 
 class DatabankConsent(models.Model):
@@ -89,71 +86,6 @@ class DatabankConsent(models.Model):
         return "{patient}'s Databank Consent".format(
             patient=str(self.patient),
         )
-
-    def clean(self) -> None:
-        """Ensure GUID is set, or notify of missing data errors.
-
-        Raises:
-            ValidationError: If patient does not have a legacy id
-        """
-        if not self.patient.legacy_id:
-            raise ValidationError(
-                {
-                    'patient__legacy_id': _("Can't generate a GUID for a patient who is missing their legacy_id."),
-                },
-            )
-        if not self.guid or self.guid == '':
-            # Retrieve this patient's middle name and city of birth responses from questionnairedb.
-            results = LegacyAnswer.objects.get_guid_fields(self.patient.legacy_id)
-            middle_name_cleaned = self._clean_and_validate_guid_middle_name(results)
-            city_of_birth_cleaned = self._clean_and_validate_guid_city_of_birth(results)
-            osi_identifiers = PatientData(
-                first_name=self.patient.first_name,
-                middle_name=middle_name_cleaned,
-                last_name=self.patient.last_name,
-                gender=self.patient.get_sex_display(),
-                date_of_birth=str(self.patient.date_of_birth),
-                city_of_birth=city_of_birth_cleaned,
-            )
-            self.guid = OpenScienceIdentity(osi_identifiers).to_signature()
-
-    def _clean_and_validate_guid_middle_name(self, result_set: models.QuerySet) -> str:
-        """Clean the middle name property, or raise error if question is missing.
-
-        Args:
-            result_set: from LegacyAnswer model manager
-
-        Raises:
-            ValidationError: only if the Middle name question is missing from the questionnaire
-
-        Returns:
-            Lowercase, space removed middle name from result set
-        """
-        middle_name_response = result_set.filter(question_text__icontains='middle name').first()
-        if middle_name_response:
-            middle_name_cleaned = middle_name_response['answer_text'].lower().replace(' ', '')
-        else:
-            raise ValidationError('Middle name question missing from LegacyQuestionnaireDB.')
-        return str(middle_name_cleaned)
-
-    def _clean_and_validate_guid_city_of_birth(self, result_set: models.QuerySet) -> str:
-        """Clean the city of birth property, or raise error if question/response is missing.
-
-        Args:
-            result_set: from LegacyAnswer model manager
-
-        Raises:
-            ValidationError: If the city of birth question or required response is missing
-
-        Returns:
-            Lowercase, space removed city of birth from result set
-        """
-        city_of_birth_response = result_set.filter(question_text__icontains='city of birth').first()
-        if city_of_birth_response:
-            city_of_birth_cleaned = city_of_birth_response['answer_text'].lower().replace(' ', '')
-        else:
-            raise ValidationError('City of birth question or response missing from LegacyQuestionnaireDB.')
-        return str(city_of_birth_cleaned)
 
 
 class DataModuleType(models.TextChoices):

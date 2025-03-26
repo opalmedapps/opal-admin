@@ -1,4 +1,5 @@
 
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 import pytest
@@ -9,7 +10,7 @@ from opal.patients.factories import Patient
 from .. import factories
 from ..models import SharedData
 
-pytestmark = pytest.mark.django_db()
+pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
 
 def test_databankconsent_factory() -> None:
@@ -64,8 +65,32 @@ def test_shareddata_multiple_per_patient() -> None:
     assert SharedData.objects.count() == 3
 
 
-def test_valid_guid_generation() -> None:
-    """Test the GUID is correctly generated before saving the DatabankConsent model."""
-    consenting_patient = Patient(legacy_id=51)
+def test_guid_generation_missing_patient_legacy_id() -> None:
+    """Test Validation error if patient missing legacy id."""
+    consenting_patient = Patient(legacy_id=None)
     databank_consent = factories.DatabankConsent(patient=consenting_patient)
+    with assertRaisesMessage(ValidationError, "Can't generate a GUID for a patient who is missing their legacy_id."):
+        databank_consent.full_clean()
+
+
+def test_guid_successful_generation(databank_consent_questionnaire_and_response: dict) -> None:
+    """Test the guid is created properly if all fields exist."""
+    legacy_questionnaire_patient = databank_consent_questionnaire_and_response['patient']
+    django_patient = Patient(legacy_id=legacy_questionnaire_patient.external_id)
+    print(django_patient)
+    databank_consent = factories.DatabankConsent(patient=django_patient)
     databank_consent.full_clean()
+    print(databank_consent.guid)
+    assert 1 == 0
+
+
+def test_clean_guid_middle_name_question_fail() -> None:
+    """Test the middle name cleaning raises ValidationError for missing question from QuestionnaireDB."""
+
+
+def test_clean_guid_city_of_birth_question_fail() -> None:
+    """Test the city of birth cleaning raises ValidationError for missing question from QuestionnaireDB."""
+
+
+def test_clean_guid_city_of_birth_answer_fail() -> None:
+    """Test the city of birth cleaning raises ValidationError for missing answer from QuestionnaireDB."""

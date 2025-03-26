@@ -583,8 +583,6 @@ class LegacyAnswer(models.Model):
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
     updated_by = models.CharField(max_length=255, db_column='updatedBy')
 
-    objects: managers.LegacyAnswerManager = managers.LegacyAnswerManager()
-
     class Meta:
         managed = False
         db_table = 'answer'

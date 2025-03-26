@@ -6,7 +6,7 @@ from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
 
 from .. import factories
-from ..models import LegacyAnswer, LegacyAnswerQuestionnaire, LegacyQuestionnaire
+from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
@@ -83,7 +83,7 @@ def test_new_questionnaires_patient_caregiver() -> None:
         content_id=1,
         language_id=2,
     )
-    legacy_purpose = factories.LegacyPurposeFactory(title=legacy_dictionary, id=2)
+    legacy_purpose = factories.LegacyPurposeFactory(title=legacy_dictionary)
 
     legacy_dictionary1 = factories.LegacyDictionaryFactory(
         content='Patient',
@@ -196,62 +196,3 @@ def test_new_questionnaires_return_empty_without_rependont_matching() -> None:
     )
 
     assert not new_questionnaires
-
-
-def test_get_guid_fields() -> None:  # noqa: WPS213
-    """Test successful retrieval of the guid fields middle name and city of birth."""
-    # Prepare all data for consent and guid generation
-    consenting_patient = factories.LegacyPatientFactory(external_id=51)
-    # Questionnaire content
-    middle_name_content = factories.LegacyDictionaryFactory(content_id=22222, content='Middle name', language_id=2)
-    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
-    cob_content = factories.LegacyDictionaryFactory(content_id=33333, content='City of birth', language_id=2)
-    cob_question = factories.LegacyQuestionFactory(display=cob_content)
-    consent_purpose = factories.LegacyPurposeFactory(id=4)
-    questionnaire_title = factories.LegacyDictionaryFactory(
-        content_id=44444,
-        content='Databank Consent Questionnaire',
-        language_id=2,
-    )
-    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
-    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
-    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
-    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
-    # Answer data
-    answer_questionnaire = factories.LegacyAnswerQuestionnaireFactory(
-        questionnaire=consent_questionnaire,
-        patient=consenting_patient,
-    )
-    answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
-    cob_answer = factories.LegacyAnswerFactory(
-        question=cob_question,
-        answer_section=answer_section,
-        patient=consenting_patient,
-        questionnaire=consent_questionnaire,
-    )
-    middle_name_answer = factories.LegacyAnswerFactory(
-        question=middle_name_question,
-        answer_section=answer_section,
-        patient=consenting_patient,
-        questionnaire=consent_questionnaire,
-    )
-    factories.LegacyAnswerTextBoxFactory(answer=cob_answer, value='Montreal')
-    factories.LegacyAnswerTextBoxFactory(answer=middle_name_answer, value='Juliet')
-
-    results = LegacyAnswer.objects.get_guid_fields(consenting_patient.external_id)
-    assert len(results) == 2
-    for questionanswer in results:
-        question_text = questionanswer['question_text']
-        answer_text = questionanswer['answer_text']
-        assert question_text in {'City of birth', 'Middle name'}
-        if question_text == 'City of birth':
-            assert answer_text == 'Montreal'
-        elif question_text == 'Middle name':
-            assert answer_text == 'Juliet'
-
-
-def test_guid_field_answers_missing() -> None:
-    """Test that the response is empty if no question answers have been saved."""
-    consenting_patient = factories.LegacyPatientFactory(external_id=51)
-    results = LegacyAnswer.objects.get_guid_fields(consenting_patient.external_id)
-    assert not results

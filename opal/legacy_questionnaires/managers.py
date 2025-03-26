@@ -12,7 +12,7 @@ from django.db import connections, models, transaction
 from django.db.backends.utils import CursorWrapper
 
 if TYPE_CHECKING:
-    from .models import LegacyAnswer, LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
+    from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire  # noqa: F401
 
 from opal.patients.models import RelationshipType
 
@@ -131,40 +131,3 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
             sql_content = handle.read()
             handle.close()
         return sql_content
-
-
-class LegacyAnswerManager(models.Manager['LegacyAnswer']):
-    """LegacyAnswer manager."""
-
-    @transaction.atomic
-    def get_guid_fields(self, external_patient_id: int) -> models.QuerySet:
-        """Retrieve middle name and city of birth for Databank GUID generation.
-
-        Args:
-            external_patient_id: QuestionnaireDB.Patient.external_id field (Same as legacy OpalDB PatientSerNum)
-
-        Returns:
-            QuerySet of answers for the two questions, if found.
-        """
-        # Must re-import LegacyAnswerQuestionnaire and LegacyAnswerTextBox outside the Typechecking
-        # block at the top of the file. Otherwise we will get a circular import error on LegacyAnswerTextBox and a
-        # repeated import error on LegacyAnswerQuestionnaire which is already being used in a different manager
-        from .models import LegacyAnswerQuestionnaire, LegacyAnswerTextBox  # noqa: F811, WPS433, WPS442
-
-        # Subquery for LegacyAnswerQuestionnaire
-        subquery = LegacyAnswerQuestionnaire.objects.filter(
-            questionnaire__purpose__id=4,
-            patient__external_id=external_patient_id,
-            questionnaire__title__content__icontains='databank',
-            questionnaire__title__language_id=2,
-        ).values('id')
-
-        # Main query
-        return self.filter(
-            answer_section__answer_questionnaire_id__in=subquery,
-            id__in=LegacyAnswerTextBox.objects.all().values('answer'),
-            question__display__language_id=2,
-        ).annotate(
-            question_text=models.F('question__display__content'),
-            answer_text=models.F('legacyanswertextbox__value'),
-        ).values('question_text', 'answer_text')
