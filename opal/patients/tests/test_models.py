@@ -180,7 +180,7 @@ def test_hospitalpatient_factory() -> None:
     hospital_patient.full_clean()
 
 
-def test_hospitalpatient_one_patient_one_site() -> None:
+def test_hospitalpatient_str() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
     hospitalpatient = factories.HospitalPatient()
     hospitalpatient.site = factories.Site(name="Montreal Children's Hospital")
@@ -203,7 +203,7 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 
 
 def test_hospitalpatient_many_patients_one_site() -> None:
-    """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
+    """Test many patients have the same site and mrn."""
     patient1 = factories.Patient(first_name='aaa', last_name='111')
     patient2 = factories.Patient(first_name='bbb', last_name='222')
     site = factories.Site(name="Montreal Children's Hospital")
