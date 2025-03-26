@@ -209,10 +209,8 @@ def test_user_admin_group_add_signal() -> None:
 def test_user_admin_group_remove_signal() -> None:
     """User properties `is_staff` and `is_superuser` are deactivated when removed from the defined admin group."""
     # create a user
-    clinical_staff = factories.User()
+    clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # activate superuser and staff properties
-    clinical_staff.is_staff = True
-    clinical_staff.is_superuser = True
     # create admin group
     admingroup = factories.Group(name=ADMIN_GROUP_NAME)
     admingroup.save()
@@ -229,9 +227,7 @@ def test_user_admin_group_remove_signal() -> None:
 def test_user_group_add_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are not changed when another group is added."""
     # create a user
-    clinical_staff = factories.User()
-    clinical_staff.is_superuser = True
-    clinical_staff.is_staff = True
+    clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # create a group
     group = factories.Group(name=ORMS_GROUP_NAME)
     group.save()
@@ -246,17 +242,46 @@ def test_user_group_add_not_change_status() -> None:
 def test_user_group_remove_not_change_status() -> None:
     """User properties `is_staff` and `is_superuser` are not changed when another group is removed."""
     # create a user
-    clinical_staff = factories.User()
-    clinical_staff.is_superuser = True
-    clinical_staff.is_staff = True
+    clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # create a group
     group = factories.Group(name=ORMS_GROUP_NAME)
     group.save()
-    # add user to admin group
+    # add user to non-admin group
     clinical_staff.groups.add(group)
     clinical_staff.groups.remove(group)
 
-    # assert that properties are deactivated
+    # assert that properties are not affected
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+
+def test_user_nonclinical_user_add_not_change_status() -> None:
+    """User properties `is_staff` and `is_superuser` are unaffected when nonclinical user is added to admingroup."""
+    # create a user
+    clinical_staff = factories.Caregiver()
+    # create a group
+    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
+    admingroup.save()
+    # add user to admin group
+    clinical_staff.groups.add(admingroup)
+
+    # assert that properties are not affected
+    assert not clinical_staff.is_superuser
+    assert not clinical_staff.is_staff
+
+
+def test_user_nonclinical_user_remove_not_change_status() -> None:
+    """User properties `is_staff` and `is_superuser` are unaffected when nonclinical user is removed from admingroup."""
+    # create a user
+    clinical_staff = factories.Caregiver(is_staff=True, is_superuser=True)
+    # create a group
+    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
+    admingroup.save()
+    # add user to admin group
+    clinical_staff.groups.add(admingroup)
+    clinical_staff.groups.remove(admingroup)
+
+    # assert that properties are not affected
     assert clinical_staff.is_superuser
     assert clinical_staff.is_staff
 
