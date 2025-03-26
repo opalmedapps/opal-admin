@@ -1,3 +1,9 @@
+# run pipelines for default branch, tags, and all types of merge request pipelines
+# to support merge trains
+# see: https://gitlab.com/gitlab-org/gitlab/-/issues/13159#note_373865588
+include:
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
