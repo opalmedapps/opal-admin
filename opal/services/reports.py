@@ -108,6 +108,10 @@ class QuestionnaireReportService():
         Returns:
             bool: if a given string is base64
         """
+        # base64 string cannot be empty
+        if not string:
+            return False
+
         try:
             return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
         except Exception:
