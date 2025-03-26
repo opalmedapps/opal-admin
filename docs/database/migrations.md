@@ -66,13 +66,12 @@ to connect to the database.
 ??? note "HeidiSQL Database Client"
     [HeidiSQL](https://www.heidisql.com/) is a free and easy-to-use database client that you can use to connect
     to your database. Install and launch the software, then enter the following values to start a session:
-        ```
-        - Network type: MariaDB or MySQL (TCP/IP)
-        - Hostname / IP: 127.0.0.1
-        - User: DATABASE_USER from .env
-        - Password: DATABASE_PASSWORD from .env
-        - Port: DATABASE_PORT from .env
-        ```
+
+    - Network type: MariaDB or MySQL (TCP/IP)
+    - Hostname / IP: 127.0.0.1
+    - User: `DATABASE_USER` from `.env`
+    - Password: `DATABASE_PASSWORD` from `.env`
+    - Port: `DATABASE_PORT` from `.env`
 
 Run the following command in the project to print the SQL statements used during your failed database migration
 (in this example, we assume migration 0003 failed in the patients app).

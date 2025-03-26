@@ -119,6 +119,7 @@ class Patient(models.Model):
     legacy_id = models.PositiveIntegerField(
         verbose_name=_('Legacy ID'),
         validators=[MinValueValidator(1)],
+        unique=True,
         null=True,
         blank=True,
     )
@@ -218,6 +219,10 @@ class Relationship(models.Model):
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
                 check=models.Q(start_date__lt=models.F('end_date')),
+            ),
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                fields=['patient', 'caregiver', 'type', 'status'],
             ),
         ]
 

@@ -9,3 +9,7 @@ MD034: false
 # Need to disable in order to support PyMdown Tabbed extension
 # See: https://facelessuser.github.io/pymdown-extensions/extensions/tabbed/
 MD046: false
+
+# mkdocstring crossreference support is not compatible with this rule
+# see: https://mkdocstrings.github.io/usage/#cross-references
+MD052: false

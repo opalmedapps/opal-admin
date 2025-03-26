@@ -90,6 +90,25 @@ mypy:
     - mypy --version
     - mypy opal/
 
+markdownlint:
+  stage: Static Analysis
+  image:
+    name: davidanson/markdownlint-cli2:v0.5.1
+    # overwrite default entrypoint (which is a call to markdownlint-cli2)
+    entrypoint: [""]
+  # this is not a Python script so we don't need to do all this extra stuff
+  before_script:
+    - markdownlint-cli2 --version
+    # install our custom GitLab formatter to convert output to code quality artefact
+    - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
+  script:
+    # use the config file that is stored outside the root
+    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv" "#node_modules"
+  artifacts:
+    when: always
+    reports:
+      codequality: markdownlint-cli2-results.json
+
 test:
   stage: Test
   # set up DB service only for the test job since it is not used by others
@@ -173,6 +192,7 @@ build docs:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
     - job: setup
+    - job: markdownlint
 
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
