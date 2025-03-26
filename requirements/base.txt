@@ -1,6 +1,6 @@
 # Django
 #
-django==4.2.11
+django==4.2.12
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.11  # https://django-modeltranslation.readthedocs.io/en/latest/
