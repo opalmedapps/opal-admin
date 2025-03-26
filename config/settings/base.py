@@ -445,6 +445,9 @@ SMS_FROM = env.str('SMS_FROM')
 # Path to the pathology reports folder
 PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
 
+# Databank Enabled
+DATABANK_ENABLED = env.bool('DATABANK_ENABLED')
+
 # QUESTIONNAIRE REPORTS SETTINGS
 # Path to the questionnaire reports folder
 QUESTIONNAIRE_REPORTS_PATH = Path(env.str('QUESTIONNAIRE_REPORTS_PATH'))
