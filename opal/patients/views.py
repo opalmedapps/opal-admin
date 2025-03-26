@@ -765,7 +765,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         """
         context_data = super().get_context_data(**kwargs)
         default_success_url = reverse('patients:relationships-list')
-        context_data['table'] = tables.PatientTable([self.get_object().patient])
+        context_data['table'] = tables.PatientTable([context_data['relationship'].patient])
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
         elif self.request.META.get('HTTP_REFERER'):
