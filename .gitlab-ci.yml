@@ -98,9 +98,8 @@ mypy:
     # export output and don't fail if there are errors
     - mypy . --no-error-summary > mypy-out.txt || true
     - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
-    # fail if file is not empty
-    # see: https://stackoverflow.com/q/9964823
-    - [ ! -s mypy-out.txt ]
+     # fail if JSON file does not contain empty array
+    - cat codequality.json | grep -q "\[\]"
   artifacts:
     when: always
     reports:
