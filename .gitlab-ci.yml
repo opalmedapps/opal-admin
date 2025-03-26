@@ -142,7 +142,7 @@ django:
     - echo "Checking for presence of fuzzy translation strings (need updates) ..."
     - FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep '#| msgid' -B02 -A01)
     # fail if there are fuzzy strings
-    - echo "#FUZZY_STRINGS"
+    - echo "$FUZZY_STRINGS"
     - (! echo "$FUZZY_STRINGS" | grep -q .)
     # Prevent auto-named migrations
     - echo "Checking that migrations are not auto-named ..."
