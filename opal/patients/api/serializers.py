@@ -157,8 +157,6 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         if not value:
             raise serializers.ValidationError('Provided `MRNs` list is empty.')
 
-        self._check_site_codes_uniqueness(value)
-
         # Check if at least one MRN/Site pair exists. If a pair does not exist it should contain `is_active` field
         self._check_mrn_site_pair_exists(value)
 
@@ -211,29 +209,6 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             user.save()
 
         return instance
-
-    def _check_site_codes_uniqueness(
-        self,
-        hospital_patients: List[Dict[str, Any]],
-    ) -> None:
-        """Ensure that a patient does not have more than one record at the same site.
-
-        E.g., a patient should not have two MRN records at the same site.
-
-        Args:
-            hospital_patients: list of dictionaries that contain `HospitalPatient` records
-
-        Raises:
-            ValidationError: occurs when hospital_patients list contains duplicated "site" codes
-        """
-        # Get list of site codes
-        sites = [hospital_patient['site']['code'] for hospital_patient in hospital_patients]
-
-        # Compare length for unique site code elements
-        if len(set(sites)) != len(sites):
-            raise serializers.ValidationError(
-                'Provided `MRNs` list contains duplicated "site" codes. Site codes should be unique.',
-            )
 
     def _check_mrn_site_pair_exists(
         self,
