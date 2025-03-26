@@ -1,4 +1,5 @@
 """Module providing model factories for Legacy database models."""
+from datetime import datetime
 
 from django.utils import timezone
 
@@ -121,3 +122,43 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
 
     patientsernum = SubFactory(LegacyPatientFactory)
     readstatus = 0
+
+
+class LegacySecurityQuestionFactory(DjangoModelFactory):
+    """SecurityQuestion factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacySecurityQuestion
+
+    securityquestionsernum = 1
+    questiontext_en = 'What is the name of your first pet?'
+    questiontext_fr = 'Quel est le nom de votre premier animal de compagnie?'
+    creationdate = datetime.strptime(
+        '2022-09-27 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )
+    lastupdated = datetime.strptime(
+        '2022-09-27 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )
+    active = 1
+
+
+class LegacySecurityAnswerFactory(DjangoModelFactory):
+    """SecurityAnswer factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacySecurityAnswer
+
+    securityanswersernum = 1
+    securityquestionsernum = SubFactory(LegacySecurityQuestionFactory)
+    patientsernum = SubFactory(LegacyPatientFactory)
+    answertext = 'bird'
+    creationdate = datetime.strptime(
+        '2022-09-27 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )
+    lastupdated = datetime.strptime(
+        '2022-09-27 11:11:11',
+        '%Y-%m-%d %H:%M:%S',
+    )

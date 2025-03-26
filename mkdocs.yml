@@ -13,11 +13,13 @@ copyright: Copyright &copy; 2022 Opal Health Informatics Group (O-HIG)
 # Content
 nav:
   - Home: index.md
+  - Architecture: architecture.md
   - Apps:
-      - New Apps: apps/new_app.md
+      - App Structure: apps/structure.md
       - Caregivers: apps/caregivers.md
       - Patients: apps/patients.md
       - Users: apps/users.md
+      - Questionnaires: apps/questionnaires.md
   - Database:
       - Migrations: database/migrations.md
       - Legacy DB Setup: database/legacy_db.md

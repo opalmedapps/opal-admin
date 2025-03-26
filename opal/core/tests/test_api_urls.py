@@ -73,9 +73,64 @@ def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'
 
 
-# questionnaire report generation API endpoint: questionnaires/reviewed/
+def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API security questions endpoints are defined."""
+    question_path = '/{api_root}/security-questions/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:security-questions-list') == question_path
+    assert resolve(question_path).view_name == 'api:security-questions-list'
 
-def test_questionnaires_reviewed() -> None:
+
+def test_api_caregiver_security_questions_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions are defined."""
+    question_path = '/{api_root}/caregivers/{uuid}/security-questions/123/'.format(
+        api_root=settings.API_ROOT,
+        uuid='217c7adb-a13c-438f-8ea6-454edff6d8db',
+    )
+    assert reverse(
+        'api:caregivers-securityquestions-detail',
+        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db', 'pk': 123},
+    ) == question_path
+    assert resolve(question_path).view_name == 'api:caregivers-securityquestions-detail'
+
+
+def test_api_security_question_random_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions random endpoints are defined."""
+    question_path = '/{api_root}/caregivers/{uuid}/security-questions/random/'.format(
+        api_root=settings.API_ROOT,
+        uuid='217c7adb-a13c-438f-8ea6-454edff6d8db',
+    )
+    assert reverse(
+        'api:caregivers-securityquestions-random',
+        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db'},
+    ) == question_path
+    assert resolve(question_path).view_name == 'api:caregivers-securityquestions-random'
+
+
+def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions verify endpoints are defined."""
+    question_path = 'caregivers/217c7adb-a13c-438f-8ea6-454edff6d8db/security-questions/123/verify/'
+    question_path = '/{api_root}/{question_path}'.format(api_root=settings.API_ROOT, question_path=question_path)
+    assert reverse(
+        'api:caregivers-securityquestions-verify',
+        kwargs={'uuid': '217c7adb-a13c-438f-8ea6-454edff6d8db', 'pk': 123},
+    ) == question_path
+    assert resolve(question_path).view_name == 'api:caregivers-securityquestions-verify'
+
+
+# questionnaire report generation API endpoint: questionnaires/reviewed/
+def test_questionnaires_reviewed(settings: SettingsWrapper) -> None:
     """Ensure `questionnaires/reviewed/` endpoint is defined."""
-    assert reverse('api:questionnaires-reviewed') == '/api/questionnaires/reviewed/'
-    assert resolve('/api/questionnaires/reviewed/').view_name == 'api:questionnaires-reviewed'
+    url_path = '/{api_root}/questionnaires/reviewed/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:questionnaires-reviewed') == url_path
+    assert resolve(url_path).view_name == 'api:questionnaires-reviewed'
+
+
+def test_retrieve_registration_code(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/` endpoint is defined."""
+    registration_code = 'ABCD12345678'
+    url_path = '/{api_root}/registration/{code}/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:registration-code', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:registration-code'
