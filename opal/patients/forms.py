@@ -549,7 +549,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
         required=False,
     )
-    prev_url = forms.CharField(
+    cancel_url = forms.CharField(
         widget=forms.widgets.HiddenInput(),
         required=False,
     )
@@ -561,7 +561,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'end_date',
             'status',
             'reason',
-            'prev_url',
+            'cancel_url',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -585,10 +585,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'end_date',
             'status',
             'reason',
-            Hidden('prev_url', '{{prev_url}}'),
+            Hidden('cancel_url', '{{cancel_url}}'),
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
-                CancelButton('{{prev_url}}'),
+                CancelButton('{{cancel_url}}'),
             ),
         )
 
