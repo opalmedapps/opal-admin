@@ -77,7 +77,7 @@ class InlineReset(Layout):
     The reset button is not using an `<input type="reset">` because this only erases the form field values.
     """
 
-    label = _('Reset')
+    label = _('Pending Requests')
 
     def __init__(self) -> None:
         """

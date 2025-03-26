@@ -532,7 +532,6 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
     model = Relationship
     permission_required = ('patients.can_manage_relationships',)
     table_class = tables.PendingRelationshipTable
-    ordering = ['request_date']
     template_name = 'patients/relationships/pending_relationship_list.html'
     queryset = Relationship.objects.select_related(
         'patient', 'caregiver__user', 'type',
@@ -540,8 +539,18 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
         'patient__hospital_patients__site',
     )
     filterset_class = ManageCaregiverAccessFilter
+    ordering = ['request_date']
 
-    def get_filterset_kwargs(self, filterset_class):
+    def get_filterset_kwargs(self, filterset_class: Any) -> Any:
+        """
+        Apply the filter arguments on the set of data.
+
+        Args:
+            filterset_class: the filter arguments
+
+        Returns:
+            the filter keyword arguments
+        """
         # Only use filter query arguments for the filter to support sorting etc. with django-tables2
         # see: https://github.com/carltongibson/django-filter/issues/1521
 
@@ -559,11 +568,22 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
 
         # if no filter fields are used in the query strings default to pending relationships only
         if not data:
-            filterset_kwargs['queryset'] = self.queryset.filter(status=RelationshipStatus.PENDING)
+            filterset_kwargs['queryset'] = self.queryset.filter(
+                status=RelationshipStatus.PENDING,
+            ).order_by('request_date')
 
         return filterset_kwargs
 
     def get_context_data(self, **kwargs: Any) -> Any:
+        """
+        Return the template context for `PendingRelationshipListView` update view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the template context for `PendingRelationshipListView`
+        """
         context_data = super().get_context_data(**kwargs)
 
         filter_used = context_data['filter'].form.is_bound

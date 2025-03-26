@@ -21,14 +21,14 @@
         <li class="nav-item">
           {% var is_search=filter.form.is_bound %}
           {# trigger a search with missing data to detect switching to a search #}
-          <a href="?card_type=" class="{{ is_search|yesno:yesno_css_filter }} me-2"{% if is_search %} aria-current="page"{% endif %}>
+          <label class="{{ is_search|yesno:yesno_css_filter }} me-2"{% if is_search %} aria-current="page"{% endif %}>
             {% translate "Specific Patient" %}
-          </a>
+          </label>
         </li>
         <li class="nav-item">
-          <a href="{{ request.path }}" class="{{ is_pending|yesno:yesno_css_filter }} me-2"{% if is_pending %} aria-current="page"{% endif %}>
+          <label href="{{ request.path }}" class="{{ is_pending|yesno:yesno_css_filter }} me-2"{% if is_pending %} aria-current="page"{% endif %}>
             {% translate "All Pending Requests" %}
-          </a>
+          </label>
         </li>
       </ul>
     </div>
