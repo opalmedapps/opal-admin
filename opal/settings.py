@@ -178,7 +178,7 @@ DATABASES = {
 }
 
 # Use SSL for all the database connections if DATABASE_USE_SSL is set to True
-if env.bool('DATABASE_USE_SSL'):
+if env.bool('DATABASE_USE_SSL'):  # pragma: no cover
     # Use OPTIONS setting to set extra parameters when connecting to the database.
     # The parameters vary depending on the database backend.
     # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
