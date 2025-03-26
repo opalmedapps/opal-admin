@@ -98,8 +98,16 @@ markdownlint:
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
     - markdownlint-cli2 --version
+    - npm install markdownlint-cli2-formatter-pretty
+    # install our custom GitLab formatter
+    # to convert output to code quality artefact
+    - npm install .gitlab/markdownlint/markdown-cli2-formatters-gitlab
   script:
     - markdownlint-cli2 "**/*.md" "#.venv"
+  artifacts:
+    when: always
+    reports:
+      codequality: markdownlint-cli2-results.json
 
 test:
   stage: Test
