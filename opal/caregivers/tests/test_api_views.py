@@ -973,6 +973,8 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
             format='json',
         )
 
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
     def test_email_verification_process_resend(self, api_client: APIClient, mocker: MockerFixture) -> None:
         """Test the email verification process with resending a verification code."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
