@@ -93,6 +93,9 @@ class DailyUserAppActivity(models.Model):
     )
 
     class Meta:
+        indexes = [
+            models.Index(fields=['date_added']),
+        ]
         verbose_name = _('User App Activity')
         verbose_name_plural = _('User App Activities')
 
@@ -179,6 +182,9 @@ class DailyPatientDataReceived(models.Model):
     )
 
     class Meta:
+        indexes = [
+            models.Index(fields=['date_added']),
+        ]
         verbose_name = _('Patient Data Received')
         verbose_name_plural = _('Patient Data Received Records')
 
