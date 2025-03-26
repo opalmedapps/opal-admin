@@ -101,3 +101,525 @@ def test_is_report_export_response_invalid_type() -> None:
     assert oie_validator.is_report_export_response_valid('test string') is False
     assert oie_validator.is_report_export_response_valid(123) is False
     assert oie_validator.is_report_export_response_valid({'status': {'success'}}) is False
+
+
+# is_patient_response_valid
+
+def test_is_patient_response_valid_success() -> None:
+    """Ensure patient response valid success."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.is_patient_response_valid({
+        'status': 'success',
+        'data': patient_data,
+    })
+    assert not errors
+
+
+def test_patient_response_status_non_exists() -> None:
+    """Ensure patient response data non-existent status return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.is_patient_response_valid({
+        'data': patient_data,
+    })
+    assert errors == ['Patient response data does not have the attribute status']
+
+
+def test_patient_response_data_non_exists() -> None:
+    """Ensure patient response data non-existent status return error message."""
+    errors = oie_validator.is_patient_response_valid({
+        'status': 'success',
+    })
+    assert errors == ['Patient response data does not have the attribute data']
+
+
+# check_patient_data
+
+def test_check_patient_data_valid() -> None:
+    """Ensure patient data valid."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert not errors
+
+
+def test_check_patient_date_of_birth_non_exists() -> None:
+    """Ensure patient data invalid date_of_birth return error message."""
+    patient_data = {
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute dateOfBirth']
+
+
+def test_check_patient_date_of_birth_invalid() -> None:
+    """Ensure patient data invalid date_of_birth return error message."""
+    patient_data = {
+        'dateOfBirth': '1953/01/01',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data dateOfBirth format is incorrect, should be YYYY-MM-DD HH:mm:ss']
+
+
+def test_check_patient_first_name_non_exists() -> None:
+    """Ensure patient data invalid firstName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute firstName']
+
+
+def test_check_patient_first_name_empty() -> None:
+    """Ensure patient data invalid firstName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': '',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data firstName is empty']
+
+
+def test_check_patient_last_name_non_exists() -> None:
+    """Ensure patient data invalid lastName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute lastName']
+
+
+def test_check_patient_last_name_empty() -> None:
+    """Ensure patient data invalid lastName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': '',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data lastName is empty']
+
+
+def test_check_patient_sex_non_exists() -> None:
+    """Ensure patient data invalid lastName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute sex']
+
+
+def test_check_patient_sex_empty() -> None:
+    """Ensure patient data invalid lastName return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': '',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data sex is empty']
+
+
+def test_check_patient_alias_non_exists() -> None:
+    """Ensure patient data invalid alias return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute alias']
+
+
+def test_check_patient_ramq_non_exists() -> None:
+    """Ensure patient data invalid ramq return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute ramq']
+
+
+def test_check_patient_ramq_invalid() -> None:
+    """Ensure patient data invalid ramq return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'ABC1111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data ramq is invalid']
+
+
+def test_check_patient_ramq_expiration_non_exists() -> None:
+    """Ensure patient data invalid ramqExpiration return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute ramqExpiration']
+
+
+def test_check_patient_ramq_expiration_invalid() -> None:
+    """Ensure patient data invalid ramqExpiration return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018/01/31',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data ramqExpiration format is incorrect, should be YYYY-MM-DD HH:mm:ss']
+
+
+def test_check_patient_mrns_non_exists() -> None:
+    """Ensure patient data invalid mrn site return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data does not have the attribute mrns']
+
+
+def test_check_patient_mrns_empty() -> None:
+    """Ensure patient data invalid mrn site return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient data mrns is empty']
+
+
+def test_check_patient_mrn_site_non_exists() -> None:
+    """Ensure patient data invalid mrn site return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data does not have the attribute site']
+
+
+def test_check_patient_mrn_site_empty() -> None:
+    """Ensure patient data invalid mrn site return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': '',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data site is empty']
+
+
+def test_check_patient_mrn_mrn_non_exists() -> None:
+    """Ensure patient data invalid mrn mrn return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data does not have the attribute mrn']
+
+
+def test_check_patient_mrn_mrn_empty() -> None:
+    """Ensure patient data invalid mrn mrn return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '',
+                'active': True,
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data mrn is empty']
+
+
+def test_check_patient_mrn_active_non_exists() -> None:
+    """Ensure patient data invalid mrn active return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data does not have the attribute active']
+
+
+def test_check_patient_mrn_active_invalid() -> None:
+    """Ensure patient data invalid mrn active return error message."""
+    patient_data = {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': '',
+            },
+        ],
+    }
+    errors = oie_validator.check_patient_data(patient_data)
+    assert errors == ['Patient MRN data active is not bool']

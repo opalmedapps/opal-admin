@@ -10,6 +10,7 @@ from django.urls.conf import include
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView
+from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
@@ -27,8 +28,11 @@ if settings.DEBUG:
 else:
     router = SimpleRouter()
 
+
 router.register('institutions', settings_views.InstitutionViewSet, basename='institutions')
 router.register('sites', settings_views.SiteViewSet, basename='sites')
+router.register('security-questions', SecurityQuestionViewSet, basename='security-questions')
+
 
 app_name = 'core'
 
@@ -47,5 +51,25 @@ urlpatterns = [
     path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
     path('registration/<str:code>/', RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
+    path(
+        'caregivers/<uuid:uuid>/security-questions/',
+        SecurityAnswerViewSet.as_view({'get': 'list'}),
+        name='caregivers-securityquestions-list',
+    ),
+    path(
+        'caregivers/<uuid:uuid>/security-questions/<int:pk>/',
+        SecurityAnswerViewSet.as_view({'get': 'retrieve', 'put': 'update'}),
+        name='caregivers-securityquestions-detail',
+    ),
+    path(
+        'caregivers/<uuid:uuid>/security-questions/random/',
+        SecurityAnswerViewSet.as_view({'get': 'random'}),
+        name='caregivers-securityquestions-random',
+    ),
+    path(
+        'caregivers/<uuid:uuid>/security-questions/<int:pk>/verify/',
+        SecurityAnswerViewSet.as_view({'post': 'verify_answer'}),
+        name='caregivers-securityquestions-verify',
+    ),
     path('', include(router.urls)),
 ]
