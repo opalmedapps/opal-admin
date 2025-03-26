@@ -178,6 +178,7 @@ msgstr ""
 
 #: opal/templates/email/confirmation_email.txt
 #, python-format
+msgid ""
 "If you have any problems with the app, please contact us at "
 "%(support_email)s or by using the Feedback form available on the General tab "
 "of Opal."
