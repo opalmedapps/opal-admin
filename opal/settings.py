@@ -128,6 +128,7 @@ DATABASES = {
         'PASSWORD': env('DATABASE_PASSWORD'),
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
+        'ATOMIC_REQUESTS': True,
     },
     'legacy': {
         'ENGINE': 'django.db.backends.mysql',
@@ -136,6 +137,7 @@ DATABASES = {
         'PASSWORD': env('LEGACY_DATABASE_PASSWORD'),
         'HOST': env('LEGACY_DATABASE_HOST'),
         'PORT': env('LEGACY_DATABASE_PORT'),
+        'ATOMIC_REQUESTS': True,
     },
 }
 
