@@ -83,7 +83,7 @@ class LegacyDocumentFactory(DjangoModelFactory):
     readstatus = 0
 
 
-class LegacyTxteammsgFactory(DjangoModelFactory):
+class LegacyTxTeamMessageFactory(DjangoModelFactory):
     """Txteammessage factory from the legacy database."""
 
     class Meta:
@@ -93,11 +93,11 @@ class LegacyTxteammsgFactory(DjangoModelFactory):
     readstatus = 0
 
 
-class LegacyEdumaterialFactory(DjangoModelFactory):
+class LegacyEducationalMaterialFactory(DjangoModelFactory):
     """Educational material factory from the legacy database."""
 
     class Meta:
-        model = models.LegacyEducationMaterial
+        model = models.LegacyEducationalMaterial
 
     patientsernum = SubFactory(LegacyPatientFactory)
     readstatus = 0

@@ -139,20 +139,20 @@ class LegacyTxTeamMessage(models.Model):
     txteammessagesernum = models.AutoField(db_column='TxTeamMessageSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    objects: managers.LegacyTxteammessageManager = managers.LegacyTxteammessageManager()
+    objects: managers.LegacyTxTeamMessageManager = managers.LegacyTxTeamMessageManager()
 
     class Meta:
         managed = False
         db_table = 'TxTeamMessage'
 
 
-class LegacyEducationMaterial(models.Model):
+class LegacyEducationalMaterial(models.Model):
     """Educationalmaterial model from the legacy database OpalDB."""
 
     educationalmaterialsernum = models.AutoField(db_column='EducationalMaterialSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    objects: managers.LegacyEducationalmaterialManager = managers.LegacyEducationalmaterialManager()
+    objects: managers.LegacyEducationalMaterialManager = managers.LegacyEducationalMaterialManager()
 
     class Meta:
         managed = False

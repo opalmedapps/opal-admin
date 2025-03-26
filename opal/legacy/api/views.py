@@ -57,7 +57,7 @@ class AppChartView(APIView):
             unread_appointment_count=models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
             unread_document_count=models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
             unread_txteammessage_count=models.LegacyTxTeamMessage.objects.get_unread_queryset(patient_sernum).count(),
-            unread_educationalmaterial_count=models.LegacyEducationMaterial.objects.get_unread_queryset(patient_sernum).count(),  # noqa: E501
+            unread_educationalmaterial_count=models.LegacyEducationalMaterial.objects.get_unread_queryset(patient_sernum).count(),  # noqa: E501
             unread_questionnaire_count=models.LegacyQuestionnaire.objects.get_unread_queryset(patient_sernum).count(),
         )
         return Response({

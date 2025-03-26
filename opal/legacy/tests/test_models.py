@@ -45,13 +45,13 @@ def test_legacy_document_factory() -> None:
 
 def test_legacy_txteammessage_factory() -> None:
     """Test whether the factory creates a valid legacy txteammessage model instance."""
-    test_txteammessage = factories.LegacyTxteammsgFactory()
+    test_txteammessage = factories.LegacyTxTeamMessageFactory()
     test_txteammessage.full_clean()
 
 
 def test_legacy_educationmaterial_factory() -> None:
     """Test whether the factory creates a valid legacy educational material model instance."""
-    test_edumaterial = factories.LegacyEdumaterialFactory()
+    test_edumaterial = factories.LegacyEducationalMaterialFactory()
     test_edumaterial.full_clean()
 
 

@@ -87,11 +87,11 @@ class LegacyDocumentManager(UnreadQuerySetMixin, models.Manager):
     """legacy document manager."""
 
 
-class LegacyTxteammessageManager(UnreadQuerySetMixin, models.Manager):
+class LegacyTxTeamMessageManager(UnreadQuerySetMixin, models.Manager):
     """legacy txteammessage manager."""
 
 
-class LegacyEducationalmaterialManager(UnreadQuerySetMixin, models.Manager):
+class LegacyEducationalMaterialManager(UnreadQuerySetMixin, models.Manager):
     """legacy educational material manager."""
 
 

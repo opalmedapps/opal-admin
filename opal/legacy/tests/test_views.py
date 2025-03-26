@@ -119,19 +119,19 @@ class TestChartAppView:
     def test_get_unread_txteammessage_count(self) -> None:
         """Test if function returns number of unread txteammessages."""
         patient = factories.LegacyPatientFactory()
-        factories.LegacyTxteammsgFactory(patientsernum=patient)
-        factories.LegacyTxteammsgFactory(patientsernum=patient)
-        factories.LegacyTxteammsgFactory(patientsernum=patient, readstatus=1)
+        factories.LegacyTxTeamMessageFactory(patientsernum=patient)
+        factories.LegacyTxTeamMessageFactory(patientsernum=patient)
+        factories.LegacyTxTeamMessageFactory(patientsernum=patient, readstatus=1)
         txteammessages = models.LegacyTxTeamMessage.objects.get_unread_queryset(patient.patientsernum).count()
         assert txteammessages == 2
 
     def test_get_unread_edumaterial_count(self) -> None:
         """Test if function returns number of unread educational materials."""
         patient = factories.LegacyPatientFactory()
-        factories.LegacyEdumaterialFactory(patientsernum=patient)
-        factories.LegacyEdumaterialFactory(patientsernum=patient)
-        factories.LegacyEdumaterialFactory(patientsernum=patient, readstatus=1)
-        edumaterials = models.LegacyEducationMaterial.objects.get_unread_queryset(patient.patientsernum).count()
+        factories.LegacyEducationalMaterialFactory(patientsernum=patient)
+        factories.LegacyEducationalMaterialFactory(patientsernum=patient)
+        factories.LegacyEducationalMaterialFactory(patientsernum=patient, readstatus=1)
+        edumaterials = models.LegacyEducationalMaterial.objects.get_unread_queryset(patient.patientsernum).count()
         assert edumaterials == 2
 
     def test_get_unread_questionnaire_count(self) -> None:
