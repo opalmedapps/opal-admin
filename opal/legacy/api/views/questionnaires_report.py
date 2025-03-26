@@ -24,6 +24,10 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
     serializer_class = QuestionnaireReportRequestSerializer
     # Get an instance of a logger
     logger = logging.getLogger(__name__)
+    # OIE service
+    oie = hospital.OIEService()
+    # Report service
+    report_service = reports.ReportService()
 
     def post(
         self,
@@ -48,8 +52,7 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
 
             # Generate questionnaire report
-            report_service = reports.ReportService()
-            encoded_report = report_service.generate_questionnaire_report(
+            encoded_report = self.report_service.generate_questionnaire_report(
                 reports.QuestionnaireReportRequestData(
                     patient_id=serializer.validated_data.get('patient_id'),
                     logo_path=Path(Institution.objects.get(pk=1).logo.path),
@@ -60,26 +63,24 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             # The `ReportService` does not return error messages.
             # If an error occurs during report generation, the `ReportService` returns `None`
             if not encoded_report:
-                # Log an error message
-                self.logger.error('An error occurred during report generation.')
-                return response.Response(
-                    {
-                        'status': 'error',
-                        'message': 'An error occurred during report generation.',
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+                return self._create_error_response('An error occurred during report generation.')
+
+            hospital_patient = HospitalPatient.objects.select_related(
+                'site',
+            ).filter(
+                patient__legacy_id=serializer.validated_data.get('patient_id'),
+            ).first()
+
+            if not hospital_patient:
+                return self._create_error_response(
+                    'Could not find `HospitalPatient` object for the given `patient_id`.',
                 )
 
             # Submit report to the OIE
-            oie = hospital.OIEService()
-            export_result = oie.export_pdf_report(
+            export_result = self.oie.export_pdf_report(
                 hospital.OIEReportExportData(
-                    mrn=HospitalPatient.objects.filter(
-                        patient__legacy_id=serializer.validated_data.get('patient_id'),
-                    ).values_list('mrn', flat=True).get(pk=1),
-                    site=HospitalPatient.objects.filter(
-                        patient__legacy_id=serializer.validated_data.get('patient_id'),
-                    ).values_list('site__name', flat=True).get(pk=1),
+                    mrn=hospital_patient.mrn,
+                    site=hospital_patient.site.name,
                     base64_content=encoded_report,
                     document_number='FMU',  # TODO: clarify where to get the value
                     document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
@@ -90,3 +91,14 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
                 self.logger.error('An error occurred while exporting a PDF report to the OIE.')
 
             return response.Response(export_result)
+
+    def _create_error_response(self, message: str) -> response.Response:
+        # Log an error message
+        self.logger.error(message)
+        return response.Response(
+            {
+                'status': 'error',
+                'message': message,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )

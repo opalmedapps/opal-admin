@@ -1,6 +1,8 @@
 import pytest
 from rest_framework import serializers
 
+from opal.legacy.factories import LegacyPatientFactory
+
 from ..api.serializers import QuestionnaireReportRequestSerializer
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -10,12 +12,12 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 def test_patient_id_type_for_questionnaire_report() -> None:
     """Ensure `patient_id` for the questionnaire report request is a `serializers.IntegerField` type."""
+    LegacyPatientFactory()
     serializer = QuestionnaireReportRequestSerializer(
         data={'patient_id': 51},
     )
 
     assert isinstance(serializer.fields['patient_id'], serializers.IntegerField)
-    serializer.run_validation()
     assert serializer.is_valid()
 
 
