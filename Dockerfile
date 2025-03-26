@@ -44,6 +44,6 @@ COPY ./scripts/cron/* /etc/cron.d/
 
 # Add new cron jobs to the cron tab and compile languages
 RUN crontab /etc/cron.d/crontab \
-  && python manage.py compilemessages
+  && DATABASE_NAME= DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
