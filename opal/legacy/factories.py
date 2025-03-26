@@ -219,6 +219,7 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
     educationalmaterialcontrolsernum = SubFactory(LegacyEducationalMaterialControlFactory)
     readby = '[]'
     readstatus = 0
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
 
 
 class LegacyQuestionnaireFactory(DjangoModelFactory):
@@ -229,6 +230,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 
     patientsernum = SubFactory(LegacyPatientFactory)
     completedflag = 0
+    date_added = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
 
 
 class LegacyPostcontrolFactory(DjangoModelFactory):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-12 16:12-0400\n"
+"POT-Creation-Date: 2024-04-15 17:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,3 +17,139 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/usage_statistics/apps.py:11
+msgid "Usage Statistics"
+msgstr "Statistiques d'utilisation"
+
+#: opal/usage_statistics/models.py:16
+msgid "User who triggered this action"
+msgstr "Utilisateur qui a déclenché cette action"
+
+#: opal/usage_statistics/models.py:22
+msgid "Relationship between user and patient"
+msgstr "Relation entre l'utilisateur et le patient"
+
+#: opal/usage_statistics/models.py:29 opal/usage_statistics/models.py:121
+msgid "Patient"
+msgstr "Patient"
+
+#: opal/usage_statistics/models.py:35
+msgid "Last Login"
+msgstr "Dernière connexion"
+
+#: opal/usage_statistics/models.py:39
+msgid "Count Logins"
+msgstr "Nombre de connexions"
+
+#: opal/usage_statistics/models.py:43
+msgid "Count Checkins"
+msgstr "Nombre d'enregistrements"
+
+#: opal/usage_statistics/models.py:47
+msgid "Count Documents"
+msgstr "Nombre de documents"
+
+#: opal/usage_statistics/models.py:51
+msgid "Count Educational Materials"
+msgstr "Nombre de matériel éducatif"
+
+#: opal/usage_statistics/models.py:55
+msgid "Count Feedbacks"
+msgstr "Nombre de rétroactions"
+
+#: opal/usage_statistics/models.py:59
+msgid "Count Questionnaires"
+msgstr "Nombre de questionnaires"
+
+#: opal/usage_statistics/models.py:63
+msgid "Count Labs"
+msgstr "Nombre de résultats de laboratoire"
+
+#: opal/usage_statistics/models.py:67
+msgid "Count Security Answer Updates"
+msgstr "Nombre de mises à jour des réponses de sécurité"
+
+#: opal/usage_statistics/models.py:71
+msgid "Count Password Updates"
+msgstr "Nombre de mises à jour de mots de passe"
+
+#: opal/usage_statistics/models.py:75
+msgid "Count Language Updates"
+msgstr "Nombre de mises à jour linguistiques"
+
+#: opal/usage_statistics/models.py:79
+msgid "IOS Devices"
+msgstr "Appareils iOS"
+
+#: opal/usage_statistics/models.py:83
+msgid "Android Devices"
+msgstr "Appareils Android"
+
+#: opal/usage_statistics/models.py:87
+msgid "Browser Devices"
+msgstr "Appareils de navigateur"
+
+#: opal/usage_statistics/models.py:91 opal/usage_statistics/models.py:177
+msgid "Date Added"
+msgstr "Date ajoutée"
+
+#: opal/usage_statistics/models.py:96
+msgid "User App Activity"
+msgstr "Activité de l'application utilisateur"
+
+#: opal/usage_statistics/models.py:97
+msgid "User App Activities"
+msgstr "Activités de l'application utilisateur"
+
+#: opal/usage_statistics/models.py:127
+msgid "Next Appointment"
+msgstr "Prochain rendez-vous"
+
+#: opal/usage_statistics/models.py:132
+msgid "Last Appointment Received"
+msgstr "Dernier rendez-vous reçu"
+
+#: opal/usage_statistics/models.py:137
+msgid "Appointments Received"
+msgstr "Rendez-vous reçus"
+
+#: opal/usage_statistics/models.py:141
+msgid "Last Document Received"
+msgstr "Dernier document reçu"
+
+#: opal/usage_statistics/models.py:146
+msgid "Documents Received"
+msgstr "Documents reçus"
+
+#: opal/usage_statistics/models.py:150
+msgid "Last Educational Material Received"
+msgstr "Dernier matériel éducatif reçu"
+
+#: opal/usage_statistics/models.py:155
+msgid "Educational Materials Received"
+msgstr "Matériel éducatif reçu"
+
+#: opal/usage_statistics/models.py:159
+msgid "Last Questionnaire Received"
+msgstr "Dernier questionnaire reçu"
+
+#: opal/usage_statistics/models.py:164
+msgid "Questionnaires Received"
+msgstr "Questionnaires reçus"
+
+#: opal/usage_statistics/models.py:168
+msgid "Last Lab Received"
+msgstr "Dernier résultat de laboratoire reçu"
+
+#: opal/usage_statistics/models.py:173
+msgid "Labs Received"
+msgstr "Résultats de laboratoire reçu"
+
+#: opal/usage_statistics/models.py:182
+msgid "Patient Data Received"
+msgstr "Données patient reçues"
+
+#: opal/usage_statistics/models.py:183
+msgid "Patient Data Received Records"
+msgstr "Dossiers de données reçues sur le patient"
