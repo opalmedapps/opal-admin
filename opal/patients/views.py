@@ -5,6 +5,7 @@ from typing import Any, List, Tuple
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import qrcode
@@ -102,7 +103,13 @@ class AccessRequestView(SessionWizardView):
         Returns:
             the template context for a step
         """
-        return super().get_context_data(form=form, **kwargs)
+        context = super().get_context_data(form=form, **kwargs)
+        if self.steps.current == 'site':
+            context.update({'header_title': _('Hospital Information')})
+        elif self.steps.current == 'search':
+            context.update({'header_title': _('Patient Details')})
+
+        return context
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
         """

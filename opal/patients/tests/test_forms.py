@@ -1,7 +1,8 @@
 import pytest
 
 from opal.hospital_settings import factories
-from opal.patients.forms import SearchForm, SelectSiteForm
+
+from ..forms import SearchForm, SelectSiteForm
 
 pytestmark = pytest.mark.django_db
 
