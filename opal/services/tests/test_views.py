@@ -1,5 +1,6 @@
 
 from pytest_mock.plugin import MockerFixture
+from typing import Dict, cast
 
 from .. import hospital
 
@@ -31,7 +32,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     mock_oie_response.return_value = OIE_data
 
     response = hospital.find_patient_by_mrn('9999993', 'MGH')
-    status = response['status']
+    status = cast(Dict[str, str], response['status'])
     assert status == OIE_data['status']
 
 
@@ -52,7 +53,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     mock_oie_response.return_value = OIE_data
 
     response = hospital.find_patient_by_ramq('AAAA9999999')
-    status = response['status']
+    status = cast(Dict[str, str], response['status'])
     assert status == OIE_data['status']
 
 
