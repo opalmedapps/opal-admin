@@ -340,6 +340,7 @@ pages:
     paths:
       - public
   needs:
+    - setup
     - build docs
 
 
