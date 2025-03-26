@@ -35,3 +35,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * deps: Add Renovate Bot configuration (!6)
 * fix: Better migration names for hospital-settings (!38)
 * chore: Add vscode extension recommendations (!40)
+* build: Fix broken documentation build (!52)

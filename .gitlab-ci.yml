@@ -1,4 +1,4 @@
-image: python:3.9.9-slim-buster
+image: python:3.9.10-slim-buster
 
 services:
   - mariadb:10.7.1-focal
@@ -114,9 +114,8 @@ build docs:
   script:
     - pip install -r requirements/docs.txt
     - mkdocs build
-  # only run during merge request
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # cannot restrict to only merge requests due to the following issue:
+  # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
     - job: coverage
 
