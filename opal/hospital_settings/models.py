@@ -4,6 +4,8 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator, Mi
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from ..core.models import Address
+
 
 class Location(models.Model):
     """Abstract class representing a hospital location with a name and code."""
@@ -78,7 +80,7 @@ class Institution(Location):  # type: ignore[django-manager-missing]
         verbose_name_plural = _('Institutions')
 
 
-class Site(Location):  # type: ignore[django-manager-missing]
+class Site(Location, Address):  # type: ignore[django-manager-missing]
     """A site belonging to an [Institution][opal.hospital_settings.models.Institution] with its specific properties."""
 
     parking_url = models.URLField(_('Parking Info (URL)'))
