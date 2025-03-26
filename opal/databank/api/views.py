@@ -17,7 +17,6 @@ class CreateDatabankConsentView(generics.CreateAPIView):
     queryset = DatabankConsent.objects.none()
     permission_classes = [CreateModelPermissions]
     serializer_class = DatabankConsentSerializer
-    pagination_class = None
 
     def perform_create(self, serializer: serializers.BaseSerializer[DatabankConsent]) -> None:
         """

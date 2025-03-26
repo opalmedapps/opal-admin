@@ -28,7 +28,7 @@ class TestCreateDatabankConsentView:
         api_client: APIClient,
     ) -> None:
         """Ensure the endpoint returns a 403 error if the user is unauthorized."""
-        # Make a `PUT` request without proper permissions.
+        # Make a `POST` request without proper permissions.
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
