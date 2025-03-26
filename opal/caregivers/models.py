@@ -51,7 +51,7 @@ class RegistrationCode(models.Model):
     """Model Registration Code."""
 
     relationship = models.ForeignKey(
-        to='patients.Relationship',
+        to='patients.Relationship',  # Using string model references to avoid circular import
         verbose_name=_('Relationship'),
         related_name='registrationcodes',
         on_delete=models.CASCADE,

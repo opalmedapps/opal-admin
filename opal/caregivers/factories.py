@@ -25,7 +25,7 @@ class RegistrationCode(DjangoModelFactory):
 
     class Meta:
         model = models.RegistrationCode
-
+    # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
     status = models.RegistrationCodeStatus.NEW
