@@ -172,6 +172,8 @@ class Command(BaseCommand):
                 timeout=5,
             ).json()
             # TODO: QSCCD-1096 Handle response_data / partial sender errors
+            # 403 Unauth: Possibly need to check reverse proxy allow list and endpoint pass-throughs
+            # 400 data failed to send
         except requests.exceptions.RequestException as exc:
             # log OIE errors
             self.stderr.write(
