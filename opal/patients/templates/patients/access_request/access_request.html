@@ -36,7 +36,9 @@
       {% endif %}
     {% endblock %}
 
-    {% form_cancel href='/'|add:request.resolver_match.route %}
-    <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}"{% if next_button_disabled %} disabled{% endif %} />
+    {% #form_actions %}
+      {% form_cancel href='/'|add:request.resolver_match.route %}
+      <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}"{% if next_button_disabled %} disabled{% endif %} />
+    {% /form_actions %}
   </form>
 {% endblock %}

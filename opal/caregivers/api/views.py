@@ -28,7 +28,7 @@ from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, 
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
-from opal.users.models import User
+from opal.users.models import Caregiver, User
 
 from .. import constants
 
@@ -184,20 +184,27 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
+        #  Check whether the email is already registered
+        caregiver = Caregiver.objects.filter(email=email).first()
+        if caregiver:
+            raise drf_serializers.ValidationError(
+                _('The email is already registered.'),
+            )
+
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
-        caregiver = registration_code.relationship.caregiver
+        caregiver_profile = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
             email_verification = EmailVerification.objects.create(
-                caregiver=caregiver,
+                caregiver=caregiver_profile,
                 code=verification_code,
                 email=email,
                 sent_at=timezone.now(),
             )
-            self._send_email(email_verification, caregiver.user)
+            self._send_verification_code_email(email_verification, caregiver_profile.user)
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
@@ -210,7 +217,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                         'sent_at': timezone.now(),
                     },
                 )
-                self._send_email(email_verification, caregiver.user)
+                self._send_verification_code_email(email_verification, caregiver_profile.user)
             else:
                 raise drf_serializers.ValidationError(
                     _('Please wait 10 seconds before requesting a new verification code.'),
@@ -218,7 +225,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         return Response()
 
-    def _send_email(  # noqa: WPS210
+    def _send_verification_code_email(  # noqa: WPS210
         self,
         email_verification: EmailVerification,
         user: User,
@@ -248,8 +255,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         send_mail(
             _('Opal Verification Code'),
             email_plain,
-            # TODO: change to a proper from email
-            settings.EMAIL_HOST_USER,
+            settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
             html_message=email_html,
         )

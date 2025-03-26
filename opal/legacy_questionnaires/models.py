@@ -42,7 +42,7 @@ class LegacyDictionary(models.Model):
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    table_id = models.ForeignKey(
+    table = models.ForeignKey(
         LegacyDefinitionTable,
         models.DO_NOTHING,
         db_column='tableId',
@@ -121,8 +121,8 @@ class LegacyQuestionnaire(models.Model):
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    purposeid = models.ForeignKey('LegacyPurpose', models.DO_NOTHING, db_column='purposeId', to_field='id')
-    respondentid = models.ForeignKey('LegacyRespondent', models.DO_NOTHING, db_column='respondentId', to_field='id')
+    purpose = models.ForeignKey('LegacyPurpose', models.DO_NOTHING, db_column='purposeId', to_field='id')
+    respondent = models.ForeignKey('LegacyRespondent', models.DO_NOTHING, db_column='respondentId', to_field='id')
     title = models.ForeignKey(
         LegacyDictionary,
         models.DO_NOTHING,
@@ -193,13 +193,13 @@ class LegacyAnswerQuestionnaire(models.Model):
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
-    questionnaireid = models.ForeignKey(
+    questionnaire = models.ForeignKey(
         LegacyQuestionnaire,
         models.DO_NOTHING,
         db_column='questionnaireId',
         to_field='id',
     )
-    patientid = models.ForeignKey(
+    patient = models.ForeignKey(
         LegacyPatient,
         models.DO_NOTHING,
         db_column='patientId',
@@ -243,7 +243,7 @@ class LegacySection(models.Model):
     """Section model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    questionnaire_id = models.ForeignKey(
+    questionnaire = models.ForeignKey(
         'LegacyQuestionnaire',
         db_column='questionnaireId',
         on_delete=models.DO_NOTHING,
@@ -286,20 +286,20 @@ class LegacyType(models.Model):
         to_field='content_id',
         related_name='+',
     )
-    table_id = models.ForeignKey('LegacyDefinitionTable', db_column='tableId', on_delete=models.DO_NOTHING)
-    sub_table_id = models.ForeignKey(
+    table = models.ForeignKey('LegacyDefinitionTable', db_column='tableId', on_delete=models.DO_NOTHING)
+    sub_table = models.ForeignKey(
         'LegacyDefinitionTable',
         db_column='subTableId',
         on_delete=models.DO_NOTHING,
         related_name='+',
     )
-    template_table_id = models.ForeignKey(
+    template_table = models.ForeignKey(
         'LegacyDefinitionTable',
         db_column='templateTableId',
         on_delete=models.DO_NOTHING,
         related_name='+',
     )
-    template_sub_table_id = models.ForeignKey(
+    template_sub_table = models.ForeignKey(
         'LegacyDefinitionTable',
         db_column='templateSubTableId',
         on_delete=models.DO_NOTHING,
@@ -330,7 +330,7 @@ class LegacyQuestion(models.Model):
         related_name='+',
     )
     question = models.BigIntegerField(db_column='question')
-    type_id = models.ForeignKey(
+    type = models.ForeignKey(
         LegacyType,
         models.DO_NOTHING,
         db_column='typeId',
@@ -358,7 +358,7 @@ class LegacyRadioButton(models.Model):
     """RadioButton model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         LegacyQuestion,
         models.DO_NOTHING,
         db_column='questionId',
@@ -374,7 +374,7 @@ class LegacyRadioButtonOption(models.Model):
     """RadioButtonOption model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    parent_table_id = models.ForeignKey(
+    parent_table = models.ForeignKey(
         LegacyRadioButton,
         models.DO_NOTHING,
         db_column='parentTableId',
@@ -398,7 +398,7 @@ class LegacyCheckbox(models.Model):
     """Checkbox model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         LegacyQuestion,
         models.DO_NOTHING,
         db_column='questionId',
@@ -422,7 +422,7 @@ class LegacyCheckboxOption(models.Model):
         to_field='content_id',
         related_name='+',
     )
-    parent_table_id = models.ForeignKey(
+    parent_table = models.ForeignKey(
         LegacyCheckbox,
         models.DO_NOTHING,
         db_column='parentTableId',
@@ -438,7 +438,7 @@ class LegacyLabel(models.Model):
     """Label model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         LegacyQuestion,
         models.DO_NOTHING,
         db_column='questionId',
@@ -454,7 +454,7 @@ class LegacyLabelOption(models.Model):
     """LabelOption model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    parent_table_id = models.ForeignKey(
+    parent_table = models.ForeignKey(
         LegacyLabel,
         models.DO_NOTHING,
         db_column='parentTableId',
@@ -484,13 +484,13 @@ class LegacyQuestionSection(models.Model):
     """QuestionSection model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         LegacyQuestion,
         models.DO_NOTHING,
         db_column='questionId',
         to_field='id',
     )
-    section_id = models.ForeignKey(
+    section = models.ForeignKey(
         LegacySection,
         models.DO_NOTHING,
         db_column='sectionId',
@@ -509,13 +509,13 @@ class LegacyAnswerSection(models.Model):
     """AnswerSection model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_questionnaire_id = models.ForeignKey(
+    answer_questionnaire = models.ForeignKey(
         LegacyAnswerQuestionnaire,
         models.DO_NOTHING,
         db_column='answerQuestionnaireId',
         to_field='id',
     )
-    section_id = models.ForeignKey(
+    section = models.ForeignKey(
         LegacySection,
         models.DO_NOTHING,
         db_column='sectionId',
@@ -531,43 +531,43 @@ class LegacyAnswer(models.Model):
     """Answer model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    questionnaire_id = models.ForeignKey(
+    questionnaire = models.ForeignKey(
         LegacyQuestionnaire,
         models.DO_NOTHING,
         db_column='questionnaireId',
         to_field='id',
     )
-    section_id = models.ForeignKey(
+    section = models.ForeignKey(
         LegacySection,
         models.DO_NOTHING,
         db_column='sectionId',
         to_field='id',
     )
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         LegacyQuestion,
         models.DO_NOTHING,
         db_column='questionId',
         to_field='id',
     )
-    type_id = models.ForeignKey(
+    type = models.ForeignKey(
         LegacyType,
         models.DO_NOTHING,
         db_column='typeId',
         to_field='id',
     )
-    answer_section_id = models.ForeignKey(
+    answer_section = models.ForeignKey(
         LegacyAnswerSection,
         models.DO_NOTHING,
         db_column='answerSectionId',
         to_field='id',
     )
-    language_id = models.ForeignKey(
+    language = models.ForeignKey(
         LegacyLanguage,
         models.DO_NOTHING,
         db_column='languageId',
         to_field='id',
     )
-    patient_id = models.ForeignKey(
+    patient = models.ForeignKey(
         LegacyPatient,
         models.DO_NOTHING,
         db_column='patientId',
@@ -591,7 +591,7 @@ class LegacyAnswerSlider(models.Model):
     """AnswerSlider model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -608,7 +608,7 @@ class LegacyAnswerTextBox(models.Model):
     """AnswerTextBox model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -625,7 +625,7 @@ class LegacyAnswerTime(models.Model):
     """AnswerTime model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -642,7 +642,7 @@ class LegacyAnswerLabel(models.Model):
     """AnswerLabel model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -663,7 +663,7 @@ class LegacyAnswerRadioButton(models.Model):
     """AnswerRadioButton model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -680,7 +680,7 @@ class LegacyAnswerCheckbox(models.Model):
     """AnswerCheckbox model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',
@@ -697,7 +697,7 @@ class LegacyAnswerDate(models.Model):
     """AnswerDate model from the legacy database QuestionnaireDB."""
 
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    answer_id = models.ForeignKey(
+    answer = models.ForeignKey(
         LegacyAnswer,
         models.DO_NOTHING,
         db_column='answerId',

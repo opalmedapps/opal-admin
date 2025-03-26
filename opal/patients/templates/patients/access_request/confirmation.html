@@ -2,8 +2,6 @@
 {% load static %}
 {% load i18n %}
 
-{% load crispy_forms_tags %}
-
 {% block heading %}
   {% translate "Opal Registration: Confirmation" %}
 {% endblock %}
@@ -15,13 +13,13 @@
     <strong>{% translate "Requestor:" %}</strong> {{ requestor }}
   </p>
   <p>
-    {# reduce spacing for blocktranslate for easier reuse in another template #}
-{% blocktranslate %}
-Please inform the requestor that access to patient data is subject to approval by Medical Records
-and inform them about any steps required to be done as per hospital policy.
-{% endblocktranslate %}
+    {% blocktranslate trimmed %}
+      Please inform the requestor that access to patient data is subject to approval by Medical Records
+      and inform them about any steps required to be done as per hospital policy.
+    {% endblocktranslate %}
   </p>
   {% #form_actions %}
-    {% form_cancel href='/'|add:request.resolver_match.route type="done" %}
+    {% url "patients:access-request" as url %}
+    {% form_cancel href=url type="done" %}
   {% /form_actions %}
 {% endblock %}
