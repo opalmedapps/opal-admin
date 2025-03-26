@@ -761,8 +761,6 @@ def test_relationship_calculate_default_start_date(
     expected: date,
 ) -> None:
     """Test set relationship start date for adult patient."""
-    request_date = date.today()
-    date_of_birth = date(2004, 1, 1)
     relationship_type = RelationshipType.objects.get(role_type=role_type)
 
     assert (
