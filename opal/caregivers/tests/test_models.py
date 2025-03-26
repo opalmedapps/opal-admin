@@ -1,4 +1,5 @@
 import datetime
+from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -28,6 +29,25 @@ def test_caregiverprofile_factory_multiple() -> None:
 
     assert profile.user != profile2.user
     assert profile.uuid != profile2.uuid
+
+
+def test_caregiverprofile_uuid_unique() -> None:
+    """Ensure that the field uuid of carigaver is unique."""
+    profile = factories.CaregiverProfile()
+    profile2 = factories.CaregiverProfile()
+    profile.uuid = profile2.uuid
+    message = 'Caregiver Profile with this Universally unique identifier already exists.'
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        profile.full_clean()
+
+
+def test_caregiverprofile_uuid_non_editable() -> None:
+    """Ensure that the field uuid of carigaver is unique."""
+    profile = factories.CaregiverProfile()
+    profile.uuid = uuid4
+    message = 'not a valid UUID.'
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        profile.full_clean()
 
 
 def test_caregiverprofile_str() -> None:
