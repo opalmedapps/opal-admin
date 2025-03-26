@@ -137,6 +137,8 @@ class UnreadCountSerializer(serializers.Serializer):
     unread_txteammessage_count = serializers.IntegerField()
     unread_educationalmaterial_count = serializers.IntegerField()
     unread_questionnaire_count = serializers.IntegerField()
+    unread_research_questionnaire_count = serializers.IntegerField()
+    unread_consent_questionnaire_count = serializers.IntegerField()
 
 
 class AnnouncementUnreadCountSerializer(serializers.Serializer):

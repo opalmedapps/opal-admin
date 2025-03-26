@@ -30,6 +30,8 @@ class TestChartAppView:
         assert 'unread_txteammessage_count' in response.data
         assert 'unread_educationalmaterial_count' in response.data
         assert 'unread_questionnaire_count' in response.data
+        assert 'unread_research_questionnaire_count' in response.data
+        assert 'unread_consent_questionnaire_count' in response.data
 
     def test_get_unread_appointment_count(self) -> None:
         """Test if function returns number of unread appointments."""
