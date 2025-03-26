@@ -57,7 +57,9 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
                 ),
             )
 
-            if encoded_report == '':
+            # The `ReportService` does not return error messages.
+            # If an error occurs during report generation, the `ReportService` returns `None`
+            if not encoded_report:
                 # Log an error message
                 self.logger.error('An error occurred during report generation.')
                 return response.Response(
