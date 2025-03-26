@@ -669,16 +669,16 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         # when the post is triggered by up validate
         if 'X-Up-Validate' in self.request.headers:
             context_data = form.get_context()
-            # keep original cancel_url
-            context_data['cancel_url'] = request.POST.get('cancel_url')
         # when the post is triggered by submit/save button
         else:
             if form.is_valid():
                 return super().post(request, **kwargs)
             else:
                 context_data = form.get_context()
-                context_data['cancel_url'] = request.POST.get('cancel_url')
 
+        context_data['relationship'] = self.get_object()
+        # keep original cancel_url
+        context_data['cancel_url'] = request.POST.get('cancel_url')
         # update the form with context data when post does not succeed
         return self.render_to_response(context_data)
 
