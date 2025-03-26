@@ -215,40 +215,8 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         send_mail(
             _('Opal Verification Code'),
             email_plain,
-            # TODO: change to a proper from email
             settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
-            html_message=email_html,
-        )
-
-    def _send_registered_email(self, email: str, user: User) -> None:
-        """
-        Send already registered email to the user with an template according to the user language.
-
-        Args:
-            email: input email address
-            user: object User
-        """
-        context = {
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-        }
-
-        email_plain = render_to_string(
-            'email/registered_confirmation.txt',
-            context,
-        )
-        email_html = render_to_string(
-            'email/registered_confirmation.html',
-            context,
-        )
-
-        send_mail(
-            _('Your existing Opal account'),
-            email_plain,
-            # TODO: change to a proper from email
-            settings.EMAIL_FROM_REGISTRATION,
-            [email],
             html_message=email_html,
         )
 
