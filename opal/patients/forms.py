@@ -10,12 +10,6 @@ from crispy_forms.layout import Field, Layout
 from .models import Relationship
 
 
-class DateInput(forms.TimeInput):
-    """Date class to use in `DateField` widgets in the forms."""
-
-    input_type = 'date'
-
-
 class RelationshipPendingAccessForm(forms.ModelForm):
     """Form for updating an `Pending Relationship Access` object."""
 
@@ -23,8 +17,8 @@ class RelationshipPendingAccessForm(forms.ModelForm):
     caregiver = forms.CharField()
     date_of_birth = forms.DateField()
     patient_identification_number = forms.CharField()
-    start_date = forms.DateField(widget=DateInput)
-    end_date = forms.DateField(widget=DateInput)
+    start_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = Relationship
