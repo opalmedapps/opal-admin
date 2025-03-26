@@ -157,17 +157,10 @@ def test_form_post_error(
     assert response.context['wizard']['form'].errors == {'sites': ['This field is required.']}
 
 
-@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
-def test_form_post_mgmt_data_missing(
-    user_client: Client,
-    url_name: str,
-    template: str,
-) -> None:
-    """Ensure that the form return bad request if the management data is missing."""
-    url = reverse(url_name)
-    wizard_step_data = (
+def _wizard_step_data(site: Site) -> Tuple[dict, dict]:
+    return (
         {
-            'site-sites': factories.Site().pk,
+            'site-sites': site.pk,
             'access_request_view-current_step': 'site',
         },
         {
@@ -176,6 +169,17 @@ def test_form_post_mgmt_data_missing(
             'access_request_view-current_step': 'search',
         },
     )
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_post_mgmt_data_missing(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that the form return bad request if the management data is missing."""
+    url = reverse(url_name)
+    wizard_step_data = _wizard_step_data(factories.Site())
     wizard_step_one_data = wizard_step_data[0].copy()
     # remove management data
     for key in list(wizard_step_one_data.keys()):
@@ -195,17 +199,7 @@ def test_form_post_success(
 ) -> None:
     """Ensure that the form submission with POST is successful."""
     url = reverse(url_name)
-    wizard_step_data = (
-        {
-            'site-sites': factories.Site().pk,
-            'access_request_view-current_step': 'site',
-        },
-        {
-            'search-medical_card': 'mrn',
-            'search-medical_number': '99996',
-            'access_request_view-current_step': 'search',
-        },
-    )
+    wizard_step_data = _wizard_step_data(factories.Site())
     response = user_client.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
@@ -222,17 +216,7 @@ def test_form_stepback(
 ) -> None:
     """Ensure that the form can go back to the previous step."""
     url = reverse(url_name)
-    wizard_step_data = (
-        {
-            'site-sites': factories.Site().pk,
-            'access_request_view-current_step': 'site',
-        },
-        {
-            'search-medical_card': 'mrn',
-            'search-medical_number': '99996',
-            'access_request_view-current_step': 'search',
-        },
-    )
+    wizard_step_data = _wizard_step_data(factories.Site())
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
