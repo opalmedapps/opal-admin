@@ -319,6 +319,7 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
             'questionnairename': ['Test Qst'],
         },
     )
+
     assert response.status_code == HTTPStatus.OK
     response_one = user_client.post(
         path=reverse('questionnaires:reports-download-xlsx'),
