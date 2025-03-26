@@ -96,8 +96,6 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         site_obj = self.form.cleaned_data.pop('site')
         medical_number = self.form.cleaned_data.pop('medical_number')
 
-        print(type(site_obj))
-
         if card_type == constants.MedicalCard.mrn.name:
             queryset = queryset.filter(
                 patient__hospital_patients__site__name=site_obj.name,
