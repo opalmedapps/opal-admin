@@ -15,6 +15,13 @@ from django.utils.translation import gettext_lazy as _
 
 import django_stubs_ext
 import environ
+from rest_framework.fields import Field
+from rest_framework.generics import GenericAPIView
+
+# Monkeypatching Django, so stubs will work for all generics
+# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
+# need to manually patch DRF generic classes: https://github.com/typeddjango/djangorestframework-stubs/issues/255#issuecomment-1320496964  # noqa: E501
+django_stubs_ext.monkeypatch(extra_classes=(Field, GenericAPIView))
 
 # get root of the project
 ROOT_DIR = Path(__file__).resolve(strict=True).parents[2]
@@ -489,10 +496,3 @@ DJANGO_TABLES2_TABLE_ATTRS = {
         'class': 'table-light',
     },
 }
-
-from rest_framework import fields, generics
-
-# Monkeypatching Django, so stubs will work for all generics
-# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
-# need to manually patch DRF generic classes: https://github.com/typeddjango/djangorestframework-stubs/issues/255#issuecomment-1320496964  # noqa: E501
-django_stubs_ext.monkeypatch(extra_classes=(fields.Field, generics.GenericAPIView))
