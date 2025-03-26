@@ -61,19 +61,24 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             kwargs: additional keyword arguments
         """
         super().__init__(*args, **kwargs)
-
         self.form.helper = FormHelper()
         self.form.helper.form_class = 'form-inline row row-cols-lg-auto g-3 align-items-baseline'
         self.form.helper.attrs = {'novalidate': ''}
         self.form.helper.form_method = 'GET'
         self.form.helper.disable_csrf = True
-
         self.form.helper.layout = Layout(
             Column('card_type'),
             Column('site'),
             Column('medical_number'),
-            Column(InlineSubmit('', gettext('Search Specific Patient'))),
-            Column(InlineReset()),
+            Column(InlineSubmit(
+                label=gettext('Search Specific Patient'),
+                active=self.is_bound,
+                extra_css='btn-secondary',
+            )),
+            Column(InlineReset(
+                label=gettext('Show Pending Requests'),
+                active=not self.is_bound,
+            )),
         )
 
         medical_number_field = self.form.fields['medical_number']
