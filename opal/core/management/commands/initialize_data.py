@@ -37,9 +37,9 @@ class Command(BaseCommand):
         """
         if Group.objects.all().exists():
             self.stderr.write(self.style.ERROR('There already exists data'))
-
-        self._create_data()
-        self.stdout.write(self.style.SUCCESS('Data successfully created'))
+        else:
+            self._create_data()
+            self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
     def _create_data(self) -> None:  # noqa: WPS210
         """
@@ -48,12 +48,13 @@ class Command(BaseCommand):
         Takes care of:
             * groups and their permissions
             * users
+            * tokens for system users
         """
         # groups
         # TODO: if we need French names for groups as well we will create our own Group model
         # maybe this can be done later
         # TODO: TBD: are administrators and superusers the same?
-        # admins = Group.objects.create(name='Administrators')
+        # then an Administrators group is unnecessary
         medical_records = Group.objects.create(name='Medical Records')
         Group.objects.create(name='Clinicians')
         receptionists = Group.objects.create(name='Receptionists')
@@ -67,8 +68,8 @@ class Command(BaseCommand):
         # permissions
         #
         # listener
-        view_institution = _find_permission('hospital_settings', 'view_institutions')
-        view_site = _find_permission('hospital_settings', 'view_sites')
+        view_institution = _find_permission('hospital_settings', 'view_institution')
+        view_site = _find_permission('hospital_settings', 'view_site')
         view_caregiver_profile = _find_permission('caregivers', 'view_caregiverprofile')
         view_registration_code = _find_permission('caregivers', 'view_registrationcode')
         view_hospital_patient = _find_permission('patients', 'view_hospitalpatient')

@@ -1,11 +1,14 @@
+from django.contrib.auth.models import Group
+
 import pytest
+from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
-from opal.users.models import Caregiver
+from opal.users.models import Caregiver, User
 
 pytestmark = pytest.mark.django_db()
 
@@ -14,7 +17,7 @@ class TestInsertTestData(CommandTestMixin):
     """Test class to group the `insert_test_data` command tests."""
 
     def test_insert(self) -> None:
-        """Ensure that test data is inserting when there is no existing data."""
+        """Ensure that test data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('insert_test_data')
 
         assert Institution.objects.count() == 1
@@ -68,3 +71,32 @@ class TestInsertTestData(CommandTestMixin):
         assert HospitalPatient.objects.count() == 6
         assert CaregiverProfile.objects.count() == 3
         assert Relationship.objects.count() == 7
+
+
+class TestInitializeData(CommandTestMixin):
+    """Test class to group the `initialize_data` command tests."""
+
+    def test_insert(self) -> None:
+        """Ensure that initial data is inserted when there is no existing data."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Group.objects.count() == 4
+        assert User.objects.count() == 2
+        assert Token.objects.count() == 2
+
+        listener_token = Token.objects.all()[0]
+        interface_engine_token = Token.objects.all()[1]
+
+        assert 'Data successfully created\n' in stdout
+        assert f'Listener token: {listener_token.key}' in stdout
+        assert f'Interface Engine token: {interface_engine_token.key}' in stdout
+
+    def test_insert_existing_data_error(self) -> None:
+        """An error is shown if data already exists."""
+        Group.objects.create(name='Clinicians')
+        User.objects.create(username='Listener')
+
+        stdout, stderr = self._call_command('initialize_data')
+
+        assert stdout == ''
+        assert stderr == 'There already exists data\n'
