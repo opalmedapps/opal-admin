@@ -242,7 +242,7 @@ class PatientUpdateView(UpdateAPIView):
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
-    def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
+    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer:
         """Return the serializer instance that should be used for validating.
 
         And deserializing input, and for serializing output.
