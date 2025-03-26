@@ -3,6 +3,7 @@ import datetime as dt
 from django.utils import timezone
 
 import pytest
+from pytest_mock import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
@@ -13,27 +14,20 @@ from opal.usage_statistics import queries as stats_queries
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
-def test_empty_fetch_population_summary() -> None:
-    """Ensure fetch_population_summary() query can return an empty result without errors."""
-    population_summary = stats_queries.fetch_population_summary()
-    assert population_summary == {
-        'user_signed_up': 0,
-        'incomplete_registration': 0,
+def test_empty_fetch_registration_summary() -> None:
+    """Ensure fetch_registration_summary() query can return an empty result without errors."""
+    registration_summary = stats_queries.fetch_registration_summary(
+        timezone.now().today(),
+        timezone.now().today(),
+    )
+    assert registration_summary == {
+        'uncompleted_registration': 0,
         'completed_registration': 0,
-        'english': 0,
-        'french': 0,
-        'deceased': 0,
-        'male': 0,
-        'female': 0,
-        'other_sex': 0,
-        'unknown_sex': 0,
-        'full_access': 0,
-        'limit_access': 0,
     }
 
 
-def test_fetch_population_summary() -> None:  # noqa: WPS213
-    """Ensure fetch_population_summary() query successfully returns population statistics."""
+def test_fetch_registration_summary(mocker: MockerFixture) -> None:
+    """Ensure fetch_registration_summary() query successfully returns population statistics."""
     marge_caregiver = caregiver_factories.CaregiverProfile(
         user=caregiver_factories.Caregiver(username='marge'),
         legacy_id=1,
@@ -112,73 +106,64 @@ def test_fetch_population_summary() -> None:  # noqa: WPS213
         status=patient_models.RelationshipStatus.PENDING,
     )
 
+    caregiver_models.RegistrationCode.objects.bulk_create([
+        caregiver_models.RegistrationCode(
+            code='marge_code',
+            relationship=marge_self_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='marge_homer',
+            relationship=marge_homer_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='homer_self1',
+            relationship=homer_first_self_relationship,
+            status=caregiver_models.RegistrationCodeStatus.BLOCKED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='homer_self2',
+            relationship=homer_second_self_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='marge_bart',
+            relationship=marge_bart_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='bart_self',
+            relationship=bart_self_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='homer_lisa',
+            relationship=homer_lisa_relationship,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
+        ),
+        caregiver_models.RegistrationCode(
+            code='lisa_self2',
+            relationship=lisa_second_self_relationship,
+            status=caregiver_models.RegistrationCodeStatus.NEW,
+        ),
+    ])
+    # Lisa's registration code created on previous day
+    today = timezone.now().date()
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = previous_day
     caregiver_factories.RegistrationCode(
-        code='marge_code',
-        relationship=marge_self_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='marge_homer',
-        relationship=marge_homer_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='homer_self1',
-        relationship=homer_first_self_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.BLOCKED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='homer_self2',
-        relationship=homer_second_self_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='marge_bart',
-        relationship=marge_bart_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='bart_self',
-        relationship=bart_self_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
-        code='homer_lisa',
-        relationship=homer_lisa_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-    )
-    caregiver_factories.RegistrationCode(
+        id=9,
         code='lisa_self1',
         relationship=lisa_first_self_relationship,
-        created_at=timezone.now().date() - dt.timedelta(days=1),
         status=caregiver_models.RegistrationCodeStatus.REGISTERED,
     )
-    caregiver_factories.RegistrationCode(
-        code='lisa_self2',
-        relationship=lisa_second_self_relationship,
-        created_at=timezone.now().date(),
-        status=caregiver_models.RegistrationCodeStatus.NEW,
-    )
 
-    population_summary = stats_queries.fetch_population_summary()
+    population_summary = stats_queries.fetch_registration_summary(
+        start_date=today, end_date=today,
+    )
     assert population_summary == {
-        'user_signed_up': 4,
-        'incomplete_registration': 2,
-        'completed_registration': 7,
-        'english': 9,
-        'french': 0,
-        'deceased': 0,
-        'male': 9,
-        'female': 0,
-        'other_sex': 0,
-        'unknown_sex': 0,
-        'full_access': 9,
-        'limit_access': 0,
+        'uncompleted_registration': 2,
+        'completed_registration': 6,
     }

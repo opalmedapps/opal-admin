@@ -12,14 +12,14 @@ from opal.patients import models as patients_models
 
 
 def fetch_registration_summary(
-    start_datetime_period: dt.datetime,
-    end_datetime_period: dt.datetime,
+    start_date: dt.date,
+    end_date: dt.date,
 ) -> dict[str, Any]:
     """Fetch grouped registration summary from `RegistrationCode` model.
 
     Args:
-        start_datetime_period: the beginning of the time period of the registration summary
-        end_datetime_period: the end of the time period of the registration summary
+        start_date: the beginning of the time period of the registration summary (inclusive)
+        end_date: the end of the time period of the registration summary (inclusive)
 
     Returns:
         registration summary for a given time period
@@ -31,8 +31,8 @@ def fetch_registration_summary(
     ]
 
     return caregivers_models.RegistrationCode.objects.filter(
-        created_at__gte=start_datetime_period,
-        created_at__lt=end_datetime_period,
+        created_at__date__gte=start_date,
+        created_at__date__lte=end_date,
     ).aggregate(
         uncompleted_registration=models.Count(
             'id',
@@ -45,26 +45,27 @@ def fetch_registration_summary(
     )
 
 
-def fetch_opal_users_summary(
-    start_datetime_period: dt.datetime,
-    end_datetime_period: dt.datetime,
+def fetch_caregivers_summary(
+    start_date: dt.date,
+    end_date: dt.date,
 ) -> dict[str, Any]:
-    """Fetch grouped Opal users summary from `CaregiverProfile` model.
+    """Fetch grouped caregivers summary from `CaregiverProfile` model.
 
     Args:
-        start_datetime_period: the beginning of the time period of the users summary
-        end_datetime_period: the end of the time period of the users summary
+        start_date: the beginning of the time period of the users summary (inclusive)
+        end_date: the end of the time period of the users summary (inclusive)
 
     Returns:
-        Opal users summary for a given time period
+        caregivers summary for a given time period
     """
     lang_codes = [lang[0] for lang in settings.LANGUAGES]
     lang_dict = {
         lang: models.Count('id', filter=models.Q(user__language=lang)) for lang in lang_codes
     }
+
     return caregivers_models.CaregiverProfile.objects.filter(
-        user__date_joined__gte=start_datetime_period,
-        user__date_joined__lt=end_datetime_period,
+        user__date_joined__gte=start_date,
+        user__date_joined__lte=end_date,
     ).aggregate(
         total=models.Count('id'),
         **lang_dict,
@@ -72,14 +73,14 @@ def fetch_opal_users_summary(
 
 
 def fetch_patients_summary(
-    start_datetime_period: dt.datetime,
-    end_datetime_period: dt.datetime,
+    start_date: dt.datetime,
+    end_date: dt.datetime,
 ) -> dict[str, Any]:
     """Fetch grouped patients summary from `Patient` model.
 
     Args:
-        start_datetime_period: the beginning of the time period of the patients summary
-        end_datetime_period: the end of the time period of the patients summary
+        start_date: the beginning of the time period of the patients summary (inclusive)
+        end_date: the end of the time period of the patients summary (inclusive)
 
     Returns:
         patients summary for a given time period
