@@ -12,7 +12,14 @@ class LegacyAliasSerializer(DynamicFieldsSerializer[LegacyAlias]):
 
     class Meta:
         model = LegacyAlias
-        fields = ['aliassernum', 'aliastype', 'aliasname_en', 'aliasname_fr']
+        fields = [
+            'aliassernum',
+            'aliastype',
+            'aliasname_en',
+            'aliasname_fr',
+            'alias_description_en',
+            'alias_description_fr',
+        ]
 
 
 class LegacyHospitalMapSerializer(DynamicFieldsSerializer[LegacyHospitalMap]):
@@ -66,6 +73,14 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
         source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkininstruction_fr',
     )
 
+    educational_material_url_en = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.educationalmaterialcontrolsernum.url_en',
+    )
+
+    educational_material_url_fr = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.educationalmaterialcontrolsernum.url_fr',
+    )
+
     patient = LegacyPatientSerializer(
         source='patientsernum',
         fields=('patientsernum', 'first_name', 'last_name'),
@@ -75,7 +90,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
 
     alias = LegacyAliasSerializer(
         source='aliasexpressionsernum.aliassernum',
-        fields=('aliastype', 'aliasname_en', 'aliasname_fr'),
+        fields=('aliastype', 'aliasname_en', 'aliasname_fr', 'alias_description_en', 'alias_description_fr'),
         many=False,
         read_only=True,
     )
@@ -104,6 +119,8 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
             'checkinpossible',
             'checkininstruction_en',
             'checkininstruction_fr',
+            'educational_material_url_en',
+            'educational_material_url_fr',
             'roomlocation_en',
             'roomlocation_fr',
             'hospitalmap',

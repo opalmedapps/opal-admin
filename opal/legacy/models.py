@@ -227,6 +227,12 @@ class LegacyAlias(models.Model):
     )
     alias_description_en = models.TextField(db_column='AliasDescription_EN')
     alias_description_fr = models.TextField(db_column='AliasDescription_FR')
+    educationalmaterialcontrolsernum = models.ForeignKey(
+        'LegacyEducationalMaterialControl',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialControlSerNum',
+        to_field='educationalmaterialcontrolsernum',
+    )
 
     class Meta:
         managed = False
@@ -343,6 +349,8 @@ class LegacyEducationalMaterialControl(models.Model):
         models.DO_NOTHING,
         db_column='EducationalMaterialCategoryId',
     )
+    url_en = models.CharField(db_column='URL_EN', max_length=2000)
+    url_fr = models.CharField(db_column='URL_FR', max_length=2000)
 
     class Meta:
         managed = False
