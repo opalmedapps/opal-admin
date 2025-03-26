@@ -59,7 +59,7 @@ class SecurityQuestion(models.Model):
         Returns:
             the question text.
         """
-        return '{title}'.format(title=self.title)
+        return self.title
 
 
 class SecurityAnswer(models.Model):
@@ -92,4 +92,4 @@ class SecurityAnswer(models.Model):
         Returns:
             the caregiver and the question.
         """
-        return '{question}'.format(question=self.question)
+        return self.question
