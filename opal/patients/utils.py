@@ -42,7 +42,7 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
 
 def update_caregiver(user: User, info: dict) -> None:
     """
-    Update Patient Legacy_id.
+    Update User infomation.
 
     Args:
         user: User object

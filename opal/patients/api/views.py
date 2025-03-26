@@ -5,7 +5,6 @@ from typing import Any, Type
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models.query import QuerySet
-from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -67,7 +66,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: C901 WPS210 WPS231
+    def post(self, request: Request, code: str) -> Response:
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -79,9 +78,8 @@ class RegistrationCompletionView(APIView):
             ValidationError: validation error.
 
         Returns:
-            HTTP response with the error or success message.
+            HTTP response with the error or success status.
         """
-        validation_error = None
         serializer = self.serializer_class(
             data=request.data,
         )
@@ -108,11 +106,8 @@ class RegistrationCompletionView(APIView):
                 register_data['security_answers'],
             )
         except ValidationError as exception:
-            validation_error = str(exception.args)
-
-        if validation_error:
             transaction.set_rollback(True)
-            raise serializers.ValidationError({'detail': _(validation_error)})
+            raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
 
