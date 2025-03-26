@@ -1,6 +1,4 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
-from typing import Any
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
@@ -9,9 +7,9 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from rest_framework import exceptions
 from rest_framework import serializers as drf_serializers
-from rest_framework import status
-from rest_framework.generics import RetrieveAPIView, get_object_or_404
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -48,7 +46,7 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     lookup_field = 'code_sha512'
 
 
-class UpdateDeviceView(AllowPUTAsCreateMixin):
+class UpdateDeviceView(AllowPUTAsCreateMixin, UpdateAPIView):
     """Class handling requests for updates or creations of device ids."""
 
     permission_classes = [IsAuthenticated]
@@ -56,42 +54,13 @@ class UpdateDeviceView(AllowPUTAsCreateMixin):
     lookup_url_kwarg = 'device_id'
     lookup_field = 'device_id'
 
-    def put(self, request: Request, *args: Any, **kwargs: Any) -> Any:
-        """Handle incoming put request and redirect to update method.
-
-        Args:
-            request (Request): request object with parameters to update or create
-            args (Any): varied amount of non-keyworded arguments
-            kwargs (Any): varied amount of keyworded arguments
-
-        Returns:
-            HTTP `Response` success or failure
-        """
-        if self.request.method == 'PUT':
-            return self.update(request, *args, **kwargs)
-        return Response({'status': status.HTTP_404_NOT_FOUND})
-
-    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Any:
-        """Handle incoming path request and redirect to partial update method.
-
-        Args:
-            request (Request): request object with parameters to update or create
-            args (Any): varied amount of non-keyworded arguments
-            kwargs (Any): varied amount of keyworded arguments
-
-        Returns:
-            HTTP `Response` success or failure
-        """
-        if self.request.method == 'PATCH':
-            return self.partial_update(request, *args, **kwargs)
-        return Response({'status': status.HTTP_404_NOT_FOUND})
-
     def get_queryset(self) -> QuerySet[Device]:
         """Provide the desired object or fails with 404 error.
 
         Returns:
             Device object or 404.
         """
+        # TODO: filter also by current user (once QSCCD-250 is done)
         return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 
@@ -107,19 +76,24 @@ class GetCaregiverPatientsList(APIView):
         Args:
             request: Http request made by the listener needed to retrive `Appuserid`.
 
+        Raises:
+            ParseError: If the caregiver username was not provided.
+
         Returns:
             Http response with the list of patients for a given caregiver.
         """
         user_id = request.headers.get('Appuserid')
-        if user_id:
-            relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
-            response = Response(
-                CaregiverPatientSerializer(relationships, many=True).data,
-            )
-        else:
-            response = Response([], status=status.HTTP_400_BAD_REQUEST)
 
-        return response
+        if not user_id:
+            raise exceptions.ParseError(
+                'Requests to APIs using CaregiverPatientPermissions must provide a string'
+                + " 'Appuserid' header representing the current user.",
+            )
+
+        relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
+        return Response(
+            CaregiverPatientSerializer(relationships, many=True).data,
+        )
 
 
 class RetrieveRegistrationCodeMixin(APIView):

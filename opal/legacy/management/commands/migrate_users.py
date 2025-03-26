@@ -1,7 +1,7 @@
 """Command for Users Caregivers migration."""
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from opal.caregivers.models import CaregiverProfile
 from opal.legacy.models import LegacyPatient, LegacyUsers
@@ -18,7 +18,8 @@ class Command(BaseCommand):
         """
         Handle migrate Users from legacy DB to New backend DB.
 
-        Return 'None'.
+        Raises:
+            CommandError: if the self RelationshipType does not exist
 
         Args:
             args: input arguments.
@@ -26,6 +27,11 @@ class Command(BaseCommand):
         """
         # TODO: change using name in retrieve the relationship type, to be done after QSCCD-645.
         relationship_type = RelationshipType.objects.filter(name='self').first()
+
+        # force failure if the relationship type does not exist
+        if relationship_type is None:
+            raise CommandError("RelationshipType for 'Self' not found")
+
         migrated_users_count = 0
 
         for legacy_user in LegacyUsers.objects.filter(usertype='Patient'):
@@ -43,11 +49,11 @@ class Command(BaseCommand):
                     caregiver_profile = self._create_caregiver_and_profile(legacy_patient, legacy_user)
                     # count number of migrated users
                     migrated_users_count += 1
-                if relationship_type:
-                    self._create_relationship(patient, caregiver_profile, relationship_type)
+
+                self._create_relationship(patient, caregiver_profile, relationship_type)
             else:
                 self.stderr.write(
-                    'Patient with sernum: {legacy_id}, does not exist,skipping.'.format(
+                    'Patient with sernum: {legacy_id}, does not exist, skipping.'.format(
                         legacy_id=legacy_user.usertypesernum,
                     ),
                 )

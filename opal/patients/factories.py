@@ -61,7 +61,7 @@ class Relationship(DjangoModelFactory):
     request_date = datetime.date.today()
     start_date = datetime.date(2020, 1, 1)
     end_date = datetime.date(2020, 5, 1)
-    reason = 'REASON'
+    reason = ''
 
 
 class CaregiverWithPatients(CaregiverProfile):

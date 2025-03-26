@@ -1,25 +1,30 @@
+from datetime import datetime
 from io import StringIO
 from typing import Any
 
 from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.db import connections
+from django.utils import timezone
 
 import pytest
+from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import RelationshipStatus
+from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 
 from ..management.commands import migrate_users
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
-class TestBasicClass:
-    """Basic test class."""
+class CommandTestMixin:
+    """Mixin to facilitate testing of management commands."""
 
     def _call_command(self, command_name: str, *args: Any, **kwargs: Any) -> tuple[str, str]:
         """
@@ -31,7 +36,7 @@ class TestBasicClass:
             kwargs: keywords input parameter
 
         Returns:
-            A tupe of stdour and stderr values.
+            tuple of stdout and stderr values
         """
         out = StringIO()
         err = StringIO()
@@ -45,7 +50,7 @@ class TestBasicClass:
         return out.getvalue(), err.getvalue()
 
 
-class TestSecurityQuestionsMigration(TestBasicClass):
+class TestSecurityQuestionsMigration(CommandTestMixin):
     """Test class for security questions migration."""
 
     def test_import_fails_question_exists(self) -> None:
@@ -74,7 +79,7 @@ class TestSecurityQuestionsMigration(TestBasicClass):
         assert error == ''
 
 
-class TestSecurityAnswersMigration(TestBasicClass):
+class TestSecurityAnswersMigration(CommandTestMixin):
     """Test class for security answers migration."""
 
     def test_import_fails_legacy_user_not_exists(self) -> None:
@@ -201,7 +206,7 @@ class TestSecurityAnswersMigration(TestBasicClass):
         assert error == ''
 
 
-class TestPatientAndPatientIdentifierMigration(TestBasicClass):
+class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     """Test class for security answers migration."""
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
@@ -296,19 +301,30 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         assert 'Number of imported patients is: 0\n' in message
 
 
-class TestUsersCaregiversMigration(TestBasicClass):
+class TestUsersCaregiversMigration(CommandTestMixin):
     """Test class for users and caregivers migrations from legacy DB."""
+
+    def test_import_user_no_self_relationshiptype(self) -> None:
+        """Test import fails if no self relationship type exists."""
+        with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
+            self._call_command('migrate_users')
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
+        self._create_self_relationshiptype()
+
         message, error = self._call_command('migrate_users')
+
         assert 'Number of imported users is: 0' in message
 
     def test_import_user_caregiver_no_patient_exist(self) -> None:
         """Test import fails, a corresponding patient in new backend does not exist."""
+        self._create_self_relationshiptype()
         legacy_factories.LegacyUserFactory(usertypesernum=99)
+
         message, error = self._call_command('migrate_users')
-        assert 'Patient with sernum: 99, does not exist,skipping.\n' in error
+
+        assert 'Patient with sernum: 99, does not exist, skipping.\n' in error
 
     def test_import_user_caregiver_already_exist(self) -> None:
         """Test import fails, caregiver profile has already been migrated."""
@@ -316,7 +332,9 @@ class TestUsersCaregiversMigration(TestBasicClass):
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(name='self')
         patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
 
@@ -324,7 +342,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationshiptype = patient_factories.RelationshipType(name='self')
+        relationshiptype = self._create_self_relationshiptype()
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
@@ -332,7 +350,9 @@ class TestUsersCaregiversMigration(TestBasicClass):
             type=relationshiptype,
             status=RelationshipStatus.CONFIRMED,
         )
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
@@ -341,9 +361,11 @@ class TestUsersCaregiversMigration(TestBasicClass):
         """Test import pass for relationship for already migrated caregiver."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(name='self')
+        self._create_self_relationshiptype()
         patient_factories.CaregiverProfile(legacy_id=55)
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
@@ -353,8 +375,10 @@ class TestUsersCaregiversMigration(TestBasicClass):
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(name='self')
+        self._create_self_relationshiptype()
+
         message, error = self._call_command('migrate_users')
+
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Number of imported users is: 1\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
@@ -367,8 +391,10 @@ class TestUsersCaregiversMigration(TestBasicClass):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
-        patient_factories.RelationshipType(name='self')
+        self._create_self_relationshiptype()
+
         message, error = self._call_command('migrate_users')
+
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Legacy user with sernum: 56 has been migrated\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
@@ -394,3 +420,289 @@ class TestUsersCaregiversMigration(TestBasicClass):
         profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
 
         assert profile.user.phone_number == ''
+
+    # TODO: remove once self relationship is added via data migration (QSCCD-645)
+    def _create_self_relationshiptype(self) -> RelationshipType:
+        return patient_factories.RelationshipType(name='self')
+
+
+class TestPatientsDeviationsCommand(CommandTestMixin):
+    """Test class for the custom command that detects `Patient` model/tables deviations."""
+
+    def test_deviations_no_patients(self) -> None:
+        """Ensure the command does not fail if there are no patient records."""
+        message, error = self._call_command('find_patients_deviations')
+        assert 'No deviations has been found in the "Patient" tables/models.' in message
+
+    def test_deviations_uneven_patient_records(self) -> None:
+        """Ensure the command handles the cases when "Patient" model/tables have uneven number of records."""
+        patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert 'The number of records in "opal.patients_patient" and "OpalDB.Patient" tables does not match!' in error
+        assert '"opal.patients_patient": 1' in error
+        assert '"OpalDB.Patient": 2' in error
+
+    def test_patient_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "Patient" model and tables."""
+        legacy_factories.LegacyPatientFactory()
+        patient_factories.Patient(legacy_id=1)
+        message, error = self._call_command('find_patients_deviations')
+
+        assert '{0}\n\n{1}'.format(
+            'found deviations in the "Patient" tables/models!!!',
+            120 * '-',
+        ) in error
+
+        assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
+        assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
+        assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
+        assert '{0}\n\n\n'.format(120 * '-')
+
+    def test_deviations_uneven_hospi_patient_records(self) -> None:
+        """Ensure the command handles the cases when "HospitalPatient" model/tables have uneven number of records."""
+        patient_factories.HospitalPatient()
+        patient_factories.HospitalPatient()
+        legacy_factories.LegacyPatientHospitalIdentifierFactory()
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert '{0}{1}'.format(
+            'The number of records in "opal.patients_hospitalpatient" ',
+            'and "OpalDB.Patient_Hospital_Identifier" tables does not match!',
+        ) in error
+        assert 'opal.patients_hospitalpatient: 2' in error
+        assert 'OpalDB.Patient_Hospital_Identifier: 1' in error
+
+    def test_hospital_patient_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "HospitalPatient" model and tables."""
+        legacy_factories.LegacyPatientHospitalIdentifierFactory()
+        patient_factories.HospitalPatient(
+            patient=patient_factories.Patient(legacy_id=1),
+            site=hospital_settings_factories.Site(code='TST'),
+        )
+
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert 'OpalDB.Patient_Hospital_Identifier  <===>  opal.patients_hospitalpatient:' in error
+        assert "(51, 'RVH', '9999996', 1)" in error
+        assert "(1, 'TST', '9999996', 1)" in error
+
+    def test_no_patient_records_deviations(self) -> None:
+        """Ensure the command does not return an error if there are no deviations in "Patient" records."""
+        # create legacy patient
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ssn='RAMQ12345678',
+            firstname='First Name',
+            lastname='Last Name',
+            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            sex='Male',
+            telnum='5149995555',
+            email='opal@example.com',
+            language='en',
+        )
+        # create legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='opal@example.com',
+                language='en',
+                phone_number='5149995555',
+            ),
+            legacy_id=99,
+        )
+        # create patient
+        patient = patient_factories.Patient(
+            legacy_id=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+        # create hospital patient
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=hospital_settings_factories.Site(code='RVH'),
+        )
+
+        # create another patient record
+
+        # create a second legacy patient
+        second_legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=98,
+            ssn='RAMQ87654321',
+            firstname='Second First Name',
+            lastname='Second Last Name',
+            dateofbirth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex='Female',
+            telnum='5149991111',
+            email='second.opal@example.com',
+            language='fr',
+        )
+        # create second legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(
+            patientsernum=second_legacy_patient,
+            mrn='9999997',
+            hospitalidentifiertypecode=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
+        )
+
+        # create second CaregiverProfile record
+        caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='second.opal@example.com',
+                phone_number='5149991111',
+                language='fr',
+            ),
+            legacy_id=98,
+        )
+
+        # create second `Patient` record
+        patient = patient_factories.Patient(
+            legacy_id=98,
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex=Patient.SexType.FEMALE,
+        )
+
+        # create second `HospitalPatient` record
+        patient_factories.HospitalPatient(
+            patient=patient,
+            mrn='9999997',
+            site=hospital_settings_factories.Site(code='MGH'),
+        )
+
+        message, error = self._call_command('find_patients_deviations')
+        assert 'No deviations has been found in the "Patient" tables/models.' in message
+
+
+class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
+    """Test class for the custom command that detects `Questionnaire respondents` sync deviations."""
+
+    def test_deviations_no_respondents(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command does not fail if there are no questionnaires with respondents."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                conn.execute('SET FOREIGN_KEY_CHECKS=0; DELETE FROM answerQuestionnaire;')
+                conn.close()
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
+
+    def test_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                query = """
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_1',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                    WHERE ID = 184;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_2',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                    WHERE ID = 189;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test3'
+                    WHERE ID = 190;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = '',
+                        `respondentDisplayName` = ''
+                    WHERE ID = 184;
+                """
+                conn.execute(query)
+                conn.close()
+
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT',
+            username='firebase hashed user UID',
+        )
+
+        # this user should not be included to the error list
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT test1',
+            username='firebase hashed user UID_1',
+        )
+
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT test2_2',
+            username='firebase hashed user UID_2',
+        )
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'found deviations in the questionnaire respondents!!!' in error
+        assert "('', '')" in error
+        assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2_2')" in error
+        assert "('firebase hashed user UID', 'TEST NAME RESPONDENT test3')" in error
+        assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2')" in error
+
+    def test_no_questionnaire_respondents_deviations(self, django_db_blocker: _DatabaseBlocker) -> None:
+        """Ensure the command does not return an error if no sync deviations for respondents' names."""
+        with django_db_blocker.unblock():
+            with connections['questionnaire'].cursor() as conn:
+                query = """
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT';
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_1',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test1'
+                    WHERE ID = 184;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID_2',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT test2'
+                    WHERE ID = 189;
+
+                    UPDATE answerQuestionnaire
+                    SET
+                        `respondentUsername` = 'firebase hashed user UID',
+                        `respondentDisplayName` = 'TEST NAME RESPONDENT'
+                    WHERE ID = 190;
+                """
+                conn.execute(query)
+                conn.close()
+
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT',
+            username='firebase hashed user UID',
+        )
+
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT test1',
+            username='firebase hashed user UID_1',
+        )
+
+        user_factories.User(
+            first_name='TEST NAME',
+            last_name='RESPONDENT test2',
+            username='firebase hashed user UID_2',
+        )
+
+        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
