@@ -19,8 +19,8 @@ class Base64Util:
         """
         try:
             # Return a `None` if a given file is not an image
-            with path.open(mode='rb') as image_file:
-                data = base64.b64encode(image_file.read())
+            with path.open(mode='rb') as file:
+                data = base64.b64encode(file.read())
         except OSError:
             return None
 
