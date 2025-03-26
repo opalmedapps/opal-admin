@@ -609,11 +609,14 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             a dict of relationship type description and patient age
         """
         option_descriptions = {}
+        age_tile = _('Age')
+        older_age = _(' and older')
         for value in RelationshipType.objects.all().values():
-            option_descriptions[value['id']] = '{description}, Age: {start_age}{end_age}'.format(
+            option_descriptions[value['id']] = '{description}, {age_title}: {start_age}{end_age}'.format(
                 description=value['description'],
+                age_title=age_tile,
                 start_age=value['start_age'],
-                end_age='-{age}'.format(age=value['end_age']) if value['end_age'] else ' and older',
+                end_age='-{age}'.format(age=value['end_age']) if value['end_age'] else older_age,
             )
         return option_descriptions
 
