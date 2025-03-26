@@ -683,9 +683,3 @@ msgid "Please note multiple MRNs need to be merged by medical records."
 msgstr ""
 "Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
 "médicaux."
-
-#~ msgid "No explanation provided."
-#~ msgstr "Aucune explication fournie."
-
-#~ msgid "Back"
-#~ msgstr "Retour"
