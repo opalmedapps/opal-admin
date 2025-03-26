@@ -385,4 +385,4 @@ DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
 # ------------------------------------------------------------------------------
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS')
-REPORT_FILE_PATH = MEDIA_ROOT.joinpath('tmp/questionnaire-files')
+REPORT_DIR_PATH = MEDIA_ROOT.joinpath('tmp/questionnaire-files')
