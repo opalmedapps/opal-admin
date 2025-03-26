@@ -1153,6 +1153,7 @@ class TestRegistrationCompletionView:
     def test_registration_without_security_answers(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration without security answers."""
         api_client.force_login(user=admin_user)
+        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
         input_data_without_security_answers = {
             'patient': {
                 'legacy_id': 1,
@@ -1182,6 +1183,7 @@ class TestRegistrationCompletionView:
         )
 
         assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
