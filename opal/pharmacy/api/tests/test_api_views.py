@@ -1,13 +1,11 @@
 """Test module for the REST API endpoints of the `pharmacy` app."""
-import json
 from pathlib import Path
 from uuid import uuid4
 
-from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
+from pytest_django.asserts import assertContains
 from rest_framework import status
 from rest_framework.test import APIClient
 
