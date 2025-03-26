@@ -39,6 +39,10 @@ class CreateDatabankConsentView(generics.CreateAPIView):
         )
         guid = OpenScienceIdentity(osi_identifiers).to_signature()
 
+        # Remove non-model fields before saving
+        serializer.validated_data.pop('middle_name', None)
+        serializer.validated_data.pop('city_of_birth', None)
+
         serializer.save(
             patient=patient,
             guid=guid,

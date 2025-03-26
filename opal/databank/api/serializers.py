@@ -1,6 +1,4 @@
 """Serializers for the API views of the `databank` app."""
-from typing import Any
-
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
@@ -27,17 +25,3 @@ class DatabankConsentSerializer(DynamicFieldsSerializer):
             'city_of_birth',
         ]
         read_only_fields = ['patient']
-
-    def create(self, validated_data: dict[str, Any]) -> Any:
-        """Create new `DatabankConsent` instance.
-
-        Args:
-            validated_data: validated `DatabankConsent` data
-
-        Returns:
-            the created `DatabankConsent` record
-        """
-        # Remove non-model fields
-        validated_data.pop('middle_name', None)
-        validated_data.pop('city_of_birth', None)
-        return super().create(validated_data)

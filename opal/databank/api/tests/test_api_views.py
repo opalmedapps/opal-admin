@@ -15,13 +15,23 @@ from rest_framework.test import APIClient
 from opal.patients.factories import Patient
 from opal.users import factories as user_factories
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 PATIENT_UUID = uuid4()
 
 
 class TestCreateDatabankConsentView:
     """Class wrapper for databank endpoint tests."""
+
+    def test_databank_consent_form_fixture(self, databank_consent_questionnaire_and_response: dict) -> None:
+        """Test the fixture from conftest creates a proper consent questionnaire."""
+        consenting_patient = databank_consent_questionnaire_and_response['patient']
+        consent_questionnaire = databank_consent_questionnaire_and_response['questionnaire']
+        assert consenting_patient
+        assert consent_questionnaire
+        assert consenting_patient.external_id == 51
+        assert consent_questionnaire.title.content == 'Databank Consent Questionnaire'
+        assert consent_questionnaire.purpose.title.content == 'Consent'
 
     def test_databank_consent_create_unauthorized(
         self,

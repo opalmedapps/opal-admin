@@ -224,9 +224,14 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
         language_id=2,
     )
     cob_question = factories.LegacyQuestionFactory(display=cob_content)
-    consent_purpose = factories.LegacyPurposeFactory(id=4)
-    questionnaire_title = factories.LegacyDictionaryFactory(
+    consent_purpose_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
+        content='Consent',
+        language_id=2,
+    )
+    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    questionnaire_title = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='Databank Consent Questionnaire',
         language_id=2,
     )
