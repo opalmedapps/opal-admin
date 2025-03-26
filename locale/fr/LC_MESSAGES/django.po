@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 14:47-0400\n"
+"POT-Creation-Date: 2023-05-31 14:43-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,21 +81,29 @@ msgstr "Enregistrer"
 msgid "Yes, delete"
 msgstr "Oui, supprimer"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid "Dear"
 msgstr "Bonjour"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid "Welcome to Opal"
 msgstr "Bienvenue dans le groupe Opal"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid "Thank you for deciding to create an account with us"
 msgstr "Merci d'avoir choisi de créer un compte avec nous"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid ""
@@ -105,6 +113,8 @@ msgstr ""
 "Si vous n'avez pas effectué de demande de création de compte Opal en "
 "utilisant cette adresse courriel, veuillez ne pas tenir compte de ce message"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid ""
@@ -114,6 +124,8 @@ msgstr ""
 "Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
 "code ci-dessous sur la page de vérification "
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid ""
@@ -123,11 +135,15 @@ msgstr ""
 "Ce code expirera dans 10 minutes. Une fois le code expiré, vous devrez "
 "demander un nouveau code pour procéder avec votre inscription"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid "Yours"
 msgstr "Cordialement"
 
+#: opal/templates/email/registered_confirmation.html
+#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid "The Opal team"
