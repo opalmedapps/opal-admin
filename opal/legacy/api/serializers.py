@@ -77,8 +77,9 @@ class QuestionnaireReportRequestSerializer(serializers.Serializer):
         max_length=10,
         required=True,
         allow_blank=False,
+        min_length=6,
         label='MRN',
-    )  # TODO: min_length?
+    )
     site = serializers.CharField(
         max_length=10,
         required=True,
