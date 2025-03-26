@@ -82,7 +82,8 @@ flake8:
     # fix relative file paths so GitLab is happy and shows the violations properly
     # see: https://github.com/awelzel/flake8-gl-codeclimate/issues/14
     - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('./', '') for line in sys.stdin]; print(json.dumps(json.loads('\n'.join(lines)), indent='\t'));" > gl-code-quality-report.json || true
-    - flake8
+    # fail if JSON file does not contain empty array
+    - cat gl-code-quality-report.json | grep -q "\[\]"
   artifacts:
     when: always
     reports:
@@ -95,10 +96,11 @@ mypy:
     - pip install mypy-gitlab-code-quality
     - mypy --version
     # export output and don't fail if there are errors
-    - mypy . --no-error-summary > mypy-out.txt || true
+    - mypy opal/ --no-error-summary > mypy-out.txt || true
     - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
-    # re-run mypy and let it fail if there are errors
-    - mypy .
+    # fail if file is not empty
+    # see: https://stackoverflow.com/q/9964823
+    - [ ! -s mypy-out.txt ]
   artifacts:
     when: always
     reports:
