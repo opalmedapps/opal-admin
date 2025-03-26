@@ -7,7 +7,7 @@ from opal.caregivers.api.serializer import RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 
 
-class GetRegistrationEncryptionInfo(RetrieveAPIView):
+class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     """Class handling gets requests for registration encryption values."""
 
     queryset = (
