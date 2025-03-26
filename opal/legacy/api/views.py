@@ -83,7 +83,7 @@ class CaregiverPermissionsView(APIView):
     """
 
     # The essential work for this request is done by CaregiverPatientPermissions
-    permission_classes = [CaregiverPatientPermissions]
+    permission_classes = [IsAuthenticated, CaregiverPatientPermissions]
 
     def get(self, request: HttpRequest, legacy_id: int) -> HttpResponse:
         """
