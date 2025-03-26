@@ -1430,6 +1430,25 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
         assert DailyUserPatientActivity.objects.all().count() == 1
         assert DailyPatientDataReceived.objects.all().count() == 1
 
+    def test_migrate_legacy_usage_statistics_with_success_no_date_value(
+        self,
+        django_db_blocker: DjangoDbBlocker,
+    ) -> None:
+        """Ensure the command handle the legacy usage statistics migration using no date test data."""
+        with django_db_blocker.unblock():
+            self._create_legacy_report_table()
+            self._create_test_legacy_usage_statistics_no_date_value()
+            self._create_test_self_registered_patient()
+
+            message, error = self._call_command('migrate_legacy_usage_statistics')
+            self._clean_legacy_report_table()
+
+        assert 'Number of imported legacy activity log is: 1' in message
+        assert 'Number of imported legacy data received log is: 1' in message
+        assert DailyUserAppActivity.objects.all().count() == 1
+        assert DailyUserPatientActivity.objects.all().count() == 1
+        assert DailyPatientDataReceived.objects.all().count() == 1
+
     def test_migrate_legacy_patient_activity_logs_with_failed(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Test the legacy patient activity log migration failed due to unexisting patient."""
         with django_db_blocker.unblock():
@@ -1621,6 +1640,68 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
                     `Browser`
                 )
                 VALUES (CURRENT_DATE(),99,'M','EN','3',0,'Test',NOW(),NOW(),NOW(),NOW(),NOW(),NOW(),'Yes',0,0,0);
+            """
+            conn.execute(query)
+            conn.close()
+
+    def _create_test_legacy_usage_statistics_no_date_value(self) -> None:
+        """Create test legacy usage statistics logs with no date value."""
+        with connections['report'].cursor() as conn:
+            query = """
+                INSERT INTO rpt_patient_activity_log(
+                    `PatientSerNum`,
+                    `Last_Login`,
+                    `Date_Login`,
+                    `Count_Login`,
+                    `Count_Checkin`,
+                    `Count_Clinical_Notes`,
+                    `Count_Educational_Material`,
+                    `Count_Feedback`,
+                    `Count_Questionnaire`,
+                    `Count_Update_Security_Answer`,
+                    `Count_LabResults`,
+                    `Count_Update_Password`,
+                    `Year_Login`,
+                    `Month_Login`,
+                    `Day_Login`,
+                    `Day_Of_Week_Login`,
+                    `Date_Added`
+                )
+                VALUES (99, NULL, CURRENT_DATE(),0,0,0,0,0,0,0,0,0,0,0,0,0,CURRENT_DATE());
+
+                INSERT INTO rpt_patient_labs_log(
+                    `PatientSerNum`,
+                    `Last_Lab_Received`,
+                    `Date_Received`,
+                    `Count_Labs`,
+                    `Year_Received`,
+                    `Month_Received`,
+                    `Day_Received`,
+                    `Day_Of_Week_Received`,
+                    `Date_Added`
+                )
+                VALUES (99, NULL, CURRENT_DATE(),0,0,0,0,0,CURRENT_DATE());
+
+                INSERT INTO rpt_patient_log(
+                    `Date_Added`,
+                    `PatientSerNum`,
+                    `Sex`,
+                    `Language`,
+                    `AccessLevel`,
+                    `BlockedStatus`,
+                    `StatusReasonTxt`,
+                    `Last_Login`,
+                    `Last_Appointment_Received`,
+                    `Next_Appointment`,
+                    `Last_Lab_Received`,
+                    `Last_Diagnosis_Received`,
+                    `Last_Clinical_Notes_Received`,
+                    `Completed_Registration`,
+                    `iOS`,
+                    `Android`,
+                    `Browser`
+                )
+                VALUES (CURRENT_DATE(),99,'M','EN','3',0,'Test',NULL,NULL,NULL,NULL,NULL,NULL,'Yes',0,0,0);
             """
             conn.execute(query)
             conn.close()
