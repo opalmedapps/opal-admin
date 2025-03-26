@@ -352,3 +352,41 @@ services:
       - path/to/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
       - $PWD/.env:.env
 ```
+
+## Running the databases with encrypted connections
+
+If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt all database connections and traffic. This requires installing [db-docker](https://gitlab.com/opalmedapps/db-docker) with the SSL/TLS setup and modifying the setup for Django:
+
+1. In the `db-docker` repository, follow the [Running the databases with encrypted connections](https://gitlab.com/opalmedapps/db-docker/-/tree/use-override-for-ssl#running-the-databases-with-encrypted-connections) section to generate self-signed certificates and set the databases in the SSL/TLS mode.
+
+2. In the Django `Backend`, open a bash CLI and navigate to the `certs/` directory. There should be `openssl-server.cnf` file that provides the details for openssl to generate the certificates required to enable encrypted connections between any client application container and the database container.
+
+3. Copy to the current (e.g., `certs/`) folder the `ca-key.pem` and `ca.pem` certificate authority (CA) certificates that were generated in the `db-docker`.
+
+4. Generate the server certificate:
+
+    ```shell
+    # Create the server's private key and a certificate request for the CA
+    openssl req -config openssl-server.cnf -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem
+    # let the CA issue a certificate for the server
+    openssl x509 -req -in server-req.pem -days 3600 -CA ca.pem -CAkey ca-key.pem -set_serial 01 -out server-cert.pem -sha256
+    ```
+
+5. Check the validity of these certs (a message like 'certificate OK' should appear.)
+
+    ```shell
+    openssl verify -CAfile ca.pem server-cert.pem
+    openssl verify -CAfile ca.pem ca.pem
+    ```
+
+6. To enable SSL/TLS for Django's database connections, in the .env file, set `USE_SSL_FOR_DATABASES=True` and fill in the `SSL_CA` variable with the path to the public key of the certificate authority file (e.g., `/app/certs/ca.pem`).
+
+7. Finally, copy the docker compose SSL override file so that it automatically applies when running compose commands:
+
+    ```shell
+    cp docker-compose.ssl.yml docker-compose.override.yml
+    ```
+
+    You can verify that it is applied by running `docker compose config`.
+
+    **Note:** [Windows users may have to re-save the `ssl.cnf` as 'read-only'](https://stackoverflow.com/a/51854668) for Docker to actually use the configs listed there.
