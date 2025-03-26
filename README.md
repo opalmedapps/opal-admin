@@ -154,7 +154,7 @@ python -m pip install -r requirements/development.txt
 
 ### Migrate Database and Create Superuser
 
-Before you can start, you need to migrate the database and create a superuser. Ensure Docker is running before start. Execute the following commands either in the virtual environment or in the `app` container.
+Before you can start, you need to migrate the database and create a superuser. Ensure at least the database container is running. Execute the following commands either in the virtual environment or in the `app` container.
 
 ```sh
 python manage.py migrate
