@@ -309,6 +309,11 @@ LOGGING = {
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 
+# OIE related settings
+#
+# OIE URL to OIE end point (no trailing slash)
+OIE_HOST = env.url('OPAL_ADMIN_URL').geturl()
+
 # Redirect after logout to legacy OpalAdmin's logout page
 # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
 LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)
