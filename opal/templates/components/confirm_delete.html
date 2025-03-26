@@ -7,6 +7,9 @@
 
   <form method="POST" novalidate>
     {% csrf_token %}
-    {% form_actions cancel_url=cancel_url submit_type="delete" %}
+    {% #form_actions %}
+      {% form_cancel href=cancel_url %}
+      {% form_submit type="delete" %}
+    {% /form_actions %}
   </form>
 </div>

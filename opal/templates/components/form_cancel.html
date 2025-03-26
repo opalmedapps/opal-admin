@@ -1,4 +1,17 @@
 {% load i18n %}
+{% load extra_filters %}
+
+{% var type=type|default:"cancel" %}
+
+{% fragment as label %}
+{% if type == "cancel" %}
+  {% translate "Cancel" %}
+  {% elif type == "back" %}
+    {% translate "Back" %}
+  {% elif type == "done" %}
+    {% translate "Done" %}
+  {% endif %}
+{% endfragment %}
 
 {# keep in one line to satisfy coverage detection #}
-{% #button href=href type="secondary" %}{% translate "Cancel" %}{% /button %}
+{% #button href=href type="secondary" %}{{ label|strip }}{% /button %}
