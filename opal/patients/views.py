@@ -400,12 +400,12 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 status=status,
                 reason='',
                 request_date=date.today(),
-                start_date=Relationship.set_relationship_start_date(
+                start_date=Relationship.calculate_default_start_date(
                     date.today(),
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
-                end_date=Relationship.set_relationship_end_date(
+                end_date=Relationship.calculate_end_date(
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
