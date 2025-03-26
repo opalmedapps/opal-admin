@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-19 16:00+0000\n"
+"POT-Creation-Date: 2023-10-03 01:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,22 @@ msgstr ""
 #: opal/users/admin.py
 msgid "Extra"
 msgstr "Extra"
+
+#: opal/users/api/viewsets.py
+msgid "user not found."
+msgstr ""
+
+#: opal/users/api/viewsets.py
+msgid "manager group not found."
+msgstr ""
+
+#: opal/users/api/viewsets.py
+msgid "user was added to the managers group successfully."
+msgstr ""
+
+#: opal/users/api/viewsets.py
+msgid "user was removed from the managers group successfully."
+msgstr ""
 
 #: opal/users/apps.py
 msgid "Users"
