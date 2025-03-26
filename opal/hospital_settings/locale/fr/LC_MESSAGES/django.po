@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-06 19:29+0300\n"
+"POT-Creation-Date: 2022-12-27 01:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,6 +76,12 @@ msgstr ""
 #: opal/hospital_settings/models.py
 msgid "Latitude"
 msgstr ""
+
+#: opal/hospital_settings/models.py
+#, fuzzy
+#| msgid "Can manage institutions"
+msgid "Can manage sites"
+msgstr "Peut gérer des institutions"
 
 #: opal/hospital_settings/models.py
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html
