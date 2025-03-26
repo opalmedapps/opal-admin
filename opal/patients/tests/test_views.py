@@ -1030,17 +1030,7 @@ def test_qr_code_class_type() -> None:
 
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
-    patient_mrn_records = OIEPatientData(
-        date_of_birth=patient_data.date_of_birth,
-        first_name=patient_data.first_name,
-        last_name=patient_data.last_name,
-        sex=patient_data.sex,
-        alias=patient_data.alias,
-        deceased=patient_data.deceased,
-        death_date_time=patient_data.death_date_time,
-        ramq=patient_data.ramq,
-        ramq_expiration=patient_data.ramq_expiration,
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -1059,22 +1049,12 @@ def test_some_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
-    patient_mrn_records = OIEPatientData(
-        date_of_birth=patient_data.date_of_birth,
-        first_name=patient_data.first_name,
-        last_name=patient_data.last_name,
-        sex=patient_data.sex,
-        alias=patient_data.alias,
-        deceased=patient_data.deceased,
-        death_date_time=patient_data.death_date_time,
-        ramq=patient_data.ramq,
-        ramq_expiration=patient_data.ramq_expiration,
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -1093,22 +1073,12 @@ def test_all_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is True
 
 
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
-    patient_mrn_records = OIEPatientData(
-        date_of_birth=patient_data.date_of_birth,
-        first_name=patient_data.first_name,
-        last_name=patient_data.last_name,
-        sex=patient_data.sex,
-        alias=patient_data.alias,
-        deceased=patient_data.deceased,
-        death_date_time=patient_data.death_date_time,
-        ramq=patient_data.ramq,
-        ramq_expiration=patient_data.ramq_expiration,
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -1127,22 +1097,12 @@ def test_no_mrns_have_same_site_code() -> None:
             ),
         ],
     )
-    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False
+    assert AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_data) is False
 
 
 def test_error_message_mrn_with_same_site_code() -> None:
     """Test error message shows up once some MRN records having the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
-    patient_mrn_records = OIEPatientData(
-        date_of_birth=patient_data.date_of_birth,
-        first_name=patient_data.first_name,
-        last_name=patient_data.last_name,
-        sex=patient_data.sex,
-        alias=patient_data.alias,
-        deceased=patient_data.deceased,
-        death_date_time=patient_data.death_date_time,
-        ramq=patient_data.ramq,
-        ramq_expiration=patient_data.ramq_expiration,
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -1163,41 +1123,13 @@ def test_error_message_mrn_with_same_site_code() -> None:
     )
     assert AccessRequestView()._update_patient_confirmation_context(
         {},
-        patient_mrn_records,
+        patient_data,
     )['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
 
 
 def test_error_message_searched_patient_deceased() -> None:
     """Test error message shows up once searched patient is deceased."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
-    patient_mrn_records = OIEPatientData(
-        date_of_birth=patient_data.date_of_birth,
-        first_name=patient_data.first_name,
-        last_name=patient_data.last_name,
-        sex=patient_data.sex,
-        alias=patient_data.alias,
-        deceased=True,
-        death_date_time=patient_data.death_date_time,
-        ramq=patient_data.ramq,
-        ramq_expiration=patient_data.ramq_expiration,
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(deceased=True)
 
     error_message = (
         'Unable to complete action with this patient. '
@@ -1205,7 +1137,7 @@ def test_error_message_searched_patient_deceased() -> None:
     )
     assert AccessRequestView()._update_patient_confirmation_context(
         {},
-        patient_mrn_records,
+        patient_data,
     )['error_message'] == error_message
 
 
