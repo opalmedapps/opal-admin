@@ -6,7 +6,13 @@ from opal.patients.models import Patient
 
 
 class AbstractQuantityTiming(models.Model):
-    """AbstractQuantityTiming."""
+    """Describes the quantity and timing information for a given prescription/order.
+
+    Quantity/Timing specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Fields/ORC.7
+
+    The default duration is indefinite which can also be taken to mean 'until the prescription runs out.
+    The default priority is Routine/Default: https://hl7-definition.caristix.com/v2/HL7v2.3/Fields/ORC.7.6
+    """
 
     quantity = models.DecimalField(max_digits=8, decimal_places=3)
     unit = models.CharField(max_length=20, blank=True)
@@ -21,7 +27,10 @@ class AbstractQuantityTiming(models.Model):
 
 
 class PhysicianPrescriptionOrder(AbstractQuantityTiming):
-    """PhysicianPrescriptionOrder."""
+    """Describes the physician's prescription/order in its original state.
+
+    Common Order Segment specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/ORC
+    """
 
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
@@ -52,7 +61,10 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
 
 
 class PharmacyEncodedOrder(AbstractQuantityTiming):
-    """PharmacyEncodedOrder."""
+    """Describes the final prescription/order after any alterations mandated by the pharmacy provider.
+
+    Pharmacy Encoded Order specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
+    """
 
     physician_prescription_order = models.ForeignKey('PhysicianPrescriptionOrder', on_delete=models.CASCADE)
     give_code = models.ForeignKey(
@@ -112,7 +124,10 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
 
 
 class CodedElement(models.Model):
-    """CodedElement."""
+    """A uniquely identified substance within some pharmaceutical coding system.
+
+    Coded Element Data Type specifications:https://hl7-definition.caristix.com/v2/HL7v2.3/DataTypes/CE
+    """
 
     identifier = models.CharField(max_length=50)
     text = models.CharField(max_length=150)
@@ -136,7 +151,10 @@ class CodedElement(models.Model):
 
 
 class PharmacyRoute(models.Model):
-    """PharmacyRoute."""
+    """Special pharmacy-provided instructions for the method of delivery of a prescription/order.
+
+    Pharmacy Route specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
+    """
 
     pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
     route = models.ForeignKey(
@@ -190,7 +208,10 @@ class ComponentType(models.TextChoices):
 
 
 class PharmacyComponent(models.Model):
-    """PharmacyComponent."""
+    """Special instructions or compound specifications to produce a requested prescription/order.
+
+    Pharmacy Component specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
+    """
 
     pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
     component_type = models.CharField(max_length=1, choices=ComponentType.choices)

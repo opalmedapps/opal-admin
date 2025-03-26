@@ -34,9 +34,9 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory):
     service_start = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     service_end = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     priority = 'PRN'  # As needed
-    trigger_event = 'NW'
+    trigger_event = 'NW'  # New order, can also be 'XX' order changed
     filler_order_number = factory.Sequence(lambda number: number + 1)
-    order_status = 'SC'
+    order_status = 'SC'  # In progress / Scheduled
     entered_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     entered_by = 'John Doe'
     verified_by = 'Jane Doe'
