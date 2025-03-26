@@ -3,7 +3,6 @@ import datetime as dt
 from types import MappingProxyType
 from typing import TypeAlias, Union
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 
@@ -357,6 +356,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
     """Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
+    Note that this function explicitly does not throw any Errors to avoid affecting registration processes.
 
     Args:
         django_patient: The patient who has just completed registration
@@ -400,7 +400,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
             readstatus=0,
             date_added=timezone.make_aware(dt.datetime.now()),
         )
-    except ObjectDoesNotExist:
+    except Exception:
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)
         return False
@@ -409,6 +409,9 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
 
 def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRecords:
     """Fetch the required control records for databank consent creation.
+
+    If the QuestionnaireDB `SyncPublishQuestionnaire` event has not already populated the
+    patient table, then this function will create the patient record linked to the OpalDB.Patient.
 
     Args:
         django_patient: Django patient instance
