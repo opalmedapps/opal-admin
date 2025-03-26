@@ -10,6 +10,7 @@ from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
+from opal.hospital_settings.models import Site
 from opal.patients import views
 
 from .. import factories, models, tables
@@ -301,53 +302,60 @@ class TestAccessRequestView(views.AccessRequestView):
         return response, self
 
 
+class SessionInit():
+    """This class is to initialize the session."""
+
+    request = RequestFactory().get('/')
+
+    def init(self) -> HttpRequest:
+        """
+        Initialize the session.
+
+        Returns:
+            the request
+        """
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(self.request)
+        self.request.session.save()
+        return self.request
+
+
 @pytest.mark.django_db()
 def test_unexpected_step() -> None:
     """Test unexpected step 'search'."""
-    request = RequestFactory().get('/')
-    # adding session
-    middleware = SessionMiddleware()
-    middleware.process_request(request)
-    request.session.save()
+    request = SessionInit().init()
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
-    assert bool(instance.get_form_initial('search')) is False
+    assert instance.get_form_initial('search') == {}  # noqa: WPS520
 
 
 @pytest.mark.django_db()
 def test_expected_step_without_session_storage() -> None:
     """Test expected step 'site' without session storage of saving user selection."""
-    request = RequestFactory().get('/')
-    # adding session
-    middleware = SessionMiddleware()
-    middleware.process_request(request)
-    request.session.save()
+    request = SessionInit().init()
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
-    assert bool(instance.get_form_initial('site')) is False
+    assert instance.get_form_initial('site') == {}  # noqa: WPS520
 
 
 @pytest.mark.django_db()
 def test_expected_step_with_session_storage() -> None:
     """Test expected step 'site' with session storage of saving user selection."""
-    request = RequestFactory().get('/')
-    # adding session
-    middleware = SessionMiddleware()
-    middleware.process_request(request)
-    request.session['site_selection'] = str('Royal Victoria')
-    request.session.save()
+    request = SessionInit().init()
+    request.session['site_selection'] = 2
     # adding Site records
-    factories.Site(name='Royal Victoria')
-    factories.Site(name='Montreal General')
+    factories.Site(pk=1)
+    factories.Site(pk=2)
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
-    assert bool(instance.get_form_initial('site')) is True
+    assert instance.get_form_initial('site') == {'sites': Site.objects.get(pk=2)}
