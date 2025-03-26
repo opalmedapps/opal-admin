@@ -288,3 +288,19 @@ class TestInitializeData(CommandTestMixin):
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()
+
+    def test_delete_clinicalstaff_only(self) -> None:
+        """Only existing clinical staff users are deleted, not caregivers."""
+        User.objects.create(username='johnwayne')
+        # create a caregiver with a profile
+        caregiver = caregiver_factories.CaregiverProfile()
+
+        stdout, _ = self._call_command('initialize_data', '--force-delete')
+
+        # ensure that the caregiver is not deleted but the user was
+        caregiver.refresh_from_db()
+        assert Caregiver.objects.count() == 1
+        assert not User.objects.filter(username='johnwayne').exists()
+        assert 'Deleting existing data\n' in stdout
+        assert 'Data successfully deleted\n' in stdout
+        assert 'Data successfully created\n' in stdout
