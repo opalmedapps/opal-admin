@@ -18,7 +18,7 @@ class LegacyUserFactory(DjangoModelFactory):
     usersernum = Sequence(lambda number: number + 1)
     usertypesernum = 51
     username = 'username'
-    usertype = 'Patient'
+    usertype = models.LegacyUserType.PATIENT
 
 
 class LegacyPatientFactory(DjangoModelFactory):

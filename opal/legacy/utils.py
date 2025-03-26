@@ -1,6 +1,6 @@
 """Utility functions used by legacy API views."""
 
-from .models import LegacyUsers
+from .models import LegacyUsers, LegacyUserType
 
 
 def get_patient_sernum(username: str) -> int:
@@ -15,14 +15,14 @@ def get_patient_sernum(username: str) -> int:
     """
     user = LegacyUsers.objects.filter(
         username=username,
-        usertype='Patient',
+        usertype=LegacyUserType.PATIENT,
     ).first()
     if user:
         return user.usertypesernum
     return 0
 
 
-def update_legacy_user_type(caregiver_legacy_id: int, new_type: str) -> None:
+def update_legacy_user_type(caregiver_legacy_id: int, new_type: LegacyUserType) -> None:
     """
     Update a user's UserType in the legacy Users table.
 

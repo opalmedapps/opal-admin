@@ -18,6 +18,7 @@ from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Site
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
+from opal.legacy.models import LegacyUserType
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     HospitalPatient,
@@ -533,7 +534,7 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
 def test_create_access_request_existing() -> None:
     """A new self relationship is created for an existing patient and caregiver."""
     patient = patient_factories.Patient()
-    legacy_user = LegacyUser(usertype='Caregiver')
+    legacy_user = LegacyUser(usertype=LegacyUserType.CAREGIVER)
     caregiver_profile = CaregiverProfile(legacy_id=legacy_user.usersernum)
     self_type = RelationshipType.objects.self_type()
 
@@ -552,7 +553,7 @@ def test_create_access_request_existing() -> None:
     assert relationship.request_date == date.today()
     assert relationship.start_date == patient.date_of_birth
     assert relationship.end_date is None
-    assert legacy_user.usertype == 'Patient'
+    assert legacy_user.usertype == LegacyUserType.PATIENT
 
 
 def test_create_access_request_non_self() -> None:

@@ -13,6 +13,7 @@ from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.hospital_settings.models import Site
 from opal.legacy import utils as legacy_utils
+from opal.legacy.models import LegacyUserType
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.services.orms.orms import ORMSService
@@ -465,7 +466,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
             if not caregiver.legacy_id:
                 raise ValueError('Legacy ID is missing from Caregiver Profile')
 
-            legacy_utils.update_legacy_user_type(caregiver.legacy_id, 'Patient')
+            legacy_utils.update_legacy_user_type(caregiver.legacy_id, LegacyUserType.PATIENT)
 
         # For existing users (who won't be going through the registration site), init patient data if needed
         if is_new_patient:

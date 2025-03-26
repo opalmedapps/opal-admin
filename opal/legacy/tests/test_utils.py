@@ -22,8 +22,8 @@ def test_get_user_sernum_no_user_available() -> None:
 
 def test_update_legacy_user_type() -> None:
     """Ensure that a legacy user's type can be updated."""
-    legacy_user = factories.LegacyUserFactory(usertype='Caregiver')
-    legacy_utils.update_legacy_user_type(legacy_user.usersernum, 'Patient')
+    legacy_user = factories.LegacyUserFactory(usertype=models.LegacyUserType.CAREGIVER)
+    legacy_utils.update_legacy_user_type(legacy_user.usersernum, models.LegacyUserType.PATIENT)
     legacy_user.refresh_from_db()
 
-    assert legacy_user.usertype == 'Patient'
+    assert legacy_user.usertype == models.LegacyUserType.PATIENT
