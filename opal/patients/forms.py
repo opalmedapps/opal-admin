@@ -23,7 +23,7 @@ from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.models import Caregiver, User
+from opal.users.models import Caregiver, Language, User
 
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
@@ -619,6 +619,23 @@ class AccessRequestConfirmForm(forms.Form):
             self.add_error('password', _('The password you entered is incorrect. Please try again.'))
 
         return self.cleaned_data
+
+
+class SendSMSForm(forms.Form):
+    language = forms.ChoiceField(
+        choices=Language,
+    )
+
+    phone_number = forms.CharField(
+        label=_('Phone Number'),
+        initial='+1',
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_class = 'd-md-flex flex-row justify-content-start gap-3'
 
 
 class SelectSiteForm(forms.Form):

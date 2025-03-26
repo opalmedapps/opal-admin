@@ -131,9 +131,19 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         """
         self.request.session[self.session_key_name] = {}
 
-        return self.render_to_response(self.get_context_data(
-            search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
-        ))
+        # return self.render_to_response(self.get_context_data(
+        #     search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
+        # ))
+        registration_code = RegistrationCode.objects.all()[0]
+        code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code.code}'
+        return render(self.request, self.template_name_confirmation_code, {
+            'patient': Patient.objects.last(),
+            'requestor': CaregiverProfile.objects.last(),
+            'registration_code': RegistrationCode.objects.last(),
+            'registration_url': settings.OPAL_USER_REGISTRATION_URL,
+            'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+            'sms_form': forms.SendSMSForm(),
+        })
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: C901, WPS210, WPS231
         """
@@ -278,6 +288,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 'registration_url': settings.OPAL_USER_REGISTRATION_URL,
                 'registration_code': registration_code.code,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+                'sms_form': forms.SendSMSForm(),
             })
             template_name = self.template_name_confirmation_code
 

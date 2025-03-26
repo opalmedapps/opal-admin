@@ -9,22 +9,31 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-md-8 col-sm-12">
+  {% comment %} <div class="row"> {% endcomment %}
+    <div>
       <p>{% translate "A unique one-time Opal registration code has been created for the following patient:" %}</p>
       <p>
         <strong>{% translate "Patient:" %}</strong> {{ patient }}<br>
         <strong>{% translate "Requestor:" %}</strong> {{ requestor }}
       </p>
     </div>
-    <div class="col-md-4 col-sm-12 text-center">
-      <h4 class="mb-3">{% translate "Registration Code" %}</h4>
-      <span class="h5">{{ registration_code }}</span>
-      <img src="data:image/svg+xml;utf8;base64,{{ qr_code|safe }}" class="img-fluid d-block mx-auto text-center w-75">
+    <div class="d-flex justify-content-center text-center gap-5">
+      <div>
+        <h4 class="mb-3">{% translate "Registration Code" %}</h4>
+        <span class="h5">{{ registration_code }}</span>
+      </div>
+      <div>
+        <h4 class="mb-3">QR Code</h4>
+        <img src="data:image/svg+xml;utf8;base64,{{ qr_code|safe }}" class="img-fluid">
+      </div>
     </div>
-  </div>
+    <div class="d-flex justify-content-center align-items-center mt-3 gap-3">
+      <p><span class="fw-semibold">Send as SMS:</span> {% crispy sms_form %}</p>
+    </div>
+  {% comment %} </div> {% endcomment %}
   <h5>{%translate "Instructions" %}</h5>
   <ul>
+    <li class="text-danger fw-semibold">Do not print this page!</li>
     <li>
       {# reduce spacing for blocktranslate for easier reuse in another template #}
 {% blocktranslate %}
