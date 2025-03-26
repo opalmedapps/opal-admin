@@ -477,6 +477,12 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'RelationshipStatusEnum': 'opal.patients.models.RelationshipStatus.choices',
+        'RegistrationCodeStatusEnum': 'opal.caregivers.models.RegistrationCodeStatus.choices',
+    },
+    # list of authentication/permission classes for spectacular's views.
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
     #  TODO: 'CONTACT': {},
     #  TODO: 'LICENSE': {},
 }

@@ -1,5 +1,5 @@
 """Collection of api views used to get appointment details."""
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,9 +11,12 @@ from ..serializers import LegacyAppointmentDetailedSerializer
 
 
 @extend_schema(
-    responses={
-        200: LegacyAppointmentDetailedSerializer(many=True),
-    },
+    responses=inline_serializer(
+        name='AppAppointmentsSerializer',
+        fields={
+            'daily_appointments': LegacyAppointmentDetailedSerializer(many=True),
+        },
+    ),
 )
 class AppAppointmentsView(APIView):
     """Class to return appointments detail data."""

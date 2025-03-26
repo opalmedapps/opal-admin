@@ -15,7 +15,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import override
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import exceptions
 from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
@@ -340,6 +340,9 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
 
 
 @extend_schema(
+    parameters=[
+        OpenApiParameter('existingUser'),
+    ],
     request={
         'existingUser': caregiver_serializers.ExistingUserRegistrationRegisterSerializer,
         'newUser': caregiver_serializers.NewUserRegistrationRegisterSerializer,
@@ -529,6 +532,7 @@ class RegistrationCompletionView(APIView):
         utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
+@extend_schema(responses=inline_serializer('EmptyResponseSerializer', fields={}))
 class RetrieveCaregiverView(RetrieveAPIView[User]):
     """
     View that looks up a caregiver by its username.
