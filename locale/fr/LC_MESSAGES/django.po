@@ -186,10 +186,12 @@ msgid "Thank you,"
 msgstr "Merci,"
 
 #: opal/templates/email/confirmation_email.txt
+#: opal/templates/email/verification_code.txt
 msgid "The Opal team"
 msgstr "L’équipe Opal"
 
 #: opal/templates/email/confirmation_email.txt
+#: opal/templates/email/verification_code.txt
 msgid "https://opalmedapps.com"
 msgstr "https://opalmedapps.com/fr-selected"
 
@@ -224,25 +226,8 @@ msgid ""
 "If you are not trying to create an Opal account using this email address, "
 "you can disregard this email."
 msgstr ""
-"Bonjour %(first_name)s %(last_name)s ,\n"
-"\n"
-"Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
-"code ci-dessous sur la page de vérification :\n"
-"\n"
-"%(code)s\n"
-"\n"
-"Ce code expirera dans %(timeout)s minutes. Une fois le code expiré, vous "
-"devrez demander un nouveau code pour procéder avec votre inscription .\n"
 "Si vous n'avez pas effectué de demande de création de compte Opal en "
 "utilisant cette adresse courriel, veuillez ne pas tenir compte de ce message."
-
-#: opal/templates/email/verification_code.txt
-msgid "The Opal team"
-msgstr "L’équipe Opal"
-
-#: opal/templates/email/verification_code.txt
-msgid "https://opalmedapps.com"
-msgstr "https://opalmedapps.com/fr-selected"
 
 #: opal/templates/sidebar.html
 msgid "Go back to opalADMIN menu"
