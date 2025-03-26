@@ -2,7 +2,10 @@
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.db import connections
+from django.db import connections, transaction
+from django.utils import timezone
+
+SPLIT_LENGTH = 120
 
 
 class Command(BaseCommand):
@@ -19,11 +22,12 @@ class Command(BaseCommand):
     help = 'Check the legacy and new back end databases for the data deviations in the `Patient` tables.'  # noqa: A003
     requires_migrations_checks = True
 
+    @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
         Handle deviation check for the `Patient` model tables.
 
-        The SQL queries for finding the unmatched records in two tables are based on the following articles:
+        The implementation was inspired by the following articles:
 
             - https://ubiq.co/database-blog/compare-two-tables-mysql/
 
@@ -112,8 +116,28 @@ class Command(BaseCommand):
 
         unmatched_hospital_patients = django_hospital_patient.symmetric_difference(legacy_hospital_patient)
 
-        self.stderr.write(
-            '\n'.join(str(patient) for patient in (unmatched_patients)),
-        )
+        if not unmatched_patients and not unmatched_hospital_patients:
+            self.stdout.write('No deviations has been found in the "Patient" tables/models.')
+            return
 
-        self.stdout.write(str(unmatched_hospital_patients))
+        err_str = '\n{0}: found deviations in the "Patient" tables/models!!!'.format(timezone.now())
+
+        if unmatched_patients:
+            err_str += '\n\n{0}'.format(SPLIT_LENGTH * '-')
+            err_str = '{0}\nOpalDB.Patient  <===>  opal.patients_patient:\n\n'.format(err_str)
+            err_str += '\n'.join(str(patient) for patient in (unmatched_patients))
+            err_str += '\n{0}'.format(SPLIT_LENGTH * '-')
+
+        if unmatched_hospital_patients:
+            err_str += '\n\n{0}'.format(SPLIT_LENGTH * '-')
+            err_str = '{0}\nOpalDB.Patient_Hospital_Identifier  <===>  opal.patients_hospitalpatient:\n\n'.format(
+                err_str,
+            )
+            err_str += '\n'.join(str(patient) for patient in (unmatched_hospital_patients))
+            err_str += '\n{0}'.format(SPLIT_LENGTH * '-')
+
+        err_str += '\n\n{0}\n{0}'.format(SPLIT_LENGTH * '=')
+
+        self.stderr.write(
+            err_str,
+        )
