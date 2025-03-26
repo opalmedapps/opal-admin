@@ -107,6 +107,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.static',
+                'django.template.context_processors.media',
                 'opal.core.context_processors.opal_global_settings',
             ],
         },
