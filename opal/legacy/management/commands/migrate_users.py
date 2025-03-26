@@ -45,8 +45,7 @@ class Command(BaseCommand):
         all_users_counter = 0
         staff_users_counter = 0
 
-        # TODO: filter out deleted users
-        legacy_users = LegacyOAUser.objects.all()
+        legacy_users = LegacyOAUser.objects.exclude(is_deleted=True)
         for legacy_user in legacy_users:
             # create a clinicalstaff user
             clinical_staff_user = ClinicalStaff(
@@ -55,7 +54,7 @@ class Command(BaseCommand):
                 date_joined=legacy_user.date_added,
             )
 
-            if legacy_user.oaroleid == admin_role:
+            if legacy_user.oa_role == admin_role:
                 clinical_staff_user.is_staff = True
                 clinical_staff_user.is_superuser = True
 
@@ -65,8 +64,8 @@ class Command(BaseCommand):
                     all_users_counter += 1
             else:
                 role_module = LegacyOARoleModule.objects.filter(
-                    oaroleid=legacy_user.oaroleid,
-                    moduleid=patient_module,
+                    oa_role=legacy_user.oa_role,
+                    module=patient_module,
                     access__gte=Access.READ_WRITE.value,
                 )
 
