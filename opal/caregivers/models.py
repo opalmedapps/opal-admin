@@ -47,7 +47,7 @@ class RegistrationCodeStatus(models.TextChoices):
 
 
 class RegistrationCode(models.Model):
-    """Model Registration Code."""
+    """A Registration Code belonging to an [Patients][location of the model] with its specific properties."""
 
     relationship = models.ForeignKey(
         # Using string model references to avoid circular import
