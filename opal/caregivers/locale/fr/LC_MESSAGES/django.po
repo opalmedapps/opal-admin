@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: opal/caregivers/api/views.py
-msgid "Resend email after 10 seconds."
+msgid "Please wait 10 seconds before requesting a new verification code."
 msgstr ""
 
 #: opal/caregivers/api/views.py
@@ -109,6 +109,14 @@ msgstr "Identifiant de l'appareil"
 #: opal/caregivers/models.py
 msgid "Trusted Device"
 msgstr "Appareil de confiance"
+
+#: opal/caregivers/models.py
+msgid "Push Token"
+msgstr "Jeton de notification directe"
+
+#: opal/caregivers/models.py
+msgid "Last Modified"
+msgstr "Dernière modification"
 
 #: opal/caregivers/models.py
 msgid "Device"

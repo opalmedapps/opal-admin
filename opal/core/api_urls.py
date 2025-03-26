@@ -48,7 +48,7 @@ urlpatterns = [
         name='caregiver-permissions',
     ),
     path(
-        'patients/legacy/<int:legacy_patient_id>/caregivers/',
+        'patients/legacy/<int:legacy_id>/caregivers/',
         CaregiverRelationshipView.as_view(),
         name='caregivers-list',
     ),
@@ -62,12 +62,12 @@ urlpatterns = [
     path('registration/<str:code>/', RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
     path(
         'registration/<str:code>/verify-email/',
-        caregivers_views.ApiVerifyEmailView.as_view(),
+        caregivers_views.VerifyEmailView.as_view(),
         name='verify-email',
     ),
     path(
         'registration/<str:code>/verify-email-code/',
-        caregivers_views.ApiVerifyEmailCodeView.as_view(),
+        caregivers_views.VerifyEmailCodeView.as_view(),
         name='verify-email-code',
     ),
     path(
@@ -94,6 +94,11 @@ urlpatterns = [
         'institutions/<int:pk>/terms-of-use/',
         settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
         name='institutions-terms-of-use',
+    ),
+    path(
+        'caregivers/devices/<str:device_id>/',
+        caregivers_views.UpdateDeviceView.as_view(),
+        name='devices-update-or-create',
     ),
     path('', include(router.urls)),
 ]

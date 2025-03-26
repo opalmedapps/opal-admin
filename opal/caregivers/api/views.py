@@ -1,23 +1,29 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+from typing import Any
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.caregivers.api.serializers import EmailVerificationSerializer, RegistrationEncryptionInfoSerializer
-from opal.caregivers.models import EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.caregivers.api.mixins.put_as_create import AllowPUTAsCreateMixin
+from opal.caregivers.api.serializers import (
+    EmailVerificationSerializer,
+    RegistrationEncryptionInfoSerializer,
+    UpdateDeviceSerializer,
+)
+from opal.caregivers.models import Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
@@ -40,6 +46,53 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     serializer_class = RegistrationEncryptionInfoSerializer
     lookup_url_kwarg = 'hash'
     lookup_field = 'code_sha512'
+
+
+class UpdateDeviceView(AllowPUTAsCreateMixin):
+    """Class handling requests for updates or creations of device ids."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = UpdateDeviceSerializer
+    lookup_url_kwarg = 'device_id'
+    lookup_field = 'device_id'
+
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Any:
+        """Handle incoming put request and redirect to update method.
+
+        Args:
+            request (Request): request object with parameters to update or create
+            args (Any): varied amount of non-keyworded arguments
+            kwargs (Any): varied amount of keyworded arguments
+
+        Returns:
+            HTTP `Response` success or failure
+        """
+        if self.request.method == 'PUT':
+            return self.update(request, *args, **kwargs)
+        return Response({'status': status.HTTP_404_NOT_FOUND})
+
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Any:
+        """Handle incoming path request and redirect to partial update method.
+
+        Args:
+            request (Request): request object with parameters to update or create
+            args (Any): varied amount of non-keyworded arguments
+            kwargs (Any): varied amount of keyworded arguments
+
+        Returns:
+            HTTP `Response` success or failure
+        """
+        if self.request.method == 'PATCH':
+            return self.partial_update(request, *args, **kwargs)
+        return Response({'status': status.HTTP_404_NOT_FOUND})
+
+    def get_queryset(self) -> QuerySet[Device]:
+        """Provide the desired object or fails with 404 error.
+
+        Returns:
+            Device object or 404.
+        """
+        return Device.objects.filter(device_id=self.kwargs['device_id'])
 
 
 class GetCaregiverPatientsList(APIView):
@@ -69,8 +122,8 @@ class GetCaregiverPatientsList(APIView):
         return response
 
 
-class ApiVerifyEmailBasicView(APIView):
-    """Basic Class for the verifiy email apis."""
+class RetrieveRegistrationCodeMixin(APIView):
+    """Mixin class that provides `get_queryset()` to lookup a `RegistrationCode` based on a given `code`."""
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -88,8 +141,8 @@ class ApiVerifyEmailBasicView(APIView):
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
 
-class ApiVerifyEmailView(ApiVerifyEmailBasicView):
-    """Class to save the user's email and email verification code.
+class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
+    """View that initiates email verification for a given email address.
 
     And send email to the user with the verification code.
     """
@@ -98,14 +151,16 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
-        Handle POST requests from `registration/<str:code>/verify-email/`.
+        Generate a random verification code and set up the EmailVerification instance.
+
+        If the user requested to re-send the code too soon, it fails.
 
         Args:
-            request: Http request made by the listener.
+            request: the HTTP request.
             code: registration code.
 
         Raises:
-            ValidationError: resend email after 10 seconds.
+            ValidationError: if re-sending the verification code was requested too soon.
 
         Returns:
             Http response with empty message.
@@ -131,6 +186,7 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
             )
             self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
         else:
+            # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
             if time_delta.total_seconds() >= constants.TIME_DELAY:
                 input_serializer.update(
@@ -143,7 +199,9 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
                 )
                 self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
             else:
-                raise drf_serializers.ValidationError({'detail': _('Resend email after 10 seconds.')})
+                raise drf_serializers.ValidationError(
+                    _('Please wait 10 seconds before requesting a new verification code.'),
+                )
 
         return Response()
 
@@ -190,17 +248,20 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
         )
 
 
-class ApiVerifyEmailCodeView(ApiVerifyEmailBasicView):
-    """Class to verify the user's email with received verification code."""
+class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
+    """View that verifies the user-provided verification code with the actual one."""
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
-        Handle POST requests from `registration/<str:code>/verify-email-code/`.
+        Verify that the provided code matches the expected one.
+
+        And if so, it deletes the EmailVerification,
+        and updates the email on the user instance with the verified one.
 
         Args:
-            request: Http request made by the listener.
+            request: the HTTP request.
             code: registration code.
 
         Returns:

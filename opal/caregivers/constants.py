@@ -3,5 +3,5 @@ from typing import Final
 
 #: Maximum length verification code for an email_verification.
 VERIFICATION_CODE_LENGTH: Final[int] = 6
-#: Time delay for sending email.
+#: Time delay in seconds for sending email.
 TIME_DELAY: Final[int] = 10

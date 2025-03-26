@@ -19,7 +19,16 @@ class InstitutionForm(forms.ModelForm):
 
     class Meta:
         model = Institution
-        fields = ('name_en', 'name_fr', 'logo_en', 'logo_fr', 'code', 'support_email')
+        fields = (
+            'name_en',
+            'name_fr',
+            'logo_en',
+            'logo_fr',
+            'code',
+            'support_email',
+            'terms_of_use_en',
+            'terms_of_use_fr',
+        )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -39,6 +48,8 @@ class InstitutionForm(forms.ModelForm):
             ImageFieldWithPreview('logo_fr'),
             'code',
             'support_email',
+            'terms_of_use_en',
+            'terms_of_use_fr',
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
                 CancelButton(reverse_lazy('hospital-settings:institution-list')),

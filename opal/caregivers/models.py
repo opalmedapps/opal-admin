@@ -138,6 +138,17 @@ class Device(models.Model):
         default=False,
     )
 
+    push_token = models.CharField(
+        verbose_name=_('Push Token'),
+        max_length=256,
+        blank=True,
+    )
+
+    modified = models.DateTimeField(
+        verbose_name=_('Last Modified'),
+        auto_now=True,
+    )
+
     class Meta:
         verbose_name = _('Device')
         verbose_name_plural = _('Devices')

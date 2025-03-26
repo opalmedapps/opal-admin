@@ -5,6 +5,7 @@ from http import HTTPStatus
 from django.contrib.auth.models import AbstractUser
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 
 from pytest_django.fixtures import SettingsWrapper
 from rest_framework.exceptions import ErrorDetail
@@ -55,7 +56,7 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     assert response.data[0]['status']
 
 
-def test_regitration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
+def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
     """Test status code and registration code value."""
     api_client.force_login(user=admin_user)
     registration_code = caregiver_factory.RegistrationCode()
@@ -66,7 +67,7 @@ def test_regitration_encryption_return_values(api_client: APIClient, admin_user:
     assert response.data['code'] == registration_code.code
 
 
-def test_regitration_encryption_with_invalid_hash(api_client: APIClient, admin_user: User) -> None:
+def test_registration_encryption_invalid_hash(api_client: APIClient, admin_user: User) -> None:
     """Return 404 if the hash is invalid."""
     api_client.force_login(user=admin_user)
     registration_code = caregiver_factory.RegistrationCode()
@@ -91,6 +92,7 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
+        assert caregiver_model.EmailVerification.objects.all().count() == 1
         response = api_client.post(
             reverse(
                 'api:verify-email-code',
@@ -105,6 +107,8 @@ class TestApiEmailVerification:
         caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert caregiver_profile.user.email != user_email
+        assert caregiver_profile.user.email == 'opal@muhc.mcgill.ca'
+        assert caregiver_model.EmailVerification.objects.all().count() == 0
 
     def test_save_verify_email_en_success(  # noqa: WPS218
         self,
@@ -112,7 +116,7 @@ class TestApiEmailVerification:
         admin_user: AbstractUser,
         settings: SettingsWrapper,
     ) -> None:
-        """Test save verify email success."""
+        """Test save verify email with English template success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -131,6 +135,7 @@ class TestApiEmailVerification:
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
         assert email_verification
+        assert not email_verification.is_verified
         assert len(mail.outbox) == 1
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
         assert email_verification.code in mail.outbox[0].body
@@ -143,7 +148,7 @@ class TestApiEmailVerification:
         admin_user: AbstractUser,
         settings: SettingsWrapper,
     ) -> None:
-        """Test save verify email success."""
+        """Test save verify email withe French template success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -167,6 +172,32 @@ class TestApiEmailVerification:
         assert email_verification.code in mail.outbox[0].body
         assert 'Cher' in mail.outbox[0].body
         assert mail.outbox[0].subject == 'Code de vérification Opal'
+
+    def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test resend verify email within 10 sec."""
+        api_client.force_login(user=admin_user)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
+        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
+        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
+        email_verification = caregiver_factory.EmailVerification(
+            caregiver=caregiver_profile,
+            sent_at=timezone.now(),
+        )
+        response = api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email_verification.email},
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.data == [
+            ErrorDetail(
+                string='Please wait 10 seconds before requesting a new verification code.',
+                code='invalid',
+            ),
+        ]
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""
