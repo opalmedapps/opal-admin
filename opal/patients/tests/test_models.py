@@ -110,7 +110,7 @@ def test_relationshiptype_self_role_delete_error() -> None:
     """Ensure operator can not delete a self role type."""
     relationship_type = factories.RelationshipType()
     relationship_type.role_type = RoleType.SELF
-    message = "{'deletion': ['Operator can not delete relationship type with restricted roletype']}"
+    message = "{'deletion': ['Operator cannot delete relationship type with this role']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         relationship_type.delete()
 
@@ -119,7 +119,7 @@ def test_relationshiptype_parent_role_delete_error() -> None:  # noqa: WPS118
     """Ensure operator can not delete a parent/guardian role type."""
     relationship_type = factories.RelationshipType()
     relationship_type.role_type = RoleType.PARENTGUARDIAN
-    message = "{'deletion': ['Operator can not delete relationship type with restricted roletype']}"
+    message = "{'deletion': ['Operator cannot delete relationship type with this role']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         relationship_type.delete()
 
@@ -411,27 +411,27 @@ def test_relationship_saved_reason_valid_revoked() -> None:
 
 def test_relationshiptype_duplicate_self_role() -> None:
     """Ensure validation error when creating a second self role type."""
-    rtype_self = factories.RelationshipType()
-    rtype_self.role_type = RoleType.SELF
-    rtype_self.save()
+    roletype_self = factories.RelationshipType()
+    roletype_self.role_type = RoleType.SELF
+    roletype_self.save()
 
-    rtype_self_copy = factories.RelationshipType()
-    rtype_self_copy.role_type = RoleType.SELF
+    roletype_self_copy = factories.RelationshipType()
+    roletype_self_copy.role_type = RoleType.SELF
 
-    message = "{'uniqueness': ['Operator can not create multiple copies of restricted relationshiptypes']}"
+    message = "{'uniqueness': ['Operator cannot create multiple copies of relationship types with this role']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        rtype_self_copy.save()
+        roletype_self_copy.save()
 
 
 def test_relationshiptype_duplicate_parent_role() -> None:
     """Ensure validation error when creating a second parent/guardian role type."""
-    rtype_parent = factories.RelationshipType()
-    rtype_parent.role_type = RoleType.PARENTGUARDIAN
-    rtype_parent.save()
+    roletype_parent = factories.RelationshipType()
+    roletype_parent.role_type = RoleType.PARENTGUARDIAN
+    roletype_parent.save()
 
-    rtype_parent_copy = factories.RelationshipType()
-    rtype_parent_copy.role_type = RoleType.PARENTGUARDIAN
+    roletype_parent_copy = factories.RelationshipType()
+    roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
 
-    message = "{'uniqueness': ['Operator can not create multiple copies of restricted relationshiptypes']}"
+    message = "{'uniqueness': ['Operator cannot create multiple copies of relationship types with this role']}"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        rtype_parent_copy.save()
+        roletype_parent_copy.save()

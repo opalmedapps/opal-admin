@@ -93,7 +93,7 @@ def relationshiptype_pre_delete(sender: RelationshipType, instance: Relationship
     """
     if (instance.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
         raise ValidationError(
-            {'deletion': _('Operator can not delete relationship type with restricted roletype')},
+            {'deletion': _('Operator cannot delete relationship type with this role')},
         )
 
 
@@ -126,7 +126,7 @@ def relationshiptype_pre_save(sender: RelationshipType, instance: RelationshipTy
                 )
             ):
                 raise ValidationError(
-                    {'uniqueness': _('Operator can not create multiple copies of restricted relationshiptypes')},
+                    {'uniqueness': _('Operator cannot create multiple copies of relationship types with this role')},
                 )
 
 

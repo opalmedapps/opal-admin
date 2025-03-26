@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-18 14:10-0500\n"
+"POT-Creation-Date: 2022-11-22 13:20-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr "Proche aidant"
 
 #: opal/patients/models.py
 msgid "Parent/Guardian"
-msgstr ""
+msgstr "Parent/Tuteur"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -75,6 +75,8 @@ msgid ""
 "A \"Self\" role type indicates a patient who owns the data that is being "
 "accessed."
 msgstr ""
+"Un rôle de type “Self” indique que le patient est le propriétaire des "
+"données demandées."
 
 #: opal/patients/models.py
 msgid "Caregiver Relationship Type"
@@ -85,12 +87,13 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
-msgid "Operator can not delete relationship type with restricted roletype"
-msgstr ""
+msgid "Operator cannot delete relationship type with this role"
+msgstr "Il est interdit de supprimer un type de relation avec ce rôle."
 
 #: opal/patients/models.py
-msgid "Operator can not create multiple copies of restricted relationshiptypes"
-msgstr ""
+msgid ""
+"Operator cannot create multiple copies of relationship types with this role"
+msgstr "Il est interdit de créer plus d'un type de relation avec le même rôle."
 
 #: opal/patients/models.py
 msgid "Female"
