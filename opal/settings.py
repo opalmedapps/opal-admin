@@ -51,6 +51,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_twilio',
 ]
 THIRD_PARTY_APPS = [
     'crispy_forms',
