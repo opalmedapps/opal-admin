@@ -2,6 +2,8 @@
 
 import json
 import logging
+import math
+import textwrap
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
@@ -452,7 +454,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         )
         report_prepared_by_template.render()
 
-    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:
+    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:   # noqa: WPS210
         """Build a table/box that is shown at the top of the first page.
 
         The table contains site's and patient's information.
@@ -473,6 +475,13 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             f'Tél. : {self.pathology_data.site_phone}'
         ) if str(self.pathology_data.site_phone) else ''
 
+        # Wrap the text with the maximum characters can be filled in each line.
+        wrapper = textwrap.TextWrapper(
+            width=int((190 - 138) / 2) - 1,
+        )
+        patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
+        # Calculate the number of the linse patient name will occupy
+        line = math.ceil(len(patient_name) * 2 / (190 - 138))
         return [
             {
                 'name': 'site_logo',
@@ -559,7 +568,6 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'priority': 0,
                 'multiline': False,
             },
-            # TODO: handle long patient names, this might affect the starting position of the patient_date_of_birth
             {
                 'name': 'patient_name',
                 'type': 'T',
@@ -573,17 +581,17 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': f'Nom/Name: {self.patient_name}',
+                'text': patient_name,
                 'priority': 0,
-                'multiline': False,
+                'multiline': True,
             },
             {
                 'name': 'patient_date_of_birth',
                 'type': 'T',
                 'x1': 138,
-                'y1': 34,
+                'y1': 30 + 4 * line,
                 'x2': 190,
-                'y2': 38,
+                'y2': 30 + 4 * (line + 1),
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 9,
                 'bold': 0,
@@ -598,9 +606,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'name': 'patient_ramq',
                 'type': 'T',
                 'x1': 138,
-                'y1': 38,
+                'y1': 30 + 4 * (line + 1),
                 'x2': 190,
-                'y2': 42,
+                'y2': 30 + 4 * (line + 2),
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 9,
                 'bold': 0,
@@ -615,9 +623,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'name': 'patient_sites_and_mrns',
                 'type': 'T',
                 'x1': 138,
-                'y1': 42,
+                'y1': 30 + 4 * (line + 2),
                 'x2': 190,
-                'y2': 46,
+                'y2': 30 + 4 * (line + 3),
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 9,
                 'bold': 0,
