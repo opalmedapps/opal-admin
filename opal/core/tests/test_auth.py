@@ -44,14 +44,16 @@ def _mock_requests_post(mocker: MockerFixture, auth_data: dict[str, str]) -> Mag
     (AUTHENTICATION_FAILURE, None),
     (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
 ])
-def test_parse_response(success: str, expected: Optional[UserData]) -> None:
+def test_parse_response(success: str, expected: Optional[UserData], mocker: MockerFixture) -> None:
     """Ensure JSON response is parsed correctly."""
+    mock_logger = mocker.patch('logging.Logger.error')
     response: Response = Response()
     response.status_code = HTTPStatus.OK
 
     response._content = json.dumps(_create_auth_data(success)).encode(ENCODING)
 
     assert auth_backend._parse_response(response) == expected
+    mock_logger.assert_not_called()
 
 
 def test_parse_response_empty_response() -> None:
@@ -112,13 +114,13 @@ def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:
     """Ensure connection failure is handled and does not result in error."""
     # mock actual web API call to raise a connection error
     mock_post = mocker.patch('requests.post')
-    mock_logger = mocker.patch('logging.Logger.error', return_value=None)
     mock_post.side_effect = ConnectionError('connection failed')
+    mock_logger = mocker.patch('logging.Logger.exception')
 
     user_data = auth_backend._authenticate_fedauth('user', 'pass')
 
     assert user_data is None
-    mock_logger.assert_called_once_with('connection failed')
+    mock_logger.assert_called_once_with('error while requesting the fed auth API')
 
 
 @pytest.mark.django_db()
@@ -227,12 +229,16 @@ def test_authenticate_integration_error(mocker: MockerFixture) -> None:
     # assume incomplete data is returned
     auth_data = {
         'authenticate': AUTHENTICATION_SUCCESS,
+        'givenName': 'Hans',
+        'sn': 'Wurst',
     }
     _mock_requests_post(mocker, auth_data)
+    mock_logger = mocker.patch('logging.Logger.error')
 
     authenticated_user = auth_backend.authenticate(None, 'testuser', 'testpass')
 
     assert authenticated_user is None
+    mock_logger.assert_called_once_with(f'incomplete response data received from fed auth API: {auth_data}')
 
 
 @pytest.mark.django_db()

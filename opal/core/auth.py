@@ -22,6 +22,8 @@ AUTHENTICATION_SUCCESS = '1'
 #: Representation in API response when authentication was unsuccessful.
 AUTHENTICATION_FAILURE = '0'
 
+LOGGER = logging.getLogger(__name__)
+
 
 class FedAuthBackend(BaseBackend):
     """
@@ -114,9 +116,8 @@ class FedAuthBackend(BaseBackend):
                 },
                 timeout=10,
             )
-        except RequestException as exc:
-            logger = logging.getLogger(__name__)
-            logger.error(str(exc))
+        except RequestException:
+            LOGGER.exception('error while requesting the fed auth API')
         else:
             return self._parse_response(response)
 
@@ -143,14 +144,14 @@ class FedAuthBackend(BaseBackend):
             # statusCode: 0 = no error, 1 = error
             #
             # if the data does not contain the key (e.g., in an empty return), handle as not authenticated
-            if (
-                auth_data.get('authenticate', AUTHENTICATION_FAILURE) == AUTHENTICATION_SUCCESS
-                and all(key in auth_data for key in ('mail', 'givenName', 'sn'))
-            ):
-                email = auth_data['mail']
-                first_name = auth_data['givenName']
-                last_name = auth_data['sn']
+            if auth_data.get('authenticate', AUTHENTICATION_FAILURE) == AUTHENTICATION_SUCCESS:
+                if all(key in auth_data for key in ('mail', 'givenName', 'sn')):
+                    email = auth_data['mail']
+                    first_name = auth_data['givenName']
+                    last_name = auth_data['sn']
 
-                return UserData(email, first_name, last_name)
+                    return UserData(email, first_name, last_name)
+                else:
+                    LOGGER.error('incomplete response data received from fed auth API: {0}'.format(auth_data))
 
         return None

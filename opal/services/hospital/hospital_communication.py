@@ -56,14 +56,16 @@ class OIEHTTPCommunicationManager:
                 timeout=5,
             ).json()
         except requests.exceptions.RequestException as req_exp:
-
             # log OIE errors
-            logger.error(
+            logger.exception(
                 'OIE error: {oie_message}'.format(
                     oie_message=str(req_exp),
                 ),
             )
-            return self.error_handler.generate_error({'message': str(req_exp)})
+            return self.error_handler.generate_error({
+                'message': str(req_exp),
+                'exception': req_exp,
+            })
 
     # TODO: make function async
     def fetch(

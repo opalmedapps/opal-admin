@@ -213,7 +213,7 @@ def _create_test_data() -> None:
         last_name=homer.last_name,
         username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
         email='homer@opalmedapps.ca',
-        language='fr',
+        language='en',
         phone_number='+15557654321',
         legacy_id=2,
         # homer is blocked: he lost access due to him being unstable
@@ -225,7 +225,7 @@ def _create_test_data() -> None:
         last_name=bart.last_name,
         username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
         email='bart@opalmedapps.ca',
-        language='fr',
+        language='en',
         phone_number='+498999998123',
         legacy_id=3,
     )
@@ -235,7 +235,7 @@ def _create_test_data() -> None:
         last_name=mona.last_name,
         username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
         email='mona@opalmedapps.ca',
-        language='fr',
+        language='en',
         phone_number='+15144758941',
         legacy_id=4,
         is_active=False,
@@ -273,11 +273,10 @@ def _create_test_data() -> None:
         patient=homer,
         caregiver=user_homer,
         relationship_type=type_self,
-        status=RelationshipStatus.REVOKED,
+        status=RelationshipStatus.CONFIRMED,
         request_date=_relative_date(today, -10),
         start_date=_relative_date(today, -12),
         end_date=_relative_date(today, -1),
-        reason='Revoked due to legal court order.',
     )
 
     # Marge --> Bart: Guardian/Parent

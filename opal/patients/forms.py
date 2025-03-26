@@ -1,5 +1,5 @@
 """This module provides forms for the `patients` app."""
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import Any, Optional, Union, cast
 
 from django import forms
@@ -17,10 +17,10 @@ from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
 
 from . import constants, utils
@@ -87,7 +87,7 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression; move to setup.cfg?)
+        super().__init__(*args, **kwargs)
 
         self.has_existing_data = False
 
@@ -109,7 +109,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
     card_type = forms.ChoiceField(
@@ -124,7 +124,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         label=_('Hospital'),
         required=is_mrn_selected,
         disabled=is_not_mrn_or_single_site,
-        empty_label=get_site_empty_label,  # noqa: WPS506
+        empty_label=get_site_empty_label,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -237,7 +237,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if not self.patient:
                 response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
 
-        self._handle_response(response)
+        if response:
+            self._handle_response(response)
+
+        if not self.patient and not self._errors:
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
         """Handle the response from OIE service.
@@ -245,31 +249,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
-        if response:
-            if response['status'] == 'success':
-                self.patient = response['data']
-            else:
-                self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+        if response['status'] == 'success':
+            self.patient = response['data']
+        else:
+            messages = response['data'].get('message')
 
-            if not self.patient:
-                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
-    def _fake_oie_response(self) -> OIEPatientData:
-        return OIEPatientData(
-            date_of_birth=date.fromisoformat('2018-01-01'),
-            first_name='Lisa',
-            last_name='Simpson',
-            sex='F',
-            alias='',
-            ramq='SIML86531906',
-            ramq_expiration=None,
-            deceased=False,
-            death_date_time=None,
-            mrns=[
-                OIEMRNData(site='MGH', mrn='9999993', active=True),
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
-            ],
-        )
+            if 'connection_error' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
+            elif 'no_test_patient' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -392,12 +380,19 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        patient: Patient | OIEPatientData,
+        existing_user: Optional[CaregiverProfile] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
             patient: a `Patient` or `OIEPatientData` instance
+            existing_user: a `CaregiverProfile` if it a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -420,7 +415,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = None
+        self.existing_user: Optional[CaregiverProfile] = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -705,7 +700,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
         Set the layout.
 
@@ -714,9 +709,38 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        # get the selected type
-        selected_type = self['type'].value()
-        initial_type = RelationshipType.objects.get(pk=selected_type)
+        # get the RelationshipType record that corresponds to the instance
+        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+        available_choices: QuerySet[RelationshipType] = existing_choice
+
+        caregiver_firstname_field: Field = self.fields['first_name']
+        caregiver_lastname_field: Field = self.fields['last_name']
+
+        # setting the value of caregiver first and last names
+        caregiver_firstname_field.initial = self.instance.caregiver.user.first_name
+        caregiver_lastname_field.initial = self.instance.caregiver.user.last_name
+
+        # get the saved type
+        initial_type: RelationshipType = self.instance.type
+        # ensure that self cannot be changed
+        if initial_type.role_type == RoleType.SELF:
+            self.fields['type'].disabled = True
+            # use readonly to include information in data post
+            caregiver_firstname_field.widget.attrs['readonly'] = True
+            caregiver_lastname_field.widget.attrs['readonly'] = True
+            # change to required/not-required according to the type of the relationship
+            self.fields['end_date'].required = False
+        else:
+            # get the selected type
+            selected_type = self['type'].value()
+            initial_type = RelationshipType.objects.get(pk=selected_type)
+            # combine the instance value and with the valid relationshiptypes
+            available_choices |= utils.valid_relationship_types(self.instance.patient)
+            # exclude self relationship to disallow switching to self
+            available_choices = available_choices.exclude(role_type=RelationshipType.objects.self_type())
+
+        # set the type field with the proper choices
+        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
@@ -738,27 +762,9 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             ),
         })
 
-        available_choices = utils.valid_relationship_types(self.instance.patient)
-
-        # get the RelationshipType record that corresponds to the instance
-        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
-
-        # combine the instance value and with the valid relationshiptypes
-        available_choices |= existing_choice
-
-        self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
-
-        # setting the value of caregiver first and last names
-        self.fields['last_name'].initial = self.instance.caregiver.user.last_name
-        self.fields['first_name'].initial = self.instance.caregiver.user.first_name
-
-        # change to required/not-required according to the type of the relationship
-        if initial_type.role_type == RoleType.SELF.name:
-            self.fields['end_date'].required = False
-
         self.helper = FormHelper(self)
         self.helper.attrs = {'novalidate': ''}
-        self.helper.layout = Layout(
+        self.helper.layout = EnterSuppressedLayout(
             Row(
                 CrispyField('first_name', wrapper_class='col-md-6'),
                 CrispyField('last_name', wrapper_class='col-md-6'),
@@ -776,6 +782,31 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 ),
             ),
         )
+
+    def clean(self) -> dict[str, Any]:
+        """
+        Validate the that patient and caregiver have same names when relationship is of `SELF` type.
+
+        Returns:
+            the cleaned form data
+        """
+        super().clean()
+        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
+        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
+        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+
+        if type_field.role_type == RoleType.SELF.name:
+            if (
+                self.instance.patient.first_name != caregiver_firstname
+                or self.instance.patient.last_name != caregiver_lastname
+            ):
+                # this is to capture before saving patient and caregiver has matching names
+                error = (_(
+                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+                ))
+                self.add_error(NON_FIELD_ERRORS, error)
+
+        return self.cleaned_data
 
 
 # TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
