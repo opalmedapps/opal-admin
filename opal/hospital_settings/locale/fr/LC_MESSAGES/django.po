@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-27 02:54+0300\n"
+"POT-Creation-Date: 2023-01-02 21:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,8 +48,8 @@ msgid "Support email"
 msgstr "Adresse courriel d'assistance"
 
 #: opal/hospital_settings/models.py
-msgid "Can manage sites"
-msgstr "Peut gérer des sites"
+msgid "Can manage institutions"
+msgstr "Peut gérer des institutions"
 
 #: opal/hospital_settings/models.py
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
@@ -78,8 +78,8 @@ msgid "Latitude"
 msgstr ""
 
 #: opal/hospital_settings/models.py
-msgid "Can manage institutions"
-msgstr "Peut gérer des institutions"
+msgid "Can manage sites"
+msgstr "Peut gérer des sites"
 
 #: opal/hospital_settings/models.py
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html
