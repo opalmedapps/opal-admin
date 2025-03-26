@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     help = (  # noqa: A003
         'Checks all confirmed relationships, and sets as expired those for which the patient '
-        "has reached or exceeded the relationship's end age."  # noqa: WPS326
+        + "has reached or exceeded the relationship's end age."
     )
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
@@ -36,13 +36,16 @@ class Command(BaseCommand):
             if relationship.patient.date_of_birth:
                 patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
 
-                if patient_age >= relationship.type.end_age:  # type: ignore[operator]
+                if patient_age >= relationship.type.end_age:
                     relationship.status = RelationshipStatus.EXPIRED
                     relationship.save()
                     number_of_updates += 1
                     self.stdout.write(
-                        f'Expired relationship: id={relationship.id} | '  # noqa: WPS237
-                        f'age {patient_age} >= {relationship.type.end_age} end_age',  # noqa: WPS326
+                        'Expired relationship: id={id} | age {age} >= {end_age} end_age'.format(
+                            id=relationship.id,
+                            age=patient_age,
+                            end_age=relationship.type.end_age,
+                        ),
                     )
 
         self.stdout.write(f'Updated {number_of_updates} relationship(s) from confirmed to expired.')
