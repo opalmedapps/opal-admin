@@ -161,7 +161,7 @@ def test_relationships_pending_no_update(user_client: Client) -> None:
     factories.Relationship(pk=10)
     response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 10}))
     response.content.decode('utf-8')
-    assertContains(response, 'name="caregiver" class="form-group col-md-12 mb-0 select custom-select" disabled="True"')  # noqa: E501
+    assertContains(response, 'disabled="True" required id="id_patient')
     assertContains(response, 'name="patient_identification_number" readonly="True"')
-    assertContains(response, 'name="patient" class="form-group col-md-12 mb-0 select custom-select" disabled="True"')
+    assertContains(response, 'disabled="True" required id="id_caregiver"')
     assertContains(response, 'name="date_of_birth" value="1999-01-01" readonly="True"')
