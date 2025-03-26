@@ -17,18 +17,3 @@ class Address(models.Model):
 
     class Meta:
         abstract = True
-
-    def __str__(self) -> str:
-        """
-        Return the string representation of the address.
-
-        Returns:
-            the name of the location
-        """
-        return ', '.join([
-            self.street_number,
-            self.street_name,
-            self.postal_code,
-            self.city,
-            self.province_code,
-        ])
