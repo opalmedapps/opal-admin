@@ -241,7 +241,7 @@ class TestHL7Parser:
         institution_factories.Site(acronym='RVH')
         institution_factories.Site(acronym='MGH')
         parsed_data = self.parser.parse(stream)
-        parsed_sites = {mrn_site[1] for mrn_site in parsed_data['PID']['mrn_sites']}
+        parsed_sites = {mrn_site[1] for mrn_site in parsed_data['PID'].get('mrn_sites', [])}
         assert 'RVH' in parsed_sites, 'RVH should be present in parsed data'
         assert 'MGH' in parsed_sites, 'MGH should be present in parsed data'
         assert 'MCH' not in parsed_sites, 'MCH should not be present in parsed data'
