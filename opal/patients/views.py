@@ -321,6 +321,24 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             reference_date = date_of_birth + relativedelta(years=relationship_type.start_age)
         return reference_date
 
+    def _set_relationship_end_date(self, date_of_birth: date, relationship_type: RelationshipType) -> date | None:
+        """
+        Calculate the end date for the relationship record.
+
+        Args:
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
+
+        Returns:
+            the end date
+        """
+        reference_date = None
+        # Check if the relationship type has an end_age set or not
+        if relationship_type.end_age:
+            # Calculate the date at which the patient turns to the end age of relationship type
+            reference_date = date_of_birth + relativedelta(years=relationship_type.end_age)
+        return reference_date
+
     def _create_caregiver_profile(self, form_data: dict, random_username_length: int) -> dict[str, Any]:
         """
         Create caregiver user and caregiver profile instance if not exists.
@@ -425,6 +443,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 reason='',
                 request_date=date.today(),
                 start_date=self._set_relationship_start_date(
+                    patient_record.date_of_birth,
+                    relationship_type,
+                ),
+                end_date=self._set_relationship_end_date(
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
