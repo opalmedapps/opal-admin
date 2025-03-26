@@ -34,6 +34,7 @@ class CreatePharmacyView(HL7CreateView):
         Returns:
             API Response with code and headers
         """
+        print(request.data)
         transformed_data = self._transform_parsed_to_serializer_structure(request.data)
         patient: Patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         transformed_data['patient'] = patient.pk

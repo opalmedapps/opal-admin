@@ -296,7 +296,6 @@ class HL7Parser(BaseParser):
 
         # Normalize line endings to CR
         hl7_message = raw_data_str.replace('\r\n', '\r').replace('\n', '\r')
-
         # Check for a parser context which defines specific segments to be parsed
         segments_to_parse = parser_context.get('segments_to_parse') if parser_context else None
 

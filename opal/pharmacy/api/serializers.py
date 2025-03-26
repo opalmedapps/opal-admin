@@ -1,6 +1,8 @@
 """Serializers for the API views of the `pharmacy` app."""
-from rest_framework import serializers
 from typing import Any
+
+from rest_framework import serializers
+
 from opal.core.api.serializers import DynamicFieldsSerializer
 
 from ..models import CodedElement, PharmacyComponent, PharmacyEncodedOrder, PharmacyRoute, PhysicianPrescriptionOrder

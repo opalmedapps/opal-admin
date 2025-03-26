@@ -1,8 +1,9 @@
+import re
 from collections import defaultdict
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any
-import re
+
 import pytest
 from rest_framework import exceptions
 
