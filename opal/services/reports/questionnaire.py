@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import re
+import types
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
@@ -73,11 +74,24 @@ class QuestionnaireData(NamedTuple):
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
 AUTO_PAGE_BREAK_BOTTOM_MARGIN = 50
+
+CHECKBOX_TYPE_QUESTION = 1
 NUMERIC_TYPE_QUESTION = 2
+TEXT_TYPE_QUESTION = 3
+RADIO_TYPE_QUESTION = 4
 
 TABLE_HEADER = ('Questionnaires remplis', 'Dernière mise à jour', 'Page')
 
 TEXT_QUESTIONS_TABLE_HEADER = ('Date', 'Response')
+
+QUESTION_TYPE_HANDLERS = types.MappingProxyType(
+    {
+        NUMERIC_TYPE_QUESTION: '_draw_chart_for_numeric_question',
+        TEXT_TYPE_QUESTION: '_draw_text_answer_question',
+        RADIO_TYPE_QUESTION: '_draw_text_answer_question',
+        CHECKBOX_TYPE_QUESTION: '_draw_text_answer_question',
+    },
+)
 
 
 class QuestionnairePDF(FPDF):  # noqa: WPS214
@@ -325,12 +339,18 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         Args:
             questions: list of questions associated with the questionnaire
+
+        Raises:
+            ValueError: question type was not found in the choices
+
         """
         for question in questions:
-            if question.question_type_id == NUMERIC_TYPE_QUESTION:
-                self._draw_chart_for_numeric_question(question)
+            handler_name = QUESTION_TYPE_HANDLERS.get(question.question_type_id, '_draw_text_answer_question')
+            handler = getattr(self, handler_name, None)
+            if callable(handler):
+                handler(question)
             else:
-                self._draw_text_answer_question(question)
+                raise ValueError(f"Handler '{handler_name}' not found for question type {question.question_type_id}.")
 
     def _draw_chart_for_numeric_question(self, question: Question) -> None:
         """Generate a chart for a numeric question (e.g., `SLIDER`) type.
