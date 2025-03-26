@@ -556,6 +556,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     _create_security_answers(user_bart)
 
     # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
+    # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
         _create_pathology_result(
             patient=marge,
