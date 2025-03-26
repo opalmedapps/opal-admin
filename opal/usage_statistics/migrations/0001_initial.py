@@ -8,6 +8,12 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
+    """
+    Initial migration for the usage statistics app.
+
+    Creates the `DailyUserAppActivity` and `DailyPatientDataReceived` models.
+    This can be further extended in the future.
+    """
 
     initial = True
 

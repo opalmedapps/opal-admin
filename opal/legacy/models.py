@@ -835,16 +835,16 @@ class LegacyOARoleModule(models.Model):
 class LegacyPatientActivityLog(models.Model):
     """PatientActivityLog from the legacy database OpalDB."""
 
-    ActivitySerNum = models.IntegerField(primary_key=True)
-    Request = models.CharField(max_length=255, null=False, db_index=True)
-    Parameters = models.CharField(max_length=2048, default='')
-    TargetPatientId = models.IntegerField(null=True)
-    Username = models.CharField(max_length=255, null=False, db_index=True)
-    DeviceId = models.CharField(max_length=255, null=False)
-    SessionId = models.TextField(default='')
-    DateTime = models.DateTimeField(null=False, db_index=True)
-    LastUpdated = models.DateTimeField(null=False, default=timezone.now)
-    AppVersion = models.CharField(max_length=50, null=False, db_index=True)
+    activity_ser_num = models.IntegerField(primary_key=True)
+    request = models.CharField(max_length=255, null=False, db_index=True)
+    parameters = models.CharField(max_length=2048, default='')
+    target_patient_id = models.IntegerField(null=True)
+    username = models.CharField(max_length=255, null=False, db_index=True)
+    device_id = models.CharField(max_length=255, null=False)
+    session_id = models.TextField(default='')
+    date_time = models.DateTimeField(null=False, db_index=True)
+    lastupdated = models.DateTimeField(null=False, default=timezone.now)
+    app_version = models.CharField(max_length=50, null=False, db_index=True)
 
     class Meta:
         managed = False

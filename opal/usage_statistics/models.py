@@ -1,6 +1,5 @@
-"""Prototype models for usage statistics."""
+"""Module providing models for the usage statistics app."""
 
-from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -9,11 +8,9 @@ from django.utils.translation import gettext_lazy as _
 from opal.patients.models import Patient, Relationship
 from opal.users.models import User
 
-Language = settings.LANGUAGES
-
 
 class DailyUserAppActivity(models.Model):
-    """Tracks daily app activity per user and patient. One record per user + patient per day (Maximum)."""
+    """A daily app activity statistics per user and patient. One record per user + patient per day (Maximum)."""
 
     action_by_user = models.ForeignKey(
         verbose_name=_('User who triggered this action'),
@@ -118,7 +115,7 @@ class DailyUserAppActivity(models.Model):
 
 
 class DailyPatientDataReceived(models.Model):
-    """Tracks daily data sent to patient. One record per patient per day (Maximum)."""
+    """Statistics of a daily data sent to patient. One record per patient per day (Maximum)."""
 
     patient = models.ForeignKey(
         verbose_name=_('Patient'),
