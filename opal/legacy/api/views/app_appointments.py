@@ -10,7 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.core.drf_permissions import IsListener
+from opal.core.drf_permissions import IsListener, IsOrmsSystem
 from opal.legacy import models
 
 from ..serializers import LegacyAppointmentCheckinSerializer, LegacyAppointmentDetailedSerializer
@@ -59,7 +59,9 @@ class AppAppointmentsView(APIView):
 class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
     """View supporting single legacy appointment update based on patient legacy ID."""
 
-    permission_classes = (IsListener,)
+    # Composable permission classes:
+    # https://www.django-rest-framework.org/community/3.9-announcement/#composable-permission-classes
+    permission_classes = [(IsListener | IsOrmsSystem)]
     serializer_class = LegacyAppointmentCheckinSerializer
 
     def get_object(self) -> models.LegacyAppointment:

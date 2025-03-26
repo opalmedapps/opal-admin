@@ -59,7 +59,7 @@ class IsSuperUser(permissions.IsAuthenticated):
         Returns:
             True, if the check is successful, False otherwise
         """
-        return super().has_permission(request, view) and request.user.is_superuser  # type: ignore[union-attr]
+        return super().has_permission(request, view) and request.user.is_superuser
 
 
 class _UsernameRequired(permissions.IsAuthenticated):
@@ -96,7 +96,7 @@ class _UsernameRequired(permissions.IsAuthenticated):
             )
 
         return super().has_permission(request, view) and (
-            request.user.username == self.required_username or request.user.is_superuser  # type: ignore[union-attr]
+            request.user.username == self.required_username or request.user.is_superuser
         )
 
 
@@ -124,6 +124,12 @@ class IsLegacyBackend(_UsernameRequired):
     required_username = constants.USERNAME_BACKEND_LEGACY
 
 
+class IsOrmsSystem(_UsernameRequired):
+    """Allows access only to the orms system user and superusers."""
+
+    required_username = constants.USERNAME_ORMS
+
+
 class IsORMSUser(permissions.IsAuthenticated):
     """Allows access only to users belong to the ORMS user group and superusers."""
 
@@ -140,7 +146,7 @@ class IsORMSUser(permissions.IsAuthenticated):
         """
         return super().has_permission(request, view) and (
             request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()  # type: ignore[union-attr]
-            or request.user.is_superuser  # type: ignore[union-attr]
+            or request.user.is_superuser
         )
 
 

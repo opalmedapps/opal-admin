@@ -235,6 +235,20 @@ def orms_user(django_user_model: User, settings: LazySettings) -> User:
 
 
 @pytest.fixture
+def orms_system_user(django_user_model: User) -> User:
+    """
+    Fixture providing a `User` instance representing the orms sytem.
+
+    Args:
+        django_user_model: the `User` model used in this project
+
+    Returns:
+        a user instance representing the listener
+    """
+    return django_user_model.objects.create_user(username=constants.USERNAME_ORMS)
+
+
+@pytest.fixture
 def user_client(client: Client, user: User) -> Client:
     """
     Fixture providing an instance of [Client][django.test.Client] with a logged in user.
