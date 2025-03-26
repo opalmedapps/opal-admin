@@ -13,8 +13,8 @@ from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType, RoleType
+from opal.tests.utils.test_commands import CommandTestMixin
 from opal.users import factories as user_factories
-from opal.utils.commands import CommandTestMixin
 
 from ..management.commands import migrate_users
 
