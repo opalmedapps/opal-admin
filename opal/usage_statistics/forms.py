@@ -79,3 +79,16 @@ class GroupUsageStatisticsExportForm(forms.Form):
                     _('Start Date cannot be later than End Date.'),
                 )
         return self.cleaned_data
+
+
+class IndividualUsageStatisticsExportForm(forms.Form):
+    """Form for exporting individual usage statistics data based on the provided filtering values."""
+
+    start_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=_('Start Date'),
+    )
+    end_date = forms.DateField(
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}),
+        label=_('End Date'),
+    )
