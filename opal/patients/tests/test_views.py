@@ -405,3 +405,75 @@ def test_process_step_select_site_form() -> None:
     assert response.status_code == HTTPStatus.OK
     assert instance.process_step(form) == form_data
     assert request.session['site_selection'] == site.pk
+
+
+def test_some_mrns_have_same_site_code() -> None:
+    """Test some MRN records have the same site code."""
+    patient_mrn_records = {
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+            {
+                'site': 'MGH',
+                'mrn': '9999994',
+                'active': True,
+            },
+            {
+                'site': 'RVH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+
+
+def test_all_mrns_have_same_site_code() -> None:
+    """Test all MRN records have the same site code."""
+    patient_mrn_records = {
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+            {
+                'site': 'MGH',
+                'mrn': '9999994',
+                'active': True,
+            },
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+
+
+def test_no_mrns_have_same_site_code() -> None:
+    """Test No MRN records have the same site code."""
+    patient_mrn_records = {
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+            {
+                'site': 'MCH',
+                'mrn': '9999994',
+                'active': True,
+            },
+            {
+                'site': 'RVH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False
