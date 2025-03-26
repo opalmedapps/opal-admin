@@ -6,7 +6,7 @@ import pytest
 from opal.users.models import User
 
 
-@pytest.fixture()
+@pytest.fixture
 def permission_user(django_user_model: User, permission_name: str) -> User:
     """
     Fixture providing a `User` instance with the permission from the parameter.
