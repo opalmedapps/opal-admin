@@ -10,7 +10,7 @@ from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 
-from ..core.form_layouts import CancelButton, ImageFieldWithPreview
+from ..core.form_layouts import CancelButton
 from .models import Institution
 
 
@@ -44,8 +44,8 @@ class InstitutionForm(forms.ModelForm):
         self.helper.layout = Layout(
             'name_en',
             'name_fr',
-            ImageFieldWithPreview('logo_en'),
-            ImageFieldWithPreview('logo_fr'),
+            'logo_en',
+            'logo_fr',
             'code',
             'support_email',
             'terms_of_use_en',
