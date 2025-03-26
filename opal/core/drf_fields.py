@@ -14,7 +14,7 @@ from ..utils.base64 import Base64Util
 
 
 class Base64FileField(serializers.Field):
-    """This class is a reuseable field for encoding the to read the file and return the base64 encoded file contents."""
+    """This class is a reuseable field for encoding the file and return the base64 encoded file contents."""
 
     def to_representation(self, file: FieldFile) -> Optional[Any]:
         """Represent a file content in base64 encoded form.
