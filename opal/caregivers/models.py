@@ -92,4 +92,8 @@ class SecurityAnswer(models.Model):
         Returns:
             the caregiver and the question.
         """
-        return '{profile} - {question}'.format(profile=self.profile, question=self.question)
+        return '{profile} - {question} - {answer}'.format(
+            profile=self.profile,
+            question=self.question,
+            answer=self.answer,
+        )

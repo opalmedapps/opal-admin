@@ -24,7 +24,8 @@ class SecurityQuestion(DjangoModelFactory):
     class Meta:
         model = models.SecurityQuestion
 
-    title = '1234567'
+    title = 'Apple'
+    title_fr = 'Pomme'
     is_active = True
 
 
@@ -34,6 +35,8 @@ class SecurityAnswer(DjangoModelFactory):
     class Meta:
         model = models.SecurityAnswer
 
-    question = '1234567'
+    question = 'Apple'
+    question_fr = 'Pomme'
     profile = SubFactory(CaregiverProfile)
-    answer = 'abcdefg'
+    answer = 'answer'
+    answer_fr = 'réponse'

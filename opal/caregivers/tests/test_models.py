@@ -71,7 +71,7 @@ def test_caregiverprofile_legacy_id() -> None:
 def test_security_question_str() -> None:
     """The `str` method returns the name of the security_question."""
     question = factories.SecurityQuestion()
-    assert str(question) == '1234567'
+    assert str(question) == 'Apple'
 
 
 def test_security_question_factory() -> None:
@@ -93,7 +93,7 @@ def test_security_answer_str() -> None:
     profile = CaregiverProfile()
     profile.user = caregiver
     answer.profile = profile
-    assert str(answer) == 'first_name last_name - 1234567'
+    assert str(answer) == 'first_name last_name - Apple - answer'
 
 
 def test_security_answer_factory() -> None:
