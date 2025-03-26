@@ -868,7 +868,6 @@ def test_create_access_request_new_patient_and_databank_consent(
     """A new relationship and new patient with databank consent records are created."""
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
-    print(f'{consent_form.title=}')
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
     Institution()
@@ -878,8 +877,6 @@ def test_create_access_request_new_patient_and_databank_consent(
         caregiver_profile,
         self_type,
     )
-
-    print(f'{consent_form.title=}')
 
     assert registration_code is None
     patient = Patient.objects.get()
