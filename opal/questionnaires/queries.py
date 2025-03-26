@@ -3,7 +3,7 @@ import html
 import logging
 
 from django.conf import settings
-from django.db import connections
+from django.db import connections, transaction
 from django.db.backends.utils import CursorWrapper
 from django.db.utils import DatabaseError
 from django.http.request import QueryDict
@@ -11,11 +11,8 @@ from django.utils.translation import gettext_lazy as _
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
-
-if settings.DEBUG:
-    test_accounts = ('')
-else:
-    test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
+# List of test account data to be excluded from reports (leave environment variable blank when in development)
+test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
 
 
 def _get_description(qid: int, lang_id: int) -> str:
@@ -36,6 +33,7 @@ def _get_description(qid: int, lang_id: int) -> str:
                    FROM questionnaire WHERE ID = %s
                )
                AND languageId = %s
+               LIMIT 1
             """, [qid, lang_id],
         )
         description = str(conn.fetchone()[0])
@@ -59,6 +57,7 @@ def _fetch_all_as_dict(cursor: CursorWrapper) -> list[dict]:
     ]
 
 
+@transaction.atomic
 def get_all_questionnaires(lang_id: int) -> list[dict]:
     """Get list of questionnaires which have non-zero number of responses.
 
@@ -90,6 +89,7 @@ def get_all_questionnaires(lang_id: int) -> list[dict]:
     return qs
 
 
+@transaction.atomic
 def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, WPS213
     """Get details for desired questionnaire (questions, patients, dates).
 
@@ -164,6 +164,7 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
     }
 
 
+@transaction.atomic
 def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: WPS210, WPS213
     """Query the QuestionnaireDB with the user's specific options & generate tables.
 

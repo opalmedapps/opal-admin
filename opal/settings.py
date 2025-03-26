@@ -411,4 +411,4 @@ DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------
 # List of accounts to be excluded from the questionnaires list when not in debug mode
-TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS')
+TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
