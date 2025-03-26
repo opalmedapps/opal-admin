@@ -317,6 +317,13 @@ class RequestorDetailsForm(forms.Form):
         label=_('Caregiver relationship type'),
     )
 
+    requestor_form = forms.BooleanField(
+        label=_('Has the requestor filled out the request form?'),
+        widget=forms.CheckboxInput(),
+        required=False,
+        initial=False,
+    )
+
     def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for card type select box and card number input box.
@@ -333,6 +340,10 @@ class RequestorDetailsForm(forms.Form):
                 Column('relationship_type', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row',
             ),
+            Row(
+                Column('requestor_form', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row',
+            ),
             ButtonHolder(
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
@@ -342,3 +353,13 @@ class RequestorDetailsForm(forms.Form):
             patient_age=self.age,
         ).values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = available_choices
+
+    def clean(self) -> None:
+        """Validate if relationship type requested requires a form."""
+        super().clean()
+        type_field = self.cleaned_data.get('relationship_type')
+        requestor_form_field = self.cleaned_data.get('requestor_form')
+
+        user_select_type = RelationshipType.objects.get(name=type_field)
+        if user_select_type.form_required and not requestor_form_field:
+            self.add_error('requestor_form', _('Form request is required.'))
