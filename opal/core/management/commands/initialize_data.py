@@ -314,7 +314,7 @@ class Command(BaseCommand):
         message = 'Created superuser with username "admin"'
 
         if not password_option:
-            message += ' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
+            message += f' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
 
         self.stdout.write(message)
 
