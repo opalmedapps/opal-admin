@@ -78,7 +78,12 @@ flake8:
     - flake8 --version
     # install plugin to produce code climate report
     - pip install flake8-gl-codeclimate
-    - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json
+    # don't fail if there are errors so the result can also be printed to the console for logs
+    # fix relative file paths so GitLab is happy and shows the violations properly
+    # see: https://github.com/awelzel/flake8-gl-codeclimate/issues/14
+    - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('./', '') for line in sys.stdin]; print(json.dumps(json.loads('\n'.join(lines)), indent='\t'));" > gl-code-quality-report.json || true
+    # fail if JSON file does not contain empty array
+    - cat gl-code-quality-report.json | grep -q "\[\]"
   artifacts:
     when: always
     reports:
@@ -87,8 +92,18 @@ flake8:
 mypy:
   stage: Static Analysis
   script:
+    # install plugin to produce code climate report
+    - pip install mypy-gitlab-code-quality
     - mypy --version
-    - mypy opal/
+    # export output and don't fail if there are errors
+    - mypy opal/ --no-error-summary > mypy-out.txt || true
+    - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
+     # fail if JSON file does not contain empty array
+    - cat codequality.json | grep -q "\[\]"
+  artifacts:
+    when: always
+    reports:
+      codequality: codequality.json
 
 markdownlint:
   stage: Static Analysis
