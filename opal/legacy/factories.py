@@ -583,7 +583,6 @@ class LegacyPatientDeviceIdentifierFactory(DjangoModelFactory):
     app_version = '100.100.100'
     registration_id = ''
     device_type = 0
-    session_id = ''
     security_answer_ser_num = None
     attempt = 0
     trusted = 1
