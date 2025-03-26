@@ -1,6 +1,6 @@
 """Module providing models for the patients app."""
 from datetime import date
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from opal.caregivers.models import CaregiverProfile
 from opal.core.validators import validate_ramq
 from opal.hospital_settings.models import Site
-from opal.patients.managers import HospitalPatientManager, RelationshipManager, RelationshipTypeManager
+from opal.patients.managers import HospitalPatientManager, PatientManager, RelationshipManager, RelationshipTypeManager
 
 from . import constants
 
@@ -210,6 +210,7 @@ class Patient(models.Model):
         null=True,
         blank=True,
     )
+    objects: PatientManager = PatientManager()
 
     class Meta:
         verbose_name = _('Patient')
@@ -242,6 +243,38 @@ class Patient(models.Model):
         """
         if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
             raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
+
+    def create_or_update_hospital_patients(
+        self,
+        hospital_patients: List[Dict[str, Any]],
+    ) -> None:
+        """Create or update `HospitalPatient` records based on a given list of hospital patients.
+
+        Args:
+            hospital_patients: list of dictionaries containing hospital patients
+        """
+        for item in hospital_patients:
+            site = item.get('site')
+            site_code = site.get('code') if site else ''
+            hospital_patient = self.hospital_patients.filter(
+                mrn=item.get('mrn'),
+                site__code=site_code,
+                patient=self,
+            ).first()
+
+            # if `HospitalPatient` exists, update the existing object
+            if hospital_patient:
+                hospital_patient.is_active = item.get('is_active', hospital_patient.is_active)
+                hospital_patient.save()
+            # Otherwise create a new `HospitalPatient` object
+            else:
+                site = Site.objects.get(code=site_code)
+                self.hospital_patients.create(
+                    patient=self,
+                    site=site,
+                    mrn=item.get('mrn'),
+                    is_active=item.get('is_active'),
+                )
 
     @classmethod
     def calculate_age(cls, date_of_birth: date, reference_date: Optional[date] = None) -> int:

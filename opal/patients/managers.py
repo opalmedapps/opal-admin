@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.functions import Coalesce
 
 from . import constants
-from . import models as patients_models
+from . import models as patient_models
 
 
 class RelationshipManager(models.Manager):
@@ -99,41 +99,6 @@ class HospitalPatientManager(models.Manager):
             mrn=mrn,
         )
 
-    def get_hospital_patient_by_site_mrn_list(
-        self,
-        site_mrn_list: list[dict[str, Any]],
-    ) -> Optional['patients_models.HospitalPatient']:
-        """
-        Query manager to get a `HospitalPatient` record filtered by given list of dictionaries with site codes and MRNs.
-
-        Args:
-            site_mrn_list: list of dictionaries that contain site codes and MRNs
-
-        Returns:
-            `HospitalPatient` record
-        """
-        # Create flat lists of the provided MRNs and site codes
-        mrns = [hospital_patient.get('mrn') for hospital_patient in site_mrn_list]
-        sites = [hospital_patient['site']['code'] for hospital_patient in site_mrn_list]
-
-        # Get `HospitalPatient` queryset filtered by MRNs AND site codes
-        hospital_patients: Any = self.filter(
-            models.Q(mrn__in=mrns) & models.Q(site__code__in=sites),
-        )
-
-        # Get first `HospitalPatient` object from the queryset
-        hospital_patient: Optional['patients_models.HospitalPatient'] = hospital_patients.first()
-
-        # Return `None` if the `Patient` objects in the queryset are not the same (refer to different patients)
-        # or if the queryset is empty
-        if (
-            not hospital_patient
-            or len(hospital_patients) != hospital_patients.filter(patient_id=hospital_patient.patient_id).count()
-        ):
-            return None
-
-        return hospital_patient
-
 
 class RelationshipTypeManager(models.Manager):
     """Manager class for the `RelationshipType` model."""
@@ -150,3 +115,44 @@ class RelationshipTypeManager(models.Manager):
         return self.annotate(  # type: ignore[no-any-return]
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
+
+
+class PatientManager(models.Manager):
+    """Manager class for the `Patient` model."""
+
+    def get_patient_by_site_mrn_list(
+        self,
+        site_mrn_list: list[dict[str, Any]],
+    ) -> Optional['patient_models.Patient']:
+        """
+        Query manager to get a `Patient` record filtered by a given list of dictionaries with site codes and MRNs.
+
+        Args:
+            site_mrn_list: list of dictionaries that contain site codes and MRNs
+
+        Returns:
+            `Patient` record
+        """
+        # Create flat lists of the provided MRNs and site codes
+        mrns = [hospital_patient.get('mrn') for hospital_patient in site_mrn_list]
+        sites = [hospital_patient['site']['code'] for hospital_patient in site_mrn_list]
+
+        # Get `Patient` queryset filtered by MRNs AND site codes
+        patients: Any = self.prefetch_related(
+            'hospital_patients__site',
+        ).filter(
+            models.Q(hospital_patients__mrn__in=mrns) & models.Q(hospital_patients__site__code__in=sites),
+        )
+
+        # Get first `Patient` object from the queryset
+        patient: Optional['patient_models.Patient'] = patients.first()
+
+        # Return `None` if the `Patient` objects in the queryset are not the same (more than one patient)
+        # or if the queryset is empty
+        if (
+            not patient
+            or len(patients) != 1
+        ):
+            return None
+
+        return patient

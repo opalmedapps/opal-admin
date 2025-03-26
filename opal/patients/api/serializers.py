@@ -6,8 +6,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.hospital_settings.models import Site
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -136,16 +135,6 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             # 'language',
         ]
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initialize the serializer for patient demographic operations.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        super().__init__(*args, **kwargs)
-        self.hospital_patient_queryset = HospitalPatient.objects.all()
-
     def validate_mrns(
         self,
         value: List[Dict[str, Any]],
@@ -183,6 +172,8 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
     ) -> Optional[Patient]:
         """Update `Patient` instance during patient demographic update call.
 
+        It updates `User` fields as well.
+
         Args:
             instance: `Patient` record to be updated
             validated_data: dictionary containing validated request data
@@ -193,7 +184,31 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         # Runs the original parent update()
         super().update(instance, validated_data)
 
-        self._bulk_update(instance, validated_data)
+        hospital_patients = validated_data.get('mrns', [])
+
+        # Update the `HospitalPatient` records with the new demographic information
+        instance.create_or_update_hospital_patients(hospital_patients)
+
+        # Update the `User` model with the new demographic information
+        # Look up the `Relationships` to the updating patient with a `SELF` role type
+        relationship = Relationship.objects.select_related(
+            'caregiver__user',
+        ).filter(
+            patient=instance,
+            type__role_type=RoleType.SELF,
+        ).first()
+
+        if relationship:
+            user = relationship.caregiver.user
+            user.first_name = validated_data.get(
+                'first_name',
+                relationship.caregiver.user.first_name,
+            )
+            user.last_name = validated_data.get(
+                'last_name',
+                relationship.caregiver.user.last_name,
+            )
+            user.save()
 
         return instance
 
@@ -235,7 +250,9 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             ValidationError: occurs when MRN/site code pair is missing `is_active` key
             ValidationError: occurs when MRN/site code pair has not been found
         """
-        hospital_patients = self.hospital_patient_queryset
+        hospital_patients = HospitalPatient.objects.select_related(
+            'site',
+        )
 
         for patient in validated_hospital_patients:
             hospital_patient = hospital_patients.filter(
@@ -261,53 +278,3 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             raise serializers.ValidationError(
                 'The provided "MRNs" list should contain "MRN/site" pair that exists in the database',
             )
-
-    # TODO: refactor the following method
-    def _bulk_update(  # noqa: WPS210
-        self,
-        patient_instance: Patient,
-        validated_data: Dict[str, Any],
-    ) -> None:
-
-        hospital_patients = validated_data.get('mrns', [])
-
-        # Update the `HospitalPatient` records with the new demographic information
-        for item in hospital_patients:
-            site_code = item.get('site').get('code')
-            hospital_patient = self.hospital_patient_queryset.filter(
-                mrn=item.get('mrn'),
-                site__code=site_code,
-                patient=patient_instance,
-            ).first()
-
-            if hospital_patient:
-                hospital_patient.is_active = item.get('is_active', hospital_patient.is_active)
-                hospital_patient.save()
-            else:
-                site = Site.objects.get(code=site_code)
-                self.hospital_patient_queryset.create(
-                    patient=patient_instance,
-                    site=site,
-                    mrn=item.get('mrn'),
-                    is_active=item.get('is_active'),
-                )
-
-        # Update the `User` model with the new demographic information
-        # TODO: use constant to find `Self` relationship
-        relationship_type = RelationshipType.objects.filter(name='Self').first()
-        # Look up the `Relationships` to that patient with a `Self` relationship
-        relationship = Relationship.objects.filter(
-            patient=patient_instance,
-            type=relationship_type,
-        ).first()
-
-        if relationship:
-            relationship.caregiver.user.first_name = validated_data.get(
-                'first_name',
-                relationship.caregiver.user.first_name,
-            )
-            relationship.caregiver.user.last_name = validated_data.get(
-                'last_name',
-                relationship.caregiver.user.last_name,
-            )
-            relationship.caregiver.user.save()

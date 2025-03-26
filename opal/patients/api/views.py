@@ -19,7 +19,7 @@ from opal.caregivers.api import serializers as caregiver_serializers
 from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
 
 from ..api.serializers import CaregiverRelationshipSerializer, PatientDemographicSerializer
-from ..models import HospitalPatient, Patient, Relationship
+from ..models import Patient, Relationship
 from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 
@@ -155,7 +155,9 @@ class PatientDemographicView(UpdateAPIView):
     """REST API `UpdateAPIView` handling PUT and PATCH requests for patient demographic updates."""
 
     permission_classes = [IsAuthenticated, UpdateModelPermissions]
-    queryset = Patient.objects.all()
+    queryset = Patient.objects.prefetch_related(
+        'hospital_patients__site',
+    )
     serializer_class = PatientDemographicSerializer
     pagination_class = None
 
@@ -168,7 +170,7 @@ class PatientDemographicView(UpdateAPIView):
             `Patient` object
 
         Raises:
-            NotFound: if `HospitalPatient` record has not be found through the provided `mrns` list of dictionaries
+            NotFound: if `Patient` record has not be found through the provided `mrns` list of `HospitalPatients`
         """
         # Validate the `MRNs` from input
         serializer = PatientDemographicSerializer(
@@ -177,24 +179,22 @@ class PatientDemographicView(UpdateAPIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        hospital_patient = HospitalPatient.objects.get_hospital_patient_by_site_mrn_list(
+        patient = Patient.objects.get_patient_by_site_mrn_list(
             serializer.validated_data.get('mrns'),
         )
 
         # Raise `NotFound` if `HospitalPatient` queryset is empty
-        if not hospital_patient:
+        if not patient:
             raise NotFound(
                 {
                     'detail': '{0} {1}'.format(
-                        'Cannot find patient records with the provided MRNs and site codes.',
+                        'Cannot find patient record with the provided MRNs and site codes.',
                         'Make sure that MRN/site code pairs refer to the same patient.',
                     ),
                 },
             )
 
-        obj = get_object_or_404(self.get_queryset(), id=hospital_patient.patient_id)
-
         # May raise a permission denied
-        self.check_object_permissions(self.request, obj)
+        self.check_object_permissions(self.request, patient)
 
-        return obj
+        return patient

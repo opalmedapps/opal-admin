@@ -352,7 +352,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         return caregiver_dict
 
-    def _create_patient(self, form_data: dict) -> Patient:
+    def _create_patient(self, form_data: dict) -> Any:
         """
         Create patient instance if not exists.
 
