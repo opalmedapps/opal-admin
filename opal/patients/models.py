@@ -29,7 +29,6 @@ class RelationshipType(models.Model):
         help_text=_('Minimum age the relationship is allowed to start.'),
         validators=[
             MinValueValidator(constants.RELATIONSHIP_MIN_AGE),
-            MaxValueValidator(constants.RELATIONSHIP_MAX_AGE - 1),
         ])
     end_age = models.PositiveIntegerField(
         verbose_name=_('End age'),
