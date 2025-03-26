@@ -45,7 +45,7 @@ class Command(BaseCommand):
             self._create_data()
             self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
-    def _create_data(self) -> None:  # noqa: WPS210
+    def _create_data(self) -> None:  # noqa: WPS210, WPS213 (local variables, too many expressions)
         """
         Create all test data.
 
@@ -73,8 +73,6 @@ class Command(BaseCommand):
         interface_engine = User.objects.create(username='Interface Engine')
 
         # permissions
-        #
-        # listener
         view_institution = _find_permission('hospital_settings', 'view_institution')
         view_site = _find_permission('hospital_settings', 'view_site')
         view_caregiver_profile = _find_permission('caregivers', 'view_caregiverprofile')
@@ -82,6 +80,7 @@ class Command(BaseCommand):
         view_hospital_patient = _find_permission('patients', 'view_hospitalpatient')
         view_patient = _find_permission('patients', 'view_patient')
         view_relationship = _find_permission('patients', 'view_relationship')
+        change_patient = _find_permission('patients', 'change_patient')
 
         listener.user_permissions.set([
             view_institution,
@@ -94,7 +93,9 @@ class Command(BaseCommand):
         ])
 
         # OIE
-        # TODO: determine which permissions are specifically needed
+        interface_engine.user_permissions.set([
+            change_patient,
+        ])
 
         # Medical Records
         medical_records.permissions.add(_find_permission('patients', 'can_manage_relationships'))

@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
 
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.asserts import assertRaisesMessage
+from pytest_mock.plugin import MockerFixture
 
-from opal.core.test_utils import CommandTestMixin
+from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.databank import factories as databank_factories
 from opal.legacy import factories as legacy_factories
 from opal.legacy_questionnaires import factories as legacy_questionnaire_factories
@@ -75,14 +78,14 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             last_synchronized=timezone.make_aware(yesterday),
         )
         message, error = self._call_command('send_databank_data')
-        assert 'No Appointments data found for Simpson, Bart' in message
-        assert 'No Demographics data found for Simpson, Bart' in message
-        assert 'No Diagnoses data found for Simpson, Bart' in message
-        assert 'No Labs data found for Simpson, Bart' in message
-        assert 'No Questionnaires data found for Simpson, Bart' in message
+        assert f'No Appointments data found for {pat1}' in message
+        assert f'No Demographics data found for {pat1}' in message
+        assert f'No Diagnoses data found for {pat1}' in message
+        assert f'No Labs data found for {pat1}' in message
+        assert f'No Questionnaires data found for {pat1}' in message
         assert not error
 
-    def test_data_found_for_consenting_patient(self) -> None:
+    def test_data_found_for_consenting_patient(self, mocker: MockerFixture) -> None:  # noqa: WPS213
         """Test fetching the existing data of patients who have consented."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
@@ -102,13 +105,16 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         legacy_factories.LegacyAppointmentFactory(appointmentsernum=2, checkin=1, patientsernum=legacy_pat1)
         legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
         legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
-        message, error = self._call_command('send_databank_data')
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+        RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
 
-        assert '2 instances of Appointments data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Diagnoses data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Labs data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '1 instances of Demographics data found, [Temporary print out for test coverage in pipeline]' in message
-        assert '7 instances of Questionnaires data found, [Temporary print out for test coverage in pipeline]' in message  # noqa: E501
+        message, error = self._call_command('send_databank_data')
+        assert f'2 instances of Appointments found for {django_pat1}' in message
+        assert f'1 instances of Diagnoses found for {django_pat1}' in message
+        assert f'3 instances of Labs found for {django_pat1}' in message
+        assert f'1 instances of Demographics found for {django_pat1}' in message
+        assert f'7 instances of Questionnaires found for {django_pat1}' in message
         assert not error
 
     def test_invalid_databank_module(self) -> None:
@@ -147,3 +153,69 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         message = 'Legacy ID missing from Databank Patient.'
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
+
+    def test_data_found_for_multiple_patient(self, mocker: MockerFixture) -> None:
+        """Test fetching the existing data of multiple patients who have consented."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMH12345678', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        # Must set the last sync date to before the hardcoded last_updated date in our test_QuestionnaireDB.sql data
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat2)
+        legacy_factories.LegacyAppointmentFactory(checkin=0, patientsernum=legacy_pat2)
+        RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+        message, error = self._call_command('send_databank_data')
+        for module in ('Appointments', 'Diagnoses', 'Demographics', 'Labs', 'Questionnaires'):
+            assert f'Number of {module}-consenting patients is: 2' in message
+
+        assert not error
+
+    def test_partial_sender_error_oie(self, mocker: MockerFixture, capsys: pytest.CaptureFixture) -> None:
+        """Verify oie sender errors get properly handled."""
+        django_pat1 = patient_factories.Patient()
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        yesterday = datetime.now() - timedelta(days=1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(yesterday),
+        )
+        generated_data = {
+            'status': 'error',
+            'data': {
+                'message': 'request failed',
+            },
+        }
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        mock_post = RequestMockerTest.mock_requests_post(mocker, generated_data)
+        mock_post.side_effect = requests.RequestException('request failed')
+        mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
+        command = send_databank_data.Command()
+        command._send_to_oie_and_handle_response({})
+        captured = capsys.readouterr()
+        assert 'OIE Error: request failed' in captured.err
