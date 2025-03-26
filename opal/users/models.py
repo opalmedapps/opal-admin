@@ -16,10 +16,8 @@ from typing import Any, ClassVar, Set, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.base import ModelBase
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -164,17 +162,17 @@ class Caregiver(User):
         verbose_name_plural = _('Caregivers')
 
 
-@receiver(signal=m2m_changed, sender=User.groups.through)
-def post_save_user_signal_handler(  # noqa: WPS211
-    instance: User,
+@receiver(signal=m2m_changed, sender=ClinicalStaff.groups.through)
+def post_save_user_signal_handler(  # noqa: WPS211, WPS231
+    instance: ClinicalStaff,
     action: str,
-    model: ModelBase,
-    pk_set: Set,
+    model: type[models.Model],
+    pk_set: Set[int],
     *args: Any,
     **kwargs: Any,
 ) -> None:
     """
-    Post save function that is triggered by a signal once a change in the `users.groups` model is performed.
+    Post save function that is triggered by a signal once a change in the `users.groups` relationship is performed.
 
     The goal of this function is to set `is_staff` and `is_superuser` to True when a user is added to admin_group.
 
@@ -186,18 +184,15 @@ def post_save_user_signal_handler(  # noqa: WPS211
         args: argument sent with the request
         kwargs: extra keyword arguments
     """
-    if model == Group:
-        try:
-            administrators_pk = Group.objects.get(name=ADMIN_GROUP_NAME).pk
-        except ObjectDoesNotExist:
-            return
-
-        if administrators_pk in pk_set:
-            if action == 'post_add':
-                instance.is_superuser = True
-                instance.is_staff = True
-            elif action == 'post_remove':
-                instance.is_superuser = False
-                instance.is_staff = False
+    if model == Group and instance.type == 'CLINICAL':
+        administrators = Group.objects.filter(name=ADMIN_GROUP_NAME).first()
+        if administrators:
+            if administrators.pk in pk_set:
+                if action == 'post_add':
+                    instance.is_superuser = True
+                    instance.is_staff = True
+                elif action == 'post_remove':
+                    instance.is_superuser = False
+                    instance.is_staff = False
 
         instance.save()
