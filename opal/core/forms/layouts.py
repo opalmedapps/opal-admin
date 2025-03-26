@@ -14,12 +14,6 @@ class FileField(Field):
     template = 'forms/filefield.html'
 
 
-class DelayField(Field):
-    """Delay fields with a label, a disclaimer and input box with an appended text as a unit."""
-
-    template = 'forms/delayfield.html'
-
-
 class CancelButton(HTML):
     """
     Reusable cancel button.

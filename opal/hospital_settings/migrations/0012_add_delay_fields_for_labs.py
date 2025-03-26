@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Add `adulthood_age`, `interpretable_lab_result_delay` and `non_interpretable_lab_result_delay` fieldss to the `Institution` model."""
+    """Add `adulthood_age`, `interpretable_lab_result_delay` and `non_interpretable_lab_result_delay` fields to the `Institution` model."""
 
     dependencies = [
         ('hospital_settings', '0011_add_manage_site_permission'),

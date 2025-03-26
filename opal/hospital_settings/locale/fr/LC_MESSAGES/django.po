@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-14 15:53+0000\n"
+"POT-Creation-Date: 2023-07-19 14:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,14 @@ msgstr ""
 #: opal/hospital_settings/templates/hospital_settings/index.html
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
+
+#: opal/hospital_settings/forms.py
+msgid "years"
+msgstr "ans"
+
+#: opal/hospital_settings/forms.py
+msgid "days"
+msgstr "jours"
 
 #: opal/hospital_settings/forms.py
 msgid "Save"
