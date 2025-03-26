@@ -1,4 +1,5 @@
 import datetime
+from types import MappingProxyType
 
 from django.forms import model_to_dict
 
@@ -15,7 +16,7 @@ from ..models import Relationship, RelationshipStatus, RelationshipType, RoleTyp
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = dict({
+OIE_PATIENT_DATA = MappingProxyType({
     'dateOfBirth': '1953-01-01 00:00:00',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',

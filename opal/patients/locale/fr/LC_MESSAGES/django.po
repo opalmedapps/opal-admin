@@ -367,21 +367,6 @@ msgid "Start date cannot be earlier than patient's date of birth"
 msgstr ""
 
 #: opal/patients/models.py
-#, python-brace-format
-msgid "Start date cannot be earlier than {calculated_start_date}."
-msgstr ""
-"La date de début ne peut pas être antérieure à {calculated_start_date}."
-
-#: opal/patients/models.py
-#, python-brace-format
-msgid ""
-"Start date cannot be earlier than {relative_year} years before the request "
-"date of {request_date}."
-msgstr ""
-"La date de début ne peut pas être antérieure à {relative_year} ans avant la "
-"date de demande du {request_date}."
-
-#: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
 

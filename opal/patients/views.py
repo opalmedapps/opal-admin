@@ -356,6 +356,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 'ramq': patient_record.ramq,
             },
         )
+        patient.full_clean()
 
         return patient
 
@@ -378,19 +379,24 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         caregiver_user = caregiver_dict['caregiver_user']
         caregiver = caregiver_dict['caregiver']
-        patient_record = form_data['patient_record']
         relationship_type = form_data['relationship_type']
         # Check if there is no relationship between requestor and patient
         relationship: Optional[Relationship] = Relationship.objects.get_relationship_by_patient_caregiver(
             str(relationship_type),
             caregiver_user.id,
-            patient_record.ramq,
+            patient.ramq,
         ).first()
         # For `Self` relationship, the status is CONFIRMED
         if relationship_type.role_type == RoleType.SELF:
             status = RelationshipStatus.CONFIRMED
         else:
             status = RelationshipStatus.PENDING
+
+        start_date = Relationship.calculate_default_start_date(
+            date.today(),
+            patient.date_of_birth,
+            relationship_type,
+        )
 
         if not relationship:
             relationship = Relationship(
@@ -400,13 +406,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 status=status,
                 reason='',
                 request_date=date.today(),
-                start_date=Relationship.set_relationship_start_date(
-                    date.today(),
-                    patient_record.date_of_birth,
-                    relationship_type,
-                ),
-                end_date=Relationship.set_relationship_end_date(
-                    patient_record.date_of_birth,
+                start_date=start_date,
+                end_date=Relationship.calculate_end_date(
+                    patient.date_of_birth,
                     relationship_type,
                 ),
             )
