@@ -5,6 +5,8 @@
 !.envs/*.sample
 staticfiles/
 
+opal/static/thirdparty/node_modules
+
 # test data
 docker/nginx-data/
 # docker logs
