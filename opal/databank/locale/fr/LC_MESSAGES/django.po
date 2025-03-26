@@ -20,48 +20,48 @@ msgstr ""
 
 #: opal/databank/apps.py
 msgid "Databank"
-msgstr ""
+msgstr "Banque de données"
 
 #: opal/databank/models.py
 msgid "Patient"
-msgstr ""
+msgstr "Patient"
 
 #: opal/databank/models.py
 msgid "Checked-In Appointments Consent"
-msgstr ""
+msgstr "Consentement pour les rendez-vous enregistrés"
 
 #: opal/databank/models.py
-msgid "Diagnosis Consent"
-msgstr ""
+msgid "Diagnoses Consent"
+msgstr "Consentement pour les diagnostics"
 
 #: opal/databank/models.py
 msgid "Demographics Consent"
-msgstr ""
+msgstr "Consentement pour les données démographiques"
 
 #: opal/databank/models.py
 msgid "Labs Consent"
-msgstr ""
+msgstr "Consentement pour les résultats de laboratoire"
 
 #: opal/databank/models.py
 msgid "Questionnaires Consent"
-msgstr ""
+msgstr "Consentement pour les questionnaires"
 
 #: opal/databank/models.py
 msgid "Consent Granted"
-msgstr ""
+msgstr "Consentement accordé"
 
 #: opal/databank/models.py
 msgid "Consent Updated"
-msgstr ""
+msgstr "Mise à jour du consentement"
 
 #: opal/databank/models.py
-msgid "Last Synchronized At"
-msgstr ""
+msgid "Last Synchronized"
+msgstr "Dernière synchronisation"
 
 #: opal/databank/models.py
 msgid "Databank Consent"
-msgstr ""
+msgstr "Consentement à la banque de données"
 
 #: opal/databank/models.py
 msgid "Databank Consents"
-msgstr ""
+msgstr "Consentements à la banque de données"

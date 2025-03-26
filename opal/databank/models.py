@@ -36,7 +36,7 @@ class DatabankConsent(models.Model):
         default=True,
     )
     has_diagnosis = models.BooleanField(
-        verbose_name=_('Diagnosis Consent'),
+        verbose_name=_('Diagnoses Consent'),
         default=True,
     )
     has_demographics = models.BooleanField(
@@ -60,7 +60,7 @@ class DatabankConsent(models.Model):
         default=timezone.now,
     )
     last_synchronized = models.DateTimeField(
-        verbose_name=_('Last Synchronized At'),
+        verbose_name=_('Last Synchronized'),
     )
 
     class Meta:
