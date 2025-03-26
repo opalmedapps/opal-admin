@@ -48,3 +48,7 @@ For new apps ensure to do the following things:
 For apps that expose an API, create a sub-package `api` where serializers, views and viewsets should live.
 
 API URLs are defined in a module in the core app (`core/api_urls.py`).
+
+## Best Practices
+
+* favour fat models and skinny views, i.e., logic should go into the model, model manager or utility modules instead of the view for reusability. See more information in Two Scoops of Django's preface "Core Concepts: Fat Models, Utility Modules, Thin Views, Stupid Templates".
