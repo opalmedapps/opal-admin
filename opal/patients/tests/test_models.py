@@ -116,6 +116,19 @@ def test_relationshiptype_default_role() -> None:
     assert relationship_type.role_type == RoleType.CAREGIVER
 
 
+def test_relationshiptype_is_self_true() -> None:
+    """Ensure the RelationshipType correctly identifies a SELF role type."""
+    relationship_type = factories.RelationshipType(role_type=RoleType.SELF)
+    assert relationship_type.is_self
+
+
+@pytest.mark.parametrize('role_type', [role for role in RoleType.values if role != RoleType.SELF])
+def test_relationshiptype_is_self_false(role_type: RoleType) -> None:
+    """Ensure the RelationshipType correctly identifies non-SELF role types."""
+    relationship_type = factories.RelationshipType(role_type=role_type)
+    assert not relationship_type.is_self
+
+
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
     patient = Patient(first_name='First Name', last_name='Last Name')
