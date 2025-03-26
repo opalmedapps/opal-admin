@@ -10,7 +10,7 @@ class AbstractQuantityTiming(models.Model):
 
     Quantity/Timing specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Fields/ORC.7
 
-    The default duration is indefinite which can also be taken to mean 'until the prescription runs out.
+    The default duration is indefinite which can also be taken to mean "until the prescription runs out".
     The default priority is Routine/Default: https://hl7-definition.caristix.com/v2/HL7v2.3/Fields/ORC.7.6
     """
 
@@ -61,6 +61,16 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
         return f'Filler number {self.filler_order_number}, {self.ordered_by} order for {self.patient}'
 
 
+class FormularyStatus(models.TextChoices):
+    """Choices of formulary status type for the PharmacyEncodedOrder model."""
+
+    STANDARD = 'STD', _('Standard')
+    AMBULATORY = 'AMB', _('Ambulatory')
+    LEAVE = 'LOA', _('Leave Of Absence')
+    TAKEHOME = 'TH', _('Take Home')
+    SELF = 'SELF', _('Self Administration')  # noqa: WPS117
+
+
 class PharmacyEncodedOrder(AbstractQuantityTiming):
     """Describes the final prescription/order after any alterations mandated by the pharmacy provider.
 
@@ -70,7 +80,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     physician_prescription_order = models.ForeignKey('PhysicianPrescriptionOrder', on_delete=models.CASCADE)
     give_code = models.ForeignKey(
         'CodedElement',
-        related_name='pharmacy_encoded_order_give_code',
+        related_name='pharmacy_encoded_order_give_codes',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -86,7 +96,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     )
     give_dosage_form = models.ForeignKey(
         'CodedElement',
-        related_name='pharmacy_encoded_order_give_dosage_form',
+        related_name='pharmacy_encoded_order_give_dosage_forms',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -109,7 +119,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     refills = models.IntegerField(default=0)
     refills_remaining = models.IntegerField(default=0)
     last_refilled = models.DateTimeField(blank=True)
-    formulary_status = models.CharField(max_length=10)
+    formulary_status = models.CharField(max_length=4, choices=FormularyStatus.choices)
 
     class Meta:
         verbose_name = _('Pharmacy Encoding')
@@ -201,7 +211,7 @@ class PharmacyRoute(models.Model):
 
 
 class ComponentType(models.TextChoices):
-    """Choices of component type for the [opal.pharmacy.models.PharmacyComponent][] model."""
+    """Choices of component type for the PharmacyComponent model."""
 
     ADDITIVE = 'A', _('Additive')
     BASE = 'B', _('Base')
