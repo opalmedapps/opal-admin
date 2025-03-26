@@ -37,12 +37,10 @@ def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> N
             'first_name': hospital_patient.patient.first_name,
             'last_name': hospital_patient.patient.last_name,
         },
-        'institutions': [
-            {
-                'institution_id': institution.id,
-                'name': institution.name,
-            },
-        ],
+        'institution': {
+            'id': institution.id,
+            'name': institution.name,
+        },
     }
 
 
@@ -77,7 +75,7 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
             'sex': patient.sex,
             'ramq': patient.ramq,
         },
-        'hosptial_patients': [
+        'hospital_patients': [
             {
                 'mrn': hospital_patient.mrn,
                 'site_code': site.code,

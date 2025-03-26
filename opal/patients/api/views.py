@@ -5,8 +5,8 @@ from typing import Any, Type
 from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
 
+from opal.caregivers.api.serializer import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
-from opal.patients.api.serializers import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -25,7 +25,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_field = 'code'
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
-        """Override 'get_serializer_class' to switch the serilizer based on the `detailed`.
+        """Override 'get_serializer_class' to switch the serializer based on the `detailed`.
 
         Args:
             args (list): request parameters
