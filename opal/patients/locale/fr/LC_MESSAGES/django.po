@@ -55,6 +55,14 @@ msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
 #: opal/patients/models.py
+msgid "Right to answer questionnaire"
+msgstr "Le droit de répondre au questionnaire"
+
+#: opal/patients/models.py
+msgid "The caregiver can answer questionnaires on behalf of the patient."
+msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 

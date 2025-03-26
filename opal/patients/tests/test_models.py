@@ -334,6 +334,12 @@ def test_hospitalpatient_many_patients_one_site() -> None:
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
 
 
+def test_can_answer_questionnaire_default() -> None:
+    """Ensure default can_answer_questionnaire field is false."""
+    relationtype = factories.RelationshipType()
+    assert not relationtype.can_answer_questionnaire
+
+
 # tests for reason field constraints and validations
 def test_relationship_no_reason_invalid_revoked() -> None:
     """Ensure that error is thrown when reason is empty and status is revoked."""
