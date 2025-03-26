@@ -1,10 +1,9 @@
 """Test module for the `patients` app REST API endpoints."""
-
 import copy
 import json
 from datetime import datetime
 from http import HTTPStatus
-from typing import Any
+from typing import Any, Callable
 
 from django.contrib.auth.models import Permission
 from django.urls import reverse
@@ -842,6 +841,29 @@ class TestPatientDemographicView:
 
 class TestPatientCaregiverDevicesView:
     """Class wrapper for patient caregiver devices endpoint tests."""
+
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        user_with_permission: Callable[[str | list[str]], User],
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:patient-caregiver-devices', kwargs={'legacy_id': 1})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(user_with_permission('patients.view_patient'))
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
 
     def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test get patient caregiver devices success."""

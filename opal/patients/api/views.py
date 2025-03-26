@@ -229,6 +229,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
             'relationships__caregiver__devices',
         )
     )
+    permission_classes = (FullDjangoModelPermissions,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'
