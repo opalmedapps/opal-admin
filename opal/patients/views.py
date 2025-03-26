@@ -273,10 +273,9 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
         template_name = self.template_name_confirmation
 
         if registration_code:
-            code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code.code}'
-            web_code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code.code}'
+            code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code.code}'
             context.update({
-                'registration_url': web_code_url,
+                'registration_url': settings.OPAL_USER_REGISTRATION_URL,
                 'registration_code': registration_code.code,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
             })
