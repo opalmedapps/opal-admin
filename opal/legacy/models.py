@@ -375,7 +375,12 @@ class LegacyAnnouncement(models.Model):
     """Announcement model from the legacy database OpalDB."""
 
     announcementsernum = models.AutoField(db_column='AnnouncementSerNum', primary_key=True)
-    postcontrolsernum = models.ForeignKey('LegacyPostcontrol', models.DO_NOTHING, db_column='PostControlSerNum')
+    postcontrolsernum = models.ForeignKey(
+        'LegacyPostcontrol',
+        models.DO_NOTHING,
+        db_column='PostControlSerNum',
+        to_field='postcontrolsernum',
+    )
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     readby = models.JSONField(db_column='ReadBy', default=list)
@@ -390,6 +395,7 @@ class LegacyPostcontrol(models.Model):
     """PostControl model from the legacy database OpalDB."""
 
     postcontrolsernum = models.AutoField(db_column='PostControlSerNum', primary_key=True)
+    posttype = models.CharField(db_column='PostType', max_length=100)
 
     class Meta:
         managed = False

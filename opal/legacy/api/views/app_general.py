@@ -35,4 +35,5 @@ class AppGeneralView(APIView):
                 request.headers['Appuserid'],
             ),
         }
+
         return Response(AnnouncementUnreadCountSerializer(unread_count).data)

@@ -300,13 +300,11 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread annoucement(s) records.
         """
-        return self.filter(
-            patientsernum__in=patient_sernum_list,
-        ).exclude(
+        return self.exclude(
             readby__contains=user_name,
-        ).values(
-            'postcontrolsernum',
-        ).distinct().count() or 0
+        ).filter(
+            patientsernum__in=patient_sernum_list,
+        ).count()
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
