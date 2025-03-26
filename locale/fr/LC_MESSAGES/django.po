@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 14:47-0400\n"
+"POT-Creation-Date: 2023-06-08 17:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -172,10 +172,6 @@ msgstr "Types de Relations"
 #: opal/templates/sidebar.html
 msgid "Opal Registration"
 msgstr "Inscription à Opal"
-
-#: opal/templates/sidebar.html
-msgid "Opal Registration (old)"
-msgstr ""
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
