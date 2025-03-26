@@ -56,7 +56,7 @@ class InstitutionData(NamedTuple):
     """Information about an institution from which a report was received.
 
     Attributes:
-        institution_logo_path: file path of the instituion's logo image
+        institution_logo_path: file path of the institution's logo image
     """
 
     institution_logo_path: Path
