@@ -80,6 +80,14 @@ setup:
     # don't cache since it takes just as long to upload and download the cache than to re-download dependencies with uv
 
 
+pre-commit:
+  stage: static analysis
+  extends:
+    - .uses_python_dependencies
+  script:
+    - SKIP=flake8,mypy,markdownlint-cli2 pre-commit run --all-files
+
+
 flake8:
   stage: static analysis
   extends:
@@ -248,9 +256,15 @@ django checks:
   extends:
     - .uses_django
   script:
-    # Run checks to be sure we follow all django's best practices:
+    # Run checks to be sure we follow all Django's best practices:
     - echo "Checking that all Django checks pass ..."
     - python manage.py check --fail-level WARNING
+    # Run deploy checks to be sure we follow all Django's deploy best practices:
+    - echo "Checking that all Django deploy checks pass..."
+    - echo "ALLOWED_HOSTS=undefined" >> .env
+    - sed -i "s/^DEBUG=True/DEBUG=False/" .env
+    - DEBUG=False ALLOWED_python manage.py check --deploy --fail-level WARNING
+
 
 django template validation:
   stage: checks
@@ -289,6 +303,8 @@ build image:
     # only cache to build cache if on main
     # the image for a branch/MR needs to be pushed so that container scanning can scan it
     - export IMAGE_BUILD_CACHE=$IMAGE_REPOSITORY/docker-build-cache:latest
+    # Check for warnings in Dockerfile first
+    - docker buildx build --check .
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
         echo "Running on default branch. Pushing latest and commit tags, and caching to registry cache..."
