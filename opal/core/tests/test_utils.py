@@ -7,6 +7,7 @@ from .. import utils
 file_contents = {
     'file1.txt': b'Hello, this is file 1.',
     'file2.txt': b'This is the content of file 2.',
+    'image.png': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00',
 }
 
 
@@ -54,24 +55,21 @@ def test_qr_code() -> None:
     assert code.startswith(b'<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<svg xmlns:svg="http://www.w3.org/2000/svg"')
 
 
-def test_create_zip_from_bytesio_empty_list() -> None:
-    """Ensure create_zip_from_bytesio does not fail when it receives an empty list."""
-    file_list: list[tuple[str, io.BytesIO]] = []
+def test_create_zip_empty_list() -> None:
+    """Ensure create_zip does not fail when it receives an empty list."""
+    files: dict[str, bytes] = {}
 
     # Invoke the function with the empty list
-    zip_bytes_io = utils.create_zip_from_bytesio(file_list)
+    zip_bytes = utils.create_zip(files)
 
-    # Ensure the returned object is a BytesIO instance
-    assert isinstance(zip_bytes_io, io.BytesIO), 'The returned object should be a BytesIO even the file list is empty.'
+    # Ensure the returned object is a bytes instance
+    assert isinstance(zip_bytes, bytes), 'The returned object should be a bytes object even the file list is empty.'
 
-    # Ensure the zip buffer is not None
-    assert zip_bytes_io is not None, 'The ZIP buffer should not be None.'
+    # Ensure the zip buffer is not None or empty
+    assert zip_bytes, 'The ZIP buffer should not be None or empty.'
 
-    # Ensure the zip buffer is not empty (an empty zip file has some bytes)
-    assert zip_bytes_io.getbuffer().nbytes > 0, 'The zip buffer should contain data even for an empty zip file.'
-
-    # Open the zip file from the BytesIO object
-    with zipfile.ZipFile(zip_bytes_io, 'r') as zip_file:
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
         # Get the list of files in the zip archive
         zip_contents = zip_file.namelist()
 
@@ -79,30 +77,20 @@ def test_create_zip_from_bytesio_empty_list() -> None:
         assert not zip_contents, 'The zip archive should be empty when the file list is empty.'
 
 
-def test_create_zip_from_bytesio_success() -> None:
-    """Ensure a ZIP file can be successfully created as an in-memory BytesIO object."""
-    # Create the list of (filename, BytesIO object) pairs
-    file_list = [
-        (filename, io.BytesIO(content)) for filename, content in file_contents.items()
-    ]
+def test_create_zip_success() -> None:
+    """Ensure a ZIP file can be successfully created as an in-memory bytes object."""
+    zip_bytes = utils.create_zip(file_contents)
 
-    zip_bytes_io = utils.create_zip_from_bytesio(file_list)
-
-    assert isinstance(zip_bytes_io, io.BytesIO), 'The returned object should be a BytesIO instance.'
-    assert zip_bytes_io.getbuffer().nbytes != 0, 'The ZIP buffer should not be empty.'
+    assert isinstance(zip_bytes, bytes), 'The returned object should be a bytes instance.'
+    assert zip_bytes, 'The ZIP buffer should not be empty.'
 
 
-def test_create_zip_from_bytesio_contains_all_files() -> None:
+def test_create_zip_contains_all_files() -> None:
     """Ensure that all expected files are in the zip archive."""
-    # Create the list of (filename, BytesIO object) pairs
-    file_list = [
-        (filename, io.BytesIO(content)) for filename, content in file_contents.items()
-    ]
+    zip_bytes = utils.create_zip(file_contents)
 
-    zip_bytes_io = utils.create_zip_from_bytesio(file_list)
-
-    # Open the zip file from the BytesIO object
-    with zipfile.ZipFile(zip_bytes_io, 'r') as zip_file:
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
         # Get the list of files in the zip archive
         zip_contents = zip_file.namelist()
 
@@ -113,17 +101,12 @@ def test_create_zip_from_bytesio_contains_all_files() -> None:
         )
 
 
-def test_create_zip_from_bytesio_contains_files_contents() -> None:
+def test_create_zip_contains_files_contents() -> None:
     """Ensure that in the ZIP archive the contents of each file are the same as the original ones."""
-    # Create the list of (filename, BytesIO object) pairs
-    file_list = [
-        (filename, io.BytesIO(content)) for filename, content in file_contents.items()
-    ]
+    zip_bytes = utils.create_zip(file_contents)
 
-    zip_bytes_io = utils.create_zip_from_bytesio(file_list)
-
-    # Open the zip file from the BytesIO object
-    with zipfile.ZipFile(zip_bytes_io, 'r') as zip_file:
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
         expected_files = list(file_contents.keys())
 
         # Verify the contents of each file

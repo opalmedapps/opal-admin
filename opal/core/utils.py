@@ -81,26 +81,19 @@ def qr_code(text: str) -> bytes:
     return stream.getvalue()
 
 
-def create_zip_from_bytesio(file_list: list[tuple[str, io.BytesIO]]) -> io.BytesIO:
-    """Create a ZIP file from a list of (filename, BytesIO object) pairs.
+def create_zip(files: dict[str, bytes]) -> bytes:
+    """Create a ZIP file from a mapping of files.
 
-    The ZIP file is returned in a BytesIO object format.
+    The ZIP file is returned as bytes.
 
     Args:
-        file_list: list of tuples containing filenames and BytesIO objects
+        files: dictionary of files to be archived, where the key is filename and the value is `bytes` object.
 
     Returns:
-        BytesIO object containing the ZIP file
+        `bytes` object containing the ZIP file
     """
     zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for filename, file_io in file_list:
-            # Ensure the BytesIO object is at the start
-            file_io.seek(0)
-            # Read the content from BytesIO
-            file_data = file_io.read()
-            # Write the file data to the zip file
-            zip_file.writestr(filename, file_data)
-    # Reset the buffer's position to the beginning
-    zip_buffer.seek(0)
-    return zip_buffer
+    with zipfile.ZipFile(file=zip_buffer, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_file:
+        for filename, file_content in files.items():
+            zip_file.writestr(filename, file_content)
+    return zip_buffer.getvalue()
