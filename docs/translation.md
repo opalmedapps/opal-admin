@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 test_variable = _("My test translation string.")
 ```
 
-To specify a translation string in a template code, include **{% load i18n %}** toward the top of the template. This will provide access to the **translate** and **blocktranslate** template tags. For example,
+To specify a translation string in a template code, include `{% load i18n %}` toward the top of the template. This will provide access to the **translate** and **blocktranslate** template tags. For example,
 
 ```html
 {% extends "layouts/base.html" %}
@@ -24,18 +24,24 @@ To specify a translation string in a template code, include **{% load i18n %}** 
 </h1>
 ```
 
+!!! note
+
+    You can provide additional context which is especially helpful if a word can have several meanings in another language. See the [documentation on contextual markers](https://docs.djangoproject.com/en/dev/topics/i18n/translation/#contextual-markers-1) for more information.
+
 To create or update a message file that keeps all the translations, run this command:
 
 ```sh
 django-admin makemessages --add-location file -l fr
 ```
 
-where **fr** is the locale name for the message file you want to create.
+where **fr** is the locale name for the message file you want to create. Note that for a new app you need to first create the `locale` directory within the app directory. Otherwise the translations will be added to the project's translation file.
+
+!!! important
+
+    If translation strings were removed they will only be commented out in the `.po` file. Delete them if they are not needed anymore. Also pay attention to fuzzy strings. This happens when translations are inferred from previously translated strings. Verify them and adjust as necessary. By default, fuzzy entries are not processed by **compilemessages**.
 
 Once you have filled in or updated the message file, it must be compiled. Run the following command to compile a new binary file:
 
 ```sh
 django-admin compilemessages
 ```
-
-**makemessages** sometimes generates translation entries marked as fuzzy, e.g. when translations are inferred from previously translated strings. By default, fuzzy entries are not processed by **compilemessages**.
