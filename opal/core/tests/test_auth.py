@@ -9,7 +9,7 @@ import pytest
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from opal.core.test_utils import RequestMockerTest
 
@@ -83,7 +83,7 @@ def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings: Set
 
     # mock actual web API call
     mock_post = mocker.patch('requests.post')
-    mock_post.side_effect = ConnectionError('connection failed')
+    mock_post.side_effect = RequestsConnectionError('connection failed')
 
     user_data = auth_backend._authenticate_fedauth('user', 'pass')
     assert user_data is None
@@ -103,7 +103,7 @@ def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:
     """Ensure connection failure is handled and does not result in error."""
     # mock actual web API call to raise a connection error
     mock_post = mocker.patch('requests.post')
-    mock_post.side_effect = ConnectionError('connection failed')
+    mock_post.side_effect = RequestsConnectionError('connection failed')
     mock_logger = mocker.patch('logging.Logger.exception')
 
     user_data = auth_backend._authenticate_fedauth('user', 'pass')

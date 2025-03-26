@@ -4,6 +4,7 @@ These permissions are provided for the project and intended to be reused.
 """
 from typing import TYPE_CHECKING, Optional
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import QuerySet
 
@@ -58,10 +59,7 @@ class IsSuperUser(permissions.IsAuthenticated):
         Returns:
             True, if the check is successful, False otherwise
         """
-        return (
-            super().has_permission(request, view)
-            and request.user.is_superuser
-        )
+        return super().has_permission(request, view) and request.user.is_superuser
 
 
 class _UsernameRequired(permissions.IsAuthenticated):
@@ -97,12 +95,8 @@ class _UsernameRequired(permissions.IsAuthenticated):
                 ),
             )
 
-        return (
-            super().has_permission(request, view)
-            and (
-                str(request.user.username) == self.required_username
-                or request.user.is_superuser
-            )
+        return super().has_permission(request, view) and (
+            str(request.user.username) == self.required_username or request.user.is_superuser
         )
 
 
@@ -122,6 +116,34 @@ class IsInterfaceEngine(_UsernameRequired):
     """Allows access only to the interface engine user and superusers."""
 
     required_username = constants.USERNAME_INTERFACE_ENGINE
+
+
+class IsLegacyBackend(_UsernameRequired):
+    """Allows access only to the legacy backend (legacy OpalAdmin) user and superusers."""
+
+    required_username = constants.USERNAME_BACKEND_LEGACY
+
+
+class IsORMSUser(permissions.IsAuthenticated):
+    """Allows access only to users belong to the ORMS user group and superusers."""
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and has the required username.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+        """
+        return super().has_permission(request, view) and (
+            # make mypy happy to know that the user is not anonymous
+            request.user.is_authenticated
+            and request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
+            or request.user.is_superuser
+        )
 
 
 class CaregiverPatientPermissions(permissions.BasePermission):
@@ -278,37 +300,6 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
 
 
-class CreateModelPermissions(permissions.DjangoModelPermissions):
-    """
-    Custom DRF `DjangoModelPermissions` permission for adding/creating a model's data.
-
-    Restricts POST operations to require the `add` permission on the model.
-
-    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
-    """
-
-    # taken from DjangoModelPermissions and added the permission for POST
-    perms_map = {
-        'POST': ['%(app_label)s.add_%(model_name)s'],
-    }
-
-
-class UpdateModelPermissions(permissions.DjangoModelPermissions):
-    """
-    Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
-
-    Restricts PUT and PATCH operations to require the `change` permission on the model.
-
-    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
-    """
-
-    # taken from DjangoModelPermissions and added the permission for PUT and PATCH
-    perms_map = {
-        'PUT': ['%(app_label)s.change_%(model_name)s'],
-        'PATCH': ['%(app_label)s.change_%(model_name)s'],
-    }
-
-
 class CaregiverSelfPermissions(CaregiverPatientPermissions):
     """
     Global permission check that validates the permission of a caregiver trying to access a patient's data.
@@ -366,6 +357,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
             raise exceptions.PermissionDenied(
                 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
             )
+
 
 # Future Enhancement: Pull common permissions functionality into an abstract base class
 #                     to allow for faster definition of new perms in the future
