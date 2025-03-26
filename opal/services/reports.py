@@ -1107,7 +1107,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': self.pathology_data.prepared_at.strftime('%d-%b-%Y %I:%M %p'),
+                'text': self.pathology_data.prepared_at.strftime('%d-%b-%Y %H:%M %p'),
                 'priority': 0,
                 'multiline': False,
             },

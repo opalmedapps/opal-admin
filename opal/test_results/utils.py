@@ -1,5 +1,6 @@
 """Utility functions used by the test results app."""
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -191,5 +192,11 @@ def _find_note_date(note_text: str) -> datetime:
     Returns:
         date and time of note creation
     """
-    # TODO: implement regex
+    pattern = r'Electronically signed on ([\d\-A-Z]+ \d{1,2}:\d{2} [apm]{2})\\.br\\By (.+?)(?:,,|$)'
+    match = re.search(pattern, note_text)
+
+    # Extract date and time of note text
+    if match:
+        note_date = match.group(1).strip()
+        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p')
     return datetime(1, 1, 1)
