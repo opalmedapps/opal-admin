@@ -99,14 +99,14 @@ class RegistrationRegisterView(APIView):
             )
 
         # update caregiver
-        if not db_error:
+        if registration_code and not db_error:
             db_error = self._update_caregiver(
                 registration_code.relationship.caregiver.user,
                 register_data['relationship']['caregiver'],
             )
 
         # insert related security answers
-        if not db_error:
+        if registration_code and not db_error:
             caregiver_profile = registration_code.relationship.caregiver
             self._insert_security_answers(
                 caregiver_profile,
