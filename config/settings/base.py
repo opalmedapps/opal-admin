@@ -455,7 +455,7 @@ REST_FRAMEWORK = {
     ],
     # lock down API by default, override on a per-view basis (see Two Scoops of Django Section 17.2)
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser',
+        'opal.core.drf_permissions.IsSuperUser',
     ],
     # disabled pagination by default
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
