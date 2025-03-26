@@ -172,10 +172,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
                 else:
                     # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
-                    # TODO: create relationship
+                    # TODO: create relationship, patient (if new) etc.
                     return render(self.request, 'patients/access_request/qr_code.html', {
                         'qrcode': base64.b64encode(self._generate_qr_code('').getvalue()).decode(),
-                        'header_title': _('New Access Request: Success'),
+                        'header_title': _('Opal Registration: Success'),
                     })
             else:
                 print("some forms are invalid (or the next button wasn't clicked)")

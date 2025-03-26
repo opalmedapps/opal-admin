@@ -651,7 +651,7 @@ msgid "No explanation provided"
 msgstr ""
 
 #: opal/patients/views.py
-msgid "New Access Request: Success"
+msgid "Opal Registration: Success"
 msgstr ""
 
 #: opal/patients/views.py
