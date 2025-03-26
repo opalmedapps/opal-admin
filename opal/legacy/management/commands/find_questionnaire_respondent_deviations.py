@@ -7,7 +7,7 @@ from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
-# consider only completed and in progress questionnaires
+# consider only completed (status=2) and in progress (status=1) questionnaires
 LEGACY_RESPONDENT_QUERY = """
     SELECT
         aq.respondentUsername AS Username,
