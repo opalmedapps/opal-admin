@@ -48,7 +48,7 @@ class LegacyPatient(models.Model):
     death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
     ssn = models.CharField(db_column='SSN', max_length=16)
     sex = models.CharField(db_column='Sex', max_length=25)
-    last_updated = models.DateTimeField(db_column='LastUpdated')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
 
     class Meta:
@@ -73,7 +73,7 @@ class LegacyNotification(models.Model):
 class LegacySourceDatabase(models.Model):
     """SourceDatabase from the legacy database OpalDB."""
 
-    source_database_ser_num = models.AutoField(db_column='SourceDatabaseSourceSerNum', primary_key=True)
+    source_database_ser_num = models.AutoField(db_column='SourceDatabaseSerNum', primary_key=True)
     source_database_name = models.CharField(db_column='SourceDatabaseName', max_length=255)
     enabled = models.SmallIntegerField(db_column='Enabled')
 
@@ -107,10 +107,10 @@ class LegacyAppointment(models.Model):
     date_added = models.DateTimeField(db_column='DateAdded')
     scheduled_end_time = models.DateTimeField(db_column='ScheduledEndTime')
     appointment_aria_ser = models.IntegerField(db_column='AppointmentAriaSer')
-    last_updated = models.DateTimeField(db_column='LastUpdated')
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     source_database_ser_num = models.ForeignKey(
-        LegacySourceDatabase,
-        on_delete=models.CASCADE,
+        'LegacySourceDatabase',
+        on_delete=models.DO_NOTHING,
         db_column='SourceDatabaseSerNum',
     )
 
@@ -266,7 +266,7 @@ class LegacySecurityQuestion(models.Model):
     questiontext_en = models.CharField(db_column='QuestionText_EN', max_length=2056)
     questiontext_fr = models.CharField(db_column='QuestionText_FR', max_length=2056)
     creationdate = models.DateTimeField(db_column='CreationDate')
-    lastupdated = models.DateTimeField(db_column='LastUpdated')
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     active = models.IntegerField(db_column='Active')
 
     class Meta:
@@ -286,7 +286,7 @@ class LegacySecurityAnswer(models.Model):
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     answertext = models.CharField(db_column='AnswerText', max_length=2056)
     creationdate = models.DateTimeField(db_column='CreationDate')
-    lastupdated = models.DateTimeField(db_column='LastUpdated')
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
     class Meta:
         managed = False
@@ -359,18 +359,18 @@ class LegacyMasterSourceAlias(models.Model):
 class LegacyDiagnosis(models.Model):
     """Diagnosis from the legacy database OpalDB."""
 
-    diagnosis_ser_num = models.AutoField(primary_key=True)
+    diagnosis_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisSerNum')
     patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     source_database_ser_num = models.ForeignKey(
-        LegacySourceDatabase,
-        on_delete=models.CASCADE,
+        'LegacySourceDatabase',
+        on_delete=models.DO_NOTHING,
         db_column='SourceDatabaseSerNum',
     )
     diagnosis_aria_ser = models.CharField(db_column='DiagnosisAriaSer', max_length=32)
     diagnosis_code = models.CharField(db_column='DiagnosisCode', max_length=50)
-    last_updated = models.DateTimeField(db_column='LastUpdated')
-    stage = models.CharField(db_column='Stage', max_length=32)
-    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32)
+    last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
+    stage = models.CharField(db_column='Stage', max_length=32, blank=True, null=True)  # noqa: DJ01
+    stage_criteria = models.CharField(db_column='StageCriteria', max_length=32, blank=True, null=True)  # noqa: DJ01
     creation_date = models.DateTimeField(db_column='CreationDate')
 
     class Meta:
@@ -393,10 +393,10 @@ class LegacyDiagnosisTranslation(models.Model):
 class LegacyDiagnosisCode(models.Model):
     """DiagnosisCode from the legacy database OpalDB."""
 
-    diagnosis_code_ser_num = models.AutoField(primary_key=True)
+    diagnosis_code_ser_num = models.AutoField(primary_key=True, db_column='DiagnosisCodeSerNum')
     diagnosis_translation_ser_num = models.ForeignKey(
-        LegacyDiagnosisTranslation,
-        on_delete=models.CASCADE,
+        'LegacyDiagnosisTranslation',
+        on_delete=models.DO_NOTHING,
         db_column='DiagnosisTranslationSerNum',
     )
     description = models.CharField(db_column='Description', max_length=2056)
@@ -416,8 +416,8 @@ class LegacyTestResult(models.Model):
     test_result_expression_ser_num = models.IntegerField(db_column='TestResultExpressionSerNum')
     patient_ser_num = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     source_database_ser_num = models.ForeignKey(
-        LegacySourceDatabase,
-        on_delete=models.CASCADE,
+        'LegacySourceDatabase',
+        on_delete=models.DO_NOTHING,
         db_column='SourceDatabaseSerNum',
     )
     test_result_aria_ser = models.CharField(db_column='TestResultAriaSer', max_length=100)
@@ -452,8 +452,8 @@ class LegacyTestResultControl(models.Model):
     group_en = models.CharField(max_length=200, db_column='Group_EN')
     group_fr = models.CharField(max_length=200, db_column='Group_FR')
     source_database_ser_num = models.ForeignKey(
-        LegacySourceDatabase,
-        on_delete=models.CASCADE,
+        'LegacySourceDatabase',
+        on_delete=models.DO_NOTHING,
         db_column='SourceDatabaseSerNum',
     )
     educational_material_control_ser_num = models.IntegerField(null=True, db_column='EducationalMaterialControlSerNum')
