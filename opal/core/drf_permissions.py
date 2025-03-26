@@ -232,7 +232,11 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         Returns:
             True if the caregiver has a confirmed relationship with the patient.
         """
-        # TODO: call super's has_permission first and then _check_has_self_relationship_type?
+        super().has_permission(request, view)
+
+        # TODO: redoing this adds extra queries.
+        # Future improvement: add an attribute `require_self_relationship` to the first class which is False by default
+        # this permission sets it to true, everything else is done in the main permission
         # Read and validate the input parameters
         caregiver_username = self._get_caregiver_username(request)
         patient_legacy_id = self._get_patient_legacy_id(view)
