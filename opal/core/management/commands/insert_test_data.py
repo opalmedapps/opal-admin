@@ -8,6 +8,8 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from dateutil.relativedelta import relativedelta
+
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
@@ -111,10 +113,9 @@ def _create_test_data() -> None:
     marge = _create_patient(
         first_name='Marge',
         last_name='Simpson',
-        # TODO: calculate birth year depending on current year to get to correct age
-        date_of_birth=date.fromisoformat('1986-10-01'),
+        date_of_birth=_create_date(36, 10, 1),
         sex=Patient.SexType.FEMALE,
-        ramq='SIMM86600199',
+        # ramq='SIMM86600199',
         legacy_id=51,
         mrns=[
             (rvh, '9999996'),
@@ -124,9 +125,8 @@ def _create_test_data() -> None:
     homer = _create_patient(
         first_name='Homer',
         last_name='Simpson',
-        date_of_birth=date.fromisoformat('1983-05-12'),
+        date_of_birth=_create_date(39, 5, 12),
         sex=Patient.SexType.MALE,
-        ramq='SIMH83051299',
         legacy_id=52,
         mrns=[
             (rvh, '9999997'),
@@ -137,9 +137,8 @@ def _create_test_data() -> None:
     bart = _create_patient(
         first_name='Bart',
         last_name='Simpson',
-        date_of_birth=date.fromisoformat('2013-02-23'),
+        date_of_birth=_create_date(10, 2, 3),
         sex=Patient.SexType.MALE,
-        ramq='SIMB13022399',
         legacy_id=53,
         mrns=[
             (mch, '9999996'),
@@ -149,9 +148,8 @@ def _create_test_data() -> None:
     maggie = _create_patient(
         first_name='Maggie',
         last_name='Simpson',
-        date_of_birth=date.fromisoformat('2022-01-14'),
+        date_of_birth=_create_date(1, 1, 14),
         sex=Patient.SexType.FEMALE,
-        ramq='SIMM22511499',
         legacy_id=54,
         mrns=[
             (mch, '9999994'),
@@ -202,7 +200,7 @@ def _create_institution() -> Institution:
             institution = Institution(
                 name='McGill University Health Centre',
                 name_fr='Centre universitaire de santé McGill',
-                code='MUHD',
+                code='MUHC',
                 support_email='opal@muhc.mcgill.ca',
                 terms_of_use=terms_of_use,
                 terms_of_use_fr=terms_of_use,
@@ -249,10 +247,10 @@ def _create_patient(
     last_name: str,
     date_of_birth: date,
     sex: Patient.SexType,
-    ramq: str,
     legacy_id: int,
     mrns: list[tuple[Site, str]],
 ) -> Patient:
+    ramq = _build_ramq(first_name, last_name, date_of_birth, sex)
     patient = Patient(
         first_name=first_name,
         last_name=last_name,
@@ -331,3 +329,24 @@ def _create_relationship(
 
     relationship.full_clean()
     relationship.save()
+
+
+def _create_date(age: int, month: int, day: int) -> date:
+    current_year = date.today().year
+
+    return date(current_year, month, day) - relativedelta(years=age)
+
+
+def _build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: Patient.SexType) -> str:
+    month = date_of_birth.month if sex == Patient.SexType.MALE else date_of_birth.month + 50
+
+    data = [
+        last_name[:3].upper(),
+        first_name[0].upper(),
+        str(date_of_birth.year),
+        str(month),
+        str(date_of_birth.day),
+        '99',
+    ]
+
+    return ''.join(data)
