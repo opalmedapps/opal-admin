@@ -546,6 +546,11 @@ class ConfirmPasswordForm(forms.Form):
 class RelationshipAccessForm(forms.ModelForm[Relationship]):
     """Form for updating `Relationship Caregiver Access`  record."""
 
+    relationship_type = forms.ModelChoiceField(
+        queryset=RelationshipType.objects.all(),
+        widget=AvailableRadioSelect,
+        label=_('Relationship Type'),
+    )
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
         label=Relationship._meta.get_field('start_date').verbose_name,  # noqa: WPS437
@@ -572,13 +577,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'status',
             'reason',
             'cancel_url',
+            'relationship_type',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
         """
         Set the layout.
 
         Args:
+            date_of_birth: datetime.date object of patient
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
@@ -589,8 +596,11 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             )
         ]
 
+        available_choices = search_valid_relationship_types(date_of_birth)
+        self.fields['relationship_type'].widget.available_choices = available_choices
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
+            'relationship_type',
             'start_date',
             'end_date',
             'status',
