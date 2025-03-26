@@ -1,9 +1,19 @@
 from datetime import datetime
 from typing import Any
 
+import pytest
 from pytest_mock.plugin import MockerFixture
 
-from ..utils import _find_doctor_name, _find_note_date, _parse_notes, _parse_observations  # noqa: WPS450
+from opal.hospital_settings import factories
+from opal.hospital_settings.models import Site
+
+from ..utils import (  # noqa: WPS450
+    _find_doctor_name,
+    _find_note_date,
+    _get_site_instance,
+    _parse_notes,
+    _parse_observations,
+)
 
 
 def _create_empty_parsed_observations() -> dict[str, list]:
@@ -182,3 +192,21 @@ def test_parse_observations_success() -> None:
         'SPGROS': ['value_3'],
         'SPDX': ['value_4'],
     }
+
+
+@pytest.mark.django_db()
+def test_get_site_instance_success() -> None:
+    """Ensure that _get_site_instance() pass valid receiving facility successfully return Site instance."""
+    factories.Site(code='RVH')
+    site = _get_site_instance(receiving_facility='RVH')
+
+    assert Site.objects.filter(pk=site.pk).exists()
+
+
+@pytest.mark.django_db()
+def test_get_site_instance_failed() -> None:
+    """Ensure that _get_site_instance() pass invalid receiving facility raising exception."""
+    factories.Site(code='RVH')
+
+    with pytest.raises(Site.DoesNotExist):
+        _get_site_instance(receiving_facility='')

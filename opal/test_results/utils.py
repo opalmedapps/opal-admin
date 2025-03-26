@@ -1,5 +1,5 @@
 """Utility functions used by the test results app."""
-
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -9,6 +9,8 @@ from django.db import models
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
 from opal.services.reports import PathologyData, ReportService
+
+logger = logging.getLogger(__name__)
 
 
 def generate_pathology_report(
@@ -34,7 +36,7 @@ def generate_pathology_report(
     report_service = ReportService()
 
     # Got Site object by filtering with receiving_facility from pathology data
-    site = Site.objects.get(code=pathology_data['receiving_facility'])
+    site = _get_site_instance(pathology_data['receiving_facility'])
 
     return report_service.generate_pathology_report(
         pathology_data=PathologyData(
@@ -133,6 +135,29 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
 
     parsed_notes['prepared_by'] = '; '.join(doctor_names)
     return parsed_notes
+
+
+def _get_site_instance(receiving_facility: str) -> Site:
+    """Got Site instance.
+
+    Args:
+        receiving_facility: the receiving facility code
+
+    Returns:
+        A Site instance
+    """
+    try:
+        return Site.objects.get(code=receiving_facility)
+    except Site.DoesNotExist:
+        logger.error('A Site instance is not found due to the receiving facility is empty string.')
+        return Site(
+            name='',
+            street_name='',
+            city='',
+            province_code='',
+            postal_code='',
+            contact_telephone='',
+        )
 
 
 def _find_doctor_name(note_text: str) -> str:

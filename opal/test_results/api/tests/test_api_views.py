@@ -4,12 +4,11 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
+from pytest_django.asserts import assertContains, assertJSONEqual
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from rest_framework import status
@@ -130,53 +129,6 @@ class TestCreatePathologyView:
             text='An error occurred while inserting `LegacyDocument` record to the database.',
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-        assert test_results_models.GeneralTest.objects.count() == 0
-        assert legacy_models.LegacyDocument.objects.count() == 0
-
-    def test_pathology_create_raises_site_not_exist_exception(
-        self,
-        api_client: APIClient,
-        tmp_path: Path,
-        mocker: MockerFixture,
-        settings: SettingsWrapper,
-        interface_engine_user: User,
-    ) -> None:
-        """Ensure the endpoint raises exception in case of not getting a Site instance via receiving facility."""
-        settings.PATHOLOGY_REPORTS_PATH = tmp_path
-        valid_data = self._get_valid_input_data()
-        Institution()
-        Site(code=valid_data.get('receiving_facility'))
-
-        patient = Patient(
-            ramq='TEST01161972',
-            uuid=PATIENT_UUID,
-        )
-
-        Relationship(
-            patient=patient,
-            type=patient_models.RelationshipType.objects.self_type(),
-        )
-
-        LegacyPatientFactory(
-            patientsernum=patient.legacy_id,
-        )
-
-        # mock the current timezone to simulate the local time
-        generated_at = timezone.localtime(timezone.now())
-        mocker.patch.object(timezone, 'now', return_value=generated_at)
-
-        api_client.force_login(interface_engine_user)
-
-        valid_data.update({'receiving_facility': ''})
-        message = 'Site matching query does not exist.'
-        with assertRaisesMessage(ObjectDoesNotExist, message):
-            response = api_client.post(
-                reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
-                data=valid_data,
-                format='json',
-            )
-
-        assert response.status_code == status.HTTP_404_NOT_FOUND
         assert test_results_models.GeneralTest.objects.count() == 0
         assert legacy_models.LegacyDocument.objects.count() == 0
 
