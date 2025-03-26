@@ -1,4 +1,6 @@
 """App patient utils test functions."""
+from datetime import date
+
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
@@ -8,17 +10,29 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.patients.factories import Patient
+from opal.patients.models import SexType
 from opal.users.factories import User
 
-from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
+from .. import utils
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.parametrize(('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'), [
+    # one-digit month
+    ('Bart', 'Wayne', date(2013, 2, 23), SexType.MALE, 'WAYB13022399'),
+    # one-digit day (and female)
+    ('Marge', 'Simpson', date(1986, 10, 1), SexType.FEMALE, 'SIMM86600199'),
+])
+def test_build_ramq(first_name: str, last_name: str, date_of_birth: date, sex: SexType, ramq: str) -> None:
+    """The RAMQ is derived correctly."""
+    assert utils.build_ramq(first_name, last_name, date_of_birth, sex) == ramq
 
 
 def test_update_registration_code_status_success() -> None:
     """Test get registration code and update its status success."""
     registration_code = RegistrationCode(status=caregiver_models.RegistrationCodeStatus.NEW)
-    update_registration_code_status(registration_code)
+    utils.update_registration_code_status(registration_code)
     registration_code.refresh_from_db()
     assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
@@ -27,7 +41,7 @@ def test_update_patient_legacy_id_valid() -> None:
     """Test update patient legacy id with valid value."""
     patient = Patient()
     legacy_id = patient.legacy_id + 1
-    update_patient_legacy_id(patient, legacy_id)
+    utils.update_patient_legacy_id(patient, legacy_id)
     patient.refresh_from_db()
     assert patient.legacy_id == legacy_id
 
@@ -41,7 +55,7 @@ def test_update_patient_legacy_id_invalid() -> None:
         ValidationError,
         expected_message,
     ):
-        update_patient_legacy_id(patient, legacy_id)
+        utils.update_patient_legacy_id(patient, legacy_id)
 
 
 def test_update_caregiver_success() -> None:
@@ -57,7 +71,7 @@ def test_update_caregiver_success() -> None:
             'phone_number': phone_number2,
         },
     }
-    update_caregiver(user, info)
+    utils.update_caregiver(user, info)
     user.refresh_from_db()
     assert user.language == language2
     assert user.phone_number == phone_number2
@@ -81,7 +95,7 @@ def test_update_caregiver_failure() -> None:
         ValidationError,
         expected_message,
     ):
-        update_caregiver(user, info)
+        utils.update_caregiver(user, info)
 
 
 def test_insert_security_answers_success() -> None:
@@ -97,7 +111,7 @@ def test_insert_security_answers_success() -> None:
             'answer': 'maybe',
         },
     ]
-    insert_security_answers(caregiver, security_answers)
+    utils.insert_security_answers(caregiver, security_answers)
     security_answers_objs = caregiver_models.SecurityAnswer.objects.all()
     assert len(security_answers_objs) == 2
 
@@ -120,4 +134,4 @@ def test_insert_security_answers_failure() -> None:
         IntegrityError,
         expected_message,
     ):
-        insert_security_answers(caregiver, security_answers)
+        utils.insert_security_answers(caregiver, security_answers)

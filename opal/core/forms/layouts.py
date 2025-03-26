@@ -130,7 +130,7 @@ class FormActions(CrispyFormActions):
             template: the template to use. Defaults to None.
             kwargs: additional keyword arguments that are added to the div
         """
-        css_class = f'{css_class} {self.default_css_class}' if css_class else self.default_css_class
+        css_class = f'{self.default_css_class} {css_class}' if css_class else self.default_css_class
 
         super().__init__(
             *fields,
