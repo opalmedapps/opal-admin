@@ -88,7 +88,6 @@ class HL7CreateView(CreateAPIView[_Model]):
         request.data['patient'] = patient
         return super().post(request, *args, **kwargs)
 
-
     def _validate_uuid_matches_pid_segment(
         self,
         parsed_data: dict[str, Any],
