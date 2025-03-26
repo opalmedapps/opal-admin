@@ -47,10 +47,10 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'crispy_forms',
-    'crispy_bootstrap4',
 ]
 THIRD_PARTY_APPS = [
+    'crispy_forms',
+    'crispy_bootstrap5',
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
@@ -427,8 +427,11 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 
 # Crispy forms
 #
-# Use Twitter Bootstrap (version 4) as a default template for the project
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+# Use Twitter Bootstrap (version 5) as a default template for the project
+# Override allowed template packs for bootstrap5
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
 
 # Django Tables2
 #
