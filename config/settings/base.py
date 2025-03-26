@@ -74,7 +74,7 @@ DATABASES = {
         'HOST': env('DATABASE_HOST'),
         'PORT': env('DATABASE_PORT'),
         'TEST': {
-            'NAME': 'test_{0}'.format(env('DATABASE_NAME')),
+            'NAME': f"test_{env('DATABASE_NAME')}",
         },
         'ATOMIC_REQUESTS': True,
     },
@@ -87,7 +87,7 @@ DATABASES = {
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_DATABASE_NAME')),
+            'NAME': f"test_{env('LEGACY_DATABASE_NAME')}",
         },
     },
     'questionnaire': {
@@ -99,7 +99,7 @@ DATABASES = {
         'PORT': env('LEGACY_DATABASE_PORT'),
         'TIME_ZONE': 'America/Toronto',
         'TEST': {
-            'NAME': 'test_{0}'.format(env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')),
+            'NAME': f"test_{env('LEGACY_QUESTIONNAIRE_DATABASE_NAME')}",
         },
     },
 }
@@ -174,6 +174,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'easyaudit',
     'slippers',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
@@ -461,14 +462,38 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     # set default request format to JSON
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF Spectacular API documentation (OpenAPI 3.0 Specification)
+# See https://drf-spectacular.readthedocs.io/en/latest/index.html
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Opal Backend',
+    'DESCRIPTION': (
+        'This Python Django-based backend provides API '
+        + 'endpoints for other Opal applications and a user '
+        + 'interface for administrative functionality.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'RelationshipStatusEnum': 'opal.patients.models.RelationshipStatus.choices',
+        'RegistrationCodeStatusEnum': 'opal.caregivers.models.RegistrationCodeStatus.choices',
+    },
+    # list of authentication/permission classes for spectacular's views.
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+    #  TODO: 'CONTACT': {},
+    #  TODO: 'LICENSE': {},
 }
 
 # django-cors-headers
 # ------------------------------------------------------------------------------
 # See https://github.com/adamchainz/django-cors-headers#setup
 # A list of origins that are authorized to make cross-site HTTP requests.
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
-CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
+# CORS settings are optional
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
 
 # django-easy-audit
 # ------------------------------------------------------------------------------

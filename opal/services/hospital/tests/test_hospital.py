@@ -233,11 +233,11 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
     # parameters as in the `export_pdf_report` post request.
     # Arguments: *args, **kwargs
     mock_post.assert_called_once_with(
-        url='{0}{1}'.format(OIE_HOST, '/report/post'),
+        url=f'{OIE_HOST}/report/post',
         auth=requests.auth.HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
         headers=None,
         json=payload,
-        timeout=5,
+        timeout=15,
     )
 
 

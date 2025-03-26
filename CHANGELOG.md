@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * Add mkdocs-based documentation site (!35)
 * Improve getting started documentation for Windows users (!42)
+* Add drf-spectacular schema generation (!1220)
 
 ### Miscellaneous Chores
 

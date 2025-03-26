@@ -30,6 +30,18 @@ repos:
   rev: v0.13.0
   hooks:
   - id: markdownlint-cli2
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.17.0
+  hooks:
+  - id: pyupgrade
+    # desired Python version needs to be set explicitly
+    # see: https://github.com/asottile/pyupgrade/issues/768
+    args: ['--py311-plus']
+- repo: https://github.com/adamchainz/django-upgrade
+  rev: 1.20.0
+  hooks:
+  - id: django-upgrade
+    args: [--target-version, "4.2"]
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 - repo: local
   hooks:

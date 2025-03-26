@@ -2,13 +2,12 @@
 
 import base64
 from pathlib import Path
-from typing import Optional
 
 
 class Base64Util:
     """Util that provides functionality for handling base64 encoding strings."""
 
-    def encode_to_base64(self, path: Path) -> Optional[str]:
+    def encode_to_base64(self, path: Path) -> str | None:
         """Create base64 string of a given file.
 
         Args:
@@ -26,7 +25,7 @@ class Base64Util:
 
         return data.decode('utf-8')
 
-    def is_base64(self, string: Optional[str]) -> bool:
+    def is_base64(self, string: str | None) -> bool:
         """Check if a given string is base64 encoded.
 
         Args:

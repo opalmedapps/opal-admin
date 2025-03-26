@@ -1,7 +1,8 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
 from collections import defaultdict
+from collections.abc import Callable, Mapping
 from datetime import datetime
-from typing import IO, Any, Callable, Mapping, TypeAlias
+from typing import IO, Any, TypeAlias
 
 from django.utils import timezone
 
@@ -234,7 +235,7 @@ def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
 
 
 def fix_breaking_characters(field: str) -> str:
-    """Replace incorrectly encoded or interpretted characters with linebreaks.
+    """Replace incorrectly encoded or interpreted characters with linebreaks.
 
     Args:
         field: The HL7 er7 data to be cleaned

@@ -212,7 +212,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
 
     def create_pathology_document(
         self,
-        legacy_patient_id: Optional[int],
+        legacy_patient_id: int | None,
         prepared_by: int,
         received_at: datetime,
         report_file_name: str,
@@ -269,9 +269,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         except (ObjectDoesNotExist, MultipleObjectsReturned) as exp:
             # raise `DatabaseError` exception if LegacyPatient, LegacyAliasExpression, or LegacySourceDatabase
             # instances cannot be found or multiple instances returned
-            err = 'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {0}'.format(
-                exp,
-            )
+            err = f'Failed to insert a new pathology PDF document record to the OpalDB.Document table: {exp}'
             logger.error(err)
             raise DatabaseError(err)
 
@@ -523,13 +521,34 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
                 filter=models.Q(request='AccountChange', parameters__contains='Language'),
             ),
             count_device_ios=models.Count(
-                'device_id', filter=models.Q(parameters__contains='iOS'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='"Activity":"Login"',
+                ) & models.Q(
+                    parameters__contains='"deviceType":"iOS"',
+                ),
+                distinct=True,
             ),
             count_device_android=models.Count(
-                'device_id', filter=models.Q(parameters__contains='Android'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='"Activity":"Login"',
+                ) & models.Q(
+                    parameters__contains='"deviceType":"Android"',
+                ),
+                distinct=True,
             ),
             count_device_browser=models.Count(
-                'device_id', filter=models.Q(parameters__contains='browser'), distinct=True,
+                'activity_ser_num',
+                filter=models.Q(
+                    request='Log',
+                    parameters__contains='"Activity":"Login"',
+                ) & models.Q(
+                    parameters__contains='"deviceType":"browser"',
+                ),
+                distinct=True,
             ),
             # NOTE! The action_date indicates the date when the application activities were made.
             # It is not the date when the activity statistics were populated.
@@ -573,7 +592,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         Returns:
             Annotated `LegacyPatientActivityLog` records
         """
-        # TODO: QSCCD-2147. An activity triggered from the Notifications page is recorded differently than
+        # NOTE: an activity triggered from the Notifications page is recorded differently than
         #       an activity that is initialized in the chart.
         #       E.g., if Marge clicks on a TxTeamMessage notification from her Home page,
         #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
@@ -592,16 +611,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             # TODO: QSCCD-2139. Split the counts of successful from failed check in attempts
             count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
             count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
-            # TODO: QSCCD-2148. Different educational material types get logged differently in PAL table.
-            # Package --> Request==Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"6"}
-            #  + for each content Request==Log,
-            #       and Parameters={"Activity":"EducationalMaterialControlSerNum","ActivityDetails":"649"}
-            #         + etc
-            # Factsheet --> Request=Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"11"}
-            # Booklet --> Log + {"Activity":"EducationalMaterialSerNum","ActivityDetails":"4"}
-            #         + for each chapter Request=Read, Parameters={"Field":"EducationalMaterial","Id":"4"}
-            # Might have to use PatientActionLog to properly determine educational material count?
-            # Could consider counting each type separately here then aggregating below in the model creation?
+            # NOTE: educational materials count does not include opened sub educational materials or chapters.
+            # E.g., Package or Booklet educational materials might have sub-materials that won't be counted.
             count_educational_materials=models.Count(
                 'activity_ser_num',
                 filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),

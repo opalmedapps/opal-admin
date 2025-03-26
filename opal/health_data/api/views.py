@@ -4,11 +4,13 @@ from typing import Any
 from django.db import models
 from django.utils import timezone
 
+from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.api.serializers import PatientUUIDSerializer
 from opal.patients.models import Patient
@@ -82,6 +84,17 @@ class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
         serializer.save(patient=self.patient)
 
 
+@extend_schema(
+    request=PatientUUIDSerializer(many=True),
+    responses=inline_serializer(
+        name='UnviewedQuantitySampleSerializer',
+        fields={
+            'patient_uuid': serializers.UUIDField(),
+            'count': serializers.IntegerField(min_value=0),
+        },
+        many=True,
+    ),
+)
 class UnviewedQuantitySampleView(APIView):
     """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
 
@@ -125,6 +138,7 @@ class MarkQuantitySampleAsViewedView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
     permission_classes = (IsORMSUser,)
+    serializer_class = EmptyResponseSerializer
 
     def patch(self, request: Request, uuid: str) -> Response:
         """Set patient's `QuantitySample` records as viewed.

@@ -210,7 +210,7 @@ class PharmacyEncodedOrderSerializer(serializers.ModelSerializer[PharmacyEncoded
 class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[PhysicianPrescriptionOrder]):
     """Serializer for the `PhysicianPrescriptionOrder` model."""
 
-    pharmacy_encoded_order = PharmacyEncodedOrderSerializer(  # noqa: WPS118
+    pharmacy_encoded_order = PharmacyEncodedOrderSerializer(
         many=False,
         required=True,
     )

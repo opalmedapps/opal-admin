@@ -60,7 +60,7 @@ def test_relationshiptype_min_age_lowerbound() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.start_age = constants.RELATIONSHIP_MIN_AGE - 1
 
-    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE)
+    message = f'Ensure this value is greater than or equal to {constants.RELATIONSHIP_MIN_AGE}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -74,7 +74,7 @@ def test_relationshiptype_min_age_upperbound() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.start_age = constants.RELATIONSHIP_MAX_AGE
 
-    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE - 1)
+    message = f'Ensure this value is less than or equal to {constants.RELATIONSHIP_MAX_AGE - 1}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -88,7 +88,7 @@ def test_relationshiptype_max_age_lowerbound() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.end_age = constants.RELATIONSHIP_MIN_AGE
 
-    message = 'Ensure this value is greater than or equal to {0}.'.format(constants.RELATIONSHIP_MIN_AGE + 1)
+    message = f'Ensure this value is greater than or equal to {constants.RELATIONSHIP_MIN_AGE + 1}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -102,7 +102,7 @@ def test_relationshiptype_max_age_upperbound() -> None:
     relationship_type = factories.RelationshipType()
     relationship_type.end_age = constants.RELATIONSHIP_MAX_AGE + 1
 
-    message = 'Ensure this value is less than or equal to {0}.'.format(constants.RELATIONSHIP_MAX_AGE)
+    message = f'Ensure this value is less than or equal to {constants.RELATIONSHIP_MAX_AGE}.'
 
     with assertRaisesMessage(ValidationError, message):
         relationship_type.full_clean()
@@ -217,9 +217,9 @@ def test_patient_ramq_max() -> None:
     """Ensure the length of patient ramq is not greater than 12."""
     patient = factories.Patient()
     patient.ramq = 'ABCD5678901234'
-    expected_message = '{0}, {1}'.format(
-        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
-        "'Ensure this value has at most 12 characters (it has 14).']",
+    expected_message = (
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'"
+        + ", 'Ensure this value has at most 12 characters (it has 14).']"
     )
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
@@ -228,8 +228,8 @@ def test_patient_ramq_max() -> None:
 def test_patient_ramq_min() -> None:
     """Ensure the length of patient ramq is not less than 12."""
     patient = factories.Patient(ramq='ABCD56')
-    expected_message = '{0}'.format(
-        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
+    expected_message = (
+        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'"
     )
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()
@@ -238,8 +238,8 @@ def test_patient_ramq_min() -> None:
 def test_patient_ramq_format() -> None:
     """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
     patient = factories.Patient(ramq='ABC123456789')
-    expected_message = '{0}'.format(
-        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
+    expected_message = (
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']"
     )
     with assertRaisesMessage(ValidationError, expected_message):
         patient.clean_fields()

@@ -2,10 +2,12 @@
 
 import datetime as dt
 from collections import UserDict
+from pathlib import Path
 from typing import Any
 
 from django.db import models
 
+import pandas as pd
 from django_stubs_ext.aliases import ValuesQuerySet
 
 from opal.legacy import models as legacy_models
@@ -257,3 +259,52 @@ def get_aggregated_patient_received_data(
         'patient',
         *annotation_subqueries,
     )
+
+
+def export_data(    # noqa: WPS234
+    data_set: list[dict[str, Any]] | dict[str, Any],
+    file_path: Path,
+) -> None:
+    """Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
+
+    The function currently only support for csv and xlsx format, a value error will be raised for other cases.
+
+    Args:
+        data_set: the data set  to be exported
+        file_path: the destination path of the export file
+
+    Raises:
+        ValueError: If the file_name format is not supported
+    """
+    # Generate dataframe from the queryset given
+    if not data_set:
+        raise ValueError('Invalid input, unable to export empty data')
+    if isinstance(data_set, list):
+        data_set_columns = data_set[0].keys()
+    else:
+        data_set_columns = data_set.keys()
+        data_set = [data_set]
+    dataframe = pd.DataFrame.from_records(data_set, columns=data_set_columns)
+    dataframe = dataframe.map(
+        lambda col: _convert_to_naive(col) if isinstance(col, pd.Timestamp) else col,
+    )
+    # Generate the file in the required path and format
+    match file_path.suffix:
+        case '.csv':
+            dataframe.to_csv(file_path, index=False)
+        case '.xlsx':
+            dataframe.to_excel(file_path, index=False)
+        case _:
+            raise ValueError('Invalid file format, please use either csv or xlsx')
+
+
+def _convert_to_naive(datetime: pd.Timestamp) -> pd.Timestamp:
+    """Clean the time zone info of the input datetime data if it exists.
+
+    Args:
+        datetime: the datetime data
+
+    Returns:
+        the datetime value without time zone information
+    """
+    return datetime.tz_convert(None) if datetime.tzinfo is not None else datetime

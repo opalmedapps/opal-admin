@@ -227,6 +227,6 @@ class PharmacyComponent(models.Model):
         Returns:
             string representation
         """
-        return 'Component for filler order {0}'.format(
-            self.pharmacy_encoded_order.physician_prescription_order.filler_order_number,
+        return (
+            f'Component for filler order {self.pharmacy_encoded_order.physician_prescription_order.filler_order_number}'
         )

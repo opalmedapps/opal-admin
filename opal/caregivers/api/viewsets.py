@@ -34,7 +34,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     RetrieveModelMixin,
     UpdateModelMixin,
     viewsets.GenericViewSet[SecurityAnswer],
-):  # noqa: WPS215
+):
     """
     This viewset provides an retrieve view and update view for `SecurityAnswer`.
 
@@ -42,8 +42,9 @@ class SecurityAnswerViewSet(  # noqa: WPS215
     """
 
     permission_classes = (IsListener,)
+    queryset = SecurityAnswer.objects.none()
 
-    def get_queryset(self) -> QuerySet[SecurityAnswer]:
+    def get_queryset(self) -> QuerySet[SecurityAnswer]:  # noqa: WPS615
         """
         Override get_queryset to filter security answers by caregiver uuid.
 
@@ -65,7 +66,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
         return serializers.SecurityAnswerQuestionSerializer
 
     @action(detail=False, methods=['get'])
-    def random(self, request: Request, username: str) -> Response:  # noqa: WPS210
+    def random(self, request: Request, username: str) -> Response:
         """
         Handle GET requests for a random pair of security question and answer.
 
@@ -84,7 +85,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
-    def verify_answer(self, request: Request, username: str, pk: int) -> Response:  # noqa: WPS210
+    def verify_answer(self, request: Request, username: str, pk: int) -> Response:
         """
         Handle POST requests for verifyig a security answer and a question.
 

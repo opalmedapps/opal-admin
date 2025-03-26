@@ -1,6 +1,5 @@
 """Module providing different middlewares for the whole project."""
 from collections.abc import Callable
-from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -45,7 +44,7 @@ class LoginRequiredMiddleware():
         if (
             not request.user.is_authenticated
             # ignore API URLs since this is handled by DRF
-            and not request.path.startswith('/{api_root}/'.format(api_root=self.api_root))
+            and not request.path.startswith(f'/{self.api_root}/')
             and self._resolve_route(request) not in settings.AUTH_EXEMPT_ROUTES
         ):
             redirect_to = '{login_url}?next={next_url}'.format(
@@ -57,7 +56,7 @@ class LoginRequiredMiddleware():
 
         return self.get_response(request)
 
-    def _resolve_route(self, request: HttpRequest) -> Optional[str]:
+    def _resolve_route(self, request: HttpRequest) -> str | None:
         """
         Resolve the route of the request to the format namespace:url_name.
 
@@ -72,6 +71,6 @@ class LoginRequiredMiddleware():
         route_name = resolver.url_name
 
         if resolver.namespace:
-            route_name = '{namespace}:{url_name}'.format(namespace=resolver.namespace, url_name=route_name)
+            route_name = f'{resolver.namespace}:{route_name}'
 
         return route_name

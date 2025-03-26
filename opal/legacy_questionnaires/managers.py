@@ -75,7 +75,7 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
     """LegacyAnswerQuestionnaire manager."""
 
     @transaction.atomic
-    def get_databank_data_for_patient(  # noqa: WPS210
+    def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
         last_synchronized: datetime,

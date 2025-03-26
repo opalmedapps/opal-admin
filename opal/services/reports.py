@@ -6,7 +6,7 @@ import math
 import textwrap
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Any, Literal, NamedTuple
 
 from django.conf import settings
 from django.utils import timezone
@@ -15,67 +15,46 @@ import requests
 from fpdf import FPDF, FPDF_VERSION, Align, FlexTemplate
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
-from typing_extensions import Literal, TypedDict
+from typing_extensions import TypedDict
 
 from opal.utils.base64_util import Base64Util
 
-FPDFCellDictType = TypedDict(
-    'FPDFCellDictType',
-    {
-        'w': Optional[float],
-        'h': Optional[float],
-        'text': str,
-        'border': bool | str | Literal[0, 1],
-        'align': str | Align,
-    },
-)
 
-FPDFMultiCellDictType = TypedDict(
-    'FPDFMultiCellDictType',
-    {
-        'w': float,
-        'h': Optional[float],
-        'text': str,
-        'align': str | Align,
-    },
-)
+class FPDFCellDictType(TypedDict):
+    """The required arguments to pass to FPDF's cell() function."""
 
-FPDFFontDictType = TypedDict(
-    'FPDFFontDictType',
-    {
-        'family': Optional[str],
-        'style': Literal[
-            '',
-            'B',
-            'I',
-            'U',
-            'BU',
-            'UB',
-            'BI',
-            'IB',
-            'IU',
-            'UI',
-            'BIU',
-            'BUI',
-            'IBU',
-            'IUB',
-            'UBI',
-            'UIB',
-        ],
-        'size': int,
-    },
-)
+    w: float | None  # noqa: WPS111
+    h: float | None  # noqa: WPS111
+    text: str
+    border: bool | str | Literal[0, 1]
+    align: str | Align
 
-FPDFRectDictType = TypedDict(
-    'FPDFRectDictType',
-    {
-        'x': float,
-        'y': float,
-        'w': float,
-        'h': float,
-        'style': Optional[str],
-    },
-)
+
+class FPDFMultiCellDictType(TypedDict):
+    """The required arguments to pass to FPDF's multi_cell() function."""
+
+    w: float  # noqa: WPS111
+    h: float | None  # noqa: WPS111
+    text: str
+    align: str | Align
+
+
+class FPDFFontDictType(TypedDict):
+    """The required arguments to pass to FPDF's set_font() function."""
+
+    family: str | None
+    style: Literal['', 'B', 'I', 'U', 'BU', 'UB', 'BI', 'IB', 'IU', 'UI', 'BIU', 'BUI', 'IBU', 'IUB', 'UBI', 'UIB']
+    size: int
+
+
+class FPDFRectDictType(TypedDict):
+    """The required arguments to pass to FPDF's rect() function."""
+
+    x: float  # noqa: WPS111
+    y: float  # noqa: WPS111
+    w: float  # noqa: WPS111
+    h: float  # noqa: WPS111
+    style: str | None
 
 
 class QuestionnaireReportRequestData(NamedTuple):
@@ -312,16 +291,16 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             - Title of the report
             - Producer of the document (e.g., the name of the software that generates the PDF)
         """
-        self.set_keywords((
+        self.set_keywords(
             'Pathology Report, '
             + 'Pathologie Chirurgicale Rapport Final, '
             + 'Surgical Pathology Final Report, '
             + 'Opal, '
-            + 'Opal Health Informatics Group'
-        ))
+            + 'Opal Health Informatics Group',
+        )
         self.set_subject(f'Pathology report for {self.patient_name}')
         self.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
-        self.set_producer('fpdf2 v{0}'.format(FPDF_VERSION))
+        self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
     def _draw_site_logo(self) -> None:
         """Draw the site logo that is shown at the top of the first page."""
@@ -1155,7 +1134,7 @@ class ReportService():
     def generate_base64_questionnaire_report(
         self,
         report_data: QuestionnaireReportRequestData,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Create a questionnaire PDF report in encoded base64 string format.
 
         Args:
@@ -1167,10 +1146,8 @@ class ReportService():
         # return a `None` if questionnaire report request data are not valid
         if not self._is_questionnaire_report_request_data_valid(report_data):
             self.logger.error(
-                '{0} {1}'.format(
-                    'The questionnaire report request data are not valid.',
-                    'Please check the data that are being passed to the legacy PHP report service.',
-                ),
+                'The questionnaire report request data are not valid.'
+                + 'Please check the data that are being passed to the legacy PHP report service.',
             )
             return None
 
@@ -1211,7 +1188,7 @@ class ReportService():
     def _request_base64_report(
         self,
         report_data: QuestionnaireReportRequestData,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
@@ -1245,10 +1222,8 @@ class ReportService():
         # Return a `None` if response status code is not success (e.g., different than 2**)
         if status.is_success(response.status_code) is False:
             self.logger.error(
-                'The status code of the response from the PHP report service should be "200".\n{0}\n{1}'.format(
-                    response.reason,
-                    response.text,
-                ),
+                'The status code of the response from the PHP report service should be "200".\n'
+                + f'{response.reason}\n{response.text}',
             )
             return None
 
@@ -1257,10 +1232,8 @@ class ReportService():
             base64_report = response.json()['data']['base64EncodedReport']
         except (KeyError, JSONDecodeError):
             self.logger.exception(
-                '{0} {1}'.format(
-                    'Cannot read "base64EncodedReport" key in the JSON response received from PHP report service.\n',
-                    response.text,
-                ),
+                'Cannot read "base64EncodedReport" key in the JSON response received from PHP report service.\n'
+                + f' {response.text}',
             )
             return None
 

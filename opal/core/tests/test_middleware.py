@@ -30,7 +30,7 @@ def test_loginrequired_partial_urls_not_excluded(
     mock_resolve_route = mocker.spy(LoginRequiredMiddleware, '_resolve_route')
 
     # ensure that the middleware excludes /{api_root}/ only
-    response = client.get('/{api_root}test'.format(api_root=settings.API_ROOT))
+    response = client.get(f'/{settings.API_ROOT}test')
     mock_resolve_route.assert_called_once()
 
     assert response.status_code == HTTPStatus.NOT_FOUND

@@ -7,7 +7,7 @@ from opal.core.drf_fields import Base64FileField
 from ..models import Institution, Site
 
 
-class SiteSerializer(serializers.HyperlinkedModelSerializer):
+class SiteSerializer(serializers.HyperlinkedModelSerializer[Site]):
     """This class defines how a `Site` is serialized for an API."""
 
     # since urls has the app_name the URL field needs to be defined here with the appropriate view_name
@@ -35,7 +35,7 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer[Institution]):
+class InstitutionSerializer(serializers.HyperlinkedModelSerializer[Institution], DynamicFieldsSerializer[Institution]):
     """
     This class defines how an `Institution` model is serialized for the REST API.
 
@@ -61,7 +61,7 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicField
         ]
 
 
-class TermsOfUseSerializer(serializers.HyperlinkedModelSerializer):
+class TermsOfUseSerializer(serializers.HyperlinkedModelSerializer[Institution]):
     """This class defines how the `terms of use` of an `Institution` is serialized for an API."""
 
     url = serializers.HyperlinkedIdentityField(view_name='api:institutions-terms-of-use')

@@ -1,5 +1,5 @@
 """Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -100,7 +100,7 @@ DJANGO_CAREGIVER_QUERY = """
     FROM caregivers_caregiverprofile CC
     LEFT JOIN users_user UU ON CC.user_id = UU.id
     WHERE CC.legacy_id IS NOT NULL;
-"""  # noqa: WPS323
+"""
 
 
 class Command(BaseCommand):
@@ -211,7 +211,7 @@ class Command(BaseCommand):
         legacy_table_records: list[tuple[str, ...]],
         django_model_name: str,
         legacy_table_name: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Build error string based on the model/table records deviations.
 
         Args:
@@ -240,32 +240,26 @@ class Command(BaseCommand):
         ):
             return None
 
-        err_str = '\n{0}: found deviations between {1} Django model and {2} legacy table!!!'.format(
-            timezone.now(),
-            django_model_name,
-            legacy_table_name,
+        err_str = (
+            f'\n{timezone.now}:'
+            + f'found deviations between {django_model_name} Django model and {legacy_table_name} legacy table!!!'
         )
 
         # Add an error to the error string if the number of the table/model records does not match
         if django_records_len != legacy_records_len:
-            err_str += '\n\nThe number of records in "{0}" and "{1}" tables does not match!'.format(
-                django_model_name,
-                legacy_table_name,
-            )
-            err_str += '\n{0}: {1}\n{2}: {3}'.format(
-                django_model_name,
-                django_records_len,
-                legacy_table_name,
-                legacy_records_len,
+            err_str += (
+                '\n\n'
+                + f'The number of records in "{django_model_name}" and "{legacy_table_name}" tables does not match!'
+                + f'\n{django_model_name}: {django_records_len}\n{legacy_table_name}: {legacy_records_len}'
             )
 
         # Add a list of unmatched records to the error string
         err_str += self._get_unmatched_records_str(
             unmatched_records,
-            '{0}  <===>  {1}'.format(django_model_name, legacy_table_name),
+            f'{django_model_name}  <===>  {legacy_table_name}',
         )
 
-        return '{0}\n\n\n'.format(err_str)
+        return f'{err_str}\n\n\n'
 
     def _get_unmatched_records_str(
         self,
@@ -281,9 +275,6 @@ class Command(BaseCommand):
         Returns:
             string containing unmatched_records
         """
-        return '{0}\n{1}:\n\n{2}{3}'.format(
-            '\n\n{0}'.format(SPLIT_LENGTH * '-'),
-            block_name,
-            '\n'.join(str(record) for record in (unmatched_records)),
-            '\n{0}'.format(SPLIT_LENGTH * '-'),
-        )
+        divider = SPLIT_LENGTH * '-'
+        unmatched_records_string = '\n'.join(str(record) for record in (unmatched_records))
+        return f'\n\n{divider}\n{block_name}:\n\n{unmatched_records_string}\n{divider}'
