@@ -2,7 +2,8 @@
 
 from rest_framework import serializers
 
-from opal.legacy.models import LegacyAppointment, LegacyPatient
+from opal.legacy.models import LegacyAppointment
+from opal.patients.models import HospitalPatient
 
 
 class LegacyAppointmentSerializer(serializers.ModelSerializer):
@@ -20,20 +21,37 @@ class LegacyAppointmentSerializer(serializers.ModelSerializer):
 class QuestionnaireReportRequestSerializer(serializers.Serializer):
     """This class defines how a `QuestionnairesReport` request data are serialized."""
 
-    patient_id = serializers.IntegerField()
+    mrn = serializers.CharField(max_length=10, label='MRN')  # TODO: min_length?
+    site_name = serializers.CharField(max_length=100)  # TODO: min_length?
 
-    def validate_patient_id(self, value: int) -> int:
-        """Check that patient id (PatientSerNum) exists in the OpalDB.
+    def validate_mrn(self, value: str) -> str:
+        """Check that medical record number (MRN) exists in the OpalDB.
 
         Args:
-            value (int): patient id (PatientSerNum) to be validated
+            value (str): MRN to be validated
 
         Returns:
-            Boolean value showing the result of the patient id validation
+            validated MRN value
 
         Raises:
-            ValidationError: if provided patient ID does not exist in the database
+            ValidationError: if provided MRN does not exist in the database
         """
-        if not LegacyPatient.objects.filter(patientsernum=value).exists():
-            raise serializers.ValidationError('Provided patient ID does not exist.')
+        if not HospitalPatient.objects.filter(mrn=value).exists():
+            raise serializers.ValidationError('Provided MRN does not exist.')
+        return value
+
+    def validate_site_name(self, value: str) -> str:
+        """Check that site name exists in the OpalDB.
+
+        Args:
+            value (str): site name to be validated
+
+        Returns:
+            validated site name value
+
+        Raises:
+            ValidationError: if provided site name does not exist in the database
+        """
+        if not HospitalPatient.objects.filter(site__name=value).exists():
+            raise serializers.ValidationError('Provided MRN does not exist.')
         return value
