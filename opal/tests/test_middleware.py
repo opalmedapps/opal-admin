@@ -4,6 +4,7 @@ from django.test import Client
 from django.urls import reverse
 
 import pytest
+from pytest_django.asserts import assertRedirects
 from pytest_django.fixtures import SettingsWrapper
 
 pytestmark = pytest.mark.django_db
@@ -21,8 +22,7 @@ def test_loginrequired_unauthenticated_with_next(client: Client) -> None:
     """Ensure that an unauthenticated request gets redirect."""
     response = client.get(reverse('start'))
 
-    assert response.url == '{url}?next=/'.format(url=reverse('login'))
-    assert response.status_code == HTTPStatus.FOUND
+    assertRedirects(response, '{url}?next=/'.format(url=reverse('login')))
 
 
 def test_loginrequired_authenticated(user_client: Client, settings: SettingsWrapper) -> None:
