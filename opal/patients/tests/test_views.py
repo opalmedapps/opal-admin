@@ -13,7 +13,7 @@ from .. import factories, models, tables
 
 # Add any future GET-requestable patients app pages here for faster test writing
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:caregiver-access'), 'patients/caregiver_access/form.html'),
+    (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
 ]
 
 

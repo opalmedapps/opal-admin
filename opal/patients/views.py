@@ -12,7 +12,12 @@ from opal.core.views import CreateUpdateView
 
 from .forms import ManageCaregiverAccessForm
 from .models import Relationship, RelationshipStatus, RelationshipType
-from .tables import CaregiverAccessTable, PatientInfoTable, PendingRelationshipTable, RelationshipTypeTable
+from .tables import (
+    PendingRelationshipTable,
+    RelationshipCaregiverTable,
+    RelationshipPatientTable,
+    RelationshipTypeTable,
+)
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -80,11 +85,11 @@ class CaregiverAccessView(MultiTableMixin, FormView):
     )
 
     tables = [
-        PatientInfoTable(Relationship.objects.none()),
-        CaregiverAccessTable(Relationship.objects.none()),
+        RelationshipPatientTable(Relationship.objects.none()),
+        RelationshipCaregiverTable(Relationship.objects.none()),
     ]
 
-    template_name = 'patients/caregiver_access/form.html'
+    template_name = 'patients/relationships-search/form.html'
     form_class = ManageCaregiverAccessForm
     success_url = reverse_lazy('patients:caregiver-access')
 
@@ -102,7 +107,7 @@ class CaregiverAccessView(MultiTableMixin, FormView):
         """
         context = self.get_context_data(**kwargs)
         filtered_queryset = self.queryset.filter(patient__ramq=form.cleaned_data['medical_number'])
-        context['tables'][0] = PatientInfoTable(filtered_queryset)
-        context['tables'][1] = CaregiverAccessTable(filtered_queryset)
+        context['tables'][0] = RelationshipPatientTable(filtered_queryset)
+        context['tables'][1] = RelationshipCaregiverTable(filtered_queryset)
         context['form'] = form
         return self.render_to_response(context)

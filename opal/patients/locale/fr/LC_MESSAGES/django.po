@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-01 11:11-0500\n"
+"POT-Creation-Date: 2022-12-02 11:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -256,8 +256,8 @@ msgid "RAMQ"
 msgstr "RAMQ"
 
 #: opal/patients/tables.py
-msgid "No data."
-msgstr ""
+msgid "No patient found."
+msgstr "Aucun patient trouvé."
 
 #: opal/patients/tables.py
 msgid "Start Date"
@@ -274,22 +274,6 @@ msgstr "Statut"
 #: opal/patients/tables.py
 msgid "No caregivers."
 msgstr "Pas des aidants."
-
-#: opal/patients/templates/patients/caregiver_access/form.html
-msgid "Search Patient Acceess"
-msgstr "Rechercher l'accès des patients"
-
-#: opal/patients/templates/patients/caregiver_access/form.html
-msgid "Search for a specific patient to see all caregivers."
-msgstr "Search for a specific patient to see all caregivers."
-
-#: opal/patients/templates/patients/caregiver_access/form.html
-msgid "Patient Details"
-msgstr "Détails du patient"
-
-#: opal/patients/templates/patients/caregiver_access/form.html
-msgid "Caregiver Details"
-msgstr "Détails de l'aidant"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -333,6 +317,22 @@ msgstr ""
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
 msgstr ""
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Search Patient Acceess"
+msgstr "Rechercher l'accès des patients"
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Search for a specific patient to see all their caregivers."
+msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/templates/patients/relationships-search/form.html
+msgid "Caregiver Details"
+msgstr "Détails de l'aidant"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"

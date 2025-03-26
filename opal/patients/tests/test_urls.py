@@ -42,6 +42,6 @@ def test_caregiver_access_list() -> None:
 
     It also checks that the URL is served with the correct view.
     """
-    url = '/patients/caregiver-access/'
-    assert reverse('patients:caregiver-access') == url
-    assert resolve(url).view_name == 'patients:caregiver-access'
+    url = '/patients/relationships/search'
+    assert reverse('patients:relationships-search') == url
+    assert resolve(url).view_name == 'patients:relationships-search'

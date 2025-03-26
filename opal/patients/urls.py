@@ -38,8 +38,8 @@ urlpatterns = [
         name='relationshiptype-delete',
     ),
     path(
-        'caregiver-access/',
+        'relationships/search',
         views.CaregiverAccessView.as_view(),
-        name='caregiver-access',
+        name='relationships-search',
     ),
 ]

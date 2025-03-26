@@ -73,8 +73,8 @@ class PendingRelationshipTable(tables.Table):
         }
 
 
-class PatientInfoTable(tables.Table):
-    """A table for displaying patient info on the `Manage Caregiver Access` page."""
+class RelationshipPatientTable(tables.Table):
+    """A table for displaying patients' personal information."""
 
     first_name = tables.Column(
         verbose_name=_('First Name'),
@@ -99,7 +99,7 @@ class PatientInfoTable(tables.Table):
     class Meta:
         model = Relationship
         fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
-        empty_text = _('No data.')
+        empty_text = _('No patient found.')
         attrs = {
             'class': 'table table-bordered table-hover',
             'thead': {
@@ -108,8 +108,8 @@ class PatientInfoTable(tables.Table):
         }
 
 
-class CaregiverAccessTable(tables.Table):
-    """A table for listing caregivers on the `Manage Caregiver Access` page."""
+class RelationshipCaregiverTable(tables.Table):
+    """A table for displaying caregivers' personal information."""
 
     first_name = tables.Column(
         verbose_name=_('First Name'),
