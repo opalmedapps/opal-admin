@@ -46,6 +46,9 @@ class AppChartView(APIView):
         """
         Handle GET requests from `api/app/chart`.
 
+        The function provides the number of unread values for the user
+        and will provide them for the selected patient instead until the profile selector is finished.
+
         Args:
             request: Http request made by the listener.
 
