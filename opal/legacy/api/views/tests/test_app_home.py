@@ -12,6 +12,7 @@ from opal.legacy import factories, models
 from opal.legacy.api.serializers import LegacyAppointmentSerializer
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.patients import factories as patient_factories
+from opal.patients import models as patient_models
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -39,7 +40,9 @@ class TestHomeAppView:
         mock_timezone = mocker.patch('django.utils.timezone.now')
         mock_timezone.return_value = now
 
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=username)
@@ -62,7 +65,9 @@ class TestHomeAppView:
 
     def test_get_unread_notification_count(self) -> None:
         """Test if function returns number of unread notifications."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         username = relationship.caregiver.user.username
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)
@@ -76,7 +81,9 @@ class TestHomeAppView:
 
     def test_get_daily_appointments(self, mocker: MockerFixture) -> None:
         """Test daily appointment according to their dates."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
         alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
@@ -108,7 +115,9 @@ class TestHomeAppView:
         mocker: MockerFixture,
     ) -> None:
         """Test the return value of get home data when the fields are empty."""
-        relationship = patient_factories.Relationship(status='CON')
+        relationship = patient_factories.Relationship(
+            status=patient_models.RelationshipStatus.CONFIRMED,
+        )
         username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=username)

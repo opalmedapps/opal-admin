@@ -59,6 +59,7 @@ class Relationship(DjangoModelFactory):
     patient = SubFactory(Patient)
     caregiver = SubFactory(CaregiverProfile)
     type = SubFactory(RelationshipType)  # noqa: A003
+    status = models.RelationshipStatus.PENDING
     request_date = datetime.date.today()
     start_date = lazy_attribute(lambda relationship: relationship.patient.date_of_birth)
     end_date = datetime.date.today() + relativedelta(years=2)

@@ -19,8 +19,7 @@ class AppGeneralView(APIView):
         """
         Handle GET requests from `api/app/general`.
 
-        The function provides the number of unread values for the user
-        and will provide them for the selected patient instead until the profile selector is finished.
+        The function provides the number of unread values for the Opal app user.
 
         Args:
             request: HTTP request made by the listener.
@@ -30,11 +29,11 @@ class AppGeneralView(APIView):
         """
         unread_count = {
             'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
-                Relationship.objects.get_list_of_patients_ids_for_caregiver(
+                patient_sernum_list=Relationship.objects.get_list_of_patients_ids_for_caregiver(
                     username=request.headers['Appuserid'],
                     status=RelationshipStatus.CONFIRMED,
                 ),
-                request.headers['Appuserid'],
+                username=request.headers['Appuserid'],
             ),
         }
 

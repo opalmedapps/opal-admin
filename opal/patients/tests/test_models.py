@@ -549,7 +549,7 @@ def test_relationship_invalid_dates_constraint() -> None:
 def test_relationship_status_constraint() -> None:
     """Error happens when assigning an invalid Relationship status."""
     relationship = factories.Relationship()
-    relationship.status = 'INV'
+    relationship.status = 'INV'  # type: ignore [assignment]
 
     constraint_name = 'patients_relationship_status_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):
