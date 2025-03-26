@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
 
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_mock.plugin import MockerFixture
 
@@ -188,3 +190,32 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             assert f'Number of {module}-consenting patients is: 2' in message
 
         assert not error
+
+    def test_partial_sender_error_oie(self, mocker: MockerFixture, capsys: pytest.CaptureFixture) -> None:
+        """Verify oie sender errors get properly handled."""
+        django_pat1 = patient_factories.Patient()
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        yesterday = datetime.now() - timedelta(days=1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(yesterday),
+        )
+        generated_data = {
+            'status': 'error',
+            'data': {
+                'message': 'request failed',
+            },
+        }
+        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
+        mock_post = RequestMockerTest.mock_requests_post(mocker, generated_data)
+        mock_post.side_effect = requests.RequestException('request failed')
+        mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
+        command = send_databank_data.Command()
+        command._send_to_oie_and_handle_response({})
+        captured = capsys.readouterr()
+        assert 'OIE Error: request failed' in captured.err

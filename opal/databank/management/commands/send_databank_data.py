@@ -14,14 +14,12 @@ from requests.auth import HTTPBasicAuth
 from opal.databank.models import DatabankConsent, DataModuleType
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.services.hospital.hospital import OIEService
 
 
 class Command(BaseCommand):
     """Command to send the data of consenting databank patients to the external databank."""
 
     help = "send consenting Patients' data to the databank"  # noqa: A003
-    oie = OIEService()
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:
@@ -63,19 +61,7 @@ class Command(BaseCommand):
                         )
                         combined_module_data[idx] = nested_databank_data
                 if combined_module_data:
-                    try:
-                        requests.post(
-                            url=f'{settings.OIE_HOST}/databank/post',
-                            auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
-                            json=json.dumps(combined_module_data, default=str),
-                            timeout=5,
-                        ).json()
-                        # TODO: QSCCD-1096 Handle response_data / partial sender errors
-                    except requests.exceptions.RequestException as exc:
-                        # log OIE errors
-                        self.stderr.write(
-                            f'OIE Error: {exc}',
-                        )
+                    self._send_to_oie_and_handle_response(combined_module_data)
             else:
                 self.stderr.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
@@ -166,3 +152,23 @@ class Command(BaseCommand):
                 for key, value in groups.items()
             ]
         return {'GUID': guid, nesting_key: data}
+
+    def _send_to_oie_and_handle_response(self, data: dict) -> Any:
+        """Send databank dataset to the OIE and handle response.
+
+        Args:
+            data: Databank dictionary of one of the five module types.
+        """
+        try:
+            requests.post(
+                url=f'{settings.OIE_HOST}/databank/post',
+                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                json=json.dumps(data, default=str),
+                timeout=5,
+            ).json()
+            # TODO: QSCCD-1096 Handle response_data / partial sender errors
+        except requests.exceptions.RequestException as exc:
+            # log OIE errors
+            self.stderr.write(
+                f'OIE Error: {exc}',
+            )
