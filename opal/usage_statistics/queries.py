@@ -110,7 +110,7 @@ def fetch_devices_summary(
         last_updated__date__lte=end_date,
     ).aggregate(
         total=models.Count('patient_device_identifier_ser_num'),
-        iOS=models.Count(
+        ios=models.Count(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=0),
         ),

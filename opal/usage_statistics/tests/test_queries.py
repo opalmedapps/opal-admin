@@ -271,7 +271,7 @@ def test_empty_fetch_devices_summary() -> None:
     )
     assert devices_summary == {
         'total': 0,
-        'iOS': 0,
+        'ios': 0,
         'android': 0,
         'browser': 0,
     }
@@ -299,7 +299,7 @@ def test_fetch_devices_summary(mocker: MockerFixture) -> None:
     )
     assert devices_summary == {
         'total': 6,
-        'iOS': 2,
+        'ios': 2,
         'android': 2,
         'browser': 2,
     }
