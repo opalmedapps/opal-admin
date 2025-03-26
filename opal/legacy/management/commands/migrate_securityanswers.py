@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     ),
                 )
 
-    def _find_question(self, securityquestionsernum: int) -> Optional[SecurityQuestion]:
+    def _find_question(self, securityquestionsernum: int) -> Any:
         """
         Check legacy security question exists or not.
 
