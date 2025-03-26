@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-13 15:02-0400\n"
+"POT-Creation-Date: 2023-09-14 14:39-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,6 +25,105 @@ msgstr "Pathologie"
 #: opal/test_results/models.py
 msgid "Lab"
 msgstr "Laboratoire"
+
+#: opal/test_results/models.py
+msgid "Low"
+msgstr "Bas"
+
+#: opal/test_results/models.py
+msgid "Normal"
+msgstr "Normale"
+
+#: opal/test_results/models.py
+msgid "High"
+msgstr "Haut"
+
+#: opal/test_results/models.py
+msgid "Observation Identifier"
+msgstr "Identificateur d'observation"
+
+#: opal/test_results/models.py
+msgid "Test component code."
+msgstr "Tester le code du composant."
+
+#: opal/test_results/models.py
+msgid "Observation Identifier Text"
+msgstr "Texte d'identification de l'observation"
+
+#: opal/test_results/models.py
+msgid "Test component text."
+msgstr "Texte de l'élément de test."
+
+#: opal/test_results/models.py
+msgid "Observed At"
+msgstr "Observé à"
+
+#: opal/test_results/models.py
+msgid ""
+"When this specific observation segment was entered into the source system."
+msgstr ""
+"Date à laquelle ce segment d'observation spécifique a été saisi dans le "
+"système source."
+
+#: opal/test_results/models.py
+msgid "Updated At"
+msgstr "Mis à jour le"
+
+#: opal/test_results/models.py
+msgid "Value"
+msgstr "Le valeur"
+
+#: opal/test_results/models.py
+msgid "General Test"
+msgstr "Test général"
+
+#: opal/test_results/models.py
+msgid "Pathology Observation"
+msgstr "Observation de la pathologie"
+
+#: opal/test_results/models.py
+msgid "Pathology Observations"
+msgstr "Observations pathologiques"
+
+#: opal/test_results/models.py
+msgid "Value Units"
+msgstr "Valeur unités"
+
+#: opal/test_results/models.py
+msgid "Minimum Value Range"
+msgstr "Valeur minimale plage"
+
+#: opal/test_results/models.py
+msgid "Maximum Value Range"
+msgstr "Valeur maximale plage"
+
+#: opal/test_results/models.py
+msgid "Abnormal Flag"
+msgstr "Indicateur d'anomalie"
+
+#: opal/test_results/models.py
+msgid "Lab Observation"
+msgstr "Observation en laboratoire"
+
+#: opal/test_results/models.py
+msgid "Lab Observations"
+msgstr "Observations en laboratoire"
+
+#: opal/test_results/models.py
+msgid "Note Source"
+msgstr "Note Source"
+
+#: opal/test_results/models.py
+msgid "Note Text"
+msgstr "Texte de la note"
+
+#: opal/test_results/models.py
+msgid "Note"
+msgstr "Remarque"
+
+#: opal/test_results/models.py
+msgid "Notes"
+msgstr "Remarques"
 
 #: opal/test_results/models.py
 msgid "Patient"
@@ -112,104 +211,5 @@ msgid "Reported At"
 msgstr "Rapporté à"
 
 #: opal/test_results/models.py
-msgid "General Test"
-msgstr "Test général"
-
-#: opal/test_results/models.py
 msgid "General Tests"
 msgstr "Tests généraux"
-
-#: opal/test_results/models.py
-msgid "Low"
-msgstr "Bas"
-
-#: opal/test_results/models.py
-msgid "Normal"
-msgstr "Normale"
-
-#: opal/test_results/models.py
-msgid "High"
-msgstr "Haut"
-
-#: opal/test_results/models.py
-msgid "Observation Identifier"
-msgstr "Identificateur d'observation"
-
-#: opal/test_results/models.py
-msgid "Test component code."
-msgstr "Tester le code du composant."
-
-#: opal/test_results/models.py
-msgid "Observation Identifier Text"
-msgstr "Texte d'identification de l'observation"
-
-#: opal/test_results/models.py
-msgid "Test component text."
-msgstr "Texte de l'élément de test."
-
-#: opal/test_results/models.py
-msgid "Observed At"
-msgstr "Observé à"
-
-#: opal/test_results/models.py
-msgid ""
-"When this specific observation segment was entered into the source system."
-msgstr ""
-"Date à laquelle ce segment d'observation spécifique a été saisi dans le "
-"système source."
-
-#: opal/test_results/models.py
-msgid "Updated At"
-msgstr "Mis à jour le"
-
-#: opal/test_results/models.py
-msgid "Value"
-msgstr "Le valeur"
-
-#: opal/test_results/models.py
-msgid "Pathology Observation"
-msgstr "Observation de la pathologie"
-
-#: opal/test_results/models.py
-msgid "Pathology Observations"
-msgstr "Observations pathologiques"
-
-#: opal/test_results/models.py
-msgid "Value Units"
-msgstr "Valeur unités"
-
-#: opal/test_results/models.py
-msgid "Minimum Value Range"
-msgstr "Valeur minimale plage"
-
-#: opal/test_results/models.py
-msgid "Maximum Value Range"
-msgstr "Valeur maximale plage"
-
-#: opal/test_results/models.py
-msgid "Abnormal Flag"
-msgstr "Indicateur d'anomalie"
-
-#: opal/test_results/models.py
-msgid "Lab Observation"
-msgstr "Observation en laboratoire"
-
-#: opal/test_results/models.py
-msgid "Lab Observations"
-msgstr "Observations en laboratoire"
-
-#: opal/test_results/models.py
-msgid "Note Source"
-msgstr "Note Source"
-
-#: opal/test_results/models.py
-msgid "Note Text"
-msgstr "Texte de la note"
-
-#: opal/test_results/models.py
-msgid "Note"
-msgstr "Remarque"
-
-#: opal/test_results/models.py
-msgid "Notes"
-msgstr "Remarques"
