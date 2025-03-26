@@ -31,6 +31,6 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('app/home/', AppHomeView.as_view(), name='app-home'),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
-    path('questionnaires/reviewed/', QuestionnairesReportCreateAPIView.as_view(), name='questionnaires'),
+    path('questionnaires/reviewed/', QuestionnairesReportCreateAPIView.as_view(), name='questionnaires-reviewed'),
     path('', include(router.urls)),
 ]

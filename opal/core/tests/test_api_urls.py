@@ -39,3 +39,11 @@ def test_api_auth_defined(settings: SettingsWrapper) -> None:
     auth_login_path = '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
     assert reverse('api:rest_login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:rest_login'
+
+
+# questionnaire report generation API endpoint: questionnaires/reviewed/
+
+def test_questionnaires_reviewed() -> None:
+    """Ensure `questionnaires/reviewed/` endpoint is defined."""
+    assert reverse('api:questionnaires-reviewed') == '/api/questionnaires/reviewed/'
+    assert resolve('/api/questionnaires/reviewed/').view_name == 'api:questionnaires-reviewed'
