@@ -25,7 +25,7 @@ from django.urls.conf import include
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import RedirectView
 
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from opal.core.views import LoginView
 
