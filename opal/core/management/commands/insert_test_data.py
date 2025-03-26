@@ -3,6 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Optional
 
 from django.core.files.base import ContentFile
@@ -20,12 +21,30 @@ from opal.users.models import Caregiver
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
 
+
 class InstitutionOption(Enum):
+    """The institutions that test data can be created for."""
+
     muhc = 'MUHC'
     chusj = 'CHUSJ'
 
     def __str__(self) -> str:
-        return self.name
+        """
+        Return the value of the enum literal.
+
+        Returns:
+            the value of the enum literal
+        """
+        return self.value
+
+
+INSTITUTION_DATA = MappingProxyType({
+    InstitutionOption.muhc: {
+        'name': 'McGill University Health Centre',
+        'name_fr': 'Centre universitaire de santé McGill',
+        'support_email': 'opal@muhc.mcgill.ca',
+    },
+})
 
 
 class Command(BaseCommand):
@@ -38,6 +57,12 @@ class Command(BaseCommand):
     help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'  # noqa: A003
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
         parser.add_argument(
             'institution',
             type=InstitutionOption,
@@ -85,7 +110,8 @@ class Command(BaseCommand):
             _delete_existing_data()
             self.stdout.write('Existing test data deleted')
 
-        _create_test_data()
+        institution_option: InstitutionOption = options['institution']
+        _create_test_data(institution_option)
         self.stdout.write(self.style.SUCCESS('Test data successfully created'))
 
 
@@ -110,11 +136,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         * patients
         * caregivers
         * relationships between the patients and caregivers
+
+
+    Args:
+        institution_option: the chosen institution for which the test data should be inserted
     """
     today = date.today()
 
     # hospital settings
-    institution = _create_institution()
+    institution = _create_institution(institution_option)
     rvh = _create_site(
         institution,
         'Royal Victoria Hospital',
@@ -374,32 +404,38 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     _create_security_answers(user_bart)
 
 
-def _create_institution() -> Institution:
+def _create_institution(institution_option: InstitutionOption) -> Institution:
     """
     Create, validate and save an institution instance with the given properties.
 
     The logo and terms of use are loaded from the file system under `files/` within the directory of this module.
 
+    Args:
+        institution_option: the chosen institution for which the test data should be inserted
+
     Returns:
         the newly created institution
     """
-    logo_path = DIRECTORY_FILES.joinpath('logo.png')
+    institution_directory = DIRECTORY_FILES.joinpath(institution_option.name)
+    data = INSTITUTION_DATA[institution_option]
+
+    logo_path = institution_directory.joinpath('logo.png')
     with logo_path.open('rb') as logo_file:
         logo = ContentFile(logo_file.read(), logo_path.name)
 
-    terms_path_en = DIRECTORY_FILES.joinpath('terms_of_use_en.pdf')
+    terms_path_en = institution_directory.joinpath('terms_of_use_en.pdf')
     with terms_path_en.open('rb') as terms_file_en:
         terms_of_use_en = ContentFile(terms_file_en.read(), terms_path_en.name)
 
-    terms_path_fr = DIRECTORY_FILES.joinpath('terms_of_use_fr.pdf')
+    terms_path_fr = institution_directory.joinpath('terms_of_use_fr.pdf')
     with terms_path_fr.open('rb') as terms_file_fr:
         terms_of_use_fr = ContentFile(terms_file_fr.read(), terms_path_fr.name)
 
     institution = Institution(
-        name='McGill University Health Centre',
-        name_fr='Centre universitaire de santé McGill',
-        code='MUHC',
-        support_email='opal@muhc.mcgill.ca',
+        name=data['name'],
+        name_fr=data['name_fr'],
+        code=institution_option.value,
+        support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
         terms_of_use_fr=terms_of_use_fr,
         logo=logo,

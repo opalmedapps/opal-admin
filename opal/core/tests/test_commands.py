@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group
+from django.core.management.base import CommandError
 
 import pytest
 from rest_framework.authtoken.models import Token
@@ -17,11 +18,20 @@ pytestmark = pytest.mark.django_db()
 class TestInsertTestData(CommandTestMixin):
     """Test class to group the `insert_test_data` command tests."""
 
+    def test_insert_missing_institution(self) -> None:
+        """Ensure that the institution argument is required and validated against the institution options."""
+        with pytest.raises(CommandError, match='the following arguments are required: institution'):
+            self._call_command('insert_test_data')
+
+        with pytest.raises(CommandError, match="argument institution: invalid InstitutionOption value: 'muhc'"):
+            self._call_command('insert_test_data', 'muhc')
+
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data')
+        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
 
         assert Institution.objects.count() == 1
+        assert Institution.objects.get().code == 'MUHC'
         assert Site.objects.count() == 4
         assert Patient.objects.count() == 5
         assert HospitalPatient.objects.count() == 6
@@ -35,7 +45,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship()
 
-        stdout, _stderr = self._call_command('insert_test_data')
+        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
 
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
@@ -53,7 +63,7 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
-        stdout, _stderr = self._call_command('insert_test_data')
+        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
@@ -79,7 +89,7 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
-        stdout, _stderr = self._call_command('insert_test_data')
+        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
