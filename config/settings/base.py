@@ -20,7 +20,8 @@ from rest_framework.generics import GenericAPIView
 
 # Monkeypatching Django, so stubs will work for all generics
 # see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
-# need to manually patch DRF generic classes: https://github.com/typeddjango/djangorestframework-stubs/issues/255#issuecomment-1320496964  # noqa: E501
+# need to manually patch DRF generic classes: 
+# https://github.com/typeddjango/djangorestframework-stubs/issues/255#issuecomment-1320496964
 django_stubs_ext.monkeypatch(extra_classes=(Field, GenericAPIView))
 
 # get root of the project
