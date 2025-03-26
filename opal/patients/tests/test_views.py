@@ -199,7 +199,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
     assertQuerySetEqual(list(reversed(response.context['relationship_list'])), relationships)
 
     for relationship in relationships:
-        assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
+        assertContains(response, f'<td >{relationship.type.name}</td>')
 
 
 def test_relationships_not_pending_not_list(relationship_user: Client) -> None:

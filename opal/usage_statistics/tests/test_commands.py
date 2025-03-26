@@ -800,50 +800,98 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'Android', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'Android', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=0,
         )
@@ -894,50 +942,98 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'iOS', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'iOS', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=0,
         )
@@ -989,50 +1085,98 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             action_date=date - dt.timedelta(days=2),
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=marge_caregiver.user.username,
             days_delta=0,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=1,
         )
         self._create_log_record(
-            request='DeviceIdentifier',
-            parameters=json.dumps({'deviceType': 'browser', 'registrationId': ''}),
+            request='Log',
+            parameters=json.dumps(
+                {
+                    'Activity': 'Login',
+                    'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'false'},
+                },
+                separators=(',', ':'),
+            ),
             username=homer_caregiver.user.username,
             days_delta=0,
         )

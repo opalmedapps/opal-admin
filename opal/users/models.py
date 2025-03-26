@@ -73,12 +73,12 @@ class User(AbstractUser):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_language_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_language_valid',
                 # determine the language codes from the list of tuples
                 check=models.Q(language__in=[language[0] for language in Language]),
             ),
             models.CheckConstraint(
-                name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
+                name='%(app_label)s_%(class)s_type_valid',
                 check=models.Q(type__in=UserType.values),
             ),
         ]

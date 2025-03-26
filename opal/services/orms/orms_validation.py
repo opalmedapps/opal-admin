@@ -9,7 +9,7 @@ class ORMSValidator:
     #   Also adjust `initialize_new_opal_patient` accordingly; its calls to ORMS, the OIE etc. should be handled and
     #   not cause the whole function to fail.
     # TODO log or return original errors from ORMS instead of suppressing them
-    def is_patient_response_valid(  # noqa: C901, WPS231
+    def is_patient_response_valid(
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:

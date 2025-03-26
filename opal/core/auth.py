@@ -72,7 +72,7 @@ class FedAuthBackend(BaseBackend):
 
         return None
 
-    def get_user(self, user_id: int) -> User | None:  # noqa: WPS615
+    def get_user(self, user_id: int) -> User | None:
         """
         Retrieve the user with the given user ID.
 

@@ -263,7 +263,7 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
 
-def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C901
+def _create_test_data(institution_option: InstitutionOption) -> None:
     """
     Create all test data.
 

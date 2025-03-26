@@ -100,7 +100,7 @@ DJANGO_CAREGIVER_QUERY = """
     FROM caregivers_caregiverprofile CC
     LEFT JOIN users_user UU ON CC.user_id = UU.id
     WHERE CC.legacy_id IS NOT NULL;
-"""  # noqa: WPS323
+"""
 
 
 class Command(BaseCommand):

@@ -50,7 +50,7 @@ class InlineSubmit(Layout):
     default_label = _('Submit')
     default_css_class = 'btn d-table'
 
-    def __init__(  # noqa: WPS211
+    def __init__(
         self,
         name: str,
         label: str | None = None,
@@ -98,7 +98,7 @@ class InlineReset(Layout):
     default_label = _('Reset')
     default_css_class = 'btn d-table'
 
-    def __init__(  # noqa: WPS210
+    def __init__(
         self,
         label: str | None = None,
         extra_css: str | None = None,

@@ -56,7 +56,7 @@ class RelationshipTypeAdmin(TranslationAdmin[models.RelationshipType]):
         if obj and obj.role_type in models.PREDEFINED_ROLE_TYPES:
             return False
 
-        return super().has_delete_permission(request, obj)  # type: ignore[no-any-return]
+        return super().has_delete_permission(request, obj)
 
 
 @admin.register(models.Relationship)
