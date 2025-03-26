@@ -11,7 +11,7 @@ pytest-randomly==3.16.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.4.0  # https://github.com/wemake-services/django-test-migrations
 coverage==7.6.10  # https://github.com/nedbat/coveragepy
 factory-boy==3.3.1  # https://github.com/FactoryBoy/factory_boy
-isort==5.13.2  # https://github.com/PyCQA/isort
+isort==6.0.0  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
