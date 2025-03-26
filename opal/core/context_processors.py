@@ -15,7 +15,6 @@ def opal_global_settings(request: HttpRequest) -> Dict:
     Returns:
         dictionary that contains `OpalAdmin` global values (e.g., OpalAdmin URL, media URL, etc.).
     """
-    # return the value you want as a dictionnary. you may add multiple values in there.
     return {
         'OPAL_ADMIN_URL': settings.OPAL_ADMIN_URL,
         'MEDIA_URL': settings.MEDIA_URL,
