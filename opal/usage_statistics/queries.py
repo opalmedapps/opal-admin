@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 
 from opal.caregivers import models as caregivers_models
+from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
 
@@ -86,4 +87,38 @@ def fetch_patients_summary() -> dict[str, Any]:
         other_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.OTHER)),
         unknown_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.UNKNOWN)),
         **access_dict,
+    )
+
+
+# TODO: use Django's `Device` model instead of `LegacyPatientDeviceIdentifier` once QSCCD-628 and QSCCD-630 are finished
+def fetch_devices_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, Any]:
+    """Fetch grouped device identifiers summary from `LegacyPatientDeviceIdentifier` model.
+
+    Args:
+        start_date: the beginning of the time period of the device identifiers summary (inclusive)
+        end_date: the end of the time period of the device identifiers summary (inclusive)
+
+    Returns:
+        device identifiers summary for a given time period
+    """
+    return legacy_models.LegacyPatientDeviceIdentifier.objects.filter(
+        last_updated__date__gte=start_date,
+        last_updated__date__lte=end_date,
+    ).aggregate(
+        total=models.Count('patient_device_identifier_ser_num'),
+        iOS=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=0),
+        ),
+        android=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=1),
+        ),
+        browser=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=3),
+        ),
     )
