@@ -334,6 +334,9 @@ def test_create_patient_hospitalpatients_error() -> None:
             ],
         )
 
+        assert Patient.objects.count() == 1
+        assert HospitalPatient.objects.count() == 0
+
 
 def test_create_caregiver_profile() -> None:
     """A new caregiver profile and caregiver can be created."""
