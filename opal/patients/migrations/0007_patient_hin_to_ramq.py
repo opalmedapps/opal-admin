@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patient',
             name='ramq',
-            field=models.CharField(blank=True, max_length=12, null=True, unique=True, validators=[django.core.validators.MinLengthValidator(12), django.core.validators.RegexValidator('^[A-Z]{4}\\d{8}$', 'First 4 characters should be alphabetic, last 8 characters should be numeric.')], verbose_name='RAMQ Number'),
+            field=models.CharField(blank=True, max_length=12, null=True, unique=True, validators=[django.core.validators.MinLengthValidator(12), django.core.validators.RegexValidator('^[A-Z]{4}\\d{8}', 'First 4 characters should be alphabetic, last 8 characters should be numeric.')], verbose_name='RAMQ Number'),
         ),
     ]
