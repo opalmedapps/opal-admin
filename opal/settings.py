@@ -316,7 +316,7 @@ LOGGING = {
 }
 
 # Set email SMTP server
-# See https://docs.djangoproject.com/en/4.0/topics/email/
+# See https://docs.djangoproject.com/en/dev/topics/email/
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:  # pragma: no cover
