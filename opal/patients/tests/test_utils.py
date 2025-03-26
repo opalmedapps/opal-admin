@@ -186,7 +186,20 @@ def test_valid_relationship_of_self_contain_self_role_type() -> None:
     valid_types = list(
         utils.valid_relationship_types(
             patient,
-            RoleType.SELF,
+        ).values_list('role_type', flat=True),
+    )
+
+    assert RoleType.SELF in valid_types
+    assert RoleType.MANDATARY in valid_types
+
+
+def test_valid_relationship_contain_role_type_being_updated() -> None:
+    """Ensure to include type being updated in the valid types list."""
+    patient = Patient()
+
+    valid_types = list(
+        utils.valid_relationship_types(
+            patient,
         ).values_list('role_type', flat=True),
     )
 

@@ -119,13 +119,12 @@ def search_relationship_types_by_patient_age(date_of_birth: date) -> QuerySet[Re
     return RelationshipType.objects.filter_by_patient_age(patient_age=age)  # type: ignore[no-any-return]
 
 
-def valid_relationship_types(patient: Patient, instance_type: Optional[str] = None) -> QuerySet[RelationshipType]:
+def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
     """
     Get the queryset of valid relationship types according to the patient's age and existing self role.
 
     Args:
         patient: Patient object
-        instance_type: type of the relationship to exclude it from validation in case it is `self`
 
     Returns:
         Queryset of valid relationship types
@@ -135,7 +134,7 @@ def valid_relationship_types(patient: Patient, instance_type: Optional[str] = No
     if Relationship.objects.filter(
         patient=patient,
         type__role_type=RoleType.SELF,
-    ).exists() and instance_type != RoleType.SELF:
+    ).exists():
         return relationship_types_queryset.exclude(role_type=RoleType.SELF)
 
     return relationship_types_queryset

@@ -1008,9 +1008,14 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.type,
             ),
         })
-        # exclude the instance of roletype self from this validation
-        relationship_type = self.instance.type.role_type
-        available_choices = utils.valid_relationship_types(self.instance.patient, instance_type=relationship_type)
+
+        available_choices = utils.valid_relationship_types(self.instance.patient)
+
+        # get the RelationshipType record that corresponds to the instance
+        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+
+        # combine the instance value and with the valid relationshiptypes
+        available_choices |= existing_choice
 
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
