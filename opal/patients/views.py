@@ -39,16 +39,17 @@ from .tables import (
 )
 
 
-class RelationshipTypeListView(SingleTableView):
+class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     table_class = RelationshipTypeTable
     ordering = ['pk']
     template_name = 'patients/relationship_type/list.html'
 
 
-class RelationshipTypeCreateUpdateView(CreateUpdateView):
+class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
     """
     This `CreateView` displays a form for creating an `RelationshipType` object.
 
@@ -56,12 +57,13 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
     """
 
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/form.html'
     form_class = RelationshipTypeUpdateForm
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class RelationshipTypeDeleteView(generic.edit.DeleteView):
+class RelationshipTypeDeleteView(PermissionRequiredMixin, generic.edit.DeleteView):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
 
@@ -70,7 +72,10 @@ class RelationshipTypeDeleteView(generic.edit.DeleteView):
     If this view is fetched via **GET**, it will display a confirmation page with a form that POSTs to the same URL.
     """
 
+    # see: https://github.com/typeddjango/django-stubs/issues/1227#issuecomment-1311472749
+    object: RelationshipType  # noqa: A003
     model = RelationshipType
+    permission_required = ('patients.can_manage_relationshiptypes',)
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
 

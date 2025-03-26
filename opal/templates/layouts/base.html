@@ -94,12 +94,14 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{% url 'patients:relationshiptype-list' %}" class="nav-link">
-                  <i class="nav-icon fas fa-people-arrows"></i>
-                  <p class="text">{% translate "Relationship Types" %}</p>
-                </a>
-              </li>
+              {% if perms.patients.can_manage_relationshiptypes %}
+                <li class="nav-item">
+                  <a href="{% url 'patients:relationshiptype-list' %}" class="nav-link">
+                    <i class="nav-icon fas fa-people-arrows"></i>
+                    <p class="text">{% translate "Relationship Types" %}</p>
+                  </a>
+                </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="{% url 'patients:access-request' %}" class="nav-link">
                   <i class="nav-icon fas fa-user-lock"></i>
