@@ -16,10 +16,11 @@ if TYPE_CHECKING:
     from rest_framework.views import APIView
 
 
-class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
+class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     """
-    Custom DRF `DjangoModelPermissions` permission which is more restrictive.
+    Full Django model permissions.
 
+    Enhances DRF's `DjangoModelPermissions` permission class to be fully restrictive.
     Restricts GET operations to require the `view` permission on the model.
 
     See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
@@ -28,8 +29,8 @@ class CustomDjangoModelPermissions(permissions.DjangoModelPermissions):
     # taken from DjangoModelPermissions and added the permission for GET
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
-        'OPTIONS': [],
-        'HEAD': [],
+        'OPTIONS': ['%(app_label)s.view_%(model_name)s'],
+        'HEAD': ['%(app_label)s.view_%(model_name)s'],
         'POST': ['%(app_label)s.add_%(model_name)s'],
         'PUT': ['%(app_label)s.change_%(model_name)s'],
         'PATCH': ['%(app_label)s.change_%(model_name)s'],
