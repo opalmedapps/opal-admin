@@ -1021,8 +1021,6 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         else:
             context_data['cancel_url'] = default_success_url
 
-        patient_queryset = Patient.objects.filter(pk=self.get_object().patient.pk)
-        context_data['patient_table'] = tables.PatientTable(patient_queryset)
         return context_data
 
     def get_success_url(self) -> str:  # noqa: WPS615
