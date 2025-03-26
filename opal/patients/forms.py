@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, ButtonHolder, Column, Layout, Row, Submit
+from crispy_forms.layout import ButtonHolder, Column, Hidden, Layout, Row, Submit
 
 from ..core import validators
 from ..core.form_layouts import CancelButton
@@ -549,6 +549,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
         required=False,
     )
+    prev_url = forms.CharField(
+        widget=forms.widgets.HiddenInput(),
+        required=False,
+    )
 
     class Meta:
         model = Relationship
@@ -557,6 +561,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'end_date',
             'status',
             'reason',
+            'prev_url',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -568,24 +573,22 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        # this html is to use cancel_url passed by the view or re-submit search query in prev_url if available
-        select_return_url = '{% if prev_url %} {{prev_url}} {% else %} {{cancel_url}} {% endif %}'
-        injected_html = "<a class='btn btn-secondary' href=%(url)s>%(translation)s</a>" % \
-                        {'url': select_return_url, 'translation': _('Cancel')}  # noqa: WPS318, WPS323, N400
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
             )
         ]
+
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
             'end_date',
             'status',
             'reason',
+            Hidden('prev_url', '{{prev_url}}'),
             FormActions(
                 Submit('submit', _('Save'), css_class='btn btn-primary'),
-                HTML(injected_html),
+                CancelButton('{{prev_url}}'),
             ),
         )
 

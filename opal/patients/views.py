@@ -564,7 +564,6 @@ class SearchRelationshipUpdateView(UpdateView[Relationship, ModelForm[Relationsh
     template_name = 'patients/relationships-search/form.html'
     # re-use same RelationshipAccessForm
     form_class = RelationshipAccessForm
-    success_url = reverse_lazy('patients:relationships-search')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """
@@ -580,8 +579,22 @@ class SearchRelationshipUpdateView(UpdateView[Relationship, ModelForm[Relationsh
         # to pass url to crispy form to be able to re-use the same form for different purposes
         context['cancel_url'] = reverse_lazy('patients:relationships-search')
         # provide previous link with parameters to update on clicking cancel button
-        context['prev_url'] = self.request.META.get('HTTP_REFERER')
+        if self.request.META.get('HTTP_REFERER'):
+            context['prev_url'] = self.request.META.get('HTTP_REFERER')
+        else:
+            context['prev_url'] = context['cancel_url']
         return context
+
+    def get_success_url(self) -> Any:
+        """
+        Provide the correct `success_url` to re-submit search results or default success_url.
+
+        Returns:
+            the success url link
+        """
+        if self.request.POST['prev_url']:
+            return self.request.POST['prev_url']
+        return reverse_lazy('patients:relationships-search')
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
