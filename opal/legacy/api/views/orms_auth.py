@@ -10,8 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from opal.users.api.serializers import UserCaregiverUpdateSerializer
-from opal.users.models import Caregiver
+from opal.users.api.serializers import ClinicalStaffDetailSerializer
 
 
 class ORMSLoginView(LoginView):
@@ -73,8 +72,6 @@ class ORMSValidateView(APIView):
             raise PermissionDenied()
 
         return Response(
-            UserCaregiverUpdateSerializer(
-                Caregiver.objects.first(),
-            ).data,
+            data=ClinicalStaffDetailSerializer(user).data,
             status=status.HTTP_200_OK,
         )

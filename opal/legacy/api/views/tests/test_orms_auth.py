@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.contrib.auth.models import AbstractUser, Group
 from django.urls import reverse
 
@@ -166,8 +164,9 @@ class TestORMSValidateView:
         admin_user.groups.add(orms_group)
         admin_user.save()
 
-        response = api_client.get(reverse('api:orms-validate'))
-        assert response.status_code == HTTPStatus.OK
+        response = api_client.get(reverse('api:orms-validate'), format='json')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == {'username': 'admin'}
 
     def test_orms_validate_session_no_permission(
         self,
