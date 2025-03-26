@@ -18,6 +18,8 @@ def test_migration_relationshiptype_prepopulate(migrator: Migrator) -> None:
     assert prepopulated_type_self.count() == 1
     assert prepopulated_type_parent.count() == 1
 
+    migrator.reset()
+
 
 def test_migration_relationshiptype_reverse(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
@@ -31,3 +33,5 @@ def test_migration_relationshiptype_reverse(migrator: Migrator) -> None:
 
     assert not prepopulated_type_self
     assert not prepopulated_type_parent
+
+    migrator.reset()
