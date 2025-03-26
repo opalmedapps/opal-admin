@@ -46,7 +46,7 @@ openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
-plotly==5.18.0  # https://pypi.org/project/plotly/
+plotly==5.19.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
@@ -59,3 +59,7 @@ fpdf2==2.7.8
 # Unidecode for transliterating special characters during de-identification
 #
 unidecode==1.3.8  # https://pypi.org/project/Unidecode/
+
+# HL7 Python Parsing Library
+#
+hl7apy==1.3.4  # https://pypi.org/project/hl7apy/

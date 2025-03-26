@@ -86,6 +86,35 @@ build image:
         docker push $IMAGE_COMMIT
       fi
 
+# Run additional Repository X-Ray job to enhance code suggestions with additional context
+# https://docs.gitlab.com/ee/user/project/repository/code_suggestions/repository_xray.html
+xray:
+  stage: Build
+  image: registry.gitlab.com/gitlab-org/code-creation/repository-x-ray:latest
+  allow_failure: true
+  rules:
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    OUTPUT_DIR: reports
+  # replace default before_script section
+  before_script:
+    - uname -a
+    - x-ray-scan -version
+  script:
+    # x-ray-scan currently requires the requirements.txt file
+    # it also doesn't support references to other requirements files yet
+    # see: https://gitlab.com/gitlab-org/code-creation/repository-x-ray/-/issues/21
+    # prepare a single requirements.txt that contains all relevant dependencies
+    - mv requirements/base.txt requirements.txt
+    # remove the first line ("-r ...")
+    - tail -n +2 requirements/development.txt >> requirements.txt
+    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
+  artifacts:
+    reports:
+      repository_xray: "$OUTPUT_DIR/*/*.json"
+    paths:
+      - "$OUTPUT_DIR/*/*.json"
+
 flake8:
   stage: Static Analysis
   extends:
