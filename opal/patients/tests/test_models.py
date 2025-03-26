@@ -189,7 +189,7 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 
     HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
     HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
-    hospitalpatients = Site.objects.all()
+    hospitalpatients = HospitalPatient.objects.all()
     assert len(hospitalpatients) == 2
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
