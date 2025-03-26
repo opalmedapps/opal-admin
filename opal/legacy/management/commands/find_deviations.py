@@ -34,9 +34,7 @@ LEGACY_PATIENT_QUERY = """
         ) As AccessLevel,
         P.DeathDate as DeathDate
     FROM PatientControl PC
-    LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum
-    LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
-    WHERE U.UserType <> "Caregiver";
+    LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum;
 """  # noqa: WPS323
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
@@ -50,17 +48,16 @@ LEGACY_HOSPITAL_PATIENT_QUERY = """
 
 LEGACY_CAREGIVER_QUERY = """
     SELECT
-        PatientSerNum AS LegacyID,
-        FirstName AS FirstName,
-        LastName AS LastName,
-        CONVERT(TelNum, CHAR) AS Phone,
-        LOWER(Email) AS Email,
-        LOWER(Language) AS Language,
+        P.PatientSerNum AS LegacyID,
+        P.FirstName AS FirstName,
+        P.LastName AS LastName,
+        CONVERT(P.TelNum, CHAR) AS Phone,
+        LOWER(P.Email) AS Email,
+        LOWER(P.Language) AS Language,
         U.Username as Username
     FROM Users U
-    LEFT JOIN Patient P ON P.PatientSerNum = U.UserTypeSerNum
-    WHERE U.UserType = "Caregiver";
-"""  # noqa: WPS323
+    LEFT JOIN Patient P ON P.PatientSerNum = U.UserTypeSerNum;
+"""
 
 DJANGO_PATIENT_QUERY = """
     SELECT
@@ -73,7 +70,7 @@ DJANGO_PATIENT_QUERY = """
         PP.data_access As AccessLevel,
         PP.date_of_death as DeathDate
     FROM patients_patient PP
-    WHERE PP.legacy_id <> '' AND PP.legacy_id IS NOT NULL;
+    WHERE PP.legacy_id IS NOT NULL;
 """  # noqa: WPS323
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
@@ -97,10 +94,8 @@ DJANGO_CAREGIVER_QUERY = """
         LOWER(UU.language) AS Language,
         UU.username as Username
     FROM caregivers_caregiverprofile CC
-    LEFT JOIN patients_relationship PR ON CC.id = PR.caregiver_id
     LEFT JOIN users_user UU ON CC.user_id = UU.id
-    WHERE PR.type_id <> 1 AND CC.legacy_id <> '' AND CC.legacy_id IS NOT NULL
-    GROUP BY CC.legacy_id;
+    WHERE CC.legacy_id IS NOT NULL;
 """  # noqa: WPS323
 
 
