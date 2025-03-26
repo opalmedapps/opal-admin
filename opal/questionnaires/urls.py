@@ -29,13 +29,13 @@ urlpatterns = [
         name='reports-detail',
     ),
     path(
-        'reports/downloadcsv/',
+        'reports/download-csv/',
         views.QuestionnaireReportDownloadCSVTemplateView.as_view(),
-        name='reports-downloadcsv',
+        name='reports-download-csv',
     ),
     path(
-        'reports/downloadxlsx/',
+        'reports/download-xlsx/',
         views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
-        name='reports-downloadxlsx',
+        name='reports-download-xlsx',
     ),
 ]

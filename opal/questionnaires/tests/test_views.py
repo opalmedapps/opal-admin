@@ -102,7 +102,7 @@ def test_get_viewreport_unauthorized(user_client: Client, admin_user: AbstractUs
 def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-downloadcsv'))
+    response = user_client.get(reverse('questionnaires:reports-download-csv'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -110,6 +110,6 @@ def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user
 def test_get_downloadxlsx_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-downloadxlsx'))
+    response = user_client.get(reverse('questionnaires:reports-download-xlsx'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED

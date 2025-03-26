@@ -25,11 +25,11 @@ def test_reports_detail() -> None:
 
 def test_reports_downloadcsv() -> None:
     """Ensure exportreports downloadcsv is defined."""
-    assert reverse('questionnaires:reports-downloadcsv') == '/questionnaires/reports/downloadcsv/'
-    assert resolve('/questionnaires/reports/downloadcsv/').view_name == 'questionnaires:reports-downloadcsv'
+    assert reverse('questionnaires:reports-download-csv') == '/questionnaires/reports/download-csv/'
+    assert resolve('/questionnaires/reports/download-csv/').view_name == 'questionnaires:reports-download-csv'
 
 
 def test_reports_downloadxlsx() -> None:
     """Ensure exportreports downloadxlsx is defined."""
-    assert reverse('questionnaires:reports-downloadxlsx') == '/questionnaires/reports/downloadxlsx/'
-    assert resolve('/questionnaires/reports/downloadxlsx/').view_name == 'questionnaires:reports-downloadxlsx'
+    assert reverse('questionnaires:reports-download-xlsx') == '/questionnaires/reports/download-xlsx/'
+    assert resolve('/questionnaires/reports/download-xlsx/').view_name == 'questionnaires:reports-download-xlsx'

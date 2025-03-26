@@ -1,7 +1,6 @@
 """This module provides views for questionnaire settings."""
 import datetime
 import logging
-import os
 from http import HTTPStatus
 from typing import Any
 
@@ -146,7 +145,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
 
         """
         qid = request.POST.get('questionnaireid')
-        path = os.path.join(settings.MEDIA_ROOT, 'questionnaire-files')
+        path = settings.REPORT_FILE_PATH
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
         filename_long = smart_str(f'{path}/{filename}')
@@ -190,7 +189,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         qid = request.POST.get('questionnaireid')
         tabs = request.POST.get('tabs')
 
-        path = os.path.join(settings.MEDIA_ROOT, 'questionnaire-files')
+        path = settings.REPORT_FILE_PATH
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         filename_long = smart_str(f'{path}/{filename}')
