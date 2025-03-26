@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -54,20 +55,20 @@ class UserViewSet(
 
         Args:
             request: Http request.
-            username: user username.
+            username: user's username.
 
         Returns:
-            Http response with response details.
+            HTTP response with response details.
+
+        Raises:
+            NotFound: if admin group is not found.
         """
-        try:
-            clinicalstaff_user = ClinicalStaff.objects.get(username=username)
-        except ObjectDoesNotExist:
-            return Response({'detail': _('user not found.')}, status=HTTPStatus.NOT_FOUND)
+        clinicalstaff_user = self.get_object()
 
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            return Response({'detail': _('manager group not found.')}, status=HTTPStatus.NOT_FOUND)
+            raise NotFound(_('manager group not found.'))
 
         clinicalstaff_user.groups.add(group.pk)
         clinicalstaff_user.save()
@@ -82,20 +83,20 @@ class UserViewSet(
 
         Args:
             request: Http request.
-            username: user username.
+            username: user's username.
 
         Returns:
-            Http response with response details.
+            HTTP response with response details.
+
+        Raises:
+            NotFound: if admin group is not found.
         """
-        try:
-            clinicalstaff_user = ClinicalStaff.objects.get(username=username)
-        except ObjectDoesNotExist:
-            return Response({'detail': _('user not found.')}, status=HTTPStatus.NOT_FOUND)
+        clinicalstaff_user = self.get_object()
 
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            return Response({'detail': _('manager group not found.')}, status=HTTPStatus.NOT_FOUND)
+            raise NotFound(_('manager group not found.'))
 
         clinicalstaff_user.groups.remove(group.pk)
         clinicalstaff_user.save()
