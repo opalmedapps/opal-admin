@@ -129,7 +129,7 @@ urlpatterns = [
         name='patients-data-quantity-create',
     ),
     path(
-        'patient/exists',
+        'patients/exists',
         patient_views.PatientExistsView.as_view(),
         name='patient-exists',
     ),

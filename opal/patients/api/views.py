@@ -24,6 +24,7 @@ from ..api.serializers import (
     HospitalPatientSerializer,
     PatientDemographicSerializer,
     PatientExistsSerializer,
+    PatientSerializer,
 )
 from ..models import Patient, Relationship
 
@@ -260,7 +261,7 @@ class PatientExistsView(APIView):
 
     def post(self, request: Request) -> Response:
         """
-        Handle POST requests from `patient/exists`.
+        Handle POST requests from `patients/exists`.
 
         Args:
             request: List of mrn & site dictionary objects
@@ -279,7 +280,6 @@ class PatientExistsView(APIView):
             try:
                 patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
             except (ObjectDoesNotExist, MultipleObjectsReturned):
-                # Raise `NotFound` if `Patient` object is empty or multiple found
                 raise NotFound(
                     detail='{0} {1}'.format(
                         'Cannot find patient record with the provided MRNs and sites or',
@@ -287,7 +287,7 @@ class PatientExistsView(APIView):
                     ),
                 )
             return Response(
-                data={'uuid': str(patient.uuid), 'legacy_id': patient.legacy_id},
+                data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -865,7 +865,7 @@ class TestPatientCaregiversView:
 
 
 class TestApiPatientExists:
-    """Test class tests the api patient/exists."""
+    """Test class tests the api patients/exists."""
 
     input_data_cases = {
         'valid': [{'site_code': 'RVH', 'mrn': '9999996'}, {'site_code': 'LAC', 'mrn': '0765324'}],
