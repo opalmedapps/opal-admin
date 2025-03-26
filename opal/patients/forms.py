@@ -471,18 +471,15 @@ class ExistingUserForm(forms.Form):
             self.add_error('user_phone', phone_error_msg)
             is_phone_valid = False
 
-        self._set_requestor_relationship(
-            is_email_valid,
-            is_phone_valid,
-            user_email_field,
-            user_phone_field,
-            error_message,
-        )
+        if is_email_valid and is_phone_valid:
+            self._set_requestor_relationship(
+                user_email_field,
+                user_phone_field,
+                error_message,
+            )
 
-    def _set_requestor_relationship(    # noqa: WPS211
+    def _set_requestor_relationship(
         self,
-        is_email_valid: bool,
-        is_phone_valid: bool,
         user_email_field: Any,
         user_phone_field: Any,
         error_message: str,
@@ -494,8 +491,6 @@ class ExistingUserForm(forms.Form):
         If yes, show user details.
 
         Args:
-            is_email_valid: email address is valid by default
-            is_phone_valid: phone number is valid by default
             user_email_field: cleaned data for user email
             user_phone_field: cleaned data for phone number
             error_message: error message if the caregiver does not exist
@@ -504,11 +499,10 @@ class ExistingUserForm(forms.Form):
             ValidationError: If the caregiver cannot be found.
         """
         # Search user info by both email and phone number in our django User model
-        if is_email_valid and is_phone_valid:
-            try:
-                user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
-            except Caregiver.DoesNotExist:
-                raise ValidationError(error_message)
+        try:
+            user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
+        except Caregiver.DoesNotExist:
+            raise ValidationError(error_message)
 
         # Check if there is no 'Self' relationship related to this requestor himself/herself
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
