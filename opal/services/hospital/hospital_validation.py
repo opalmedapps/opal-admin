@@ -111,16 +111,15 @@ class OIEValidator:
         elif status == 'error':
             print(response_data)
             if patient_data and 'exception' in patient_data:
-                errors.append('Could not establish a connection to the hospital interface.')
+                errors.append('connection_error')
             message: str = response_data.get('message')
 
             if message:
-                # hard-code better error messages for now
                 # TODO: improve
-                friendly_message = message.replace('Patient 00000000null not found', 'Patient could not be found')
+                friendly_message = message.replace('Patient 00000000null not found', 'not_found')
                 friendly_message = friendly_message.replace(
                     'Not Opal test patient',
-                    'The patient is not an Opal test patient',
+                    'no_test_patient',
                 )
                 errors.append(friendly_message)
         return errors

@@ -376,7 +376,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
+                'message': 'connection_error.',
             },
         },
     )
@@ -449,7 +449,7 @@ def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
+                'message': 'connection_error',
             },
         },
     )
@@ -496,7 +496,7 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'error',
-            'data': {'message': 'Patient could not be found'},
+            'data': {'message': 'not_found'},
         },
     )
 
@@ -508,6 +508,7 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
 
     assert not form.is_valid()
     assert form.patient is None
+    print(form.errors)
     assert form.non_field_errors()[0] == 'No patient could be found.'
 
 

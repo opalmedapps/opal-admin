@@ -429,7 +429,7 @@ def test_find_by_mrn_patient_not_found(mocker: MockerFixture) -> None:
 
     response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'error'
-    assert response['data']['message'] == ['Patient could not be found']
+    assert response['data']['message'] == ['not_found']
 
 
 def test_find_by_mrn_patient_not_test_patient(mocker: MockerFixture) -> None:
@@ -445,7 +445,7 @@ def test_find_by_mrn_patient_not_test_patient(mocker: MockerFixture) -> None:
 
     response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
     assert response['status'] == 'error'
-    assert response['data']['message'] == ['The patient is not an Opal test patient']
+    assert response['data']['message'] == ['no_test_patient']
 
 
 def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
@@ -461,7 +461,7 @@ def test_find_by_ramq_patient_not_found(mocker: MockerFixture) -> None:
 
     response = oie_service.find_patient_by_ramq('SIMM86100199')
     assert response['status'] == 'error'
-    assert response['data']['message'] == ['Patient could not be found']
+    assert response['data']['message'] == ['not_found']
 
 
 @patch('requests.post')
@@ -479,7 +479,7 @@ def test_find_patient_by_mrn_failure(post_mock: MagicMock, caplog: LogCaptureFix
     # assert user error message
     assert response['status'] == 'error'
     assert response['data'] == {
-        'message': ['Could not establish a connection to the hospital interface.'],
+        'message': ['connection_error'],
         'responseData': {
             'status': 'error',
             'data': {
@@ -603,7 +603,7 @@ def test_find_patient_by_ramq_failure(post_mock: MagicMock, caplog: LogCaptureFi
     # assert user error message
     assert response['status'] == 'error'
     assert response['data'] == {
-        'message': ['Could not establish a connection to the hospital interface.'],
+        'message': ['connection_error'],
         'responseData': {
             'status': 'error',
             'data': {
