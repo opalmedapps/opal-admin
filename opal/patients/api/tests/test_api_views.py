@@ -15,8 +15,8 @@ from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.users.factories import User
 from opal.patients.models import RelationshipType, RoleType
+from opal.users.factories import User
 
 pytestmark = pytest.mark.django_db
 
