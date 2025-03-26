@@ -27,6 +27,7 @@ def test_caregiverprofile_factory_multiple() -> None:
     profile2 = factories.CaregiverProfile()
 
     assert profile.user != profile2.user
+    assert profile.uuid != profile2.uuid
 
 
 def test_caregiverprofile_str() -> None:
