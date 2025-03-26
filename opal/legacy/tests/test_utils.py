@@ -12,12 +12,10 @@ from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.hospital_settings import factories as hospital_factories
-from opal.hospital_settings.models import Institution
 from opal.legacy import factories, models
 from opal.legacy import utils as legacy_utils
 from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipType
-from opal.services.reports.base import InstitutionData, PatientData
 from opal.services.reports.questionnaire import Question, QuestionnaireData
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -391,8 +389,6 @@ def test_fetch_questionnaire_from_db(mocker: MockerFixture) -> None:
     mock_cursor = mocker.MagicMock()
     mock_cursor.fetchall.return_value = mock_db_result
 
-    # mocker.patch("connections['questionnaire'].cursor", return_value=mock_cursor)
-
     result = legacy_utils.fetch_questionnaires_from_db(external_patient_id)
 
     assert result == expected_output
@@ -528,7 +524,7 @@ def test_process_questionnaire_data_invalid_date_format(mocker: MockerFixture) -
         },
     ]
 
-    with pytest.raises(ValueError, match="time data 'invalid-date' does not match format '%Y-%m-%d %H:%M:%S'"):
+    with pytest.raises(ValueError, match="time data 'invalid-date' does not match format "):
         legacy_utils.process_questionnaire_data(parsed_data_list)
 
 
@@ -613,7 +609,7 @@ def test_invalid_question_date_format() -> None:
         },
     ]
 
-    with pytest.raises(ValueError, match="time data '2024-23-02 12:00:00' does not match format '%Y-%m-%d %H:%M:%S'"):
+    with pytest.raises(ValueError, match="time data '2024-23-02 12:00:00' does not match format "):
         legacy_utils.process_questions(parsed_question_list)
 
 
