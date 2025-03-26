@@ -1010,7 +1010,7 @@ class ManageCaregiverAccessForm(forms.Form):
             site.initial = Site.objects.first()
 
 
-class ManageCaregiverAccessUserForm(forms.ModelForm[Caregiver]):
+class ManageCaregiverAccessUserForm(forms.ModelForm[User]):
     """Form for updating a `Caregiver` object."""
 
     class Meta:
