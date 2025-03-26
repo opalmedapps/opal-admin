@@ -139,7 +139,7 @@ class Patient(models.Model):
             ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
-                check=models.Q(date_of_birth__lt=models.F('date_of_death')),
+                check=models.Q(date_of_birth__lte=models.F('date_of_death')),
             ),
         ]
 

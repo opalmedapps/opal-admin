@@ -116,7 +116,7 @@ msgstr "Patient"
 
 #: opal/patients/models.py
 msgid "Date of death cannot be earlier than date of birth."
-msgstr "Date de décès ne peut pas être antérieure à la date de naissance."
+msgstr "Date de décès ne peut pas précéder la date de naissance."
 
 #: opal/patients/models.py
 msgid "Pending"
