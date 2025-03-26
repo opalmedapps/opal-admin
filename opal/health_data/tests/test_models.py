@@ -4,8 +4,10 @@ from django.db import IntegrityError
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 
+from opal.patients.factories import Patient
+
 from .. import factories
-from ..models import QuantitySample, QuantitySampleType
+from ..models import HealthDataStore, QuantitySample, QuantitySampleType
 
 pytestmark = pytest.mark.django_db()
 
@@ -38,6 +40,14 @@ def test_healthdatastore_unique_per_patient() -> None:
     constraint_name = 'health_data_healthdatastore_unique_patient'
     with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
         data_store2.save()
+
+
+def test_healthdatastore_created() -> None:
+    """Ensure the HealthDataStore instance is created automatically for a new patient."""
+    patient = Patient()
+
+    assert HealthDataStore.objects.count() == 1
+    assert HealthDataStore.objects.all()[0].patient == patient
 
 
 def test_quantitysample_factory() -> None:
