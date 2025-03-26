@@ -993,7 +993,7 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
     relationship_types = list(
         RelationshipType.objects.filter(
             role_type__in=enabled_options,
-        ).values_list('name', flat=True),
+        ).values_list('name', flat=True).reverse(),
     )
 
     patient = OIE_PATIENT_DATA._asdict()
@@ -1036,7 +1036,7 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
                 RoleType.GUARDIAN_CAREGIVER,
                 RoleType.PARENT_GUARDIAN,
             ],
-        ).values_list('name', flat=True),
+        ).values_list('name', flat=True).reverse(),
     )
 
     assert disabled_options == disabled_types
