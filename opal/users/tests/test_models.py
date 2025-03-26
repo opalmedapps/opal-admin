@@ -7,7 +7,7 @@ from django.db.utils import IntegrityError
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 
-from config.settings.base import ADMIN_GROUP_NAME
+from config.settings.base import ADMIN_GROUP_NAME, ORMS_GROUP_NAME
 
 from .. import factories
 from ..models import Caregiver, ClinicalStaff, User, UserType
@@ -219,6 +219,77 @@ def test_user_admin_group_remove_signal() -> None:
     # add user to admin group
     clinical_staff.groups.add(admingroup)
     # remove user from admin group
+    clinical_staff.groups.remove(admingroup)
+
+    # assert that properties are deactivated
+    assert not clinical_staff.is_superuser
+    assert not clinical_staff.is_staff
+
+
+def test_user_group_add_not_change_status() -> None:
+    """User properties `is_staff` and `is_superuser` are not changed when another group is added."""
+    # create a user
+    clinical_staff = factories.User()
+    clinical_staff.is_superuser = True
+    clinical_staff.is_staff = True
+    # create a group
+    group = factories.Group(name=ORMS_GROUP_NAME)
+    group.save()
+    # add user to admin group
+    clinical_staff.groups.add(group)
+
+    # assert that properties are deactivated
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+
+def test_user_group_remove_not_change_status() -> None:
+    """User properties `is_staff` and `is_superuser` are not changed when another group is removed."""
+    # create a user
+    clinical_staff = factories.User()
+    clinical_staff.is_superuser = True
+    clinical_staff.is_staff = True
+    # create a group
+    group = factories.Group(name=ORMS_GROUP_NAME)
+    group.save()
+    # add user to admin group
+    clinical_staff.groups.add(group)
+    clinical_staff.groups.remove(group)
+
+    # assert that properties are deactivated
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+
+def test_user_group_remove_add_multiple_groups() -> None:  # noqa: WPS213
+    """User properties `is_staff` and `is_superuser` changed when multiple groups are added and removed."""
+    # create a user
+    clinical_staff = factories.User()
+    # create a group
+    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
+    ormsgroup = factories.Group(name=ORMS_GROUP_NAME)
+    testgroup = factories.Group(name='test_group')
+    # add user to admin group
+    admingroup.save()
+    ormsgroup.save()
+    testgroup.save()
+
+    clinical_staff.groups.add(admingroup)
+    clinical_staff.groups.add(ormsgroup)
+    clinical_staff.groups.add(testgroup)
+
+    # assert that properties are activated
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+    clinical_staff.groups.remove(ormsgroup)
+    clinical_staff.groups.remove(testgroup)
+
+    # assert that properties are activated
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+    clinical_staff.groups.add(testgroup)
     clinical_staff.groups.remove(admingroup)
 
     # assert that properties are deactivated
