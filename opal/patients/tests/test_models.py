@@ -244,6 +244,7 @@ def test_relationship_factory_multiple() -> None:
     """Ensure the Relationship factory can build multiple default model instances."""
     relationship = factories.Relationship()
     relationship2 = factories.Relationship()
+    relationship2.full_clean()
 
     assert relationship != relationship2
     assert relationship.patient == relationship2.patient
@@ -302,6 +303,21 @@ def test_relationship_status_constraint() -> None:
     constraint_name = 'patients_relationship_status_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):
         relationship.save()
+
+
+def test_relationship_forbid_multiple_self() -> None:
+    """Ensure that a patient can only have one self-relationship."""
+    self_type = RelationshipType.objects.get(role_type=RoleType.SELF)
+
+    relationship = factories.Relationship(type=self_type)
+    # create a relationship with a new relationship type
+    relationship2 = factories.Relationship(patient=relationship.patient)
+    relationship2.full_clean()
+
+    relationship2.type = self_type
+
+    with assertRaisesMessage(ValidationError, 'There is already a caregiver with a self-relationship to the patient'):
+        relationship2.full_clean()
 
 
 def test_hospitalpatient_factory() -> None:

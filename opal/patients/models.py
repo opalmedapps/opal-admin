@@ -392,6 +392,15 @@ class Relationship(models.Model):
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
+        if self.type.role_type == RoleType.SELF:
+            if Relationship.objects.filter(
+                patient=self.patient,
+                type__role_type=RoleType.SELF,
+            ).exists():
+                raise ValidationError({
+                    'type': _('There is already a caregiver with a self-relationship to the patient'),
+                })
+
     @classmethod
     def valid_statuses(cls, current: RelationshipStatus) -> list[RelationshipStatus]:
         """
