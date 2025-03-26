@@ -4,8 +4,8 @@ import requests
 from pytest_mock.plugin import MockerFixture
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
-from opal.services.hospital.hospital_error import OIEErrorHandler
 
 ENCODING = 'utf-8'
 
@@ -25,7 +25,7 @@ def _create_response_data() -> dict[str, str]:
 
 def test_init() -> None:
     """Ensure init function creates error handler (a.k.a., error helper service)."""
-    assert isinstance(communication_manager.error_handler, OIEErrorHandler)
+    assert isinstance(communication_manager.error_handler, ServiceErrorHandler)
     assert communication_manager.error_handler is not None
 
 

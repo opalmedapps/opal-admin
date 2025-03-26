@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-16 19:42+0300\n"
+"POT-Creation-Date: 2023-09-26 18:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: config/settings/base.py
+msgid "English"
+msgstr "Anglais"
+
+#: config/settings/base.py
+msgid "French"
+msgstr "Français"
+
+#: config/urls.py
+msgid "Opal Management"
+msgstr "Administration d'Opal"
+
+#: config/urls.py
+msgid "Opal Backend Admin"
+msgstr "Administrateur principal d'Opal"
+
 #: opal/core/forms/layouts.py
 msgid "Submit"
 msgstr "Soumettre"
@@ -25,6 +41,34 @@ msgstr "Soumettre"
 #: opal/core/forms/layouts.py
 msgid "Reset"
 msgstr "Réinitialiser"
+
+#: opal/core/models.py
+msgid "Street Name"
+msgstr "Nom de rue"
+
+#: opal/core/models.py
+msgid "Street Number"
+msgstr "Numéro de rue"
+
+#: opal/core/models.py
+msgid "Postal Code"
+msgstr "Code Postal"
+
+#: opal/core/models.py
+msgid "City"
+msgstr "Ville"
+
+#: opal/core/models.py
+msgid "Province Code"
+msgstr "Code provincial"
+
+#: opal/core/models.py
+msgid "Contact Telephone"
+msgstr "Téléphone de Contact"
+
+#: opal/core/models.py
+msgid "Contact Fax"
+msgstr "Télécopieur"
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
@@ -43,14 +87,6 @@ msgstr ""
 #: opal/core/views.py
 msgid "OpalAdmin v2"
 msgstr "OpalAdmin v2"
-
-#: opal/settings.py
-msgid "English"
-msgstr "Anglais"
-
-#: opal/settings.py
-msgid "French"
-msgstr "Français"
 
 #: opal/templates/base.html
 msgid "Opal Health Informatics Group"
@@ -196,11 +232,3 @@ msgstr "Modifier"
 #: opal/templates/tables/action_column.html
 msgid "Delete"
 msgstr "Supprimer"
-
-#: opal/urls.py
-msgid "Opal Management"
-msgstr "Administration d'Opal"
-
-#: opal/urls.py
-msgid "Opal Backend Admin"
-msgstr "Administrateur principal d'Opal"

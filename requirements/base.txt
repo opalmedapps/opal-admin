@@ -34,6 +34,7 @@ argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.31.0  # https://github.com/psf/requests
 # required for ImageFields
 Pillow==10.0.0  # https://pypi.org/project/Pillow
+whitenoise==6.5.0  # http://whitenoise.evans.io/en/stable/index.html
 
 # Export Report functionality
 #
@@ -42,8 +43,12 @@ openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
-plotly==5.16.1  # https://pypi.org/project/plotly/
+plotly==5.17.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
 twilio==8.8.0  # https://github.com/twilio/twilio-python
+
+# fpdf2 for generating PDF documents
+#
+fpdf2==2.7.5

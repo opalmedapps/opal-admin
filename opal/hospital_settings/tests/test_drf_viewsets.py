@@ -46,7 +46,7 @@ def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_us
     assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
 
 
-def test_api_institution_retrieve(api_client: APIClient, admin_user: User) -> None:
+def test_api_institutions_retrieve(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can be retrieved."""
     api_client.force_login(user=admin_user)
     institution = factories.Institution()
@@ -87,8 +87,8 @@ def test_api_site_list(api_client: APIClient, admin_user: User) -> None:
     response = api_client.get(reverse('api:sites-list'))
 
     assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 1
-    assert response.data['results'][0]['id'] == site.pk
+    assert len(response.data) == 1
+    assert response.data[0]['id'] == site.pk
 
 
 def test_api_site_retrieve(api_client: APIClient, admin_user: User) -> None:

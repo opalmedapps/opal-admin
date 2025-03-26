@@ -2,7 +2,6 @@ from datetime import date
 from http import HTTPStatus
 from typing import Tuple
 
-from django.contrib.auth.models import AbstractUser
 from django.test import Client
 from django.urls.base import reverse
 
@@ -25,27 +24,24 @@ test_url_template_data: list[Tuple] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_questionnaire_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_questionnaire_urls_exist(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page exists at each URL address."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+def test_views_use_correct_template(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page uses appropriate templates."""
-    user_client.force_login(admin_user)
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assertTemplateUsed(response, template)
 
 
-def test_dashboard_empty_profile(user_client: Client, admin_user: AbstractUser) -> None:
+def test_dashboard_empty_profile(admin_client: Client) -> None:
     """Ensure that the dashboard doesnt crash if no profile exists for the user."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports'))
+    response = admin_client.get(reverse('questionnaires:reports'))
     assert response.status_code == HTTPStatus.OK
 
 
@@ -57,6 +53,7 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
     user_client.force_login(test_questionnaire_profile.user)
 
     response = user_client.get(reverse('questionnaires:reports'))
+
     assertContains(response, reverse('questionnaires:reports-filter'))
     assertContains(response, reverse('questionnaires:reports-list'))
 
@@ -69,7 +66,9 @@ def test_dashboard_multi_questionnaire_profile(user_client: Client) -> None:
     user_client.force_login(test_questionnaire_profile.user)
 
     response = user_client.get(reverse('questionnaires:reports'))
+
     assert response.status_code == HTTPStatus.OK
+
     #  Add second questionnaire to list and go back to dashboard page
     QuestionnaireProfile.update_questionnaires_following(
         qid='13',
@@ -77,14 +76,15 @@ def test_dashboard_multi_questionnaire_profile(user_client: Client) -> None:
         user=test_questionnaire_profile.user,
         toggle=True,
     )
+
     response = user_client.get(reverse('questionnaires:reports'))
+
     assert response.status_code == HTTPStatus.OK
 
 
-def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
+def test_filter_report_form_exists(admin_client: Client) -> None:
     """Ensure that a form exists in the reports list page pointing to the filter page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-list'))
+    response = admin_client.get(reverse('questionnaires:reports-list'))
     assertContains(response, reverse('questionnaires:reports-filter'))
 
 
@@ -99,14 +99,13 @@ def test_detail_report_form_exists(user_client: Client) -> None:
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['11']},
     )
+
     assertContains(response, reverse('questionnaires:reports-detail'))
 
 
-def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> None:
+def test_download_forms_exist(admin_client: Client) -> None:
     """Ensure that forms exists in the reports detail page and they point to the two download options."""
-    user_client.force_login(admin_user)
-
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],
@@ -118,24 +117,23 @@ def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> 
             'following': [True],
         },
     )
+
     assertContains(response, reverse('questionnaires:reports-download-csv'))
     assertContains(response, reverse('questionnaires:reports-download-xlsx'))
 
 
-def test_filter_report_invalid_params(user_client: Client, admin_user: AbstractUser) -> None:
+def test_filter_report_invalid_params(admin_client: Client) -> None:
     """Ensure that a post call to filter reports returns error given invalid/missing params."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-filter'),
         data={},
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_detail_report_invalid_params(user_client: Client, admin_user: AbstractUser) -> None:
+def test_detail_report_invalid_params(admin_client: Client) -> None:
     """Ensure that a post call to detail reports returns error given invalid/missing params."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={},
     )
@@ -150,15 +148,14 @@ def test_export_report_hidden_unauthenticated(user_client: Client, django_user_m
     response = user_client.get(reverse('hospital-settings:index'))
 
     export_url = reverse('questionnaires:reports')
+
     assertNotContains(response, f'href="{export_url}"')
 
 
 @pytest.mark.xfail(condition=True, reason='the sidebar menus are removed', strict=True)
-def test_export_report_visible_authenticated(user_client: Client, admin_user: AbstractUser) -> None:
+def test_export_report_visible_authenticated(admin_client: Client) -> None:
     """Ensure that an authenticated user can view the Export Reports page."""
-    user_client.force_login(admin_user)
-
-    response = user_client.get(reverse('hospital-settings:index'))
+    response = admin_client.get(reverse('hospital-settings:index'))
 
     export_url = reverse('questionnaires:reports')
     assertContains(response, f'href="{export_url}"')
@@ -181,50 +178,44 @@ def test_questionnaires_no_menu(user_client: Client, django_user_model: User) ->
     assert not menu_group
 
 
-def test_get_reports_filter_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_reports_filter_unauthorized(admin_client: Client) -> None:
     """Ensure no GET requests can be made to the page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-filter'))
+    response = admin_client.get(reverse('questionnaires:reports-filter'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_get_detail_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_detail_unauthorized(admin_client: Client) -> None:
     """Ensure no GET requests can be made to the page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-detail'))
+    response = admin_client.get(reverse('questionnaires:reports-detail'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_downloadcsv_viewreport_unauthorized(admin_client: Client) -> None:
     """Ensure no GET requests can be made to the page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-download-csv'))
+    response = admin_client.get(reverse('questionnaires:reports-download-csv'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_get_downloadxlsx_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
+def test_get_downloadxlsx_viewreport_unauthorized(admin_client: Client) -> None:
     """Ensure no GET requests can be made to the page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-download-xlsx'))
+    response = admin_client.get(reverse('questionnaires:reports-download-xlsx'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_reportlist_visible_authenticated(user_client: Client, admin_user: AbstractUser) -> None:
+def test_reportlist_visible_authenticated(admin_client: Client) -> None:
     """Ensure that an authenticated user can view the Export Reports page."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-list'))
+    response = admin_client.get(reverse('questionnaires:reports-list'))
 
     assert response.status_code == HTTPStatus.OK
 
 
-def test_report_filter_invalid_key_format(user_client: Client, admin_user: AbstractUser) -> None:
+def test_report_filter_invalid_key_format(admin_client: Client) -> None:
     """Ensure bad request error if bad key format."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-filter'),
         data={'questionnaireid': ['fish']},
     )
@@ -232,10 +223,9 @@ def test_report_filter_invalid_key_format(user_client: Client, admin_user: Abstr
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_report_filter_missing_key(user_client: Client, admin_user: AbstractUser) -> None:
+def test_report_filter_missing_key(admin_client: Client) -> None:
     """Ensure bad request error if missing key."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-filter'),
         data={'badkey': ['11']},
     )
@@ -265,10 +255,9 @@ def test_update_request_event_filter_template(user_client: Client) -> None:
     assert request_event.query_string == q_string
 
 
-def test_update_request_event_detail_template(user_client: Client, admin_user: AbstractUser) -> None:
+def test_update_request_event_detail_template(admin_client: Client) -> None:
     """Ensure RequestEvent object is correctly updated on call to detail template."""
-    user_client.force_login(admin_user)
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],
@@ -293,11 +282,10 @@ def test_update_request_event_detail_template(user_client: Client, admin_user: A
     assert request_event.query_string == q_string
 
 
-def test_detail_template_download_csv(user_client: Client, admin_user: AbstractUser) -> None:
+def test_detail_template_download_csv(admin_client: Client) -> None:
     """Ensure downloading of csv data works as expected."""
-    user_client.force_login(admin_user)
     # trigger generation of temp tables
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],
@@ -309,7 +297,7 @@ def test_detail_template_download_csv(user_client: Client, admin_user: AbstractU
         },
     )
     assert response.status_code == HTTPStatus.OK
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-download-csv'),
         data={
             'questionnaireid': ['11'],
@@ -323,11 +311,10 @@ def test_detail_template_download_csv(user_client: Client, admin_user: AbstractU
     assert int(headers.get('Content-Length', 0)) > 0
 
 
-def test_detail_template_download_xlsx(user_client: Client, admin_user: AbstractUser) -> None:
+def test_detail_template_download_xlsx(admin_client: Client) -> None:
     """Ensure downloading of xlsx data works as expected."""
-    user_client.force_login(admin_user)
     # trigger generation of temp tables
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],
@@ -340,21 +327,21 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
     )
 
     assert response.status_code == HTTPStatus.OK
-    response_one = user_client.post(
+    response_one = admin_client.post(
         path=reverse('questionnaires:reports-download-xlsx'),
         data={
             'questionnaireid': ['11'],
             'tabs': ['none'],
         },
     )
-    response_two = user_client.post(
+    response_two = admin_client.post(
         path=reverse('questionnaires:reports-download-xlsx'),
         data={
             'questionnaireid': ['11'],
             'tabs': ['patients'],
         },
     )
-    response_three = user_client.post(
+    response_three = admin_client.post(
         path=reverse('questionnaires:reports-download-xlsx'),
         data={
             'questionnaireid': ['11'],
@@ -370,11 +357,9 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
         assert int(header.get('Content-Length', 0)) > 0
 
 
-def test_toggle_questionnaire_follow(user_client: Client, admin_user: AbstractUser) -> None:
+def test_toggle_questionnaire_follow(admin_client: Client) -> None:
     """Ensure that the update questionnaire profile method works from the view call."""
-    user_client.force_login(admin_user)
-
-    user_client.post(
+    admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],
@@ -388,7 +373,7 @@ def test_toggle_questionnaire_follow(user_client: Client, admin_user: AbstractUs
         },
     )
 
-    response = user_client.post(
+    response = admin_client.post(
         path=reverse('questionnaires:reports-detail'),
         data={
             'start': ['2016-11-25'],

@@ -4,7 +4,6 @@ from typing import Type
 
 from django.apps import apps
 from django.conf import LazySettings
-from django.contrib.auth.models import Permission
 from django.db import connections
 from django.db.models import Model
 from django.test import Client
@@ -81,22 +80,52 @@ def user_api_client(api_client: APIClient, django_user_model: User) -> APIClient
 
 
 @pytest.fixture()
-def user_client(client: Client, django_user_model: User) -> Client:
+def admin_api_client(api_client: APIClient, admin_user: User) -> APIClient:  # noqa: WPS442
+    """
+    Fixture providing an instance of `APIClient` (`rest_framework.test.API_Client`) with a logged in admin user.
+
+    Args:
+        api_client: the API client instance
+        admin_user: the admin user
+
+    Returns:
+        an instance of `APIClient` with a logged in admin user
+    """
+    api_client.force_login(user=admin_user)
+
+    return api_client
+
+
+@pytest.fixture(name='user')
+def user_instance(django_user_model: User) -> User:
+    """
+    Fixture providing a user with no permissions.
+
+    Args:
+        django_user_model: the `User` model used in this project
+
+    Returns:
+        a `User` instance
+    """
+    user = django_user_model.objects.create(username='testuser')
+    user.set_password('testpassword')
+    user.save()
+
+    return user
+
+
+@pytest.fixture()
+def user_client(client: Client, user: User) -> Client:
     """
     Fixture providing an instance of [Client][django.test.Client] with a logged in user.
 
     Args:
         client: the Django test client instance
-        django_user_model: the `User` model used in this project
+        user: the `User` instance
 
     Returns:
         an instance of `Client` with a logged in user
     """
-    user = django_user_model.objects.create(username='testuser')
-    manage_institution_permission = Permission.objects.get(codename='can_manage_institutions')
-    user.user_permissions.add(manage_institution_permission)
-    user.set_password('testpassword')
-    user.save()
     client.force_login(user)
 
     return client
@@ -139,23 +168,13 @@ def _manage_unmanaged_models() -> None:
 
 @pytest.fixture(autouse=True)
 def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
-    """Fixture changing the `MEDIA_ROOT` value of the `settings.py`.
+    """Fixture changing the `MEDIA_ROOT` value of the settings.
 
     Args:
-        tmp_path (Path): Object to a temporary directory which is unique to each test function
-        settings (LazySettings): All the configurations of the `opalAdmin backend` service
+        tmp_path: Object to a temporary directory which is unique to each test function
+        settings: All the configurations of the `opalAdmin backend` service
     """
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
-
-
-@pytest.fixture(autouse=True)
-def _set_email_backend_service(settings: LazySettings) -> None:
-    """Fixture changing the `EMAIL_BACKEND` setting to the in-memory backend.
-
-    Args:
-        settings: the Django settings
-    """
-    settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 
 @pytest.fixture(scope='session', autouse=True)

@@ -226,20 +226,15 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread annoucement(s) records.
         """
-        return self.select_related(  # noqa: WPS221
+        query_set = self.select_related(
             'postcontrolsernum',
         ).exclude(
             readby__contains=user_name,
-        ).values(
-            'postcontrolsernum',
         ).filter(
             patientsernum__in=patient_sernum_list,
-            # select_related here does a left join instead of inner join and causes a problem to get
-            # the announcements with the postcontrolsernum which does not exist. So forward to posttype
-            # which default value is not null, to tell it null or not and remove the announcement with
-            # non-existing postcontrolsernum
-            postcontrolsernum__posttype__isnull=False,
-        ).distinct().count() or 0
+        )
+
+        return len(query_set) or 0
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
@@ -266,9 +261,9 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             last_updated__gt=last_synchronized,
         ).annotate(
             patient_id=models.F('patientsernum'),
-            opal_registration_date=models.F('registrationdate'),
+            opal_registration_date=models.F('registration_date'),
             patient_sex=models.F('sex'),
-            patient_dob=models.F('dateofbirth'),
+            patient_dob=models.F('date_of_birth'),
             patient_primary_language=models.F('language'),
             patient_death_date=models.F('death_date'),
         ).values(

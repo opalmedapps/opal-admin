@@ -2,9 +2,9 @@
 from datetime import datetime
 from typing import Any
 
+from ..general.service_error import ServiceErrorHandler
 from .hospital_communication import OIEHTTPCommunicationManager
 from .hospital_data import OIEMRNData, OIEPatientData, OIEReportExportData
-from .hospital_error import OIEErrorHandler
 from .hospital_validation import OIEValidator
 
 
@@ -21,7 +21,7 @@ class OIEService:
     def __init__(self) -> None:
         """Initialize OIE helper services."""
         self.communication_manager = OIEHTTPCommunicationManager()
-        self.error_handler = OIEErrorHandler()
+        self.error_handler = ServiceErrorHandler()
         self.validator = OIEValidator()
 
     def export_pdf_report(
@@ -203,6 +203,50 @@ class OIEService:
                 ),
             }
 
+        return self.error_handler.generate_error(
+            {
+                'message': errors,
+                'responseData': response_data,
+            },
+        )
+
+    def new_opal_patient(self, active_mrn_list: list[tuple[str, str]]) -> dict[str, Any]:
+        """Notifies the OIE of a new Opal patient.
+
+        Tries calling the OIE using each of the patient's MRNs until one succeeds.
+
+        Args:
+            active_mrn_list: a list of all active (site_code, mrn) tuples belonging to the patient
+
+        Returns:
+            A wrapped success response from the OIE or an error in JSON format
+        """
+        errors, response_data = None, None
+        if not active_mrn_list:
+            return self.error_handler.generate_error(
+                {
+                    'message': 'A list of active (site, mrn) tuples should be provided to set_opal_patient',
+                    'mrn_list': active_mrn_list,
+                },
+            )
+
+        for site_code, mrn in active_mrn_list:
+            response_data = self.communication_manager.submit(
+                # TODO Update to 'Patient/New' after the renaming is deployed
+                endpoint='/Patient/UpdateOpalStatus',
+                payload={
+                    'mrn': mrn,
+                    'site': site_code,
+                },
+            )
+
+            success, errors = self.validator.is_new_patient_response_valid(response_data)
+            if success:
+                return {
+                    'status': 'success',
+                }
+
+        # If none of the calls succeeded, return the last error
         return self.error_handler.generate_error(
             {
                 'message': errors,
