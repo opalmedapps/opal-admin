@@ -225,7 +225,7 @@ def _create_test_data() -> None:
         last_name=bart.last_name,
         username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
         email='bart@opalmedapps.ca',
-        language='en',
+        language='fr',
         phone_number='+498999998123',
         legacy_id=3,
     )
