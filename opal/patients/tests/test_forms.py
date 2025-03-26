@@ -7,7 +7,6 @@ from django.utils import timezone
 import pytest
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
-from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
@@ -1467,13 +1466,8 @@ def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None
     mock_send.assert_not_called()
 
 
-def test_accessrequestsendsmsform_send_success(
-    mocker: MockerFixture,
-    settings: SettingsWrapper,
-) -> None:
+def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
     """Ensure that the SMS is sent successfully."""
-    settings.TWILIO_ACCOUNT_SID = 'TEST'
-    settings.TWILIO_AUTH_TOKEN = 'TEST'  # noqa: S105
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     form = forms.AccessRequestSendSMSForm(
@@ -1490,13 +1484,8 @@ def test_accessrequestsendsmsform_send_success(
     mock_send.assert_called_once_with('+15005550001', mocker.ANY)
 
 
-def test_accessrequestsendsmsform_send_error(
-    mocker: MockerFixture,
-    settings: SettingsWrapper,
-) -> None:
+def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if sending the SMS failed."""
-    settings.TWILIO_ACCOUNT_SID = 'TEST'
-    settings.TWILIO_AUTH_TOKEN = 'TEST'  # noqa: S105
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
@@ -1519,13 +1508,8 @@ def test_accessrequestsendsmsform_send_error(
     mock_send.assert_called_once_with('+15005550001', mocker.ANY)
 
 
-def test_accessrequestsendsmsform_send_request_error(
-    mocker: MockerFixture,
-    settings: SettingsWrapper,
-) -> None:
+def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if the connection to Twilio fails."""
-    settings.TWILIO_ACCOUNT_SID = 'TEST'
-    settings.TWILIO_AUTH_TOKEN = 'TEST'  # noqa: S105
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=RequestException('SSL key too weak'),
