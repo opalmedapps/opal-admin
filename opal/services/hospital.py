@@ -4,7 +4,7 @@ from django.conf import settings
 import requests
 
 
-def find_patient_by_mrn(mrn: str, site: str):
+def find_patient_by_mrn(mrn: str, site: str) -> requests.Response:
     """Search patient info by mrn code.
 
     Args:
@@ -23,7 +23,7 @@ def find_patient_by_mrn(mrn: str, site: str):
     return requests.post(url, data=data)
 
 
-def find_patient_by_ramq(ramq: str):
+def find_patient_by_ramq(ramq: str) -> requests.Response:
     """Search patient info by ramq code.
 
     Args:
