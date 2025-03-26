@@ -1,6 +1,7 @@
 import json
 import re
 import urllib
+from collections import OrderedDict
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any
@@ -18,9 +19,9 @@ from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
 
+from opal.caregivers.models import RegistrationCode
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.factories import Caregiver
-from opal.users.models import User
+from opal.users.models import Caregiver, User
 
 from .. import constants, factories, forms, models, tables
 from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
@@ -874,8 +875,7 @@ def test_not_display_duplicated_patients(relationship_user: Client) -> None:
     factories.HospitalPatient(mrn='9999992', site=site2, patient=patient1)
     factories.HospitalPatient(mrn='9999991', site=site2, patient=patient2)
 
-    user = Caregiver()
-    caregiver_profile = factories.CaregiverProfile(user=user)
+    caregiver_profile = factories.CaregiverProfile()
     factories.Relationship(
         caregiver=caregiver_profile,
         patient=patient1,
@@ -1041,6 +1041,22 @@ def test_access_request(client: Client, registration_user: User) -> None:
     assert 'next_button_text' in response.context
 
 
+def test_access_request_get_prefix() -> None:
+    """The get_prefix function can handle non-existent forms."""
+    view = AccessRequestView()
+
+    assert view._get_prefix(forms.AccessRequestSearchPatientForm) == 'search'
+    assert view._get_prefix(forms.AccessRequestSendSMSForm) is None
+
+
+def test_access_request_get_forms() -> None:
+    """The get_forms function can handle empty forms."""
+    view = AccessRequestView()
+    view.forms = OrderedDict()
+
+    assert not view._get_forms('search')
+
+
 def test_access_request_invalid_management_form(registration_user: User) -> None:
     """Ensure that a missing step raises an exception."""
     request = RequestFactory().post(reverse('patients:access-request'), data={'current_step': ''})
@@ -1117,6 +1133,39 @@ def test_access_request_search_existing_patient(client: Client, registration_use
         },
         'patient': hospital_patient.patient.pk,
     }
+
+
+def test_access_request_search_up_validate(client: Client, registration_user: User) -> None:
+    """Ensure that the access request can handle up-validate events."""
+    _initialize_session(client)
+    hospital_patient = factories.HospitalPatient()
+
+    form_data = {
+        'current_step': 'search',
+        'next': 'submit',
+        'search-card_type': constants.MedicalCard.RAMQ.name,
+        'search-medical_number': hospital_patient.mrn,
+    }
+
+    response = client.post(
+        reverse('patients:access-request'),
+        data=form_data,
+        HTTP_X_Up_Validate='search-card_type',
+    )
+
+    # assert that the patient was found and the next step (showing the patient) is active
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['current_step'] == 'search'
+    assert response.context['next_step'] == 'search'
+
+    # the data is empty and initial has the form data to not cause invalid forms
+    assert response.context['search_form'].initial == {
+        'current_step': 'search',
+        'next': 'submit',
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': hospital_patient.mrn,
+    }
+    assert not response.context['search_form'].data
 
 
 def test_access_request_search_fields_disabled(client: Client, registration_user: User) -> None:
@@ -1248,6 +1297,362 @@ def test_access_request_confirm_patient(client: Client, registration_user: User)
     assert response.status_code == HTTPStatus.OK
     assert response.context['next_step'] == 'relationship'
     assert 'relationship_form' in response.context
+    assert 'user_table' in response.context
+    session = client.session[AccessRequestView.session_key_name]
+    expected_data: dict[str, Any] = {}
+    assert session['step_patient'] == expected_data
+
+
+def test_access_request_requestor_new_user(client: Client, registration_user: User) -> None:
+    """The relationship step handles a new user and moves to the confirm password step."""
+    hospital_patient = factories.HospitalPatient()
+    self_type = models.RelationshipType.objects.self_type()
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'relationship',
+        'next': 'submit',
+        'relationship-relationship_type': self_type.pk,
+        'relationship-id_checked': True,
+        'relationship-user_type': constants.UserType.NEW.name,
+        # purposefully pass a different name to ensure that it will be ignored
+        'relationship-first_name': 'Hans',
+        'relationship-last_name': 'Wurst',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'confirm'
+    assert response.context['next_button_text'] == 'Generate Registration Code'
+    assert 'confirm_form' in response.context
+
+    session = client.session[AccessRequestView.session_key_name]
+    expected_data = data.copy()
+    expected_data.update({
+        'step_relationship': {
+            'relationship_type': self_type.pk,
+            'form_filled': False,
+            'id_checked': True,
+            'user_type': constants.UserType.NEW.name,
+            'first_name': 'Marge',
+            'last_name': 'Simpson',
+            'user_email': '',
+            'user_phone': '',
+        },
+    })
+    assert session == expected_data
+
+
+def test_access_request_requestor_existing_user_not_found(client: Client, registration_user: User) -> None:
+    """The relationship step handles an existing user search and does not continue if the user has not been found."""
+    hospital_patient = factories.HospitalPatient()
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'relationship',
+        'next': 'submit',
+        'relationship-relationship_type': models.RelationshipType.objects.guardian_caregiver().pk,
+        'relationship-form_filled': True,
+        'relationship-id_checked': True,
+        'relationship-user_type': constants.UserType.EXISTING.name,
+        'relationship-user_email': 'marge@opalmedapps.ca',
+        'relationship-user_phone': '+15141234567',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'relationship'
+    assert not response.context['relationship_form'].is_valid()
+    assert len(response.context['relationship_form'].errors) == 1
+    assert len(response.context['relationship_form'].non_field_errors()) == 1
+    assert 'confirm_form' not in response.context
+
+
+def test_access_request_requestor_existing_user_found(client: Client, registration_user: User) -> None:
+    """The relationship step handles an existing user search and does not continue if the user has been found."""
+    hospital_patient = factories.HospitalPatient()
+    caregiver = factories.CaregiverProfile(
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'relationship',
+        # the search button was clicked instead of the default form submit button
+        'search_user': 'submit',
+        'relationship-user_type': constants.UserType.EXISTING.name,
+        'relationship-user_email': 'marge@opalmedapps.ca',
+        'relationship-user_phone': '+15141234567',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'relationship'
+    assert response.context['user_table'].data.data == [caregiver.user]
+    assert 'confirm_form' not in response.context
+
+
+def test_access_request_requestor_existing_user(client: Client, registration_user: User) -> None:
+    """The relationship step handles an existing user search and continues to the confirm password step."""
+    hospital_patient = factories.HospitalPatient()
+    relationship_type = models.RelationshipType.objects.guardian_caregiver()
+    caregiver = factories.CaregiverProfile(
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'relationship',
+        'next': 'submit',
+        'relationship-relationship_type': relationship_type.pk,
+        'relationship-form_filled': True,
+        'relationship-id_checked': True,
+        'relationship-user_type': constants.UserType.EXISTING.name,
+        'relationship-user_email': 'marge@opalmedapps.ca',
+        'relationship-user_phone': '+15141234567',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'confirm'
+    assert 'confirm_form' in response.context
+    assert response.context['next_button_text'] == 'Create Access Request'
+
+    session = client.session[AccessRequestView.session_key_name]
+    expected_data = data.copy()
+    expected_data.update({
+        'step_relationship': {
+            'relationship_type': relationship_type.pk,
+            'form_filled': True,
+            'id_checked': True,
+            'user_type': constants.UserType.EXISTING.name,
+            'first_name': '',
+            'last_name': '',
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+        'caregiver': caregiver.pk,
+    })
+    assert session == expected_data
+
+
+def test_access_request_confirm_password_invalid(
+    client: Client,
+    registration_user: User,
+    mocker: MockerFixture,
+) -> None:
+    """The confirm password step handles an invalid password and the previous form is still valid."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
+
+    hospital_patient = factories.HospitalPatient()
+    relationship_type = models.RelationshipType.objects.guardian_caregiver()
+    caregiver = factories.CaregiverProfile(
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'step_relationship': {
+            'relationship_type': relationship_type.pk,
+            'form_filled': True,
+            'id_checked': True,
+            'user_type': constants.UserType.EXISTING.name,
+            'first_name': '',
+            'last_name': '',
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+        'caregiver': caregiver.pk,
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'confirm',
+        'next': 'submit',
+        'confirm-password': 'invalid',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'confirm'
+
+    # ensure that the password is not stored in the session data
+    session = client.session[AccessRequestView.session_key_name]
+    assert 'step_confirm' not in session
+
+    # ensure that the existing user is still there (see QSCCD-1262)
+    assert response.context['relationship_form'].is_valid()
+    assert response.context['user_table'].data.data == [caregiver.user]
+
+
+def test_access_request_confirm_password_existing_user(
+    client: Client,
+    registration_user: User,
+    mocker: MockerFixture,
+) -> None:
+    """The confirm password step handles an invalid password and the previous form is still valid."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
+
+    hospital_patient = factories.HospitalPatient()
+    relationship_type = models.RelationshipType.objects.guardian_caregiver()
+    caregiver = factories.CaregiverProfile(
+        user__email='marge@opalmedapps.ca',
+        user__phone_number='+15141234567',
+    )
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'step_relationship': {
+            'relationship_type': relationship_type.pk,
+            'form_filled': True,
+            'id_checked': True,
+            'user_type': constants.UserType.EXISTING.name,
+            'first_name': '',
+            'last_name': '',
+            'user_email': 'marge@opalmedapps.ca',
+            'user_phone': '+15141234567',
+        },
+        'caregiver': caregiver.pk,
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'confirm',
+        'next': 'submit',
+        'confirm-password': 'testpassword',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == reverse('patients:access-request-confirmation')
+
+    # ensure that the relationship was created
+    relationship = models.Relationship.objects.get()
+    assert relationship.type == relationship_type
+    assert relationship.patient == hospital_patient.patient
+    assert relationship.caregiver == caregiver
+
+    # ensure the required data by the confirmation page is in the session
+    session = client.session[AccessRequestView.session_key_name]
+    assert session == {
+        'patient': 'Simpson, Marge',
+        'requestor': 'Simpson, Marge',
+    }
+
+
+def test_access_request_confirm_password_new_user(
+    client: Client,
+    registration_user: User,
+    mocker: MockerFixture,
+) -> None:
+    """The confirm password step handles an invalid password and the previous form is still valid."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
+
+    hospital_patient = factories.HospitalPatient()
+    relationship_type = models.RelationshipType.objects.guardian_caregiver()
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'step_patient': {},
+        'step_relationship': {
+            'relationship_type': relationship_type.pk,
+            'form_filled': True,
+            'id_checked': True,
+            'user_type': constants.UserType.NEW.name,
+            'first_name': 'Ned',
+            'last_name': 'Flanders',
+            'user_email': '',
+            'user_phone': '',
+        },
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'confirm',
+        'next': 'submit',
+        'confirm-password': 'testpassword',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+    assert response.status_code == HTTPStatus.FOUND
+    assert response['Location'] == reverse('patients:access-request-confirmation')
+
+    # ensure that the relationship was created
+    relationship = models.Relationship.objects.get()
+    caregiver = Caregiver.objects.get()
+    assert relationship.type == relationship_type
+    assert relationship.patient == hospital_patient.patient
+    assert relationship.caregiver.user == caregiver
+
+    registration_code = RegistrationCode.objects.get()
+
+    # ensure the required data by the confirmation page is in the session
+    session = client.session[AccessRequestView.session_key_name]
+    assert session == {
+        'patient': 'Simpson, Marge',
+        'requestor': 'Flanders, Ned',
+        'registration_code': registration_code.code,
+    }
 
 
 def test_access_request_confirmation_no_permission(django_user_model: User) -> None:

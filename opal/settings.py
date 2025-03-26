@@ -1,5 +1,5 @@
 """
-Django default settings for digitalprint project.
+Django default settings for the Opal backend project.
 
 Used for local dev and tests.
 
