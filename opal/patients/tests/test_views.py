@@ -291,17 +291,19 @@ def test_relationships_pending_response_no_menu(user_client: Client, django_user
     'url_name', [
         reverse('patients:relationshiptype-list'),
         reverse('patients:relationshiptype-create'),
-        reverse('patients:relationshiptype-update', args=(1,)),
-        reverse('patients:relationshiptype-delete', args=(1,)),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
     ],
 )
 def test_relationshiptype_perm_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
     """Ensure that `RelationshipType` permission denied error is raised when not having privilege."""
     user = django_user_model.objects.create(username='test_relationshiptype_user')
-    factories.RelationshipType(pk=1)
+    factories.RelationshipType(pk=11)
     user_client.force_login(user)
+
     response = user_client.get(url_name)
     request = RequestFactory().get(response)  # type: ignore[arg-type]
+
     request.user = user
     with pytest.raises(PermissionDenied):
         PendingRelationshipListView.as_view()(request)
@@ -311,31 +313,26 @@ def test_relationshiptype_perm_required_fail(user_client: Client, django_user_mo
     'url_name', [
         reverse('patients:relationshiptype-list'),
         reverse('patients:relationshiptype-create'),
-        reverse('patients:relationshiptype-update', args=(1,)),
-        reverse('patients:relationshiptype-delete', args=(1,)),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
     ],
 )
-def test_relationshiptype_perm_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
+def test_relationshiptype_perm_required_success(
+    relationshiptype_user: Client,
+    django_user_model: User,
+    url_name: str,
+) -> None:
     """Ensure that `RelationshipType` can be accessed with the required permission."""
-    user = django_user_model.objects.create(username='test_relationshiptype_user')
-    user_client.force_login(user)
-    permission = Permission.objects.get(codename='can_manage_relationshiptypes')
-    user.user_permissions.add(permission)
-    factories.RelationshipType(pk=1)
+    factories.RelationshipType(pk=11)
 
-    response = user_client.get(url_name)
+    response = relationshiptype_user.get(url_name)
 
     assert response.status_code == HTTPStatus.OK
 
 
-def test_relationshiptype_response_contains_menu(user_client: Client, django_user_model: User) -> None:
+def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
     """Ensures that pending relationshiptypes is displayed for users with permission."""
-    user = django_user_model.objects.create(username='test_relationshiptype_user')
-    user_client.force_login(user)
-    permission = Permission.objects.get(codename='can_manage_relationshiptypes')
-    user.user_permissions.add(permission)
-
-    response = user_client.get('/hospital-settings/')
+    response = relationshiptype_user.get('/hospital-settings/')
 
     assertContains(response, 'Relationship Types')
 
