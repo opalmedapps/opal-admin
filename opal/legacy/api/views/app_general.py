@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.legacy import models
-from opal.legacy.utils import get_patient_sernum
+from opal.patients.models import Relationship
 
 from ..serializers import AnnouncementUnreadCountSerializer
 
@@ -29,10 +29,9 @@ class AppGeneralView(APIView):
         Returns:
             Http response with the data needed to display the general view.
         """
-        patient_sernum = get_patient_sernum(request.headers['Appuserid'])
         unread_count = {
             'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
-                patient_sernum,
-            ).count(),
+                Relationship.objects.get_patient_id_list_for_caregiver(request.headers['Appuserid']),
+            ),
         }
         return Response(AnnouncementUnreadCountSerializer(unread_count).data)

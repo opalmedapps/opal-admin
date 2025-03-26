@@ -123,6 +123,13 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     completedflag = 0
 
 
+class LegacyPostcontrolFactory(DjangoModelFactory):
+    """Post Controle factory for announcement from the legacy database."""
+
+    class Meta:
+        model = models.LegacyPostcontrol
+
+
 class LegacyAnnouncementFactory(DjangoModelFactory):
     """Announcement factory from the legacy database."""
 
@@ -130,6 +137,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
         model = models.LegacyAnnouncement
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    postcontrolsernum = SubFactory(LegacyPostcontrolFactory)
     readstatus = 0
 
 

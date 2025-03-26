@@ -1,4 +1,5 @@
 """Collection of managers for the caregiver app."""
+
 from django.db import models
 
 
@@ -23,6 +24,20 @@ class RelationshipManager(models.Manager):
         ).filter(
             caregiver__user__username=user_id,
         )
+
+    def get_patient_id_list_for_caregiver(self, user_id: str) -> list[int]:
+        """
+        Query manager to get a array of patients legacy ID for a given caregiver.
+
+        Args:
+            user_id: User id making the request
+
+        Returns:
+            List of patient legacy id
+
+        """
+        relationships = self.get_patient_list_for_caregiver(user_id=user_id)
+        return list(relationships.values_list('patient__legacy_id', flat=True))
 
 
 class HospitalPatientManager(models.Manager):
