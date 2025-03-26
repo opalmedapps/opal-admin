@@ -73,7 +73,6 @@ class TestCreateDatabankConsentView:
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient.save()
 
         client = self._get_client_with_permissions(api_client)
         response = client.post(
@@ -104,7 +103,6 @@ class TestCreateDatabankConsentView:
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient.save()
 
         client = self._get_client_with_permissions(api_client)
         response = client.post(
@@ -136,7 +134,6 @@ class TestCreateDatabankConsentView:
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient.save()
 
         client = self._get_client_with_permissions(api_client)
         response = client.post(
@@ -164,7 +161,6 @@ class TestCreateDatabankConsentView:
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
         )
-        patient.save()
 
         client = self._get_client_with_permissions(api_client)
         response = client.post(

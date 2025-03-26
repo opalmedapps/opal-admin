@@ -19,6 +19,9 @@ from rest_framework.test import APIClient
 from opal.legacy_questionnaires import factories
 from opal.users.models import User
 
+LEGACY_TEST_PATIENT_ID = 51
+LEGACY_DICTIONARY_CONTENT_ID = 9000000
+
 
 def pytest_collection_modifyitems(session: Session, config: Config, items: list[Function]) -> None:
     """
@@ -207,15 +210,23 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
     """
     # Legacy patient record
-    consenting_patient = factories.LegacyPatientFactory(external_id=51)
+    consenting_patient = factories.LegacyPatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
-    middle_name_content = factories.LegacyDictionaryFactory(content_id=9000001, content='Middle name', language_id=2)
+    middle_name_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID,
+        content='Middle name',
+        language_id=2,
+    )
     middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
-    cob_content = factories.LegacyDictionaryFactory(content_id=9000002, content='City of birth', language_id=2)
+    cob_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
+        content='City of birth',
+        language_id=2,
+    )
     cob_question = factories.LegacyQuestionFactory(display=cob_content)
     consent_purpose = factories.LegacyPurposeFactory(id=4)
     questionnaire_title = factories.LegacyDictionaryFactory(
-        content_id=9000003,
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Databank Consent Questionnaire',
         language_id=2,
     )

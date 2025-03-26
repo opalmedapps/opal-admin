@@ -28,18 +28,18 @@ class CreateDatabankConsentView(generics.CreateAPIView):
         Args:
             serializer: the serializer instance to use
         """
-        django_patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
+        patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         osi_identifiers = PatientData(
-            first_name=django_patient.first_name,
+            first_name=patient.first_name,
             middle_name=serializer.validated_data['middle_name'],
-            last_name=django_patient.last_name,
-            gender=django_patient.get_sex_display(),
-            date_of_birth=str(django_patient.date_of_birth),
+            last_name=patient.last_name,
+            gender=patient.get_sex_display(),
+            date_of_birth=str(patient.date_of_birth),
             city_of_birth=serializer.validated_data['city_of_birth'],
         )
         guid = OpenScienceIdentity(osi_identifiers).to_signature()
 
         serializer.save(
-            patient=django_patient,
+            patient=patient,
             guid=guid,
         )
