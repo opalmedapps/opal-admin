@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 15:51-0400\n"
+"POT-Creation-Date: 2022-10-17 10:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,8 +43,12 @@ msgid "Select questionnaire"
 msgstr "Sélectionnez le questionnaire"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
-msgid "Use the dropdown menu on the right to select the questionnaire you want to query, then press select."
-msgstr "Utilisez le menu déroulant à droite pour sélectionner le questionnaire que vous souhaitez interroger, puis appuyez sur sélectionner."
+msgid ""
+"Use the dropdown menu on the right to select the questionnaire you want to "
+"query, then press select."
+msgstr ""
+"Utilisez le menu déroulant à droite pour sélectionner le questionnaire que "
+"vous souhaitez interroger, puis appuyez sur sélectionner."
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
 msgid "ID - Name"
@@ -53,6 +57,12 @@ msgstr "Identifiant - Nom"
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
 msgid "Select"
 msgstr "Sélectionner"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "Questionnaire"
+msgstr "Questionnaires"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
 msgid "Description"
@@ -135,3 +145,7 @@ msgstr "Par questions"
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
 msgid "None (single tab)"
 msgstr "Aucun (onglet unique)"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
+msgid "Cancel"
+msgstr "Annuler"
