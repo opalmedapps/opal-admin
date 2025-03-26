@@ -212,8 +212,8 @@ class RegistrationCode(models.Model):
         max_length=3,
     )
 
-    creation_date = models.DateField(
-        verbose_name=_('Creation Date'),
+    created_at = models.DateTimeField(
+        verbose_name=_('Created At'),
         auto_now_add=True,
     )
 
