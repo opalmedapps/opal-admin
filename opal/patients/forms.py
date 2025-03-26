@@ -276,26 +276,22 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
             for message in messages:
-                if 'attribute "status“' in message:  # noqa: WPS223
-                    self.add_error(NON_FIELD_ERRORS, _('Response status is invalid.'))
-                elif 'attribute dateOfBirth' in message or 'dateOfBirth is invalid' in message:
+                if 'dateOfBirth' in message:  # noqa: WPS223
                     self.add_error(NON_FIELD_ERRORS, _('Patient Date of Birth is invalid.'))
-                elif 'attribute firstName' in message:
+                elif 'firstName' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient firstName is invalid.'))
-                elif 'attribute lastName' in message:
+                elif 'lastName' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient lastName is invalid.'))
-                elif 'attribute sex' in message:
+                elif 'sex' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient sex is invalid.'))
-                elif 'attribute alias' in message:
+                elif 'alias' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient alias is invalid.'))
-                elif 'attribute ramq' in message or 'ramq is invalid' in message:
+                elif 'ramq' in message and 'ramqExpiration' not in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient ramq is invalid.'))
-                elif 'attribute ramqExpiration' in message or 'ramqExpiration is invalid' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient ramqExpiration is invalid.'))
+                elif 'ramqExpiration' in message:
+                    self.add_error(NON_FIELD_ERRORS, _('Patient ramq expiration is invalid.'))
                 elif 'Patient MRN' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient MRN is invalid.'))
-                elif 'attribute alias' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient alias is invalid.'))
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
