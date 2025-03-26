@@ -45,7 +45,6 @@ class TestMigrateLegacyUsageStatisticsMigration(CommandTestMixin):
             message, error = self._call_command('migrate_legacy_usage_statistics')
             self._clean_legacy_report_table()
 
-        print(error)
         assert 'Number of imported legacy activity log is: 1' in message
         assert 'Number of imported legacy data received log is: 1' in message
         assert DailyUserAppActivity.objects.all().count() == 1
