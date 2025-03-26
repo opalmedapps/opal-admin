@@ -940,7 +940,10 @@ class TestPatientCaregiverDevicesView:
         assert response.json() == {
             'first_name': patient.first_name,
             'last_name': patient.last_name,
-            'institution_code': institution.acronym,
+            'institution': {
+                'acronym_en': institution.acronym_en,
+                'acronym_fr': institution.acronym_fr,
+            },
             'data_access': 'ALL',
             'caregivers': [
                 {
