@@ -7,9 +7,9 @@ from django.utils import timezone
 import pytest
 from django_stubs_ext.aliases import ValuesQuerySet
 
-from opal.caregivers import factories as caregivers_factories
+from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories as legacy_factories
-from opal.patients import factories as patients_factories
+from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import utils as stats_utils
 
@@ -26,29 +26,29 @@ def test_empty_relationship_mapping() -> None:
 
 def test_relationship_mapping_with_multiple_usernames() -> None:
     """Ensure RelationshipMapping successfully creates relationships mapping with multiple usernames."""
-    marge_caregiver = caregivers_factories.CaregiverProfile(
-        user=caregivers_factories.Caregiver(username='marge'),
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='marge'),
         legacy_id=1,
     )
-    homer_caregiver = caregivers_factories.CaregiverProfile(
-        user=caregivers_factories.Caregiver(username='homer'),
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='homer'),
         legacy_id=2,
     )
-    patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
-        patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
+    patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.self_type(),
+        patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    homer_patient = patients_factories.Patient(legacy_id=52, ramq='TEST01161973')
-    patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
+    homer_patient = patient_factories.Patient(legacy_id=52, ramq='TEST01161973')
+    patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=homer_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+    patient_factories.Relationship(
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,

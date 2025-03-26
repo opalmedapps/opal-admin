@@ -143,11 +143,13 @@ python -m pip install -r requirements/development.txt
 
         ```sh
         brew install mysql-client
-        export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
         brew install pkg-config
-        export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
+        # export PATH and PKG_CONFIG_PATH according to output from installing mysql-client
         # install dependencies via pip install
         ```
+
+        Use the output from installing `mysql-client` to update the `PATH` and set the `PKG_CONFIG_PATH` environment variables.
+        If you've already installed `mysql-client` you can get this information by executing `brew info mysql-client`.
 
     === "Windows"
         No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the `mysqlclient` package.
@@ -166,6 +168,17 @@ python manage.py createsuperuser
 The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
 
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
+
+### Initializing data
+
+For convenience, we provide two commands to initialize initial and test data.
+
+```shell
+python manage.py initialize_data
+python manage.py insert_test_data OMI
+```
+
+See the command's help for more information.
 
 ### Pre-commit
 
