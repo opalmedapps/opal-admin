@@ -1,13 +1,16 @@
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.db.models.functions import Coalesce
 
 from . import constants
 from . import models as patient_models
+
+if TYPE_CHECKING:
+    from opal.patients.models import RelationshipType
 
 
 class RelationshipManager(models.Manager):
@@ -75,10 +78,10 @@ class RelationshipManager(models.Manager):
         )
 
 
-class RelationshipTypeManager(models.Manager):
+class RelationshipTypeManager(models.Manager['RelationshipType']):
     """Manager class for the `RelationshipType` model."""
 
-    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet:
+    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
         """Return a new QuerySet filtered by the patient age between start_age and end_age.
 
         Args:
@@ -87,9 +90,45 @@ class RelationshipTypeManager(models.Manager):
         Returns:
             a queryset of the relationship type.
         """
-        return self.annotate(  # type: ignore[no-any-return]
+        return self.annotate(
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
+
+    def self_type(self) -> 'RelationshipType':
+        """
+        Return the Self relationship type.
+
+        Returns:
+            the relationship type representing the self type
+        """
+        return self.get(role_type=patient_models.RoleType.SELF)
+
+    def parent_guardian(self) -> 'RelationshipType':
+        """
+        Return the Parent/Guardian relationship type.
+
+        Returns:
+            the relationship type representing the parent/guardian type
+        """
+        return self.get(role_type=patient_models.RoleType.PARENT_GUARDIAN)
+
+    def guardian_caregiver(self) -> 'RelationshipType':
+        """
+        Return the Guardian-Caregiver relationship type.
+
+        Returns:
+            the relationship type representing the guardian-caregiver type
+        """
+        return self.get(role_type=patient_models.RoleType.GUARDIAN_CAREGIVER)
+
+    def mandatary(self) -> 'RelationshipType':
+        """
+        Return the Mandatary relationship type.
+
+        Returns:
+            the relationship type representing the mandatary type
+        """
+        return self.get(role_type=patient_models.RoleType.MANDATARY)
 
 
 class PatientQueryset(models.QuerySet['patient_models.Patient']):
