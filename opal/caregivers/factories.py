@@ -53,7 +53,7 @@ class TokenProvider(BaseProvider):
         Returns:
             A random hex token
         """
-        return secrets.token_hex(64)
+        return secrets.token_hex(32)
 
 
 Faker.add_provider(TokenProvider)
