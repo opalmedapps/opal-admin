@@ -55,8 +55,8 @@
   </head>
   <body>
     <div class="d-flex">
-      {% comment %} {% block sidebar-items %} {% include "sidebar_items.html" %} {% endblock %} {% endcomment %}
-      {% block sidebar-items %} {% include "sidebar_base.html" %} {% endblock %}
+      {% comment %} {% block sidebar-items %} {% include "sidebar_menu.html" %} {% endblock %} {% endcomment %}
+      {% include "sidebar.html" %}
 
       <main class="container-fluid d-flex flex-column px-5">
         <div class="mb-auto pt-3">
