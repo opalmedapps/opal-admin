@@ -125,6 +125,7 @@ class TestApiEmailVerification:
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
         assert email_verification
+        assert not email_verification.is_verified
 
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test resend verify email within 10 sec."""
@@ -145,12 +146,12 @@ class TestApiEmailVerification:
             format='json',
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data == {
-            'detail': ErrorDetail(
+        assert response.data == [
+            ErrorDetail(
                 string='Please wait 10 seconds before requesting a new verification code.',
                 code='invalid',
             ),
-        }
+        ]
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""

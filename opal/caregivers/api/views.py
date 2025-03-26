@@ -1,13 +1,12 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -66,7 +65,7 @@ class GetCaregiverPatientsList(APIView):
 
 
 class RetrieveRegistrationCodeMixin(APIView):
-    """Basic Class for the verifiy email apis."""
+    """Mixin class that provides `get_queryset()` to lookup a `RegistrationCode` based on a given `code`."""
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -84,7 +83,7 @@ class RetrieveRegistrationCodeMixin(APIView):
 
 
 class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
-    """Class to save the user's email and email verification code.
+    """View that initiates email verification for a given email address.
 
     And send email to the user with the verification code.
     """
@@ -93,7 +92,9 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
-        Handle POST requests from `registration/<str:code>/verify-email/`.
+        Generate a random verification code and set up the EmailVerification instance.
+
+        If the user requested to re-send the code too soon, it fails.
 
         Args:
             request: Http request made by the listener.
@@ -125,6 +126,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                 sent_at=timezone.now(),
             )
         else:
+            # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
             if time_delta.total_seconds() >= constants.TIME_DELAY:
                 input_serializer.update(
@@ -136,21 +138,24 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
                     },
                 )
             else:
-                raise drf_serializers.ValidationError({
-                    'detail': _('Please wait 10 seconds before requesting a new verification code.'),
-                })
+                raise drf_serializers.ValidationError(
+                    _('Please wait 10 seconds before requesting a new verification code.'),
+                )
 
         return Response()
 
 
 class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
-    """Class to verify the user's email with received verification code."""
+    """View that verifies the user-provided verification code with the actual one."""
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
-        Handle POST requests from `registration/<str:code>/verify-email-code/`.
+        Verify that the provided code matches the expected one.
+
+        And if so, it deletes the EmailVerification,
+        and updates the email on the user instance with the verified one.
 
         Args:
             request: Http request made by the listener.
