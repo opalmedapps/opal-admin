@@ -1,6 +1,7 @@
 """Command for updating the `DailyUserAppActivity` and `DailyUserPatientActivity` models on daily basis."""
 
 import datetime as dt
+from collections import UserDict
 from typing import Any
 
 from django.conf import settings
@@ -14,6 +15,42 @@ from opal.legacy.models import LegacyPatientActivityLog, LegacyPatientControl
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
+
+
+class RelationshipsMapping(UserDict[str, Any]):
+    """Custom patient-user relationships mapping."""
+
+    def __init__(
+        self,
+        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
+    ) -> None:
+        """Build relationships dictionary for populating patients' application activities.
+
+        The mapping contains the legacy patient IDs that map to a dictionary with patient ID and usernames.
+        The username keys map to a dictionary with the relationship and user IDs.
+
+        The created dictionary contains required values for populating `DailyUserPatientActivity` model.
+
+        Args:
+            relationships: patient-caregiver relationships queryset
+        """
+        relationships_dict = {}
+
+        if relationships is not None:
+            for rel in relationships:
+                legacy_id = rel['patient__legacy_id']
+                username = rel['caregiver__user__username']
+                username_dict = {
+                    'relationship_id': rel['id'],
+                    'user_id': rel['caregiver__user__id'],
+                }
+
+                if legacy_id not in relationships_dict:
+                    relationships_dict[legacy_id] = {'patient_id': rel['patient__id']}
+
+                relationships_dict[legacy_id][username] = username_dict
+
+        super().__init__(relationships_dict)
 
 
 class Command(BaseCommand):
@@ -181,7 +218,9 @@ class Command(BaseCommand):
             end_date=models.Max('end_date'),
         )
 
-        patient_activities_list = self._annotate_patient_activities(activities, relationships)
+        relationships_dict = RelationshipsMapping(relationships)
+
+        patient_activities_list = self._annotate_patient_activities(activities, relationships_dict)
 
         DailyUserPatientActivity.objects.bulk_create(patient_activities_list)
 
@@ -213,7 +252,7 @@ class Command(BaseCommand):
     def _annotate_patient_activities(
         self,
         activities: ValuesQuerySet[LegacyPatientActivityLog, dict[str, Any]],
-        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
+        relationships_dict: RelationshipsMapping,
     ) -> list[DailyUserPatientActivity]:
         """Annotate patient's activity records with the fields that are required in `DailyUserPatientActivity` model.
 
@@ -221,12 +260,11 @@ class Command(BaseCommand):
 
         Args:
             activities: `LegacyPatientActivityLog` records per patient per day
-            relationships: patient-caregiver relationships for annotating activity records
+            relationships_dict: mapping with patient IDs that map to a dictionary with patient ID and usernames
 
         Returns:
             list of `DailyUserPatientActivity` objects
         """
-        relationships_dict = self._build_relationships_dict(relationships)
         patient_activities_list = []
 
         for activity in activities:
@@ -238,39 +276,6 @@ class Command(BaseCommand):
             patient_activities_list.append(DailyUserPatientActivity(**activity))
 
         return patient_activities_list
-
-    def _build_relationships_dict(
-        self,
-        relationships: ValuesQuerySet[Relationship, dict[str, Any]],
-    ) -> dict[str, Any]:
-        """Build relationships dictionary for populating patients' application activities.
-
-        The mapping contains the legacy patient IDs that map to a dictionary with patient ID and usernames.
-        The username keys map to a dictionary with the relationship and user IDs.
-
-        The created dictionary contains required values for populating `DailyUserPatientActivity` model.
-
-        Args:
-            relationships: patient-caregiver relationships queryset
-
-        Returns:
-            dictionary containing required relationship_id, user_id, and patient_id values
-        """
-        relationships_dict = {}
-        for rel in relationships:
-            legacy_id = rel['patient__legacy_id']
-            username = rel['caregiver__user__username']
-            username_dict = {
-                'relationship_id': rel['id'],
-                'user_id': rel['caregiver__user__id'],
-            }
-
-            if legacy_id not in relationships_dict:
-                relationships_dict[legacy_id] = {'patient_id': rel['patient__id']}
-
-            relationships_dict[legacy_id][username] = username_dict
-
-        return relationships_dict
 
     def _delete_stored_statistics(self) -> bool:
         """Delete daily application activity statistics data.

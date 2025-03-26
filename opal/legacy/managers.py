@@ -48,7 +48,13 @@ logger = logging.getLogger(__name__)
 
 ReceivedDataLegacyModels = namedtuple(
     'ReceivedDataLegacyModels',
-    'LegacyAppointment LegacyDocument LegacyEducationalMaterial LegacyQuestionnaire LegacyPatientTestResult',
+    [
+        'LegacyAppointment',
+        'LegacyDocument',
+        'LegacyEducationalMaterial',
+        'LegacyQuestionnaire',
+        'LegacyPatientTestResult',
+    ],
 )
 
 
