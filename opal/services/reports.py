@@ -119,7 +119,10 @@ class ReportService():
             base64_report = response.json()['data']['base64EncodedReport']
         except (KeyError, JSONDecodeError):
             self.logger.exception(
-                'Cannot read "base64EncodedReport" key in the JSON response received from the PHP report service.',
+                '{0} {1}'.format(
+                    'Cannot read "base64EncodedReport" key in the JSON response received from PHP report service.\n',
+                    response.text,
+                ),
             )
             return None
 
