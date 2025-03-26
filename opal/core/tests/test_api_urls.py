@@ -292,6 +292,13 @@ def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
     assert resolve(auth_login_path).view_name == 'api:orms-login'
 
 
+def test_api_orms_auth_validate_session_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API auth validate session endpoint for the ORMS is defined."""
+    auth_validate_path = '/{api_root}/auth/orms/validate/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:orms-validate') == auth_validate_path
+    assert resolve(auth_validate_path).view_name == 'api:orms-validate'
+
+
 def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
     """Ensure the patient demographic update endpoint is defined."""
     url_path = '/{api_root}/patients/demographic/'.format(api_root=settings.API_ROOT)
