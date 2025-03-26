@@ -152,10 +152,10 @@ class LegacyQuestionnaire(models.Model):
         related_name='+',
     )
     logo = models.CharField(max_length=512)
-    deletedby = models.CharField(db_column='deletedBy', max_length=255)
+    deleted_by = models.CharField(db_column='deletedBy', blank=True, max_length=255)
     creationdate = models.DateTimeField(db_column='creationDate')
-    createdby = models.CharField(db_column='createdBy', max_length=255)
-    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+    created_by = models.CharField(db_column='createdBy', max_length=255)
+    updated_by = models.CharField(db_column='updatedBy', max_length=255)
     legacyname = models.CharField(db_column='legacyName', max_length=255)
     objects: managers.LegacyQuestionnaireManager = managers.LegacyQuestionnaireManager()
 
@@ -207,9 +207,9 @@ class LegacyAnswerQuestionnaire(models.Model):
     )
     status = models.IntegerField(db_column='status')
     creationdate = models.DateTimeField(db_column='creationDate')
-    deletedby = models.CharField(db_column='deletedBy', max_length=255)
-    createdby = models.CharField(db_column='createdBy', max_length=255)
-    updatedby = models.CharField(db_column='updatedBy', max_length=255)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255)
+    created_by = models.CharField(db_column='createdBy', max_length=255)
+    updated_by = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False
@@ -228,7 +228,7 @@ class LegacyLanguage(models.Model):
         related_name='+',
     )
     deleted = models.BooleanField(default=False, db_column='deleted')
-    deleted_by = models.CharField(max_length=255, default='', db_column='deletedBy')
+    deleted_by = models.CharField(max_length=255, default='', blank=True, db_column='deletedBy')
     creation_date = models.DateTimeField(auto_now_add=True, db_column='creationDate')
     created_by = models.CharField(max_length=255, db_column='createdBy')
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
@@ -236,65 +236,6 @@ class LegacyLanguage(models.Model):
 
     class Meta:
         db_table = 'language'
-        managed = False
-
-
-class LegacyCheckboxOption(models.Model):
-    """CheckboxOption model from the legacy database QuestionnaireDB."""
-
-    id = models.BigAutoField(primary_key=True, db_column='ID')
-    order = models.IntegerField(default=1, db_column='order')
-    description = models.ForeignKey(
-        LegacyDictionary,
-        models.DO_NOTHING,
-        db_column='description',
-        to_field='content_id',
-        related_name='+',
-    )
-
-    class Meta:
-        db_table = 'checkboxOption'
-        managed = False
-
-
-class LegacyLabelOption(models.Model):
-    """LabelOption model from the legacy database QuestionnaireDB."""
-
-    id = models.BigAutoField(primary_key=True, db_column='ID')
-    description = models.ForeignKey(
-        LegacyDictionary,
-        models.DO_NOTHING,
-        db_column='description',
-        to_field='content_id',
-        related_name='+',
-    )
-    pos_init_x = models.IntegerField(default=0, db_column='posInitX')
-    pos_init_y = models.IntegerField(default=0, db_column='posInitY')
-    pos_final_x = models.IntegerField(default=0, db_column='posFinalX')
-    pos_final_y = models.IntegerField(default=0, db_column='posFinalY')
-    intensity = models.IntegerField(default=0, db_column='intensity')
-    order = models.IntegerField(default=1, db_column='order')
-
-    class Meta:
-        db_table = 'labelOption'
-        managed = False
-
-
-class LegacyRadioButtonOption(models.Model):
-    """RadioButtonOption model from the legacy database QuestionnaireDB."""
-
-    id = models.BigAutoField(primary_key=True, db_column='ID')
-    description = models.ForeignKey(
-        LegacyDictionary,
-        models.DO_NOTHING,
-        db_column='description',
-        to_field='content_id',
-        related_name='+',
-    )
-    order = models.IntegerField(default=1)
-
-    class Meta:
-        db_table = 'radioButtonOption'
         managed = False
 
 
@@ -323,7 +264,7 @@ class LegacySection(models.Model):
     )
     order = models.IntegerField(default=1, db_column='order')
     deleted = models.BooleanField(default=False, db_column='deleted')
-    deleted_by = models.CharField(max_length=255, default='', db_column='deletedBy')
+    deleted_by = models.CharField(max_length=255, default='', blank=True, db_column='deletedBy')
     creation_date = models.DateTimeField(db_column='creationDate')
     created_by = models.CharField(max_length=255, db_column='createdBy')
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
@@ -401,15 +342,142 @@ class LegacyQuestion(models.Model):
     final = models.BooleanField(default=False, db_column='final')
     optional_feedback = models.BooleanField(default=False, db_column='optionalFeedback')
     deleted = models.BooleanField(default=False, db_column='deleted')
-    deleted_by = models.CharField(max_length=255, default='', db_column='deletedBy')
+    deleted_by = models.CharField(max_length=255, default='', blank=True, db_column='deletedBy')
     creation_date = models.DateTimeField(db_column='creationDate')
     created_by = models.CharField(max_length=255, db_column='createdBy')
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
     updated_by = models.CharField(max_length=255, db_column='updatedBy')
+    legacy_type_id = models.BigIntegerField(default=1, db_column='legacyTypeId')
 
     class Meta:
         managed = False
         db_table = 'question'
+
+
+class LegacyRadioButton(models.Model):
+    """RadioButton model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    question_id = models.ForeignKey(
+        LegacyQuestion,
+        models.DO_NOTHING,
+        db_column='questionId',
+        to_field='id',
+    )
+
+    class Meta:
+        db_table = 'radioButton'
+        managed = False
+
+
+class LegacyRadioButtonOption(models.Model):
+    """RadioButtonOption model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    parent_table_id = models.ForeignKey(
+        LegacyRadioButton,
+        models.DO_NOTHING,
+        db_column='parentTableId',
+        to_field='id',
+    )
+    description = models.ForeignKey(
+        LegacyDictionary,
+        models.DO_NOTHING,
+        db_column='description',
+        to_field='content_id',
+        related_name='+',
+    )
+    order = models.IntegerField(default=1)
+
+    class Meta:
+        db_table = 'radioButtonOption'
+        managed = False
+
+
+class LegacyCheckbox(models.Model):
+    """Checkbox model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    question_id = models.ForeignKey(
+        LegacyQuestion,
+        models.DO_NOTHING,
+        db_column='questionId',
+        to_field='id',
+    )
+
+    class Meta:
+        db_table = 'checkbox'
+        managed = False
+
+
+class LegacyCheckboxOption(models.Model):
+    """CheckboxOption model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    order = models.IntegerField(default=1, db_column='order')
+    description = models.ForeignKey(
+        LegacyDictionary,
+        models.DO_NOTHING,
+        db_column='description',
+        to_field='content_id',
+        related_name='+',
+    )
+    parent_table_id = models.ForeignKey(
+        LegacyCheckbox,
+        models.DO_NOTHING,
+        db_column='parentTableId',
+        to_field='id',
+    )
+
+    class Meta:
+        db_table = 'checkboxOption'
+        managed = False
+
+
+class LegacyLabel(models.Model):
+    """Label model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    question_id = models.ForeignKey(
+        LegacyQuestion,
+        models.DO_NOTHING,
+        db_column='questionId',
+        to_field='id',
+    )
+
+    class Meta:
+        db_table = 'label'
+        managed = False
+
+
+class LegacyLabelOption(models.Model):
+    """LabelOption model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    parent_table_id = models.ForeignKey(
+        LegacyLabel,
+        models.DO_NOTHING,
+        db_column='parentTableId',
+        to_field='id',
+        related_name='+',
+    )
+    description = models.ForeignKey(
+        LegacyDictionary,
+        models.DO_NOTHING,
+        db_column='description',
+        to_field='content_id',
+        related_name='+',
+    )
+    pos_init_x = models.IntegerField(default=0, db_column='posInitX')
+    pos_init_y = models.IntegerField(default=0, db_column='posInitY')
+    pos_final_x = models.IntegerField(default=0, db_column='posFinalX')
+    pos_final_y = models.IntegerField(default=0, db_column='posFinalY')
+    intensity = models.IntegerField(default=0, db_column='intensity')
+    order = models.IntegerField(default=1, db_column='order')
+
+    class Meta:
+        db_table = 'labelOption'
+        managed = False
 
 
 class LegacyQuestionSection(models.Model):
@@ -581,8 +649,8 @@ class LegacyAnswerLabel(models.Model):
         to_field='id',
     )
     selected = models.SmallIntegerField(default=1, db_column='selected')
-    pox_x = models.IntegerField(db_column='posX')
-    pox_y = models.IntegerField(db_column='posY')
+    pos_x = models.IntegerField(db_column='posX')
+    pos_y = models.IntegerField(db_column='posY')
     intensity = models.IntegerField(db_column='intensity')
     value = models.BigIntegerField(db_column='value')
 

@@ -64,10 +64,10 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     description = SubFactory(LegacyDictionaryFactory)
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
-    deletedby = 'Test User'
+    deleted_by = 'Test User'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
-    createdby = 'Test User'
-    updatedby = 'Test User'
+    created_by = 'Test User'
+    updated_by = 'Test User'
     legacyname = 'Test Questionnaire'
 
 
@@ -95,9 +95,9 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
     patientid = SubFactory(LegacyPatientFactory)
     status = 0
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
-    deletedby = 'Test User'
-    createdby = 'Test User'
-    updatedby = 'Test User'
+    deleted_by = 'Test User'
+    created_by = 'Test User'
+    updated_by = 'Test User'
 
 
 class LegacyLanguageFactory(DjangoModelFactory):
@@ -106,47 +106,12 @@ class LegacyLanguageFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyLanguage
 
-    iso_lang = Faker('language_code')
+    iso_lang = 'en'
     name = SubFactory(LegacyDictionaryFactory)
     deleted = False
     deleted_by = ''
     created_by = Faker('name')
     updated_by = Faker('name')
-
-
-class LegacyCheckboxOptionFactory(DjangoModelFactory):
-    """CheckBoxOption factory from the legacy questionnaire database."""
-
-    class Meta:
-        model = models.LegacyCheckboxOption
-
-    order = Faker('random_int')
-    description = SubFactory(LegacyDictionaryFactory)
-
-
-class LegacyLabelOptionFactory(DjangoModelFactory):
-    """LabelOption factory from the legacy questionnaire database."""
-
-    class Meta:
-        model = models.LegacyLabelOption
-
-    description = SubFactory(LegacyDictionaryFactory)
-    pos_init_x = Faker('random_int')
-    pos_init_y = Faker('random_int')
-    pos_final_x = Faker('random_int')
-    pos_final_y = Faker('random_int')
-    intensity = Faker('random_int')
-    order = Faker('random_int')
-
-
-class LegacyRadioButtonOptionFactory(DjangoModelFactory):
-    """RadioButtonOption factory from the legacy questionnaire database."""
-
-    class Meta:
-        model = models.LegacyRadioButtonOption
-
-    description = SubFactory(LegacyDictionaryFactory)
-    order = Sequence(lambda number: number)
 
 
 class LegacySectionFactory(DjangoModelFactory):
@@ -198,6 +163,71 @@ class LegacyQuestionFactory(DjangoModelFactory):
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
     created_by = Faker('name')
     updated_by = Faker('name')
+
+
+class LegacyRadioButtonFactory(DjangoModelFactory):
+    """RadioButton factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyRadioButton
+
+    question_id = SubFactory(LegacyQuestionFactory)
+
+
+class LegacyRadioButtonOptionFactory(DjangoModelFactory):
+    """RadioButtonOption factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyRadioButtonOption
+
+    parent_table_id = SubFactory(LegacyRadioButtonFactory)
+    description = SubFactory(LegacyDictionaryFactory)
+    order = Sequence(lambda number: number)
+
+
+class LegacyCheckboxFactory(DjangoModelFactory):
+    """CheckBox factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyCheckbox
+
+    question_id = SubFactory(LegacyQuestionFactory)
+
+
+class LegacyCheckboxOptionFactory(DjangoModelFactory):
+    """CheckBoxOption factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyCheckboxOption
+
+    order = Faker('random_int')
+    description = SubFactory(LegacyDictionaryFactory)
+    parent_table_id = SubFactory(LegacyCheckboxFactory)
+
+
+class LegacyLabelFactory(DjangoModelFactory):
+    """Label factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyLabel
+
+    question_id = SubFactory(LegacyQuestionFactory)
+
+
+class LegacyLabelOptionFactory(DjangoModelFactory):
+    """LabelOption factory from the legacy questionnaire database."""
+
+    class Meta:
+        model = models.LegacyLabelOption
+
+    description = SubFactory(LegacyDictionaryFactory)
+    pos_init_x = Faker('random_int')
+    pos_init_y = Faker('random_int')
+    pos_final_x = Faker('random_int')
+    pos_final_y = Faker('random_int')
+    intensity = Faker('random_int')
+    order = Faker('random_int')
+    parent_table_id = SubFactory(LegacyLabelFactory)
 
 
 class LegacyQuestionSectionFactory(DjangoModelFactory):
@@ -252,7 +282,7 @@ class LegacyAnswerSliderFactory(DjangoModelFactory):
         model = models.LegacyAnswerSlider
 
     answer_id = SubFactory(LegacyAnswerFactory)
-    value = Faker('pyfloat', positive=True, min_value=0, max_value=10)
+    value = Faker('pyfloat', positive=True, min_value=1, max_value=10)
 
 
 class LegacyAnswerTextBoxFactory(DjangoModelFactory):
@@ -283,7 +313,7 @@ class LegacyAnswerLabelFactory(DjangoModelFactory):
 
     answer_id = SubFactory(LegacyAnswerFactory)
     selected = 1
-    pox_x = Faker('pyint')
+    pos_x = Faker('pyint')
     pos_y = Faker('pyint')
     intensity = Faker('pyint')
     value = Faker('pyint')
