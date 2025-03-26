@@ -196,8 +196,6 @@ django translations:
   extends:
     - .default_needs
   script:
-    # install dependencies for makemessages and git diff
-    - apt update && apt-get install -y gettext git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
