@@ -185,6 +185,7 @@ class Command(BaseCommand):
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
         """
+        response = {}
         try:
             response = requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',
@@ -199,7 +200,7 @@ class Command(BaseCommand):
                 f'Databank sender OIE Error: {exc}',
             )
 
-        if response.status_code == 200:
+        if response and response.status_code == 200:
             # Data sent to OIE successfully, parse aggregate response from databank and update models
             return response.json()
         # TODO: QSCCD-1097 handle all error codes
