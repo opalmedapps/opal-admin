@@ -2,6 +2,7 @@
 import datetime
 import logging
 import os
+from http import HTTPStatus
 from typing import Any
 
 from django.conf import settings
@@ -10,11 +11,11 @@ from django.http import HttpResponse
 from django.utils.encoding import smart_str
 from django.views.generic.base import TemplateView
 
-import django_tables2 as tables
 import pandas as pd
 
 from .backend import get_all_questionnaire, get_questionnaire_detail, get_tempC, make_tempC
 from .models import ExportReportPermission
+from .tables import ReportTable
 
 
 # QUESTIONNAIRES INDEX PAGE
@@ -74,20 +75,8 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             context.update(questionnaire_detail)
         else:
             self.logger.error('Request questionnaire not found.')
-            return HttpResponse(status=404)  # noqa: WPS432
-        return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
-
-
-# REPORT TABLE (DjangoTables2)
-class ReportTable(tables.Table):
-    """Enable rendering of report data with django table2."""
-
-    patientId = tables.Column()
-    questionId = tables.Column()
-    question = tables.Column()
-    Answer = tables.Column()
-    creationDate = tables.Column()
-    lastUpdated = tables.Column()
+            return HttpResponse(status=HTTPStatus.NOT_FOUND)
+        return super().render_to_response(context)  # noqa: WPS613
 
 
 # EXPORT REPORTS VIEW REPORT
@@ -113,17 +102,20 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         context = self.get_context_data()
         context.update({'title': 'export questionnaire'})
         complete_params_check = make_tempC(request.POST)  # create temporary table for requested questionnaire data
-
         if not complete_params_check:  # fail with 400 error if query parameters are incomplete
             self.logger.error('Server received incomplete query parameters.')
             return HttpResponse(status=400)  # noqa: WPS432
 
         report = get_tempC()  # after verifying parameters were complete, retrieve the prepared data
 
-        report_table = ReportTable(report, orderable=False)  # orderable set false for now to avoid queryset errors
+        report_table = ReportTable(report)
         context.update({'questionnaireID': request.POST.get('questionnaireid')})
         context.update({'reporttable': report_table})
-        return super(TemplateView, self).render_to_response(context)  # noqa: WPS608, WPS613
+        context.update({'questionnaireName': request.POST.get('questionnairename')})
+        context.update({'start': request.POST.get('start')})
+        context.update({'end': request.POST.get('end')})
+
+        return super().render_to_response(context)  # noqa: WPS613
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)

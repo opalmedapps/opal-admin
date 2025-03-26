@@ -9,7 +9,7 @@
   {% if perms.questionnaires.export_report %}
       <div class="row justify-content-md-center">
         <div class="col col-md-10">
-            <h3>{% translate "Report" %}</h3>
+            <h4>{% translate "Report:" %} {{ questionnaireName }} {% translate "between" %} {{ start }} {% translate "and" %} {{ end }}</h4>
             <div class="table-responsive">
               {% render_table reporttable %}
           </div>

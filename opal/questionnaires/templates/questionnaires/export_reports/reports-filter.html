@@ -21,6 +21,7 @@
     </div>
    <form action="{% url 'questionnaires:reports-detail' %}" method="post" id="form2">
       {% csrf_token %}
+      <input type="hidden" name="questionnairename" value="{{ questionnaire.name  }}"/>
       <div class="row justify-content-md-center">
           <div class="col-sm-3">
 
