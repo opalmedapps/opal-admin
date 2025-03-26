@@ -28,7 +28,7 @@ msgstr "Patient"
 
 #: opal/databank/models.py
 msgid "Globally Unique Identifier"
-msgstr ""
+msgstr "Identifiant unique mondial"
 
 #: opal/databank/models.py
 msgid "Checked-In Appointments Consent"
