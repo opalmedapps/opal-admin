@@ -331,7 +331,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
     def _draw_institution_logo(self) -> None:
-        """Draw the site logo that is shown at the top of the first page."""
+        """Draw the institution logo that is shown at the top of the first page."""
         self.image(
             str(self.institution_data.institution_logo_path),
             x=35,
