@@ -1022,17 +1022,39 @@ class TestPatientExistsView:
         )
 
 
+def test_relationship_types_list_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    listener_user: User,
+) -> None:
+    """Test that unauthenticated and unauthorized users cannot access the API."""
+    url = reverse('api:relationship-types-list')
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(listener_user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
 def test_relationship_types_list(api_client: APIClient, listener_user: User) -> None:
     """Test the return of the relationship types list."""
     api_client.force_login(user=listener_user)
 
-    relationship_type1 = RelationshipType()
+    relationship_type = RelationshipType()
 
     response = api_client.get(reverse('api:relationship-types-list'))
 
     assert response.status_code == HTTPStatus.OK
 
     assert response.json()[0] == {
-        'name': relationship_type1.name,
-        'description': relationship_type1.description,
+        'name': relationship_type.name,
+        'description': relationship_type.description,
     }
