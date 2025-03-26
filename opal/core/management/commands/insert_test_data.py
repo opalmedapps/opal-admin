@@ -604,7 +604,7 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
         'Quel était le nom de votre super-héros préféré durant votre enfance?'
     )
     question3 = (
-        'What was the color of your first car'
+        'What was the color of your first car?'
         if language == 'en'
         else
         'Quelle était la couleur de votre première voiture?'
