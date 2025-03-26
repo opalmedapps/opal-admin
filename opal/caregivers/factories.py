@@ -80,4 +80,3 @@ class RegistrationCode(DjangoModelFactory):
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
     email_verification_code = '123456'
-    status = models.RegistrationCodeStatus.NEW
