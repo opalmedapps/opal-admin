@@ -12,7 +12,7 @@ class SecurityQuestionTranslationOptions(TranslationOptions):
     See [SecurityQuestion][opal.patients.models.SecurityQuestion].
     """
 
-    fields = ('title')
+    fields = ('title',)
     required_languages = ('en', 'fr')
 
 
