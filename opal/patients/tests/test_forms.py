@@ -475,7 +475,7 @@ def test_new_user_form_not_valid() -> None:
     assert not form.is_valid()
 
 
-def test_confirm_password_form_valid() -> None:
+def test_confirm_password_form_valid(mocker: MockerFixture) -> None:
     """Ensure that the confirm user password form is valid."""
     form_data = {
         'confirm_password': 'test-password',
@@ -483,18 +483,26 @@ def test_confirm_password_form_valid() -> None:
     user = User.objects.create()
     user.set_password(form_data['confirm_password'])
 
+    # mock fed authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
+
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 
     assert form.is_valid()
 
 
-def test_confirm_password_form_password_invalid() -> None:
+def test_confirm_password_form_password_invalid(mocker: MockerFixture) -> None:
     """Ensure that user password is not valid."""
     form_data = {
         'confirm_password': 'test-password',
     }
     user = User.objects.create()
     user.set_password('password')
+
+    # mock fed authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate.return_value = None
 
     form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
 

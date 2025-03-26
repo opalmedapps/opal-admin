@@ -3,7 +3,6 @@ from datetime import date
 from typing import Any, Dict, Optional, Union
 
 from django import forms
-from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from django.utils.translation import gettext
@@ -12,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
+
+from opal.core.auth import FedAuthBackend
 
 from ..core import validators
 from ..core.form_layouts import CancelButton
@@ -527,9 +528,10 @@ class ConfirmPasswordForm(forms.Form):
     def clean(self) -> None:
         """Validate the user password."""
         super().clean()
-        confirm_password = self.cleaned_data.get('confirm_password')
+        confirm_password = self.cleaned_data.get('confirm_password', '')
+        fed_auth_service = FedAuthBackend()
 
-        if not check_password(confirm_password, self.authorized_user.password):
+        if not fed_auth_service.authenticate_fedauth(self.authorized_user.username, confirm_password):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 

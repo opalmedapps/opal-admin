@@ -404,6 +404,10 @@ def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerF
         },
     )
 
+    # mock fed authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
+
     url = reverse('patients:access-request')
     site = factories.Site()
     relationship = factories.RelationshipType()
