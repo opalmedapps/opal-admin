@@ -137,6 +137,10 @@ class Patient(models.Model):
                 name='%(app_label)s_%(class)s_sex_valid',  # noqa: WPS323
                 check=models.Q(sex__in=SexType.values),
             ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
+                check=models.Q(date_of_birth__lt=models.F('date_of_death')),
+            ),
         ]
 
     def __str__(self) -> str:
@@ -155,7 +159,7 @@ class Patient(models.Model):
             ValidationError: If the date of death is earlier than the date of birth.
         """
         if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
-            raise ValidationError({'date_of_death': _('Date of death must be later than date of birth.')})
+            raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
 
 
 class RelationshipStatus(models.TextChoices):

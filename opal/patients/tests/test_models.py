@@ -473,7 +473,7 @@ def test_invalid_date_of_death() -> None:
     patient.date_of_birth = datetime.date(2022, 11, 20)
     patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 10, 20))
 
-    expected_message = 'Date of death must be later than date of birth.'
+    expected_message = 'Date of death cannot be earlier than date of birth.'
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
         patient.clean()
 
