@@ -94,12 +94,13 @@ markdownlint:
   stage: Static Analysis
   image:
     name: davidanson/markdownlint-cli2:v0.5.1
-    # entrypoint:
-    #   - sh
+    entrypoint:
+      - sh
+  # this is not a Python script so we don't need to do all this extra stuff
+  before_script:
+    - markdownlint-cli2 --version
   script:
-    # - markdownlint-cli2 --version
-    # - markdownlint-cli2 "**/*.md" "#.venv"
-    - "**/*.md"
+    - markdownlint-cli2 "**/*.md" "#.venv"
 
 test:
   stage: Test
@@ -184,6 +185,7 @@ build docs:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
     - job: setup
+    - job: markdownlint
 
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
