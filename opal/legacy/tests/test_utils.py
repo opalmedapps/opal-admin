@@ -57,3 +57,13 @@ def test_insert_hospital_identifiers() -> None:
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='1234567', hospital__code='MCH', is_active=False,
     ).exists()
+
+
+def test_create_patient_control() -> None:
+    """The patient control is created for the legacy patient."""
+    factories.LegacyPatientFactory(patientsernum=321)
+
+    legacy_utils.create_patient_control(321)
+
+    assert models.LegacyPatientControl.objects.count() == 1
+    assert models.LegacyPatientControl.objects.get().patient_id == 321

@@ -3,7 +3,7 @@ from django.db.models import F  # noqa: WPS347 (vague import)
 
 from opal.patients.models import HospitalPatient
 
-from .models import LegacyPatientHospitalIdentifier, LegacyUsers
+from .models import LegacyPatientControl, LegacyPatientHospitalIdentifier, LegacyUsers
 
 
 def get_patient_sernum(username: str) -> int:
@@ -53,3 +53,13 @@ def insert_hospital_identifiers(legacy_id: int) -> None:
         for hospital_patient in HospitalPatient.objects.select_related('site').annotate(site_code=F('site__code'))
     ]
     LegacyPatientHospitalIdentifier.objects.bulk_create(hospital_identifiers)
+
+
+def create_patient_control(legacy_id: int) -> None:
+    """
+    Create the patient control for the patient.
+
+    Args:
+        legacy_id: the legacy ID of the patient
+    """
+    LegacyPatientControl.objects.create(patient_id=legacy_id)

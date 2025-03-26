@@ -15,8 +15,10 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 * Don't rename db_table or db_column values
 """
+import datetime as dt
 
 from django.db import models
+from django.utils import timezone
 
 from . import managers
 
@@ -66,6 +68,23 @@ class LegacyPatient(models.Model):
     class Meta:
         managed = False
         db_table = 'Patient'
+
+
+class LegacyPatientControl(models.Model):
+    """Patient control from the legacy database."""
+
+    patient = models.OneToOneField('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum', primary_key=True)
+    patientupdate = models.IntegerField(db_column='PatientUpdate', default=1)
+    lasttransferred = models.DateTimeField(
+        db_column='LastTransferred',
+        default=timezone.make_aware(dt.datetime(2000, 1, 1)),
+    )
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
+    transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)
+
+    class Meta:
+        managed = False
+        db_table = 'PatientControl'
 
 
 class LegacyNotification(models.Model):
