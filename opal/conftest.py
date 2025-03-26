@@ -243,7 +243,7 @@ def orms_system_user(django_user_model: User) -> User:
         django_user_model: the `User` model used in this project
 
     Returns:
-        a user instance representing the listener
+        a user instance representing orms
     """
     return django_user_model.objects.create_user(username=constants.USERNAME_ORMS)
 
