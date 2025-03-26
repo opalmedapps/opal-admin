@@ -35,7 +35,7 @@ def test_healthdatastore_unique_per_patient() -> None:
     data_store2.id = None
 
     constraint_name = 'health_data_healthdatastore_unique_patient'
-    with assertRaisesMessage(IntegrityError, constraint_name):
+    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
         data_store2.save()
 
 
@@ -62,7 +62,7 @@ def test_quantitysample_str() -> None:
 
 
 @pytest.mark.parametrize('sample_type', QuantitySampleType.values)
-def test_quantitysampletype_unit_defined(sample_type: tuple[str, str]) -> None:
+def test_quantitysampletype_unit_defined(sample_type: str) -> None:
     """Ensure there exists a `Unit` for each unit referenced in the `QuantitySampleTypes`."""
     sample = QuantitySample(type=sample_type, value=12.34)
 
