@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-13 11:23-0400\n"
+"POT-Creation-Date: 2023-06-16 10:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -137,6 +137,10 @@ msgstr "L’Équipe Opal"
 msgid "Go back to OpalAdmin Menu"
 msgstr "Retourner au menu d'OpalAdmin"
 
+#: opal/templates/sidebar_base.html
+msgid "Log Out"
+msgstr "Se déconnecter"
+
 #: opal/templates/sidebar_items.html
 msgid "Home"
 msgstr "Accueil"
@@ -180,10 +184,6 @@ msgstr "Questionnaires"
 #: opal/templates/sidebar_items.html
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
-
-#: opal/templates/sidebar_items.html
-msgid "Log Out"
-msgstr "Se déconnecter"
 
 #: opal/templates/tables/action_column.html
 msgid "View"
