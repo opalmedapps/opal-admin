@@ -1,19 +1,18 @@
 from collections import defaultdict
-from datetime import datetime
 from io import StringIO
 from pathlib import Path
 
 import pytest
 
-from opal.core.drf_parsers import hl7_parser
+from opal.core.drf_parsers.hl7_parser import HL7Parser
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 
 @pytest.fixture
-def parser():
+def parser() -> HL7Parser:
     """Fixture for creating an HL7Parser instance."""
-    return hl7_parser.HL7Parser()
+    return HL7Parser()
 
 
 class TestHL7Parser:
@@ -67,7 +66,7 @@ class TestHL7Parser:
         # Use the utility method to assert the PID segment data
         self._assert_segment_data(parsed_data['PID'], expected_values, "PID")
 
-    def test_parse_pv1_segment(self, parser):
+    def test_parse_pv1_segment(self, parser) -> None:
         """Test parsing a PV1 segment."""
         stream = self._load_hl7_fixture('marge_PV1.hl7v2')
         parsed_data = parser.parse(stream)
@@ -86,7 +85,7 @@ class TestHL7Parser:
         self._assert_segment_data(pv1_data, expected_values, "PV1")
 
 
-    def test_parse_orc_segment(self, parser):
+    def test_parse_orc_segment(self, parser) -> None:
         """Test parsing a ORC segment."""
         stream = self._load_hl7_fixture('marge_ORC.hl7v2')
         parsed_data = parser.parse(stream)
@@ -121,7 +120,7 @@ class TestHL7Parser:
         self._assert_segment_data(orc_data, expected_values, "ORC")
 
 
-    def test_parse_rxe_segment(self, parser):
+    def test_parse_rxe_segment(self, parser) -> None:
         """Test parsing a RXE segment."""
         stream = self._load_hl7_fixture('marge_RXE.hl7v2')
         parsed_data = parser.parse(stream)
@@ -166,7 +165,7 @@ class TestHL7Parser:
         self._assert_segment_data(rxe_data, expected_values, "RXE")
 
 
-    def test_parse_rxr_segment(self, parser):
+    def test_parse_rxr_segment(self, parser) -> None:
         """Test parsing a RXR segment."""
         stream = self._load_hl7_fixture('marge_RXR.hl7v2')
         parsed_data = parser.parse(stream)
@@ -193,7 +192,7 @@ class TestHL7Parser:
         self._assert_segment_data(rxr_data, expected_values, "RXR")
 
 
-    def test_parse_rxc_segment(self, parser):
+    def test_parse_rxc_segment(self, parser) -> None:
         """Test parsing a RXC segment."""
         stream = self._load_hl7_fixture('marge_RXC.hl7v2')
         parsed_data = parser.parse(stream)
@@ -214,7 +213,7 @@ class TestHL7Parser:
         # Use the utility method to assert the segment data
         self._assert_segment_data(rxc_data, expected_values, "RXC")
 
-    def test_parse_nte_segment(self, parser):
+    def test_parse_nte_segment(self, parser) -> None:
         """Test parsing a NTE segment."""
         stream = self._load_hl7_fixture('marge_NTE.hl7v2')
         parsed_data = parser.parse(stream)

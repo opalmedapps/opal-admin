@@ -17,7 +17,7 @@ class HL7Parser(BaseParser):
 
     media_type = 'application/hl7-v2+er7'
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the segment parsing functions."""
         self.segment_parsers: dict[str, function] = {
             'PID': self._parse_pid_segment,
@@ -31,10 +31,10 @@ class HL7Parser(BaseParser):
 
     def parse(
         self,
-        stream: IO,
+        stream: IO[Any],
         media_type: str | None = None,
         parser_context: Mapping[str, Any] | None = None,
-    ) -> defaultdict[Any, list]:
+    ) -> defaultdict[Any, list[dict[str, Any]]]:
         """Parse the incoming bytestream as an HL7v2 message and return JSON.
 
         Args:
@@ -70,14 +70,14 @@ class HL7Parser(BaseParser):
             # If a parsing function is defined, use it to parse the segment
             if parse_function and segment_name=='PID':
                 # Only 1 PID segment is ever expected
-                message_dict[segment_name] = parse_function(segment)
+                message_dict[segment_name] = parse_function(segment)  # type: ignore[operator]
             elif parse_function:
                 # Other segment types can have multiple
-                message_dict[segment_name].append(parse_function(segment))
+                message_dict[segment_name].append(parse_function(segment))  # type: ignore[operator]
 
         return message_dict
 
-    def _parse_pid_segment(self, segment: Segment) -> dict:
+    def _parse_pid_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract patient data from an HL7v2 PID segment.
 
         Use the HL7 documentation to know which fields contain the correct data:
@@ -106,7 +106,7 @@ class HL7Parser(BaseParser):
             'marital_status': segment.pid_17.pid_17_1.to_er7(),
         }
 
-    def _parse_pv1_segment(self, segment: Segment) -> dict:
+    def _parse_pv1_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract patient visit data from an HL7v2 PV1 segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/PV1
@@ -125,7 +125,7 @@ class HL7Parser(BaseParser):
             'visit_number': segment.pv1_19.pv1_19_1.to_er7(),
         }
 
-    def _parse_orc_segment(self, segment: Segment) -> dict:
+    def _parse_orc_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract common order data from an HL7v2 ORC segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/ORC
@@ -161,7 +161,7 @@ class HL7Parser(BaseParser):
             'effective_at': self._format_datetime_from_er7(segment.orc_15.orc_15_1.to_er7(), '%Y%m%d%H%M%S'),
         }
 
-    def _parse_rxe_segment(self, segment: Segment) -> dict:
+    def _parse_rxe_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract pharmacy encoding data from an HL7v2 RXE segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
@@ -206,7 +206,7 @@ class HL7Parser(BaseParser):
             'give_rate_units': segment.rxe_24.rxe_24_2.to_er7(),
         }
 
-    def _parse_rxc_segment(self, segment: Segment) -> dict:
+    def _parse_rxc_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract pharmacy component data from an HL7v2 RXC segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
@@ -229,7 +229,7 @@ class HL7Parser(BaseParser):
             'component_units': segment.rxc_4.rxc_4_1.to_er7(),
         }
 
-    def _parse_rxr_segment(self, segment: Segment) -> dict:
+    def _parse_rxr_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract pharmacy route data from an HL7v2 RXR segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
@@ -257,7 +257,7 @@ class HL7Parser(BaseParser):
             'route_administration_alt_coding_system': segment.rxr_4.rxr_4_6.to_er7(),
         }
 
-    def _parse_nte_segment(self, segment: Segment) -> dict:
+    def _parse_nte_segment(self, segment: Segment) -> dict[str, Any]:
         """Extract note and comment data from an HL7v2 NTE segment.
 
         https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/NTE
@@ -297,7 +297,7 @@ class HL7Parser(BaseParser):
         """
         return field.replace('\\E\\.br\\E\\', '\n')
 
-    def _remove_invalid_sites(self, mrn_site_list: list[tuple]) -> list[tuple] | None:
+    def _remove_invalid_sites(self, mrn_site_list: list[tuple[str, str]]) -> list[tuple[str, str]] | None:
         """Remove any identifiers using an invalid hospital site.
 
         Example before and after:
