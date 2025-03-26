@@ -52,7 +52,7 @@ class ORMSValidateView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request) -> Response:  # noqa: WPS210
+    def get(self, request: Request) -> Response:
         """
         Validate if the user is authenticated and user belongs to ORMS user group.
 
@@ -63,7 +63,7 @@ class ORMSValidateView(APIView):
             PermissionDenied: if no permission.
 
         Returns:
-            Http response with empty message.
+            Http response with caregiver username and status code.
         """
         user = request.user
 
