@@ -174,6 +174,12 @@ def test_relationship_status_constraint() -> None:
         relationship.save()
 
 
+def test_hospitalpatient_factory() -> None:
+    """Ensure the Patient factory is building properly."""
+    hospital_patient = factories.HospitalPatient()
+    hospital_patient.full_clean()
+
+
 def test_hospitalpatient_one_patient_one_site() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
     hospitalpatient = factories.HospitalPatient()
