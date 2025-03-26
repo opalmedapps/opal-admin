@@ -692,12 +692,6 @@ msgstr "Afficher l'accès des soignants"
 msgid "No explanation provided"
 msgstr ""
 
-#: opal/patients/templates/patients/unpoly.html
-#, fuzzy
-#| msgid "Generate Access Request"
-msgid "New Access Request"
-msgstr "Générer une demande d'accès"
-
 #: opal/patients/views.py
 msgid "Hospital Information"
 msgstr "Patient de l'hôpital"
