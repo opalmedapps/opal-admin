@@ -168,12 +168,60 @@ def fetch_patients_received_data_summary(
                 patient_id__in=patients_with_logins,
             ),
         ),
-        # 'has_appointment_only': {},
-        # 'has_labs_only': {},
-        # 'has_clinical_notes_only': {},
-        # 'using_app_after_receiving_new_data': {},
-        # 'not_using_app_after_receiving_new_data': {},
-        # 'not_using_app_and_no_data': {},
+        'has_appointment_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received__isnull=False,
+                last_lab_received=None,
+                last_document_received=None,
+                patient_id__in=patients_with_logins,
+            ),
+        ),
+        'has_labs_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received__isnull=False,
+                last_document_received=None,
+                patient_id__in=patients_with_logins,
+            ),
+        ),
+        'has_clinical_notes_only': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received=None,
+                last_document_received__isnull=False,
+                patient_id__in=patients_with_logins,
+            ),
+        ),
+        'using_app_after_receiving_new_data': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received__isnull=False,
+                last_lab_received__isnull=False,
+                last_document_received__isnull=False,
+                patient_id__in=patients_with_logins,
+            ),
+        ),
+        'not_using_app_after_receiving_new_data': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received__isnull=False,
+                last_lab_received__isnull=False,
+                last_document_received__isnull=False,
+                patient_id__in=patients_with_no_logins,
+            ),
+        ),
+        'not_using_app_and_no_data': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received=None,
+                last_document_received=None,
+                patient_id__in=patients_with_no_logins,
+            ),
+        ),
     }
 
     return DailyPatientDataReceived.objects.filter(
