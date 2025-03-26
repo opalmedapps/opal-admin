@@ -231,6 +231,13 @@ def test_patient_non_existing_legacy_id() -> None:
     assert Patient.objects.count() == 2
 
 
+def test_patient_access_level_default() -> None:
+    """Ensure that the default data access level is ALL."""
+    patient = factories.Patient()
+
+    assert patient.data_access == Patient.DataAccessType.ALL
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
@@ -333,7 +340,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
     calculated_end_date = relationship.patient.date_of_birth + relativedelta(
         years=relationship.type.end_age,
     )
-    relationship.start_date = calculated_end_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    relationship.start_date = calculated_end_date - relativedelta(years=2)
     relationship.end_date = calculated_end_date + timedelta(days=1)
 
     expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
@@ -789,7 +796,6 @@ def test_validstatuses_not_contain_wrong_status_expired() -> None:
                 RelationshipStatus.CONFIRMED,
                 RelationshipStatus.PENDING,
                 RelationshipStatus.REVOKED,
-                RelationshipStatus.EXPIRED,
             ],
         ),
         (

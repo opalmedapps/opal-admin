@@ -27,7 +27,7 @@ class RelationshipManager(models.Manager['Relationship']):
             Queryset to get the list of patients
 
         """
-        return self.prefetch_related(
+        return self.select_related(
             'patient',
             'caregiver',
             'caregiver__user',

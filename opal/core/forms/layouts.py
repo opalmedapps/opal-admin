@@ -48,7 +48,7 @@ class InlineSubmit(Layout):
     """
 
     default_label = _('Submit')
-    default_css_class = 'd-table'
+    default_css_class = 'btn d-table'
 
     def __init__(  # noqa: WPS211
         self,
@@ -70,14 +70,16 @@ class InlineSubmit(Layout):
         """
         the_label = label if label else self.default_label
 
-        css_class = self.default_css_class
+        submit = Submit(name, the_label, **kwargs)
 
         if extra_css:
-            css_class = f'{self.default_css_class} {extra_css}'
+            submit.field_classes = f'{self.default_css_class} {extra_css}'
+        else:
+            submit.field_classes = f'{self.default_css_class} btn-primary'
 
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{the_label}</label>'),
-            Submit(name, label, css_class=css_class, **kwargs),
+            submit,
         )
         super().__init__(*fields)
 
@@ -160,4 +162,21 @@ class FormActions(CrispyFormActions):
             css_class=css_class,
             template=template,
             **kwargs,
+        )
+
+
+class EnterSuppressedLayout(Layout):
+    """Default layout to suppress submission on pressing enter-key."""
+
+    def __init__(self, *fields: Any) -> None:
+        """
+        Override initialization of Layout component for crispyforms.
+
+        Args:
+            fields: field list passed to initialize the layout
+        """
+        self.fields = list(fields)
+        super().__init__(
+            HTML('<button type="submit" disabled style="display: none" aria-hidden="true"></button>'),
+            *fields,
         )

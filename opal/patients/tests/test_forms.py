@@ -11,7 +11,6 @@ from pytest_mock.plugin import MockerFixture
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
-from opal.users.models import User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -173,451 +172,6 @@ def test_relationship_pending_status_reason() -> None:
     assert pending_form.errors['reason'][0] == message
 
 
-def test_site_selection_exist() -> None:
-    """Ensure that the site selection is valid."""
-    site = factories.Site(name='Montreal General Hospital', code='MGH')
-    form_data = {
-        'sites': site,
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert form.is_valid()
-
-
-def test_site_selection_not_exist() -> None:
-    """Ensure that the empty site selection is not valid."""
-    form_data = {
-        'sites': '',
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert not form.is_valid()
-
-
-def test_find_patient_by_mrn_invalid_mrn() -> None:
-    """Ensure that the `find_patient_by_mrn` catch an error with an invalid MRN."""
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '',
-        'site_code': 'RVH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-
-    assert 'This field is required.' in form.errors['medical_number']
-    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
-
-
-def test_find_patient_by_mrn_invalid_site_code() -> None:
-    """Ensure that the `find_patient_by_mrn` catch an error with an invalid site code."""
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999996',
-        'site_code': '',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Provided MRN or site is invalid.'
-
-
-def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is not valid and return an error message.
-
-    Mock find_patient_by_mrn and pretend it was failed.
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
-            },
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999993',
-        'site_code': 'MGH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
-
-
-def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is valid by returning the expected OIE data structure.
-
-    Mock find_patient_by_mrn and pretend it was successful
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
-        return_value={
-            'status': 'success',
-            'data': OIE_PATIENT_DATA._asdict(),
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.MRN.name,
-        'medical_number': '9999993',
-        'site_code': 'MGH',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_find_patient_by_ramq_invalid_ramq() -> None:
-    """Ensure that the `find_patient_by_ramq` catch an error with an invalid site ramq."""
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'ram99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
-
-
-def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is not valid and return an error message.
-
-    Mock find_patient_by_ramq and pretend it was failed.
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
-        return_value={
-            'status': 'error',
-            'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
-            },
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'RAMQ99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
-
-
-def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
-    """
-    Ensure that the form is valid by returning the expected OIE data structure.
-
-    Mock find_patient_by_ramq and pretend it was successful
-    """
-    mocker.patch(
-        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
-        return_value={
-            'status': 'success',
-            'data': OIE_PATIENT_DATA._asdict(),
-        },
-    )
-
-    form_data = {
-        'medical_card': constants.MedicalCard.RAMQ.name,
-        'medical_number': 'RAMQ99996666',
-    }
-
-    form = forms.SearchForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_is_correct_checked() -> None:
-    """Ensure that the 'Correct?' checkbox is checked."""
-    form_data = {
-        'is_correct': True,
-    }
-
-    form = forms.ConfirmPatientForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_is_correct_not_checked() -> None:
-    """Ensure that the 'Correct?' checkbox is not checked."""
-    form_data = {
-        'is_correct': False,
-    }
-
-    form = forms.ConfirmPatientForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_correct'] == ['This field is required.']
-
-
-def test_requestor_form_not_check_if_required() -> None:
-    """Ensure that the 'requestor_form' checkbox is not checked."""
-    form_data = {
-        'relationship_type': factories.RelationshipType(start_age=1, form_required=True),
-        'requestor_form': False,
-    }
-
-    form = forms.RequestorDetailsForm(
-        data=form_data,
-        ramq='MARG99991313',
-        mrn='9999993',
-        site='MGH',
-        date_of_birth=date.today() - relativedelta(
-            years=14,
-        ),
-    )
-    assert not form.is_valid()
-    assert form.errors['requestor_form'] == ['Form request is required.']
-
-
-def test_disabled_option_exists() -> None:
-    """Ensure that a disabled option exists."""
-    self_type = RelationshipType.objects.self_type()
-    mandatary_type = RelationshipType.objects.mandatary()
-    factories.Patient(ramq='MARG99991313')
-
-    form_data = {
-        'relationship_type': RelationshipType.objects.all(),
-    }
-    form = forms.RequestorDetailsForm(
-        data=form_data,
-        ramq='MARG99991313',
-        mrn='9999993',
-        site='MGH',
-        date_of_birth=date.today() - relativedelta(
-            years=14,
-        ),
-    )
-
-    options = form.fields['relationship_type'].widget.options('relationship-type', '')
-    for option in options:
-        if option['label'] in {'Self', 'Mandatary'}:
-            assert 'disabled' not in option['attrs']
-        else:
-            assert option['attrs']['disabled'] == 'disabled'
-
-    assert list(form.fields['relationship_type'].widget.available_choices) == [
-        mandatary_type.pk,
-        self_type.pk,
-    ]
-
-
-def test_requestor_account_form_valid() -> None:
-    """Ensure that the requestor account form is valid."""
-    form_data = {
-        'user_type': 1,
-    }
-    form = forms.RequestorAccountForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_requestor_account_form_invalid() -> None:
-    """Ensure that the requestor account form is not valid."""
-    form_data = {
-        'user_type': '',
-    }
-
-    form = forms.SelectSiteForm(data=form_data)
-
-    assert not form.is_valid()
-
-
-def test_existing_user_form_phone_field_error() -> None:
-    """Ensure that the existing user form phone field has error."""
-    form_data = {
-        'user_email': 'marge.simpson@gmail.com',
-        'user_phone': '5141111111',
-    }
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    assert not form.is_valid()
-    assert form.errors['user_phone'] == [
-        'Enter a valid phone number having the format: '
-        + '+<countryCode><phoneNumber> (for example +15141234567) '
-        + 'with an optional extension "x123"',
-    ]
-
-
-def test_existing_user_form_email_field_error() -> None:
-    """Ensure that the existing user form email field has error."""
-    form_data = {
-        'user_email': 'marge.simpson',
-        'user_phone': '5141111111',
-    }
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    assert not form.is_valid()
-    assert form.errors['user_email'] == ['Enter a valid email address.']
-
-
-def test_existing_user_form_user_not_found() -> None:
-    """Ensure that the existing user is not found."""
-    form_data = {
-        'user_email': 'marge.simpson@gmail.com',
-        'user_phone': '+15142222222',
-    }
-    Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
-    )
-
-    error_message = (
-        'Opal user was not found in your database. '
-        + 'This may be an out-of-hospital account. '
-        + 'Please proceed to generate a new QR code. '
-        + 'Inform the user they must register at the Registration website.'
-    )
-
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == error_message
-
-
-def test_existing_user_not_more_than_one_self() -> None:
-    """Ensure that the existing user is not allowed to have more than one self relationship."""
-    form_data = {
-        'user_email': 'bart.simpson@gmail.com',
-        'user_phone': '+15142222222',
-    }
-    user_caregiver = Caregiver(
-        email='bart.simpson@gmail.com',
-        phone_number='+15142222222',
-        first_name='Bart',
-        last_name='Simpson',
-    )
-    caregiver = CaregiverProfile(user=user_caregiver)
-    patient = factories.Patient(first_name='Bart', last_name='Simpson')
-    relationship_type = factories.RelationshipType(
-        role_type=RoleType.SELF,
-        name='Self',
-        start_age=1,
-        form_required=True,
-    )
-    factories.Relationship(patient=patient, caregiver=caregiver, type=relationship_type)
-
-    form = forms.ExistingUserForm(
-        data=form_data,
-        relationship_type=relationship_type,
-    )
-
-    error_message = (
-        'This opal user already has a self-relationship with the patient.'
-    )
-
-    assert not form.is_valid()
-    assert form.non_field_errors()[0] == error_message
-
-
-def test_both_checkbox_checked() -> None:
-    """Ensure that the `Correct?` and `ID Checked?` checkboxes are checked."""
-    form_data = {
-        'is_correct': True,
-        'is_id_checked': True,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_correct_is_not_checked() -> None:
-    """Ensure that the `Correct?` is not checked."""
-    form_data = {
-        'is_correct': False,
-        'is_id_checked': True,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_correct'] == ['This field is required.']
-
-
-def test_id_checked_is_not_checked() -> None:
-    """Ensure that the `ID Checked?` is not checked."""
-    form_data = {
-        'is_correct': True,
-        'is_id_checked': False,
-    }
-
-    form = forms.ConfirmExistingUserForm(data=form_data)
-    assert not form.is_valid()
-    assert form.errors['is_id_checked'] == ['This field is required.']
-
-
-def test_new_user_form_valid() -> None:
-    """Ensure that the `NewUserForm` is valid."""
-    form_data = {
-        'first_name': 'Marge',
-        'last_name': 'Simpson',
-        'is_id_checked': True,
-    }
-
-    form = forms.NewUserForm(data=form_data)
-    assert form.is_valid()
-
-
-def test_new_user_form_not_valid() -> None:
-    """Ensure that the `NewUserForm` is not valid."""
-    form_data = {
-        'first_name': 'Marge',
-        'last_name': 'Simpson',
-        'is_id_checked': False,
-    }
-
-    form = forms.NewUserForm(data=form_data)
-    assert not form.is_valid()
-
-
-def test_confirm_password_form_valid(mocker: MockerFixture) -> None:
-    """Ensure that the confirm user password form is valid."""
-    form_data = {
-        'confirm_password': 'test-password',
-    }
-    user = User.objects.create()
-    user.set_password(form_data['confirm_password'])
-
-    # mock fed authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
-
-    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
-
-    assert form.is_valid()
-
-
-def test_confirm_password_form_password_invalid(mocker: MockerFixture) -> None:
-    """Ensure that user password is not valid."""
-    form_data = {
-        'confirm_password': 'test-password',
-    }
-    user = User.objects.create()
-    user.set_password('password')
-
-    # mock fed authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = None
-
-    form = forms.ConfirmPasswordForm(data=form_data, authorized_user=user)
-
-    assert form.errors['confirm_password'] == ['The password you entered is incorrect. Please try again.']
-    assert not form.is_valid()
-
-
 # Tests for ManageCaregiverAccessFilter
 def test_filter_managecaregiver_missing_site() -> None:
     """Ensure that `site` is required when filtering caregiver access by `mrn`."""
@@ -707,6 +261,16 @@ def test_caregiver_first_last_name_invalid() -> None:
 
 
 # Opal Registration Tests
+def test_accessrequestsearchform_initial() -> None:
+    """Ensure that the card type is the default and the site field is required."""
+    form = forms.AccessRequestSearchPatientForm()
+    site_field = form.fields['site']
+
+    assert form['card_type'].value() == constants.MedicalCard.MRN.name
+    assert not site_field.disabled
+    assert site_field.required
+
+
 def test_accessrequestsearchform_ramq() -> None:
     """Ensure that site field is disabled when card type is ramq."""
     form_data = {
@@ -812,7 +376,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
+                'message': ['connection_error'],
             },
         },
     )
@@ -826,6 +390,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
     form.fields['site'].initial = site
 
     assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
@@ -885,7 +450,7 @@ def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'Could not establish a connection to the hospital interface.',
+                'message': ['connection_error'],
             },
         },
     )
@@ -897,6 +462,7 @@ def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
     form = forms.AccessRequestSearchPatientForm(data=form_data)
 
     assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
@@ -926,15 +492,13 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
     assert form.patient == OIE_PATIENT_DATA
 
 
-# skip until OIE is fixed
-@pytest.mark.skip()
 def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
     """Ensure that the validation fails if no patient was found."""
     mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
-            'status': '400',
-            'data': {'message': 'Bad request'},
+            'status': 'error',
+            'data': {'message': ['not_found']},
         },
     )
 
@@ -946,7 +510,30 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
 
     assert not form.is_valid()
     assert form.patient is None
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'No patient could be found.'
+
+
+def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if the patient is not a test patient."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {'message': ['no_test_patient']},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'Patient is not a test patient.'
 
 
 def test_accessrequestrequestorform_form_filled_default() -> None:
@@ -983,7 +570,7 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
     relationship_types = list(
         RelationshipType.objects.filter(
             role_type__in=enabled_options,
-        ).values_list('name', flat=True),
+        ).values_list('name', flat=True).reverse(),
     )
 
     patient = OIE_PATIENT_DATA._asdict()
@@ -1026,7 +613,7 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
                 RoleType.GUARDIAN_CAREGIVER,
                 RoleType.PARENT_GUARDIAN,
             ],
-        ).values_list('name', flat=True),
+        ).values_list('name', flat=True).reverse(),
     )
 
     assert disabled_options == disabled_types

@@ -59,13 +59,22 @@ def test_inlinesubmit() -> None:
     assert 'value="bar"' in html
 
 
+def test_inlinesubmit_default_css() -> None:
+    """Ensure the InlineSubmit supports adding extra CSS classes."""
+    form = SampleForm(layouts.InlineSubmit(''))
+
+    html = render_crispy_form(form)
+
+    assert f'class="{layouts.InlineSubmit.default_css_class} btn-primary"' in html
+
+
 def test_inlinesubmit_extra_css() -> None:
     """Ensure the InlineSubmit supports adding extra CSS classes."""
     form = SampleForm(layouts.InlineSubmit('', extra_css='btn-secondary'))
 
     html = render_crispy_form(form)
 
-    assert f'class="btn btn-primary {layouts.InlineSubmit.default_css_class} btn-secondary"' in html
+    assert f'class="{layouts.InlineSubmit.default_css_class} btn-secondary"' in html
 
 
 def test_inlinesubmit_kwargs() -> None:

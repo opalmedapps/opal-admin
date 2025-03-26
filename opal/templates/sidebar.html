@@ -4,8 +4,7 @@
 <nav class="d-flex flex-column flex-shrink-0 p-3 border-end" style="width: 300px;">
   <a href="{% url 'start' %}" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
     <img src="{% static 'images/logo_opal.png' %}" alt="opal ADMIN logo" class="bi pe-none me-2 align-middle" width="32" height="32" style="opacity: .8" />
-    <span class="fs-4 fw-semibold text-body">OpalAdmin 2.0</span>
-    &nbsp;<span class="badge text-bg-primary">{% translate "new" %}</span>
+    <span class="fs-4 fw-semibold text-body">OpalAdmin</span>
   </a>
   <p>
     <a href="{{ OPAL_ADMIN_URL }}/#!/home" class="text-secondary">
@@ -46,9 +45,6 @@
       {% if perms.patients.can_perform_registration %}
         {% #menu_item url_name="patients:access-request-new" request=request %}
           {% translate "Opal Registration" %}
-        {% /menu_item %}
-        {% #menu_item url_name="patients:access-request" request=request %}
-          {% translate "Opal Registration (old)" %}
         {% /menu_item %}
       {% endif %}
       {% if perms.patients.can_manage_relationships %}

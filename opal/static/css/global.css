@@ -55,3 +55,8 @@ table thead a {
 .table-hover > tbody > tr:hover > * {
   background-color: var(--table-accent-bg-color);
 }
+
+/* Remove the bold font-weight to make the titles consistent with legend definition */
+h4 {
+  font-weight: var(--bs-body-font-weight);
+}
