@@ -425,7 +425,11 @@ class RegistrationCompletionView(APIView):
 
     def _get_email_address(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> str:
         """
-        Return email address to handle registration completion for a new caregiver and send confirmation email.
+        Return the email address for a new caregiver.
+
+        The email address is either coming from the related `EmailVerification`.
+        Or, from the request data (if the caregiver has an account at another institution, 
+        i.e., an existing Firebase account).
 
         Args:
             relationship: the relationship

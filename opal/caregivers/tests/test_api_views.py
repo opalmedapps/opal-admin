@@ -1670,8 +1670,8 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         caregiver_user.refresh_from_db()
         assert caregiver_user.email == 'foo@bar.com'
 
-    @pytest.mark.django_db(databases=['default', 'legacy'])
-    def test_confirmation_email_new_caregiver_fr(
+    @pytest.mark.django_db(databases=['default'])
+    def test_confirmation_email_new_caregiver(
         self,
         api_client: APIClient,
         admin_user: User,
