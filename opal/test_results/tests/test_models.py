@@ -68,7 +68,7 @@ def test_pathology_observation_str() -> None:
         general_test=general_test,
         observed_at=timezone.make_aware(datetime.today()),
     )
-    assert str(observation) == f'SPSPECI : {observation.observed_at}'
+    assert str(observation) == f'SPSPECI: {observation.observed_at}'
 
 
 def test_lab_observation_str() -> None:
@@ -82,7 +82,7 @@ def test_lab_observation_str() -> None:
         value_units='10^9/L',
         value_abnormal=models.AbnormalFlag.HIGH,
     )
-    assert str(observation) == 'WBC : 3.0 10^9/L [H]'
+    assert str(observation) == 'WBC: 3.0 10^9/L [H]'
 
 
 def test_note_str() -> None:
@@ -106,15 +106,16 @@ def test_save_pathology_observation_correct_type() -> None:
     pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
     observation = factories.PathologyObservationFactory(general_test=pathology_test)
     # This should not raise any exceptions
-    observation.save()
+    observation.full_clean()
 
 
 def test_save_pathology_observation_incorrect_type() -> None:
     """Test save behaviour of PathologyObservations for incorrect type."""
     lab_test = factories.GeneralTest(type=models.TestType.LAB)
+    pathology_observation = factories.PathologyObservationFactory(general_test=lab_test)
 
     with pytest.raises(ValidationError) as exc_info:
-        factories.PathologyObservationFactory(general_test=lab_test)
+        pathology_observation.full_clean()
 
     # Check if desired error message is in the list of error messages
     assert 'PathologyObservations can only be linked to GeneralTest of type PATHOLOGY.' in exc_info.value.messages
@@ -125,15 +126,15 @@ def test_save_lab_observation_correct_type() -> None:
     lab_test = factories.GeneralTest(type=models.TestType.LAB)
     observation = factories.LabObservationFactory(general_test=lab_test)
     # This should not raise any exceptions
-    observation.save()
+    observation.full_clean()
 
 
 def test_save_lab_observation_incorrect_type() -> None:
     """Test save behaviour of LabObservations for incorrect type."""
     pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
-
+    lab_observation = factories.LabObservationFactory(general_test=pathology_test)
     with pytest.raises(ValidationError) as exc_info:
-        factories.LabObservationFactory(general_test=pathology_test)
+        lab_observation.full_clean()
 
     # Check if desired error message is in the list of error messages
     assert 'LabObservations can only be linked to GeneralTest of type LAB.' in exc_info.value.messages
