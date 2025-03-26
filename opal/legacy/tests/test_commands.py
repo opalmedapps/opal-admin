@@ -8,11 +8,11 @@ from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
+from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType
-from opal.tests.utils.test_commands import CommandTestMixin
 from opal.users import factories as user_factories
 
 from ..management.commands import migrate_users

@@ -1,6 +1,9 @@
 """Module providing custom crispy layout objects."""
+from typing import Any, Optional
+
 from django.utils.translation import gettext_lazy as _
 
+from crispy_forms.bootstrap import FormActions as CrispyFormActions
 from crispy_forms.layout import HTML, Field, Layout, Submit
 
 
@@ -84,3 +87,37 @@ class InlineReset(Layout):
             HTML(f'<a class="btn btn-secondary me-2 d-table" href="{url}">{self.label}</a>'),
         )
         super().__init__(*fields)
+
+
+class FormActions(CrispyFormActions):
+    """Default form actions."""
+
+    default_css_class = 'd-flex justify-content-end gap-2'
+
+    def __init__(  # noqa: WPS211
+        self,
+        *fields: Any,
+        css_id: Optional[str] = None,
+        css_class: Optional[str] = None,
+        template: Optional[str] = None,
+        **kwargs: Any,
+    ):
+        """
+        Initialize the right-aligned form actions.
+
+        Args:
+            fields: the fields to contain within this action container (should only be HTML or BaseInput)
+            css_id: the ID to set for the div. Defaults to None.
+            css_class: the extra CSS classes to add to the div.
+            template: the template to use. Defaults to None.
+            kwargs: additional keyword arguments that are added to the div
+        """
+        css_class = f'{css_class} {self.default_css_class}' if css_class else self.default_css_class
+
+        super().__init__(
+            *fields,
+            css_id=css_id,
+            css_class=css_class,
+            template=template,
+            **kwargs,
+        )

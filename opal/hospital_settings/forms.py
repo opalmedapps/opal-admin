@@ -6,11 +6,11 @@ from django import forms
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 
-from ..core.form_layouts import CancelButton, FileField
+from opal.core.forms.layouts import CancelButton, FileField, FormActions
+
 from .models import Institution
 
 
