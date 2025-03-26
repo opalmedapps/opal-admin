@@ -168,6 +168,15 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
     }
 
 
+def test_empty_fetch_grouped_registration_summary() -> None:
+    """Ensure fetch_grouped_registration_summary() query can return an empty result without errors."""
+    registration_summary = stats_queries.fetch_grouped_registration_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not registration_summary
+
+
 def test_empty_fetch_caregivers_summary() -> None:
     """Ensure fetch_caregivers_summary() query can return an empty result without errors."""
     caregivers_summary = stats_queries.fetch_caregivers_summary(
