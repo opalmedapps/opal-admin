@@ -331,9 +331,18 @@ def test_user_caregiver_update(settings: SettingsWrapper) -> None:
 
 
 def test_databank_consent_create(settings: SettingsWrapper) -> None:
-    """Ensure the create DatabanKConsent endpoint is defined for a specific patient."""
+    """Ensure the create DatabankConsent endpoint is defined for a specific patient."""
     patient_uuid = uuid4()
     url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/databank/consent/'
 
     assert reverse('api:databank-consent-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:databank-consent-create'
+
+
+def test_patient_viewed_health_data_update(settings: SettingsWrapper) -> None:
+    """Ensure the endpoint for marking QuantitySamples as viewed for specific patient is defined."""
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/health-data/viewed/'
+
+    assert reverse('api:patient-viewed-health-data-update', kwargs={'uuid': patient_uuid}) == url_path
+    assert resolve(url_path).view_name == 'api:patient-viewed-health-data-update'
