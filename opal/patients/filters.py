@@ -72,8 +72,15 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column('card_type'),
             Column('site'),
             Column('medical_number'),
-            Column(InlineSubmit('', gettext('Search Specific Patient'))),
-            Column(InlineReset()),
+            Column(InlineSubmit(
+                name='submit_button',
+                label=gettext('Search Specific Patient'),
+                active_condition='{%if is_search %} active btn-active" aria-pressed=true {% endif %}',  # noqa: WPS323
+            )),
+            Column(InlineReset(
+                label=gettext('Show Pending Requests'),
+                active_condition='{%if is_pending %} active btn-active" aria-pressed=true {% endif %}',  # noqa: WPS323
+            )),
         )
 
         medical_number_field = self.form.fields['medical_number']
