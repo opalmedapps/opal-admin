@@ -113,6 +113,13 @@ class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[Site]):
         'institution',
         'longitude',
         'latitude',
+        'street_name',
+        'street_number',
+        'postal_code',
+        'city',
+        'province_code',
+        'contact_telephone',
+        'contact_fax',
     ]
     success_url = reverse_lazy('hospital-settings:site-list')
 

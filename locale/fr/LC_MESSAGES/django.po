@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-16 19:42+0300\n"
+"POT-Creation-Date: 2023-09-26 18:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,6 +41,34 @@ msgstr "Soumettre"
 #: opal/core/forms/layouts.py
 msgid "Reset"
 msgstr "Réinitialiser"
+
+#: opal/core/models.py
+msgid "Street Name"
+msgstr "Nom de rue"
+
+#: opal/core/models.py
+msgid "Street Number"
+msgstr "Numéro de rue"
+
+#: opal/core/models.py
+msgid "Postal Code"
+msgstr "Code Postal"
+
+#: opal/core/models.py
+msgid "City"
+msgstr "Ville"
+
+#: opal/core/models.py
+msgid "Province Code"
+msgstr "Code provincial"
+
+#: opal/core/models.py
+msgid "Contact Telephone"
+msgstr "Téléphone de Contact"
+
+#: opal/core/models.py
+msgid "Contact Fax"
+msgstr "Télécopieur"
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
