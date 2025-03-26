@@ -26,14 +26,14 @@ class Command(BaseCommand):
         for legacy_answer in legacy_answers:
 
             legacy_patient = legacy_answer.patientsernum
-            user = self._check_users(legacy_patient.patientsernum)
-            user = user['user']
+            res = self._check_users(legacy_patient.patientsernum)
+            user = res['user']
             if user is None:
                 continue
 
             legacy_question = legacy_answer.securityquestionsernum
-            question = self._check_and_import_question(legacy_question.securityquestionsernum)
-            question = question['question']
+            res = self._check_and_import_question(legacy_question.securityquestionsernum)
+            question = res['question']
             if question is None:
                 continue
 
