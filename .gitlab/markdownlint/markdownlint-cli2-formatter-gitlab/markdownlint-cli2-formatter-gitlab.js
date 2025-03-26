@@ -57,7 +57,7 @@ const { createHash } = require('node:crypto');
 }
 
 // Writes markdownlint-cli2 results to a file in JSON format following the GitLab CodeClimate spec
-// see: https://docs.gitlab.com/15.4/ee/ci/testing/code_quality.html#implementing-a-custom-tool
+// see: https://docs.gitlab.com/ee/ci/testing/code_quality.html#implementing-a-custom-tool
 const outputFormatter = (options, params) => {
   const { directory, results } = options;
   const { name, spaces } = (params || {});
