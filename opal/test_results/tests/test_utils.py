@@ -1,9 +1,22 @@
 from datetime import datetime
 from typing import Any
 
+import pytest
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_mock.plugin import MockerFixture
 
-from ..utils import _find_doctor_name, _find_note_date, _parse_notes, _parse_observations  # noqa: WPS450
+from opal.hospital_settings import factories as hospital_settings_factories
+from opal.hospital_settings.models import Site
+
+from ..utils import (  # noqa: WPS450
+    _find_doctor_name,
+    _find_note_date,
+    _get_site_instance,
+    _parse_notes,
+    _parse_observations,
+)
+
+pytestmark = pytest.mark.django_db
 
 
 def _create_empty_parsed_observations() -> dict[str, list]:
@@ -182,3 +195,31 @@ def test_parse_observations_success() -> None:
         'SPGROS': ['value_3'],
         'SPDX': ['value_4'],
     }
+
+
+def test_get_site_instance_success() -> None:
+    """Ensure that _get_site_instance() successfully return Site instance."""
+    hospital_settings_factories.Site(code='RVH')
+    site = _get_site_instance(receiving_facility='RVH')
+
+    assert Site.objects.filter(pk=site.pk).exists()
+
+
+def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
+    """Ensure that _get_site_instance() returns an empty Site for non-existent receiving facility."""
+    hospital_settings_factories.Site(code='RVH')
+    receiving_facility = ''
+    error = (
+        'An error occurred during pathology report generation.'
+        + 'Given receiving_facility code does not exist: {0}.'
+        + 'Proceeded generation with an empty Site.'
+    ).format(receiving_facility)
+    site = _get_site_instance(receiving_facility=receiving_facility)
+    assert caplog.records[0].message == error
+    assert caplog.records[0].levelname == 'ERROR'
+    assert site.name == ''
+    assert site.street_name == ''
+    assert site.city == ''
+    assert site.province_code == ''
+    assert site.postal_code == ''
+    assert site.contact_telephone == ''
