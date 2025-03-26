@@ -902,6 +902,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.get_max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
@@ -909,6 +911,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
                 initial_type,
+            ) or Relationship.get_max_end_date(
+                self.instance.patient.date_of_birth,
             ),
         })
 
