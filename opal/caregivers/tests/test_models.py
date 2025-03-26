@@ -284,7 +284,7 @@ class TestEmailVerification:
     def test_email_not_empty(self) -> None:
         """Ensure the field email is not empty."""
         email_verification = factories.EmailVerification()
-        email_verification.email = None
-        expected_message = "'email': ['This field cannot be null.']"
+        email_verification.email = ''
+        expected_message = "'email': ['This field cannot be blank.']"
         with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
             email_verification.clean_fields()
