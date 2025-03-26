@@ -207,6 +207,7 @@ class Command(BaseCommand):  # noqa: WPS214
             Any: json object containing response for each individual patient message, or empty if send failed
         """
         response = None
+        print(json.dumps(data, default=str))
         try:
             response = requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',
@@ -298,10 +299,10 @@ class Command(BaseCommand):  # noqa: WPS214
             self.stdout.write(f'Databank confirmation of data received for {databank_patient}: {message}')
         # Extract data ids depending on module and save to SharedData instances
         if DataModuleType.DEMOGRAPHICS in synced_data:
-            sent_data_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
+            sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
                 databank_consent=databank_patient,
-                data_id=sent_data_id,
+                data_id=sent_patient_id,
                 data_type=DataModuleType.DEMOGRAPHICS,
             )
         elif DataModuleType.LABS in synced_data:
@@ -314,6 +315,16 @@ class Command(BaseCommand):  # noqa: WPS214
             shared_data_instances = [
                 SharedData(databank_consent=databank_patient, data_id=test_result_id, data_type=DataModuleType.LABS)
                 for test_result_id in sent_test_result_ids
+            ]
+            SharedData.objects.bulk_create(shared_data_instances)
+        elif DataModuleType.DIAGNOSES in synced_data:
+            sent_diagnosis_ids = [
+                diagnosis['diagnosis_id']
+                for diagnosis in synced_data.get(DataModuleType.DIAGNOSES, [])
+            ]
+            shared_data_instances = [
+                SharedData(databank_consent=databank_patient, data_id=diagnosis_id, data_type=DataModuleType.DIAGNOSES)
+                for diagnosis_id in sent_diagnosis_ids
             ]
             SharedData.objects.bulk_create(shared_data_instances)
 
