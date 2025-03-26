@@ -65,3 +65,15 @@ def test_users_action_deactivate_user() -> None:
     ) == f'/api/users/{user.username}/deactivate-user/'
 
     assert resolve(f'/api/users/{user.username}/deactivate-user/').view_name == 'api:users-deactivate-user'
+
+
+def test_users_action_reactivate_user() -> None:
+    """Ensure users action for `reactivate-user` is defined."""
+    user = factories.User()
+
+    assert reverse(
+        'api:users-reactivate-user',
+        kwargs={'username': user.username},
+    ) == f'/api/users/{user.username}/reactivate-user/'
+
+    assert resolve(f'/api/users/{user.username}/reactivate-user/').view_name == 'api:users-reactivate-user'
