@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Layout, Row, Submit
 
 from . import constants
-from .models import Relationship, RelationshipStatus, Site, filter_on_initial
+from .models import Relationship, RelationshipStatus, Site
 
 
 class ManageCaregiverAccessForm(forms.Form):
@@ -87,7 +87,7 @@ class RelationshipPendingAccessForm(forms.ModelForm):
         """
         super().__init__(*args, **kwargs)
         self.fields['status'].choices = [
-            (choice.value, choice.label) for choice in filter_on_initial(
+            (choice.value, choice.label) for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
             )
         ]

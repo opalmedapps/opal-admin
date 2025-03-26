@@ -275,6 +275,33 @@ class Relationship(models.Model):
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
+    @staticmethod
+    def valid_statuses(initial: RelationshipStatus) -> list[RelationshipStatus]:  # noqa: WPS602
+        """
+        Select the proper status for the selected relationship status.
+
+        Args:
+            initial: the selected value of the status
+
+        Returns:
+            list of choices
+        """
+        if initial.value == RelationshipStatus.PENDING:
+            return [RelationshipStatus.PENDING, RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
+        elif initial.value == RelationshipStatus.CONFIRMED:
+            return [
+                RelationshipStatus.CONFIRMED,
+                RelationshipStatus.PENDING,
+                RelationshipStatus.DENIED,
+                RelationshipStatus.REVOKED,
+            ]
+        elif initial.value == RelationshipStatus.DENIED:
+            return [RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
+        elif initial.value == RelationshipStatus.REVOKED:
+            return [RelationshipStatus.REVOKED, RelationshipStatus.CONFIRMED]
+        # for initial value = Expired
+        return [RelationshipStatus.EXPIRED]
+
 
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
@@ -317,31 +344,3 @@ class HospitalPatient(models.Model):
             site_code=str(self.site.code),
             mrn=str(self.mrn),
         )
-
-
-def filter_on_initial(initial: RelationshipStatus) -> list:
-    """
-    Filter available choices in the options field of the form based on initial value.
-
-    Args:
-        initial: initial selected value of the option field
-
-    Returns:
-        list of choices
-
-    """
-    if initial.value == RelationshipStatus.PENDING:
-        return [RelationshipStatus.PENDING, RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
-    elif initial.value == RelationshipStatus.CONFIRMED:
-        return [
-            RelationshipStatus.CONFIRMED,
-            RelationshipStatus.PENDING,
-            RelationshipStatus.DENIED,
-            RelationshipStatus.REVOKED,
-        ]
-    elif initial.value == RelationshipStatus.DENIED:
-        return [RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
-    elif initial.value == RelationshipStatus.REVOKED:
-        return [RelationshipStatus.REVOKED, RelationshipStatus.CONFIRMED]
-    # for initial value = Expired
-    return [RelationshipStatus.EXPIRED]
