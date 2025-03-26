@@ -46,7 +46,7 @@ QUESTION_REPORT_DATA = (
         max_value=None,
         polarity=0,
         section_id=1,
-        values=[
+        answers=[
             (
                 datetime(2024, 10, 21, 14, 0),
                 '3000',

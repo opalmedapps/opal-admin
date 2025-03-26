@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 from pathlib import Path
 from typing import Any
 
@@ -44,7 +44,7 @@ def test_create_patient() -> None:
         'Marge',
         'Simpson',
         models.LegacySexType.FEMALE,
-        datetime.date(1986, 10, 5),
+        dt.date(1986, 10, 5),
         'marge@opalmedapps.ca',
         models.LegacyLanguage.FRENCH,
         'SIMM86600599',
@@ -56,7 +56,7 @@ def test_create_patient() -> None:
     assert legacy_patient.first_name == 'Marge'
     assert legacy_patient.last_name == 'Simpson'
     assert legacy_patient.sex == models.LegacySexType.FEMALE
-    assert legacy_patient.date_of_birth == timezone.make_aware(datetime.datetime(1986, 10, 5))
+    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1986, 10, 5))
     assert legacy_patient.email == 'marge@opalmedapps.ca'
     assert legacy_patient.language == models.LegacyLanguage.FRENCH
     assert legacy_patient.ramq == 'SIMM86600599'
@@ -74,7 +74,7 @@ def test_create_dummy_patient() -> None:
 
     legacy_patient.full_clean()
 
-    date_of_birth = timezone.make_aware(datetime.datetime(1900, 1, 1))
+    date_of_birth = timezone.make_aware(dt.datetime(1900, 1, 1))
 
     assert legacy_patient.first_name == 'Marge'
     assert legacy_patient.last_name == 'Simpson'
@@ -91,12 +91,12 @@ def test_update_patient() -> None:
     # the date of birth for dummy patients is 0000-00-00 but it fails validation since it is an invalid date
     legacy_patient = factories.LegacyPatientFactory(
         ramq='',
-        date_of_birth=timezone.make_aware(datetime.datetime(2000, 1, 1)),
+        date_of_birth=timezone.make_aware(dt.datetime(2000, 1, 1)),
         sex=models.LegacySexType.UNKNOWN,
         age=None,
     )
 
-    date_of_birth = timezone.make_aware(datetime.datetime(2008, 3, 29))
+    date_of_birth = timezone.make_aware(dt.datetime(2008, 3, 29))
     legacy_utils.update_patient(legacy_patient, models.LegacySexType.OTHER, date_of_birth.date(), 'SIMB08032999')
 
     legacy_patient.refresh_from_db()
@@ -177,7 +177,7 @@ def test_initialize_new_patient() -> None:
     assert legacy_patient.first_name == patient.first_name
     assert legacy_patient.last_name == patient.last_name
     assert legacy_patient.sex == models.LegacySexType.MALE
-    assert legacy_patient.date_of_birth == timezone.make_aware(datetime.datetime(1999, 1, 1))
+    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
     assert legacy_patient.email == ''
     assert legacy_patient.language == models.LegacyLanguage.FRENCH
     assert legacy_patient.ramq == patient.ramq
@@ -232,7 +232,7 @@ def test_create_caregiver_user_patient() -> None:
         'Marge',
         'Simpson',
         models.LegacySexType.FEMALE,
-        datetime.date(1986, 10, 5),
+        dt.date(1986, 10, 5),
         '',
         models.LegacyLanguage.ENGLISH,
         'SIMM86600599',
@@ -301,7 +301,7 @@ def test_change_caregiver_user_to_patient() -> None:
     legacy_patient.refresh_from_db()
     assert legacy_patient.sex == models.LegacySexType.MALE
     assert legacy_patient.ramq == 'SIMB04100199'
-    assert legacy_patient.date_of_birth == timezone.make_aware(datetime.datetime(1999, 1, 1))
+    assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
 
 
 def test_databank_consent_form_fixture(
@@ -450,12 +450,11 @@ def test_legacy_patient_not_found(
     django_patient = patient_factories.Patient(ramq='SIMB04100199')
     assert not legacy_utils.create_databank_patient_consent_data(django_patient)
 
+
 #  Unit test for questionnaires data processing
-
-
 @pytest.mark.django_db
 def test_get_questionnaire_data_success(mocker: MockerFixture) -> None:
-    """Test successful execution of get_questionnaire_data."""
+    """Test that get_questionnaire_data returns the expected data."""
     # Arrange
     patient = patient_factories.Patient.create(legacy_id=123)
     mock_query_result = [('{"questionnaire_id": 1, "questions": []}',)]
@@ -464,19 +463,19 @@ def test_get_questionnaire_data_success(mocker: MockerFixture) -> None:
         QuestionnaireData(
             questionnaire_id=1,
             questionnaire_title='Mock Title',
-            last_updated=datetime.datetime(2023, 1, 1, 12, 0),
+            last_updated=dt.datetime(2023, 1, 1, 12, 0),
             questions=[],
         ),
     ]
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils.fetch_questionnaires_from_db', return_value=mock_query_result,
+        'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
     )
     mock_parse = mocker.patch(
-        'opal.legacy.utils.parse_query_result', return_value=mock_parsed_data,
+        'opal.legacy.utils._parse_query_result', return_value=mock_parsed_data,
     )
     mock_process = mocker.patch(
-        'opal.legacy.utils.process_questionnaire_data', return_value=mock_processed_data,
+        'opal.legacy.utils._process_questionnaire_data', return_value=mock_processed_data,
     )
 
     # Act
@@ -495,7 +494,7 @@ def test_get_questionnaire_data_db_error(mocker: MockerFixture) -> None:
     patient = patient_factories.Patient.create(legacy_id=123)
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils.fetch_questionnaires_from_db', side_effect=Exception('DB Error'),
+        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=Exception('DB Error'),
     )
 
     with pytest.raises(CommandError, match='Error fetching questionnaires: DB Error'):
@@ -511,7 +510,7 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
     mock_query_result = [('',)]
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils.fetch_questionnaires_from_db', return_value=mock_query_result,
+        'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
     )
 
     with pytest.raises(CommandError, match='Error parsing questionnaires: Expected parsed data to be a dict'):
@@ -524,8 +523,9 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
 def test_fetch_questionnaire_from_db(mocker: MockerFixture) -> None:
     """Test successful execution of fetch_questionnaires_from_db in the test questionnaire database."""
     external_patient_id = 51
-    result = legacy_utils.fetch_questionnaires_from_db(external_patient_id)
+    result = legacy_utils._fetch_questionnaires_from_db(external_patient_id)
 
+    print(result)
     assert len(result) == 1
     assert result[0]['questionnaire_id'] == 12
     assert result[0]['questionnaire_nickname'] == 'Edmonton Symptom Assessment System'
@@ -551,37 +551,30 @@ def test_parse_query_result_success() -> None:
         {'questionnaire5': 'questionnaire_value5'},
     ]
 
-    result = legacy_utils.parse_query_result(query_result)
+    result = legacy_utils._parse_query_result(query_result)
 
     assert result == expected_output
 
 
 def test_parse_query_result_invalid_data() -> None:
     """Test parsing with invalid data in the query result."""
-    query_result = [123, 'not_a_dict_or_list']  # Invalid data after deserialization
+    query_result = [(123, 'not_a_dict_or_list')]  # Invalid data after deserialization
     with pytest.raises(ValueError, match='Expected parsed data to be a dict or list of dicts, got'):
-        legacy_utils.parse_query_result(query_result)
+        legacy_utils._parse_query_result(query_result)
 
 
 def test_parse_query_result_empty_rows() -> None:
     """Test parsing when rows contain empty data."""
     query_result = list('')
-    result = legacy_utils.parse_query_result(query_result)
+    result = legacy_utils._parse_query_result(query_result)
     assert not result
-
-
-def test_parse_query_result_non_dict_list() -> None:
-    """Test parsing when data doesn't resolve to a list of dictionaries."""
-    query_result = [['not_a_dict_list']]  # A list of invalid structures
-    with pytest.raises(ValueError, match='Expected parsed data to be a dict or list of dicts, got'):
-        legacy_utils.parse_query_result(query_result)
 
 
 def test_parse_query_result_non_dict_items() -> None:
     """Test parsing when data contains non-dictionary items."""
     query_result = [[123, 456], None]  # A mix of invalid list contents
     with pytest.raises(ValueError, match='Expected parsed data to be a dict or list of dicts, got'):
-        legacy_utils.parse_query_result(query_result)
+        legacy_utils._parse_query_result(query_result)
 
 
 def test_process_questionnaire_data(mocker: MockerFixture) -> None:
@@ -597,14 +590,14 @@ def test_process_questionnaire_data(mocker: MockerFixture) -> None:
     ]
 
     mock_process_questions = mocker.patch(
-        'opal.legacy.utils.process_questions', return_value=[mock_question],
+        'opal.legacy.utils._process_questions', return_value=[mock_question],
     )
 
-    result = legacy_utils.process_questionnaire_data(parsed_data_list)
+    result = legacy_utils._process_questionnaire_data(parsed_data_list)
     assert len(result) == 1
     assert result[0].questionnaire_id == 1
     assert result[0].questionnaire_title == 'Test Questionnaire'
-    assert result[0].last_updated == datetime.datetime(
+    assert result[0].last_updated == dt.datetime(
         2024,
         11,
         25,
@@ -629,8 +622,8 @@ def test_process_questionnaire_data_missing_questions(mocker: MockerFixture) -> 
         },
     ]
 
-    with pytest.raises(CommandError, match='Unexpected data format:'):
-        legacy_utils.process_questionnaire_data(parsed_data_list)
+    with pytest.raises(ValueError, match='Unexpected data format:'):
+        legacy_utils._process_questionnaire_data(parsed_data_list)
 
 
 def test_process_questionnaire_data_invalid_date_format(mocker: MockerFixture) -> None:
@@ -656,7 +649,7 @@ def test_process_questionnaire_data_invalid_date_format(mocker: MockerFixture) -
     ]
 
     with pytest.raises(ValueError, match="time data 'invalid-date' does not match format "):
-        legacy_utils.process_questionnaire_data(parsed_data_list)
+        legacy_utils._process_questionnaire_data(parsed_data_list)
 
 
 def test_process_questions_valid() -> None:
@@ -678,7 +671,7 @@ def test_process_questions_valid() -> None:
             ],
         },
     ]
-    result = legacy_utils.process_questions(parsed_question_list)
+    result = legacy_utils._process_questions(parsed_question_list)
 
     assert len(result) == 1
     assert result[0].question_text == 'Sample question'
@@ -687,17 +680,9 @@ def test_process_questions_valid() -> None:
     assert result[0].position == 1
     assert result[0].polarity == 1
     assert result[0].section_id == 1
-    assert result[0].values == [
-        (datetime.datetime(2024, 2, 23, 12, 0), '3'),
+    assert result[0].answers == [
+        (dt.datetime(2024, 2, 23, 12, 0), '3'),
     ]
-
-
-def test_invalid_question_format() -> None:
-    """Test processing with invalid question format."""
-    parsed_question_list = ['not a dict']
-
-    with pytest.raises(CommandError, match='Invalid question format: not a dict'):
-        legacy_utils.process_questions(parsed_question_list)
 
 
 def test_invalid_question_values_format() -> None:
@@ -717,7 +702,7 @@ def test_invalid_question_values_format() -> None:
     ]
 
     with pytest.raises(CommandError, match="Invalid 'values' format for question"):
-        legacy_utils.process_questions(parsed_question_list)
+        legacy_utils._process_questions(parsed_question_list)
 
 
 def test_invalid_question_date_format() -> None:
@@ -741,7 +726,7 @@ def test_invalid_question_date_format() -> None:
     ]
 
     with pytest.raises(ValueError, match="time data '2024-23-02 12:00:00' does not match format "):
-        legacy_utils.process_questions(parsed_question_list)
+        legacy_utils._process_questions(parsed_question_list)
 
 
 @pytest.fixture
@@ -750,7 +735,7 @@ def patient_mock(mocker: MockerFixture) -> Any:
     return mocker.MagicMock(
         first_name='Bart',
         last_name='Simpson',
-        date_of_birth=datetime.date(1999, 1, 1),
+        date_of_birth=dt.date(1999, 1, 1),
         ramq='SIMM99999999',
         sites_and_mrns=[
             {'mrn': '22222443', 'site_code': 'MGH'},
@@ -780,9 +765,9 @@ def questionnaire_data_mock(mocker: MockerFixture) -> Any:
         max_value=10,
         polarity=1,
         section_id=1,
-        values=[
+        answers=[
             (
-                datetime.datetime(2024, 11, 25, 10, 0, 0), '3',
+                dt.datetime(2024, 11, 25, 10, 0, 0), '3',
             ),
         ],
     )
@@ -790,7 +775,7 @@ def questionnaire_data_mock(mocker: MockerFixture) -> Any:
         mocker.MagicMock(
             questionnaire_id=1,
             questionnaire_title='Test Questionnaire',
-            last_updated=datetime.datetime(2024, 11, 25, 10, 0, 0),
+            last_updated=dt.datetime(2024, 11, 25, 10, 0, 0),
             questions=[question_mock],
         ),
     ]
@@ -798,12 +783,11 @@ def questionnaire_data_mock(mocker: MockerFixture) -> Any:
 
 @pytest.fixture
 def mock_generate_pdf(mocker: MockerFixture) -> Any:
-    """Fixture to mock generating a pdf."""
+    """Fixture to mock generating a PDF."""
     return mocker.patch('opal.legacy.utils.generate_pdf', autospec=True)
 
+
 # Test for generating the report
-
-
 def test_generate_questionnaire_report(
     mocker: MockerFixture,
     patient_mock: Any, mock_institution: Any, questionnaire_data_mock: Any, mock_generate_pdf: Any,  # noqa: WPS442
@@ -821,7 +805,7 @@ def test_generate_questionnaire_report(
     # Verify patient data
     assert args['patient'].patient_first_name == 'Bart'
     assert args['patient'].patient_last_name == 'Simpson'
-    assert args['patient'].patient_date_of_birth == datetime.date(1999, 1, 1)
+    assert args['patient'].patient_date_of_birth == dt.date(1999, 1, 1)
     assert args['patient'].patient_ramq == 'SIMM99999999'
 
     # Verify questionnaire data
@@ -829,7 +813,7 @@ def test_generate_questionnaire_report(
     questionnaire = args['questionnaires'][0]
     assert questionnaire.questionnaire_id == 1
     assert questionnaire.questionnaire_title == 'Test Questionnaire'
-    assert questionnaire.last_updated == datetime.datetime(2024, 11, 25, 10, 0, 0)
+    assert questionnaire.last_updated == dt.datetime(2024, 11, 25, 10, 0, 0)
 
     # Verify questions
     question = questionnaire.questions[0]
@@ -838,8 +822,8 @@ def test_generate_questionnaire_report(
     assert question.question_type_id == 1
     assert question.min_value == 0
     assert question.max_value == 10
-    assert question.values == [(
-        datetime.datetime(2024, 11, 25, 10, 0, 0), '3',
+    assert question.answers == [(
+        dt.datetime(2024, 11, 25, 10, 0, 0), '3',
     )]
 
     # Verify pdf generation

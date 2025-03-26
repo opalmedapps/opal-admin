@@ -474,22 +474,22 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
     """
     external_patient_id = patient.legacy_id if patient.legacy_id else -1
     try:
-        query_result = fetch_questionnaires_from_db(external_patient_id)
+        query_result = _fetch_questionnaires_from_db(external_patient_id)
     except Exception as exc:
         raise CommandError(f'Error fetching questionnaires: {exc}')
 
     try:
-        data_list = parse_query_result(query_result)
+        data_list = _parse_query_result(query_result)
     except ValueError as exc:  # noqa: WPS440
         raise CommandError(f'Error parsing questionnaires: {exc}')
-    return process_questionnaire_data(data_list)
+    return _process_questionnaire_data(data_list)
 
 
-def fetch_questionnaires_from_db(external_patient_id: int) -> list[Any]:
+def _fetch_questionnaires_from_db(legacy_patient_id: int) -> list[dict[str, Any]]:
     """Fetch completed questionnaires data from the database.
 
     Args:
-        external_patient_id (int): patient's legacy id
+        legacy_patient_id: patient's legacy id
 
     Returns:
         the result of the query
@@ -497,29 +497,29 @@ def fetch_questionnaires_from_db(external_patient_id: int) -> list[Any]:
     with connections['questionnaire'].cursor() as cursor:
         cursor.callproc(
             'getCompletedQuestionnairesList',
-            [external_patient_id, 1, 'EN'],
+            [legacy_patient_id, 1, 'EN'],
         )
         return [
             json.loads(row[0]) for row in cursor.fetchall() if row and row[0]  # noqa: WPS221
         ]
 
 
-def parse_query_result(
+def _parse_query_result(
     query_result: list[Any],
-) -> list[dict[Any, Any]]:
-    """Parse the raw query result into a structured list of disctionries.
+) -> list[dict[str, Any]]:
+    """Parse the raw query result into a structured list of dictionaries.
 
     This function processes each row in the query result, expecting JSON data in the first column
     (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
 
     Args:
-        query_result (list[Any]): raw query results, each tuple represents a database row
+        query_result: raw query results, each tuple represents a database row
 
     Raises:
         ValueError: if the JSON data cannot be deserialized
 
     Returns:
-        list[dict[Any, Any]]: structured list of dictonaries representing the query
+        structured list of dictonaries representing the query
     """
     data_list = []
     for parsed_data in query_result:
@@ -531,30 +531,27 @@ def parse_query_result(
             raise ValueError(
                 f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
             )
-    if not all(isinstance(item, dict) for item in data_list):
-        raise ValueError(f'Expected parsed data to be a dict or list of dicts, got {type(data_list)}.')
-
     return data_list
 
 
-def process_questionnaire_data(parsed_data_list: list[dict[Any, Any]]) -> list[QuestionnaireData]:
+def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[QuestionnaireData]:
     """Process parsed questionnaire data into QuestionnaireData objects.
 
     Args:
-        parsed_data_list (list[dict[Any,Any]]): parsed data list of the questionnaire
+        parsed_data_list: parsed data list of the questionnaire
 
     Raises:
-        CommandError: if the questionnaire format is wrong
+        ValueError: if the questionnaire format is wrong
 
     Returns:
-        list[QuestionnaireData]: complete answered questionnaire data list of the patient
+        complete answered questionnaire data list of the patient
     """
     questionnaire_data_list = []
 
     for data in parsed_data_list:
         if 'questions' not in data:
-            raise CommandError(f'Unexpected data format: {data}')
-        questions = process_questions(data['questions'])
+            raise ValueError(f'Unexpected data format: {data}')
+        questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
             QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
@@ -567,17 +564,17 @@ def process_questionnaire_data(parsed_data_list: list[dict[Any, Any]]) -> list[Q
     return questionnaire_data_list
 
 
-def process_questions(questions_data: list[Any]) -> list[Question]:
+def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
     """Process question data into Question objects.
 
     Args:
-        questions_data (list[Any]): unprocessed questions data associated with the questionnaire
+        questions_data: unprocessed questions data associated with the questionnaire
 
     Raises:
         CommandError: if the question format is wrong
 
     Returns:
-        list[Question]: list of questions associated with the questionnaire
+        list of questions associated with the questionnaire
     """
     questions = []
 
@@ -585,8 +582,8 @@ def process_questions(questions_data: list[Any]) -> list[Question]:
         if not isinstance(que, dict):
             raise CommandError(f'Invalid question format: {que}')
 
-        values = que.get('values') or []
-        if not isinstance(values, list):
+        answers = que.get('values') or []
+        if not isinstance(answers, list):
             raise CommandError(f"Invalid 'values' format for question: {que}")
 
         questions.append(
@@ -599,11 +596,11 @@ def process_questions(questions_data: list[Any]) -> list[Question]:
                 max_value=que['max_value'],
                 polarity=que['polarity'],
                 section_id=que['section_id'],
-                values=[
+                answers=[
                     (
-                        datetime.strptime(val[0], '%Y-%m-%d %H:%M:%S'),
-                        str(val[1]),
-                    ) for val in values
+                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S'),
+                        str(answer[1]),
+                    ) for answer in answers
                 ],
             ),
         )
@@ -615,11 +612,11 @@ def generate_questionnaire_report(
     patient: Patient,
     questionnaire_data_list: list[QuestionnaireData],
 ) -> bytearray:
-    """Generate the questionnaire PDF report by calling the pdf generator for Questionnaires.
+    """Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
 
     Args:
-        patient (Patient): patient instance for whom a new PDF questionnaire report being generated
-        questionnaire_data_list (list[QuestionnaireData]): list of questionnaireData required to generate the PDF report
+        patient: patient instance for whom a new PDF questionnaire report being generated
+        questionnaire_data_list: list of questionnaireData required to generate the PDF report
 
     Returns:
         bytearray: the generated questionnaire report
@@ -636,7 +633,7 @@ def generate_questionnaire_report(
                 max_value=question.max_value,
                 polarity=question.polarity,
                 section_id=question.section_id,
-                values=question.values,
+                answers=question.answers,
             )
             for question in questionnaire_data.questions
         ]

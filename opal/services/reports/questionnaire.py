@@ -37,7 +37,7 @@ class Question(NamedTuple):
         max_value: maximum allowed value for the answer (if applicable)
         polarity: polarity value for the answer
         section_id: ID of the section
-        values: list of tuples representing timestamp and answer values
+        answers: list of tuples representing timestamp and answer values
     """
 
     question_text: str
@@ -48,7 +48,7 @@ class Question(NamedTuple):
     max_value: int | None
     polarity: int
     section_id: int
-    values: list[tuple[datetime, str]]
+    answers: list[tuple[datetime, str]]
 
 
 class QuestionnaireData(NamedTuple):
