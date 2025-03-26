@@ -74,10 +74,7 @@ def test_patienttable_render_mrns_dict() -> None:
 def _mock_datetime(mocker: MockerFixture) -> None:
     # mock the current timezone to avoid flaky tests
     current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
-    current_date = date(2022, 6, 2)
     mocker.patch.object(timezone, 'now', return_value=current_time)
-    mock_date = mocker.patch('datetime.date.today')
-    mock_date.return_value = current_date
 
 
 def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture) -> None:
@@ -85,7 +82,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
     _mock_datetime(mocker)
 
     # in case of `zero` number of days
-    today_date = date.today()
+    today_date = date(2022, 6, 2)
     relationship_record = factories.Relationship(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
@@ -95,7 +92,7 @@ def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture)
     assert status_format == 'Pending (0 days)'
 
     # in case of `one` number of days
-    today_date = date.today() - timedelta(days=1)
+    today_date = date(2022, 6, 1)
     relationship_record = factories.Relationship(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
@@ -109,7 +106,7 @@ def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -
     """Ensure that pending status is rendered in the form `STATUS (number of days)` in plural form."""
     _mock_datetime(mocker)
 
-    today_date = date.today() - timedelta(days=5)
+    today_date = date(2022, 6, 2) - timedelta(days=5)
     relationship_record = factories.Relationship(request_date=today_date)
     relationships = models.Relationship.objects.filter()
 
