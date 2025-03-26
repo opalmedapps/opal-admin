@@ -129,7 +129,7 @@ mypy:
 markdownlint:
   stage: static analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.13.0
+    name: davidanson/markdownlint-cli2:v0.14.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # does not need setup artifacts
@@ -272,10 +272,10 @@ django template validation:
 
 build image:
   stage: build
-  image: docker:27.2.0
+  image: docker:27.2.1
   needs: []
   services:
-    - docker:27.2.0-dind
+    - docker:27.2.1-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
