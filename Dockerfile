@@ -24,12 +24,8 @@ FROM python:3.11.8-alpine3.19
 RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
   && apk add --no-cache mariadb-dev \
-  # argon2-cffi dependencies
-  # && apt-get install -y libffi-dev libssl-dev \
   # Translations dependencies
   && apk add --no-cache gettext
-  # cron dependencies
-  # && apk add --no-cache cron
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -49,7 +45,7 @@ WORKDIR /app
 COPY . /app
 
 # Set up the cron jobs
-COPY ./scripts/cron/* /etc/cron.d/
+COPY ./scripts/cron/crontab /etc/cron.d/
 
 # Add new cron jobs to the cron tab and compile languages
 RUN crontab /etc/cron.d/crontab \
