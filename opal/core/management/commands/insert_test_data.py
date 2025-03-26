@@ -553,7 +553,6 @@ def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: 
 
 def _create_security_answers(caregiver: CaregiverProfile) -> None:
     language = caregiver.user.language
-    print(language)
 
     question1 = (
         'What is the name of your first pet?'
