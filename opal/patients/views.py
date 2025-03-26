@@ -559,6 +559,24 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
     permission_required = ('patients.can_manage_relationships',)
     success_url = reverse_lazy('patients:relationships-pending-list')
 
+    def get_form_kwargs(self) -> dict[str, str]:
+        """
+        Return the kwargs for `ManagePendingUpdateView` update view.
+
+        Returns:
+            the dictionary of kwards including date_of_birth
+        """
+        kwargs = super().get_form_kwargs()
+        # Get the priamry key of Relationship object
+        pk = self.kwargs.get('pk', None)
+
+        if pk:
+            relationship = Relationship.objects.get(pk=pk)
+            patient = relationship.patient
+            kwargs['date_of_birth'] = patient.date_of_birth
+
+        return kwargs
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         """
         Return the template context for `ManagePendingUpdateView` update view.

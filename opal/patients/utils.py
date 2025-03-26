@@ -1,10 +1,13 @@
 """App patients util functions."""
+from datetime import date
+from typing import Any, Dict, List
+
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
-from .models import Patient
+from .models import Patient, RelationshipType
 
 
 def update_registration_code_status(
@@ -63,3 +66,18 @@ def insert_security_answers(
     """
     answers = [caregiver_models.SecurityAnswer(**answer, user=caregiver_profile) for answer in security_answers]
     caregiver_models.SecurityAnswer.objects.bulk_create(answers)
+
+
+def search_valid_relationship_types(date_of_birth: date) -> List[Dict[str, Any]]:
+    """
+    Search for valid relationship types according to patient age.
+
+    Args:
+        date_of_birth: datetime.date object
+
+    Returns:
+        list(queryset): list of ids of filtered relationship types
+    """
+    age = Patient.calculate_age(date_of_birth=date_of_birth)
+    queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age).values('id')
+    return list(queryset)
