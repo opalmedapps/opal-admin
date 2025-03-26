@@ -220,6 +220,10 @@ class Relationship(models.Model):
                 name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
                 check=models.Q(start_date__lt=models.F('end_date')),
             ),
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                fields=['patient', 'caregiver', 'type', 'status'],
+            ),
         ]
 
     def __str__(self) -> str:
