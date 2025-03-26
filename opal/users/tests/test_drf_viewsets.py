@@ -480,7 +480,7 @@ def test_api_set_manager_user_action_pass(api_client: APIClient, admin_user: Use
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data['detail'] == 'user was added to the managers group successfully.'
+    assert response.data['detail'] == 'User was added to the managers group successfully.'
     assert clinical_user.groups.get(pk=manager_group.pk)
 
 
@@ -502,7 +502,7 @@ def test_api_unset_manager_user_action_pass(api_client: APIClient, admin_user: U
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data['detail'] == 'user was removed from the managers group successfully.'
+    assert response.data['detail'] == 'User was removed from the managers group successfully.'
     assert not clinical_user.groups.all()
 
 
@@ -554,7 +554,7 @@ def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user:
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'manager group not found.'
+    assert str(response.data['detail']) == 'Manager group not found.'
 
 
 def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -571,7 +571,7 @@ def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_use
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'manager group not found.'
+    assert str(response.data['detail']) == 'Manager group not found.'
 
 
 def test_api_deactivate_user_action_pass(api_client: APIClient, admin_user: User) -> None:
@@ -588,7 +588,7 @@ def test_api_deactivate_user_action_pass(api_client: APIClient, admin_user: User
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.OK
-    assert response.data['detail'] == 'user was deactivated successfully.'
+    assert response.data['detail'] == 'User was deactivated successfully.'
     assert not User.objects.get(username=clinical_user.username).is_active
 
 
