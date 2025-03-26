@@ -153,6 +153,7 @@ class Command(BaseCommand):
         ])
 
         legacy_backend.user_permissions.set([
+            view_institution,
             view_patient,
         ])
 
