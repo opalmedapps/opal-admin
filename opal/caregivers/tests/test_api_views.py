@@ -516,6 +516,17 @@ def test_partial_update_device_failure(api_client: APIClient, listener_user: Use
     assert response_two.status_code == HTTPStatus.BAD_REQUEST
 
 
+def test_verify_existing_caregiver(api_client: APIClient, admin_user: User) -> None:
+    """Test the verification of the existence of a caregiver in database."""
+    api_client.force_login(user=admin_user)
+    caregiver_factories.CaregiverProfile(user__username='johnwaynedabest')
+    response_one = api_client.get(reverse('api:caregivers-username-verify', kwargs={'username': 'johnwaynedabest'}))
+    response_two = api_client.get(reverse('api:caregivers-username-verify', kwargs={'username': 'skeleton'}))
+
+    assert response_one.status_code == HTTPStatus.OK
+    assert response_two.status_code == HTTPStatus.NOT_FOUND
+
+
 class TestVerifyEmailCodeView:
     """A test class to test verifying an email with a code."""
 
