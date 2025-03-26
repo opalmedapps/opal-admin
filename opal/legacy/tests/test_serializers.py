@@ -91,6 +91,8 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     unread_serializer = UnreadCountSerializer(data=unread_count)
     assert not unread_serializer.is_valid()
