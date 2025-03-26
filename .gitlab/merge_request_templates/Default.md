@@ -2,12 +2,12 @@
 
 * [ ] The merge request title follows the conventional commits convention (see `README.md`)
 * [ ] I have made only one major change in my proposed changes.
-* [ ] I have commented my proposed changes within the code (classes, methods/functions, and whereever additional explanation is necessary).
+* [ ] I have commented my proposed changes within the code (classes, methods/functions, and wherever additional explanation is necessary).
 * [ ] I have tested my proposed changes, and have included unit tests where possible.
 * [ ] New and existing unit tests pass locally with my changes
 * [ ] I have added a changelog entry to `CHANGELOG.md`.
 * [ ] I have updated the documentation if necessary.
-* [ ] I have used translation strings in the code (and translation model fields) where approbriate.
+* [ ] I have used translation strings in the code (and translation model fields) where appropriate.
 
 ## Description:
 
