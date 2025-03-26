@@ -1,0 +1,12 @@
+{% load static %}
+{% load i18n %}
+
+<h4> {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ: {{ patient.ramq | default:'' }})</h4>
+
+{% for label, plot_html in graphs.items %}
+  {% if plot_html %}
+    {{ plot_html | safe }}
+  {% else %}
+    <h5>{% translate "No data found for" %} {{ label }}</h5>
+  {% endif %}
+{% endfor %}
