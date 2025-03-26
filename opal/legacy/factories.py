@@ -143,7 +143,25 @@ class LegacyDocumentFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyDocument
 
+    documentsernum = 5
     patientsernum = SubFactory(LegacyPatientFactory)
+    sourcedatabasesernum = SubFactory(LegacySourceDatabaseFactory)
+    documentid = '56190000000000039165511'
+    aliasexpressionsernum = SubFactory(LegacyAliasExpressionFactory)
+    approvedby = 890
+    approvedtimestamp = timezone.make_aware(datetime(2023, 6, 1, 12, 36))
+    authoredbysernum = 890
+    dateofservice = timezone.make_aware(datetime(2023, 6, 8, 12, 35))
+    revised = ''
+    validentry = 'Y'
+    originalfilename = 'bart_2009Feb23_pathology.pdf'
+    finalfilename = 'bart_2009Feb23_pathology.pdf'
+    createdbysernum = 890
+    createdtimestamp = timezone.make_aware(datetime(2023, 6, 8, 12, 36))
+    transferstatus = 'T'
+    transferlog = 'Transfer successful'
+    dateadded = timezone.make_aware(datetime(2023, 6, 9, 16, 38, 26))
+    readstatus = 0
     readby = '[]'
     readstatus = 0
 
@@ -422,3 +440,72 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     result_date_time = timezone.make_aware(datetime(2018, 1, 1))
     unit_description = 'mmol'
     read_by = ''
+
+
+class LegacyOARoleFactory(DjangoModelFactory):
+    """LegacyOARole factory."""
+
+    class Meta:
+        model = models.LegacyOARole
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    deletedby = Faker('name')
+    creationdate = timezone.make_aware(datetime(2018, 1, 1))
+    createdby = Faker('name')
+    updatedby = Faker('name')
+
+
+class LegacyOAUserFactory(DjangoModelFactory):
+    """LegacyOAUser factory."""
+
+    class Meta:
+        model = models.LegacyOAUser
+
+    username = Faker('user_name')
+    password = Faker('password')
+    oaroleid = SubFactory(LegacyOARoleFactory)
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+
+
+class LegacyOAUserRoleFactory(DjangoModelFactory):
+    """LegacyOAUserRole factory."""
+
+    class Meta:
+        model = models.LegacyOAUserRole
+
+    oausersernum = Faker('random_int')
+    rolesernum = Faker('random_int')
+
+
+class LegacyModuleFactory(DjangoModelFactory):
+    """LegacyModule factory."""
+
+    class Meta:
+        model = models.LegacyModule
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    description_en = Faker('sentence')
+    description_fr = Faker('sentence')
+    tablename = Faker('name')
+    controltablename = Faker('name')
+    primarykey = Faker('name')
+    iconclass = Faker('name')
+    url = Faker('url')
+    sqlpublicationlist = Faker('paragraph')
+    sqldetails = Faker('paragraph')
+    sqlpublocationcharlog = Faker('paragraph')
+    sqlpublicationlistlog = Faker('paragraph')
+    sqlpublicationmultiple = Faker('paragraph')
+    sqlpublicationunique = Faker('paragraph')
+
+
+class LegacyOARoleModuleFactory(DjangoModelFactory):
+    """LegacyOARoleModule factory."""
+
+    class Meta:
+        model = models.LegacyOARoleModule
+
+    moduleid = SubFactory(LegacyModuleFactory)
+    oaroleid = SubFactory(LegacyOARoleFactory)

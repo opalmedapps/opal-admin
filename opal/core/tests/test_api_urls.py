@@ -227,10 +227,10 @@ def test_retrieve_device_update(settings: SettingsWrapper) -> None:
 
 def test_quantitysample_create(settings: SettingsWrapper) -> None:
     """Ensure the quantity sample endpoint is defined for a specific patient."""
-    patient_id = 42
-    url_path = f'/{settings.API_ROOT}/patients/{patient_id}/health-data/quantity-samples/'
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/health-data/quantity-samples/'
 
-    assert reverse('api:patients-data-quantity-create', kwargs={'patient_id': patient_id}) == url_path
+    assert reverse('api:patients-data-quantity-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patients-data-quantity-create'
 
 
@@ -257,3 +257,25 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
+
+
+def test_user_caregiver_update(settings: SettingsWrapper) -> None:
+    """Ensure that the endpoint for users/caregivers/<str:username> is defined."""
+    url_path = '/{api_root}/users/caregivers/{username}/'.format(
+        api_root=settings.API_ROOT,
+        username='username',
+    )
+    assert reverse(
+        'api:users-caregivers-update',
+        kwargs={'username': 'username'},
+    ) == url_path
+    assert resolve(url_path).view_name == 'api:users-caregivers-update'
+
+
+def test_databank_consent_create(settings: SettingsWrapper) -> None:
+    """Ensure the create DatabanKConsent endpoint is defined for a specific patient."""
+    patient_uuid = uuid4()
+    url_path = f'/{settings.API_ROOT}/patients/{patient_uuid}/databank/consent/'
+
+    assert reverse('api:databank-consent-create', kwargs={'uuid': patient_uuid}) == url_path
+    assert resolve(url_path).view_name == 'api:databank-consent-create'

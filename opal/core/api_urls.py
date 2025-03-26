@@ -3,6 +3,7 @@ URL configuration for the project-wide REST API.
 
 Inspired by Two Scoops of Django Section 17.3.
 """
+# TODO: determine whether to move API Urls to config module (and support versioning)
 from django.conf import settings
 from django.urls import path
 from django.urls.conf import include
@@ -12,6 +13,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api import views as caregivers_views
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
+from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_appointments import AppAppointmentsView
@@ -23,6 +25,7 @@ from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
+from opal.users.api import views as user_views
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -124,7 +127,7 @@ urlpatterns = [
     ),
     # patients (by new ID) for the health data quantity samples
     path(
-        'patients/<int:patient_id>/health-data/quantity-samples/',
+        'patients/<uuid:uuid>/health-data/quantity-samples/',
         data_views.CreateQuantitySampleView.as_view(),
         name='patients-data-quantity-create',
     ),
@@ -137,6 +140,12 @@ urlpatterns = [
         'patients/<uuid:uuid>/pathology-reports/',
         CreatePathologyView.as_view(),
         name='patient-pathology-create',
+    ),
+    # databank consent instances for patients
+    path(
+        'patients/<uuid:uuid>/databank/consent/',
+        CreateDatabankConsentView.as_view(),
+        name='databank-consent-create',
     ),
 
 
@@ -172,6 +181,17 @@ urlpatterns = [
         'registration/<str:code>/register/',
         patient_views.RegistrationCompletionView.as_view(),
         name='registration-register',
+    ),
+    # USERS ENDPOINTS
+    path(
+        'groups/',
+        user_views.ListGroupView.as_view(),
+        name='groups-list',
+    ),
+    path(
+        'users/caregivers/<str:username>/',
+        user_views.UserCaregiverUpdateView.as_view(),
+        name='users-caregivers-update',
     ),
 
     path('', include(router.urls)),

@@ -4,7 +4,7 @@ During the migration period from the legacy backend to this backend there exists
 
 ## Setup
 
-The project has an additional database called `legacy` defined in the project settings (see [opal.settings][]). Configuration is done via `.env` with the environment variables prefixed with `LEGACY_DATABASE_`. Please see the [db-docker](https://gitlab.com/opalmedapps/db-docker/) project for how to run the legacy database.
+The project has an additional database called `legacy` defined in the project settings (see `config.settings.base`). Configuration is done via `.env` with the environment variables prefixed with `LEGACY_DATABASE_`. Please see the [db-docker](https://gitlab.com/opalmedapps/db-docker/) project for how to run the legacy database.
 
 There exists an app named `legacy` with the purpose of containing all legacy models. Instead of having to specify which database to query, a custom database router ([opal.core.dbrouters.LegacyDbRouter][]) is defined for [automatic database routing](https://docs.djangoproject.com/en/dev/topics/db/multi-db/#automatic-database-routing). This router routes all read and write operations of models in the `legacy` app to the `legacy` database.
 

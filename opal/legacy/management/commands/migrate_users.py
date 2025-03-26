@@ -1,147 +1,110 @@
-"""Command for Users Caregivers migration."""
+"""Command for Users migration."""
+from enum import Enum
 from typing import Any
 
+from django.conf import settings
+from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
-from opal.caregivers.models import CaregiverProfile
-from opal.legacy.models import LegacyPatient, LegacyUsers, LegacyUserType
-from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType
-from opal.users.models import Caregiver
+from opal.legacy.models import LegacyModule, LegacyOARole, LegacyOARoleModule, LegacyOAUser
+from opal.users.models import ClinicalStaff
+
+
+class Access(Enum):
+    """An enumeration of supported access rights."""
+
+    # Legacy has 0-7 access privileges
+    READ = 1
+    READ_WRITE = 3
+    READ_WRITE_DELETE = 7
 
 
 class Command(BaseCommand):
-    """Command to migrate Users from legacy DB to Caregivers in New Backend."""
+    """Command to migrate users from legacy DB to the new backend users."""
 
-    help = 'migrate Users from legacy DB to New backend DB'  # noqa: A003
+    help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
-        Handle migrate Users from legacy DB to New backend DB.
+        Handle migrate OAUsers legacy DB to the new backend.
+
+        Print out number of users imported after completion.
 
         Args:
-            args: input arguments.
-            kwargs: input arguments.
+            args: non-keyword input arguments.
+            kwargs:  variable keyword input arguments.
         """
-        relationship_type = RelationshipType.objects.self_type()
+        patient_module = LegacyModule.objects.get(name_en='Patient')
+        admin_role = LegacyOARole.objects.get(name_en='System Administrator')
 
-        migrated_users_count = 0
+        admin_group = Group.objects.get(name=settings.ADMIN_GROUP_NAME)
+        registrant_group = Group.objects.get(name=settings.REGISTRANTS_GROUP_NAME)
 
-        for legacy_user in LegacyUsers.objects.filter(usertype=LegacyUserType.PATIENT):
-            patient = Patient.objects.filter(legacy_id=legacy_user.usertypesernum).first()
-            if patient:
-                caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usersernum).first()
-                if caregiver_profile:
-                    self.stdout.write(
-                        'Nothing to be done for sernum: {legacy_id}, skipping.'.format(
-                            legacy_id=legacy_user.usersernum,
-                        ),
-                    )
-                else:
-                    legacy_patient = LegacyPatient.objects.get(patientsernum=legacy_user.usertypesernum)
-                    caregiver_profile = self._create_caregiver_and_profile(legacy_patient, legacy_user)
-                    # count number of migrated users
-                    migrated_users_count += 1
+        admin_users_counter = 0
+        all_users_counter = 0
+        staff_users_counter = 0
 
-                self._create_relationship(patient, caregiver_profile, relationship_type)
+        for legacy_user in LegacyOAUser.objects.all():
+            # create a clinicalstaff user
+            clinical_staff_user = ClinicalStaff(
+                username=legacy_user.username,
+                language=legacy_user.language.lower(),
+                date_joined=legacy_user.date_added,
+            )
+
+            if legacy_user.oaroleid == admin_role:
+                clinical_staff_user.is_staff = True
+                clinical_staff_user.is_superuser = True
+
+                if self._save_clinical_staff_user(clinical_staff_user):
+                    admin_group.user_set.add(clinical_staff_user)
+                    admin_users_counter += 1
+                    all_users_counter += 1
             else:
-                self.stderr.write(
-                    'Patient with sernum: {legacy_id}, does not exist, skipping.'.format(
-                        legacy_id=legacy_user.usertypesernum,
-                    ),
+                role_module = LegacyOARoleModule.objects.filter(
+                    oaroleid=legacy_user.oaroleid,
+                    moduleid=patient_module,
+                    access__gte=Access.READ_WRITE.value,
                 )
-        self.stdout.write(
-            f'Number of imported users is: {migrated_users_count}',
+
+                if self._save_clinical_staff_user(clinical_staff_user):
+                    # access codes 0-7
+                    if role_module:
+                        registrant_group.user_set.add(clinical_staff_user)
+                        staff_users_counter += 1
+
+                    all_users_counter += 1
+        self.stdout.write('Total migrated users: {total} of which {admins} Admins and {staff} Registrants.'.format(
+            total=all_users_counter,
+            admins=admin_users_counter,
+            staff=staff_users_counter,
+        ),
         )
 
-    def _create_caregiver_and_profile(
-        self,
-        legacy_patient: LegacyPatient,
-        legacy_user: LegacyUsers,
-    ) -> CaregiverProfile:
+    def _save_clinical_staff_user(self, clinical_staff_user: ClinicalStaff) -> bool:
         """
-        Create `Caregiver` and corresponding `CaregiverProfile` instances for the given legacy patient and user.
-
-        Returns the created `CaregiverProfile` instance.
+        Save ClinicalStaff User in Users model.
 
         Args:
-            legacy_patient: the legacy patient
-            legacy_user: the legacy user corresponding to the patient
+            clinical_staff_user: user object of type clinical staff
 
         Returns:
-            CaregiverProfile: the created `CaregiverProfile` instance
+            True if user is added, False otherwise.
         """
-        # convert phone number in int to str
-        phone_number = '+1{0}'.format(legacy_patient.telnum) if legacy_patient.telnum else ''
-        caregiver_user = Caregiver(
-            username=legacy_user.username,
-            first_name=legacy_patient.firstname,
-            last_name=legacy_patient.lastname,
-            email=legacy_patient.email,
-            date_joined=legacy_patient.registrationdate,
-            language=legacy_patient.language.lower(),
-            phone_number=phone_number,
-        )
-        # User passwords aren't currently saved in Django
-        caregiver_user.set_unusable_password()
-        caregiver_user.full_clean()
-        caregiver_user.save()
+        clinical_staff_user.set_unusable_password()
 
-        caregiver_profile = CaregiverProfile(
-            user=caregiver_user,
-            legacy_id=legacy_user.usersernum,
-        )
-        caregiver_profile.full_clean()
-        caregiver_profile.save()
+        try:
+            clinical_staff_user.full_clean()
 
-        self.stdout.write(
-            'Legacy user with sernum: {legacy_id} has been migrated'.format(
-                legacy_id=legacy_user.usersernum,
-            ),
-        )
-
-        return caregiver_profile
-
-    def _create_relationship(
-        self,
-        patient: Patient,
-        caregiver_profile: CaregiverProfile,
-        relationship_type: RelationshipType,
-    ) -> None:
-        """
-            Check the self relationship between caregiver and patient and migrated if it does not exist.
-
-        Args:
-            patient: instance of Patient model.
-            caregiver_profile: instance of CaregiverProfile model.
-            relationship_type: the `RelationshipType` instance for Self.
-
-        """
-        relationship = Relationship.objects.filter(
-            patient=patient,
-            caregiver=caregiver_profile,
-            type=relationship_type,
-        ).first()
-        if relationship:
-            self.stdout.write(
-                'Self relationship for patient with legacy_id: {legacy_id} already exists.'.format(
-                    legacy_id=patient.legacy_id,
+        except ValidationError as exception:
+            self.stderr.write(
+                'Error: {msg} when saving username: {username}'.format(
+                    msg=exception,
+                    username=clinical_staff_user.username,
                 ),
             )
-        else:
-            relationship = Relationship(
-                patient=patient,
-                caregiver=caregiver_profile,
-                type=relationship_type,
-                status=RelationshipStatus.CONFIRMED,
-                request_date=caregiver_profile.user.date_joined,
-                start_date=caregiver_profile.user.date_joined,
-                reason='',
-            )
-            relationship.full_clean()
-            relationship.save()
+            return False
 
-            self.stdout.write(
-                'Self relationship for patient with legacy_id: {legacy_id} has been created.'.format(
-                    legacy_id=patient.legacy_id,
-                ),
-            )
+        clinical_staff_user.save()
+        return True

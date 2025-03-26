@@ -35,7 +35,6 @@ default:
     - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
-
 stages:
   - Build
   - Static Analysis
@@ -106,7 +105,7 @@ mypy:
     - pip install mypy-gitlab-code-quality
     - mypy --version
     # export output and don't fail if there are errors
-    - mypy opal/ --no-error-summary > mypy-out.txt || true
+    - mypy config/ opal/ --no-error-summary > mypy-out.txt || true
     - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
      # fail if JSON file does not contain empty array
     - cat codequality.json | grep -q "\[\]"
