@@ -174,7 +174,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             user_type = self.get_cleaned_data_for_step('account')['user_type']
             # If new user is selected, the current form will be replaced by `NewUserForm`.
             # The last step `finished` will be ignored.
-            if user_type == constants.NEW_USER:
+            if user_type == str(constants.NEW_USER):
                 form_class = forms.NewUserForm
                 form = form_class(data)
                 self.condition_dict = {'finished': False}
@@ -286,7 +286,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             caregiver user nad caregiver profile instance dictionary
         """
-        if form_data['user_type'] == constants.EXISTING_USER:
+        if form_data['user_type'] == str(constants.EXISTING_USER):
             # Get the Caregiver user if it exists
             caregiver_user = Caregiver.objects.get(
                 email=form_data['user_email'],
