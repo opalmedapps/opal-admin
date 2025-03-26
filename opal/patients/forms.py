@@ -77,6 +77,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         label=_('Hospital'),
         required=lambda form: form.is_mrn_selected(),
         disabled=lambda form: form.is_not_mrn_or_single_site(),
+        empty_label=lambda form: _('Choose...') if form.is_mrn_selected() else _('Not required'),
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -114,8 +115,8 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         self.helper.layout = Layout(
             Div(
                 'card_type',
-                'site',
                 'medical_number',
+                'site',
                 # make form inline
                 css_class='d-md-flex flex-row justify-content-start gap-3',
             ),

@@ -714,9 +714,13 @@ def test_accessrequestsearchform_ramq() -> None:
         'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+    site_field = form.fields['site']
+
     assert form.is_valid()
-    assert form.fields['site'].disabled
+    assert site_field.disabled
+    assert not site_field.required
     assert not isinstance(form.fields['site'].widget, HiddenInput)
+    assert site_field.empty_label == 'Not required'  # type: ignore[attr-defined]
 
 
 def test_accessrequestsearchform_single_site_mrn() -> None:
@@ -727,11 +731,13 @@ def test_accessrequestsearchform_single_site_mrn() -> None:
         'medical_number': '9666666',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+    site_field = form.fields['site']
 
     assert form.is_valid()
     assert form['site'].value() == site.pk
-    assert form.fields['site'].disabled
-    assert isinstance(form.fields['site'].widget, HiddenInput)
+    assert site_field.disabled
+    assert site_field.required
+    assert isinstance(site_field.widget, HiddenInput)
 
 
 def test_accessrequestsearchform_more_than_site() -> None:
@@ -746,7 +752,9 @@ def test_accessrequestsearchform_more_than_site() -> None:
     }
 
     form = forms.AccessRequestSearchPatientForm(data=form_data)
+    site_field = form.fields['site']
 
     assert form.is_valid()
-    assert not form.fields['site'].disabled
-    assert not isinstance(form.fields['site'].widget, HiddenInput)
+    assert not site_field.disabled
+    assert site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
