@@ -182,7 +182,7 @@ def _create_test_data() -> None:
         ],
     )
 
-    _create_patient(
+    mona = _create_patient(
         first_name='Mona',
         last_name='Simpson',
         date_of_birth=date(1940, 3, 15),
@@ -209,7 +209,7 @@ def _create_test_data() -> None:
     user_homer = _create_caregiver(
         first_name=homer.first_name,
         last_name=homer.last_name,
-        username='homer_username_undefined',
+        username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
         email='homer@opaldevapps.ca',
         language='fr',
         phone_number='+15557654321',
@@ -219,11 +219,22 @@ def _create_test_data() -> None:
     user_bart = _create_caregiver(
         first_name=bart.first_name,
         last_name=bart.last_name,
-        username='bart_username_undefined',
+        username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
         email='bart@opaldevapps.ca',
         language='en',
         phone_number='+498999998123',
         legacy_id=3,
+    )
+
+    user_mona = _create_caregiver(
+        first_name=mona.first_name,
+        last_name=mona.last_name,
+        username='mona_username_undefined',
+        email='mona@opaldevapps.ca',
+        language='fr',
+        phone_number='+15144758941',
+        legacy_id=4,
+        is_active=False,
     )
 
     # get relationship types
@@ -307,6 +318,30 @@ def _create_test_data() -> None:
         status=RelationshipStatus.CONFIRMED,
         request_date=date_bart_fourteen,
         start_date=date_bart_fourteen,
+    )
+
+    # Marge --> Mona: Mandatary
+    _create_relationship(
+        patient=mona,
+        caregiver=user_marge,
+        relationship_type=type_mandatary,
+        status=RelationshipStatus.EXPIRED,
+        request_date=_relative_date(today, -5),
+        start_date=_relative_date(today, -3),
+        end_date=_relative_date(today, -2),
+        reason='Patient deceased.',
+    )
+
+    # Mona --> Mona: Self
+    _create_relationship(
+        patient=mona,
+        caregiver=user_mona,
+        relationship_type=type_self,
+        status=RelationshipStatus.EXPIRED,
+        request_date=_relative_date(today, -5),
+        start_date=_relative_date(today, -4),
+        end_date=_relative_date(today, -2),
+        reason='Patient deceased.',
     )
 
 
