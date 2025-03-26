@@ -8,27 +8,27 @@ from ..drf_fields import Base64FileField
 
 # copied from: https://github.com/Hipo/drf-extra-fields/blob/master/tests/test_fields.py
 class _FieldFile:
-    """A fake FieldFile class in purpose of unit testing."""
+    """A fake `FieldFile` class that provides a `path` property.."""
 
     def __init__(self, path: str):
         """
-        Set the fake FieldFile class.
+        Initialize the field file instance.
 
         Args:
-            path: tmp path for testing in string format
+            path: file path where the file is located at
         """
         self.path = path
 
 
 class _DownloadableBase64File:
-    """The class to instantiated the fake FieldFile class."""
+    """Wrapper class that provides a `FieldFile` with a `path` property."""
 
     def __init__(self, file_path: Path):
         """
-        Set the DownloadableBase64File class.
+        Initialize the instance.
 
         Args:
-            file_path: the path Oject for FieldFile class.
+            file_path: the path to the file.
         """
         self.file = _FieldFile(path=str(file_path))
 
