@@ -231,17 +231,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             template_plain,
             parameters,
         )
-        template_html = 'email/verification_code_{0}.html'.format(language)
-        msg_html = render_to_string(
-            template_html,
-            parameters,
-        )
         send_mail(
             email_subject,
             msg_plain,
             settings.EMAIL_HOST_USER,
             [email_verification.email],
-            html_message=msg_html,
         )
 
 
