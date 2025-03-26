@@ -5,23 +5,36 @@ import requests
 
 
 def find_patient_by_mrn(mrn: str, site: str):
-    """Search patient info by mrn code."""
+    """Search patient info by mrn code.
+
+    Args:
+        mrn: mrn code
+        site: site name
+
+    Returns:
+        return the reponse of the OIE
+    """
     url = settings.OIE_HOST
     data = {
         'mrn': mrn,
         'site': site,
         'visitInfo': False,
     }
-    response = requests.post(url, data=data)
-    return response
+    return requests.post(url, data=data)
 
 
 def find_patient_by_ramq(ramq: str):
-    """Search patient info by ramq code."""
+    """Search patient info by ramq code.
+
+    Args:
+        ramq: ramq code
+
+    Returns:
+        return the reponse of the OIE
+    """
     url = settings.OIE_HOST
     data = {
         'medicareNumber': ramq,
         'visitInfo': False,
     }
-    response = requests.post(url, data=data)
-    return response
+    return requests.post(url, data=data)
