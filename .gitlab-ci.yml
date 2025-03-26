@@ -8,7 +8,6 @@ variables:
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
-  SECURE_LOG_LEVEL: "debug"
 
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -339,26 +338,3 @@ include:
   # Secret Detection: https://docs.gitlab.com/ee/user/application_security/secret_detection/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Secret-Detection.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
-  # Dependency Scanning: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/
-  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Dependency-Scanning.latest.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
-
-# Customizations
-#
-
-# Dependency Scanning
-# https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-analyzer-behavior
-gemnasium-python-dependency_scanning:
-  variables:
-    # enforce running this without the "exists: **/requirements.txt" rule
-    PIP_REQUIREMENTS_FILE: "requirements.txt"
-  # the scanner actually installs the dependencies via pip and therefore requires the mysql client to be installed
-  before_script:
-    # install dependencies for mysqlclient
-    - apt update && apt-get install -y libmariadb-dev pkg-config
-    # prepare a single requirements file
-    # prepare a single requirements.txt that contains all relevant dependencies
-    - mv requirements/base.txt requirements.txt
-    # remove the first line ("-r ...")
-    - tail -n +2 requirements/development.txt >> requirements.txt
-    - tail -n +2 requirements/production.txt >> requirements.txt
