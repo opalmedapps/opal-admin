@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from typing import Optional
 
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
@@ -131,7 +130,7 @@ def test_relationshippending_update_fail() -> None:
         RoleType.MANDATARY,
     ],
 )
-def test_relationshippending_type_not_contain_self(relationship_type: Optional[str]) -> None:
+def test_relationshippending_type_not_contain_self(relationship_type: str | None) -> None:
     """Ensure that the `type` field does not contain self but contains the relationship type being updated."""
     self_type = RelationshipType.objects.self_type()
     relation_type = RelationshipType.objects.get(role_type=relationship_type)
@@ -1165,12 +1164,13 @@ def test_requestor_form_relationship_type_description() -> None:
     )
 
     options = form.fields['relationship_type'].widget.option_descriptions
-    assert options[1] == '{0}'.format(
+    assert options[1] == (
         'The patient is the requestor and is caring for themselves, Age: 14 and older',
     )
-    assert options[3] == '{0}{1}'.format(
-        'A parent or guardian of a minor who is considered',
-        ' incapacitated in terms of self-care, Age: 14-18',
+
+    assert options[3] == (
+        'A parent or guardian of a minor who is considered'
+        + ' incapacitated in terms of self-care, Age: 14-18'
     )
 
 
@@ -1179,7 +1179,7 @@ def test_requestor_form_relationship_type_description() -> None:
     constants.UserType.NEW.name,
     constants.UserType.EXISTING.name,
 ])
-def test_accessrequestrequestorform_is_existing_user_selected(user_type: Optional[str]) -> None:
+def test_accessrequestrequestorform_is_existing_user_selected(user_type: str | None) -> None:
     """Ensure the existing user is not selected by default."""
     data = None
 

@@ -157,8 +157,8 @@ class TestUserCaregiverUpdateView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert caregiver.email == original_email
-        assert str(response.data['email']) == '{0}'.format(
-            "[ErrorDetail(string='This field may not be blank.', code='blank')]",
+        assert str(response.data['email']) == (
+            "[ErrorDetail(string='This field may not be blank.', code='blank')]"
         )
 
     @pytest.mark.parametrize('permission_name', ['change_caregiver'])
@@ -183,6 +183,6 @@ class TestUserCaregiverUpdateView:
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert caregiver.email == original_email
-        assert str(response.data['non_field_errors']) == '{0}'.format(
-            "[ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]",
+        assert str(response.data['non_field_errors']) == (
+            "[ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]"
         )

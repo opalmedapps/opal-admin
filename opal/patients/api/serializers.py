@@ -91,7 +91,7 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
         """
         if not Site.objects.filter(acronym=value).exists():
             raise serializers.ValidationError(
-                '{0}{1}{2}'.format('Provided "', value, '" site acronym does not exist.'),
+                f'Provided "{value}" site acronym does not exist.',
             )
         return value
 

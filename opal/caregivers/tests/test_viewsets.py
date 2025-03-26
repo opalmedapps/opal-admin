@@ -200,7 +200,7 @@ def test_verify_answer_success(api_client: APIClient, listener_user: User) -> No
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': listener_user.username, 'pk': answer_id},
         ),
         data=answer,
     )
@@ -218,7 +218,7 @@ def test_verify_answer_failure(api_client: APIClient, listener_user: User) -> No
     response = api_client.post(
         reverse(
             'api:caregivers-securityquestions-verify',
-            kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
+            kwargs={'username': listener_user.username, 'pk': answer_id},
         ),
         data=answer,
     )

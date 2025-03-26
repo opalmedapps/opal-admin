@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -63,7 +63,7 @@ class ServiceHTTPCommunicationManager:
         self,
         endpoint: str,
         payload: dict[str, Any],
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Any:
         """Send data to the external component by making HTTP POST request.
 
@@ -80,7 +80,7 @@ class ServiceHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.post
             # https://www.w3schools.com/python/ref_requests_post.asp
             return requests.post(
-                url='{0}{1}'.format(self.base_url, endpoint),
+                url=f'{self.base_url}{endpoint}',
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 json=json.dumps(payload) if self.dump_json_payload else payload,
@@ -103,8 +103,8 @@ class ServiceHTTPCommunicationManager:
     def fetch(
         self,
         endpoint: str,
-        params: Optional[dict[str, Any]] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Any:
         """Retrieve data from the external component by making HTTP GET request.
 
@@ -121,7 +121,7 @@ class ServiceHTTPCommunicationManager:
             # https://requests.readthedocs.io/en/latest/api/#requests.get
             # https://www.w3schools.com/python/ref_requests_get.asp
             return requests.get(
-                url='{0}{1}'.format(self.base_url, endpoint),
+                url=f'{self.base_url}{endpoint}',
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 params=params,

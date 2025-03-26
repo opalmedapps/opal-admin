@@ -10,7 +10,7 @@ from pytest_django.fixtures import SettingsWrapper
 
 def test_api_root_debug_only(settings: SettingsWrapper) -> None:
     """Ensure that the API root is available in debug mode."""
-    path = '/{api_root}/'.format(api_root=settings.API_ROOT)
+    path = f'/{settings.API_ROOT}/'
     assert reverse('api:api-root') == path
     assert resolve(path).view_name == 'api:api-root'
 
@@ -23,7 +23,7 @@ def test_api_root_debug_only(settings: SettingsWrapper) -> None:
 def test_api_root_not_accessible_in_non_debug(settings: SettingsWrapper) -> None:
     """Ensure that the API root is not available when not in debug mode."""
     assert settings.DEBUG is False
-    path = '/{api_root}/'.format(api_root=settings.API_ROOT)
+    path = f'/{settings.API_ROOT}/'
 
     # reload API URLs module with debug=False to record coverage properly
     # see: https://stackoverflow.com/a/46034755
@@ -37,14 +37,14 @@ def test_api_root_not_accessible_in_non_debug(settings: SettingsWrapper) -> None
 
 def test_api_auth_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API auth endpoints are defined."""
-    auth_login_path = '/{api_root}/auth/login/'.format(api_root=settings.API_ROOT)
+    auth_login_path = f'/{settings.API_ROOT}/auth/login/'
     assert reverse('api:rest_login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:rest_login'
 
 
 def test_api_languages_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API languages endpoints are defined."""
-    languages_path = '/{api_root}/languages/'.format(api_root=settings.API_ROOT)
+    languages_path = f'/{settings.API_ROOT}/languages/'
     assert reverse('api:languages') == languages_path
     assert resolve(languages_path).view_name == 'api:languages'
 
@@ -125,7 +125,7 @@ def test_sites_detail() -> None:
 
 def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API security questions endpoints are defined."""
-    question_path = '/{api_root}/security-questions/'.format(api_root=settings.API_ROOT)
+    question_path = f'/{settings.API_ROOT}/security-questions/'
     assert reverse('api:security-questions-list') == question_path
     assert resolve(question_path).view_name == 'api:security-questions-list'
 
@@ -175,7 +175,7 @@ def test_api_security_question_random_defined(settings: SettingsWrapper) -> None
 def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions verify endpoints are defined."""
     question_path = 'caregivers/username/security-questions/123/verify/'
-    question_path = '/{api_root}/{question_path}'.format(api_root=settings.API_ROOT, question_path=question_path)
+    question_path = f'/{settings.API_ROOT}/{question_path}'
     assert reverse(
         'api:caregivers-securityquestions-verify',
         kwargs={'username': 'username', 'pk': 123},
@@ -186,7 +186,7 @@ def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
 # questionnaire report generation API endpoint: questionnaires/reviewed/
 def test_questionnaires_reviewed(settings: SettingsWrapper) -> None:
     """Ensure `questionnaires/reviewed/` endpoint is defined."""
-    url_path = '/{api_root}/questionnaires/reviewed/'.format(api_root=settings.API_ROOT)
+    url_path = f'/{settings.API_ROOT}/questionnaires/reviewed/'
     assert reverse('api:questionnaires-reviewed') == url_path
     assert resolve(url_path).view_name == 'api:questionnaires-reviewed'
 
@@ -287,21 +287,21 @@ def test_quantitysample_create(settings: SettingsWrapper) -> None:
 
 def test_api_orms_auth_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API auth endpoint for the ORMS is defined."""
-    auth_login_path = '/{api_root}/auth/orms/login/'.format(api_root=settings.API_ROOT)
+    auth_login_path = f'/{settings.API_ROOT}/auth/orms/login/'
     assert reverse('api:orms-login') == auth_login_path
     assert resolve(auth_login_path).view_name == 'api:orms-login'
 
 
 def test_api_orms_auth_validate_session_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API auth validate session endpoint for the ORMS is defined."""
-    auth_validate_path = '/{api_root}/auth/orms/validate/'.format(api_root=settings.API_ROOT)
+    auth_validate_path = f'/{settings.API_ROOT}/auth/orms/validate/'
     assert reverse('api:orms-validate') == auth_validate_path
     assert resolve(auth_validate_path).view_name == 'api:orms-validate'
 
 
 def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
     """Ensure the patient demographic update endpoint is defined."""
-    url_path = '/{api_root}/patients/demographic/'.format(api_root=settings.API_ROOT)
+    url_path = f'/{settings.API_ROOT}/patients/demographic/'
     assert reverse('api:patient-demographic-update') == url_path
     assert resolve(url_path).view_name == 'api:patient-demographic-update'
 
@@ -358,6 +358,6 @@ def test_patients_unviewed_health_data(settings: SettingsWrapper) -> None:
 
 def test_retrieve_relationship_type_list(settings: SettingsWrapper) -> None:
     """Ensure `relationship-types/` is defined."""
-    url_path = '/{api_root}/relationship-types/'.format(api_root=settings.API_ROOT)
+    url_path = f'/{settings.API_ROOT}/relationship-types/'
     assert reverse('api:relationship-types-list') == url_path
     assert resolve(url_path).view_name == 'api:relationship-types-list'

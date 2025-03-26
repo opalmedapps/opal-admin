@@ -34,6 +34,6 @@ class ORMSValidator:
             if response_data.get('error') == 'Patient not found':
                 errors.append('Skipping patient initialization in ORMS because the patient was not found there')
         elif not success:
-            errors.append('Patient response data has an unexpected "status" value: {0}'.format(status))
+            errors.append(f'Patient response data has an unexpected "status" value: {status}')
 
         return success, errors

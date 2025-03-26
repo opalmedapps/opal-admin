@@ -1,5 +1,5 @@
 """Reusable form widgets."""
-from typing import Any, Optional, Union
+from typing import Any
 
 from django import forms
 
@@ -72,11 +72,11 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         self,
         name: str,
         value: Any,
-        label: Union[int, str],
+        label: int | str,
         selected: bool,
         index: int,
-        subindex: Optional[int] = None,
-        attrs: Optional[dict[str, Any]] = None,
+        subindex: int | None = None,
+        attrs: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Initialize an option (choice).

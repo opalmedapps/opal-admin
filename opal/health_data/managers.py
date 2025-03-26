@@ -15,14 +15,12 @@ if TYPE_CHECKING:
     from opal.patients.models import Patient
 
 
-BloodPressureMeasurementType = TypedDict(
-    'BloodPressureMeasurementType',
-    {
-        'systolic': Decimal,
-        'diastolic': Decimal,
-        'measured_at': datetime.datetime,
-    },
-)
+class BloodPressureMeasurementType(TypedDict):
+    """A blood pressure measurement."""
+
+    systolic: Decimal
+    diastolic: Decimal
+    measured_at: datetime.datetime
 
 
 class QuantitySampleManager(models.Manager['QuantitySample']):

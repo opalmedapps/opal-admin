@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 import pytest
 from pytest_mock import MockerFixture, MockType
@@ -122,7 +121,7 @@ class TestExpireRelationshipsCommand(CommandTestMixin):
     def _create_relationship(
         self,
         patient_date_of_birth: date,
-        end_age: Optional[int] = 14,
+        end_age: int | None = 14,
         status: RelationshipStatus = RelationshipStatus.CONFIRMED,
     ) -> Relationship:
         """
