@@ -62,8 +62,8 @@ class Command(BaseCommand):
         # maybe this can be done later
         medical_records = Group.objects.create(name='Medical Records')
         registrants = Group.objects.create(name='Registrants')
+        administrators = Group.objects.create(name='System Administrators')
         Group.objects.create(name=settings.ORMS_USER_GROUP)
-        administrators = Group.objects.create(name='Administrators')
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
